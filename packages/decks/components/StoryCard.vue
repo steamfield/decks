@@ -50,7 +50,12 @@ function onEnter(el: Element, done: () => void): void {
 </script>
 
 <template>
-  <div class="od-story-card" :class="[`anchor-${props.anchor}`, `accent-${props.hue}`]">
+  <div
+    class="od-story-card"
+    :class="[`anchor-${props.anchor}`, `accent-${props.hue}`]"
+    :data-lead="props.lead"
+    :data-body="props.body"
+  >
     <div ref="bodyEl" class="od-story-card-body">
       <Transition :css="false" @before-leave="onBeforeLeave" @enter="onEnter" @leave="fadeOutInPlace">
         <div :key="contentKey">

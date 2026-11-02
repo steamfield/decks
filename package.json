@@ -20,7 +20,8 @@
     "snap:diff": "bun packages/decks/scripts/snap.mjs diff",
     "lint": "./tools/content-lint.sh",
     "fact-extract": "bun tools/content-fact-extract.mjs",
-    "test:hooks": "bash .claude/hooks/tests/run-hook-tests.sh"
+    "test:hooks": "bash .claude/hooks/tests/run-hook-tests.sh",
+    "test:embed": "bun packages/decks/scripts/embed-check.mjs"
   },
   "dependencies": {
     "3d-force-graph": "^1.80.0",

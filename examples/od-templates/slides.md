@@ -4,9 +4,11 @@ title: "Slide Templates"
 info: "Reference templates for conventional Decks slides: cover, bullets, two columns, big stats, a chart and a story stage."
 author: Decks
 transition: slide-left
+routerMode: hash
 aspectRatio: 16/9
 canvasWidth: 1920
 fonts:
+  provider: none
   fallbacks: false
   webfonts: [Inter]
   sans: Inter, sans-serif

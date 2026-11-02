@@ -1,4 +1,5 @@
 /* Shared slide styles, loaded after the theme tokens by styles/index.ts. */
+@import './fonts.css';
 @import './base.css';
 @import './layout.css';
 @import './components.css';

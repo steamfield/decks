@@ -4,9 +4,11 @@ title: "Agent Experience: Designing for the User Who Reads Every Token"
 info: "How we built OpenData agent-first, treating LLM agents as the primary user cohort and letting their friction shape the API, the MCP server, and OpenChart."
 author: Riley Hilliard
 transition: slide-left
+routerMode: hash
 aspectRatio: 16/9
 canvasWidth: 1920
 fonts:
+  provider: none
   fallbacks: false
   webfonts: [Inter]
   sans: Inter, sans-serif

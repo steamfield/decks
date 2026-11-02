@@ -14,9 +14,11 @@ transition:
   css: false
 htmlAttrs:
   data-od-story: ""
+routerMode: hash
 aspectRatio: 16/9
 canvasWidth: 1920
 fonts:
+  provider: none
   fallbacks: false
   webfonts: [Inter]
   sans: Inter, sans-serif
@@ -34,19 +36,24 @@ src: ./pages/01-cover.md
 ---
 ---
 # One stanza per slide. `clicks` is the stage's beat count minus one, and
-# `beats.test.ts` fails if it disagrees with the stage's COPY array.
+# `beats.test.ts` fails if it disagrees with the stage's COPY array. `title`
+# repeats the stage headline for the overview and the embed's slideTitles.
 src: ./pages/02-two-a-day.md
+title: Boston gets two high tides a day.
 clicks: 2
 ---
 ---
 src: ./pages/03-two-bulges.md
+title: The Moon stretches the ocean into two bulges.
 clicks: 2
 ---
 ---
 src: ./pages/04-spring-neap.md
+title: The Sun makes the tide grow and shrink.
 clicks: 2
 ---
 ---
 src: ./pages/05-coastline.md
+title: Coastline shape decides how high the tide climbs.
 clicks: 2
 ---
