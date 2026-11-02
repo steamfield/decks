@@ -1,0 +1,47 @@
+{
+  "name": "decks",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun packages/decks/scripts/deck.mjs dev",
+    "build": "bun packages/decks/scripts/deck.mjs build",
+    "export": "bun packages/decks/scripts/deck.mjs export",
+    "new": "bun packages/decks/scripts/deck.mjs new",
+    "list": "bun packages/decks/scripts/deck.mjs list",
+    "check": "bun packages/decks/scripts/deck.mjs check",
+    "typecheck": "tsc --noEmit --pretty false 2>&1 | grep -v 'node_modules/' | grep 'error TS' && exit 1 || true",
+    "build:all": "bun packages/decks/scripts/deck.mjs build --all",
+    "test": "vitest run packages/decks/story packages/decks/scripts",
+    "shot": "bun packages/decks/scripts/shot.mjs",
+    "snap": "bun packages/decks/scripts/snap.mjs",
+    "snap:diff": "bun packages/decks/scripts/snap.mjs diff"
+  },
+  "dependencies": {
+    "3d-force-graph": "^1.80.0",
+    "@iconify-json/carbon": "^1.2.25",
+    "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/ph": "^1.2.2",
+    "@slidev/cli": "^52.19.0",
+    "slidev-addon-decks": "workspace:*",
+    "slidev-theme-the-unnamed": "^0.0.24",
+    "three": "^0.185.1",
+    "three-spritetext": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/d3-scale": "^4.0.9",
+    "pixelmatch": "^7.2.0",
+    "playwright-chromium": "^1.62.1",
+    "pngjs": "^7.0.0",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "three": "0.185.1",
+    "@opendata-ai/openchart-core": "9.0.0-rc.2",
+    "@opendata-ai/openchart-engine": "9.0.0-rc.2",
+    "@opendata-ai/openchart-vanilla": "9.0.0-rc.2",
+    "@opendata-ai/openchart-vue": "9.0.0-rc.2"
+  }
+}

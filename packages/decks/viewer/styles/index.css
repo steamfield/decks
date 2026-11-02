@@ -1,0 +1,28 @@
+/* Slidev opts out of selection on its wrapper. Keep UI controls nonselectable,
+   but allow slide content in audience, presenter and exported documents. */
+.slidev-page { -webkit-user-select: text !important; user-select: text !important; }
+
+/* VueUse's swipe control sets pan-y inline, excluding native touch pinch. */
+html[data-od-viewer] #page-root { touch-action: pan-y pinch-zoom !important; }
+
+/* Magnify the rendered canvas, not its viewport-based layout. At 100% this
+   is the original geometry; resizing a window still fits the slide normally. */
+html[data-od-viewer] #slide-container {
+  transform-origin: 0 0;
+  transform: translate(var(--od-viewer-x, 0px), var(--od-viewer-y, 0px)) scale(var(--od-viewer-scale, 1));
+}
+.od-viewer-reset {
+  position: fixed;
+  z-index: 1000;
+  right: 16px;
+  top: 12px;
+  padding: 6px 10px;
+  border: 1px solid #ffffff40;
+  border-radius: 6px;
+  color: white;
+  background: #18181be6;
+  font: 14px/1.4 system-ui, sans-serif;
+  cursor: pointer;
+}
+.od-viewer-reset[hidden] { display: none; }
+@media print { .od-viewer-reset { display: none; } }

@@ -1,0 +1,27 @@
+{
+  "_readme": "Deck registry for Decks (packages/decks/scripts/deck.mjs), read from the current directory. _config: decksDir is where `decks new` scaffolds; outDir and base apply to `build` and may contain {name}; a deck entry may override either. Deck entries: alias -> { entry: slides.md path, name: slug for outDir/base, animated: true when the deck uses OpenChart/scripted demos (switches export to --with-clicks --wait 1500, dropping the TOC step that errors on HTML-only slides), skipAll: true to exclude from build --all }",
+  "_config": {
+    "decksDir": "decks",
+    "outDir": "dist/{name}",
+    "base": "/"
+  },
+  "pitch": {
+    "entry": "examples/opendata-pitch/slides.md",
+    "name": "opendata-pitch",
+    "animated": true
+  },
+  "ax": {
+    "entry": "examples/agent-experience/slides.md",
+    "name": "agent-experience",
+    "animated": true
+  },
+  "templates": {
+    "entry": "examples/od-templates/slides.md",
+    "name": "od-templates"
+  },
+  "story-templates": {
+    "entry": "examples/od-story-templates/slides.md",
+    "name": "od-story-templates",
+    "animated": true
+  }
+}

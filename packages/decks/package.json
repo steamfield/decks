@@ -1,0 +1,46 @@
+{
+  "name": "slidev-addon-decks",
+  "version": "0.0.0",
+  "description": "Slidev addon: story engine, ink marks, OpenChart wrapper, layout CSS, and a deck runner.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "keywords": [
+    "slidev-addon",
+    "slidev"
+  ],
+  "engines": {
+    "slidev": ">=52"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./story": "./story/index.ts",
+    "./chart-theme": "./chart-theme.ts",
+    "./composables/*": "./composables/*.ts"
+  },
+  "bin": {
+    "decks": "./scripts/deck.mjs"
+  },
+  "files": [
+    "LICENSE",
+    "chart-theme.ts",
+    "vite.config.mts",
+    "components",
+    "composables",
+    "setup",
+    "styles",
+    "story",
+    "!story/*.test.ts",
+    "!story/test-decks.ts",
+    "viewer",
+    "templates",
+    "scripts",
+    "!scripts/*.test.ts"
+  ],
+  "dependencies": {
+    "@opendata-ai/openchart-core": "9.0.0-rc.2",
+    "@opendata-ai/openchart-vue": "9.0.0-rc.2",
+    "d3-scale": "^4.0.2",
+    "gsap": "^3.15.0",
+    "uqr": "^0.1.3"
+  }
+}

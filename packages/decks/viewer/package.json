@@ -1,0 +1,5 @@
+{
+  "name": "slidev-addon-od-viewer",
+  "private": true,
+  "engines": { "slidev": ">=52" }
+}

@@ -1,0 +1,114 @@
+/* ── Story slides: the marks ──────────────────────────────────────────────
+   What sits inside the frame: the house card surface the story card, the row
+   strip and the dataset card share, its accent hues, the prose card box and
+   the svg stage label. Loads after story-frame.css, which declares the frame
+   units these rules measure in.
+
+   Every rule here is scoped under `.od-slide.is-story`, for the same reason
+   as the frame: the addon stylesheet ships to every deck and nothing in this
+   file should reach a conventional slide.
+   ------------------------------------------------------------------------ */
+
+/* ── House card surface ──
+   The same construction as `.doc-card` in the frontend: one corner anchored
+   radial glow, tinted with the card's accent, over the flat surface token.
+   Elevation comes from the glow, the hairline border and the radius, not
+   from a drop shadow. `--card-accent` defaults to cyan; the `accent-*`
+   modifiers pick the hue of the ink the card sits beside. */
+.od-slide.is-story .od-story-card,
+.od-slide.is-story .od-rowstrip,
+.od-slide.is-story .od-dataset-card {
+  --card-accent: var(--od-cyan);
+  --card-glow: 12%;
+  border: 1px solid var(--od-border);
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      ellipse 80% 100% at 0% 0%,
+      color-mix(in srgb, var(--card-accent) var(--card-glow), transparent) 0%,
+      transparent 60%
+    ),
+    var(--od-surface);
+}
+.od-slide.is-story .accent-rose {
+  --card-accent: var(--od-rose);
+}
+.od-slide.is-story .accent-amber {
+  --card-accent: var(--od-amber);
+}
+.od-slide.is-story .accent-emerald {
+  --card-accent: var(--od-emerald);
+}
+.od-slide.is-story .accent-violet {
+  --card-accent: var(--od-violet);
+}
+.od-slide.is-story .accent-slate {
+  --card-accent: var(--od-slate);
+}
+
+/* ── Prose card ── */
+.od-slide.is-story .od-story-card {
+  position: absolute;
+  bottom: calc(12 * var(--sh));
+  width: calc(36 * var(--lw));
+  padding: calc(1.5 * var(--sw)) calc(1.7 * var(--sw));
+}
+.od-slide.is-story .od-story-card.anchor-left {
+  left: calc(5.7 * var(--lw));
+}
+.od-slide.is-story .od-story-card.anchor-right {
+  right: calc(5.7 * var(--lw));
+}
+
+/* ── Clean labelled row ── */
+.od-slide.is-story .od-rowstrip {
+  overflow: hidden;
+}
+
+/* ── Stage furniture: typeset text is never filtered ── */
+.od-slide.is-story .od-stage-label {
+  font-family: var(--od-font-mono);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  fill: var(--od-text-faint);
+}
+.od-slide.is-story .od-stage-label.is-end {
+  fill: var(--od-text-secondary);
+}
+
+/* ── Stage text: the four sizes a labelled box is built from ──
+   The name of a thing, the line of detail under it, a small uppercase
+   category and a figure. Sizes are the median of what the pitch's stages had
+   each written out per stage; `InkLabeledCard` uses the first two, and a
+   stage that draws its own boxes takes the same four rather than picking new
+   sizes. Existing stages keep their scoped classes: retrofitting would move
+   text by a few px per site and buys nothing on a finished deck. */
+.od-slide.is-story .od-stage-name {
+  font-family: var(--od-font-sans);
+  font-size: 30px;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+  fill: var(--od-text);
+}
+.od-slide.is-story .od-stage-note {
+  font-family: var(--od-font-mono);
+  font-size: 20px;
+  font-weight: 400;
+  fill: var(--od-text-faint);
+}
+.od-slide.is-story .od-stage-tag {
+  font-family: var(--od-font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--od-text-faint);
+}
+.od-slide.is-story .od-stage-value {
+  font-family: var(--od-font-mono);
+  font-size: 20px;
+  font-weight: 590;
+  font-variant-numeric: tabular-nums;
+  fill: var(--od-text-secondary);
+}

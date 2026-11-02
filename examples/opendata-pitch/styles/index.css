@@ -1,0 +1,65 @@
+/* opendata-pitch deck styles. Everything else comes from the shared addon
+   (`addons: ["slidev-addon-decks"]`), which loads before this file.
+
+   The dataset card is markup only this deck writes: FilesToRowStage and
+   ScaleGraphStage. Its house surface (border, radius, accent glow) stays in
+   the addon's story-marks.css, shared with the story card and the row strip; what
+   is here is the box and the type inside it. */
+
+/* ── Dataset card ──
+   The object the reconciliation slide ends on and the scale slide opens
+   with: one dataset, named. Both slides place it from the same box, so the
+   view transition carries it across unchanged before it joins the field. */
+.od-slide.is-story .od-dataset-card {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(0.35 * var(--sw));
+  padding: calc(1.1 * var(--sw)) calc(1.5 * var(--sw));
+  overflow: hidden;
+  --card-accent: var(--od-emerald);
+}
+/* When the dataset card is a link to its dataset page (slide 3) it carries no
+   link styling at all: the affordance is the card lighting up. The beat tween
+   owns `transform` and writes `border-color` inline, so hover moves neither;
+   it raises the accent glow and puts a ring inside the border instead. */
+.od-slide.is-story a.od-dataset-card {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    box-shadow var(--od-dur-card) var(--od-settle),
+    background var(--od-dur-card) var(--od-settle);
+}
+.od-slide.is-story a.od-dataset-card:hover,
+.od-slide.is-story a.od-dataset-card:focus-visible {
+  --card-glow: 24%;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-accent) 55%, transparent);
+}
+.od-slide.is-story a.od-dataset-card:focus-visible {
+  outline: none;
+}
+
+.od-slide.is-story .od-dataset-kicker {
+  font-family: var(--od-font-mono);
+  font-size: calc(0.78 * var(--sw));
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--od-text-faint);
+  white-space: nowrap;
+}
+.od-slide.is-story .od-dataset-name {
+  font-family: var(--od-font-mono);
+  font-size: calc(1.35 * var(--sw));
+  font-weight: 500;
+  color: var(--od-text);
+  white-space: nowrap;
+}
+.od-slide.is-story .od-dataset-meta {
+  font-size: calc(1 * var(--sw));
+  color: var(--od-text-muted);
+  white-space: nowrap;
+}

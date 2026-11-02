@@ -1,0 +1,224 @@
+/* ── Overline / eyebrow ── */
+.od-eyebrow {
+  font-size: 0.98rem;
+  font-weight: 510;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--od-cyan);
+}
+.od-eyebrow.amber {
+  color: var(--od-amber);
+}
+.od-eyebrow.violet {
+  color: var(--od-violet);
+}
+.od-eyebrow.emerald {
+  color: var(--od-emerald);
+}
+.od-eyebrow.rose {
+  color: var(--od-rose);
+}
+.od-eyebrow-rule {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--od-cyan), var(--od-blue));
+  display: block;
+}
+.od-eyebrow + .od-h2 {
+  margin: 1.1rem 0 0;
+}
+
+/* ── Brand ── */
+.od-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.od-brand-name {
+  font-weight: 700;
+  font-size: 1.95rem;
+  letter-spacing: -0.022em;
+  line-height: 1;
+  background-image: var(--od-wordmark-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── Inline slide source/citation (lower-left, above footer) ── */
+.od-slide-source {
+  margin-top: auto;
+  font-size: 0.95rem;
+  line-height: 1.4 !important;
+  color: var(--od-text-faint);
+}
+.od-slide-source + .od-footer {
+  margin-top: 1rem;
+}
+
+/* ── Footer ── */
+.od-footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Bullet list ── */
+.od-bullets {
+  list-style: none !important;
+  padding: 0;
+  margin: 2.2rem 0 0;
+}
+.od-bullets li::marker {
+  content: '' !important;
+}
+.od-bullets li {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 1.7rem;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: var(--od-text-secondary);
+}
+.od-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--od-cyan);
+}
+.od-bullets.amber li::before {
+  background: var(--od-amber);
+}
+.od-bullets.emerald li::before {
+  background: var(--od-emerald);
+}
+.od-bullets.violet li::before {
+  background: var(--od-violet);
+}
+
+.od-bullets.od-bullets-tight {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.od-bullets.od-bullets-tight li {
+  padding-left: 1.5rem;
+  margin-bottom: 0.6rem;
+  line-height: 1.45;
+}
+.od-bullets.od-bullets-tight li:last-child {
+  margin-bottom: 0;
+}
+
+/* Muted overline label for sub-sections within a slide */
+.od-intro-label {
+  font-size: 0.9rem;
+  font-weight: 510;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--od-text-faint);
+}
+
+/* ── Intro photo ── */
+.od-intro-photo {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1px solid var(--od-border);
+  box-shadow: 0 4px 32px rgba(6, 182, 212, 0.06);
+  background-size: cover;
+  background-position: center;
+  justify-self: center;
+}
+
+/* ── Comparison table ── */
+.od-compare {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+.od-compare th {
+  padding: 0.95rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 510;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--od-text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--od-border);
+}
+.od-compare th:not(:first-child) {
+  text-align: right;
+}
+.od-compare td {
+  padding: 1.05rem 1.2rem;
+  font-size: 1.28rem;
+  color: var(--od-text-secondary);
+  border-bottom: 1px solid var(--od-border-subtle);
+}
+.od-compare td:not(:first-child) {
+  text-align: right;
+  font-family: var(--od-font-sans);
+  font-size: 1.18rem;
+}
+.od-compare td.rose {
+  color: var(--od-rose);
+}
+.od-compare td.amber {
+  color: var(--od-amber-soft);
+}
+.od-compare td.green {
+  color: var(--od-emerald);
+}
+.od-compare td.dim {
+  color: var(--od-text-faint);
+}
+.od-compare tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Quote block ── */
+.od-quote {
+  margin: 2rem 0;
+  padding: 1.8rem 2.2rem;
+  background: var(--od-surface);
+  border-left: 3px solid var(--od-cyan);
+  border-radius: 0 12px 12px 0;
+  font-size: 1.5rem;
+  font-style: italic;
+  line-height: 1.55 !important;
+  color: var(--od-text-secondary);
+}
+.od-quote-cite {
+  display: block;
+  margin-top: 1rem;
+  font-size: 1.08rem;
+  font-style: normal;
+  color: var(--od-text-faint);
+}
+
+/* ── Key-value pair rows ── */
+.od-kv-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem 2rem;
+  margin-top: 1.5rem;
+}
+.od-kv-key {
+  font-family: var(--od-font-sans);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--od-text);
+}
+.od-kv-val {
+  font-size: 1.05rem;
+  color: var(--od-text-muted);
+}

@@ -1,0 +1,86 @@
+// Interaction regression: bun scripts/viewer-browser.mjs <url> <text selector>
+import assert from 'node:assert/strict'
+import { chromium } from 'playwright-chromium'
+const [url = 'http://localhost:3037/22', selector = '.slidev-page-22 .od-story-head'] = process.argv.slice(2)
+const browser = await chromium.launch()
+try {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } })
+  const errors = []
+  // Headless Chromium denies the optional screen wake lock independently of input.
+  page.on('pageerror', error => { if (error.message !== 'Wake Lock permission request denied') errors.push(error.message) })
+  page.on('console', message => { if (message.type() === 'error' && !message.text().includes('Wake Lock permission request denied')) errors.push(message.text()) })
+  await page.goto(url)
+  await page.waitForTimeout(2500)
+  const heading = page.locator(selector).first()
+  const box = await heading.boundingBox()
+  assert.ok(box)
+  // A real mouse drag, not Range.selectNodeContents (which bypasses CSS).
+  await page.mouse.move(box.x + 3, box.y + box.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(box.x + Math.min(350, box.width - 5), box.y + box.height / 2, { steps: 16 })
+  await page.mouse.up()
+  assert.ok((await page.evaluate(() => getSelection()?.toString())).length > 3, 'drag selects visible text')
+  const scale = () => page.evaluate(() => Number(document.documentElement.style.getPropertyValue('--od-viewer-scale')))
+  const fontSize = () => heading.evaluate(el => parseFloat(getComputedStyle(el).fontSize))
+  const initialFont = await fontSize()
+  const canvasBefore = await page.locator('#slide-container').boundingBox()
+  await page.keyboard.press('Meta+=')
+  assert.equal(await scale(), 1, 'keyboard sizing does not magnify the canvas')
+  assert.ok(await fontSize() > initialFont * 1.09, 'keyboard sizing increases actual font metrics')
+  const canvasAfter = await page.locator('#slide-container').boundingBox()
+  assert.deepEqual(canvasAfter, canvasBefore, 'typography changes leave the slide canvas fitted')
+  await page.keyboard.press('Meta+-')
+  assert.equal(await fontSize(), initialFont)
+  await page.keyboard.press('Control+-')
+  assert.ok(await fontSize() < initialFont, 'keyboard sizing can reduce type independently of pinch')
+  assert.equal(await scale(), 1)
+  await page.keyboard.press('Control+0')
+  assert.equal(await fontSize(), initialFont)
+  await page.mouse.move(1000, 400)
+  await page.keyboard.down('Control')
+  await page.mouse.wheel(0, -50)
+  await page.keyboard.up('Control')
+  await page.waitForTimeout(100)
+  assert.ok(await scale() > 1.5, 'ctrl-wheel/pinch magnifies')
+  const beforePan = await page.evaluate(() => document.documentElement.style.getPropertyValue('--od-viewer-y'))
+  await page.mouse.wheel(0, 100)
+  await page.waitForTimeout(100)
+  assert.notEqual(await page.evaluate(() => document.documentElement.style.getPropertyValue('--od-viewer-y')), beforePan, 'scroll pans enlarged canvas')
+  await page.locator('.od-viewer-reset').click()
+  assert.equal(await scale(), 1)
+  await page.keyboard.down('Control')
+  await page.mouse.wheel(0, 800)
+  await page.keyboard.up('Control')
+  await page.waitForTimeout(100)
+  assert.equal(await scale(), 1, 'pinching out cannot shrink below the fitted slide')
+  // Safari gesture path, including reset and reciprocal pinch.
+  await page.evaluate(() => {
+    for (const [type, scale] of [['gesturestart', 1], ['gesturechange', 1.4], ['gestureend', 1.4]]) {
+      const event = new Event(type, { bubbles: true, cancelable: true })
+      Object.assign(event, { scale, clientX: 900, clientY: 500 })
+      window.dispatchEvent(event)
+    }
+  })
+  assert.equal(await scale(), 1.4)
+  await page.keyboard.press('Meta+0')
+  const before = page.url()
+  await page.keyboard.press('ArrowRight')
+  await page.waitForTimeout(1000)
+  assert.notEqual(page.url(), before, 'arrow navigation still works')
+  await page.setViewportSize({ width: 2560, height: 1440 })
+  assert.equal(await scale(), 1, 'display resize keeps fitted zoom')
+  // Browser shortcuts remain available in editable controls.
+  assert.equal(await page.evaluate(() => {
+    const input = document.createElement('input'); document.body.append(input)
+    const event = new KeyboardEvent('keydown', { key: '+', metaKey: true, bubbles: true, cancelable: true })
+    input.dispatchEvent(event); input.remove(); return event.defaultPrevented
+  }), false)
+  const presenter = new URL(page.url())
+  presenter.pathname = presenter.pathname.replace(/\/\d+\/?$/, '/presenter/1')
+  presenter.search = ''
+  await page.goto(presenter.href)
+  await page.waitForTimeout(1000)
+  assert.equal(await page.evaluate(() => document.documentElement.hasAttribute('data-od-viewer')), false, 'presenter keeps native controls')
+  assert.deepEqual(errors, [])
+  console.log('PASS: text selection, keyboard typography sizing, pinch, pan, reset, navigation, display resize; no browser errors')
+} finally { await browser.close() }

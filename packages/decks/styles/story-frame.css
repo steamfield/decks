@@ -1,0 +1,370 @@
+/* ── Story slides: the frame ──────────────────────────────────────────────
+   The slide level chrome of a story slide: the 16:9 box every layer shares,
+   the frame units and duration mirrors declared on it, the cover layout, the
+   headline, and the cross slide hand off. The marks that sit inside the frame
+   are in story-marks.css, which loads straight after this file.
+
+   Every rule here is scoped under `.od-slide.is-story`, because the shared
+   addon stylesheet ships to every deck and nothing in this file should reach
+   a conventional slide.
+
+   Two exceptions live at the bottom and cannot be scoped, because the browser
+   owns the elements: the `::view-transition-*` pseudo elements (document
+   level by definition) and their keyframes. Their duration and easing mirror
+   `DUR.morph` and `SETTLE_CSS` in `shared/story/easings.ts`; if either moves,
+   move both.
+   ------------------------------------------------------------------------ */
+
+.od-slide.is-story {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+
+  /* The largest 16:9 box that fits the viewport. Ink is drawn in a 1920x1080
+     viewBox and the overlay is laid out in CSS, and the two only coincide if
+     the box holding them has the viewBox's aspect ratio. When the slide itself
+     was the box, any viewport that was not 16:9 made `xMidYMid slice` crop the
+     ink: fullscreen on a 16:10 laptop cut everything past viewBox x=1824,
+     which is where this deck draws. Both layers live in this frame instead, so
+     nothing is ever cropped and ink lands on overlay at any aspect ratio. */
+  --od-fw: min(100vw, 177.7778vh);
+  --od-fh: min(100vh, 56.25vw);
+
+  /* One percent of the frame, for everything inside it. These replace vw and
+     vh: a viewport unit inside the frame drifts from the ink the moment the
+     window stops being 16:9. 1 --sw is 19.2 viewBox units, 1 --sh is 10.8. */
+  --sw: calc(var(--od-fw) / 100);
+  --sh: calc(var(--od-fh) / 100);
+  /* Horizontal layout can expand independently of type and SVG geometry. */
+  --lw: calc(var(--od-fw) / 100);
+  /* Half the letterbox band: how far a layer that is meant to cover the whole
+     window (a full bleed map, say) has to reach past the frame on each side.
+     Everything laid out inside the frame still uses --sw/--sh. */
+  --od-bleed-x: calc((100vw - var(--od-fw)) / 2);
+  /* Mirrors of the TS duration table, for the handful of transitions that
+     stay in CSS. Keep in sync with DUR in shared/story/easings.ts. */
+  --od-dur-card: 300ms;
+  --od-dur-opacity: 140ms;
+  --od-settle: cubic-bezier(0.32, 0.72, 0, 1);
+  --od-draw: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Cover variant: the stage carries the ink, the glow stays. */
+.od-slide.is-story.is-story-cover {
+  background:
+    radial-gradient(57vw 70vh at 86% 12%, rgba(6, 182, 212, 0.1), rgba(6, 182, 212, 0) 55%),
+    radial-gradient(43vw 57vh at 8% 102%, rgba(59, 130, 246, 0.07), rgba(59, 130, 246, 0) 55%),
+    var(--od-canvas-cover);
+}
+
+/* The 16:9 box the stage svg and the overlay share. */
+.od-slide.is-story .od-story-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--od-fw);
+  height: var(--od-fh);
+  transform: translate(-50%, -50%);
+}
+
+/* Reflowable HTML and chart containers use the window width, capped at 12:5
+   on ultrawide displays. Type stays tied to the fitted frame height so it
+   cannot crowd the vertical layout. Fixed-coordinate SVG scenes opt out. */
+.od-slide.is-story.is-fluid {
+  --od-fw: min(100vw, 240vh);
+  --sw: calc(min(var(--od-fw), var(--od-fh) * 16 / 9) / 100);
+  --lw: calc(var(--od-fw) / 100);
+}
+
+/* ── Stage ── */
+.od-slide.is-story .od-stage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* A second full bleed svg layer, for ink that has to sit on an element with a
+   CSS box (anything carrying a view-transition-name). */
+.od-slide.is-story .od-stage-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.od-slide.is-story .od-stage-layer > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Cover chrome: the one story overlay that is a flow layout rather than a set
+   of absolutely placed pieces. */
+.od-slide.is-story .od-cover-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(8.1 * var(--sh)) calc(5.7 * var(--lw));
+}
+
+/* A cover frame with no byline row (the close) has two children, and
+   space-between would drop the title to the floor. This centers the middle
+   block in the space left over, which is where a three-row frame puts it,
+   without an empty element standing in as a spacer. */
+.od-slide.is-story .od-cover-frame > .od-cover-center {
+  margin-block: auto;
+}
+
+/* The body block: eyebrow, title, lede. Narrower than the frame so a title
+   wraps where it reads best. */
+.od-slide.is-story .od-cover-body {
+  max-width: calc(64 * var(--lw));
+}
+
+/* The one sentence under a cover title. */
+.od-slide.is-story .od-cover-lede {
+  margin: 1.7rem 0 0;
+  max-width: calc(52 * var(--lw));
+}
+
+/* ── Headline: fixed top left, never moves within a slide ──
+   A fixed width rather than a max-width. A shrink-to-fit box changes width
+   with its text, so the named view-transition group morphed between two
+   different boxes and scaled both headline snapshots on every slide change.
+   With one width on both sides only the height can differ. */
+.od-slide.is-story .od-story-head {
+  position: absolute;
+  top: calc(6.2 * var(--sh));
+  left: calc(5.7 * var(--lw));
+  margin: 0;
+  width: calc(64 * var(--lw));
+  /* Frame units, not rem: rem holds still while the frame shrinks, so on a
+     1280px laptop the headline wrapped into the stage. 46.4px at 1920. */
+  font-size: calc(2.4167 * var(--sw));
+  font-weight: 510;
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  color: var(--od-text);
+}
+/* One line at the full width of the frame, for a stage that needs the height
+   a wrapped headline would take. */
+.od-slide.is-story .od-story-head.is-wide {
+  width: calc(88 * var(--lw));
+  white-space: nowrap;
+}
+
+/* ── Cross slide hand off ────────────────────────────────────────────────
+   Names are assigned only when the stage says it is rendering the real slide
+   (`vt-on`, set from $renderContext), and nulled again under the presenter
+   and the print container, so a duplicated name can never abort a
+   transition. Only adjacent slides ever share a name.
+
+   Box-shaped morph targets get an opaque background, because a transparent
+   snapshot cross-fades against whatever happens to be behind it. The two ink
+   layers stay transparent on purpose: both sides of their morph sit on the
+   same canvas, so an opaque box would hide the stage underneath. */
+.od-slide.is-story.vt-on .od-story-head {
+  view-transition-name: od-story-head;
+}
+.od-slide.is-story.vt-on .od-story-card.anchor-left {
+  view-transition-name: od-story-card-left;
+}
+.od-slide.is-story.vt-on .od-story-card.anchor-right {
+  view-transition-name: od-story-card-right;
+}
+.od-slide.is-story.vt-on .vt-drift-line {
+  view-transition-name: od-drift-line;
+}
+.od-slide.is-story.vt-on .vt-clean-row {
+  view-transition-name: od-clean-row;
+  background-color: var(--od-surface);
+}
+.od-slide.is-story.vt-on .vt-seed-square {
+  view-transition-name: od-seed-square;
+  background-color: var(--od-surface);
+}
+.od-slide.is-story.vt-on .vt-baseline {
+  view-transition-name: od-baseline;
+}
+.od-slide.is-story.vt-on .vt-campus-grid {
+  view-transition-name: od-campus-grid;
+}
+.od-slide.is-story.vt-on .vt-qr-frame {
+  view-transition-name: od-qr-frame;
+  background-color: var(--od-qr-white);
+}
+
+/* One null list for all three containers. `:is()` takes the specificity of
+   its most specific argument, so `#print-container` makes the whole rule
+   (1,3,0), above every setter above it. Adding a name means adding it here
+   too, and `vt-names.test.ts` fails if it is missed. */
+:is(.slidev-presenter, #print-container, .slidev-overview)
+  .od-slide.is-story
+  :is(
+    .od-story-head,
+    .od-story-card,
+    .vt-drift-line,
+    .vt-clean-row,
+    .vt-seed-square,
+    .vt-baseline,
+    .vt-campus-grid,
+    .vt-qr-frame
+  ) {
+  view-transition-name: none;
+}
+
+/* Document level: the morph itself. 600ms is DUR.morph, 240ms is DUR.draw,
+   the curves are SETTLE_CSS and DRAW_CSS. All mirror shared/story/easings.ts.
+
+   The rules are scoped to `html[data-od-story]`, which a deck sets through
+   `htmlAttrs` in its headmatter. This stylesheet ships with the addon to
+   every deck, and a conventional deck that later turns on view transitions
+   must not inherit this pacing by accident.
+
+   Named groups (the hand offs above) travel on SETTLE over the morph
+   duration. The root, which is everything else, cross fades over the same
+   duration and curve on both sides, so the two opacities always sum to one
+   under the browser's plus-lighter blend and the frame never dips toward
+   black, while the new frame settles in from a short drift, downward going
+   forward and upward going back. The drift is the one length in this file
+   written in vh: --sw and --sh are declared on .od-slide.is-story, and a
+   ::view-transition pseudo element is a child of the document root, so a
+   frame unit resolves to nothing here. Both keyframes use the literal. The
+   direction is stamped on <html> by shared/setup/main.ts before the snapshot.
+
+   The headline and the prose card carry names of their own. Between two
+   story slides they cross fade in place; entering from a slide without one
+   (`:only-child`, no old image) they rise in like the root, the card one
+   stagger after the headline (280ms is two DUR.opacity beats). */
+html[data-od-story]::view-transition-group(*) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+html[data-od-story]::view-transition-old(*),
+html[data-od-story]::view-transition-new(*) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+html[data-od-story]::view-transition-old(root) {
+  animation: od-vt-out 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+html[data-od-story]::view-transition-new(root) {
+  animation: od-vt-in 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+html[data-od-story][data-od-nav='back']::view-transition-new(root) {
+  animation-name: od-vt-in-back;
+}
+html[data-od-story]::view-transition-new(od-story-head):only-child,
+html[data-od-story]::view-transition-new(od-story-card-left):only-child,
+html[data-od-story]::view-transition-new(od-story-card-right):only-child {
+  animation: od-vt-in 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+html[data-od-story][data-od-nav='back']::view-transition-new(od-story-head):only-child,
+html[data-od-story][data-od-nav='back']::view-transition-new(od-story-card-left):only-child,
+html[data-od-story][data-od-nav='back']::view-transition-new(od-story-card-right):only-child {
+  animation-name: od-vt-in-back;
+}
+html[data-od-story]::view-transition-new(od-story-card-left):only-child,
+html[data-od-story]::view-transition-new(od-story-card-right):only-child {
+  animation-delay: 280ms;
+}
+html[data-od-story]::view-transition-old(od-story-head):only-child,
+html[data-od-story]::view-transition-old(od-story-card-left):only-child,
+html[data-od-story]::view-transition-old(od-story-card-right):only-child {
+  animation: od-vt-out 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes od-vt-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes od-vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.4vh);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes od-vt-in-back {
+  from {
+    opacity: 0;
+    transform: translateY(-1.4vh);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes od-vt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Reduced motion: keep the narrative sweeps, drop the drift ── */
+@media (prefers-reduced-motion: reduce) {
+  /* A running keyframe outranks a plain declaration, so the drift is
+     removed by swapping the keyframe, at the specificity of the back rule. */
+  html[data-od-story][data-od-nav]::view-transition-old(root),
+  html[data-od-story][data-od-nav]::view-transition-new(root),
+  html[data-od-story]::view-transition-old(root),
+  html[data-od-story]::view-transition-new(root),
+  html[data-od-story][data-od-nav]::view-transition-new(od-story-head):only-child,
+  html[data-od-story][data-od-nav]::view-transition-new(od-story-card-left):only-child,
+  html[data-od-story][data-od-nav]::view-transition-new(od-story-card-right):only-child,
+  html[data-od-story]::view-transition-new(od-story-head):only-child,
+  html[data-od-story]::view-transition-new(od-story-card-left):only-child,
+  html[data-od-story]::view-transition-new(od-story-card-right):only-child {
+    animation-name: od-vt-fade;
+    animation-duration: 140ms;
+    animation-delay: 0ms;
+  }
+}
+
+/* ── PDF export ──
+   Slidev exports one tall document, so the viewport is the whole deck and
+   the viewport-sized frame no longer describes one slide. Pin every story frame
+   to the 1920x1080 canvas. Containment also stops off-canvas geometry (a map
+   camera's overscan, say) from making Chromium shrink every PDF page to fit. */
+html.print[data-od-story] #page-root {
+  display: block;
+  width: 1920px;
+}
+html.print[data-od-story] #twoslash-container { display: none; }
+html.print[data-od-story] .print-slide-container {
+  contain: strict;
+  isolation: isolate;
+}
+html.print[data-od-story] .print-slide-container:last-child { break-after: auto; }
+html.print[data-od-story] .slidev-layout {
+  width: 1920px !important;
+  height: 1080px !important;
+}
+html.print[data-od-story] .od-slide.is-story {
+  --od-fw: 1920px;
+  --od-fh: 1080px;
+  --od-bleed-x: 0px;
+  width: 1920px;
+  height: 1080px;
+}
+
+/* Text labels remain selectable even on otherwise noninteractive SVG layers. */
+.od-slide.is-story :is(.od-stage, .od-stage-layer) text { pointer-events: auto; }
+
+html.print[data-od-story] .od-slide.is-story.is-fluid { --od-fw: 1920px; --sw: 19.2px; --lw: 19.2px; }

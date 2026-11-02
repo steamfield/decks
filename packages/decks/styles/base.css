@@ -1,0 +1,96 @@
+/* ── Full-bleed ── */
+.slidev-slide-container {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+#slide-content,
+.slidev-slide-content {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  transform: none !important;
+}
+
+/* ── Base canvas + typography ── */
+.slidev-layout {
+  background: var(--od-canvas) !important;
+  color: var(--od-text) !important;
+  font-family: var(--od-font-sans) !important;
+  font-feature-settings: 'cv01', 'ss03' !important;
+  font-size: 1.05rem !important;
+  line-height: 1.6 !important;
+  padding: 0 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.slidev-layout h1::before,
+.slidev-layout h2::before,
+.slidev-layout h3::before {
+  display: none !important;
+}
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3 {
+  font-family: var(--od-font-sans) !important;
+  font-weight: 510 !important;
+  color: var(--od-text) !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  letter-spacing: -0.022em;
+}
+
+/* ── Headlines ── */
+.od-title {
+  margin: 0;
+  font-size: 4.4rem;
+  font-weight: 510;
+  line-height: 1.14 !important;
+  letter-spacing: -0.024em;
+  color: var(--od-text);
+}
+.od-h2 {
+  margin: 0;
+  font-size: 2.9rem;
+  font-weight: 510;
+  line-height: 1.12 !important;
+  letter-spacing: -0.022em;
+  color: var(--od-text);
+}
+.od-h3 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 510;
+  line-height: 1.15;
+  letter-spacing: -0.018em;
+  color: var(--od-text);
+}
+.od-lede {
+  font-size: 1.7rem;
+  font-weight: 300;
+  line-height: 1.7 !important;
+  letter-spacing: -0.006em;
+  color: var(--od-text-muted);
+}
+.od-body {
+  font-size: 1.45rem;
+  font-weight: 400;
+  line-height: 1.65 !important;
+  color: var(--od-text-secondary);
+}
+.od-body + .od-body {
+  margin-top: 1.3rem;
+}
+.od-caption {
+  font-size: 1.18rem;
+  line-height: 1.65 !important;
+  color: var(--od-text-faint);
+}
+.od-mono {
+  font-family: var(--od-font-mono);
+}
+.od-dim {
+  color: var(--od-text-dim);
+}
