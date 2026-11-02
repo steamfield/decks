@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 // Parameterized deck runner. Replaces per-deck dev:/build:/export: script triplets.
 //
 //   decks dev <alias> [...]  dev server with --open; later flags (--port N) go to Slidev
