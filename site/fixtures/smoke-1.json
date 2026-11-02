@@ -1,0 +1,85 @@
+{
+  "source": "smoke-1.jsonl",
+  "session": "d3d60f8d-add4-40f9-aa1c-09b91c966284",
+  "prompt": "make a 5-slide story deck about how ocean tides work",
+  "turns": 87,
+  "durationMs": 495917,
+  "costUsd": 3.169083600000001,
+  "toolCalls": 85,
+  "steps": [
+    {
+      "calls": ["Skill(building-a-deck)"],
+      "note": "Loads the repo's deck-building workflow.",
+      "output": "Launching skill: building-a-deck"
+    },
+    {
+      "calls": ["Bash(bun run new tides ocean-tides --story)"],
+      "note": "Scaffolds a story deck and registers it.",
+      "output": "Scaffolded decks/ocean-tides/ and registered alias \"tides\"."
+    },
+    {
+      "calls": [
+        "Read(.claude/rules/story-stage.md)",
+        "Read(.claude/rules/deck-writing.md)",
+        "Read(.claude/rules/deck-data.md)"
+      ],
+      "note": "Reads the writing, stage and data rules before drafting.",
+      "output": ""
+    },
+    {
+      "calls": ["Bash(curl api.tidesandcurrents.noaa.gov ... station=8443970)"],
+      "note": "NOAA tide predictions for Boston.",
+      "output": ""
+    },
+    {
+      "calls": ["Bash(curl aa.usno.navy.mil/api/moon/phases ...)"],
+      "note": "US Naval Observatory moon phase dates.",
+      "output": ""
+    },
+    {
+      "calls": ["Bash(curl nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html)"],
+      "note": "NASA fact-sheet constants.",
+      "output": ""
+    },
+    {
+      "calls": [
+        "Write(decks/ocean-tides/data/boston-days.ts)",
+        "Write(decks/ocean-tides/data/moon-clock.ts)",
+        "Write(decks/ocean-tides/data/boston-month.ts)",
+        "Write(decks/ocean-tides/data/ranges.ts)"
+      ],
+      "note": "One data module per slide, each figure with its source.",
+      "output": ""
+    },
+    {
+      "calls": [
+        "Write(decks/ocean-tides/components/TideDayStage.vue)",
+        "Write(decks/ocean-tides/components/TideBulgeStage.vue)",
+        "Write(decks/ocean-tides/components/TideMonthStage.vue)",
+        "Write(decks/ocean-tides/components/TideRangeStage.vue)"
+      ],
+      "note": "One stage component per story slide.",
+      "output": ""
+    },
+    {
+      "calls": ["Bash(bun run check)"],
+      "note": "",
+      "output": "All page files match their manifests."
+    },
+    {
+      "calls": ["Bash(bun run test)"],
+      "note": "",
+      "output": "Tests  147 passed (147)"
+    },
+    {
+      "calls": ["Bash(bun run lint)"],
+      "note": "The prose lint prints only its own command line: no findings.",
+      "output": "$ ./tools/content-lint.sh"
+    },
+    {
+      "calls": ["Bash(bun run build tides)"],
+      "note": "",
+      "output": "✓ built in 1.08s"
+    }
+  ]
+}

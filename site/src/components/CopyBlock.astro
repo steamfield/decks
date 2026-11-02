@@ -1,0 +1,35 @@
+---
+// One or more command lines with a single copy button that copies them all.
+// The button stays hidden until src/scripts/site.ts confirms the clipboard API;
+// without it the commands are plain selectable text.
+import type { EventName } from "../lib/events";
+
+interface Props {
+  lines: string[];
+  /** Accessible name for the button, e.g. "Copy both install commands". */
+  label: string;
+  track?: EventName;
+  trackMethod?: string;
+}
+const { lines, label, track, trackMethod } = Astro.props;
+const text = lines.join("\n");
+---
+
+<div class="border-line-strong bg-panel flex items-start gap-3 rounded-md border p-3">
+  <pre class="text-ink min-w-0 flex-1 font-mono text-[13px] leading-6 break-words whitespace-pre-wrap"><code>{
+    lines.map((line, index) => (
+      <span class="block"><span aria-hidden="true" class="text-muted select-none">$ </span>{line}{index < lines.length - 1 ? "\n" : ""}</span>
+    ))
+  }</code></pre>
+  <button
+    type="button"
+    hidden
+    data-copy={text}
+    data-track={track}
+    data-track-method={trackMethod}
+    aria-label={label}
+    class="border-line-strong text-ink-2 hover:text-ink min-h-11 shrink-0 rounded-sm border px-3 text-xs"
+  >
+    Copy
+  </button>
+</div>

@@ -1,0 +1,110 @@
+{
+  "title": "Agent Experience: Designing for the User Who Reads Every Token",
+  "slides": 10,
+  "slideTitles": [
+    "Designing for the user who reads every token.",
+    "A new user cohort, about every fifteen years.",
+    "Interview the agent like you'd interview a user.",
+    "One task. 72 calls. Then 8.",
+    "What we changed after reading the transcripts.",
+    "What an agent's interface actually needs.",
+    "The error is where you design recovery.",
+    "The clean runs were just as useful.",
+    "Agents write config better than code, so the chart is a config.",
+    "Stop guessing. Watch the agent."
+  ],
+  "startSlide": 1,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 10,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    }
+  ]
+}

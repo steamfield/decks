@@ -1,0 +1,71 @@
+{
+  "title": "Slide Templates",
+  "slides": 6,
+  "slideTitles": [
+    "Slide Templates",
+    "What the team ships this year",
+    "Producer Price Index: Pharmaceuticals",
+    "The year at a glance",
+    "Pharmaceutical prices climbed 38% through the supply shock",
+    "The catalog doubled twice in five years."
+  ],
+  "startSlide": 6,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 2,
+      "lead": "A thousand datasets, hand curated.",
+      "body": "Small enough to read end to end."
+    },
+    {
+      "slide": 6,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Connectors made coverage compound.",
+      "body": "One config ingests a whole portal."
+    },
+    {
+      "slide": 6,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The index is the product now.",
+      "body": "Every dataset joins the ones already there."
+    }
+  ]
+}

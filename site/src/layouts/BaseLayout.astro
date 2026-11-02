@@ -1,0 +1,144 @@
+---
+import { Font } from "astro:assets";
+import { site } from "../config";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Route path with its trailing slash, e.g. "/docs/" (never Astro.url, which a host can rewrite). */
+  path: string;
+  /** Social card path under /og/. */
+  image?: string;
+  /** This page's Markdown export, linked as rel="alternate". */
+  markdown?: string;
+  noindex?: boolean;
+}
+const {
+  title,
+  description = site.description,
+  path,
+  image = "/og/index.png",
+  markdown,
+  noindex = false,
+} = Astro.props;
+const canonical = new URL(path, site.url);
+const ogImage = new URL(image, site.url);
+// The package name leads: "Decks" alone is unsearchable.
+const brand = `${site.name} (${site.packageName})`;
+const pageTitle = path === "/" ? `${brand}: ${title}` : `${title} | ${brand}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+    {markdown && <link rel="alternate" type="text/markdown" href={markdown} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={brand} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <Font cssVariable="--ff-inter" preload />
+    <Font cssVariable="--ff-mono" />
+    <Font cssVariable="--ff-dseg" />
+    <Font cssVariable="--ff-marker" />
+    <script is:inline>
+      // Before paint: mark JavaScript on, then the stored theme, else the system preference.
+      (() => {
+        const root = document.documentElement;
+        root.classList.add("js");
+        try {
+          const stored = localStorage.getItem("theme");
+          const dark = stored
+            ? stored === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          root.classList.add(dark ? "dark" : "light");
+        } catch {
+          // Storage blocked: the CSS media fallback applies.
+        }
+      })();
+    </script>
+    <script>
+      import { initAnalytics } from "../lib/analytics";
+      import "../scripts/site";
+
+      initAnalytics({
+        key: import.meta.env.PUBLIC_POSTHOG_KEY,
+        host: import.meta.env.PUBLIC_POSTHOG_HOST,
+      });
+    </script>
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a
+      href="#main"
+      class="bg-canvas sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:p-2"
+    >
+      Skip to content
+    </a>
+    <slot name="banner" />
+    <header class="border-line border-b">
+      <div class="mx-auto flex h-14 max-w-[1200px] items-center gap-4 px-4 sm:px-8">
+        <a href="/" class="text-ink flex items-baseline gap-2 no-underline">
+          <span class="text-lg font-semibold tracking-tight">{site.name}</span>
+          <span class="text-muted hidden font-mono text-xs sm:inline">{site.packageName}</span>
+        </a>
+        {site.version && <span class="text-muted font-mono text-xs">v{site.version}</span>}
+        <nav aria-label="Main" class="ml-auto flex items-center gap-5 text-sm">
+          <a href="/docs/" class="no-underline hover:underline">
+            Docs
+          </a>
+          {site.social.map((link) => (
+            <a href={link.href} class="no-underline hover:underline">
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        <!-- Search goes here: a search fragment fills this slot. -->
+        <slot name="search" />
+        <button
+          type="button"
+          data-theme-toggle
+          hidden
+          class="border-line-strong text-ink-2 hover:text-ink rounded-sm border px-2 py-1 text-xs"
+        >
+          Dark theme
+        </button>
+      </div>
+    </header>
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <footer class="border-line text-muted border-t text-sm">
+      <div class="mx-auto grid max-w-[1200px] gap-8 px-4 py-10 sm:grid-cols-[1.4fr_1fr_1fr_1fr] sm:px-8">
+        <div class="flex flex-col gap-2">
+          <span class="text-ink font-semibold">{site.name}</span>
+          <span>A Steamfield project.</span>
+          <span>Released under the {site.license} license.</span>
+        </div>
+        {site.footer.map((column) => (
+          <nav aria-label={column.title} class="flex flex-col gap-2">
+            <span class="text-ink font-medium">{column.title}</span>
+            {column.links.map((link) => (
+              <a href={link.href} class="text-muted hover:text-ink no-underline hover:underline">
+                {link.label}
+              </a>
+            ))}
+          </nav>
+        ))}
+      </div>
+    </footer>
+  </body>
+</html>

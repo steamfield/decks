@@ -1,0 +1,104 @@
+---
+// The NORMAL/WARM switch: the same tides slide built with the default theme and
+// with demo/warm-theme.json, both screenshots taken by `make demo`. Two radio
+// inputs and CSS, so it works without JavaScript; site.ts only records a change.
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
+const positions = [
+  { value: "normal", label: "Normal", note: "packages/decks/theme/default.json" },
+  { value: "warm", label: "Warm", note: "default.json with theme.json on top" },
+];
+const base = (value: string) => `/stills/tides-${value}`;
+const exists = (value: string) =>
+  existsSync(join(process.cwd(), "public", `${base(value)}-1280.avif`));
+const srcset = (value: string, ext: string) =>
+  [640, 1280].map((width) => `${base(value)}-${width}.${ext} ${width}w`).join(", ");
+---
+
+<div class="type-switch flex flex-col gap-4">
+  <fieldset class="hw bg-hw-face flex flex-wrap items-center gap-4 rounded-md border border-black px-4 py-3">
+    <legend class="sr-only">Tape type</legend>
+    <span class="hw-label" aria-hidden="true">
+      Type
+    </span>
+    <div class="switch-track bg-hw-well relative grid grid-cols-2 rounded-sm border border-black p-1">
+      {positions.map((position, index) => (
+        <label class="relative z-10 flex min-h-11 min-w-24 cursor-pointer items-center justify-center px-3">
+          <input
+            type="radio"
+            name="tape-type"
+            value={position.value}
+            checked={index === 0}
+            data-tape-type
+            class="peer sr-only"
+          />
+          <span class="text-hw-print peer-checked:text-live text-xs font-semibold tracking-[0.14em] uppercase">
+            {position.label}
+          </span>
+        </label>
+      ))}
+      <span
+        aria-hidden="true"
+        class="switch-knob silver absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-xs opacity-25"
+      ></span>
+    </div>
+    <span class="text-hw-print text-xs" data-note="normal">
+      {positions[0]?.note}
+    </span>
+    <span class="text-hw-print text-xs" data-note="warm">
+      {positions[1]?.note}
+    </span>
+  </fieldset>
+  {positions.map((position) => (
+    <figure data-still={position.value} class="flex flex-col gap-2">
+      {exists(position.value) ? (
+        <picture>
+          <source
+            type="image/avif"
+            srcset={srcset(position.value, "avif")}
+            sizes="(min-width: 1280px) 640px, 100vw"
+          />
+          <source
+            type="image/webp"
+            srcset={srcset(position.value, "webp")}
+            sizes="(min-width: 1280px) 640px, 100vw"
+          />
+          <img
+            src={`${base(position.value)}-1280.webp`}
+            width="1280"
+            height="720"
+            loading="lazy"
+            alt={`The tides deck's second slide with the ${position.label.toLowerCase()} theme`}
+            class="border-line aspect-video w-full rounded-sm border"
+          />
+        </picture>
+      ) : (
+        <p class="border-line text-muted grid aspect-video place-items-center rounded-sm border text-sm">
+          Run make demo to take this still.
+        </p>
+      )}
+      <figcaption class="text-muted text-sm">
+        {position.label}: {position.note}
+      </figcaption>
+    </figure>
+  ))}
+</div>
+
+<style>
+  .type-switch:has(input[value="warm"]:checked) [data-still="normal"],
+  .type-switch:not(:has(input[value="warm"]:checked)) [data-still="warm"],
+  .type-switch:has(input[value="warm"]:checked) [data-note="normal"],
+  .type-switch:not(:has(input[value="warm"]:checked)) [data-note="warm"] {
+    display: none;
+  }
+
+  .type-switch:has(input[value="warm"]:checked) .switch-knob {
+    transform: translateX(100%);
+  }
+
+  .switch-track:has(input:focus-visible) {
+    outline: 2px solid var(--color-live);
+    outline-offset: 2px;
+  }
+</style>

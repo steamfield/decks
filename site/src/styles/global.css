@@ -1,0 +1,318 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/*
+ * Page tokens. Components use these utilities (bg-canvas, text-ink, text-muted,
+ * border-line, bg-panel) instead of dark: variants, so one set of overrides below
+ * serves the theme toggle and visitors without JavaScript. Values come from the
+ * product's packages/decks/theme/default.json (surfaces and text); light mode is
+ * the same neutrals inverted. `static` emits every token, because CSS below reads
+ * them with var().
+ *
+ * The hw-* and live-* tokens are the hardware: the deck player, the cassettes and
+ * the NORMAL/WARM switch. They stay dark in both modes, like a real object on the
+ * page. Amber (live) means a live readout and nothing else.
+ */
+@theme static {
+  --font-sans: var(--ff-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--ff-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--ff-dseg), ui-monospace, monospace;
+  --font-hand: var(--ff-marker), cursive;
+
+  --color-canvas: #fafafa;
+  --color-panel: #f4f4f5;
+  --color-ink: #09090b;
+  --color-ink-2: #3f3f46;
+  --color-muted: #52525b;
+  --color-line: #e4e4e7;
+  --color-line-strong: #71717a;
+  --color-accent: #18181b;
+
+  --color-hw-face: #111113;
+  --color-hw-raised: #18181b;
+  --color-hw-well: #09090b;
+  --color-hw-edge: #27272a;
+  --color-hw-print: #a1a1aa;
+  --color-hw-ink: #f7f8f8;
+  --color-hw-ink-2: #d0d6e0;
+  --color-live: #fbbf24;
+  --color-live-2: #f59e0b;
+  --color-live-off: #2a2110;
+  --color-silver-hi: #f4f4f5;
+  --color-silver-lo: #a1a1aa;
+  --color-silver-ink: #18181b;
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+}
+
+@layer base {
+  /* The head script sets .dark or .light before paint. */
+  .dark {
+    --color-canvas: #09090b;
+    --color-panel: #111113;
+    --color-ink: #f7f8f8;
+    --color-ink-2: #d0d6e0;
+    --color-muted: #a1a1aa;
+    --color-line: #27272a;
+    --color-line-strong: #71717a;
+    --color-accent: #f7f8f8;
+    color-scheme: dark;
+  }
+
+  /* Without JavaScript neither class is set; follow the system preference. */
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+      --color-canvas: #09090b;
+      --color-panel: #111113;
+      --color-ink: #f7f8f8;
+      --color-ink-2: #d0d6e0;
+      --color-muted: #a1a1aa;
+      --color-line: #27272a;
+      --color-line-strong: #71717a;
+      --color-accent: #f7f8f8;
+      color-scheme: dark;
+    }
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+
+  a {
+    @apply underline decoration-1 underline-offset-4;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
+  code,
+  kbd,
+  pre {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Shown only with JavaScript off; .js is set by the head script. */
+.js .no-js-only {
+  display: none;
+}
+
+/* Hardware labels: printed on the faceplate, uppercase and tracked. */
+.hw-label {
+  @apply text-hw-print text-[11px] font-semibold tracking-[0.14em] uppercase;
+}
+
+/* Brushed silver: button caps and the switch only. One neutral gradient. */
+.silver {
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.06) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, var(--color-silver-hi), var(--color-silver-lo));
+  color: var(--color-silver-ink);
+}
+
+/* The hardware keeps its own focus ring: the page ring is dark in light mode. */
+.hw :focus-visible {
+  outline-color: var(--color-live);
+}
+
+/* Docs prose follows the tokens in both themes. */
+.prose {
+  --tw-prose-body: var(--color-ink-2);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-lead: var(--color-muted);
+  --tw-prose-links: var(--color-ink);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-muted);
+  --tw-prose-hr: var(--color-line);
+  --tw-prose-quotes: var(--color-ink);
+  --tw-prose-quote-borders: var(--color-line);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-th-borders: var(--color-line);
+  --tw-prose-td-borders: var(--color-line);
+}
+
+.prose :where(code):not(:where(pre code)) {
+  @apply bg-panel border-line rounded-xs border px-1 py-0.5 font-normal;
+}
+
+.prose :where(code):not(:where(pre code))::before,
+.prose :where(code):not(:where(pre code))::after {
+  content: none;
+}
+
+/* Shiki emits both themes as CSS variables (defaultColor: false); pick one per theme. */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+.dark .astro-code,
+.dark .astro-code span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .astro-code,
+  :root:not(.light) .astro-code span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+}
+
+.code-frame {
+  @apply border-line relative overflow-hidden rounded-md border;
+}
+
+.code-frame figcaption {
+  @apply border-line bg-panel text-muted border-b px-4 py-2 font-mono text-xs;
+}
+
+.code-frame pre {
+  @apply m-0 rounded-none;
+}
+
+/* Added to each code frame by src/scripts/site.ts. */
+.code-copy {
+  @apply border-line-strong bg-canvas text-ink-2 absolute top-2 right-2 rounded-sm border px-2 py-0.5 text-xs;
+}
+
+.callout {
+  @apply border-line bg-panel my-6 rounded-md border border-l-4 px-4 py-1;
+}
+
+.callout-title {
+  @apply text-ink font-semibold;
+}
+
+.callout-note,
+.callout-tip,
+.callout-important {
+  border-left-color: var(--color-ink-2);
+}
+
+.callout-warning,
+.callout-caution {
+  border-left-color: #b45309;
+}
+
+.heading-anchor {
+  @apply text-muted ml-2 no-underline opacity-0 focus:opacity-100;
+}
+
+.heading-anchor::after {
+  content: "#";
+}
+
+.prose :where(h2, h3):hover .heading-anchor {
+  opacity: 1;
+}
+
+.table-scroll {
+  @apply overflow-x-auto;
+}
+
+/*
+ * The deck player's segment display: unlit segments sit behind lit ones, the way
+ * a real 14-segment display shows every segment faintly.
+ */
+.seg {
+  position: relative;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.seg::before {
+  content: attr(data-ghost);
+  position: absolute;
+  inset: 0;
+  color: var(--color-live-off);
+}
+
+.seg-text {
+  position: relative;
+}
+
+/*
+ * Motion. The finished state above is the default; everything that moves sits
+ * behind prefers-reduced-motion: no-preference. Nothing flashes, nothing loops
+ * except the reels while a beat transition is running.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .reel {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  [data-reels="forward"] .reel {
+    animation: reel-turn 1.6s linear infinite;
+  }
+
+  [data-reels="backward"] .reel {
+    animation: reel-turn 1.6s linear infinite reverse;
+  }
+
+  .meter-fill {
+    transition: width 180ms ease-out;
+  }
+
+  .tape-slot[data-swap="eject"] {
+    animation: tape-eject 220ms ease-in both;
+  }
+
+  .tape-slot[data-swap="insert"] {
+    animation: tape-insert 260ms ease-out both;
+  }
+
+  .press {
+    transition: transform 80ms ease-out;
+  }
+
+  .press:active {
+    transform: translateY(1px);
+  }
+
+  .switch-knob {
+    transition: transform 160ms ease-out;
+  }
+
+  .rack-item {
+    transition: transform 160ms ease-out;
+  }
+
+  .rack-item:not(:has(:checked)):hover {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes reel-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tape-eject {
+  to {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+@keyframes tape-insert {
+  from {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+/* Controls that do nothing without JavaScript stay hidden until it runs. */
+html:not(.js) .js-only {
+  display: none;
+}

@@ -1,0 +1,99 @@
+{
+  "title": "Story Slide Templates",
+  "slides": 6,
+  "slideTitles": [
+    "Story slide templates.",
+    "The catalog doubled twice in five years.",
+    "Bars grow, recolor, exit and re-sort.",
+    "A labelled card is a name and a note.",
+    "One mark, carried across the cut.",
+    "One mark, carried across the cut."
+  ],
+  "startSlide": 2,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 2,
+      "lead": "A thousand datasets, hand curated.",
+      "body": "Small enough to read end to end."
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Connectors made coverage compound.",
+      "body": "One config ingests a whole portal."
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The index is the product now.",
+      "body": "Every dataset joins the ones already there."
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Five rows, one metric.",
+      "body": "The bars grow as the slide arrives, so beat 0 is never empty."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Echo is the outlier.",
+      "body": "One row leaves the series hue; everything else stays grey-green."
+    },
+    {
+      "slide": 3,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The second metric drops two rows.",
+      "body": "What is left re-sorts and rescales in place, reversibly."
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Three boxes, one row.",
+      "body": "Each carries a name and one line of detail, nothing else."
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 2,
+      "lead": "The third is not built yet.",
+      "body": "A dashed box reads as planned without a word of copy saying so."
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Then it is.",
+      "body": "The dash closes and the glow comes up over the card duration."
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 0,
+      "lead": "This rule is about to move.",
+      "body": "It carries vt-baseline, so the next slide inherits the same mark."
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 0,
+      "lead": "Same rule, new position.",
+      "body": "The browser tweens the two boxes; neither stage animates anything."
+    }
+  ]
+}

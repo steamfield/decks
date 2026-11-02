@@ -1,0 +1,105 @@
+{
+  "title": "Tides run on the Moon's clock",
+  "slides": 5,
+  "slideTitles": [
+    "Tides run on the Moon's clock",
+    "Boston gets two high tides a day.",
+    "The Moon stretches the ocean into two bulges.",
+    "The Sun makes the tide grow and shrink.",
+    "Coastline shape decides how high the tide climbs."
+  ],
+  "startSlide": 2,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Water level, hour by hour, for two days.",
+      "body": "NOAA prediction for Boston Harbor, June 11 and 12, 2025, in meters above mean lower low water."
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 2,
+      "lead": "High tides arrive 12 h 25 min apart.",
+      "body": "That is the average gap between every Boston high tide from January 10 to 31, 2025."
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The schedule follows the Moon.",
+      "body": "Two tides take 24 hours 50 minutes, the time Earth needs to turn back under the Moon."
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 2,
+      "lead": "The Moon pulls the near ocean hardest.",
+      "body": "Gravity weakens with distance, so water facing the Moon is pulled more than Earth's center."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 2,
+      "lead": "The far ocean is pulled least.",
+      "body": "Earth is pulled away from that water, which leaves a second bulge on the opposite side."
+    },
+    {
+      "slide": 3,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Earth turns under both bulges.",
+      "body": "One turn back under the Moon takes 24 hours 50 minutes, so both bulges pass each coast."
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Every Boston high and low for three weeks.",
+      "body": "NOAA predictions, January 10 to 31, 2025. The zigzag widens and narrows on a two week rhythm."
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Sun and Moon in line: spring tides.",
+      "body": "At full and new moon their pulls add, and a single swing reaches 3.6 m."
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Sun and Moon at right angles: neap tides.",
+      "body": "The Sun's tidal pull is 46% of the Moon's and now works against it. Swings shrink to 1.8 m."
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Same Moon, very different tides.",
+      "body": "Average gap between high and low water at five NOAA stations, 1983 to 2001."
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Funnel-shaped bays get the biggest tides.",
+      "body": "Anchorage, at the head of Cook Inlet, averages 8.0 m. Eastport sits at the Bay of Fundy's mouth."
+    },
+    {
+      "slide": 5,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Pensacola's tide barely moves.",
+      "body": "It averages 0.37 m. Anchorage's range is 22 times larger."
+    }
+  ]
+}

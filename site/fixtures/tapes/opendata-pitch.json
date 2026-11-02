@@ -1,0 +1,274 @@
+{
+  "title": "OpenData: public data, made usable for AI agents",
+  "slides": 13,
+  "slideTitles": [
+    "Data, made usable for the agent era.",
+    "Agents can query any data that is clean and in a database. Almost no public data is.",
+    "Twenty-nine files became one dataset.",
+    "Every dataset we clean joins the Dataset Graph.",
+    "Infrastructure as code, written by agents.",
+    "Two tests, ten districts, one contradiction.",
+    "They had the data. They could not get at it.",
+    "Thirty questions.",
+    "The catalog is the base. The tools are the product.",
+    "Companies already sell usable public data.",
+    "Two Mac Minis run production. Disk fills first.",
+    "Verifiability is what converts the skeptics.",
+    "Every dataset discoverable. Every claim verifiable."
+  ],
+  "startSlide": 3,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 1,
+      "lead": "Twenty-nine files. No headers. No changelog.",
+      "body": "About 7,691 unnamed fields per row, and the salary field alone has sat in 14 different columns."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 1,
+      "lead": "We reconcile it once. One dataset, one query.",
+      "body": "Every file mapped onto one schema and published as a single dataset."
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 3,
+      "lead": "969 datasets. 203 agencies. 1.6 billion rows.",
+      "body": "Every square is one dataset OpenData agents cleaned and published."
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 3,
+      "lead": "17 categories, four of them most of the catalog.",
+      "body": "Education, government, health and economics are 566 of the 952."
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 3,
+      "lead": "952 datasets. 3,291 relationships.",
+      "body": "952 of the 969 are ready and linked. The graph is how an agent sees the connections."
+    },
+    {
+      "slide": 4,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Seven weeks, and the graph grew by half.",
+      "body": "630 datasets and 2,135 links in July; 952 and 3,291 today."
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 3,
+      "lead": "A dataset is a YAML file in git.",
+      "body": "Source, schema, transforms, checks, refresh schedule, reviewed like code. Push to main, live in about 4 minutes."
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 3,
+      "lead": "One gate decides if the new file ships.",
+      "body": "Every check runs against the staged file. A failure leaves yesterday’s data serving and tells us why."
+    },
+    {
+      "slide": 5,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Agents wrote 93 of them in one week.",
+      "body": "The first dataset landed 3 weeks in. Claude Code agents wrote most of the 232 added in the last four weeks."
+    },
+    {
+      "slide": 5,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Two steps still need a person.",
+      "body": "Someone starts the agent and pushes its YAML. Wire those two links and a request lands unattended."
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 3,
+      "lead": "Roma is 90% low-income and triples Austin.",
+      "body": "Economically disadvantaged students meeting grade level on STAAR math, 2024-25."
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 3,
+      "lead": "Austin is last of the ten.",
+      "body": "22% of Austin's low-income students met grade level; Roma's 64% is nearly triple."
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 3,
+      "lead": "The SAT flips it.",
+      "body": "Same low-income students, same year. Three Valley districts beat Austin on the SAT, three trail it."
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 3,
+      "lead": "STAAR and the SAT disagree.",
+      "body": "One of these tests is measuring something that college readiness does not follow from."
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 4,
+      "lead": "6 of 30, without OpenData.",
+      "body": "Sonnet 5, one fresh chat per question, web search and a sandbox. Single run."
+    },
+    {
+      "slide": 8,
+      "beat": 1,
+      "beats": 4,
+      "lead": "25 of 30, with it.",
+      "body": "Same model, same questions, same day. Single run per arm."
+    },
+    {
+      "slide": 8,
+      "beat": 2,
+      "beats": 4,
+      "lead": "The clock went the same way.",
+      "body": "Median 63 seconds per chat without it, 35 with. 30 chats, totalled on stage."
+    },
+    {
+      "slide": 8,
+      "beat": 3,
+      "beats": 4,
+      "lead": "Without it, the model rebuilds the pipeline.",
+      "body": "It spun up a sandbox in 17 of 30 chats, downloading source files to re-implement the work."
+    },
+    {
+      "slide": 8,
+      "beat": 4,
+      "beats": 4,
+      "lead": "The same shape in a bare API agent.",
+      "body": "Same model, same prompt, only the tool list differs. This run billed per token."
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 2,
+      "lead": "One catalog, one graph, one interface.",
+      "body": "Everything we clean lands in one place, linked to everything like it, behind a single query layer."
+    },
+    {
+      "slide": 9,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Three ways in, for three kinds of user.",
+      "body": "Developers build on the API. Non-technical users ask an agent. Editors get charts they can edit."
+    },
+    {
+      "slide": 9,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The same stack runs on private data.",
+      "body": "Every enterprise conversation asks for it. It ships once signed demand covers the SOC 2 cost."
+    },
+    {
+      "slide": 10,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Four tiers, three of them paid.",
+      "body": "The engine is open source. The API, the agent interface and the charts are what we sell."
+    },
+    {
+      "slide": 10,
+      "beat": 1,
+      "beats": 2,
+      "lead": "AccuWeather makes $225M a year on free feeds.",
+      "body": "The National Weather Service data underneath it costs nothing to download."
+    },
+    {
+      "slide": 10,
+      "beat": 2,
+      "beats": 2,
+      "lead": "GovWin charges $12K to $42K a seat.",
+      "body": "The bid notices underneath are public. Both companies charge for making free data usable."
+    },
+    {
+      "slide": 11,
+      "beat": 0,
+      "beats": 3,
+      "lead": "Production is two Mac Minis on a desk.",
+      "body": "One serves, one processes. We own the hardware, pay no cloud bill, and have 16 GB of RAM on each."
+    },
+    {
+      "slide": 11,
+      "beat": 1,
+      "beats": 3,
+      "lead": "Disk runs out long before CPU or RAM.",
+      "body": "105 of 150 GB used at idle, CPU load 0.11 on 8 cores. Crawler agents are blocked on storage."
+    },
+    {
+      "slide": 11,
+      "beat": 2,
+      "beats": 3,
+      "lead": "1,104 QPS before latency moves.",
+      "body": "Zero failures to 1,397 req/s. The wall was the proxy's memory cap, not the hardware."
+    },
+    {
+      "slide": 11,
+      "beat": 3,
+      "beats": 3,
+      "lead": "The first cloud spend is storage.",
+      "body": "Same containers, same YAML, more disk. That unblocks the request loop and the crawler agents."
+    },
+    {
+      "slide": 12,
+      "beat": 0,
+      "beats": 2,
+      "lead": "1M+ reads, and none of them engineers.",
+      "body": "Data stories built on the catalog pulled 1M+ views. The readers were journalists, economists and researchers."
+    },
+    {
+      "slide": 12,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Every conversation lands on the same worry.",
+      "body": "State agencies, newsrooms, enterprises. Interest everywhere, and one question each time: does the AI make numbers up?"
+    },
+    {
+      "slide": 12,
+      "beat": 2,
+      "beats": 2,
+      "lead": "So verifiability is the product.",
+      "body": "Every answer traces to a query you can rerun. That is what a skeptic will trust."
+    },
+    {
+      "slide": 13,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    }
+  ]
+}
