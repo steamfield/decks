@@ -23,5 +23,10 @@
     "entry": "examples/od-story-templates/slides.md",
     "name": "od-story-templates",
     "animated": true
+  },
+  "tides": {
+    "entry": "examples/tides/slides.md",
+    "name": "tides",
+    "animated": true
   }
 }
