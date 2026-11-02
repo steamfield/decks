@@ -25,7 +25,7 @@
     },
     "packages/decks": {
       "name": "slidev-addon-decks",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "decks": "./scripts/deck.mjs",
       },
