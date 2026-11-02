@@ -58,6 +58,7 @@ Use for deck openers. Swap eyebrow, title, lede, and meta row.
 </div>
 
 ---
+title: What the team ships this year
 ---
 
 <!--
@@ -113,6 +114,7 @@ icons in accent-tinted tiles (cyan / violet / emerald / blue).
 </div>
 
 ---
+title: "Producer Price Index: Pharmaceuticals"
 ---
 
 <!--
@@ -250,6 +252,7 @@ Left: descriptive text + meta chips. Right: a product surface
 </style>
 
 ---
+title: The year at a glance
 ---
 
 <!--
@@ -290,6 +293,7 @@ the deltas.
 </div>
 
 ---
+title: "Pharmaceutical prices climbed 38% through the supply shock"
 ---
 
 <!--
@@ -453,6 +457,7 @@ To adapt: swap `ppiData` and edit the chrome/annotations to fit your story.
 -->
 
 ---
+title: The catalog doubled twice in five years.
 clicks: 2
 ---
 

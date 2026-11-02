@@ -1,3 +1,7 @@
+---
+title: Designing for the user who reads every token.
+---
+
 <!--
 SLIDE 1 · COVER
 -->

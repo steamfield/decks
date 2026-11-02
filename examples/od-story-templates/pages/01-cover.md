@@ -1,3 +1,7 @@
+---
+title: Story slide templates.
+---
+
 <!--
 SLIDE 1 · COVER: the cover chrome a story deck opens, divides and closes with
 -->

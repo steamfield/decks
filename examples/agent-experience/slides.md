@@ -27,37 +27,46 @@ src: ./pages/01-cover.md
 
 ---
 src: ./pages/02-lineage.md
+title: A new user cohort, about every fifteen years.
 ---
 
 ---
 src: ./pages/03-interview.md
+title: Interview the agent like you'd interview a user.
 ---
 
 ---
 src: ./pages/04-result.md
+title: One task. 72 calls. Then 8.
 ---
 
 ---
 src: ./pages/05-section-build.md
+title: What we changed after reading the transcripts.
 ---
 
 ---
 src: ./pages/06-design-rules.md
+title: What an agent's interface actually needs.
 ---
 
 ---
 src: ./pages/07-errors.md
+title: The error is where you design recovery.
 clicks: 3
 ---
 
 ---
 src: ./pages/08-section-strengths.md
+title: The clean runs were just as useful.
 ---
 
 ---
 src: ./pages/09-openchart.md
+title: Agents write config better than code, so the chart is a config.
 ---
 
 ---
 src: ./pages/10-closing.md
+title: Stop guessing. Watch the agent.
 ---

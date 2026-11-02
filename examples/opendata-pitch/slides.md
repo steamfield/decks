@@ -37,15 +37,18 @@ src: ./pages/01-cover.md
 # Thesis: the claim and the why-now in two lines, before the ISBE slide, so the
 # cleaning story reads as the input problem rather than as the product.
 src: ./pages/01a-thesis.md
+title: Agents can query any data that is clean and in a database. Almost no public data is.
 ---
 
 ---
 src: ./pages/03-files-to-row.md
+title: Twenty-nine files became one dataset.
 clicks: 1
 ---
 
 ---
 src: ./pages/04-scale-graph.md
+title: Every dataset we clean joins the Dataset Graph.
 clicks: 3
 ---
 
@@ -54,16 +57,19 @@ clicks: 3
 # stages and one gate, and agents author most of them now. It does not draw the
 # shared baseline; the rule starts on 6.
 src: ./pages/05a-pipeline.md
+title: Infrastructure as code, written by agents.
 clicks: 3
 ---
 
 ---
 # Divider: the case study opens. One beat, cover chrome, no figures.
 src: ./pages/06a-case-study.md
+title: Two tests, ten districts, one contradiction.
 ---
 
 ---
 src: ./pages/06-customer.md
+title: They had the data. They could not get at it.
 clicks: 3
 ---
 
@@ -75,6 +81,7 @@ clicks: 3
 # sit under the headline is not on the slide, available for Q&A from
 # data-sources.md.
 src: ./pages/06d-benchmark.md
+title: Thirty questions.
 clicks: 4
 ---
 
@@ -82,11 +89,13 @@ clicks: 4
 # Platform: the stack the case study ran on, centred in the right column. Does
 # not draw the shared baseline; the rule fades out after slide 6 and returns on 7.
 src: ./pages/06b-platform.md
+title: The catalog is the base. The tools are the product.
 clicks: 2
 ---
 
 ---
 src: ./pages/07-model.md
+title: Companies already sell usable public data.
 clicks: 2
 ---
 
@@ -96,6 +105,7 @@ clicks: 2
 # cost to run" at the point the pricing is on screen rather than three slides
 # early.
 src: ./pages/05c-bootstrap.md
+title: Two Mac Minis run production. Disk fills first.
 clicks: 3
 ---
 
@@ -105,9 +115,11 @@ clicks: 3
 # Three beats, two clicks: the reach figure is enter motion, so beat 0 already
 # has a number on stage under the card that claims it.
 src: ./pages/08-signals.md
+title: Verifiability is what converts the skeptics.
 clicks: 2
 ---
 
 ---
 src: ./pages/09-close.md
+title: Every dataset discoverable. Every claim verifiable.
 ---

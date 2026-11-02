@@ -40,24 +40,29 @@ src: ./pages/01-cover.md
 # The smallest correct stage: useStage with copy, an enter motion and a beat
 # script; one line drawn on a beat; one chip; one card.
 src: ./pages/02-minimal.md
+title: The catalog doubled twice in five years.
 clicks: 2
 ---
 ---
 # InkBars: grow on entry, recolor one row, drop two and re-sort the rest.
 src: ./pages/03-bars.md
+title: Bars grow, recolor, exit and re-sort.
 clicks: 2
 ---
 ---
 # A row of InkLabeledCard boxes arriving on a stagger, with the last one
 # switching from planned to built.
 src: ./pages/04-cards.md
+title: A labelled card is a name and a note.
 clicks: 2
 ---
 ---
 # The hand-off pair. These two slides are adjacent on purpose: they share the
 # vt-baseline name, and only adjacent slides may.
 src: ./pages/05-handoff-one.md
+title: One mark, carried across the cut.
 ---
 ---
 src: ./pages/06-handoff-two.md
+title: One mark, carried across the cut.
 ---
