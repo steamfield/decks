@@ -25,7 +25,7 @@ In dev, edits to `theme.json` reload live. They apply at build time too.
 
 ## Brand
 
-`brand` is `{ name, url, "wordmark-gradient", logo }`. `logo` is `{ "view-box", "svg" }` or `null` for no mark, and `url: null` hides the cover URL. `bunx decks new <alias> --brand "Name" --url example.com` writes this block for you.
+`brand` is `{ name, url, "wordmark-gradient", logo }`. `logo` is `{ "view-box", "svg" }` or `null` for no mark, and `url: null` hides the cover URL. `bunx -p slidev-addon-decks decks new <alias> --brand "Name" --url example.com` writes this block for you.
 
 ## Using the colors
 

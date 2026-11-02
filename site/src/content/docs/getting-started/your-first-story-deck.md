@@ -5,7 +5,7 @@ group: getting-started
 order: 2
 ---
 
-`bunx decks new my-talk --story` scaffolds `decks/my-talk/` and registers the alias `my-talk` in `decks.json`.
+`bunx -p slidev-addon-decks decks new my-talk --story` scaffolds `decks/my-talk/` and registers the alias `my-talk` in `decks.json`.
 
 ## The files
 

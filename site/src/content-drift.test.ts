@@ -50,7 +50,10 @@ const docsCommands = readdirSync(docsDir, { recursive: true, encoding: "utf8" })
       splitCommands(match[1] ?? "").map((line) => ({ file, line: line.replace(/\s+#.*$/, "") })),
     );
   });
-const deckInvocation = /^(bunx|npx|pnpm exec) (\S+)\s*(.*)$/;
+/** `bunx -p slidev-addon-decks decks new ...`; the `-p` group is empty for the bare form. */
+const deckInvocation = /^(bunx|npx|pnpm exec)( -p \S+)? (\S+)\s*(.*)$/;
+/** The bare `decks` name on npm is an unrelated package: docs must pin the package with -p. */
+const pinned = " -p slidev-addon-decks";
 
 const shown = [
   ...site.quickstart.map((line) => ({ file: "config: hero", line })),
@@ -73,12 +76,26 @@ describe("every shown command matches the CLI", () => {
   });
 
   it.each(shown.filter(({ line }) => deckInvocation.test(line)))("$file: $line", ({ line }) => {
-    const [, , bin = "", rest = ""] = deckInvocation.exec(line) ?? [];
+    const [, , , bin = "", rest = ""] = deckInvocation.exec(line) ?? [];
     expect(Object.keys(pkg.bin), "the package's bin").toContain(bin);
     const [subcommand] = rest.split(/\s+/);
     expect(subcommands, "a deck.mjs case").toContain(subcommand);
     for (const flag of rest.match(/--[a-z][\w-]*/g) ?? []) {
       expect(runnerFlags, `${flag} in deck.mjs`).toContain(flag);
+    }
+  });
+
+  it.each(
+    shown.filter(({ file, line }) => !file.startsWith("config:") && deckInvocation.test(line)),
+  )("$file: $line pins the package with -p slidev-addon-decks", ({ line }) => {
+    expect(deckInvocation.exec(line)?.[2]).toBe(pinned);
+  });
+
+  it("pins the package in every docs page's inline decks commands", () => {
+    for (const file of readdirSync(docsDir, { recursive: true, encoding: "utf8" })) {
+      if (!file.endsWith(".md")) continue;
+      const text = readFileSync(join(docsDir, file), "utf8");
+      expect(text, file).not.toMatch(/\b(bunx|npx) decks\b/);
     }
   });
 
@@ -99,7 +116,9 @@ describe("every shown command matches the CLI", () => {
   });
 
   it("quotes the README's quickstart", () => {
-    for (const line of site.quickstart) expect(readme).toContain(line.split(" --story")[0]);
+    // The README pins the package with -p; the landing config still uses the bare form.
+    const bare = readme.replaceAll(pinned, "");
+    for (const line of site.quickstart) expect(bare).toContain(line.split(" --story")[0]);
   });
 });
 

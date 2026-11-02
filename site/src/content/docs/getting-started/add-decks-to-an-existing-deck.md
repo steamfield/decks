@@ -29,7 +29,7 @@ The components (`Od*` chrome, `OpenChart`, `Story*`, `Ink*` marks) are then auto
 
 ## Story slides
 
-Story slides need more headmatter than the two lines above: the transition the story engine runs, the `data-od-story` attribute, the canvas size and fonts. Scaffold a throwaway story deck with `bunx decks new scratch --story` and copy its `slides.md` headmatter; the comments in it say what each key is for.
+Story slides need more headmatter than the two lines above: the transition the story engine runs, the `data-od-story` attribute, the canvas size and fonts. Scaffold a throwaway story deck with `bunx -p slidev-addon-decks decks new scratch --story` and copy its `slides.md` headmatter; the comments in it say what each key is for.
 
 ## Run it with the CLI
 
@@ -41,4 +41,4 @@ The `decks` command works from a `decks.json` registry. To run an existing deck 
 }
 ```
 
-Then `bunx decks dev talk`, `bunx decks build talk` and `bunx decks export talk` work. See [decks.json](/docs/reference/decks-json/) for the other fields.
+Then `bunx -p slidev-addon-decks decks dev talk`, `bunx -p slidev-addon-decks decks build talk` and `bunx -p slidev-addon-decks decks export talk` work. See [decks.json](/docs/reference/decks-json/) for the other fields.

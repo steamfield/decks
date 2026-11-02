@@ -6,7 +6,7 @@ order: 4
 ---
 
 ```bash title="Terminal"
-bunx decks export my-talk
+bunx -p slidev-addon-decks decks export my-talk
 ```
 
 `export` runs Slidev's PDF export on the deck's entry. Slidev's exporter drives Chromium, so it needs Playwright's Chromium installed.

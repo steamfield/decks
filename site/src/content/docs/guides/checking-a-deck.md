@@ -1,41 +1,36 @@
 ---
 title: Checking a deck
-description: The manifest check, the prose lint and its hook, the fact extractor, and the shot and snap screenshot scripts.
+description: The manifest check, the prose lint and its hook, the fact extractor, and the shot and snap screenshot commands.
 group: guides
 order: 3
 ---
 
-## From the npm package
+## Manifest and prose checks
 
-`decks check` compares the pages on disk with each deck's `src:` manifest and reports orphaned or missing pages.
+`decks check` compares the pages on disk with each deck's `src:` manifest and reports orphaned or missing pages. It also fails on error-level `decks lint` hits. `decks build --all` runs the same check first and stops on drift.
 
 ```bash title="Terminal"
-bunx decks check
+bunx -p slidev-addon-decks decks check
 ```
 
-`decks build --all` runs the same check first and stops on drift.
+`decks lint` scans each deck's `pages/*.md`, `slides.md` and `components/*.vue`, and the `COPY` arrays of story stages, which sit in a `<script>` block. It reads the AI-rhetoric pattern list shipped in the package.
 
-## From a clone of the repository
-
-These live in the repository, not the npm package. Run them from the repo root:
-
-```bash
-bun run lint                  # AI-rhetoric lint over deck pages, slides.md and components
-bun run test                  # unit and guard tests, theme contrast, and the same lint over story-card copy
-bun run test:hooks            # tests for the two hooks
-bun run fact-extract <alias>  # list every figure in a deck as input for the fact-check
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks lint
+bunx -p slidev-addon-decks decks lint my-talk
+bunx -p slidev-addon-decks decks fact-extract my-talk
 ```
 
-The lint scans each deck's `pages/*.md`, `slides.md` and `components/*.vue`. Story card copy lives in a `<script>` block the lint skips, so `bun run test` runs the same error patterns over it. In Claude Code, the `lint-ai-rhetoric.sh` hook blocks error-level patterns as they are written.
+`lint` exits 1 on an error-level hit and 0 on warnings alone; `--strict` fails on any hit. `fact-extract` lists every figure in a deck as input for the fact-check. In Claude Code, the `decks hook lint` hook that `decks init` installs applies the same error-level patterns as the agent writes.
 
 ## Screenshots: `shot` and `snap`
 
-Both run against a dev server and need Playwright's Chromium.
+Both need `playwright-chromium`, an optional peer dependency (`bun add -d playwright-chromium`). They use a dev server already running on `--port`, or start one for the deck and stop it afterwards.
 
-```bash
-bun run shot <n> [clicks]      # headless screenshots of slide n at each click (dev server on :3030)
-bun run snap <dir> [port]      # whole-deck screenshot walk against the dev server
-bun run snap:diff <a> <b>      # per-frame pixel diff between two snap walks
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks shot my-talk 3 2
+bunx -p slidev-addon-decks decks snap my-talk
+bunx -p slidev-addon-decks decks snap diff snaps/a snaps/b
 ```
 
-`shot` writes `slide-<n>-c<k>.png` per click into `SHOT_DIR` (default: the current directory), prints the card lead per click, and lists console errors. A `Failed to resolve component` error means the dev server predates a component file and needs a restart.
+`shot` writes `slide-<n>-c<k>.png` per click into `--out` (default: `SHOT_DIR`, else the current directory), prints the card lead per click, and lists console errors. A `Failed to resolve component` error means the dev server predates a component file and needs a restart. `snap diff` also needs `pngjs` and `pixelmatch`.
