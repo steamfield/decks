@@ -22,13 +22,14 @@ rest of the workflow is the same for both.
 ## 1. Scaffold
 
 ```bash
-bun run new <alias> <dir-name>            # conventional: slides.md + pages/01-cover.md
-bun run new <alias> <dir-name> --story    # story: story headmatter, StoryCover page,
+bun run new <alias> [dir-name]            # conventional: slides.md + pages/01-cover.md
+bun run new <alias> [dir-name] --story    # story: story headmatter, StoryCover page,
                                            # a first stage copied from the minimal
                                            # template, data/first.ts, data-sources.md
 ```
 
-Both write to `decks/<dir-name>/` and register the alias in `decks.json`.
+Both write to `decks/<dir-name>/` (dir-name defaults to the alias) and register
+the alias in `decks.json`, creating it if missing.
 `--author "Name"` fills the byline; `--brand "Name" --url example.com` writes a
 `theme.json` with the deck's brand (otherwise the cover shows the default
 "Decks" name and no mark). Recoloring is the same `theme.json`; see "Theme and

@@ -5,8 +5,9 @@
 //   decks build <alias>      build to outDir (decks.json _config, default dist/<name>)
 //   decks build --all        build every deck
 //   decks export <alias>     PDF export (flags depend on `animated` in decks.json)
-//   decks new <alias> <dir>  scaffold a deck into decksDir + register it
-//   decks new <alias> <dir> --story   same, on the story engine (stage, data, provenance)
+//   decks new <alias> [dir]  scaffold a deck into decksDir + register it
+//                            (dir defaults to alias; creates decks.json if missing)
+//   decks new <alias> [dir] --story   same, on the story engine (stage, data, provenance)
 //       [--author "Name"]   fill the cover byline
 //       [--brand "Name"] [--url example.com]   write the deck's theme.json brand
 //   decks list               show the registry
@@ -25,13 +26,16 @@ import { fileURLToPath } from 'node:url'
 const rootDir = process.cwd()
 const templatesDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'templates')
 const registryPath = join(rootDir, 'decks.json')
-if (!existsSync(registryPath)) {
+const [cmd, ...rest] = process.argv.slice(2)
+// `new` starts a registry in an empty project; every other command needs one.
+if (!existsSync(registryPath) && cmd !== 'new') {
   console.error(
-    `No decks.json in ${rootDir}. Run decks from the directory that holds the deck registry.`,
+    `No decks.json in ${rootDir}. Run decks from the directory that holds the deck registry,` +
+      ' or create one with `decks new <alias>`.',
   )
   process.exit(1)
 }
-const registry = JSON.parse(readFileSync(registryPath, 'utf8'))
+const registry = existsSync(registryPath) ? JSON.parse(readFileSync(registryPath, 'utf8')) : {}
 const decks = Object.fromEntries(Object.entries(registry).filter(([k]) => !k.startsWith('_')))
 const config = {
   decksDir: 'decks',
@@ -39,8 +43,6 @@ const config = {
   base: '/',
   ...(registry._config ?? {}),
 }
-
-const [cmd, ...rest] = process.argv.slice(2)
 
 function die(msg) {
   console.error(msg)
@@ -225,11 +227,11 @@ switch (cmd) {
     const brandName = flag('--brand', undefined)
     const brandUrl = flag('--url', undefined)
     const story = args.includes('--story')
-    const [alias, dir] = args.filter((arg) => arg !== '--story')
-    if (!alias || !dir)
+    const [alias, dir = alias] = args.filter((arg) => arg !== '--story')
+    if (!alias)
       die(
-        'Usage: decks new <alias> <dir-name> [--story] [--author "Name"] [--brand "Name"] [--url example.com]' +
-          '  (e.g. decks new growth q3-growth-story)',
+        'Usage: decks new <alias> [dir-name] [--story] [--author "Name"] [--brand "Name"] [--url example.com]' +
+          '  (e.g. decks new growth q3-growth-story; dir-name defaults to the alias)',
       )
     if (dir.includes('/'))
       die(`Deck dirs are direct children of ${config.decksDir}/; pass a bare name, no slashes.`)

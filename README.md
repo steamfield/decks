@@ -17,12 +17,11 @@ In a new project:
 
 ```bash
 bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed
-echo '{}' > decks.json
-bunx decks new talk my-talk --story --author "Your Name"
-bunx decks dev talk
+bunx decks new my-talk --story --author "Your Name"
+bunx decks dev my-talk
 ```
 
-`decks` reads `decks.json` from the current directory and stops if it is missing. `new` takes an alias and a directory name. The alias is what you pass to `dev`, `build` and `export`. The directory is created under `decks/`. Its flags:
+`decks` reads the `decks.json` registry from the current directory. `new` creates it when it is missing; every other command stops without one. `new` takes an alias and an optional directory name, which defaults to the alias. The alias is what you pass to `dev`, `build` and `export`. The directory is created under `decks/`. Its flags:
 
 | Flag | Effect |
 | --- | --- |
