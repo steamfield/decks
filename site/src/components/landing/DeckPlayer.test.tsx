@@ -1,15 +1,15 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Command, DeckState } from "../../lib/player/protocol";
-import type { Tape } from "../../lib/player/tape";
+import type { Tape, TapeTheme } from "../../lib/player/tape";
 import { BOOT_TIMEOUT_MS, DeckPlayer } from "./DeckPlayer";
 
-const theme = {
-  shell: "#18181b",
+const theme: TapeTheme = {
   ink: "#09090b",
   paper: "#f7f8f8",
-  stripes: ["#06b6d4", "#f59e0b", "#f43f5e"] as [string, string, string],
+  stripes: ["#06b6d4", "#f59e0b", "#f43f5e"],
   brand: "Decks",
+  shell: { kind: "clear" },
 };
 
 const tape = (name: string, title: string): Tape => ({
@@ -79,14 +79,15 @@ describe("DeckPlayer", () => {
       screen.getByRole("img", { name: /Tides run on the Moon's clock, slide 2/ }),
     ).toHaveAttribute("fetchpriority", "high");
     expect(screen.getByText("Recorded lead.")).toBeInTheDocument();
-    expect(screen.getByText("S2·B1")).toBeInTheDocument();
+    expect(screen.getByText(/^S2·B1: slide 2 of 3, step 1 of 2$/)).toBeInTheDocument();
+    expect(screen.getByText("02 1/2")).toBeInTheDocument();
   });
 
   it("boots the deck on PLAY, as an inert, untabbable, titled iframe", async () => {
     render(<DeckPlayer tapes={tapes} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const frame = document.querySelector("iframe");
-    expect(frame?.getAttribute("src")).toBe("/demo/tides/#/2");
+    expect(frame?.getAttribute("src")).toBe("/demo/tides/index.html#/2");
     expect(frame?.getAttribute("tabindex")).toBe("-1");
     expect(frame?.hasAttribute("inert")).toBe(true);
     expect(frame?.getAttribute("title")).toMatch(/Tides run on the Moon's clock/);
@@ -107,9 +108,9 @@ describe("DeckPlayer", () => {
     expect(d.sent.at(-1)).toEqual({ type: "decks:cmd", cmd: "next" });
     d.state({ beat: 1, lead: "Second lead.", settled: false, direction: "forward" });
     expect(screen.getByText("Second lead.")).toBeInTheDocument();
-    expect(document.querySelector("[data-reels]")).toHaveAttribute("data-reels", "forward");
+    expect(document.querySelector(".hub")?.getAttribute("data-spin")).toBe("forward");
     d.state({ beat: 1, lead: "Second lead." });
-    expect(document.querySelector("[data-reels]")).toHaveAttribute("data-reels", "still");
+    expect(document.querySelector(".hub")?.getAttribute("data-spin")).toBe("still");
     expect(screen.getByText("Slide 2 of 3, step 2 of 2. Second lead.")).toBeInTheDocument();
   });
 
@@ -121,7 +122,9 @@ describe("DeckPlayer", () => {
     d.say({ type: "decks:meta", title: "Tides", slides: 3, slideTitles: ["Cover", "", "Close"] });
     d.state({});
     d.state({ slide: 3, beat: 0, beats: 0, lead: "", body: "" });
-    expect(screen.getByText("Close", { selector: "p" })).toBeInTheDocument();
+    expect(screen.getByText("Close", { selector: ".now-playing > p" })).toBeInTheDocument();
+    // The TV's on-screen display carries the slide title too.
+    expect(screen.getByText("Close", { selector: ".tv-osd-title" })).toBeInTheDocument();
   });
 
   it("plays beat by beat after a reading pause and stops at the end", () => {
@@ -136,7 +139,8 @@ describe("DeckPlayer", () => {
     d.state({ slide: 3, beat: 0, beats: 0, lead: "", body: "" });
     act(() => vi.advanceTimersByTime(9000));
     expect(d.sent).toHaveLength(1);
-    expect(screen.getByText("Stop")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByText("End")).toHaveAttribute("data-on");
   });
 
   it("pauses", () => {
@@ -186,7 +190,7 @@ describe("DeckPlayer", () => {
     render(<DeckPlayer tapes={tapes} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     act(() => vi.advanceTimersByTime(BOOT_TIMEOUT_MS + 1));
-    expect(screen.getByRole("link", { name: "Open the example deck" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open it in a new tab" })).toHaveAttribute(
       "href",
       "/demo/tides/",
     );
@@ -198,11 +202,11 @@ describe("DeckPlayer", () => {
     const [first, second] = within(rack).getAllByRole("radio");
     expect(first).toBeChecked();
     fireEvent.click(second as HTMLElement);
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => vi.advanceTimersByTime(1500));
     expect(second).toBeChecked();
     expect(screen.getByText("Tape: other")).toBeInTheDocument();
     // The pick boots the new deck once the cassette is in.
-    expect(document.querySelector("iframe")?.getAttribute("src")).toBe("/demo/other/#/2");
+    expect(document.querySelector("iframe")?.getAttribute("src")).toBe("/demo/other/index.html#/2");
   });
 
   it("renders the rack as links to each static build until it hydrates", async () => {
@@ -213,13 +217,19 @@ describe("DeckPlayer", () => {
     expect(html).not.toContain('type="radio"');
   });
 
-  it("lists each deck's slide titles on its J-card", () => {
+  it("shows the loaded tape's J-card, its slide titles split over two sides", () => {
     render(<DeckPlayer tapes={tapes} />);
-    const tracklist = screen.getByRole("list", { name: "Another deck: slides" });
+    const sideA = screen.getByRole("list", { name: "Tides run on the Moon's clock, side A" });
+    const sideB = screen.getByRole("list", { name: "Tides run on the Moon's clock, side B" });
     expect(
-      within(tracklist)
+      within(sideA)
         .getAllByRole("listitem")
         .map((item) => item.textContent),
-    ).toEqual(["Cover", "Slide 2", "Close"]);
+    ).toEqual(["Cover", "Slide 2"]);
+    expect(
+      within(sideB)
+        .getAllByRole("listitem")
+        .map((item) => item.textContent),
+    ).toEqual(["Close"]);
   });
 });

@@ -1,10 +1,12 @@
-// The hero player: a cassette deck whose window plays a real example deck. The
-// deck loads in a same-origin iframe on the first PLAY, step or cassette pick, and
-// the faceplate drives it through the embed contract in src/lib/player/protocol.ts.
+// The hero: a 90s hi-fi stack. A TV shows the slide, the DX-90 cassette deck
+// below it is the controller, and a shelf beside it holds one cassette per
+// example deck. The deck loads in a same-origin iframe inside the TV screen on
+// the first PLAY, step or cassette pick, and the faceplate drives it through the
+// embed contract in src/lib/player/protocol.ts.
 //
-// Server-rendered, it shows the poster, the start beat's text and a rack of links
-// to each static deck build, so it reads without JavaScript. Hydration turns the
-// rack into a radio group and shows the transport.
+// Server-rendered, it shows the poster, the start step's text and a shelf of
+// links to each static deck build, so it reads without JavaScript. Hydration
+// turns the shelf into a radio group and shows the transport keys.
 import { type KeyboardEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 import { track } from "../../lib/analytics";
 import { Events } from "../../lib/events";
@@ -24,16 +26,29 @@ import {
   type DeckState,
   parseDeckMessage,
 } from "../../lib/player/protocol";
-import { posterSrcset, stateAt, type Tape } from "../../lib/player/tape";
-import { Cassette, CassetteLabel, Reel, tapeStyle } from "./Cassette";
+import { posterSrcset, stateAt, type Tape, tapePosition } from "../../lib/player/tape";
+import { play as playSound, setSfxEnabled, sfxEnabled } from "../../lib/sfx";
+import {
+  CassetteArt,
+  CassetteDefs,
+  Led,
+  PianoKey,
+  RollingCounter,
+  Screw,
+  Vfd,
+  VfdFlag,
+  VuMeter,
+} from "./hifi";
+import { JCard, Spine } from "./rack";
 
 type Phase = "poster" | "booting" | "ready" | "failed";
-type Swap = "idle" | "eject" | "insert";
+/** The tape-load sequence: door opens, old tape rises out, new tape slides in, door closes. */
+type Swap = "idle" | "open" | "out" | "in" | "close";
 
 /** How long a deck may take to answer before the player gives up and links to it. */
 export const BOOT_TIMEOUT_MS = 15_000;
-const EJECT_MS = 220;
-const INSERT_MS = 260;
+/** Milliseconds from the pick to each stage of the tape-load sequence. */
+export const SWAP_TIMING = { out: 180, in: 460, close: 820, done: 1040 } as const;
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -51,72 +66,6 @@ function posterState(tape: Tape): DeckState {
     settled: true,
     direction: null,
   };
-}
-
-function Meter({
-  label,
-  value,
-  max,
-  level,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  /** 0..1, how much of the bar is lit. */
-  level: number;
-}) {
-  const segments = 12;
-  const lit = Math.round(level * segments);
-  return (
-    <div className="flex items-center gap-2">
-      <span className="hw-label w-10 shrink-0" aria-hidden="true">
-        {label}
-      </span>
-      <meter className="sr-only" min={0} max={max} value={value} aria-label={`${label} meter`}>
-        {label} {value} of {max}
-      </meter>
-      <div aria-hidden="true" className="grid flex-1 grid-cols-12 gap-0.5">
-        {Array.from({ length: segments }, (_, index) => (
-          <span
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed segment positions
-            key={index}
-            className={`h-2.5 rounded-[1px] ${index < lit ? "bg-live" : "bg-live-off"}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TransportButton({
-  glyph,
-  label,
-  name,
-  onClick,
-  pressed,
-}: {
-  glyph: string;
-  /** Printed under the glyph. */
-  label: string;
-  /** Accessible name; contains the printed label. */
-  name?: string;
-  onClick: () => void;
-  pressed?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={name}
-      aria-pressed={pressed}
-      className="press silver flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 rounded-sm border border-black/40 px-2 py-1 shadow-[inset_0_1px_0_rgb(255_255_255/0.6)]"
-    >
-      <span aria-hidden="true" className="text-sm leading-none">
-        {glyph}
-      </span>
-      <span className="text-[10px] font-semibold tracking-[0.12em] uppercase">{label}</span>
-    </button>
-  );
 }
 
 export function DeckPlayer({
@@ -139,6 +88,8 @@ export function DeckPlayer({
   const [playing, setPlaying] = useState(false);
   const [bootCount, setBootCount] = useState(0);
   const [spoken, setSpoken] = useState("");
+  const [sound, setSound] = useState(false);
+  const [peek, setPeek] = useState<number | null>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const pending = useRef<Command | null>(null);
   const positioned = useRef(false);
@@ -146,7 +97,10 @@ export function DeckPlayer({
   const swapTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const tape = tapes[index] ?? tapes[0];
-  useEffect(() => setHydrated(true), []);
+  useEffect(() => {
+    setHydrated(true);
+    setSound(sfxEnabled());
+  }, []);
 
   const send = useCallback((message: Command) => {
     frame.current?.contentWindow?.postMessage(message, window.location.origin);
@@ -227,14 +181,19 @@ export function DeckPlayer({
   if (!tape) return null;
 
   const play = () => {
+    playSound("key");
     if (playing) return;
     track(Events.playerPlayed, { tape: tape.name });
     setPlaying(true);
     if (phase === "ready" && deck && atEnd(deck)) send(command.go(tape.startSlide, 0));
     else if (phase === "poster" || phase === "failed") boot(null);
   };
-  const pause = () => setPlaying(false);
+  const pause = () => {
+    playSound("key");
+    setPlaying(false);
+  };
   const step = (message: Command) => {
+    playSound("key");
     track(Events.beatStepped, { cmd: message.cmd });
     setPlaying(false);
     if (phase === "ready") send(message);
@@ -249,32 +208,44 @@ export function DeckPlayer({
     for (const timer of swapTimers.current) clearTimeout(timer);
     clearTimeout(bootTimer.current);
     setPlaying(false);
-    const instant = prefersReducedMotion();
     const insert = () => {
       setIndex(next);
       setPhase("poster");
       setDeck(null);
       setMeta(null);
       setSpoken(`${target.title} loaded.`);
-      setSwap(instant ? "idle" : "insert");
     };
-    if (instant) {
+    if (prefersReducedMotion()) {
       insert();
+      setSwap("idle");
       // A quick run of picks boots only the last one.
       swapTimers.current = [setTimeout(() => boot(null), 300)];
       return;
     }
-    setSwap("eject");
+    playSound("door");
+    setSwap("open");
+    const at = (ms: number, run: () => void) => setTimeout(run, ms);
     swapTimers.current = [
-      setTimeout(insert, EJECT_MS),
-      setTimeout(
-        () => {
-          setSwap("idle");
-          boot(null);
-        },
-        EJECT_MS + INSERT_MS + 120,
-      ),
+      at(SWAP_TIMING.out, () => setSwap("out")),
+      at(SWAP_TIMING.in, () => {
+        insert();
+        setSwap("in");
+      }),
+      at(SWAP_TIMING.close, () => {
+        playSound("door");
+        setSwap("close");
+      }),
+      at(SWAP_TIMING.done, () => {
+        setSwap("idle");
+        playSound("hiss");
+        boot(null);
+      }),
     ];
+  };
+
+  const toggleSound = () => {
+    setSfxEnabled(!sound);
+    setSound(!sound);
   };
 
   const onFaceplateKey = (event: KeyboardEvent) => {
@@ -293,163 +264,333 @@ export function DeckPlayer({
   const mirror = mirrorCopy(shown, titles);
   const levels = meterLevels(shown);
   const steps = stepsOf(shown);
-  const counter = (
-    phase === "booting" ? "LOAD" : phase === "failed" ? "NO TAPE" : counterText(shown)
-  ).replace("·", ".");
-  const reels =
-    phase === "ready" && deck && !deck.settled ? (deck.direction ?? "forward") : "still";
-  const live = phase === "ready" || phase === "booting";
-  const frameSrc = `${tape.href}#/${tape.startSlide}`;
+  const moving = phase === "ready" && deck !== null && !deck.settled;
+  const spin = moving
+    ? deck?.direction === "backward"
+      ? "backward"
+      : "forward"
+    : playing && phase === "ready"
+      ? "forward"
+      : "still";
+  const ended = phase === "ready" && deck !== null && atEnd(deck);
+  // The VFD prints slide and step as numbers: a 14-segment S and B read as 5 and 8.
+  const display =
+    phase === "booting"
+      ? "LOAD"
+      : phase === "failed"
+        ? "NO TAPE"
+        : `${String(shown.slide).padStart(2, "0")} ${shown.beat + 1}/${steps}`;
+  const displaySpoken =
+    phase === "booting"
+      ? "Loading"
+      : phase === "failed"
+        ? "No tape"
+        : `${counterText(shown)}: slide ${shown.slide} of ${shown.slides}, step ${shown.beat + 1} of ${steps}`;
+  const position = tapePosition(tape, shown.slide, shown.beat);
+  const progress = position.total > 1 ? position.index / (position.total - 1) : 0;
+  const slideTitle = titles[shown.slide - 1]?.trim() || `Slide ${shown.slide}`;
+  const osd =
+    phase === "booting"
+      ? "Loading"
+      : phase === "failed"
+        ? "No signal"
+        : playing
+          ? "Play ▶"
+          : phase === "ready"
+            ? "Pause"
+            : "Stop";
+  // index.html by name: the Astro dev server serves no directory index from public/.
+  const frameSrc = `${tape.href}index.html#/${tape.startSlide}`;
+  const doorOpen = swap === "open" || swap === "out" || swap === "in";
+  const card = tapes[peek ?? index] ?? tape;
 
   return (
-    <div className="flex flex-col gap-6">
-      <fieldset
-        onKeyDown={onFaceplateKey}
-        style={tapeStyle(tape.theme)}
-        className="hw bg-hw-face text-hw-ink min-w-0 rounded-md border border-black p-3 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)] sm:p-4"
-      >
-        <legend className="sr-only">Deck player</legend>
-        <div className="mb-3 flex items-center justify-between gap-4">
-          <span className="hw-label">Decks</span>
-          <span className="hw-label truncate">Tape: {tape.name}</span>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
-          <div className="flex min-w-0 flex-col gap-3">
-            <div className="bg-hw-well relative aspect-video overflow-hidden rounded-sm border border-black">
-              {phase !== "poster" && (
-                <iframe
-                  key={`${tape.name}-${bootCount}`}
-                  ref={frame}
-                  src={frameSrc}
-                  title={`${tape.title}: example deck, controlled by the player`}
-                  tabIndex={-1}
-                  inert
-                  allow="screen-wake-lock"
-                  className="absolute inset-0 size-full border-0"
-                />
-              )}
-              {phase !== "ready" &&
-                (tape.poster ? (
-                  <picture>
-                    <source
-                      type="image/avif"
-                      srcSet={posterSrcset(tape.poster, "avif")}
-                      sizes="(min-width: 1024px) 860px, 100vw"
-                    />
-                    <source
-                      type="image/webp"
-                      srcSet={posterSrcset(tape.poster, "webp")}
-                      sizes="(min-width: 1024px) 860px, 100vw"
-                    />
-                    <img
-                      src={`${tape.poster.base}-1280.webp`}
-                      width={tape.poster.width}
-                      height={tape.poster.height}
-                      alt={`${tape.title}, slide ${tape.startSlide}: ${mirror.lead}`}
-                      fetchPriority={index === initial ? "high" : "auto"}
-                      className="absolute inset-0 size-full object-cover"
-                    />
-                  </picture>
-                ) : (
-                  <span className="hw-label absolute inset-0 grid place-items-center p-4 text-center">
-                    No poster yet. Run make demo.
+    <div className="hifi flex flex-col gap-8">
+      <CassetteDefs />
+      <div className="grid items-end gap-10 xl:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="stand">
+          <div className="tv">
+            <div className="tv-cabinet">
+              <Screw className="tv-screw-l" turn={35} />
+              <Screw className="tv-screw-r" turn={-15} />
+              <div className="tv-screen">
+                <div className="tv-osd" aria-hidden="true">
+                  <span>{osd}</span>
+                  <span>
+                    S{shown.slide} {shown.beat + 1}/{steps}
                   </span>
-                ))}
-              {phase === "failed" && (
-                <p className="bg-hw-well/90 absolute inset-x-0 bottom-0 p-3 text-sm">
-                  The deck didn't answer.{" "}
-                  <a href={tape.href} className="text-hw-ink">
-                    Open the example deck
-                  </a>
-                </p>
-              )}
-            </div>
-            <div
-              data-reels={reels}
-              className="bg-hw-raised flex items-center gap-3 rounded-sm border border-black p-2"
-            >
-              <Reel className="size-10 shrink-0" />
-              <div data-swap={swap} className="tape-slot min-w-0 flex-1">
-                <CassetteLabel title={tape.title} theme={tape.theme} slides={tape.slides} compact />
+                </div>
+                <div className="tv-picture">
+                  {phase !== "poster" && (
+                    <iframe
+                      key={`${tape.name}-${bootCount}`}
+                      ref={frame}
+                      src={frameSrc}
+                      title={`${tape.title}, controlled by the player above`}
+                      tabIndex={-1}
+                      inert
+                      allow="screen-wake-lock"
+                      className="absolute inset-0 size-full border-0"
+                    />
+                  )}
+                  {phase !== "ready" &&
+                    (tape.poster ? (
+                      <picture>
+                        <source
+                          type="image/avif"
+                          srcSet={posterSrcset(tape.poster, "avif")}
+                          sizes="(min-width: 1280px) 760px, 92vw"
+                        />
+                        <source
+                          type="image/webp"
+                          srcSet={posterSrcset(tape.poster, "webp")}
+                          sizes="(min-width: 1280px) 760px, 92vw"
+                        />
+                        <img
+                          src={`${tape.poster.base}-1280.webp`}
+                          width={tape.poster.width}
+                          height={tape.poster.height}
+                          alt={`${tape.title}, slide ${tape.startSlide}: ${mirror.lead}`}
+                          fetchPriority={index === initial ? "high" : "auto"}
+                          className="absolute inset-0 size-full object-cover"
+                        />
+                      </picture>
+                    ) : (
+                      <span className="tv-nosignal">No poster yet. Run make demo.</span>
+                    ))}
+                  {phase === "failed" && (
+                    <p className="tv-message">
+                      The deck didn't load.{" "}
+                      <a href={tape.href} target="_blank" rel="noopener">
+                        Open it in a new tab
+                      </a>
+                    </p>
+                  )}
+                </div>
+                <p className="tv-osd tv-osd-title">{slideTitle}</p>
+                <span aria-hidden="true" className="tv-glass" />
               </div>
-              <Reel className="size-10 shrink-0" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="bg-hw-well flex flex-col gap-3 rounded-sm border border-black p-3">
-              <div className="flex items-center justify-between">
-                <span className="hw-label">Counter</span>
-                <span className="hw-label flex items-center gap-1.5">
-                  <span
-                    aria-hidden="true"
-                    className={`size-1.5 rounded-full ${playing ? "bg-live" : "bg-live-off"}`}
-                  />
-                  {playing ? "Play" : "Stop"}
+              <div className="tv-chin">
+                <span aria-hidden="true" className="tv-grille" />
+                <span className="tv-badge">
+                  <span className="brand">Decks</span>
+                  <span className="legend">Vision 21</span>
+                </span>
+                <span className="legend flex items-center gap-1.5">
+                  <Led on={phase === "ready" || phase === "booting"} color="green" />
+                  Power
                 </span>
               </div>
-              <p
-                className="seg text-live text-right text-3xl"
-                data-ghost={counter.replace(/[^.]/g, "~")}
-              >
-                <span className="sr-only">{counterText(shown)}</span>
-                <span aria-hidden="true" className="seg-text">
-                  {counter}
-                </span>
-              </p>
-              <Meter label="Step" value={shown.beat + 1} max={steps} level={levels.beat} />
-              <Meter
-                label="Deck"
-                value={shown.slide}
-                max={Math.max(shown.slides, shown.slide)}
-                level={levels.deck}
-              />
             </div>
-            <div className="js-only grid grid-cols-3 gap-2">
-              <TransportButton
-                glyph="◀◀"
-                label="Slide"
-                name="Slide back"
-                onClick={() => step(command.prevSlide())}
-              />
-              <TransportButton glyph="▶" label="Play" pressed={playing} onClick={play} />
-              <TransportButton
-                glyph="▶▶"
-                label="Slide"
-                name="Slide forward"
-                onClick={() => step(command.nextSlide())}
-              />
-              <TransportButton
-                glyph="◀"
-                label="Step"
-                name="Step back"
-                onClick={() => step(command.prev())}
-              />
-              <TransportButton
-                glyph="❚❚"
-                label="Pause"
-                pressed={!playing && live}
-                onClick={pause}
-              />
-              <TransportButton
-                glyph="▶"
-                label="Step"
-                name="Step forward"
-                onClick={() => step(command.next())}
-              />
-            </div>
-            <a
-              href={tape.href}
-              target="_blank"
-              rel="noopener"
-              className="press silver flex min-h-11 items-center justify-center gap-2 rounded-sm border border-black/40 px-3 text-xs font-semibold tracking-[0.12em] uppercase no-underline"
-            >
-              <span aria-hidden="true">⏏</span> Eject: open the example deck
-            </a>
           </div>
-        </div>
-      </fieldset>
 
-      <div className="flex max-w-3xl flex-col gap-2">
+          <fieldset onKeyDown={onFaceplateKey} className="deck faceplate min-w-0" data-swap={swap}>
+            <legend className="sr-only">Deck player</legend>
+            <Screw className="deck-screw tl" turn={10} />
+            <Screw className="deck-screw tr" turn={70} />
+            <Screw className="deck-screw bl" turn={-40} />
+            <Screw className="deck-screw br" turn={25} />
+            <div className="deck-top">
+              <span className="deck-brand">
+                <span className="brand">Decks</span>
+                <span className="model">DX-90</span>
+              </span>
+              <span className="legend hidden sm:inline">Stereo cassette deck</span>
+              <span className="legend ml-auto flex items-center gap-1.5">
+                <Led on={ended} color="amber" />
+                Auto stop
+              </span>
+            </div>
+            <div className="deck-main">
+              <div className="well">
+                <span className="legend well-legend">Tape: {tape.name}</span>
+                <div className="well-inner">
+                  <div className="cassette-holder" data-stage={swap}>
+                    <CassetteArt
+                      theme={tape.theme}
+                      title={tape.title}
+                      steps={position.total}
+                      progress={progress}
+                      spin={spin}
+                      className="block w-full"
+                    />
+                  </div>
+                </div>
+                <span aria-hidden="true" className="door" data-open={doorOpen || undefined}>
+                  <span className="door-glass" />
+                  <span className="door-print">⏏ Push open</span>
+                </span>
+              </div>
+              <div className="deck-readouts">
+                <Vfd main={display} spoken={displaySpoken}>
+                  <span className="vfd-label">Slide</span>
+                  <span className="vfd-label">Step</span>
+                  <span className="grow" />
+                  <VfdFlag on={playing}>Play</VfdFlag>
+                  <VfdFlag on={!playing && phase === "ready"}>Pause</VfdFlag>
+                  <VfdFlag on={phase === "booting"}>Load</VfdFlag>
+                  <VfdFlag on={ended}>End</VfdFlag>
+                </Vfd>
+                <div className="counter-row">
+                  <span className="legend">Counter</span>
+                  <RollingCounter value={position.index + 1} />
+                  <button
+                    type="button"
+                    className="mini-key js-only"
+                    onClick={() => step(command.go(1, 0))}
+                    aria-label="Reset: go to the first slide"
+                  >
+                    <span aria-hidden="true">Reset</span>
+                  </button>
+                </div>
+                <div className="vu-pair">
+                  <VuMeter
+                    label="Step"
+                    level={levels.beat}
+                    kick={moving}
+                    peak={levels.beat >= 1 && steps > 1}
+                  />
+                  <VuMeter label="Deck" level={levels.deck} kick={moving} peak={ended} />
+                </div>
+                <meter
+                  className="sr-only"
+                  min={0}
+                  max={steps}
+                  value={shown.beat + 1}
+                  aria-label="Step meter"
+                >
+                  Step {shown.beat + 1} of {steps}
+                </meter>
+                <meter
+                  className="sr-only"
+                  min={0}
+                  max={Math.max(shown.slides, shown.slide)}
+                  value={shown.slide}
+                  aria-label="Deck meter"
+                >
+                  Slide {shown.slide} of {shown.slides}
+                </meter>
+              </div>
+            </div>
+            <div className="deck-keys">
+              <div className="js-only contents">
+                <PianoKey
+                  glyph="◀◀"
+                  legend="Slide"
+                  name="Slide back"
+                  onClick={() => step(command.prevSlide())}
+                />
+                <PianoKey
+                  glyph="◀"
+                  legend="Step"
+                  name="Step back"
+                  onClick={() => step(command.prev())}
+                />
+                <PianoKey
+                  glyph="▶"
+                  legend="Play"
+                  onClick={play}
+                  latched={playing}
+                  led={{ on: playing, color: "green" }}
+                />
+                <PianoKey
+                  glyph="❚❚"
+                  legend="Pause"
+                  onClick={pause}
+                  latched={!playing && phase === "ready"}
+                  led={{ on: !playing && phase === "ready", color: "amber" }}
+                />
+                <PianoKey
+                  glyph="▶"
+                  legend="Step"
+                  name="Step forward"
+                  onClick={() => step(command.next())}
+                />
+                <PianoKey
+                  glyph="▶▶"
+                  legend="Slide"
+                  name="Slide forward"
+                  onClick={() => step(command.nextSlide())}
+                />
+              </div>
+              <div className="key-slot">
+                <span className="legend">Full deck</span>
+                <a href={tape.href} target="_blank" rel="noopener" className="key key-eject">
+                  <span aria-hidden="true">⏏</span>
+                  <span className="sr-only">Eject: open the example deck in a new tab</span>
+                </a>
+              </div>
+            </div>
+            <div className="deck-bottom">
+              <label className="toggle js-only">
+                <input type="checkbox" checked={sound} onChange={toggleSound} className="sr-only" />
+                <span aria-hidden="true" className="toggle-track">
+                  <span className="toggle-knob" />
+                </span>
+                <span className="legend">Sound</span>
+              </label>
+              <span className="legend ml-auto">Arrow keys step when a key has focus</span>
+            </div>
+          </fieldset>
+          <div aria-hidden="true" className="stand-top" />
+        </div>
+
+        <section aria-labelledby={`${id}-rack`} className="shelf-wrap">
+          <h2 id={`${id}-rack`} className="shelf-title">
+            Example decks
+          </h2>
+          {hydrated ? (
+            <fieldset className="shelf min-w-0" onMouseLeave={() => setPeek(null)}>
+              <legend className="sr-only">Load an example deck</legend>
+              {tapes.map((item, position) => (
+                <label
+                  key={item.name}
+                  className="shelf-slot"
+                  onMouseEnter={() => setPeek(position)}
+                  onFocus={() => setPeek(position)}
+                  onBlur={() => setPeek(null)}
+                >
+                  <input
+                    type="radio"
+                    name={`${id}-tape`}
+                    value={item.name}
+                    checked={position === index}
+                    onChange={() => pick(position)}
+                    aria-label={`${item.title}, ${item.slides} slides`}
+                    className="sr-only"
+                  />
+                  <Spine tape={item} loaded={position === index && swap === "idle"} />
+                </label>
+              ))}
+            </fieldset>
+          ) : (
+            <ul className="shelf">
+              {tapes.map((item) => (
+                <li key={item.name} className="shelf-slot">
+                  <a href={item.href} className="block">
+                    <Spine tape={item} loaded={false} />
+                    <span className="sr-only">Open {item.title}</span>
+                  </a>
+                  {item.poster && (
+                    <img
+                      src={`${item.poster.base}-640.webp`}
+                      width={640}
+                      height={360}
+                      loading="lazy"
+                      alt={`${item.title}, slide ${item.startSlide}`}
+                      className="no-js-only mt-2 aspect-video w-full rounded-xs"
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {hydrated && <JCard tape={card} />}
+        </section>
+      </div>
+
+      <div className="now-playing">
+        <p className="legend-ink">Now playing: {tape.title}</p>
         <p className="text-ink text-xl font-semibold tracking-tight text-balance sm:text-2xl">
           {mirror.lead}
         </p>
@@ -459,97 +600,12 @@ export function DeckPlayer({
         </p>
         {tape.name === "tides" && (
           <p className="text-muted mt-2 text-sm">
-            The example deck was drafted by Claude Code using this repo's agent setup in one
-            8-minute run, then fact-checked and edited by hand.{" "}
+            Claude Code drafted this deck in one 8-minute run with the repository's agent setup, and
+            it was fact-checked and edited by hand afterward.{" "}
             {changesHref && <a href={changesHref}>See the changes</a>}
           </p>
         )}
       </div>
-
-      <section aria-labelledby={`${id}-rack`} className="flex flex-col gap-3">
-        <h2 id={`${id}-rack`} className="text-ink text-base font-semibold">
-          Example decks
-        </h2>
-        {hydrated ? (
-          <fieldset className="hw grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <legend className="sr-only">Load an example deck</legend>
-            {tapes.map((item, position) => (
-              <div
-                key={item.name}
-                className="bg-hw-face flex flex-col gap-2 rounded-md border border-black p-2"
-              >
-                <label className="rack-item text-hw-ink has-[:focus-visible]:outline-live block cursor-pointer rounded-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2">
-                  <input
-                    type="radio"
-                    name={`${id}-tape`}
-                    value={item.name}
-                    checked={position === index}
-                    onChange={() => pick(position)}
-                    aria-label={`${item.title}, ${item.slides || "unknown number of"} slides`}
-                    className="sr-only"
-                  />
-                  <RackFace tape={item} loaded={position === index} />
-                </label>
-                <TrackList tape={item} />
-              </div>
-            ))}
-          </fieldset>
-        ) : (
-          <ul className="hw grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {tapes.map((item) => (
-              <li
-                key={item.name}
-                className="bg-hw-face flex flex-col gap-2 rounded-md border border-black p-2"
-              >
-                <a href={item.href} className="text-hw-ink flex flex-col gap-2 text-xs">
-                  <RackFace tape={item} loaded={false} />
-                  {item.poster && (
-                    <img
-                      src={`${item.poster.base}-640.webp`}
-                      width={640}
-                      height={360}
-                      loading="lazy"
-                      alt=""
-                      className="no-js-only aspect-video w-full rounded-xs"
-                    />
-                  )}
-                  <span>Open {item.title}</span>
-                </a>
-                <TrackList tape={item} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
-  );
-}
-
-/** One rack slot's cassette, or an empty slot while it's in the deck. Phrasing content only. */
-function RackFace({ tape, loaded }: { tape: Tape; loaded: boolean }) {
-  if (!loaded) return <Cassette title={tape.title} theme={tape.theme} slides={tape.slides} />;
-  return (
-    <span className="border-hw-print flex aspect-[16/10] flex-col items-center justify-center gap-1 rounded-sm border border-dashed p-2">
-      <span className="hw-label">In the deck</span>
-      <span className="text-hw-ink line-clamp-2 text-center text-sm">{tape.title}</span>
-    </span>
-  );
-}
-
-/** The J-card's tracklist: the deck's slide titles, as the deck reported them. */
-function TrackList({ tape }: { tape: Tape }) {
-  if (tape.slideTitles.length === 0) return null;
-  return (
-    <ol
-      aria-label={`${tape.title}: slides`}
-      className="text-hw-ink-2 flex list-inside list-decimal flex-col gap-0.5 text-[11px] leading-snug"
-    >
-      {tape.slideTitles.map((title, position) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: slide order is the identity
-        <li key={position} className="truncate">
-          {title || `Slide ${position + 1}`}
-        </li>
-      ))}
-    </ol>
   );
 }

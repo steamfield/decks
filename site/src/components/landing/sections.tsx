@@ -42,7 +42,8 @@ export function Section({
     <section id={id} aria-labelledby={`${id}-title`} className="border-line border-t">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-14 sm:px-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-12 lg:py-20">
         <div className="flex flex-col gap-3">
-          <h2 id={`${id}-title`} className="text-2xl font-semibold tracking-tight text-balance">
+          <span aria-hidden="true" className="memphis-band" />
+          <h2 id={`${id}-title`} className="display-heading text-[1.7rem] text-balance">
             {title}
           </h2>
           {lede && <p className="text-ink-2 leading-relaxed">{lede}</p>}
@@ -88,7 +89,7 @@ export function CompareTable({ rows }: { rows: Comparison[] }) {
       >
         <span />
         <span className="text-ink font-semibold">v-click and a chart library</span>
-        <span className="text-ink font-semibold">A Decks story slide</span>
+        <span className="text-ink font-semibold">Decks story slide</span>
       </div>
       {rows.map((row) => (
         <div key={row.topic} className="grid gap-2 px-4 py-4 md:grid-cols-[8rem_1fr_1fr] md:gap-6">
@@ -98,7 +99,7 @@ export function CompareTable({ rows }: { rows: Comparison[] }) {
             {row.vclick}
           </p>
           <p className="text-ink leading-relaxed">
-            <span className="text-muted block text-xs md:sr-only">A Decks story slide</span>
+            <span className="text-muted block text-xs md:sr-only">Decks story slide</span>
             {row.decks}
           </p>
         </div>
@@ -161,7 +162,9 @@ export function Transcript({ run }: { run: SmokeRun }) {
   return (
     <figure className="border-line overflow-hidden rounded-md border">
       <figcaption className="border-line bg-panel flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b px-4 py-2 text-sm">
-        <span className="text-ink font-medium">Excerpt from a real run, abbreviated</span>
+        <span className="text-ink font-medium">
+          Excerpt from the real run that drafted the tides deck, abbreviated
+        </span>
         <span className="text-muted">
           {figures.turns} turns, {figures.minutes} minutes, {figures.cost}. {shown} of{" "}
           {run.toolCalls} tool calls shown.
@@ -210,11 +213,11 @@ export function HookPanel({ denial }: { denial: HookDenial }) {
     <figure className="border-line overflow-hidden rounded-md border">
       <figcaption className="border-line bg-panel border-b px-4 py-3">
         <p className="text-ink font-medium">
-          We fed the lint hook this line; it refused the write.
+          We sent this line to the lint hook as a test write, and the hook blocked it.
         </p>
         <p className="text-muted mt-1 text-sm">
-          <code>{denial.hook}</code> is a hook that blocks writes matching a list of known AI-prose
-          patterns. Here it ran on a {denial.tool} to <code>{denial.file}</code>.
+          <code>{denial.hook}</code> blocks a file write when the text matches a list of phrases
+          common in AI-written prose. This test was a {denial.tool} to <code>{denial.file}</code>.
         </p>
       </figcaption>
       <div className="flex flex-col gap-3 p-4">

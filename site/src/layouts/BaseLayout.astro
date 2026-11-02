@@ -26,7 +26,7 @@ const canonical = new URL(path, site.url);
 const ogImage = new URL(image, site.url);
 // The package name leads: "Decks" alone is unsearchable.
 const brand = `${site.name} (${site.packageName})`;
-const pageTitle = path === "/" ? `${brand}: ${title}` : `${title} | ${brand}`;
+const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
 ---
 
 <!doctype html>
@@ -43,7 +43,7 @@ const pageTitle = path === "/" ? `${brand}: ${title}` : `${title} | ${brand}`;
     {markdown && <link rel="alternate" type="text/markdown" href={markdown} />}
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={brand} />
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={path === "/" ? site.title : title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
@@ -55,6 +55,9 @@ const pageTitle = path === "/" ? `${brand}: ${title}` : `${title} | ${brand}`;
     <Font cssVariable="--ff-mono" />
     <Font cssVariable="--ff-dseg" />
     <Font cssVariable="--ff-marker" />
+    <Font cssVariable="--ff-display" />
+    <Font cssVariable="--ff-legend" />
+    <Font cssVariable="--ff-pen" />
     <script is:inline>
       // Before paint: mark JavaScript on, then the stored theme, else the system preference.
       (() => {
@@ -129,14 +132,14 @@ const pageTitle = path === "/" ? `${brand}: ${title}` : `${title} | ${brand}`;
           <span>Released under the {site.license} license.</span>
         </div>
         {site.footer.map((column) => (
-          <nav aria-label={column.title} class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2">
             <span class="text-ink font-medium">{column.title}</span>
             {column.links.map((link) => (
               <a href={link.href} class="text-muted hover:text-ink no-underline hover:underline">
                 {link.label}
               </a>
             ))}
-          </nav>
+          </div>
         ))}
       </div>
     </footer>

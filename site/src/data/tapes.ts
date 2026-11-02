@@ -6,7 +6,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { resolveTheme } from "../../../packages/decks/theme/resolve.ts";
-import type { Tape, TapeState, TapeTheme } from "../lib/player/tape";
+import type { Shell, Tape, TapeState, TapeTheme } from "../lib/player/tape";
 
 /** Rack order. tides is loaded by default. */
 export const TAPE_NAMES = [
@@ -18,6 +18,19 @@ export const TAPE_NAMES = [
 ] as const;
 
 export type TapeName = (typeof TAPE_NAMES)[number];
+
+type Hue = "cyan" | "amber" | "rose" | "emerald" | "violet" | "slate";
+/**
+ * Shell plastic per tape, like a 90s shelf: one clear, one smoke, three tinted.
+ * A tint is step 2 of that ramp in the deck's own resolved theme.
+ */
+const SHELLS: Record<TapeName, { kind: "clear" | "smoke" } | { kind: "tint"; hue: Hue }> = {
+  tides: { kind: "clear" },
+  "opendata-pitch": { kind: "smoke" },
+  "agent-experience": { kind: "tint", hue: "cyan" },
+  "od-story-templates": { kind: "tint", hue: "violet" },
+  "od-templates": { kind: "tint", hue: "amber" },
+};
 
 /** What `make demo` writes per deck. */
 export type TapeRecording = {
@@ -42,7 +55,7 @@ function headmatterTitle(name: string): string {
   return /^title:\s*["']?(.+?)["']?\s*$/m.exec(slides)?.[1] ?? name;
 }
 
-export function tapeTheme(name: string): TapeTheme {
+export function tapeTheme(name: TapeName): TapeTheme {
   const defaults = readJson(join(repo, "packages/decks/theme/default.json"));
   const overridePath = join(deckDir(name), "theme.json");
   const theme = resolveTheme(
@@ -50,12 +63,19 @@ export function tapeTheme(name: string): TapeTheme {
     existsSync(overridePath) ? readJson(overridePath) : undefined,
   );
   return {
-    shell: theme.surfaces["surface-raised"],
     ink: theme.surfaces.canvas,
     paper: theme.text.primary,
     stripes: [theme.ramps.cyan[1], theme.ramps.amber[1], theme.ramps.rose[1]],
     brand: theme.brand.name,
+    shell: shellFor(SHELLS[name], theme.ramps),
   };
+}
+
+function shellFor(
+  spec: (typeof SHELLS)[TapeName],
+  ramps: Record<Hue, readonly [string, string, string, string]>,
+): Shell {
+  return spec.kind === "tint" ? { kind: "tint", color: ramps[spec.hue][1] } : spec;
 }
 
 export function loadRecording(name: string): TapeRecording | null {
@@ -63,7 +83,7 @@ export function loadRecording(name: string): TapeRecording | null {
   return existsSync(path) ? (readJson(path) as TapeRecording) : null;
 }
 
-export function loadTape(name: string): Tape {
+export function loadTape(name: TapeName): Tape {
   const recording = loadRecording(name);
   const hasPoster = existsSync(join(site, "public/posters", `${name}-1280.avif`));
   return {

@@ -30,9 +30,11 @@ export const site = {
   name: "Decks",
   /** The npm package. Titles lead with it, since "Decks" alone is unsearchable. */
   packageName: "slidev-addon-decks",
-  tagline: "Slide decks where the chart and the argument move together.",
+  /** The home page's <title> and OG title. */
+  title: "Decks (slidev-addon-decks): step-by-step chart slides for Slidev",
+  tagline: "Step-by-step chart slides for Slidev",
   description:
-    "A Slidev addon for data talks. Story slides step a chart through beats on the arrow keys and rewind cleanly, with chart, annotation and slide-chrome components and a CLI that scaffolds, builds and exports decks.",
+    "Decks is a Slidev addon for talks that walk through data. A story slide holds one chart. Each press of the right arrow moves the chart to its next step and changes the caption beside it, and the left arrow plays that step backward. The package also has chart and annotation components, a theme file, and a decks command that creates, runs, builds and exports decks.",
   /** Absolute production URL: canonicals, the sitemap, OG images and llms.txt use it. */
   url: "https://decks.steamfield.io",
   repo,
@@ -71,16 +73,16 @@ export const site = {
   ],
   fit: {
     yes: [
-      "You use Slidev, or will.",
-      "Your talk has numbers that build up over several steps.",
-      "You're fine with a dark theme on slidev-theme-the-unnamed.",
+      "You present with Slidev, or are willing to switch.",
+      "Your talk explains numbers one step at a time.",
+      "Dark slides suit you.",
       "You have Node 20.19+ or 22.12+.",
     ],
     no: [
-      "You need light slides. Themes stay dark.",
-      "You need a base theme other than slidev-theme-the-unnamed.",
-      "You need Keynote or PowerPoint files. Export is PDF.",
-      "You need a stable chart library today. OpenChart is at 9.0.0-rc.2.",
+      "You need light slides.",
+      "You need a Slidev base theme other than slidev-theme-the-unnamed.",
+      "You need Keynote or PowerPoint files. Export is PDF only.",
+      "You need a chart library with a stable release. OpenChart is at 9.0.0-rc.2.",
     ],
   },
   /** Section 4: three differences from v-click plus a chart library. */
@@ -88,20 +90,20 @@ export const site = {
     {
       topic: "Going back",
       vclick:
-        "Each click shows or hides an element. Stepping back snaps the chart to its earlier state.",
+        "Each click toggles an element, so going back makes the chart jump to its earlier state.",
       decks:
-        "The beat timeline is a function of the click count, so stepping back replays the transition in reverse.",
+        "The chart is drawn from the click count, so going back plays the animation in reverse.",
     },
     {
-      topic: "The words",
+      topic: "Captions",
       vclick:
-        "Captions are separate elements you reveal next to the chart and keep in step by hand.",
-      decks: "Prose sits in a floating card whose copy changes per beat, next to the chart.",
+        "Captions are separate elements that you reveal alongside the chart and keep in sync by hand.",
+      decks: "The caption is a card next to the chart, and its text changes at each step.",
     },
     {
-      topic: "Across slides",
-      vclick: "Each slide mounts its own chart, so the next slide starts from nothing.",
-      decks: "A visual can carry over from one slide to the next.",
+      topic: "The next slide",
+      vclick: "Each slide mounts its own chart, so the next slide starts empty.",
+      decks: "A chart can stay on screen from one slide into the next.",
     },
   ] as Comparison[],
   /** Section 5: the J-card. Side A is the npm package, side B is the repository. */

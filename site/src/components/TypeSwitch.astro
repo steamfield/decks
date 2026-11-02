@@ -17,14 +17,14 @@ const srcset = (value: string, ext: string) =>
 ---
 
 <div class="type-switch flex flex-col gap-4">
-  <fieldset class="hw bg-hw-face flex flex-wrap items-center gap-4 rounded-md border border-black px-4 py-3">
+  <fieldset class="faceplate type-panel">
     <legend class="sr-only">Tape type</legend>
-    <span class="hw-label" aria-hidden="true">
-      Type
+    <span class="legend" aria-hidden="true">
+      Tape type
     </span>
-    <div class="switch-track bg-hw-well relative grid grid-cols-2 rounded-sm border border-black p-1">
+    <div class="type-track">
       {positions.map((position, index) => (
-        <label class="relative z-10 flex min-h-11 min-w-24 cursor-pointer items-center justify-center px-3">
+        <label class="type-position">
           <input
             type="radio"
             name="tape-type"
@@ -33,20 +33,16 @@ const srcset = (value: string, ext: string) =>
             data-tape-type
             class="peer sr-only"
           />
-          <span class="text-hw-print peer-checked:text-live text-xs font-semibold tracking-[0.14em] uppercase">
-            {position.label}
-          </span>
+          <span class="led" aria-hidden="true" data-color="amber" />
+          <span class="legend">{position.label}</span>
         </label>
       ))}
-      <span
-        aria-hidden="true"
-        class="switch-knob silver absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-xs opacity-25"
-      ></span>
+      <span aria-hidden="true" class="type-knob"></span>
     </div>
-    <span class="text-hw-print text-xs" data-note="normal">
+    <span class="legend type-note" data-note="normal">
       {positions[0]?.note}
     </span>
-    <span class="text-hw-print text-xs" data-note="warm">
+    <span class="legend type-note" data-note="warm">
       {positions[1]?.note}
     </span>
   </fieldset>
@@ -93,12 +89,74 @@ const srcset = (value: string, ext: string) =>
     display: none;
   }
 
-  .type-switch:has(input[value="warm"]:checked) .switch-knob {
+  .type-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 18px;
+  }
+
+  .type-track {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 4px;
+    border-radius: 3px;
+    background: #050506;
+    box-shadow:
+      inset 0 1px 4px #000,
+      0 1px 0 rgb(255 255 255 / 0.08);
+  }
+
+  .type-position {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    min-width: 6.5rem;
+    cursor: pointer;
+  }
+
+  .type-position:has(:checked) .led {
+    background: #ffb52e;
+    box-shadow: 0 0 6px 1px rgb(255 181 46 / 0.6);
+  }
+
+  .type-position:has(:checked) .legend {
+    color: #18191b;
+  }
+
+  .type-knob {
+    position: absolute;
+    inset: 4px auto 4px 4px;
+    width: calc(50% - 4px);
+    border-radius: 2px;
+    background: var(--brushed), linear-gradient(180deg, #f3f3f4, #a9abaf);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.7),
+      0 2px 0 #0c0c0d;
+  }
+
+  .type-switch:has(input[value="warm"]:checked) .type-knob {
     transform: translateX(100%);
   }
 
-  .switch-track:has(input:focus-visible) {
+  .type-track:has(input:focus-visible) {
     outline: 2px solid var(--color-live);
-    outline-offset: 2px;
+    outline-offset: 3px;
+  }
+
+  .type-note {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .type-knob {
+      transition: transform 160ms ease-out;
+    }
   }
 </style>

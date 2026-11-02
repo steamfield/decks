@@ -29,13 +29,13 @@ const [tides] = tapes;
 const run = loadSmokeRun();
 const denial = loadHookDenial();
 const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
-const codeThemes = { light: "github-light", dark: "github-dark-default" } as const;
+const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-default" } as const;
 ---
 
 <BaseLayout title={site.tagline} path="/">
   <ReleaseBanner slot="banner" announcement={site.announcement} />
 
-  <section aria-labelledby="hero-title">
+  <section aria-labelledby="hero-title" class="hero-room">
     <div class="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pt-14 pb-16 sm:px-8 sm:pt-20">
       <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:items-end">
         <div id="hero-title">
@@ -49,8 +49,8 @@ const codeThemes = { light: "github-light", dark: "github-dark-default" } as con
             trackMethod="hero"
           />
           <p class="text-muted text-sm">
-            Copy both lines: without the install, <code>bunx decks</code> fetches an unrelated npm
-            package.
+            Run both lines together. The <code>decks</code> package on npm is unrelated, so{" "}
+            <code>bunx decks</code> only finds this one after the install.
           </p>
           <p class="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium">
             <a href="/docs/getting-started/quickstart/">Read the docs</a>
@@ -69,12 +69,12 @@ const codeThemes = { light: "github-light", dark: "github-dark-default" } as con
 
   <Section
     id="fit"
-    title="Does it fit my setup?"
-    lede="Decks is a layer on Slidev with one base theme and dark slides. Check this before anything else."
+    title="Requirements and limits"
+    lede="Decks runs on Slidev with one base theme, slidev-theme-the-unnamed, and every slide is dark."
   >
     <FitLists yes={site.fit.yes} no={site.fit.no} />
     <p class="text-ink-2 mt-6">
-      Already have a Slidev deck?{" "}
+      To use Decks in a deck you already have, see{" "}
       <a href="/docs/getting-started/add-decks-to-an-existing-deck/">
         Add Decks to an existing Slidev deck
       </a>
@@ -84,34 +84,35 @@ const codeThemes = { light: "github-light", dark: "github-dark-default" } as con
 
   <Section
     id="why"
-    title="Why not v-click and a chart library?"
-    lede="Slidev's v-click reveals elements one click at a time. A story slide ties the whole chart to the click count."
+    title="Compared with v-click"
+    lede="Slidev's v-click shows or hides one element per click. A story slide redraws the whole chart from the current click count."
   >
     <CompareTable rows={site.compare} />
   </Section>
 
   <Section
     id="box"
-    title="What's in the box?"
-    lede="The npm package is side A. Side B lives in the repository: tools that check a deck, and the agent setup."
+    title="What's included"
+    lede="Side A is the npm package. Side B is the repository, which adds screenshot tools, example decks and the Claude Code setup."
   >
     <JCard title={`Decks ${site.version}`} a={site.jcard.a} b={site.jcard.b} />
   </Section>
 
   <Section
     id="theme"
-    title="Can it look like mine?"
-    lede="Every color, font and brand field comes from one theme file. A deck's theme.json overrides only the keys it names."
+    title="Themes"
+    lede="Colors, fonts and cover branding come from one theme file. A deck's theme.json sets only the keys it lists, and the rest keep their defaults."
   >
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] [&>*]:min-w-0">
       <TypeSwitch />
-      <div class="flex flex-col gap-3">
-        <figure class="code-frame">
+      <div class="flex min-w-0 flex-col gap-3">
+        <figure class="code-frame code-wrap">
           <figcaption>theme.json (WARM)</figcaption>
           <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
         </figure>
         <p class="text-muted text-sm">
-          Surfaces and the two hues the tides deck draws with, from the example decks' warm palette.
+          This file changes the background colors and the two chart colors the tides deck uses. The
+          values come from the warm palette in the template deck.{" "}
           <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
         </p>
       </div>
@@ -120,8 +121,8 @@ const codeThemes = { light: "github-light", dark: "github-dark-default" } as con
 
   <Section
     id="agent"
-    title="Can my agent write one?"
-    lede="The agent setup lives in the repository, not the npm package. Clone it and run Claude Code at its root."
+    title="Writing decks with Claude Code"
+    lede="The agent setup is in the repository, not the npm package: an agent, two skills, writing rules and a lint hook. Clone the repository and run Claude Code from its root."
   >
     <div class="flex flex-col gap-8">
       <CopyBlock
@@ -131,8 +132,8 @@ const codeThemes = { light: "github-light", dark: "github-dark-default" } as con
       <Transcript run={run} />
       <HookPanel denial={denial} />
       <p class="text-ink-2">
-        <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> covers
-        the agent, the skills, the rules and the hooks.
+        <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> explains
+        each piece and how to run it.
       </p>
     </div>
   </Section>
@@ -140,7 +141,7 @@ const codeThemes = { light: "github-light", dark: "github-dark-default" } as con
   <Section id="install" title="Install">
     <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div class="flex flex-col gap-4">
-        <InstallTabs client:visible options={site.install} />
+        <InstallTabs client:idle options={site.install} />
         <p class="text-ink-2 text-sm">Then start the dev server:</p>
         <CopyBlock lines={site.afterInstall} label="Copy the dev command" />
       </div>

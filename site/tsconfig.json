@@ -8,5 +8,5 @@
     "noUncheckedIndexedAccess": true
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "coverage", "playwright-report", "test-results"]
+  "exclude": ["dist", "coverage", "playwright-report", "test-results", "public/demo", ".demo"]
 }

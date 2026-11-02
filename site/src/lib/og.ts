@@ -19,15 +19,16 @@ export function clip(value: string, max: number): string {
 }
 
 /**
- * A cassette deck's faceplate: the page title in the amber segment display, the
+ * A cassette deck's faceplate: the page title in the VFD, the
  * description below it in Inter. Hardware colors match the player on the page.
  */
 export function ogCard({ title, description, siteName }: Card): Node {
   const label = { fontSize: 18, letterSpacing: "0.18em", color: "#a1a1aa", fontWeight: 700 };
   return div(
     {
-      width: "100%",
-      height: "100%",
+      // Content box: 1200x630 minus the padding.
+      width: 1072,
+      height: 518,
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
@@ -37,18 +38,20 @@ export function ogCard({ title, description, siteName }: Card): Node {
       fontFamily: "Inter",
     },
     [
-      div({ display: "flex", justifyContent: "space-between", ...label }, [
+      div({ display: "flex", justifyContent: "space-between", width: 1072, ...label }, [
         div({}, siteName.toUpperCase()),
-        div({}, "SIDE A"),
+        div({}, "DX-90"),
       ]),
       div(
         {
           display: "flex",
+          // satori sizes content boxes: 1072 minus padding and border.
+          width: 1004,
           padding: "28px 32px",
           background: "#09090b",
           border: "2px solid #000",
           borderRadius: "6px",
-          color: "#fbbf24",
+          color: "#92f8e2",
           fontFamily: "DSEG14",
           fontSize: 50,
           lineHeight: 1.35,
@@ -56,7 +59,10 @@ export function ogCard({ title, description, siteName }: Card): Node {
         },
         clip(title.toUpperCase(), 64),
       ),
-      div({ fontSize: 30, color: "#d0d6e0", lineHeight: 1.4 }, clip(description, 140)),
+      div(
+        { display: "flex", width: 1072, fontSize: 26, color: "#d0d6e0", lineHeight: 1.4 },
+        clip(description, 110),
+      ),
     ],
   );
 }

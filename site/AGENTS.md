@@ -1,90 +1,131 @@
 # decks-site
 
-Instructions for coding agents working in this repository. Keep this file under about 200 lines: it is loaded at the start of every session. Put detail that matters only for one area in a doc and link it from Deeper context.
-
-<!-- Setup note (delete this comment when done): each comment below that starts with the fill marker says what to write from the real project. Replace it with real content, or delete the section if it truly doesn't apply. `stacks verify` fails while any remain. -->
+Instructions for coding agents working in this directory. Keep this file under about 200 lines: it is loaded at the start of every session. Put detail that matters only for one area in a doc and link it from Deeper context.
 
 ## Overview
 
-<!-- stacks:fill Two or three sentences: what this project is, who uses it, and the main technologies. -->
+The landing page and docs for Decks (`slidev-addon-decks`) at decks.steamfield.io. The hero is a 90s hi-fi stack: a TV that shows a real example deck in a same-origin iframe, a cassette deck that drives it through the addon's embed contract, and a shelf with one cassette per example deck. Astro (static), React islands, Tailwind 4, Bun. It lives in `site/` inside the decks repository, outside the bun workspace, and is scaffolded from the stacks `astro-product-site` stack.
 
 ## Commands
 
-Run these from the repo root. They are the only supported way to build, test, and run the project; if a command here is wrong, fix it here in the same change.
+Run these from `site/`. They are the only supported way to build, test, and run the project; if a command here is wrong, fix it here in the same change.
 
 | Command | What it does |
 | --- | --- |
-<!-- stacks:fill One row per real command (Makefile target or package script): install, dev, test, a single test, lint, format, typecheck, build, and any service start/stop. Copy them from the Makefile or scripts and run each once to confirm it works. Include how to run one test file. -->
+| `make install` | Install dependencies (frozen lockfile in CI) and, outside CI, Playwright's Chromium |
+| `make dev` | Dev server on `PORT_WEB` (4321) |
+| `make lint` | Biome (TS, JS, CSS, JSON) and Prettier (`.astro`) |
+| `make format` | Apply Biome and Prettier fixes |
+| `make check` | `astro check` type-check |
+| `make test` | Unit, component and content-drift tests (vitest) |
+| `bunx vitest run src/lib/player/format.test.ts` | One test file |
+| `make build` | Static build into `dist/`, then `tests/build.test.ts` over it |
+| `make e2e` | Playwright and axe against the production build (`PORT_E2E`, 4322) |
+| `make demo` | Lint and check the decks, build all five into `public/demo/`, record them into `fixtures/tapes/`, take posters and the NORMAL/WARM stills with the repo's `shot` (about 6 minutes) |
+| `node scripts/demo.mjs --no-shots` | Builds and recordings only, keeping posters and stills |
+| `make demo-build` | Deck builds only, into `public/demo/` (what a deploy needs) |
+| `make deploy-check` | Serve `dist/` through `wrangler pages dev`; checks headers, canonical URLs, 404 |
+| `stacks verify` | The definition of done (install through serve) |
+
+Each target also has a `bun run <target>` alias in `package.json`. `make demo` needs the parent repo's dependencies (`bun install` at the repo root) and Playwright's Chromium.
 
 ## Architecture map
 
-<!-- stacks:fill A short tree of the top-level directories and what lives in each, plus one line on how requests or data flow between the parts. Only directories that exist. -->
+| Path | Owns |
+| --- | --- |
+| `src/config.ts` | All landing copy, install commands, requirements, fit lists, the J-card tracks, footer, `site.islands` |
+| `src/pages/index.astro` | The landing page: section order and which island goes where |
+| `src/components/landing/DeckPlayer.tsx` | The hero island: state, the embed contract, PLAY timing, the tape-load sequence, TV, deck and shelf layout |
+| `src/components/landing/hifi.tsx` | Hardware parts: cassette SVG, VU meters, rolling counter, VFD, piano keys, LEDs, screws |
+| `src/components/landing/rack.tsx` | Shelf spines and the J-card |
+| `src/components/landing/sections.tsx` | Static sections (fit lists, comparison, contents J-card, transcript, hook panel, no-JS deck text) |
+| `src/components/TypeSwitch.astro`, `CopyBlock.astro` | The NORMAL/WARM switch (radio inputs and CSS) and multi-line copy blocks |
+| `src/lib/player/` | `protocol.ts` (embed contract), `format.ts` (readouts), `tape.ts` (tape props, pack radii, sides) |
+| `src/data/tapes.ts` | Build-time tape loader: theme colors from each deck's `theme.json` via `packages/decks/theme/resolve.ts`, recordings from `fixtures/tapes/` |
+| `src/data/fixtures.ts` | The smoke-run excerpt and hook denial loaders |
+| `src/styles/global.css`, `src/styles/hifi.css` | Page tokens (light and dark), the hardware styles and all motion |
+| `src/lib/sfx.ts` | Optional synthesized sounds, off by default |
+| `fixtures/` | `smoke-1.json`, `hook-denial.json`, `tapes/<name>.json`: all generated by scripts, never typed |
+| `scripts/demo.mjs`, `scripts/excerpt-smoke.mjs`, `scripts/capture-hook.mjs`, `scripts/hook.mjs` | Generators for the above |
+| `demo/warm-theme.json` | The WARM still's theme override |
+| `public/posters/`, `public/stills/` | Generated images (committed); `public/demo/` holds deck builds (gitignored) |
+| `src/content-drift.test.ts` | Commands, figures, the hook's answer and deck recordings checked against the repository |
+| `e2e/fixtures/stub-deck.html` | A stand-in deck that speaks the embed contract, routed in for browser tests |
+
+The site reads its parent repository at build time (`../packages/decks`, `../examples`, `../README.md`), so it builds only inside the decks repo.
 
 ## Agent harness
 
-<!-- stacks:fill Document the selected agents' actual harness: where hooks, rules and skills live and which config wires each agent's hooks. Include a table mapping each rule to the paths it covers. Link any harness docs. Keep this section for Codex-only and multiple-agent projects too. Before writing it, when both Claude Code and Codex are targets, make one skill tree: move each `.agents/skills/*` directory into `.claude/skills/` without overwriting an existing skill, then replace `.agents/skills` with a tracked symlink to `../.claude/skills`, and write new skills under `.claude/skills/`. With Codex alone, skills live in `.agents/skills/`; with Claude alone, in `.claude/skills/`. When the project has `.claude/rules/` and Codex is a target, add: "Codex does not load `.claude/rules/` automatically: it reads the rules covering the files it changes before editing them." -->
-
+Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` block destructive commands and secret-shaped writes, lint each written file and format changed files on stop (`.claude/README.md`). Rules in `.claude/rules/site/`: `docs.md` covers `src/content/docs/**`, `ui.md` covers the components, styles and pages.
 
 ## Conventions
 
-<!-- stacks:fill The patterns this codebase follows that an agent would not guess: module boundaries, where config is loaded, naming, how generated code is produced and that it is never hand-edited. -->
-
-- Prefer the project's existing patterns and dependencies over new ones. Add a dependency only when nothing in the project already covers the need.
-- Keep changes scoped to the task. Mention unrelated problems you notice instead of fixing them in the same change.
+- Copy is literal: say what the product does. Section headings are topic labels, not questions. No slogans, no "not X but Y", no em dashes. The landing unit is a "step"; "beat" is defined in the docs.
+- Every number on the page comes from a generated fixture or the repository, and `src/content-drift.test.ts` checks it. Never type a figure, a transcript line or a slide title by hand: re-run the generator.
+- The hardware stays dark in both themes. Glow only on the VFD and LEDs. Page colors are tokens in both theme blocks of `global.css`; `src/styles/tokens.test.ts` checks contrast.
+- Motion: finished state is the default CSS; anything that moves sits under `prefers-reduced-motion: no-preference`; the tape swap is instant under reduced motion; nothing autoplays.
+- Islands: `DeckPlayer` (`client:visible`) and `InstallTabs` (`client:idle`). Each server-renders a useful state: posters, deck text and links without JavaScript.
+- The embed contract's deck side is in the addon (`bun run test:embed` at the repo root). `beats` is the last beat index, so a slide has `beats + 1` steps.
 
 ## Guardrails
 
-- Destructive commands, credential-shaped writes and real `.env` writes are guarded by native hooks when this project targets Claude Code, Codex, OpenCode or Cursor. A block means ask the user; never rephrase a command or use another tool to bypass it.
-- Store credentials in environment variables or a secrets manager. Write variable names and placeholders in `.env.example`; ask the user to set real values.
-- Load the selected agent's applicable project skills or rules before changing their area.
-- Treat lint diagnostics as work to resolve. Run the project check command before finishing; instructions and hooks do not replace tests.
+- Destructive commands, credential-shaped writes and real `.env` writes are guarded by native hooks. A block means ask the user; never rephrase a command or use another tool to bypass it.
+- Store credentials in environment variables. Write variable names and placeholders in `.env.example`.
+- Treat lint diagnostics as work to resolve. Run the project check command before finishing.
+- Never edit outside `site/` from a site task; the decks and the addon belong to the rest of the repo.
 
 ## Testing
 
-<!-- stacks:fill Test layers (unit, integration, end-to-end), which runner each uses, what is real and what is faked, the test harness files to build on, and anything tests need running first (a database, a .env). -->
-
-- Behavior-focused tests against real dependencies where practical. Fake only what crosses the network to third parties.
-- A bug fix starts with a test that reproduces the bug.
+- `make test`: protocol, readouts, tape math, sections and player component tests (Testing Library, happy-dom; the iframe's window is a stand-in), token contrast, docs rules, and the content-drift test, which runs the real prose-lint hook (needs `jq`).
+- `make build`: acceptance tests over `dist/` (docs pages, links, islands, landing content, a probe page built in a temp parent that links the repo back in).
+- `make e2e`: axe in light and dark on `/` and a docs page, the player against the stub deck (boot, PLAY timing, keys, shelf keyboard, reduced motion), 360px keys and overflow, no-JS rendering, copy buttons.
 - Weakening or skipping a test to get green is a failure, not a fix.
 
 ## Error handling
 
-<!-- stacks:fill The project's error pattern: error types, where errors are caught, logged, and turned into responses or exit codes. -->
-
-- Never swallow an error. Handle it, or add context and pass it on.
-- Log an error once, at the boundary that handles it.
+- The player gives up on a deck that does not answer within 15 s and links to it. A failed analytics load turns analytics off.
+- Generators (`scripts/*.mjs`) throw with the step that failed and exit 1.
 
 ## Debugging
 
-- If a fix hasn't worked after two attempts with no new diagnostic step in between, stop. Write down what you learned, list two or three other root-cause hypotheses, and ask which to pursue. Running a new diagnostic between attempts resets the count.
-- Read logs and error output before guessing.
+- If a fix hasn't worked after two attempts with no new diagnostic step in between, stop and list other hypotheses.
+- Under an agent, `astro dev` started through `bunx` may miss file changes; restart it or run `node node_modules/.bin/astro dev`.
+- The Astro dev server serves no directory index from `public/`, so the player loads `/demo/<name>/index.html`.
 
-<!-- stacks:fill Where the running app writes logs, how to get verbose output, and any known failure signatures. Delete this comment if there is nothing project-specific yet. -->
+## Analytics
+
+`src/lib/analytics.ts` is the only `posthog-js` import; it does nothing while `PUBLIC_POSTHOG_KEY` is empty (dev, tests, CI). Events live in `src/lib/events.ts`: `install_copied {method}`, `player_played {tape}`, `beat_stepped {cmd}`, `tape_selected {tape}`, `theme_switched {position}`, `docs_quickstart_viewed`. Names are `object_verb`, past tense, flat scalar properties; track from islands or `src/scripts/site.ts`, never docs. Consent: cookieless (`cookieless_mode: "always"`), no banner. Never send typed text, emails or tokens.
+
+## Deploy
+
+Cloudflare Pages project `decks-site`, production at decks.steamfield.io, deployed by Cloudflare's Git integration: root directory `site`, build command `make demo-build build` (the deck builds are gitignored, so the deploy builds them; it needs `bun install` at the repo root first), output `dist`, bun as the package manager. `PUBLIC_POSTHOG_KEY` and `PUBLIC_POSTHOG_HOST` are Pages build variables. `make deploy-check` verifies headers and URLs locally; `make deploy-preview BRANCH=…` and `make deploy` upload from a machine with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Headers live in `public/_headers`; add `public/_redirects` only for moved pages.
 
 ## Build workarounds
 
-Things in the tree that exist to get a build through, not because they are right. Each one says when it can be removed. Re-check them when upgrading the tools involved.
-
 | Where | What and why | Remove when |
 | --- | --- | --- |
-<!-- stacks:fill Add a row for every workaround, patch, pin, or disabled check you had to introduce while setting the project up. If there are none, write "None yet." under the table header and remove the empty table. -->
+| `package.json` | `typescript@^6`: `astro check` refuses TypeScript 7 | `@astrojs/check` supports TypeScript 7 |
+| `tests/build.test.ts` | The probe build copies `site/` into a temp parent and symlinks `packages`, `examples` and `README.md` beside it, because the site reads its parent repo | The site stops reading the parent repo at build time |
+| `src/data/tapes.ts` | Imports `../../../packages/decks/theme/resolve.ts` across the package boundary to color cassettes with the real resolver | The addon publishes the resolver on an export path the site can depend on |
 
 ## Deferred
 
-Explicitly out of scope for now, so nobody mistakes them for forgotten work.
-
-<!-- stacks:fill List what was deliberately left out (e.g. CI deploys, a production database, a second platform), or write "Nothing yet." -->
+- A light-slide variant of the player (decks stay dark).
+- Re-theming the hero player live (would need a second deck build and a reload).
+- A `decks agent-init` command so the agent section can say "run this" instead of "clone".
+- A blog or changelog pages.
 
 ## Pending user actions
 
-Steps only a human can do (accounts, API keys, DNS, signing identities). Check here before reporting one of these as a problem.
-
-<!-- stacks:fill List each with how to confirm it is done, or write "None." -->
+- Create the Cloudflare Pages project with Git integration (settings under Deploy) and attach decks.steamfield.io. Until the repo is public and the package is on npm, the GitHub links 404 and the install line fails.
+- Create a PostHog project, set `PUBLIC_POSTHOG_KEY` (and host) as Pages build variables, and enable cookieless tracking in its settings.
+- Optional: allow `make demo`, `make demo-build` and `make deploy-check` in `.claude/settings.json`.
+- The parent repo formats with Prettier (`.prettierrc`); this directory has its own Biome and Prettier config, which take precedence here. If the root ever adopts Biome, exclude `site/` or extend this `biome.json`, and add `.claude/worktrees/` to the root `.gitignore`.
 
 ## Deeper context
 
-Read these only when the task needs them.
-
 | Need | Read |
 | --- | --- |
-<!-- stacks:fill One row per doc that exists (README, architecture notes, runbooks). Remove the table if there are none yet. -->
+| Why the page is shaped this way, the copy, the design, success metrics | `docs/PRODUCT.md` |
+| How the site fits together, docs pipeline | `docs/DEVELOPMENT.md` |
+| Hooks and Claude settings | `.claude/README.md` |

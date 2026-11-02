@@ -52,7 +52,7 @@ describe("landing sections", () => {
     render(<CompareTable rows={[{ topic: "Going back", vclick: "Snaps.", decks: "Reverses." }]} />);
     const row = screen.getByRole("heading", { name: "Going back" }).parentElement as HTMLElement;
     expect(row).toHaveTextContent("v-click and a chart librarySnaps.");
-    expect(row).toHaveTextContent("A Decks story slideReverses.");
+    expect(row).toHaveTextContent("Decks story slideReverses.");
   });
 
   it("numbers each side's tracks and links them to docs", () => {
@@ -66,7 +66,9 @@ describe("landing sections", () => {
   it("labels the transcript as an abbreviated real run with its own figures", () => {
     render(<Transcript run={run} />);
     const figure = screen.getByRole("figure");
-    expect(figure).toHaveTextContent("Excerpt from a real run, abbreviated");
+    expect(figure).toHaveTextContent(
+      "Excerpt from the real run that drafted the tides deck, abbreviated",
+    );
     expect(figure).toHaveTextContent("87 turns, 8.3 minutes, $3.17. 3 of 85 tool calls shown.");
     expect(figure).toHaveTextContent('claude -p "make a deck"');
     expect(within(figure).getAllByRole("listitem")).toHaveLength(3);

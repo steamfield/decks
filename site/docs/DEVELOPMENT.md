@@ -4,14 +4,16 @@
 
 | Path | Owns |
 | --- | --- |
-| `src/config.ts` | Product name, tagline, URL, install commands, demo lines, features, logos, links, license, the docs groups and the `islands` list |
+| `src/config.ts` | Product name, tagline, URL, install commands, requirements, fit lists, comparison, J-card tracks, footer, license, the docs groups and the `islands` list |
 | `src/content/docs/` | Docs pages, one Markdown file each, validated by `src/content/schema.ts` |
 | `src/lib/docs.ts` | Pure docs rules: sidebar order, pager, URLs, the Markdown export and both llms files |
 | `src/lib/collection.ts` | The only `astro:content` import outside routes |
 | `src/lib/markdown.ts` | Docs Markdown conventions as Sätteri hast plugins plus one Shiki transformer |
 | `src/lib/og.ts` | The social card layout and its fonts |
-| `src/components/landing/` | Landing sections (static React) and `InstallTabs`, the one island |
-| `src/scripts/site.ts` | Theme toggle, code copy buttons, copy page and the TOC highlight |
+| `src/components/landing/` | Landing sections (static React) and the two islands, `DeckPlayer` (with `hifi.tsx` and `rack.tsx`) and `InstallTabs` |
+| `src/data/` | Build-time loaders for the tapes and the recorded fixtures |
+| `src/lib/player/` | The embed contract, readout formatting and tape math |
+| `src/scripts/site.ts` | Theme toggle, command and code copy buttons (shown only when the clipboard API is there), the NORMAL/WARM switch event, copy page and the TOC highlight |
 | `src/layouts/` | `BaseLayout` (head, header, footer) and `DocsLayout` (sidebar, TOC, pager) |
 
 ## Docs pages
@@ -25,7 +27,7 @@ Markdown conventions, all plain Markdown so pages read the same on GitHub and to
 - `##` and `###` headings feed the table of contents and get anchor links.
 - Tables scroll sideways inside their own region.
 
-Link between pages with the full route and its trailing slash (`/docs/concepts/how-it-works/`). The build test fails on a link or `#anchor` that doesn't resolve.
+Link between pages with the full route and its trailing slash (`/docs/concepts/ink-marks/`). The build test fails on a link or `#anchor` that doesn't resolve.
 
 ## Markdown processing
 
@@ -33,7 +35,7 @@ Astro's default processor is Sätteri, which doesn't run remark or rehype plugin
 
 ## Islands and scripts
 
-Landing sections are React components rendered to HTML at build time. Only components named in `site.islands` may take a `client:` directive, and only on the landing page; the build test compares the hydrated islands with that list and fails on any island in `/docs/`. Prefer `client:visible`. Interactive behaviour shared by every page (theme, copy buttons, TOC) goes in `src/scripts/site.ts` as plain DOM code that does nothing when its markup is absent.
+Landing sections are React components rendered to HTML at build time. Only components named in `site.islands` may take a `client:` directive, and only on the landing page; the build test compares the hydrated islands with that list and fails on any island in `/docs/`. `DeckPlayer` uses `client:visible`; `InstallTabs` sits at the bottom of the page and uses `client:idle` so it is ready before anyone scrolls to it. Interactive behaviour shared by every page (theme, copy buttons, TOC) goes in `src/scripts/site.ts` as plain DOM code that does nothing when its markup is absent.
 
 ## Theme
 
@@ -50,3 +52,9 @@ Search isn't part of this site yet. `BaseLayout` has an empty `search` slot in t
 ## Running servers
 
 Dev and preview pass `--ignore-lock` so they stay in the foreground under an agent. Stop an Astro-managed background instance with `bunx astro dev stop` or `bunx astro preview stop`. The browser tests serve `dist/` with `astro preview` on `PORT_E2E`.
+
+## The player and its data
+
+The player's decks are the repository's `examples/`. `make demo` builds each into `public/demo/<name>/` with base `/demo/<name>/`, then drives every build through the embed contract in a headless browser (the same messages the player sends) and writes `fixtures/tapes/<name>.json`: title, slide titles, the start slide (the first one with a story card) and every step's caption. Posters and the NORMAL/WARM stills come from the repo's `shot` script against a Slidev dev server; WARM runs on a temporary copy of tides under `.demo/` with `demo/warm-theme.json` merged over its theme. `src/data/tapes.ts` reads those files plus each deck's resolved theme for the cassette colors.
+
+Browser tests don't need any of that: they route `/demo/*/index.html` to `e2e/fixtures/stub-deck.html`, a stand-in that speaks the contract.

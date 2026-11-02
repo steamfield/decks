@@ -41,6 +41,18 @@ export default defineConfig({
     local("DSEG14 Classic", "--ff-dseg", "dseg/fonts/DSEG14-Classic/DSEG14Classic-Regular.woff2", [
       "monospace",
     ]),
+    local("Bungee", "--ff-display", "@fontsource/bungee/files/bungee-latin-400-normal.woff2", [
+      "sans-serif",
+    ]),
+    local("Michroma", "--ff-legend", "@fontsource/michroma/files/michroma-latin-400-normal.woff2", [
+      "sans-serif",
+    ]),
+    local(
+      "Reenie Beanie",
+      "--ff-pen",
+      "@fontsource/reenie-beanie/files/reenie-beanie-latin-400-normal.woff2",
+      ["cursive"],
+    ),
     local(
       "Permanent Marker",
       "--ff-marker",
@@ -58,7 +70,7 @@ export default defineConfig({
     // anchor plugin can read them.
     processor: satteri({ hastPlugins: [satteriHeadingIdsPlugin(), ...docsHastPlugins] }),
     shikiConfig: {
-      themes: { light: "github-light", dark: "github-dark-default" },
+      themes: { light: "github-light-high-contrast", dark: "github-dark-default" },
       // Both themes as CSS variables; global.css picks one per theme.
       defaultColor: false,
       transformers: [codeTitle],
