@@ -125,7 +125,7 @@ endpoints both survive that filter. Growth against July's 630 / 2,135 is therefo
 - SQL (beat 1) is a real query shape against the published dataset,
   `isbe/report-card:all`, not a copy-pasted session. Recorded as `RECONCILED_SQL` in
   `opendata-pitch/data/isbe-files.ts`. It is highlighted on slide by the tokenizer in
-  `shared/story/code-tokens.ts`: keywords in the frame's emerald, the quoted dataset
+  `packages/decks/story/code-tokens.ts`: keywords in the frame's emerald, the quoted dataset
   reference and the string literal in amber, nothing else coloured.
 - The SQL block is a link to the workbench with that query loaded and run:
   `https://tryopendata.ai/sandbox?sql=<urlencoded RECONCILED_SQL>&autorun=1`
@@ -185,7 +185,7 @@ endpoints both survive that filter. Growth against July's 630 / 2,135 is therefo
   contiguous blocks that a label can point at. The graph itself renders the snapshot in its
   published order.
 - Palette: the twelve categorical hues in `opendata-pitch/data/graph-palette.ts` are
-  copied from `shared/components/Graph3D.vue`, which took them from the product's graph
+  copied from `packages/decks/components/Graph3D.vue`, which took them from the product's graph
   explorer (`frontend/app/routes/graph/_components/buildGraphSpec.ts`). Assignment is by
   first appearance in `graphNodes`, which is the order the renderer walks the node list in.
   FLAG: that is a match on the same input, not a guarantee about openchart's internal
@@ -232,7 +232,7 @@ endpoints both survive that filter. Growth against July's 630 / 2,135 is therefo
   `expected_schema`, `ingest.transform`, `sync.interval: yearly`, `labels`, `landing_url`,
   `source_url`). The description, the full year list and the field list are cut; the ellipsis
   marks the cut. It is highlighted on stage by the YAML tokenizer in
-  `shared/story/code-tokens.ts` (added 2026-09-13): keys in the frame's cyan, urls,
+  `packages/decks/story/code-tokens.ts` (added 2026-09-13): keys in the frame's cyan, urls,
   numbers and the year range in amber, values and structure plain. The block scrolls and
   links to the dataset's public page:
   `https://tryopendata.ai/datasets/tea/staar-accountability`.

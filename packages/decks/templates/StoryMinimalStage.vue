@@ -8,7 +8,7 @@
  * the deck's first stage.
  *
  * The stage lives in the deck's `components/` directory because Slidev
- * auto-imports from there. A component under `shared/components/` would be
+ * auto-imports from there. A component under `packages/decks/components/` would be
  * auto-imported into every deck in the package, which is not what a template
  * is for.
  */

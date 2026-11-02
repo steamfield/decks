@@ -3,10 +3,10 @@ import theme from '#decks/theme'
 
 /**
  * The brand mark from the theme (`brand.logo`: a viewBox plus inner SVG
- * markup; `null` renders nothing). The default is the OpenData isometric
- * data-layers mark.
+ * markup; `null` renders nothing). The default theme has no mark; the
+ * OpenData example decks set one in their `theme.json`.
  *
- * The styles below animate the default mark by class. On mount, a two-cycle
+ * The styles below animate a mark by class. On mount, a two-cycle
  * intro plays:
  *   1. A transient accent burst pair (violet + amber) emerges and fades out
  *   2. The brand teal + cyan layers emerge, settle, then drift in a subtle float

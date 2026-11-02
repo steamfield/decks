@@ -13,11 +13,11 @@ Everything a stage needs comes from one path:
 import { useStage, DUR, stagger, type BeatCopy } from 'slidev-addon-decks/story'
 ```
 
-`shared/story/index.ts` is the barrel: it lists what a stage may reach for,
+`packages/decks/story/index.ts` is the barrel: it lists what a stage may reach for,
 including the lower-level composables documented below that a stage rarely
 needs. `useScriptedDemo` (the click/isActive/playCount
-primitive) lives in `shared/composables/` and `useStageMap`/`STAGE`
-(viewBox-to-overlay conversion) live in `shared/story/stage-map.ts`; both are
+primitive) lives in `packages/decks/composables/` and `useStageMap`/`STAGE`
+(viewBox-to-overlay conversion) live in `packages/decks/story/stage-map.ts`; both are
 re-exported from this barrel, so there is one import line, not two.
 
 ## `useStage`
@@ -188,8 +188,8 @@ copy here; it is kept runnable and typechecked, which a doc snippet is not.
   agree for every story deck; card word budget (eight lead, twenty body);
   pins today's over-budget cards by name.
 - `durations.test.ts`: no numeric duration literal outside `easings.ts` in
-  `shared/story/` or a `Story`/`Ink`/`Unit`/`Underline`/`Graph3D`/`RowStrip`/
-  `CodeInk`/`Demo*`-prefixed component, across every deck under `talks/`.
+  `packages/decks/story/` or a `Story`/`Ink`/`Unit`/`Underline`/`Graph3D`/`RowStrip`/
+  `CodeInk`/`Demo*`-prefixed component, across every registered deck.
 - `frame-units.test.ts`: no raw `vw`/`vh` length inside a story slide's
   components, pages, data, or styles, outside a small allowlist.
 - `css-mirror.test.ts`: the CSS duration/easing mirrors in `story-frame.css`

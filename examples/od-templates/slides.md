@@ -170,6 +170,83 @@ Left: descriptive text + meta chips. Right: a product surface
   <OdFooter />
 </div>
 
+<style>
+/* The meta chips and the schema card on this slide only. */
+.od-dataset-id {
+  font-family: var(--od-font-mono);
+  font-size: 0.95rem;
+  color: var(--od-text-faint);
+}
+.od-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.od-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--od-border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: var(--od-text-secondary);
+}
+.od-chip.mono {
+  font-family: var(--od-font-mono);
+}
+.od-chip-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--od-canvas);
+}
+.od-card {
+  border: 1px solid var(--od-border);
+  border-radius: 12px;
+  background: var(--od-surface);
+  padding: 1.4rem 1.6rem;
+}
+.od-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.8rem;
+}
+.od-schema-row {
+  display: grid;
+  grid-template-columns: 9rem 6rem 1fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--od-border-subtle);
+  font-size: 1rem;
+}
+.od-schema-row:last-child {
+  border-bottom: none;
+}
+.od-schema-head {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--od-text-faint);
+}
+.od-schema-col {
+  font-family: var(--od-font-mono);
+  color: var(--od-text);
+}
+.od-schema-type {
+  font-family: var(--od-font-mono);
+  color: var(--od-cyan);
+}
+.od-schema-desc {
+  color: var(--od-text-muted);
+}
+</style>
+
 ---
 ---
 

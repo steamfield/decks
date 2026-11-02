@@ -5,7 +5,7 @@
  * between a plain div and a TransitionGroup on every route change, and a
  * click is a route change, so every click remounted every slide: entrances
  * replayed, blooms restarted and the frame went black for a beat. The addon
- * setup (`shared/setup/main.ts`) runs the transition from a router guard
+ * setup (`packages/decks/setup/main.ts`) runs the transition from a router guard
  * instead, and the deck keeps Slidev's container on a no-op TransitionGroup
  * that never remounts anything.
  *

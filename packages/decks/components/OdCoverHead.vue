@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
  * OdCoverHead: cover/close brand row: logo + wordmark, URL right-aligned.
- * Name and default URL come from the theme's `brand`.
+ * Name and default URL come from the theme's `brand`; no URL, no URL span.
  */
 import theme from '#decks/theme'
 
-withDefaults(defineProps<{ url?: string }>(), { url: theme.brand.url })
+withDefaults(defineProps<{ url?: string }>(), { url: theme.brand.url ?? '' })
 </script>
 
 <template>
@@ -14,7 +14,7 @@ withDefaults(defineProps<{ url?: string }>(), { url: theme.brand.url })
       <OdLogo :size="46" />
       <span class="od-brand-name">{{ theme.brand.name }}</span>
     </div>
-    <span class="od-mono od-cover-url">{{ url }}</span>
+    <span v-if="url" class="od-mono od-cover-url">{{ url }}</span>
   </div>
 </template>
 

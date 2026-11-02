@@ -1,6 +1,6 @@
 // Headless screenshot of one slide at each click, against a running dev server.
 //
-//   bun run shot <slide> [clicks] [port]      # from talks/
+//   bun run shot <slide> [clicks] [port]      # from the repo root
 //
 // Writes slide-<n>-c<k>.png into SHOT_DIR (default: the current directory),
 // prints the card lead and any InkChip per click, and lists console errors,
@@ -8,7 +8,7 @@
 // a component file and needs a restart.
 //
 // Lives here rather than in a scratch directory because playwright-chromium
-// resolves from talks/node_modules. The boot sequence is browser.mjs.
+// resolves from the root node_modules. The boot sequence is browser.mjs.
 import { openDeck } from './browser.mjs'
 
 const [slide, clicksArg = '0', portArg = '3030'] = process.argv.slice(2)

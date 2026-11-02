@@ -4,7 +4,7 @@
  *
  * Preferred: pass `url` and the QR renders at runtime (uqr), no asset step.
  * Or pass `image`, a filename in the deck's public/ directory; the component
- * applies the BASE_URL guard so builds under `--base /talks/<name>/` resolve it.
+ * applies the BASE_URL guard so builds under `--base /slides/<name>/` resolve it.
  */
 import { computed } from 'vue'
 import { renderSVG } from 'uqr'

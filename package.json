@@ -17,7 +17,10 @@
     "test": "vitest run packages/decks/story packages/decks/scripts packages/decks/theme",
     "shot": "bun packages/decks/scripts/shot.mjs",
     "snap": "bun packages/decks/scripts/snap.mjs",
-    "snap:diff": "bun packages/decks/scripts/snap.mjs diff"
+    "snap:diff": "bun packages/decks/scripts/snap.mjs diff",
+    "lint": "./tools/content-lint.sh",
+    "fact-extract": "bun tools/content-fact-extract.mjs",
+    "test:hooks": "bash .claude/hooks/tests/run-hook-tests.sh"
   },
   "dependencies": {
     "3d-force-graph": "^1.80.0",

@@ -4,11 +4,11 @@ title: "Story Slide Templates"
 info: "Reference stages for a story deck: the minimal stage, bars, labelled cards, and a cross-slide hand-off."
 author: Decks
 # The story headmatter. Cross slide view transitions are run by
-# shared/setup/main.ts, not by Slidev: its own view-transition mode remounts
+# packages/decks/setup/main.ts, not by Slidev: its own view-transition mode remounts
 # every slide on every click. Slidev's container stays on a no-op
 # TransitionGroup (a cut with no CSS), and data-od-story opts this deck into
 # the addon's guard, the document level view-transition rules in
-# shared/styles/story-frame.css, and the story guard tests. This is the one
+# packages/decks/styles/story-frame.css, and the story guard tests. This is the one
 # thing `examples/od-templates` does not carry, which is why the two
 # galleries are separate decks.
 transition:

@@ -3,7 +3,7 @@
  *
  * A deck opts in with `htmlAttrs: { data-od-story: "" }` in its headmatter
  * and keeps Slidev's own `transition` on a no-op TransitionGroup (see
- * `shared/story/view-transition.ts` for why Slidev's built in
+ * `packages/decks/story/view-transition.ts` for why Slidev's built in
  * `view-transition` mode is not used). This guard then wraps every slide to
  * slide navigation in the real `/` view in `document.startViewTransition`,
  * the way Slidev's own composable does, and stamps `data-od-nav="fwd|back"`

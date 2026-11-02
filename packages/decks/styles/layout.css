@@ -93,7 +93,7 @@
   grid-template-columns: 0.85fr 1.15fr;
 }
 
-/* ── Timeline (for HISD/AISD timeline) ── */
+/* ── Timeline ── */
 .od-slide.is-timeline {
   padding-top: 3.6vh;
   padding-bottom: 3vh;

@@ -21,7 +21,8 @@ function registryRoot(): string {
   return dir
 }
 
-const ROOT_DIR = registryRoot()
+/** The repo root: where `decks.json` and `tools/` live. */
+export const ROOT_DIR = registryRoot()
 
 export interface StoryDeck {
   alias: string

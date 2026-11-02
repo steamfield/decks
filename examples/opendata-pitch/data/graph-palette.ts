@@ -1,7 +1,7 @@
 /**
  * The categorical palette the scale slide's unit grid shares with the 3D graph.
  *
- * The twelve hues live in `shared/story/graph-palette.ts`, which `Graph3D.vue`
+ * The twelve hues live in `packages/decks/story/graph-palette.ts`, which `Graph3D.vue`
  * reads too, so the grid and the graph cannot disagree about what colour
  * Education is. The product's graph explorer
  * (`frontend/app/routes/graph/_components/buildGraphSpec.ts`) keeps its own

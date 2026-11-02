@@ -11,7 +11,7 @@
    Two exceptions live at the bottom and cannot be scoped, because the browser
    owns the elements: the `::view-transition-*` pseudo elements (document
    level by definition) and their keyframes. Their duration and easing mirror
-   `DUR.morph` and `SETTLE_CSS` in `shared/story/easings.ts`; if either moves,
+   `DUR.morph` and `SETTLE_CSS` in `packages/decks/story/easings.ts`; if either moves,
    move both.
    ------------------------------------------------------------------------ */
 
@@ -43,7 +43,7 @@
      Everything laid out inside the frame still uses --sw/--sh. */
   --od-bleed-x: calc((100vw - var(--od-fw)) / 2);
   /* Mirrors of the TS duration table, for the handful of transitions that
-     stay in CSS. Keep in sync with DUR in shared/story/easings.ts. */
+     stay in CSS. Keep in sync with DUR in packages/decks/story/easings.ts. */
   --od-dur-card: 300ms;
   --od-dur-opacity: 140ms;
   --od-settle: cubic-bezier(0.32, 0.72, 0, 1);
@@ -221,7 +221,7 @@
 }
 
 /* Document level: the morph itself. 600ms is DUR.morph, 240ms is DUR.draw,
-   the curves are SETTLE_CSS and DRAW_CSS. All mirror shared/story/easings.ts.
+   the curves are SETTLE_CSS and DRAW_CSS. All mirror packages/decks/story/easings.ts.
 
    The rules are scoped to `html[data-od-story]`, which a deck sets through
    `htmlAttrs` in its headmatter. This stylesheet ships with the addon to
@@ -237,7 +237,7 @@
    written in vh: --sw and --sh are declared on .od-slide.is-story, and a
    ::view-transition pseudo element is a child of the document root, so a
    frame unit resolves to nothing here. Both keyframes use the literal. The
-   direction is stamped on <html> by shared/setup/main.ts before the snapshot.
+   direction is stamped on <html> by packages/decks/setup/main.ts before the snapshot.
 
    The headline and the prose card carry names of their own. Between two
    story slides they cross fade in place; entering from a slide without one

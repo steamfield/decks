@@ -3,11 +3,11 @@ theme: the-unnamed
 title: "OpenData: public data, made usable for AI agents"
 info: "Pitch: OpenData cleans public data once so AI agents can ground answers in it. Data-storytelling deck, September 2026."
 author: Riley Hilliard
-# Cross slide view transitions are run by shared/setup/main.ts, not by
+# Cross slide view transitions are run by packages/decks/setup/main.ts, not by
 # Slidev: its own view-transition mode remounts every slide on every click.
 # Slidev's container stays on a no-op TransitionGroup (a cut with no CSS),
 # and data-od-story opts this deck into the addon's guard and scopes the
-# document level view-transition rules in shared/styles/story-frame.css to it.
+# document level view-transition rules in packages/decks/styles/story-frame.css to it.
 transition:
   name: od-cut
   css: false

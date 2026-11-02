@@ -6,7 +6,13 @@
  * `clicks` a page declares in the deck manifest. `useStage` ties the first
  * two together; this scan ties both to the third, for every story deck, and
  * holds the card copy to its budget (eight words of lead, twenty of body,
- * `talks-patterns.md`).
+ * `.claude/rules/story-stage.md`).
+ *
+ * It also runs the error rows of `tools/ai-rhetoric-patterns.tsv` over every
+ * lead and body. `tools/content-lint.sh` skips `<script>`, which is where a
+ * story deck keeps all of its visible prose, so without this the lint never
+ * sees a story card. A line carrying `lint-allow` (all patterns) or
+ * `lint-allow: id, id` is exempt, as in content-lint.
  *
  * A card that says nothing at a beat is `{ lead: '' }` (see `BeatCopy`): it
  * counts as a beat and as zero words.
@@ -14,7 +20,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { storyDecks } from './test-decks'
+import { ROOT_DIR, storyDecks } from './test-decks'
 
 const LEAD_WORDS = 8
 const BODY_WORDS = 20
@@ -63,6 +69,42 @@ function parseCopy(literal: string): { lead: string; body: string }[] {
     }
   }
   return out
+}
+
+interface LintPattern {
+  id: string
+  re: RegExp
+}
+
+/**
+ * The error-severity rows of the shared pattern file, as JS regexes. The file
+ * is POSIX ERE for grep; the only construct here that differs in JS is the
+ * bracket class `[[:space:]]`.
+ */
+function errorPatterns(): LintPattern[] {
+  const tsv = readFileSync(join(ROOT_DIR, 'tools', 'ai-rhetoric-patterns.tsv'), 'utf8')
+  return tsv
+    .split('\n')
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split('\t'))
+    .filter(([, sev]) => sev === 'error')
+    .map(([id, , ere]) => ({ id, re: new RegExp(ere.replaceAll('[[:space:]]', '\\s')) }))
+}
+
+/** Every lead/body string in a copy literal, with the ids its line exempts. */
+function copyStrings(literal: string): { text: string; allow: string[] | '*' }[] {
+  return [...literal.matchAll(FIELD)].map((m) => {
+    const lineStart = literal.lastIndexOf('\n', m.index) + 1
+    const lineEnd = literal.indexOf('\n', m.index)
+    const line = literal.slice(lineStart, lineEnd < 0 ? undefined : lineEnd)
+    const ids = /lint-allow:\s*([\w,\s-]+)/.exec(line)?.[1]
+    const allow = ids
+      ? ids.split(',').map((id) => id.trim())
+      : line.includes('lint-allow')
+        ? '*'
+        : []
+    return { text: m[2].slice(1, -1), allow }
+  })
 }
 
 /** Words in a copy string; a `${…}` expression counts as one word. */
@@ -172,6 +214,41 @@ describe('beats', () => {
       })
     }
   }
+
+  it('reads the pattern file and catches a planted tell', () => {
+    const patterns = errorPatterns()
+    expect(patterns.map((p) => p.id)).toContain('em-dash')
+    const src = [
+      'const COPY = [',
+      "  { lead: 'Rows arrive — clean.', body: 'A plain body.' },",
+      "  { lead: 'Quoted — verbatim.' }, // lint-allow: em-dash",
+      ']',
+    ].join('\n')
+    const hits = copyStrings(copyLiteral(src) ?? '').filter(
+      ({ text, allow }) =>
+        allow !== '*' && patterns.some((p) => !allow.includes(p.id) && p.re.test(text)),
+    )
+    expect(hits.map((h) => h.text)).toEqual(['Rows arrive — clean.'])
+  })
+
+  it('keeps every card clear of the error-severity AI-rhetoric patterns', () => {
+    const patterns = errorPatterns()
+    const hits: string[] = []
+    for (const deck of DECKS) {
+      for (const stage of stages(deck)) {
+        const literal = copyLiteral(readFileSync(stage.file, 'utf8'))
+        if (!literal) continue
+        for (const { text, allow } of copyStrings(literal)) {
+          if (allow === '*') continue
+          for (const p of patterns) {
+            if (!allow.includes(p.id) && p.re.test(text))
+              hits.push(`${deck.alias}/${stage.name}.vue [${p.id}] ${text}`)
+          }
+        }
+      }
+    }
+    expect(hits).toEqual([])
+  })
 
   it('holds every card to eight words of lead and twenty of body', () => {
     const over: string[] = []

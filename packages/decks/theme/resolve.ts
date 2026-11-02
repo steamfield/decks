@@ -48,7 +48,8 @@ export interface Theme {
   'qr-white': string
   brand: {
     name: string
-    url: string
+    /** Shown right-aligned on the cover row; `null` shows nothing. */
+    url: string | null
     'wordmark-gradient': string
     /** `null` renders no mark. */
     logo: BrandLogo | null

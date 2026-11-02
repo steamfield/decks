@@ -250,15 +250,17 @@ switch (cmd) {
     console.log(`Scaffolded ${relDir}/ and registered alias "${alias}".`)
     if (story) {
       console.log(
-        'Next: read .claude/rules/talks-patterns.md and slidev-addon-decks/story/README.md, then write' +
-          ` the stage in ${relDir}/components/ and its figures in ${relDir}/data/.`,
+        `Next: write the stage in ${relDir}/components/ and its figures in ${relDir}/data/.` +
+          ' Authoring rules: .claude/rules/story-stage.md; engine API: slidev-addon-decks/story/README.md.',
       )
       console.log(
         'Restart the dev server after adding a component file: Slidev builds its' +
           ' auto-import list at startup, so a new .vue renders as an empty slot until it does.',
       )
     } else {
-      console.log('Next: read .claude/rules/talks-patterns.md, add pages, set animated:true in decks.json if the deck uses OpenChart/scripted demos.')
+      console.log(
+        'Next: add pages per .claude/rules/deck-patterns.md; set animated:true in decks.json if the deck uses OpenChart/scripted demos.',
+      )
     }
     break
   }

@@ -14,7 +14,7 @@ SLIDE 1 · COVER
   <OdByline>
     <span>{{author}}</span>
     <span class="od-dim">&bull;</span>
-    <span>Founder</span>
+    <span>Role</span>
     <span class="od-dim">&bull;</span>
     <span>Month Year</span>
   </OdByline>

@@ -7,7 +7,7 @@
  * frame (`calc(N * var(--sw))` / `var(--sh)`), never `vw`/`vh`: on a 16:10 or
  * 3:2 screen, which is what full screen gives you, a viewport unit sizes off
  * the window while everything around it sizes off the frame, and the slide
- * clips. See `.claude/rules/talks-patterns.md`, "Story slides".
+ * clips. See `.claude/rules/deck-patterns.md`, "Story slides".
  *
  * The frame's own definition is the one place a viewport unit is correct, so
  * the two `--od-fw`/`--od-fh` lines and the cover slide's background gradient

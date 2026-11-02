@@ -1,93 +1,105 @@
-# Talks
+# Decks
 
-This file provides guidance to coding agents (Claude Code, Antigravity, Codex) working in `talks/`.
+This file provides guidance to coding agents (Claude Code, Antigravity, Codex) working in this repo.
 
 ## What this is
 
-`talks/` is a single bun package holding Slidev decks for tech talks. It's one subdirectory of the OpenData monorepo (the parent `../` is the full repo: backend, frontend, opendata OSS library, blog, shared design system).
+Decks is a Slidev addon and deck runner for data-storytelling presentations, published as one npm package, `slidev-addon-decks` (bin `decks`). This repo is a bun workspace holding that package, four example decks, and a `decks/` directory where new decks are scaffolded.
 
-Deck work is self-contained here: you should not need monorepo context to write or revise slides. For anything spanning subdirectories (worktrees, commit conventions, cross-package refactors), run the session from the repo root instead, where `../AGENTS.md` loads.
-
-A deck is either **conventional** (bullets, tables, charts) or a **story** deck (one pinned visualization per slide, beats on arrow keys, prose inside the stage component rather than the page). `aisd-takeover` and `opendata-pitch` are the respective references.
+A deck is either **conventional** (bullets, tables, charts) or a **story** deck (one pinned visualization per slide, beats on arrow keys, prose inside the stage component rather than the page). `examples/agent-experience` and `examples/opendata-pitch` are the respective references.
 
 ## Structure
 
 ```
-talks/
-  package.json          # One Slidev install + parameterized runner scripts
-  decks.json             # Deck registry: alias -> entry, slug, animated flag
-  scripts/                # Runner (deck.mjs) + verification (shot, snap, browser, frames); content-fact-extract is in the repo root scripts/
-  shared/                 # Slidev addon: components, styles, composables, story engine
-    story/                # The story engine: TS modules (imported by relative path) + guard tests
-    styles/                # tokens, base, layout, components, stats, demo, story-frame, story-marks
-  references/              # Gallery/template decks (od-templates, od-story-templates); not canonical
-  <deck>/
-    slides.md             # Headmatter + src: manifest
-    pages/NN-slug.md      # One file per slide
-    components/            # Deck-local Vue components (auto-imported for that deck)
-    data/                  # Provenance-commented figures and scripted-demo fixtures, one module per slide
-    styles/                # Deck-local CSS: Slidev auto-loads styles/index.css, which @imports the rest
-    public/                # Deck-local assets
-    data-sources.md        # Slide -> source query map (data-driven decks)
+package.json          # workspace root: Slidev, the theme, runner scripts
+decks.json            # deck registry: _config + alias -> entry, slug, animated flag
+packages/decks/       # the addon (npm: slidev-addon-decks)
+  components/         # Od* chrome, OpenChart, Story*, Ink* marks (auto-imported in every deck)
+  story/              # the story engine (import from slidev-addon-decks/story) + guard tests
+  theme/              # default.json (the one theme source), resolver, contrast test
+  styles/             # base, layout, components, stats, story-frame, story-marks
+  scripts/            # deck.mjs (the `decks` bin) + shot, snap, browser, frames
+  templates/          # what `decks new` scaffolds
+examples/             # shipped decks: opendata-pitch, agent-experience, od-templates, od-story-templates
+decks/                # your decks (`bun run new` writes here)
+tools/                # content-lint.sh, ai-rhetoric-patterns.tsv, content-fact-extract.mjs
+<deck>/
+  slides.md           # headmatter + src: manifest
+  pages/NN-slug.md    # one file per slide
+  components/         # deck-local Vue components (auto-imported for that deck)
+  data/               # provenance-commented figures and scripted-demo fixtures, one module per slide
+  styles/             # deck-local CSS: Slidev auto-loads styles/index.css
+  theme.json          # optional: partial override of packages/decks/theme/default.json
+  data-sources.md     # slide -> source query map (data-driven decks)
 ```
 
-Slidev resolves `components/`, `public/`, and `setup/` relative to the deck's `slides.md`, not from `talks/`. Cross-deck code lives in the `shared/` addon, enabled per deck via headmatter `addons:`.
-
-Current decks (aliases in `decks.json`, `bun run list` to print): `aisd-takeover`, `ai-ops-harness`, `agent-experience`, `opendata-pitch`, `mcp-vs-custom-agent`, `autonomous-datasets`, `canary-in-the-codebase`, `austin-js/*` (self-contained, own conventions, don't touch unless asked), `references/od-templates`, `references/od-story-templates` (gallery decks).
+Slidev resolves `components/`, `public/`, and `setup/` relative to the deck's `slides.md`. Cross-deck code lives in the addon, enabled per deck with headmatter `addons: ["slidev-addon-decks"]`.
 
 ## Commands
 
-Run from inside `talks/`:
+Run from the repo root:
 
 ```bash
-bun run dev <alias>            # Dev server with --open
-bun run build <alias>          # Build to ../blog/public/talks/<name>
+bun run dev <alias>            # dev server (port 3030)
+bun run build <alias>          # static build to dist/<name> (decks.json _config.outDir)
 bun run export <alias>         # PDF export (flags picked per deck from decks.json)
-bun run new <alias> <dir> [--story]   # Scaffold a deck (conventional or story) + register it
-bun run check                  # Orphaned/missing pages vs src: manifests
-bun run build:all              # Build every registered deck except the `skipAll` ones (remix, story-templates); runs check first
+bun run new <alias> <dir> [--story] [--author "Name"] [--brand "Name"] [--url example.com]
+                               # scaffold decks/<dir> (conventional or story) + register it
+bun run list                   # registered decks
+bun run check                  # orphaned/missing pages vs src: manifests
+bun run build:all              # build every registered deck except `skipAll` ones; runs check first
 bun run typecheck              # tsc over .ts only; a stage's .vue script is not read
-bun run test                   # Unit suites + story guards (bunx vitest run shared/story scripts)
-bun run shot <n> [clicks]       # Headless screenshots of slide n at each click (dev server on :3030)
-bun run snap <dir> [port]       # Whole-deck screenshot walk against the dev server (default :3030)
-bun run snap:diff <a> <b>       # Per-frame pixel diff between two snap walks
+bun run test                   # unit suites, story guards, theme contrast, story-card COPY lint
+bun run lint                   # AI-rhetoric lint over deck pages, slides.md and components
+bun run fact-extract <alias>   # every figure in a deck, for the fact-check
+bun run test:hooks             # tests for the two Claude Code hooks in .claude/hooks/
+bun run shot <n> [clicks]      # headless screenshots of slide n at each click (dev server on :3030)
+bun run snap <dir> [port]      # whole-deck screenshot walk against the dev server
+bun run snap:diff <a> <b>      # per-frame pixel diff between two snap walks
 ```
 
 **Restart the dev server after adding a component file.** Slidev's auto-import
 list and Vite's resolution cache are built at startup, so a `.vue` added under
-`shared/components/` or `<deck>/components/` (or a new `shared/story/*.ts`
-module that failed to resolve once) renders as an empty slot with
-`Failed to resolve component` in the console until `bun run dev` restarts. It
-looks like a bug in the new component; it is not. `bun run shot` prints that
-console line so the cause is visible without opening the browser. This rule
-lives here only; the story-authoring detail (`.claude/rules/story-stage.md`)
-and the skill both point back to this paragraph rather than restating it.
-
-**Build output leaves this directory.** Every build writes to `$(cd .. && pwd)/blog/public/talks/<name>` so the Labs Cloudflare Pages deploy picks the decks up. A deck build therefore dirties `blog/public/`. That's expected, not a mistake.
+`packages/decks/components/` or `<deck>/components/` (or a new
+`packages/decks/story/*.ts` module that failed to resolve once) renders as an
+empty slot with `Failed to resolve component` in the console until `bun run dev`
+restarts. It looks like a bug in the new component; it is not. `bun run shot`
+prints that console line so the cause is visible without opening the browser.
+This rule lives here only; the story-authoring detail
+(`.claude/rules/story-stage.md`) and the skill both point back to this
+paragraph rather than restating it.
 
 Set `"animated": true` in `decks.json` when the deck uses OpenChart or scripted demos (it switches export from `--with-clicks --with-toc` to `--with-clicks --wait 1500`); `--story` sets it for you.
 
+## Theme
+
+`packages/decks/theme/default.json` is the single theme source. A deck's own `theme.json` next to its `slides.md` overrides it partially: objects merge key by key, arrays (`ramps`, `categorical`) are replaced whole, and `{group.token}` / `{ramps.<hue>.<1-4>}` aliases resolve after the merge. The six hue slots (cyan, amber, rose, emerald, violet, slate) are recolored, never renamed; each ramp is four `#rrggbb` steps getting lighter, step 1 at least 3:1 against `surfaces.canvas`. Themes stay dark. `brand` sets the cover and footer name, URL and logo (`null` for none). Edits live-reload in dev. Deck code reads colors through `slidev-addon-decks/theme` or `ink()`, CSS through the `--od-*` vars, never hex literals. Full detail: "Theme and tokens" in `.claude/rules/deck-patterns.md`; worked example: `examples/od-templates/theme.json`.
+
 ## Conventions
 
-Slide architecture, layout classes, typography, chart specs for the 1920x1080 canvas, and the conventional headmatter template all live in `.claude/rules/talks-patterns.md`, which auto-attaches when you edit files here. Authoring a story stage component is `.claude/rules/story-stage.md`; the story engine's library reference (import root, `useStage` API, lifecycle, component list) is `shared/story/README.md`. The data contract (`data/*.ts` provenance, `data-sources.md` skeleton) is `.claude/rules/deck-data.md`. The end-to-end build workflow (scaffold, provenance, verification chain, definition of done) is `.claude/skills/building-a-deck/SKILL.md`. Read these before authoring slides rather than inferring patterns from an existing deck.
+Slide architecture, layout classes, typography, chart specs for the 1920x1080 canvas, the theme, and the conventional headmatter template all live in `.claude/rules/deck-patterns.md`, which auto-attaches when you edit files under `examples/`, `decks/` or `packages/decks/`. Authoring a story stage component is `.claude/rules/story-stage.md`; the story engine's library reference (import root, `useStage` API, lifecycle, component list) is `packages/decks/story/README.md`. The data contract (`data/*.ts` provenance, `data-sources.md` skeleton) is `.claude/rules/deck-data.md`. The end-to-end build workflow (scaffold, provenance, verification chain, definition of done) is `.claude/skills/building-a-deck/SKILL.md`. Read these before authoring slides rather than inferring patterns from an existing deck.
 
-Terminology for data-driven decks (column names translated to prose) is in `.claude/rules/blog-terminology.md`. A `lint-ai-rhetoric.sh` hook enforces part of that glossary on write.
+Terminology for data-driven decks (column names translated to prose) goes in `.claude/rules/project-glossary.md`, which starts empty.
+
+The `od-` prefix on CSS vars, classes and `data-od-*` attributes is a legacy name kept on purpose; don't rename it.
 
 ## Data provenance
 
-Decks with data-driven charts maintain `<deck>/data-sources.md` mapping slide numbers to the queries behind each number. This is the fact-check input. Never put a figure on a slide that isn't traceable to a query in that file, a `data/*.ts` constant, or a `FLAG: founder-reported` row.
+Decks with data-driven charts maintain `<deck>/data-sources.md` mapping slide numbers to the queries behind each number. This is the fact-check input. Never put a figure on a slide that isn't traceable to a query in that file, a `data/*.ts` constant, or a `FLAG: author-reported` row. The `fact-checking-a-deck` skill runs the check.
 
 ## Writing slides
 
-Read `.claude/rules/deck-writing.md` before writing or revising any slide text. Slide prose is not article prose in miniature. The rules that trip people coming from `blog/`: a headline is a claim ending in a period rather than a topic label, three single-sentence bullets is the ceiling, there are no paragraphs anywhere, and a normal conventional slide runs about 70 visible words (`agent-experience` is the exemplar deck; a story card's budget is eight/twenty words instead, per `.claude/rules/story-stage.md`). Several of these deliberately invert the blog's rules, so do not carry article habits across.
+Read `.claude/rules/deck-writing.md` before writing or revising any slide text. Slide prose is not article prose in miniature. The rules that trip people coming from articles: a headline is a claim ending in a period rather than a topic label, three single-sentence bullets is the ceiling, there are no paragraphs anywhere, and a normal conventional slide runs about 70 visible words (`agent-experience` is the exemplar deck; a story card's budget is eight/twenty words instead, per `.claude/rules/story-stage.md`).
 
-What does carry across unchanged is the anti-slop pattern set. `make content-lint` scans `*/pages/*.md`, `*/slides.md`, and `*/components/*.vue`, and the decks currently pass clean.
+The anti-slop pattern set is `tools/ai-rhetoric-patterns.tsv`; `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; `bun run test` runs the error patterns over story-card `COPY`, which the lint can't see; and in Claude Code a write hook blocks error-level patterns as they are written.
 
-The `talks-deck` agent lives here at `.claude/agents/talks-deck.md` (moved from the repo root on 2026-08-31, so that backend and frontend sessions are not handed deck guidance). Agent discovery walks up from the session root and never down, so it resolves here and not from the repo root.
+## Agent ops
 
-`content-pipeline` and `content-fact-check` both moved to `blog/.claude/skills/` on 2026-08-31, when all blog authoring config was consolidated there to keep the root config clean for backend and frontend work. Skill discovery walks up from the session root and never down, so neither this directory nor the repo root sees them. Two things follow for deck work:
+Claude Code is the primary agent. Its config is `.claude/`:
 
-- **Fact-checking a deck now starts in `blog/`** (`cd blog && claude`). The skill still handles decks via `bun scripts/content-fact-extract.mjs --deck talks/<deck-dir>` and still reads `talks/<deck>/data-sources.md`; only its discovery location changed. Its paths stay repo-root relative, so run `cd "$(git rev-parse --show-toplevel)"` first.
-- **The pipeline's Talks Variant is likewise reachable only from `blog/`.**
+- `agents/deck-author.md`: builds or revises one deck per session.
+- `skills/building-a-deck/`, `skills/fact-checking-a-deck/`.
+- `rules/`: the files named above; each attaches by path.
+- `hooks/lint-ai-rhetoric.sh` (PreToolUse on Edit/Write/MultiEdit: denies error-level AI-rhetoric patterns in deck prose; refuses the write if `tools/content-lint.sh` is missing) and `hooks/user-prompt-submit.sh` (adds the deck-writing reminder when a prompt asks to write or revise a deck). Both need `jq` on PATH. Wired in `.claude/settings.json`; tested by `bun run test:hooks`.
 
-Deck work that needs neither uses the `building-a-deck` skill here, unchanged.
+Antigravity and Codex read the same guidance through generated copies: `.agents/rules/` (rules with Antigravity glob frontmatter), `.agents/skills/` (symlinks into `.claude/skills/`), and `.codex/agents/deck-author.toml`. They were generated once from `.claude/`; when you change a rule, skill or the agent, update the matching generated copy in the same commit. Never edit only the copy.
