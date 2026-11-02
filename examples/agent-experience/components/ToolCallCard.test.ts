@@ -28,7 +28,9 @@ describe('ToolCallCard', () => {
         h('pre', { class: 'ax-spec' }, 'mark: bar'),
       ),
     )
-    expect(part(html, 'tool-label')).toEqual(['opendata openchart'])
+    expect(html).toContain(
+      '<span data-part="tool-label"><span data-part="tool-server">opendata</span> · <span data-part="tool-name">openchart</span></span>',
+    )
     expect(part(html, 'tool-args')).toEqual(['(ChartSpec)'])
     expect(part(html, 'tool-meta')).toEqual(['1 call'])
     expect(html.indexOf('tool-header')).toBeLessThan(html.indexOf('tool-body'))
@@ -38,14 +40,16 @@ describe('ToolCallCard', () => {
 
   it('shows only the tool name when the optional props are left out', async () => {
     const html = plain(await render({ tool: 'search' }))
-    expect(part(html, 'tool-label')).toEqual(['search'])
+    expect(html).toContain('<span data-part="tool-name">search</span>')
+    expect(html).not.toContain('tool-server')
     expect(html).not.toContain('data-part="tool-args"')
     expect(html).not.toContain('data-part="tool-meta"')
   })
 
   it('wraps each optional prop in its own element', async () => {
     const html = plain(await render({ tool: 't', server: 's', args: 'a', time: '2s' }))
-    expect(part(html, 'tool-label')).toEqual(['s t'])
+    expect(part(html, 'tool-server')).toEqual(['s'])
+    expect(part(html, 'tool-name')).toEqual(['t'])
     expect(part(html, 'tool-args')).toEqual(['(a)'])
     expect(part(html, 'tool-meta')).toEqual(['2s'])
   })

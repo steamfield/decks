@@ -50,6 +50,10 @@
 
 .ax-call [data-part='tool-label'] {
   font-weight: 510;
+  color: var(--od-text-dim);
+}
+
+.ax-call [data-part='tool-name'] {
   color: var(--od-text);
 }
 

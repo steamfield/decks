@@ -36,7 +36,12 @@ const script = computed<DemoScript>(() => ({
 </script>
 
 <template>
-  <StaticTranscript class="ax-call" :script="script" layout="terminal">
+  <StaticTranscript
+    class="ax-call"
+    :script="script"
+    layout="terminal"
+    :glyphs="{ serverSeparator: ' · ' }"
+  >
     <template #toolBody>
       <slot />
     </template>
