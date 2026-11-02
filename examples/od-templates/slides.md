@@ -311,6 +311,8 @@ feature set.
 
 <script setup lang="ts">
 import { slideChartTheme, slideChartAnimation } from 'slidev-addon-decks/chart-theme'
+import { ink } from 'slidev-addon-decks/story'
+import { theme } from 'slidev-addon-decks/theme'
 
 // PPI for pharmaceutical preparations, indexed to 1982 = 100.
 // ~quarterly resolution keeps the series under the data-resolution budget
@@ -335,15 +337,15 @@ const ppiChartSpec = {
     type: 'area',
     interpolate: 'monotone',
     point: true,
-    stroke: '#22d3ee',
+    stroke: ink('cyan', 3),
     strokeWidth: 2.5,
     fill: {
       gradient: 'linear',
       x1: 0, y1: 0, x2: 0, y2: 1,
       stops: [
-        { offset: 0, color: '#06b6d4', opacity: 0.34 },
-        { offset: 0.55, color: '#06b6d4', opacity: 0.1 },
-        { offset: 1, color: '#06b6d4', opacity: 0 },
+        { offset: 0, color: ink('cyan', 2), opacity: 0.34 },
+        { offset: 0.55, color: ink('cyan', 2), opacity: 0.1 },
+        { offset: 1, color: ink('cyan', 2), opacity: 0 },
       ],
     },
   },
@@ -352,14 +354,14 @@ const ppiChartSpec = {
     x: {
       field: 'date',
       type: 'temporal',
-      axis: { format: '%Y', labelColor: '#52525b' },
+      axis: { format: '%Y', labelColor: theme.text.dim },
       scale: { nice: false },
     },
     y: {
       field: 'value',
       type: 'quantitative',
       scale: { domain: [115, 188], zero: false },
-      axis: { format: '~s', labelColor: '#52525b', title: '' },
+      axis: { format: '~s', labelColor: theme.text.dim, title: '' },
     },
   },
 
@@ -389,7 +391,7 @@ const ppiChartSpec = {
   // ── Shared slide theme, with a per-slide categorical override ──
   theme: {
     ...slideChartTheme,
-    colors: { ...slideChartTheme.colors, categorical: ['#22d3ee'] },
+    colors: { ...slideChartTheme.colors, categorical: [ink('cyan', 3)] },
   },
 
   // ── Annotation layer: range band, threshold refline, two callouts ──
@@ -399,7 +401,7 @@ const ppiChartSpec = {
       type: 'range',
       x1: '2021-04', x2: '2022-10',
       label: 'Supply shock',
-      fill: '#f59e0b',
+      fill: ink('amber', 2),
       opacity: 0.1,
       labelAnchor: 'top',
     },

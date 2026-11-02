@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // Parameterized deck runner. Replaces per-deck dev:/build:/export: script triplets.
 //
-//   decks dev <alias>        dev server with --open
+//   decks dev <alias> [...]  dev server with --open; later flags (--port N) go to Slidev
 //   decks build <alias>      build to outDir (decks.json _config, default dist/<name>)
 //   decks build --all        build every deck
 //   decks export <alias>     PDF export (flags depend on `animated` in decks.json)
@@ -26,7 +26,9 @@ const rootDir = process.cwd()
 const templatesDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'templates')
 const registryPath = join(rootDir, 'decks.json')
 if (!existsSync(registryPath)) {
-  console.error(`No decks.json in ${rootDir}. Run decks from the directory that holds the deck registry.`)
+  console.error(
+    `No decks.json in ${rootDir}. Run decks from the directory that holds the deck registry.`,
+  )
   process.exit(1)
 }
 const registry = JSON.parse(readFileSync(registryPath, 'utf8'))
@@ -99,7 +101,9 @@ async function checkManifests() {
     const pagesDir = join(rootDir, dirname(entry), 'pages')
     if (!existsSync(pagesDir)) continue
     const manifest = readFileSync(join(rootDir, entry), 'utf8')
-    const listed = new Set([...manifest.matchAll(/^src: \.\/pages\/(.+\.md)\s*$/gm)].map((m) => m[1]))
+    const listed = new Set(
+      [...manifest.matchAll(/^src: \.\/pages\/(.+\.md)\s*$/gm)].map((m) => m[1]),
+    )
     for (const f of readdirSync(pagesDir).filter((f) => f.endsWith('.md'))) {
       if (!listed.has(f)) {
         console.log(`orphan: ${alias} pages/${f} (not in ${entry} manifest)`)
@@ -178,8 +182,11 @@ function scaffoldStory(vars, write) {
 
 switch (cmd) {
   case 'dev': {
-    const { entry } = deckFor(rest[0] ?? die('Usage: decks dev <alias>'))
-    slidev([entry, '--open'])
+    const { entry } = deckFor(
+      rest[0] ?? die('Usage: decks dev <alias> [slidev flags, e.g. --port 3031]'),
+    )
+    // Flags after the alias go to Slidev as-is (--port, --remote, --bind, ...).
+    slidev([entry, '--open', ...rest.slice(1)])
     break
   }
   case 'build': {
@@ -245,7 +252,11 @@ switch (cmd) {
       const brand = { ...(brandName && { name: brandName }), ...(brandUrl && { url: brandUrl }) }
       write('theme.json', JSON.stringify({ brand }, null, 2) + '\n')
     }
-    registry[alias] = { entry: `${relDir}/slides.md`, name: dir, ...(story ? { animated: true } : {}) }
+    registry[alias] = {
+      entry: `${relDir}/slides.md`,
+      name: dir,
+      ...(story ? { animated: true } : {}),
+    }
     writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n')
     console.log(`Scaffolded ${relDir}/ and registered alias "${alias}".`)
     if (story) {

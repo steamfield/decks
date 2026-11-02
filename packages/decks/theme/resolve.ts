@@ -112,7 +112,8 @@ export function validateTheme(t: Theme): Theme {
   }
   if (!HEX.test(t.surfaces.canvas)) throw new Error('theme: surfaces.canvas must be #rrggbb')
   for (const [k, v] of Object.entries(t.glows))
-    if (!HEX.test(v)) throw new Error(`theme: glows.${k} must be #rrggbb (it is used as an rgb triplet)`)
+    if (!HEX.test(v))
+      throw new Error(`theme: glows.${k} must be #rrggbb (it is used as an rgb triplet)`)
   if (!Array.isArray(t.categorical) || t.categorical.length === 0)
     throw new Error('theme: categorical must be a non-empty array')
   return t
@@ -137,7 +138,8 @@ function rgbTriplet(hex: string): string {
 export function themeCss(t: Theme): string {
   const vars: [string, string][] = []
   for (const [k, v] of Object.entries(t.surfaces)) vars.push([k, v])
-  for (const [k, v] of Object.entries(t.text)) vars.push([k === 'primary' ? 'text' : `text-${k}`, v])
+  for (const [k, v] of Object.entries(t.text))
+    vars.push([k === 'primary' ? 'text' : `text-${k}`, v])
   for (const [k, v] of Object.entries(t.accents)) vars.push([k, v])
   for (const [k, v] of Object.entries(t.borders))
     vars.push([k === 'default' ? 'border' : `border-${k}`, v])
