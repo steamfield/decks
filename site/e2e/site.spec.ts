@@ -98,20 +98,22 @@ test.describe("the deck player", () => {
     await expect(frame).toHaveAttribute("tabindex", "-1");
     await expect(frame).toHaveAttribute("inert", "");
     await expect(frame).toHaveAttribute("title", /controlled by the player above/);
-    await expect(live(page)).toHaveText("Slide 2 of 3, step 1 of 3. First beat lead.");
+    // tides starts on step 2 (START_BEATS), where its chart is drawn; the stub opens on step 1
+    // and the player steers it there.
+    await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.");
+    await expect(page.locator(".now-playing")).toContainText("Second beat body.");
     // PLAY holds each step for its reading time, then advances by itself.
-    await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.", {
+    await expect(live(page)).toHaveText("Slide 2 of 3, step 3 of 3. Third beat lead.", {
       timeout: 12_000,
     });
-    await expect(page.locator(".now-playing")).toContainText("Second beat body.");
     expect(errors).toEqual([]);
   });
 
   test("steps with the keys and with arrow keys inside the faceplate", async ({ page }) => {
     await page.getByRole("button", { name: "Step forward" }).click();
-    await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.");
-    await page.getByRole("button", { name: "Step forward" }).press("ArrowRight");
     await expect(live(page)).toHaveText("Slide 2 of 3, step 3 of 3. Third beat lead.");
+    await page.getByRole("button", { name: "Step back" }).press("ArrowLeft");
+    await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.");
     await page.getByRole("button", { name: "Slide forward" }).click();
     // A slide without a story card falls back to its title.
     await expect(live(page)).toHaveText("Slide 3 of 3, step 1 of 2. Stub closing slide");

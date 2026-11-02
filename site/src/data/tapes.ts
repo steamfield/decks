@@ -19,6 +19,19 @@ export const TAPE_NAMES = [
 
 export type TapeName = (typeof TAPE_NAMES)[number];
 
+/**
+ * Where the poster is taken and PLAY starts, as a step on the start slide
+ * (0-based; 0 when a deck is not listed). These stages draw their line on the
+ * way from step 1 to step 2, so step 1 is an empty axis; the player and the
+ * poster start on step 2, where the chart is drawn. `make demo` records the
+ * value into the fixture and shoots the poster there.
+ */
+export const START_BEATS: Partial<Record<TapeName, number>> = {
+  tides: 1,
+  "od-story-templates": 1,
+  "od-templates": 1,
+};
+
 type Hue = "cyan" | "amber" | "rose" | "emerald" | "violet" | "slate";
 /**
  * Shell plastic per tape, like a 90s shelf: one clear, one smoke, three tinted.
@@ -38,6 +51,7 @@ export type TapeRecording = {
   slides: number;
   slideTitles: string[];
   startSlide: number;
+  startBeat: number;
   states: TapeState[];
 };
 
@@ -93,6 +107,7 @@ export function loadTape(name: TapeName): Tape {
     slides: recording?.slides ?? 0,
     slideTitles: recording?.slideTitles ?? [],
     startSlide: recording?.startSlide ?? 1,
+    startBeat: recording?.startBeat ?? 0,
     states: recording?.states ?? [],
     theme: tapeTheme(name),
     poster: hasPoster ? { base: `/posters/${name}`, width: 1280, height: 720 } : null,

@@ -9,6 +9,7 @@
     "Coastline shape decides how high the tide climbs."
   ],
   "startSlide": 2,
+  "startBeat": 1,
   "states": [
     {
       "slide": 1,

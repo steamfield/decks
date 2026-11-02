@@ -10,7 +10,14 @@ import { resolveTheme } from "../../packages/decks/theme/resolve.ts";
 import { runHook } from "../scripts/hook.mjs";
 import { site } from "./config";
 import { loadHookDenial, loadSmokeRun, runFigures } from "./data/fixtures";
-import { deckDir, loadRecording, loadTape, recordingPath, TAPE_NAMES } from "./data/tapes";
+import {
+  deckDir,
+  loadRecording,
+  loadTape,
+  recordingPath,
+  START_BEATS,
+  TAPE_NAMES,
+} from "./data/tapes";
 import { contrast } from "./lib/contrast";
 
 const repo = join(process.cwd(), "..");
@@ -157,6 +164,13 @@ describe("example decks", () => {
     expect(recording?.slideTitles).toHaveLength(recording?.slides ?? -1);
     expect(recording?.startSlide).toBeGreaterThanOrEqual(1);
     expect(recording?.startSlide).toBeLessThanOrEqual(recording?.slides ?? 0);
+    // The poster was shot at the recorded start step: re-run make demo after changing START_BEATS.
+    expect(recording?.startBeat).toBe(START_BEATS[name] ?? 0);
+    expect(
+      recording?.states.some(
+        (s) => s.slide === recording.startSlide && s.beat === recording.startBeat,
+      ),
+    ).toBe(true);
     expect(recording?.states.length).toBeGreaterThanOrEqual(recording?.slides ?? 1);
   });
 

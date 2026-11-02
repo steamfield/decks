@@ -21,7 +21,7 @@ Run these from `site/`. They are the only supported way to build, test, and run 
 | `bunx vitest run src/lib/player/format.test.ts` | One test file |
 | `make build` | Static build into `dist/`, then `tests/build.test.ts` over it |
 | `make e2e` | Playwright and axe against the production build (`PORT_E2E`, 4322) |
-| `make demo` | Lint and check the decks, build all five into `public/demo/`, record them into `fixtures/tapes/`, take posters and the NORMAL/WARM stills with the repo's `shot` (about 6 minutes) |
+| `make demo` | Lint and check the decks, build all five into `public/demo/`, record them into `fixtures/tapes/`, shoot each poster from the build at its start step once the deck reports it settled, and take the NORMAL/WARM stills with the repo's `shot` (about 6 minutes) |
 | `node scripts/demo.mjs --no-shots` | Builds and recordings only, keeping posters and stills |
 | `make demo-build` | Deck builds only, into `public/demo/` (what a deploy needs) |
 | `make deploy-check` | Serve `dist/` through `wrangler pages dev`; checks headers, canonical URLs, 404 |

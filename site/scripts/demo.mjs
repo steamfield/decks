@@ -1,6 +1,8 @@
 // `make demo`: builds every example deck into public/demo/<name>/ for the player,
 // records what each deck reports through the embed contract into
-// fixtures/tapes/<name>.json, and takes the posters and the NORMAL/WARM stills
+// fixtures/tapes/<name>.json, takes each poster from the same build through the
+// same contract the player uses (at the start step, once the deck reports it
+// settled, so entrances have finished drawing), and takes the NORMAL/WARM stills
 // with the repository's own `shot` script.
 //
 //   node scripts/demo.mjs            # everything
@@ -19,7 +21,7 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 import sharp from "sharp";
 import { deepMerge } from "../../packages/decks/theme/resolve.ts";
-import { TAPE_NAMES } from "../src/data/tapes.ts";
+import { START_BEATS, TAPE_NAMES } from "../src/data/tapes.ts";
 
 const site = resolve(import.meta.dirname, "..");
 const repo = resolve(site, "..");
@@ -122,7 +124,7 @@ const TYPES = {
 /** Serves public/ plus a harness page that embeds a deck and keeps its messages. */
 async function staticServer() {
   const root = join(site, "public");
-  const harness = `<!doctype html><meta charset="utf-8"><iframe id="deck" style="width:1280px;height:720px;border:0"></iframe>
+  const harness = `<!doctype html><meta charset="utf-8"><style>body{margin:0}</style><iframe id="deck" style="display:block;width:1920px;height:1080px;border:0"></iframe>
 <script>
   window.messages = [];
   addEventListener("message", (event) => {
@@ -205,13 +207,41 @@ async function record(page, port, name) {
     state = await step({ type: "decks:cmd", cmd: "next" });
   }
   const story = states.find((s) => s.lead);
+  const startSlide = story?.slide ?? 1;
+  const startBeat = START_BEATS[name] ?? 0;
+  if (!states.some((s) => s.slide === startSlide && s.beat === startBeat))
+    throw new Error(`${name}: no step ${startBeat + 1} on start slide ${startSlide}`);
   return {
     title: meta.title,
     slides: meta.slides,
     slideTitles: meta.slideTitles,
-    startSlide: story?.slide ?? 1,
+    startSlide,
+    startBeat,
     states,
   };
+}
+
+/**
+ * The poster: the built deck at its start step, loaded the way the player loads
+ * it (`#/<slide>?clicks=<beat>`), captured once the deck reports that step
+ * settled, so the entrance has drawn and the picture matches the first frame
+ * the player shows after PLAY. Returns a 1920x1080 PNG buffer.
+ */
+async function poster(page, port, name, { startSlide, startBeat }) {
+  await page.goto(`http://localhost:${port}/__harness.html`);
+  const query = startBeat ? `?clicks=${startBeat}` : "";
+  await page.evaluate((src) => {
+    document.getElementById("deck").src = src;
+  }, `/demo/${name}/index.html#/${startSlide}${query}`);
+  await page.waitForFunction(
+    ([slide, beat]) =>
+      window.messages.some(
+        (m) => m.type === "decks:state" && m.settled && m.slide === slide && m.beat === beat,
+      ),
+    [startSlide, startBeat],
+    { timeout: 30_000 },
+  );
+  return page.locator("#deck").screenshot();
 }
 
 /** Converts one 1920x1080 shot into the 640 and 1280 AVIF and WebP files the page uses. */
@@ -269,7 +299,7 @@ async function main() {
   const browser = await chromium.launch();
   const recordings = {};
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     for (const name of TAPES) {
       log(`recording ${name}`);
       recordings[name] = await record(page, server.port, name);
@@ -278,18 +308,22 @@ async function main() {
         `${JSON.stringify(recordings[name], null, 2)}\n`,
       );
     }
+    if (!noShots) {
+      for (const name of TAPES) {
+        const { startSlide, startBeat } = recordings[name];
+        log(`poster ${name} at slide ${startSlide}, step ${startBeat + 1}`);
+        await encode(
+          await poster(page, server.port, name, recordings[name]),
+          join(site, "public/posters", name),
+        );
+      }
+    }
   } finally {
     await browser.close();
     server.close();
   }
   run("bunx", ["biome", "format", "--write", "fixtures/tapes"], { cwd: site });
   if (noShots) return;
-
-  for (const name of TAPES) {
-    const { startSlide } = recordings[name];
-    const png = await shot(`examples/${name}/slides.md`, startSlide, 0, join(work, "shots", name));
-    await encode(png, join(site, "public/posters", name));
-  }
 
   const { startSlide } = recordings[STILL.deck];
   const normal = await shot(

@@ -55,11 +55,11 @@ const prefersReducedMotion = () =>
 
 /** The state the player shows before the deck boots: the poster's beat, as `make demo` recorded it. */
 function posterState(tape: Tape): DeckState {
-  const recorded = stateAt(tape, tape.startSlide, 0);
+  const recorded = stateAt(tape, tape.startSlide, tape.startBeat);
   return {
     slide: tape.startSlide,
     slides: tape.slides,
-    beat: 0,
+    beat: tape.startBeat,
     beats: recorded?.beats ?? 0,
     lead: recorded?.lead ?? "",
     body: recorded?.body ?? "",
@@ -135,9 +135,9 @@ export function DeckPlayer({
       if (message.type !== "decks:state") return;
       const { type: _type, ...state } = message;
       if (!positioned.current) {
-        // The deck opens wherever its URL points; the poster shows the start slide.
-        if (state.slide !== tape.startSlide || state.beat !== 0) {
-          if (state.settled) send(command.go(tape.startSlide, 0));
+        // The deck opens wherever its URL points; the poster shows the start step.
+        if (state.slide !== tape.startSlide || state.beat !== tape.startBeat) {
+          if (state.settled) send(command.go(tape.startSlide, tape.startBeat));
           return;
         }
         if (!state.settled) return;
@@ -185,7 +185,7 @@ export function DeckPlayer({
     if (playing) return;
     track(Events.playerPlayed, { tape: tape.name });
     setPlaying(true);
-    if (phase === "ready" && deck && atEnd(deck)) send(command.go(tape.startSlide, 0));
+    if (phase === "ready" && deck && atEnd(deck)) send(command.go(tape.startSlide, tape.startBeat));
     else if (phase === "poster" || phase === "failed") boot(null);
   };
   const pause = () => {
@@ -300,7 +300,8 @@ export function DeckPlayer({
             ? "Pause"
             : "Stop";
   // index.html by name: the Astro dev server serves no directory index from public/.
-  const frameSrc = `${tape.href}index.html#/${tape.startSlide}`;
+  // Slidev reads ?clicks= inside the hash, so the deck lands on the start step directly.
+  const frameSrc = `${tape.href}index.html#/${tape.startSlide}${tape.startBeat ? `?clicks=${tape.startBeat}` : ""}`;
   const doorOpen = swap === "open" || swap === "out" || swap === "in";
   const card = tapes[peek ?? index] ?? tape;
 

@@ -19,7 +19,11 @@ const tape = (name: string, title: string): Tape => ({
   slides: 3,
   slideTitles: ["Cover", "", "Close"],
   startSlide: 2,
-  states: [{ slide: 2, beat: 0, beats: 1, lead: "Recorded lead.", body: "Recorded body." }],
+  startBeat: 0,
+  states: [
+    { slide: 2, beat: 0, beats: 1, lead: "Recorded lead.", body: "Recorded body." },
+    { slide: 2, beat: 1, beats: 1, lead: "Recorded second lead.", body: "" },
+  ],
   theme,
   poster: { base: `/posters/${name}`, width: 1280, height: 720 },
 });
@@ -112,6 +116,21 @@ describe("DeckPlayer", () => {
     d.state({ beat: 1, lead: "Second lead." });
     expect(document.querySelector(".hub")?.getAttribute("data-spin")).toBe("still");
     expect(screen.getByText("Slide 2 of 3, step 2 of 2. Second lead.")).toBeInTheDocument();
+  });
+
+  it("starts on a later step when the tape's start step is not the first", () => {
+    const later = { ...tape("tides", "Tides run on the Moon's clock"), startBeat: 1 };
+    render(<DeckPlayer tapes={[later]} />);
+    // The poster's state is the start step's recorded text.
+    expect(screen.getByText("Recorded second lead.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Play" }));
+    expect(document.querySelector("iframe")?.getAttribute("src")).toBe(
+      "/demo/tides/index.html#/2?clicks=1",
+    );
+    const d = deck();
+    d.spy();
+    d.state({});
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 1 }]);
   });
 
   it("falls back to the slide title when a slide has no story card", () => {
