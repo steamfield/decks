@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { DUR } from '../story/easings'
-import { frameName, hashUrl } from './frames'
+import { frameName, hashUrl } from './frames.mjs'
 
 describe('frameName', () => {
   it('names a frame by zero padded slide and click count', () => {

@@ -4,13 +4,12 @@
  *
  * Copy this file, rename it, swap the data and the copy. Everything a stage
  * needs is here once and nothing else is: the deck's real stages add marks,
- * not structure. `bun run new <alias> <dir> --story` writes this same file as
+ * not structure. `decks new <alias> <dir> --story` writes this same file as
  * the deck's first stage.
  *
  * The stage lives in the deck's `components/` directory because Slidev
- * auto-imports from there. A component under `packages/decks/components/` would be
- * auto-imported into every deck in the package, which is not what a template
- * is for.
+ * auto-imports from there. A component in the addon's `components/` would be
+ * auto-imported into every deck, which is not what a template is for.
  */
 import { reactive, ref } from 'vue'
 import {
@@ -45,7 +44,8 @@ const CHIP_Y = yScale(Y_DOMAIN, Y_RANGE)(1.9)
 /**
  * One card per beat, in beat order. Its length is the beat count, so this
  * array and the `clicks:` in the manifest are the only two numbers that have
- * to agree (`beats.test.ts` checks that, and the eight/twenty word budget).
+ * to agree. The eight/twenty word budget per card is in
+ * `.claude/rules/story-stage.md`; `decks lint` scans this COPY for AI-prose patterns.
  */
 const COPY = [
   { lead: 'A thousand datasets, hand curated.', body: 'Small enough to read end to end.' },

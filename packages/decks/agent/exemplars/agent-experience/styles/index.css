@@ -1,0 +1,164 @@
+/* Agent Experience talk — deck-specific styles only.
+   Shared styles (tokens, base, layout, components, stats, logo) come from
+   the slidev-addon-decks addon via addons: ["slidev-addon-decks"]. */
+
+/* Era timeline (slide 2): three horizontal nodes, arrows between, AX in violet.
+   Same card treatment as the loop nodes so the two diagrams read as one family. */
+.ax-eras {
+  display: flex;
+  align-items: stretch;
+  gap: 1.6vw;
+}
+
+.ax-era {
+  flex: 1;
+  padding: 1.4rem 1.7rem;
+  border: 1px solid var(--od-border);
+  border-radius: 12px;
+  background: var(--od-surface);
+}
+
+.ax-era-k {
+  font-family: var(--od-font-sans);
+  font-size: 1.35rem;
+  font-weight: 510;
+  color: var(--od-text-muted);
+  margin-bottom: 0.7rem;
+}
+
+.ax-era-v {
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--od-text-secondary);
+}
+
+.ax-era.is-now {
+  border-color: rgba(167, 139, 250, 0.45);
+}
+
+.ax-era.is-now .ax-era-k,
+.ax-era.is-now .ax-era-v {
+  color: var(--od-violet);
+}
+
+.ax-era-arrow {
+  align-self: center;
+  font-size: 1.6rem;
+  color: var(--od-text-dim);
+}
+
+/* Loop diagram (slide 3): stacked nodes with a feedback arrow back to the top. */
+.od-loop-node {
+  font-family: var(--od-font-sans);
+  font-size: 1.3rem;
+  font-weight: 510;
+  color: var(--od-text);
+  padding: 0.85rem 1.7rem;
+  border: 1px solid var(--od-border);
+  border-radius: 12px;
+  background: var(--od-surface);
+  text-align: center;
+}
+
+.od-loop-arrow {
+  font-size: 1.6rem;
+  color: var(--od-text-dim);
+  text-align: center;
+}
+
+.od-loop-arrow.feedback {
+  color: var(--od-cyan);
+  font-size: 1.15rem;
+  font-family: var(--od-font-sans);
+  letter-spacing: 0.02em;
+}
+
+/* Design-rules grid (slide 6): 2x2 cards, accented key + prose value.
+   flex:1 + centered so the grid fills the canvas and the footer pins to the
+   bottom, matching the od-stats rhythm on the other slides. */
+.ax-rules {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.2rem 3vw;
+  flex: 1;
+  align-content: center;
+}
+
+.ax-rule-k {
+  font-size: 1.5rem;
+  font-weight: 510;
+  color: var(--od-amber);
+  margin-bottom: 0.5rem;
+}
+
+.ax-rule-n {
+  font-family: var(--od-font-sans);
+  font-size: 1.1rem;
+  font-weight: 400;
+  opacity: 0.65;
+  margin-right: 0.7rem;
+}
+
+.ax-rule-v {
+  font-size: 1.3rem;
+  line-height: 1.5;
+  color: var(--od-text-secondary);
+}
+
+/* Last card hands off to the errors slide, which opens on a rose eyebrow. */
+.ax-rule.is-next .ax-rule-k {
+  color: var(--od-rose);
+}
+
+/* Error cards (slide 7): mono code key over a prose recovery hint.
+   Click-driven: each card holds its layout slot from the start and fades up
+   when useScriptedDemo's shown(n) adds .is-in, so nothing reflows on stage. */
+.ax-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.ax-err {
+  border-left: 2px solid var(--od-rose);
+  padding-left: 1.2rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 380ms ease,
+    transform 380ms ease;
+}
+
+.ax-err.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.ax-err-k {
+  font-size: 1.15rem;
+  color: var(--od-rose);
+  margin-bottom: 0.4rem;
+}
+
+.ax-err-v {
+  font-size: 1.28rem;
+  line-height: 1.5;
+  color: var(--od-text-secondary);
+}
+
+/* ChartSpec block (slide 8): the body of a ToolCallCard, so the card chrome
+   (border, radius) comes from that component. This only sets
+   the code type. */
+.ax-spec {
+  font-family: var(--od-font-sans);
+  font-size: 1.35rem;
+  line-height: 1.75;
+  color: var(--od-text-secondary);
+  padding: 1.5rem 1.9rem;
+  margin: 0;
+  white-space: pre;
+}
+
+.ax-spec .k {
+  color: var(--od-violet);
+}

@@ -5,13 +5,35 @@
 //   decks build <alias>      build to outDir (decks.json _config, default dist/<name>)
 //   decks build --all        build every deck
 //   decks export <alias>     PDF export (flags depend on `animated` in decks.json)
+//   decks init               install the Claude Code agent setup (.claude/ files, hooks,
+//                            AGENTS.md block); re-run to update, --force for edited files
 //   decks new <alias> [dir]  scaffold a deck into decksDir + register it
 //                            (dir defaults to alias; creates decks.json if missing)
 //   decks new <alias> [dir] --story   same, on the story engine (stage, data, provenance)
 //       [--author "Name"]   fill the cover byline
 //       [--brand "Name"] [--url example.com]   write the deck's theme.json brand
 //   decks list               show the registry
-//   decks check              orphaned pages (on disk but absent from src: manifest)
+//   decks check              orphaned/missing pages vs src: manifests, unregistered
+//                            decks, and error-level `decks lint` hits
+//   decks lint [alias|file ...] [--strict] [--errors-only]
+//                            AI-rhetoric scan of slides.md, pages/*.md, components/*.vue
+//                            and story-stage COPY arrays (every deck when no target);
+//                            exit 1 on an error hit (any hit with --strict), 2 when
+//                            the pattern file is missing
+//   decks lint --stdin [--errors-only]   scan prose piped in
+//   decks shot <alias> <slide> [clicks] [--port N] [--out DIR]
+//                            screenshot one slide at each click; prints card leads,
+//                            chips and console errors
+//   decks snap <alias> [outDir] [--port N]   screenshot every slide and click
+//                            (outDir defaults to snaps/<alias>-<timestamp>)
+//   decks snap diff <dirA> <dirB> [threshold]   per-frame pixel diff of two walks
+//       shot and snap target a dev server already on --port N, or start one for
+//       the deck on a free port and stop it after; they need playwright-chromium
+//       (snap diff: pngjs, pixelmatch), optional peers installed on demand
+//   decks fact-extract <alias|deck-dir>   every figure in a deck, for the fact-check
+//   decks hook lint          Claude Code PreToolUse hook: deny deck prose with an
+//                            error-level pattern (hook JSON on stdin)
+//   decks hook prompt        Claude Code UserPromptSubmit hook: the deck-writing reminder
 //
 // The deck registry is decks.json in the current directory. Its `_config`
 // entry sets `decksDir` (where `new` scaffolds), `outDir` and `base` (both
@@ -27,12 +49,21 @@ const rootDir = process.cwd()
 const templatesDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'templates')
 const registryPath = join(rootDir, 'decks.json')
 const [cmd, ...rest] = process.argv.slice(2)
-// `new` starts a registry in an empty project; every other command needs one.
-if (!existsSync(registryPath) && cmd !== 'new') {
-  console.error(
-    `No decks.json in ${rootDir}. Run decks from the directory that holds the deck registry,` +
-      ' or create one with `decks new <alias>`.',
-  )
+// The hooks run on every write and prompt in a Claude Code session, registry
+// or not, and handle a broken one themselves, so they dispatch before it loads.
+if (cmd === 'hook') {
+  const { hookCommand } = await import('./hook.mjs')
+  await hookCommand(rest)
+  process.exit(0)
+}
+const NO_REGISTRY =
+  `No decks.json in ${rootDir}. Run decks from the directory that holds the deck registry,` +
+  ' or create one with `decks new <alias>`.'
+// `new` starts a registry in an empty project; `lint` of files or stdin and
+// `snap diff` need none; every other command needs one.
+const registryFree = cmd === 'new' || cmd === 'init' || cmd === 'lint' || (cmd === 'snap' && rest[0] === 'diff')
+if (!existsSync(registryPath) && !registryFree) {
+  console.error(NO_REGISTRY)
   process.exit(1)
 }
 const registry = existsSync(registryPath) ? JSON.parse(readFileSync(registryPath, 'utf8')) : {}
@@ -82,6 +113,46 @@ function outDir(deck) {
 
 function baseFor(deck) {
   return (deck.base ?? config.base).replaceAll('{name}', deck.name)
+}
+
+/** Remove `name value` from `args` and return the value, or undefined. */
+function takeFlag(args, name) {
+  const i = args.indexOf(name)
+  if (i === -1) return undefined
+  const [, value] = args.splice(i, 2)
+  if (!value) die(`${name} needs a value`)
+  return value
+}
+
+/**
+ * Run `fn(origin)` against a dev server for `deck`: the one already on `port`
+ * when given, else a fresh one on a free port, stopped once `fn` settles.
+ */
+async function withDevServer(deck, port, fn) {
+  const { existingServer, freePort, startServer } = await import('./server.mjs')
+  if (port) {
+    const origin = await existingServer(port)
+    if (!origin)
+      die(
+        `Nothing answers on port ${port}. Start one with \`decks dev <alias> --port ${port}\`, or drop --port.`,
+      )
+    return fn(origin)
+  }
+  const free = await freePort(3030)
+  console.log(
+    `Starting a dev server for ${deck.entry} on port ${free} (pass --port N to use a running one)`,
+  )
+  let server
+  try {
+    server = await startServer({ args: [slidevBin(), deck.entry], cwd: rootDir, port: free })
+  } catch (err) {
+    die(err.message)
+  }
+  try {
+    return await fn(server.origin)
+  } finally {
+    server.stop()
+  }
 }
 
 async function checkManifests() {
@@ -278,8 +349,73 @@ switch (cmd) {
     break
   }
   case 'check': {
-    if ((await checkManifests()) > 0) process.exit(1)
-    console.log('All page files match their manifests.')
+    const drift = await checkManifests()
+    if (!drift) console.log('All page files match their manifests.')
+    // Error-level prose hits fail the check too; warnings are `decks lint`'s to show.
+    const { deckFiles, lintFiles } = await import('./lint.mjs')
+    const files = Object.values(decks).flatMap((d) => deckFiles(resolve(rootDir, d.entry, '..')))
+    const { errors } = lintFiles(files, { rootDir, errorsOnly: true })
+    if (errors)
+      console.log(`${errors} error-level AI-rhetoric hit(s); run \`decks lint\` for all hits.`)
+    else console.log('No error-level AI-rhetoric hits.')
+    if (drift || errors) process.exitCode = 1
+    break
+  }
+  case 'lint': {
+    const { lintCommand } = await import('./lint.mjs')
+    await lintCommand(rest, {
+      rootDir,
+      decks: existsSync(registryPath) ? decks : null,
+      die,
+      noRegistry: NO_REGISTRY,
+    })
+    break
+  }
+  case 'shot': {
+    const args = [...rest]
+    const port = takeFlag(args, '--port')
+    const out = takeFlag(args, '--out')
+    const [alias, slide, clicks = '0'] = args
+    if (!alias || !slide) die('Usage: decks shot <alias> <slide> [clicks] [--port N] [--out DIR]')
+    const deck = deckFor(alias)
+    if (!/^\d+$/.test(slide) || !/^\d+$/.test(clicks))
+      die('decks shot: <slide> and [clicks] are numbers.')
+    // Before any server starts, so a missing peer costs nothing.
+    const { requireChromium } = await import('./browser.mjs')
+    await requireChromium('decks shot')
+    const { shot } = await import('./shot.mjs')
+    await withDevServer(deck, port, (origin) =>
+      shot({ origin, slide, clicks: Number(clicks), ...(out && { out: resolve(out) }) }),
+    )
+    break
+  }
+  case 'snap': {
+    const { diff, walk } = await import('./snap.mjs')
+    if (rest[0] === 'diff') {
+      const [, a, b, threshold = '0.002'] = rest
+      if (!a || !b) die('Usage: decks snap diff <dirA> <dirB> [threshold]')
+      if ((await diff(a, b, Number(threshold))) > 0) process.exitCode = 1
+      break
+    }
+    const args = [...rest]
+    const port = takeFlag(args, '--port')
+    const [alias, dir] = args
+    if (!alias)
+      die(
+        'Usage: decks snap <alias> [outDir] [--port N]  |  decks snap diff <dirA> <dirB> [threshold]',
+      )
+    const deck = deckFor(alias)
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15)
+    const outDir = resolve(dir ?? join('snaps', `${alias}-${stamp}`))
+    const { requireChromium } = await import('./browser.mjs')
+    await requireChromium('decks snap')
+    const clean = await withDevServer(deck, port, (origin) => walk({ origin, outDir }))
+    if (!clean) process.exitCode = 1
+    break
+  }
+  case 'fact-extract': {
+    const { factExtract } = await import('./fact-extract.mjs')
+    factExtract(rest[0])
     break
   }
   case 'list': {
@@ -287,6 +423,13 @@ switch (cmd) {
       console.log(`${alias.padEnd(12)} ${d.entry.padEnd(45)} ${d.animated ? 'animated' : 'static'}`)
     break
   }
+  case 'init': {
+    const { runInit } = await import('./init.mjs')
+    process.exit(runInit(rest, { rootDir }).code)
+  }
   default:
-    die('Usage: decks {dev|build|export|new|list|check} ...')
+    die(
+      'Usage: decks {init|dev|build|export|new|list|check|lint|shot|snap|fact-extract|hook} ...' +
+        '  (each prints its own usage; the full list heads slidev-addon-decks/scripts/deck.mjs)',
+    )
 }
