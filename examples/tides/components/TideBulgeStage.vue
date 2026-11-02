@@ -35,7 +35,7 @@ const COPY = [
   },
   {
     lead: 'Earth turns under both bulges.',
-    body: `One turn back under the Moon takes ${LUNAR_DAY_LABEL}, so each coast passes two highs.`,
+    body: `One turn back under the Moon takes ${LUNAR_DAY_LABEL}, so both bulges pass each coast.`,
   },
 ]
 

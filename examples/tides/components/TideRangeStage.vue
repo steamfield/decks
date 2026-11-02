@@ -23,12 +23,12 @@ const COPY = [
     body: `Average gap between high and low water at five NOAA stations, ${EPOCH_LABEL}.`,
   },
   {
-    lead: 'Long, narrow bays get the biggest tides.',
+    lead: 'Funnel-shaped bays get the biggest tides.',
     body: `Anchorage, at the head of Cook Inlet, averages ${ANCHORAGE_LABEL}. Eastport sits at the Bay of Fundy's mouth.`,
   },
   {
-    lead: 'The Gulf of Mexico barely moves.',
-    body: `Pensacola averages ${PENSACOLA_LABEL}. Anchorage's range is ${ANCHORAGE_OVER_PENSACOLA} times larger.`,
+    lead: "Pensacola's tide barely moves.",
+    body: `It averages ${PENSACOLA_LABEL}. Anchorage's range is ${ANCHORAGE_OVER_PENSACOLA} times larger.`,
   },
 ]
 

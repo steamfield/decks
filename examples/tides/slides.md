@@ -2,7 +2,7 @@
 theme: the-unnamed
 title: "Tides run on the Moon's clock"
 info: "A five-slide story deck on how ocean tides work, drawn from NOAA predictions for Boston."
-author: Riley Hilliard
+author: Claude Code (draft), Riley Hilliard (edit)
 # Cross slide view transitions are run by packages/decks/setup/main.ts, not by
 # Slidev: its own view-transition mode remounts every slide on every click.
 # Slidev's container stays on a no-op TransitionGroup (a cut with no CSS),

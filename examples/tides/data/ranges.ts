@@ -29,6 +29,10 @@ export const RANGE_ROWS: InkBarRow[] = STATIONS.map((s) => ({
 const byId = (id: string) => STATIONS.find((s) => s.id === id)!.mn
 export const ANCHORAGE_LABEL = `${byId('anchorage').toFixed(1)} m`
 export const EASTPORT_LABEL = `${byId('eastport').toFixed(1)} m`
-export const PENSACOLA_LABEL = `${byId('pensacola').toFixed(2)} m`
+/**
+ * 0.365 m to two places. `toFixed(2)` rounds the binary double just under
+ * 0.365 down to "0.36"; rounding the centimeters gives the half-up 0.37.
+ */
+export const PENSACOLA_LABEL = `${(Math.round(byId('pensacola') * 100) / 100).toFixed(2)} m`
 /** Anchorage's mean range over Pensacola's: 7.982 / 0.365 = 21.9, so "22". */
 export const ANCHORAGE_OVER_PENSACOLA = String(Math.round(byId('anchorage') / byId('pensacola')))
