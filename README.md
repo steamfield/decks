@@ -9,9 +9,13 @@ The package contains:
 - **OpenChart wrapper.** `<OpenChart :spec="..." />` renders an [OpenChart](https://github.com/tryopendata/openchart) spec sized for the 1920x1080 slide canvas, with a shared chart theme and entrance animation. `Graph3D` adds the WebGL network graph.
 - **Layout CSS and slide chrome.** Cover, footer, eyebrow, byline, QR card, plus layout classes for bullets, two columns, big stats and full-bleed charts.
 - **Viewer.** In the audience view, `Cmd/Ctrl +` and `-` resize the text, a trackpad pinch zooms the slide, and `Cmd/Ctrl 0` resets both. Presenter, overview and PDF export are not affected.
-- **Runner and verification tools.** `decks` scaffolds, runs, builds and exports decks from a `decks.json` registry. `shot` screenshots one slide at each click, and `snap` walks a whole deck and diffs it against an earlier walk pixel by pixel.
+- **Runner.** `decks` scaffolds, runs, builds and exports decks from a `decks.json` registry.
+- **Embed control.** A built deck inside a same-origin iframe takes `postMessage` commands (`next`, `prev`, `nextSlide`, `prevSlide`, `go`) and reports its slide, beat, card text and whether the beat's motion has settled. Outside such an iframe it does nothing. The message contract is at the top of `packages/decks/setup/embed.ts`.
+- **Inter, self-hosted.** The package ships Inter and decks set `fonts.provider: none`, so a deck makes no Google Fonts request.
 
 ## Quickstart
+
+Requirements: Node 20.19+ or 22.12+ (Vite's minimum). Bun is optional: the `decks` CLI runs on Node, and the commands below work with npm (`npm i ...`, then `npx decks ...`). Working in a clone of this repo needs Bun for its workspace and scripts.
 
 In a new project:
 
@@ -82,6 +86,15 @@ bun run test:hooks            # tests for the two hooks
 bun run fact-extract <alias>  # list every figure in a deck as input for the fact-check
 ```
 
+The repo also has screenshot tools, which need Playwright's Chromium (`playwright-chromium`, a dev dependency here) and are not part of the npm package. Each runs against a dev server (`bun run dev <alias>`):
+
+```bash
+bun run shot <n> [clicks]     # screenshot slide n at each click; prints card text and console errors
+bun run snap <dir> [port]     # screenshot every frame of a deck
+bun run snap:diff <a> <b>     # per-frame pixel diff between two snap walks
+bun run test:embed [alias...] # embed-control contract test against built decks (bun run build:all first)
+```
+
 ## Example decks
 
 | Alias | Deck | What it shows |
@@ -90,20 +103,21 @@ bun run fact-extract <alias>  # list every figure in a deck as input for the fac
 | `ax` | `examples/agent-experience` | A conventional deck. It is the reference for slide prose and word counts. |
 | `templates` | `examples/od-templates` | Conventional slide layouts (cover, bullets, two columns, big stat, a full OpenChart spec, a story slide) in the alternate warm palette. |
 | `story-templates` | `examples/od-story-templates` | Story stage patterns: the minimal stage, bars, labelled cards, and a hand-off between slides. |
+| `tides` | `examples/tides` | A five-slide story deck on how ocean tides work, from NOAA, USNO and NASA sources. Drafted by Claude Code in one run of this repo's agent setup, then fact-checked and edited by hand. The commit after `feat(examples): add tides deck, raw agent output` holds every change; the findings are in its `data-sources.md`. |
 
 From a clone:
 
 ```bash
 bun install
 bun run dev pitch
-bun run build:all      # all four decks into dist/
+bun run build:all      # all five decks into dist/
 ```
 
 ## Repository layout
 
 ```
 packages/decks/   the npm package (slidev-addon-decks)
-examples/         the four example decks
+examples/         the five example decks
 decks/            where `bun run new` scaffolds your decks
 tools/            prose lint, its pattern list, the fact extractor
 .claude/          agent, skills, rules and hooks for Claude Code
@@ -117,7 +131,7 @@ tools/            prose lint, its pattern list, the fact extractor
 | [slidev-theme-the-unnamed](https://github.com/estruyf/slidev-theme-the-unnamed) by Elio Struyf | MIT (`LICENSE.md` in the package; its `package.json` has no `license` field) | The base theme each deck names in its headmatter. Installed by the user. Not bundled. |
 | [OpenChart](https://github.com/tryopendata/openchart) (`@opendata-ai/openchart-core`, `@opendata-ai/openchart-vue`) | Apache-2.0 | Dependency of `slidev-addon-decks`. |
 | gsap, d3-scale, uqr | GSAP Standard "no charge" license, ISC, MIT | Dependencies of `slidev-addon-decks`. |
-| [Inter](https://rsms.me/inter/) | SIL Open Font License 1.1 | Loaded from Google Fonts when the deck is viewed, through Slidev's `fonts.webfonts`. The package contains no font files. |
+| [Inter](https://rsms.me/inter/) via [`@fontsource-variable/inter`](https://fontsource.org/fonts/inter) | SIL Open Font License 1.1 | Dependency of `slidev-addon-decks`. Its variable font files are bundled into each built deck by `styles/fonts.css`. |
 
 `.claude/rules/prose-patterns.md` is adapted from the `ce:writer` skill (MIT). The attribution is in that file.
 

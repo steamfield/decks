@@ -304,6 +304,7 @@ transition: slide-left
 aspectRatio: 16/9
 canvasWidth: 1920
 fonts:
+  provider: none        # Inter is self-hosted by the addon (styles/fonts.css)
   fallbacks: false
   webfonts: [Inter]
   sans: Inter, sans-serif
