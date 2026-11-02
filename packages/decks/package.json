@@ -45,6 +45,7 @@
     "scripts",
     "!scripts/*.test.ts",
     "!scripts/embed-check.mjs",
+    "!scripts/tarball-e2e.mjs",
     "!scripts/viewer-browser.mjs"
   ],
   "dependencies": {
