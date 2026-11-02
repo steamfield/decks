@@ -1,0 +1,92 @@
+{
+  "surfaces": {
+    "canvas": "#09090b",
+    "canvas-cover": "#08090a",
+    "surface": "#111113",
+    "surface-raised": "#18181b",
+    "muted": "#27272a"
+  },
+  "text": {
+    "primary": "#f7f8f8",
+    "secondary": "#d0d6e0",
+    "muted": "#a1a1aa",
+    "faint": "#71717a",
+    "dim": "#52525b",
+    "highlight": "#ffffff"
+  },
+  "borders": {
+    "default": "rgba(255, 255, 255, 0.08)",
+    "subtle": "rgba(255, 255, 255, 0.05)",
+    "rule": "rgba(255, 255, 255, 0.06)",
+    "axis": "rgba(255, 255, 255, 0.12)"
+  },
+  "ramps": {
+    "cyan": ["#0e7490", "#06b6d4", "#22d3ee", "#67e8f9"],
+    "amber": ["#d97706", "#f59e0b", "#fbbf24", "#fcd34d"],
+    "rose": ["#e11d48", "#f43f5e", "#fb7185", "#fda4af"],
+    "emerald": ["#059669", "#10b981", "#34d399", "#6ee7b7"],
+    "violet": ["#7c3aed", "#8b5cf6", "#a78bfa", "#c4b5fd"],
+    "slate": ["#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0"]
+  },
+  "accents": {
+    "cyan": "{ramps.cyan.2}",
+    "cyan-bright": "{ramps.cyan.3}",
+    "cyan-soft": "{ramps.cyan.4}",
+    "blue": "#3b82f6",
+    "blue-soft": "#60a5fa",
+    "violet": "{ramps.violet.3}",
+    "violet-dim": "{ramps.violet.2}",
+    "emerald": "{ramps.emerald.3}",
+    "amber": "{ramps.amber.2}",
+    "amber-soft": "{ramps.amber.3}",
+    "rose": "{ramps.rose.3}",
+    "pink": "#f472b6",
+    "slate": "{ramps.slate.2}"
+  },
+  "glows": {
+    "primary": "{accents.cyan}",
+    "secondary": "{accents.blue}",
+    "amber": "{accents.amber}",
+    "violet": "{accents.violet-dim}",
+    "emerald": "{accents.emerald}",
+    "rose": "{ramps.rose.1}"
+  },
+  "categorical": [
+    "#58a6ff",
+    "#3fb950",
+    "#d29922",
+    "#bc8cff",
+    "#f47067",
+    "#39d2c0",
+    "#f0883e",
+    "#a5d6ff",
+    "#8b949e",
+    "#f778ba",
+    "#7ee787",
+    "#d2a8ff"
+  ],
+  "fonts": {
+    "sans": "Inter, sans-serif",
+    "mono": "{fonts.sans}"
+  },
+  "chart": {
+    "text": "{text.muted}",
+    "gridline": "{borders.subtle}",
+    "axis": "{borders.axis}",
+    "eyebrow": "{accents.cyan}",
+    "title": "{text.primary}",
+    "subtitle": "{text.muted}",
+    "source": "{text.faint}",
+    "graph-label": "#e0e0e0"
+  },
+  "qr-white": "#fff",
+  "brand": {
+    "name": "OpenData",
+    "url": "tryopendata.ai",
+    "wordmark-gradient": "linear-gradient(95deg, #7dd3fc 0%, #38bdf8 45%, #3b82f6 100%)",
+    "logo": {
+      "view-box": "0 0 32 32",
+      "svg": "<path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#2563EB\" opacity=\"0.25\" /><g class=\"od-intro od-intro-1\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#F59E0B\" /></g><g class=\"od-intro od-intro-0\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#A78BFA\" /></g><g class=\"od-settle-teal\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#10B981\" /></g><g class=\"od-settle-cyan\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#38BDF8\" /></g><path d=\"M 4 18 L 16 23 L 16 30 L 4 25 Z\" fill=\"#2563EB\" /><path d=\"M 16 23 L 28 18 L 28 25 L 16 30 Z\" fill=\"#1E3A5F\" />"
+    }
+  }
+}

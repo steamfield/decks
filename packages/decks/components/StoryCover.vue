@@ -4,7 +4,8 @@
  *
  * One beat, no figures: a `StoryStage` in its cover variant holding the
  * cover frame, which is the one story overlay laid out in flow rather than
- * placed absolutely. Three rows: the brand row (`url` turns it on), the body
+ * placed absolutely. Three rows: the brand row (`url` turns it on with that
+ * URL, `brand` with the theme's), the body
  * block with eyebrow, title, lede and anything else the slot brings, and the
  * byline. A frame with no byline has two children and `center` keeps the body
  * in the middle of what is left (`.od-cover-center` in story-frame.css).
@@ -19,8 +20,8 @@
  * once an arrow-key arrival's view transition lands, instead of skipping.
  */
 withDefaults(
-  defineProps<{ url?: string; center?: boolean; enterAfterTransition?: boolean }>(),
-  { url: '', center: false, enterAfterTransition: false },
+  defineProps<{ url?: string; brand?: boolean; center?: boolean; enterAfterTransition?: boolean }>(),
+  { url: '', brand: false, center: false, enterAfterTransition: false },
 )
 </script>
 
@@ -37,7 +38,7 @@ withDefaults(
       <slot name="field" />
       <div class="od-cover-frame">
         <slot name="head">
-          <OdCoverHead v-if="url" class="od-enter-a" :url="url" />
+          <OdCoverHead v-if="url || brand" class="od-enter-a" :url="url || undefined" />
         </slot>
         <div class="od-enter-b od-cover-body" :class="{ 'od-cover-center': center }">
           <slot name="eyebrow" />

@@ -6,7 +6,8 @@
     "jsx": "preserve",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": [
     "packages/decks/**/*.ts",

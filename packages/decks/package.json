@@ -15,7 +15,11 @@
     "./package.json": "./package.json",
     "./story": "./story/index.ts",
     "./chart-theme": "./chart-theme.ts",
-    "./composables/*": "./composables/*.ts"
+    "./composables/*": "./composables/*.ts",
+    "./theme": "./theme/index.ts"
+  },
+  "imports": {
+    "#decks/theme": "./theme/default.ts"
   },
   "bin": {
     "decks": "./scripts/deck.mjs"
@@ -27,6 +31,8 @@
     "components",
     "composables",
     "setup",
+    "theme",
+    "!theme/*.test.ts",
     "styles",
     "story",
     "!story/*.test.ts",

@@ -14,7 +14,7 @@
     "check": "bun packages/decks/scripts/deck.mjs check",
     "typecheck": "tsc --noEmit --pretty false 2>&1 | grep -v 'node_modules/' | grep 'error TS' && exit 1 || true",
     "build:all": "bun packages/decks/scripts/deck.mjs build --all",
-    "test": "vitest run packages/decks/story packages/decks/scripts",
+    "test": "vitest run packages/decks/story packages/decks/scripts packages/decks/theme",
     "shot": "bun packages/decks/scripts/shot.mjs",
     "snap": "bun packages/decks/scripts/snap.mjs",
     "snap:diff": "bun packages/decks/scripts/snap.mjs diff"

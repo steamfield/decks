@@ -61,7 +61,7 @@
 .od-footer {
   margin-top: auto;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--od-border-rule);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -133,7 +133,7 @@
   aspect-ratio: 1;
   border-radius: 10px;
   border: 1px solid var(--od-border);
-  box-shadow: 0 4px 32px rgba(6, 182, 212, 0.06);
+  box-shadow: 0 4px 32px rgba(var(--od-glow-primary-rgb), 0.06);
   background-size: cover;
   background-position: center;
   justify-self: center;

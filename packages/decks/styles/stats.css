@@ -6,8 +6,8 @@
   align-items: center;
   background: radial-gradient(
     52vw 33vh at 50% 52%,
-    rgba(6, 182, 212, 0.05),
-    rgba(6, 182, 212, 0) 66%
+    rgba(var(--od-glow-primary-rgb), 0.05),
+    rgba(var(--od-glow-primary-rgb), 0) 66%
   );
 }
 .od-stats.three-col {
@@ -25,24 +25,24 @@
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 1;
-  background: linear-gradient(168deg, #ffffff 32%, var(--od-cyan-soft) 128%);
+  background: linear-gradient(168deg, var(--od-text-highlight) 32%, var(--od-cyan-soft) 128%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
 .od-stat-num.amber-grad {
-  background: linear-gradient(168deg, #ffffff 32%, var(--od-amber-soft) 128%);
+  background: linear-gradient(168deg, var(--od-text-highlight) 32%, var(--od-amber-soft) 128%);
   -webkit-background-clip: text;
   background-clip: text;
 }
 .od-stat-num.cyan-grad {
-  background: linear-gradient(168deg, #ffffff 32%, var(--od-cyan-soft) 128%);
+  background: linear-gradient(168deg, var(--od-text-highlight) 32%, var(--od-cyan-soft) 128%);
   -webkit-background-clip: text;
   background-clip: text;
 }
 .od-stat-num.violet-grad {
-  background: linear-gradient(168deg, #ffffff 32%, var(--od-violet) 128%);
+  background: linear-gradient(168deg, var(--od-text-highlight) 32%, var(--od-violet) 128%);
   -webkit-background-clip: text;
   background-clip: text;
 }

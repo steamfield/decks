@@ -1,5 +1,4 @@
-/* OpenData shared slide styles — auto-loaded by the Slidev addon. */
-@import './tokens.css';
+/* Shared slide styles, loaded after the theme tokens by styles/index.ts. */
 @import './base.css';
 @import './layout.css';
 @import './components.css';

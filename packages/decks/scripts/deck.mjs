@@ -7,7 +7,8 @@
 //   decks export <alias>     PDF export (flags depend on `animated` in decks.json)
 //   decks new <alias> <dir>  scaffold a deck into decksDir + register it
 //   decks new <alias> <dir> --story   same, on the story engine (stage, data, provenance)
-//       [--author "Name"] [--url example.com]   fill the cover byline and link
+//       [--author "Name"]   fill the cover byline
+//       [--brand "Name"] [--url example.com]   write the deck's theme.json brand
 //   decks list               show the registry
 //   decks check              orphaned pages (on disk but absent from src: manifest)
 //
@@ -63,8 +64,11 @@ function slidevBin() {
   return join(dirname(pkgPath), typeof bin === 'string' ? bin : bin.slidev)
 }
 
+// Slidev runs on Node, not on the runtime this script happens to run under:
+// under Bun, Vite's file watcher reports no events, so the dev server never
+// hot-reloads a slide or a theme.json edit.
 function slidev(args) {
-  const res = spawnSync(process.execPath, [slidevBin(), ...args], { cwd: rootDir, stdio: 'inherit' })
+  const res = spawnSync('node', [slidevBin(), ...args], { cwd: rootDir, stdio: 'inherit' })
   if (res.status !== 0) process.exit(res.status ?? 1)
 }
 
@@ -211,12 +215,13 @@ switch (cmd) {
       return value
     }
     const author = flag('--author', 'Your Name')
-    const url = flag('--url', 'example.com')
+    const brandName = flag('--brand', undefined)
+    const brandUrl = flag('--url', undefined)
     const story = args.includes('--story')
     const [alias, dir] = args.filter((arg) => arg !== '--story')
     if (!alias || !dir)
       die(
-        'Usage: decks new <alias> <dir-name> [--story] [--author "Name"] [--url example.com]' +
+        'Usage: decks new <alias> <dir-name> [--story] [--author "Name"] [--brand "Name"] [--url example.com]' +
           '  (e.g. decks new growth q3-growth-story)',
       )
     if (dir.includes('/'))
@@ -231,9 +236,15 @@ switch (cmd) {
       mkdirSync(dirname(path), { recursive: true })
       writeFileSync(path, body)
     }
-    const vars = { dir, author, url }
+    const vars = { dir, author }
     if (story) scaffoldStory(vars, write)
     else scaffoldConventional(vars, write)
+    // The cover and footer read the brand from the theme; without flags the
+    // deck keeps the default theme's brand until its theme.json says otherwise.
+    if (brandName || brandUrl) {
+      const brand = { ...(brandName && { name: brandName }), ...(brandUrl && { url: brandUrl }) }
+      write('theme.json', JSON.stringify({ brand }, null, 2) + '\n')
+    }
     registry[alias] = { entry: `${relDir}/slides.md`, name: dir, ...(story ? { animated: true } : {}) }
     writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n')
     console.log(`Scaffolded ${relDir}/ and registered alias "${alias}".`)

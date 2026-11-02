@@ -1,4 +1,7 @@
 import type { ThemeConfig } from '@opendata-ai/openchart-core'
+import theme from '#decks/theme'
+
+const { chart } = theme
 
 /**
  * Shared chart theme for Slidev decks. Import and spread into your chart spec
@@ -14,13 +17,13 @@ import type { ThemeConfig } from '@opendata-ai/openchart-core'
 export const slideChartTheme = {
   colors: {
     background: 'transparent',
-    text: '#a1a1aa',
-    gridline: 'rgba(255,255,255,0.05)',
-    axis: 'rgba(255,255,255,0.12)',
+    text: chart.text,
+    gridline: chart.gridline,
+    axis: chart.axis,
   },
   fonts: {
-    family: 'Inter, sans-serif',
-    mono: 'Inter, sans-serif',
+    family: theme.fonts.sans,
+    mono: theme.fonts.mono,
     sizes: { title: 30, subtitle: 22, body: 21, small: 18, axisTick: 20, metricLabel: 16, metricValue: 38 },
   },
   spacing: {
@@ -28,11 +31,11 @@ export const slideChartTheme = {
     xAxisLabelPadding: 4,
   },
   chrome: {
-    eyebrow: { color: '#06b6d4' },
-    title: { color: '#f7f8f8' },
-    subtitle: { color: '#a1a1aa' },
-    source: { color: '#71717a' },
-    byline: { color: '#71717a' },
+    eyebrow: { color: chart.eyebrow },
+    title: { color: chart.title },
+    subtitle: { color: chart.subtitle },
+    source: { color: chart.source },
+    byline: { color: chart.source },
   },
 } as const satisfies ThemeConfig
 

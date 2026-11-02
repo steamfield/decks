@@ -1,11 +1,13 @@
 <script setup lang="ts">
 /**
- * Shared footer chrome for the slide templates: brand lockup + page number.
+ * Shared footer chrome for the slide templates: brand lockup (the theme's
+ * `brand`) + page number.
  * Page numbering comes from Slidev's nav by default; pass `page` only to
  * override (e.g. a frozen export where the count is pinned).
  */
 import { computed } from 'vue'
 import { useNav } from '@slidev/client'
+import theme from '#decks/theme'
 
 const props = defineProps<{ page?: string }>()
 
@@ -17,7 +19,7 @@ const pageText = computed(() => props.page ?? `${nav.currentSlideNo.value} / ${n
   <div class="od-footer">
     <div class="od-footer-brand">
       <OdLogo :size="20" />
-      <span class="od-wordmark">OpenData</span>
+      <span class="od-wordmark">{{ theme.brand.name }}</span>
     </div>
     <span class="od-footer-page">{{ pageText }}</span>
   </div>

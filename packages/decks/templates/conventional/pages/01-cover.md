@@ -3,7 +3,7 @@ SLIDE 1 · COVER
 -->
 
 <div class="od-slide is-cover">
-  <OdCoverHead url="{{url}}" />
+  <OdCoverHead />
 
   <div style="max-width:74vw;">
     <OdEyebrow>Eyebrow context line</OdEyebrow>

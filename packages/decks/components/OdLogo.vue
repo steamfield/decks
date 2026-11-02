@@ -1,67 +1,46 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import theme from '#decks/theme'
 
 /**
- * OpenData isometric data-layers mark. Matches shared/components/opendata-icon.tsx.
+ * The brand mark from the theme (`brand.logo`: a viewBox plus inner SVG
+ * markup; `null` renders nothing). The default is the OpenData isometric
+ * data-layers mark.
  *
- * On mount, a two-cycle intro plays (CSS-driven, see the block below):
+ * The styles below animate the default mark by class. On mount, a two-cycle
+ * intro plays:
  *   1. A transient accent burst pair (violet + amber) emerges and fades out
  *   2. The brand teal + cyan layers emerge, settle, then drift in a subtle float
- * Swapping the settle classes to float classes after the settle animation ends
- * mirrors the React component's animationend handler.
+ * When a settle animation ends, its group swaps to the float class. A custom
+ * mark can opt into the same motion by using those class names.
  */
 withDefaults(defineProps<{ size?: number }>(), { size: 32 })
 
-const tealRef = ref<SVGGElement | null>(null)
-const cyanRef = ref<SVGGElement | null>(null)
+const logo = theme.brand.logo
 
-const onTealEnd = (e: AnimationEvent) => {
-  if (e.animationName.includes('move') && tealRef.value)
-    tealRef.value.classList.replace('od-settle-teal', 'od-float-teal')
+// animationend bubbles, so one listener on the <svg> sees both layer groups.
+const onAnimationEnd = (e: AnimationEvent) => {
+  if (!e.animationName.includes('move')) return
+  const el = e.target as Element
+  if (el.classList.contains('od-settle-teal')) el.classList.replace('od-settle-teal', 'od-float-teal')
+  else if (el.classList.contains('od-settle-cyan')) el.classList.replace('od-settle-cyan', 'od-float-cyan')
 }
-const onCyanEnd = (e: AnimationEvent) => {
-  if (e.animationName.includes('move') && cyanRef.value)
-    cyanRef.value.classList.replace('od-settle-cyan', 'od-float-cyan')
-}
-
-onMounted(() => {
-  tealRef.value?.addEventListener('animationend', onTealEnd)
-  cyanRef.value?.addEventListener('animationend', onCyanEnd)
-})
-onBeforeUnmount(() => {
-  tealRef.value?.removeEventListener('animationend', onTealEnd)
-  cyanRef.value?.removeEventListener('animationend', onCyanEnd)
-})
 </script>
 
 <template>
   <svg
+    v-if="logo"
     :width="size"
     :height="size"
-    viewBox="0 0 32 32"
+    :viewBox="logo['view-box']"
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
-  >
-    <!-- Box lid (behind layers) -->
-    <path d="M 4 18 L 16 23 L 28 18 L 16 13 Z" fill="#2563EB" opacity="0.25" />
-    <!-- Cycle 1: transient accent burst pair (amber + violet) -->
-    <g class="od-intro od-intro-1"><path d="M 4 18 L 16 23 L 28 18 L 16 13 Z" fill="#F59E0B" /></g>
-    <g class="od-intro od-intro-0"><path d="M 4 18 L 16 23 L 28 18 L 16 13 Z" fill="#A78BFA" /></g>
-    <!-- Cycle 2: brand layers that settle, then float -->
-    <g ref="tealRef" class="od-settle-teal">
-      <path d="M 4 18 L 16 23 L 28 18 L 16 13 Z" fill="#10B981" />
-    </g>
-    <g ref="cyanRef" class="od-settle-cyan">
-      <path d="M 4 18 L 16 23 L 28 18 L 16 13 Z" fill="#38BDF8" />
-    </g>
-    <!-- Box front walls (on top of layers for occlusion) -->
-    <path d="M 4 18 L 16 23 L 16 30 L 4 25 Z" fill="#2563EB" />
-    <path d="M 16 23 L 28 18 L 28 25 L 16 30 Z" fill="#1E3A5F" />
-  </svg>
+    @animationend="onAnimationEnd"
+    v-html="logo.svg"
+  />
 </template>
 
 <style scoped>
-/* ── Animated logo mark (OdLogo two-cycle intro, see opendata-icon.tsx) ── */
+/* ── Animated logo mark (two-cycle intro). :deep because the mark is v-html. ── */
 
 /* Cycle 1: transient accent burst pair emerges, rises, fades out. */
 @keyframes od-logo-intro-fade {
@@ -96,17 +75,17 @@ onBeforeUnmount(() => {
     transform: translate3d(0, -9px, 0);
   }
 }
-.od-intro {
+:deep(.od-intro) {
   opacity: 0;
   animation:
     od-logo-intro-fade 2s linear forwards,
     od-logo-intro-move 2s cubic-bezier(0.12, 0, 1, 1) forwards;
   will-change: transform, opacity;
 }
-.od-intro-0 {
+:deep(.od-intro-0) {
   animation-delay: 0s;
 }
-.od-intro-1 {
+:deep(.od-intro-1) {
   animation-delay: 0.25s;
 }
 
@@ -150,7 +129,7 @@ onBeforeUnmount(() => {
     transform: translate3d(0, -9px, 0);
   }
 }
-.od-settle-teal {
+:deep(.od-settle-teal) {
   opacity: 0;
   animation:
     od-logo-settle-fade 2s ease-out forwards,
@@ -158,7 +137,7 @@ onBeforeUnmount(() => {
   animation-delay: 1.6s;
   will-change: transform, opacity;
 }
-.od-settle-cyan {
+:deep(.od-settle-cyan) {
   opacity: 0;
   animation:
     od-logo-settle-fade 2s ease-out forwards,
@@ -186,27 +165,27 @@ onBeforeUnmount(() => {
     transform: translate3d(0, -10.2px, 0);
   }
 }
-.od-float-teal {
+:deep(.od-float-teal) {
   opacity: 1;
   animation: od-logo-float-teal 3s ease-in-out infinite;
   will-change: transform;
 }
-.od-float-cyan {
+:deep(.od-float-cyan) {
   opacity: 1;
   animation: od-logo-float-cyan 3.4s ease-in-out infinite;
   will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .od-intro {
+  :deep(.od-intro) {
     display: none;
   }
-  .od-settle-teal {
+  :deep(.od-settle-teal) {
     opacity: 1;
     animation: none;
     transform: translate3d(0, -5px, 0);
   }
-  .od-settle-cyan {
+  :deep(.od-settle-cyan) {
     opacity: 1;
     animation: none;
     transform: translate3d(0, -9px, 0);

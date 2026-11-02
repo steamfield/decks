@@ -1,0 +1,66 @@
+{
+  "surfaces": {
+    "canvas": "#15110e",
+    "canvas-cover": "#120f0c",
+    "surface": "#1d1814",
+    "surface-raised": "#26201b",
+    "muted": "#3a3029"
+  },
+  "text": {
+    "primary": "#f2e8d5",
+    "secondary": "#d8c9ae",
+    "muted": "#a8987f",
+    "faint": "#7d705f",
+    "dim": "#5b5045",
+    "highlight": "#fff6e3"
+  },
+  "borders": {
+    "default": "rgba(242, 232, 213, 0.09)",
+    "subtle": "rgba(242, 232, 213, 0.05)",
+    "rule": "rgba(242, 232, 213, 0.07)",
+    "axis": "rgba(242, 232, 213, 0.14)"
+  },
+  "ramps": {
+    "cyan": ["#2f8f83", "#3fae9f", "#62c7b8", "#9be0d4"],
+    "amber": ["#c9741c", "#e8913a", "#f2b05e", "#f8cf8f"],
+    "rose": ["#c8553d", "#de6b4f", "#ec8c6f", "#f5b39d"],
+    "emerald": ["#7f8f3a", "#9aab4c", "#b8c66e", "#d5df9d"],
+    "violet": ["#9a6c9e", "#b385b6", "#c9a3cb", "#e0c6e1"],
+    "slate": ["#857a6d", "#a39684", "#c2b6a3", "#ddd3c3"]
+  },
+  "accents": {
+    "blue": "#5b8fb9",
+    "blue-soft": "#82aacb",
+    "pink": "#e58fa6"
+  },
+  "glows": {
+    "secondary": "{ramps.amber.2}"
+  },
+  "categorical": [
+    "#e8913a",
+    "#3fae9f",
+    "#de6b4f",
+    "#b8c66e",
+    "#b385b6",
+    "#f2b05e",
+    "#5b8fb9",
+    "#c2b6a3",
+    "#9be0d4",
+    "#ec8c6f",
+    "#d5df9d",
+    "#e0c6e1"
+  ],
+  "chart": {
+    "graph-label": "#e6dccb"
+  },
+  "qr-white": "#fbf4e6",
+  "brand": {
+    "name": "Decks",
+    "url": "example.com",
+    "wordmark-gradient": "linear-gradient(95deg, #f8cf8f 0%, #e8913a 50%, #c8553d 100%)",
+    "logo": {
+      "view-box": "0 0 32 32",
+      "svg": "<rect x=\"2\" y=\"7\" width=\"28\" height=\"18\" rx=\"3\" fill=\"#e8913a\" /><rect x=\"6\" y=\"10\" width=\"20\" height=\"9\" rx=\"1.5\" fill=\"#15110e\" /><circle cx=\"12\" cy=\"14.5\" r=\"2.6\" fill=\"#f2e8d5\" /><circle cx=\"20\" cy=\"14.5\" r=\"2.6\" fill=\"#f2e8d5\" /><path d=\"M 9 25 L 11 21 L 21 21 L 23 25 Z\" fill=\"#c8553d\" />"
+    }
+  }
+}

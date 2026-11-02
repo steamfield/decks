@@ -32,6 +32,7 @@ import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { Graph } from '@opendata-ai/openchart-vue'
 import '@opendata-ai/openchart-vue/styles.css'
 import { useIsSlideActive, useSlideContext } from '@slidev/client'
+import theme from '#decks/theme'
 import { CATEGORICAL_COLORS } from '../story'
 
 /** One full revolution of the idle orbit, in seconds. */
@@ -223,7 +224,7 @@ const spec = computed(() => ({
     colors: {
       categorical: CATEGORICAL_COLORS,
       background: 'transparent',
-      text: '#e0e0e0',
+      text: theme.chart['graph-label'],
     },
     spacing: { padding: 4 },
   },

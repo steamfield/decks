@@ -32,7 +32,7 @@ const ALLOW = [
   // The frame itself: the largest 16:9 box that fits the viewport.
   /--od-f[wh]:/,
   // The cover background gradient is painted on the slide, not in the frame.
-  /rgba\(6, 182, 212|rgba\(59, 130, 246/,
+  /rgba\(var\(--od-glow-(primary|secondary)-rgb\)/,
   // Both view-transition drift keyframes: --sw/--sh are declared on the slide
   // and a ::view-transition pseudo element hangs off the document root.
   /transform: translateY\(-?1\.4vh\);/,
