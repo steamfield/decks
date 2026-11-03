@@ -171,9 +171,9 @@ describe("copy matches the repository", () => {
   });
 });
 
-const hero = ENTRIES[0];
+const hero = ENTRIES.find((entry) => entry.name === "keeling");
 
-describe("the hero's recorded agent run", () => {
+describe("the retained Keeling example's recorded agent run", () => {
   if (!hero?.run) throw new Error("the hero example in examples.json names no run fixture");
   const setup = hero.run.setup;
   const run = loadRun(hero.run.fixture);
@@ -243,7 +243,7 @@ describe("the hero's recorded agent run", () => {
 describe("the edits after each agent draft", () => {
   const edited = ENTRIES.filter((entry) => entry.edits);
 
-  it("covers at least the hero", () => {
+  it("covers the retained agent example", () => {
     expect(edited.map((entry) => entry.name)).toContain(hero?.name);
   });
 
@@ -301,12 +301,28 @@ describe("example decks", () => {
     const { provenance } = loadExample(entry);
     expect(provenance.label.length).toBeGreaterThan(0);
     if (entry.provenance === "talk") {
-      expect(provenance.label).toBe("From the talks Decks was extracted from");
+      expect(provenance.label).toBe(
+        entry.attribution?.label ?? "From the talks Decks was extracted from",
+      );
     }
   });
 
-  it("puts a deck with a recorded run first, as the hero", () => {
-    expect(ENTRIES[0]?.provenance).toBe("agent");
+  it("features the OpenData and Austin schools excerpts before the retained examples", () => {
+    expect(ENTRIES.slice(0, 2).map((entry) => entry.name)).toEqual([
+      "opendata-showcase",
+      "aisd-showcase",
+    ]);
+    expect(ENTRIES.slice(0, 2).every((entry) => entry.featured && entry.attribution)).toBe(true);
+    expect(ENTRIES.map((entry) => entry.name)).toEqual(
+      expect.arrayContaining([
+        "keeling",
+        "tides",
+        "opendata-pitch",
+        "agent-experience",
+        "od-story-templates",
+        "od-templates",
+      ]),
+    );
   });
 });
 

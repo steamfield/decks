@@ -10,6 +10,10 @@
 //   node scripts/demo.mjs --build    # deck builds only (what a deploy needs)
 //   node scripts/demo.mjs --no-shots # builds and recordings, keep posters, loops and stills
 //   node scripts/demo.mjs --loops    # builds and loops only
+//   node scripts/demo.mjs --posters  # builds, recordings and posters only
+//   node scripts/demo.mjs --headed   # visible Chromium (default on macOS)
+//   DEMO_HEADLESS=1 node scripts/demo.mjs # headless capture for CI
+//   node scripts/demo.mjs --only opendata-showcase,aisd-showcase # selected builds and fixtures
 //
 // A loop is the deck in the player's frame from its start step: three steps
 // forward, then three back, so it shows the stepped build and the reverse replay
@@ -38,7 +42,12 @@ const work = join(site, ".demo");
 const { examples: ENTRIES } = JSON.parse(
   readFileSync(join(site, "src/data/examples.json"), "utf8"),
 );
-const NAMES = ENTRIES.map((entry) => entry.name);
+const onlyIndex = process.argv.indexOf("--only");
+const only = onlyIndex >= 0 ? process.argv[onlyIndex + 1]?.split(",") : null;
+if (onlyIndex >= 0 && (!only || only.some((name) => !ENTRIES.some((entry) => entry.name === name))))
+  throw new Error("--only requires registered example names separated by commas");
+const SELECTED = ENTRIES.filter((entry) => !only || only.includes(entry.name));
+const NAMES = SELECTED.map((entry) => entry.name);
 const entryOf = (name) => ENTRIES.find((entry) => entry.name === name);
 const startBeatOf = (name) => entryOf(name)?.startBeat ?? 0;
 /** The loop's frame size, its dwell on each step, and the steps it takes. */
@@ -53,6 +62,10 @@ const STILL = { deck: "tides", clicks: 1 };
 const buildOnly = process.argv.includes("--build");
 const noShots = process.argv.includes("--no-shots");
 const loopsOnly = process.argv.includes("--loops");
+const postersOnly = process.argv.includes("--posters");
+const headed =
+  process.argv.includes("--headed") ||
+  (process.platform === "darwin" && process.env.DEMO_HEADLESS !== "1" && !process.env.CI);
 
 const log = (message) => console.log(`demo: ${message}`);
 
@@ -184,33 +197,66 @@ async function staticServer() {
  * settled state, goes to the first slide, then steps `next` to the end and keeps
  * every settled state. This is the same contract the player uses.
  */
+// Timer polling stays live when a full-frame WebGL iframe stops the harness rAF.
 async function record(page, port, name) {
   await page.goto(`http://localhost:${port}/__harness.html`);
   await page.evaluate((src) => {
     document.getElementById("deck").src = src;
   }, `/demo/${name}/`);
-  const count = () =>
-    page.evaluate(
-      () => window.messages.filter((m) => m.type === "decks:state" && m.settled).length,
-    );
   /** The newest settled state once more than `after` have arrived. */
   const settled = async (after) => {
     await page.waitForFunction(
       (n) => window.messages.filter((m) => m.type === "decks:state" && m.settled).length > n,
       after,
-      { timeout: 30_000 },
+      { timeout: 30_000, polling: 100 },
     );
     return page.evaluate(() =>
       window.messages.filter((m) => m.type === "decks:state" && m.settled).at(-1),
     );
   };
   let state = await settled(0);
+  if (entryOf(name)?.featured && !state.lead) {
+    await page.waitForFunction(
+      () => window.messages.some((m) => m.type === "decks:state" && m.settled && m.lead),
+      null,
+      { timeout: 30_000, polling: 100 },
+    );
+    state = await page.evaluate(() =>
+      window.messages.filter((m) => m.type === "decks:state" && m.settled && m.lead).at(-1),
+    );
+  }
   const meta = await page.evaluate(() => window.messages.find((m) => m.type === "decks:meta"));
   if (!meta) throw new Error(`${name}: no decks:meta before the first state`);
+  let requestId = 0;
   const step = async (message) => {
-    const before = await count();
-    await page.evaluate((m) => window.send(m), message);
-    return settled(before);
+    const expected =
+      message.cmd === "go"
+        ? { slide: message.slide, beat: message.beat }
+        : state.beat < state.beats
+          ? { slide: state.slide, beat: state.beat + 1 }
+          : { slide: state.slide + 1, beat: 0 };
+    const id = ++requestId;
+    await page.evaluate((m) => window.send(m), { ...message, requestId: id });
+    await page.waitForFunction(
+      ({ id, slide, beat }) =>
+        window.messages.some(
+          (m) =>
+            m.type === "decks:state" &&
+            m.settled &&
+            m.requestId === id &&
+            m.slide === slide &&
+            m.beat === beat,
+        ),
+      { id, ...expected },
+      { timeout: 30_000, polling: 100 },
+    );
+    return page.evaluate(
+      (id) =>
+        window.messages.findLast(
+          (m) => m.type === "decks:state" && m.settled && m.requestId === id,
+        ),
+      id,
+    );
   };
   if (state.slide !== 1 || state.beat !== 0)
     state = await step({ type: "decks:cmd", cmd: "go", slide: 1, beat: 0 });
@@ -256,12 +302,17 @@ async function poster(page, port, name, { startSlide, startBeat }) {
     document.getElementById("deck").src = src;
   }, `/demo/${name}/index.html#/${startSlide}${query}`);
   await page.waitForFunction(
-    ([slide, beat]) =>
+    ([slide, beat, featured]) =>
       window.messages.some(
-        (m) => m.type === "decks:state" && m.settled && m.slide === slide && m.beat === beat,
+        (m) =>
+          m.type === "decks:state" &&
+          m.settled &&
+          m.slide === slide &&
+          m.beat === beat &&
+          (!featured || m.lead),
       ),
-    [startSlide, startBeat],
-    { timeout: 30_000 },
+    [startSlide, startBeat, Boolean(entryOf(name)?.featured)],
+    { timeout: 30_000, polling: 100 },
   );
   return page.locator("#deck").screenshot();
 }
@@ -378,15 +429,15 @@ async function loopVideo(browser, port, name, { startSlide, startBeat, states })
   log(`wrote public/loops/${name}.{webm,mp4} and fixtures/examples/${name}.loop.json`);
 }
 
-/** Converts one 1920x1080 shot into the 640 and 1280 AVIF and WebP files the page uses. */
+/** Converts one 1920x1080 shot into the 640, 1280 and 1920 AVIF and WebP files the page uses. */
 async function encode(png, base) {
   mkdirSync(dirname(base), { recursive: true });
-  for (const width of [640, 1280]) {
+  for (const width of [640, 1280, 1920]) {
     const resized = sharp(png).resize(width, Math.round((width * 9) / 16));
     await resized.clone().avif({ quality: 50, effort: 6 }).toFile(`${base}-${width}.avif`);
     await resized.clone().webp({ quality: 74 }).toFile(`${base}-${width}.webp`);
   }
-  log(`wrote ${base.replace(`${site}/`, "")}-{640,1280}.{avif,webp}`);
+  log(`wrote ${base.replace(`${site}/`, "")}-{640,1280,1920}.{avif,webp}`);
 }
 
 /** Runs the repository's `shot` script against a dev server for `entry`; returns the PNG path. */
@@ -430,7 +481,13 @@ async function main() {
 
   mkdirSync(join(site, "fixtures/examples"), { recursive: true });
   const server = await staticServer();
-  const browser = await chromium.launch();
+  // Native Metal keeps macOS WebGL recording responsive; forcing software
+  // rendering can stall animation frames under capture. CI/DEMO_HEADLESS can
+  // use headless software rendering without changing the deck runtime.
+  const browser = await chromium.launch({
+    headless: !headed,
+    args: headed ? [] : ["--use-angle=swiftshader"],
+  });
   const recordings = {};
   try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
@@ -442,13 +499,9 @@ async function main() {
         `${JSON.stringify(recordings[name], null, 2)}\n`,
       );
     }
-    if (!noShots) {
-      for (const entry of ENTRIES.filter((e) => e.loop)) {
-        log(`loop ${entry.name}`);
-        await loopVideo(browser, server.port, entry.name, recordings[entry.name]);
-      }
-    }
+    await page.close();
     if (!noShots && !loopsOnly) {
+      const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
       for (const name of NAMES) {
         const { startSlide, startBeat } = recordings[name];
         log(`poster ${name} at slide ${startSlide}, step ${startBeat + 1}`);
@@ -457,13 +510,20 @@ async function main() {
           join(site, "public/posters", name),
         );
       }
+      await page.close();
+    }
+    if (!noShots && !postersOnly) {
+      for (const entry of SELECTED.filter((e) => e.loop)) {
+        log(`loop ${entry.name}`);
+        await loopVideo(browser, server.port, entry.name, recordings[entry.name]);
+      }
     }
   } finally {
     await browser.close();
     server.close();
   }
   run("bunx", ["biome", "format", "--write", "fixtures/examples"], { cwd: site });
-  if (noShots || loopsOnly) return;
+  if (noShots || loopsOnly || postersOnly || only) return;
 
   const { startSlide } = recordings[STILL.deck];
   const normal = await shot(

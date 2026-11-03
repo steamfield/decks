@@ -1,11 +1,11 @@
 ---
 title: Quickstart
-description: Install slidev-addon-decks with Slidev and its base theme, run decks init for the Claude Code setup, scaffold a story deck and start the dev server.
+description: Install slidev-addon-decks with Slidev and its base theme, run decks init for shared agent guidance, scaffold a story deck and start the dev server.
 group: getting-started
 order: 1
 ---
 
-Decks is one npm package, `slidev-addon-decks`, with a `decks` command. It runs on top of [Slidev](https://sli.dev) and the `slidev-theme-the-unnamed` base theme, which you install alongside it. Claude Code is the supported agent.
+Decks is one npm package, `slidev-addon-decks`, with a `decks` command. It runs on top of [Slidev](https://sli.dev) and the `slidev-theme-the-unnamed` base theme, which you install alongside it. Shared authoring guidance supports Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Windsurf and OpenCode.
 
 ## Install, init and scaffold
 
@@ -27,14 +27,16 @@ Requirements: Node 20.19+ or 22.12+. Bun is optional.
 
 ## What `init` does
 
-`init` installs the Claude Code setup into the project. It writes:
+`init` installs shared authoring guidance and agent entry points into the project. It writes:
 
 - `.claude/agents/deck-author.md`, the `building-a-deck` and `fact-checking-a-deck` skills, and six rules in `.claude/rules/`.
-- Two hooks in `.claude/settings.json`. Your existing settings and hooks stay; `init` prints a diff and never adds an entry twice.
-- A block between `<!-- decks:start -->` and `<!-- decks:end -->` in `AGENTS.md`, or in `CLAUDE.md` if that is the only instructions file. With neither, it creates `AGENTS.md` and a `CLAUDE.md` containing `@AGENTS.md`.
+- Two Claude Code hooks in `.claude/settings.json`. Your existing settings and hooks stay; `init` prints a diff and never adds an entry twice.
+- A shared reading order in `AGENTS.md`, imports in `CLAUDE.md` and `GEMINI.md`, and a thin `.github/instructions/decks.instructions.md` reference for Copilot. Codex, Cursor, Windsurf and OpenCode read `AGENTS.md` directly. The guidance is stored once; existing project text is kept.
 - `.claude/decks.json`, a list of the files it wrote with a content hash for each.
 
 Run it again after upgrading the package. Files you haven't edited are updated, files you edited are skipped and reported, and `--force` overwrites the edited ones. A file of yours at one of those paths that `init` never wrote is left alone even with `--force`: rename it and re-run. See [Writing decks with an agent](/docs/guides/writing-decks-with-an-agent/) for what each piece does.
+
+Only Claude Code runs the installed hooks automatically. Other agents must follow the reading order and run `decks check` and `decks lint` during each edit cycle.
 
 ## What `new` does
 
@@ -48,6 +50,6 @@ Run it again after upgrading the package. Files you haven't edited are updated, 
 
 ## Next
 
-- [Writing decks with an agent](/docs/guides/writing-decks-with-an-agent/) shows how to ask Claude Code for a deck once `init` has run.
+- [Writing decks with an agent](/docs/guides/writing-decks-with-an-agent/) shows how to ask your agent for a deck once `init` has run.
 - [Your first story deck](/docs/getting-started/your-first-story-deck/) walks through the files `new --story` writes.
 - [The decks CLI](/docs/reference/cli/) lists every command.

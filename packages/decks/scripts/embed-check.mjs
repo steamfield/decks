@@ -61,17 +61,22 @@ function check(ok, label, detail) {
   if (!ok) failures++
 }
 
-/** Send a command and wait for its settled:true state; returns [unsettled, settled]. */
+let requestSerial = 0
+
+/** Send a command and wait for its own settled acknowledgement. */
 async function step(page, cmd) {
   const from = await page.evaluate(() => window.msgs.length)
-  await page.evaluate((c) => window.send(c), cmd)
+  const requestId = ++requestSerial
+  await page.evaluate((c) => window.send(c), { ...cmd, requestId })
   await page.waitForFunction(
-    (n) => window.msgs.slice(n).some((m) => m.type === 'decks:state' && m.settled),
-    from,
+    ({ from, requestId }) => window.msgs.slice(from).some(
+      (m) => m.type === 'decks:state' && m.settled && m.requestId === requestId,
+    ),
+    { from, requestId },
     { timeout: 10_000 },
   )
   const after = await page.evaluate((n) => window.msgs.slice(n), from)
-  const states = after.filter((m) => m.type === 'decks:state')
+  const states = after.filter((m) => m.type === 'decks:state' && m.requestId === requestId)
   return [states.find((m) => !m.settled), states.find((m) => m.settled)]
 }
 
@@ -161,6 +166,16 @@ try {
       await expectStep(page, { cmd: 'prev' }, { direction: 'backward' }, 'prev')
       await expectStep(page, { cmd: 'prevSlide' }, { beat: 0, direction: 'backward' }, 'prevSlide')
     }
+
+    // A serialized host must receive an acknowledgement even without a move.
+    await step(page, { cmd: 'go', slide: 1, beat: 0 })
+    const [, noOp] = await step(page, { cmd: 'go', slide: 1, beat: 0 })
+    check(noOp.slide === 1 && noOp.beat === 0, 'same-position go acknowledges without moving', noOp)
+    const [, boundary] = await step(page, { cmd: 'prev' })
+    check(boundary.slide === 1 && boundary.beat === 0, 'first-step prev acknowledges', boundary)
+    const [, afterBoundary] = await step(page, { cmd: 'nextSlide' })
+    check(afterBoundary.slide === 2 && afterBoundary.beat === 0,
+      'navigation continues after a no-op boundary', afterBoundary)
 
     // Ignored: a message of another type, and a command from a frame that is not the parent.
     const before = await page.evaluate(() => window.msgs.length)

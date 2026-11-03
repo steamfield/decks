@@ -32,6 +32,8 @@ export type ExampleEntry = {
   run?: { fixture: string; setup: "repo" | "init" };
   edits?: ({ from: string; to: string } | { commits: string[] }) & { by: Editor };
   loop?: boolean;
+  featured?: { label: string; hint: string };
+  attribution?: { label: string; href?: string };
 };
 
 // Read rather than imported, so Node scripts and Playwright load this module as Vite does.
@@ -89,7 +91,7 @@ export function provenanceOf(entry: ExampleEntry, edits: Edits | null = null): P
     template: "Template deck",
     hand: "Built by hand",
   };
-  return { kind: entry.provenance, label: labels[entry.provenance] };
+  return { kind: entry.provenance, label: entry.attribution?.label ?? labels[entry.provenance] };
 }
 
 export function loadRecording(name: string): Recording | null {
@@ -128,6 +130,8 @@ export function loadExample(entry: ExampleEntry): Example {
   const edits = fixture && entry.edits ? { ...fixture, by: entry.edits.by } : null;
   return {
     name,
+    featured: entry.featured,
+    attribution: entry.attribution,
     title: recording?.title || headmatterTitle(name),
     href: `/demo/${name}/`,
     slides: recording?.slides ?? 0,
@@ -136,7 +140,13 @@ export function loadExample(entry: ExampleEntry): Example {
     startBeat: recording?.startBeat ?? 0,
     states: recording?.states ?? [],
     provenance: provenanceOf(entry, edits),
-    poster: hasPoster ? { base: `/posters/${name}`, width: 1280, height: 720 } : null,
+    poster: hasPoster
+      ? {
+          base: `/posters/${name}`,
+          width: existsSync(join(site, "public/posters", `${name}-1920.avif`)) ? 1920 : 1280,
+          height: existsSync(join(site, "public/posters", `${name}-1920.avif`)) ? 1080 : 720,
+        }
+      : null,
     loop: entry.loop ? loadLoop(name) : null,
     run: loadRunSummary(entry),
     edits,

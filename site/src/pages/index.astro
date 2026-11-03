@@ -2,7 +2,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Code } from "astro:components";
-import CopyBlock from "../components/CopyBlock.astro";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
 import {
@@ -10,7 +9,6 @@ import {
   DeckProse,
   ExampleGallery,
   FileTree,
-  Hero,
   HookPanel,
   ReleaseBanner,
   Requirements,
@@ -19,15 +17,16 @@ import {
 } from "../components/landing/sections";
 import { site } from "../config";
 import { ENTRIES, loadExamples } from "../data/examples";
-import { loadHookDenial, loadRun } from "../data/fixtures";
+import { loadHookDenial, loadRun, runFigures } from "../data/fixtures";
 import { loadProjectFiles, setupCommands } from "../data/project";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { Events } from "../lib/events";
-import { runMinutes } from "../lib/player/format";
 
 const examples = loadExamples();
 const [hero] = examples;
-const heroRun = ENTRIES[0]?.run ? loadRun(ENTRIES[0].run.fixture) : null;
+const agentEntry = ENTRIES.find((entry) => entry.name === "keeling");
+const agentExample = examples.find((example) => example.name === "keeling");
+const agentRun = agentEntry?.run ? loadRun(agentEntry.run.fixture) : null;
+const agentFigures = agentRun ? runFigures(agentRun) : null;
 const denial = loadHookDenial();
 const files = loadProjectFiles();
 const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
@@ -48,68 +47,140 @@ const stills = (name: string) => ({
 
   <section aria-labelledby="hero-title" class="hero">
     <div class="page-column hero-head">
-      <div id="hero-title">
-        <Hero tagline={site.tagline} description={site.description} />
-      </div>
-      <div class="hero-install">
-        <CopyBlock
-          lines={site.quickstart}
-          label="Copy the three install commands"
-          track={Events.installCopied}
-          trackMethod="hero"
-        />
-        <p class="text-muted text-sm">
-          {site.price}. <a href="#requirements">Requirements and limits</a> ·{" "}
-          <a href="/docs/getting-started/quickstart/">Docs</a>
-        </p>
+      <h1 id="hero-title" class="hero-title">
+        {site.tagline}
+      </h1>
+      <div class="hero-intro">
+        <p class="hero-lede">{site.heroDescription}</p>
+        <div class="hero-actions">
+          <a class="button-primary" href="#install">
+            Install Decks <span aria-hidden="true">↗</span>
+          </a>
+          <a class="button-secondary" href="/docs/getting-started/quickstart/">
+            Read the docs <span aria-hidden="true">→</span>
+          </a>
+        </div>
       </div>
     </div>
-    <div class="page-column">
+    <div class="showcase-column">
       <DeckPlayer client:visible examples={examples} />
     </div>
     {hero && <DeckProse example={hero} />}
   </section>
 
   <Section
-    id="requirements"
-    title="Requirements and limits"
-    lede="Decks fits a talk that explains numbers one step at a time, built with Claude Code on Slidev."
+    id="install"
+    title="Getting started"
+    lede="Install the components and agent setup, then scaffold a story deck."
   >
-    <Requirements items={site.requirements} />
-    <p class="text-ink-2">
-      To use Decks in a Slidev deck you already have, see{" "}
-      <a href="/docs/getting-started/add-decks-to-an-existing-deck/">
-        Add Decks to an existing Slidev deck
-      </a>
-      .
-    </p>
-  </Section>
-
-  <Section
-    id="what-you-get"
-    title="What you get"
-    lede="The agent setup and a scaffolded story deck, as the commands write them into an empty project."
-  >
-    <FileTree files={files} notes={site.files} commands={setupCommands} />
-    <p class="text-ink-2 max-w-[44rem]">
-      Then ask Claude Code for the talk. To change it later, ask for a revision of one slide, run
-      the <code>fact-checking-a-deck</code> skill before you present, and keep{" "}
-      <code>{site.devCommand}</code> open to watch each edit land.
-    </p>
+    <div class="getting-started-grid">
+      <div class="install-block" data-block>
+        <InstallTabs client:idle options={site.install} />
+        <p class="text-muted text-sm">
+          Decks is free and {site.license} licensed. Claude usage is billed separately.
+        </p>
+      </div>
+      <div class="workflow">
+        <div>
+          <h3>Describe the talk</h3>
+          <p>Give your coding agent the topic, audience and the story you want to tell.</p>
+        </div>
+        <div>
+          <h3>Review the draft</h3>
+          <p>
+            Watch the deck locally with <code>{site.devCommand}</code>. Ask for changes to a slide
+            or chart.
+          </p>
+        </div>
+        <div>
+          <h3>Check the sources</h3>
+          <p>
+            Run <code>fact-checking-a-deck</code> before presenting. Each figure stays linked to its
+            source.
+          </p>
+        </div>
+        <a href="/docs/getting-started/quickstart/">
+          Follow the quickstart <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+    <details class="evidence-disclosure" id="what-you-get">
+      <summary>
+        Files created by the setup <span>Agent instructions, deck scaffold and source map</span>
+      </summary>
+      <div class="disclosure-content">
+        <FileTree files={files} notes={site.files} commands={setupCommands} />
+      </div>
+    </details>
   </Section>
 
   <Section
     id="agent"
-    title="How the agent builds a deck"
-    lede="The agent loads the deck-building skill, reads the writing and data rules, fetches its sources, writes one data file and one stage per slide, then checks and builds the deck."
+    title="A deck built with Claude Code"
+    lede="This Keeling curve deck was drafted in a fresh project using the setup above, then revised in a second Claude Code session."
   >
-    <div class="agent-grid">
-      {heroRun && hero && <Transcript run={heroRun} deck={`the ${hero.name} deck`} />}
-      <HookPanel denial={denial} />
-    </div>
+    {agentRun && agentFigures && agentExample && (
+      <>
+        <div class="agent-evidence">
+          <div class="agent-prompt">
+            <p class="evidence-label">The prompt</p>
+            <blockquote>{agentRun.prompt}</blockquote>
+            <dl class="run-figures">
+              <div>
+                <dt>Draft time</dt>
+                <dd>{agentFigures.minutes} min</dd>
+              </div>
+              <div>
+                <dt>Claude usage</dt>
+                <dd>{agentFigures.cost}</dd>
+              </div>
+              <div>
+                <dt>Agent turns</dt>
+                <dd>{agentFigures.turns}</dd>
+              </div>
+            </dl>
+            <a href={agentExample.href} data-example={agentExample.name}>
+              Explore the Keeling deck <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <a
+            href={agentExample.href}
+            data-example={agentExample.name}
+            class="evidence-preview"
+            aria-label="Explore the Keeling curve deck"
+          >
+            <img
+              src={`${agentExample.poster?.base}-1280.webp`}
+              width="1280"
+              height="720"
+              loading="lazy"
+              alt="A sourced chart from the Keeling curve story deck"
+            />
+          </a>
+        </div>
+        <div class="evidence-disclosures">
+          <details class="evidence-disclosure">
+            <summary>
+              The recorded agent run <span>Prompt, tool calls and checks</span>
+            </summary>
+            <div class="disclosure-content">
+              <Transcript run={agentRun} deck="the Keeling curve deck" />
+            </div>
+          </details>
+          <details class="evidence-disclosure">
+            <summary>
+              A write blocked by the prose hook <span>Real output from a planted test line</span>
+            </summary>
+            <div class="disclosure-content">
+              <HookPanel denial={denial} />
+            </div>
+          </details>
+        </div>
+      </>
+    )}
     <p class="text-ink-2">
-      <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> covers
-      each file and how to run it.
+      <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> explains
+      the workflow and its checks.
     </p>
   </Section>
 
@@ -119,14 +190,18 @@ const stills = (name: string) => ({
     lede="Pick one to load it into the player at the top of the page."
   >
     <ExampleGallery examples={examples} />
-    <div class="flex flex-col gap-3">
-      <h3 class="text-ink text-lg font-semibold">Compared with v-click</h3>
-      <p class="text-ink-2 max-w-[44rem]">
-        Slidev's v-click shows or hides one element per click. A story slide redraws the whole chart
-        from the current click count.
-      </p>
-      <CompareTable rows={site.compare} />
-    </div>
+    <details class="evidence-disclosure">
+      <summary>
+        Story slides and v-click <span>How the presentation advances</span>
+      </summary>
+      <div class="disclosure-content">
+        <p class="text-ink-2 mb-4">
+          Slidev's v-click shows or hides one element per click. A story slide redraws the chart
+          from the current click count.
+        </p>
+        <CompareTable rows={site.compare} />
+      </div>
+    </details>
   </Section>
 
   <Section
@@ -179,11 +254,18 @@ const stills = (name: string) => ({
         </picture>
         <figcaption>With this theme.json</figcaption>
       </figure>
-      <figure class="code-frame code-wrap" data-block>
-        <figcaption>theme.json</figcaption>
-        <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
-      </figure>
     </div>
+    <details class="evidence-disclosure">
+      <summary>
+        The theme.json behind this slide <span>Backgrounds and chart colors</span>
+      </summary>
+      <div class="disclosure-content">
+        <figure class="code-frame code-wrap" data-block>
+          <figcaption>theme.json</figcaption>
+          <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
+        </figure>
+      </div>
+    </details>
     <p class="text-muted max-w-[44rem] text-sm">
       This file changes the background colors and the two chart colors the slide uses. The values
       come from the warm palette in the template deck.{" "}
@@ -191,15 +273,28 @@ const stills = (name: string) => ({
     </p>
   </Section>
 
-  <Section id="install" title="Install">
-    <div class="install-block" data-block>
-      <InstallTabs client:idle options={site.install} />
-      {heroRun && hero?.run && (
-        <p class="text-ink-2 text-sm">
-          The draft of the deck at the top of the page took {runMinutes(hero.run.minutes)} and{" "}
-          {hero.run.cost} of Claude usage. Decks itself is free and {site.license} licensed.
-        </p>
-      )}
+  <Section
+    id="requirements"
+    title="Requirements and limits"
+    lede="Decks runs on Slidev with shared instructions for seven agent platforms."
+  >
+    <div class="requirements-grid">
+      <Requirements items={site.requirements} />
+      <div class="docs-links">
+        <h3>Documentation</h3>
+        <a href="/docs/getting-started/quickstart/">
+          Start a new deck <span aria-hidden="true">→</span>
+        </a>
+        <a href="/docs/getting-started/add-decks-to-an-existing-deck/">
+          Add Decks to an existing Slidev deck <span aria-hidden="true">→</span>
+        </a>
+        <a href="/docs/guides/writing-decks-with-an-agent/">
+          Write with an agent <span aria-hidden="true">→</span>
+        </a>
+        <a href="/docs/guides/theming-with-theme-json/">
+          Customize the theme <span aria-hidden="true">→</span>
+        </a>
+      </div>
     </div>
   </Section>
 </BaseLayout>

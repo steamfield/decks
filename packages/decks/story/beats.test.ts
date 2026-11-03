@@ -17,7 +17,7 @@
  * counts as a beat and as zero words.
  */
 import { readdirSync, readFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { FIELD, copyLiteral as copyLiteralAt, copyStrings, loadPatterns } from '../lint/scan.mjs'
 import { storyDecks } from './test-decks'
@@ -29,6 +29,7 @@ interface Stage {
   deck: string
   name: string
   file: string
+  sourceLabel: string
   /** `:beats` as written: a number, or `beats` when it comes from useStage. */
   beats: number | 'beats'
   /** Copy entries, in beat order; null for a stage with no COPY array. */
@@ -74,14 +75,30 @@ function words(text: string): number {
     .filter(Boolean).length
 }
 
+/** Follow only a transparent local SFC wrapper: one import, one matching tag. */
+function stageSource(file: string, seen = new Set<string>()): string {
+  const full = resolve(file)
+  if (seen.has(full)) throw new Error(`${file}: circular stage wrapper`)
+  seen.add(full)
+  const src = readFileSync(full, 'utf8')
+  const wrapper =
+    /^\s*<script setup(?: lang="ts")?>\s*import (\w+) from ['"](\.[^'"]+\.vue)['"]\s*;?\s*<\/script>\s*<template>\s*<(\w+)\s*\/>\s*<\/template>\s*$/.exec(
+      src,
+    )
+  if (!wrapper || wrapper[1] !== wrapper[3]) return full
+  return stageSource(resolve(dirname(full), wrapper[2]), seen)
+}
+
 function stages(deck: { alias: string; dir: string }): Stage[] {
   const dir = join(deck.dir, 'components')
   return readdirSync(dir)
     .filter((name) => name.endsWith('Stage.vue'))
     .sort()
     .map((name) => {
-      const file = join(dir, name)
+      const file = stageSource(join(dir, name))
       const src = readFileSync(file, 'utf8')
+      const sourceDeck = DECKS.find((candidate) => file.startsWith(resolve(candidate.dir) + '/'))
+      const sourceLabel = `${sourceDeck?.alias ?? deck.alias}/${basename(file)}`
       // A cover (`StoryCover`) is one beat by construction.
       const raw = /<StoryCover\b/.test(src)
         ? '1'
@@ -94,6 +111,7 @@ function stages(deck: { alias: string; dir: string }): Stage[] {
         deck: deck.alias,
         name: name.replace(/\.vue$/, ''),
         file,
+        sourceLabel,
         beats: raw === 'beats' ? 'beats' : Number(raw),
         copy: literal ? parseCopy(literal) : null,
       }
@@ -138,6 +156,18 @@ describe('beats', () => {
     expect(DECKS.map((deck) => deck.alias)).toContain('pitch')
     expect(DECKS.length).toBeGreaterThanOrEqual(2)
     for (const deck of DECKS) expect(stages(deck).length, deck.dir).toBeGreaterThan(0)
+  })
+
+  it('checks transparent excerpts against source copy and their own manifest', () => {
+    const excerpt = DECKS.find((deck) => deck.alias === 'opendata-showcase')
+    expect(excerpt).toBeDefined()
+    const reused = stages(excerpt!)
+    expect(reused).toHaveLength(2)
+    for (const stage of reused) {
+      expect(stage.file).toContain('/opendata-pitch/components/')
+      expect(stage.copy?.length).toBeGreaterThan(1)
+      expect(stage.sourceLabel).toBe(`pitch/${stage.name}.vue`)
+    }
   })
 
   it('reads a copy array the way a stage writes one', () => {
@@ -214,12 +244,12 @@ describe('beats', () => {
         stage.copy?.forEach((card, i) => {
           const lead = words(card.lead)
           const body = words(card.body)
-          const at = `${deck.alias}/${stage.name}.vue beat ${i}`
+          const at = `${stage.sourceLabel} beat ${i}`
           if (lead > LEAD_WORDS) over.push(`${at} lead: ${lead} words`)
           if (body > BODY_WORDS) over.push(`${at} body: ${body} words`)
         })
       }
     }
-    expect(over).toEqual(OVER_BUDGET_TODAY)
+    expect([...new Set(over)]).toEqual(OVER_BUDGET_TODAY)
   })
 })

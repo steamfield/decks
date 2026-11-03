@@ -24,6 +24,34 @@ describe("parseDeckMessage", () => {
     });
   });
 
+  it("retains optional request identifiers, including settled no-op replies", () => {
+    expect(parseDeckMessage({ type: "decks:state", ...state, requestId: 7 })).toEqual({
+      type: "decks:state",
+      ...state,
+      requestId: 7,
+    });
+    expect(parseDeckMessage({ type: "decks:state", ...state, requestId: "7" })).not.toHaveProperty(
+      "requestId",
+    );
+    expect(parseDeckMessage({ type: "decks:state", ...state, requestId: -1 })).not.toHaveProperty(
+      "requestId",
+    );
+  });
+
+  it("reads iframe navigation, interaction, and explicit failures", () => {
+    expect(parseDeckMessage({ type: "decks:navigate", cmd: "prevSlide" })).toEqual({
+      type: "decks:navigate",
+      cmd: "prevSlide",
+    });
+    expect(parseDeckMessage({ type: "decks:interaction" })).toEqual({ type: "decks:interaction" });
+    expect(parseDeckMessage({ type: "decks:error", message: "Chart could not load." })).toEqual({
+      type: "decks:error",
+      message: "Chart could not load.",
+    });
+    expect(parseDeckMessage({ type: "decks:navigate", cmd: "reload" })).toBeNull();
+    expect(parseDeckMessage({ type: "decks:error", message: 5 })).toBeNull();
+  });
+
   it("fills missing card text and an unknown direction", () => {
     const { lead: _lead, body: _body, ...bare } = state;
     expect(parseDeckMessage({ type: "decks:state", ...bare, direction: "sideways" })).toMatchObject(

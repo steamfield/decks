@@ -33,5 +33,15 @@
     "entry": "examples/keeling/slides.md",
     "name": "keeling",
     "animated": true
+  },
+  "opendata-showcase": {
+    "entry": "examples/opendata-showcase/slides.md",
+    "name": "opendata-showcase",
+    "animated": true
+  },
+  "aisd-showcase": {
+    "entry": "examples/aisd-showcase/slides.md",
+    "name": "aisd-showcase",
+    "animated": true
   }
 }

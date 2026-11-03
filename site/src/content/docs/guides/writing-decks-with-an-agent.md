@@ -1,32 +1,34 @@
 ---
 title: Writing decks with an agent
-description: What decks init installs for Claude Code (an agent, two skills, six rules, two hooks, two exemplar decks), how to re-run it, and how to ask for a deck.
+description: Shared deck-writing guidance for seven agent platforms, thin entry points, Claude Code hooks, and safe init updates.
 group: guides
 order: 2
 ---
 
-Claude Code is the supported agent. `decks init` installs the setup into your project, so the workflow below applies to any project that has the package, not only a clone of the Decks repository. Other agents can read the `AGENTS.md` block, but `init` doesn't install or test a setup for them.
+`decks init` installs shared guidance for Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Windsurf and OpenCode. The workflow applies to any project with the package. The rules and skills are ordinary Markdown under `.claude/`, kept there for compatibility. Every agent follows the explicit reading order in `AGENTS.md`; the content is maintained once.
 
 ```bash title="Terminal"
 bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed
 bunx -p slidev-addon-decks decks init
 bunx -p slidev-addon-decks decks new my-talk --story
-claude
+# Open your preferred agent in this project.
 ```
 
-With npm, use `npx -p slidev-addon-decks decks ...`. Then ask Claude Code for the deck in plain language, for example `make a 5-slide story deck about how ocean tides work`. The bare `decks` name on npm is an unrelated package, which is why every command uses `-p slidev-addon-decks`.
+With npm, use `npx -p slidev-addon-decks decks ...`. Then ask your agent for the deck in plain language, for example `make a 5-slide story deck about how ocean tides work`. The bare `decks` name on npm is an unrelated package, which is why every command uses `-p slidev-addon-decks`.
 
 ## What `init` installs
 
-- **`deck-author` agent** (`.claude/agents/deck-author.md`) builds or revises one deck per session.
+- **`deck-author` agent** (`.claude/agents/deck-author.md`) is registered natively in Claude Code and builds or revises one deck per session. Other agents follow its role and the shared workflow directly.
 - **`building-a-deck` skill** covers the whole workflow: scaffold, sourcing data, verification, build, and when a deck counts as done.
 - **`fact-checking-a-deck` skill** reruns the source behind each figure, using the query or source recorded in the deck's `data-sources.md`, and checks the data arrays, card copy and slide text against the results.
-- **Rules** in `.claude/rules/` attach by path when you edit files under your decks directory. They cover slide prose (`deck-writing.md`), layout, charts and theme (`deck-patterns.md`), story stages (`story-stage.md`), data provenance (`deck-data.md`), a catalog of AI writing patterns to avoid (`prose-patterns.md`) and your own terminology (`project-glossary.md`, which starts empty).
-- **Hooks** in `.claude/settings.json`. `decks hook lint` runs before every Edit, Write and MultiEdit and denies deck prose that matches an error-level pattern from the package's pattern list. It also checks the `COPY` arrays in story stages. If the scanner can't run, it refuses the write instead of letting it through. `decks hook prompt` adds a reminder of the writing rules when a prompt asks for deck work. Both are Node scripts behind `.claude/hooks/decks.sh`, a short POSIX `sh` wrapper that `init` writes, so they need no `jq` or bash.
-- **Instructions block.** A section between `<!-- decks:start -->` and `<!-- decks:end -->` in `AGENTS.md` (or `CLAUDE.md`) lists the `decks` commands for the agent. With neither file present, `init` creates `AGENTS.md` and a `CLAUDE.md` that imports it.
+- **Rules** in `.claude/rules/` attach by path in Claude Code when you edit files under your decks directory. They cover slide prose (`deck-writing.md`), layout, charts and theme (`deck-patterns.md`), story stages (`story-stage.md`), data provenance (`deck-data.md`), a catalog of AI writing patterns to avoid (`prose-patterns.md`) and your own terminology (`project-glossary.md`, which starts empty).
+- **Claude Code hooks** in `.claude/settings.json`. `decks hook lint` runs before every Edit, Write and MultiEdit and denies deck prose that matches an error-level pattern from the package's pattern list. It also checks the `COPY` arrays in story stages. If the scanner can't run, it refuses the write instead of letting it through. `decks hook prompt` adds a reminder of the writing rules when a prompt asks for deck work. Both are Node scripts behind `.claude/hooks/decks.sh`, a short POSIX `sh` wrapper that `init` writes, so they need no `jq` or bash.
+- **Shared entry points.** A marked `AGENTS.md` section lists commands and the required reading order. Codex, Cursor, Windsurf and OpenCode read it directly. `CLAUDE.md` and `GEMINI.md` import it. `.github/instructions/decks.instructions.md` points Copilot at it for files under the configured decks directory. Existing text outside marked blocks is preserved; a colliding Copilot rule is reported and kept.
 - **Exemplars.** The skills point the agent at two decks inside the package to read and not edit: `node_modules/slidev-addon-decks/agent/exemplars/tides` (story) and `.../agent-experience` (conventional).
 
 The files are the repository's own agent setup with your decks directory (`decksDir` in `decks.json`, default `decks`), the right runner (`bunx` when you have a bun lockfile, else `npx`) and the installed package path filled in.
+
+Only Claude Code runs the installed hooks automatically. In other agents, run `decks check` and `decks lint` during each edit cycle, and follow the shared screenshot, data review and build requirements before handoff. Init tests cover installation, references, updates and preservation of custom files. Live authoring has not been tested in every listed agent.
 
 ## Re-running `init`
 
@@ -37,7 +39,7 @@ The files are the repository's own agent setup with your decks directory (`decks
 - A file at one of those paths that `init` didn't write is a collision. It is reported and left alone, even with `--force`. Rename or move it and re-run.
 - Settings are merged: nothing you have is removed, and an entry is never added twice.
 - A file an earlier `init` wrote that the package no longer ships is removed if you haven't edited it, and kept and reported if you have.
-- The `decks:start` block is replaced in place, in both `AGENTS.md` and `CLAUDE.md` if both carry one.
+- Marked Decks blocks update in place; `CLAUDE.md` and `GEMINI.md` carry imports rather than duplicate guidance.
 
 To keep a file as your own, delete its entry from `.claude/decks.json`.
 

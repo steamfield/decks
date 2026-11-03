@@ -1,6 +1,6 @@
 # Decks
 
-Decks is a framework for data-driven presentations built on [Slidev](https://sli.dev). It ships as one npm package, `slidev-addon-decks`, with a `decks` command. `decks init` installs the Claude Code setup used to write decks, and this repo adds example decks.
+Decks is a framework for data-driven presentations built on [Slidev](https://sli.dev). It ships as one npm package, `slidev-addon-decks`, with a `decks` command. `decks init` installs shared agent guidance used to write decks, and this repo adds example decks.
 
 The package contains:
 
@@ -15,7 +15,7 @@ The package contains:
 
 ## Quickstart
 
-Requirements: Node 20.19+ or 22.12+ (Vite's minimum) and Claude Code for the agent setup. Bun is optional: the `decks` CLI runs on Node, and every command below has an npm equivalent. Working in a clone of this repo needs Bun for its workspace and scripts.
+Requirements: Node 20.19+ or 22.12+ (Vite's minimum) and an agent that can read project instructions. Bun is optional: the `decks` CLI runs on Node, and every command below has an npm equivalent. Working in a clone of this repo needs Bun for its workspace and scripts.
 
 In a new project:
 
@@ -44,11 +44,11 @@ A deck enables the addon in its headmatter with `addons: ["slidev-addon-decks"]`
 
 ### What `decks init` writes
 
-`init` installs the Claude Code setup into the current project:
+`init` installs shared guidance for Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Windsurf and OpenCode:
 
 - `.claude/agents/deck-author.md`, the skills `building-a-deck` and `fact-checking-a-deck` under `.claude/skills/`, and six rules under `.claude/rules/` (`deck-patterns`, `deck-writing`, `deck-data`, `story-stage`, `prose-patterns`, `project-glossary`). They are the repo's own files with your `decksDir`, the CLI command and the installed package's path filled in.
-- Two hooks in `.claude/settings.json`: `decks hook lint` before Edit, Write and MultiEdit, and `decks hook prompt` on prompt submit. Both run through `.claude/hooks/decks.sh`, a short POSIX `sh` wrapper that calls the installed package. Existing settings and hooks are kept, nothing is added twice, and `init` prints the diff.
-- A block between `<!-- decks:start -->` and `<!-- decks:end -->` in `AGENTS.md`, or in `CLAUDE.md` when that is the only instructions file. With neither, `init` creates `AGENTS.md` and a `CLAUDE.md` containing `@AGENTS.md`.
+- Two Claude Code hooks in `.claude/settings.json`: `decks hook lint` before Edit, Write and MultiEdit, and `decks hook prompt` on prompt submit. Both run through `.claude/hooks/decks.sh`, a short POSIX `sh` wrapper that calls the installed package. Existing settings and hooks are kept, nothing is added twice, and `init` prints the diff.
+- A shared reading order and commands in a marked `AGENTS.md` block. Codex, Cursor, Windsurf and OpenCode read it directly. Claude Code imports it through `CLAUDE.md`; Gemini CLI imports it through `GEMINI.md`. A thin `.github/instructions/decks.instructions.md` points Copilot at the same guidance. Existing project text is kept.
 - `.claude/decks.json`, which records each file `init` wrote and its content hash.
 
 Re-running `init` is safe:
@@ -57,7 +57,7 @@ Re-running `init` is safe:
 - A file you edited is skipped and reported. `--force` overwrites it.
 - A file that exists at one of those paths but that `init` never wrote is a collision. `init` reports it and leaves it alone, with or without `--force`. Rename or move your file and re-run to install the Decks version.
 - A file an earlier `init` wrote that the package no longer ships is removed if you haven't edited it, and kept and reported if you have.
-- The `decks:start` block is replaced in place, in both `AGENTS.md` and `CLAUDE.md` if both carry one.
+- Marked Decks blocks update in place. The guidance stays in `AGENTS.md`; `CLAUDE.md` and `GEMINI.md` carry imports.
 
 If the package isn't installed, `init` writes the agent files and the instructions block but not the hooks, prints the install command and exits 1. Install the package and re-run `init` to add the hooks.
 
@@ -67,7 +67,7 @@ When the hooks are in `.claude/settings.json` but the package is missing (a fres
 
 | Command | What it does |
 | --- | --- |
-| `decks init [--force]` | Install the Claude Code setup, as above. |
+| `decks init [--force]` | Install shared agent guidance and entry points, as above. |
 | `decks new <alias> [dir]` | Scaffold a deck and register it. |
 | `decks dev <alias> [...]` | Dev server; flags after the alias go to Slidev (`--port 3031`). |
 | `decks build <alias>`, `decks build --all` | Static build to `dist/<name>`, or every registered deck. |
@@ -101,7 +101,7 @@ The `od-` prefix on CSS variables and classes is a leftover from the project Dec
 
 ## Writing decks with an agent
 
-Claude Code is the supported agent. After `decks init`, ask it for a deck in plain language and it uses the setup below. Other agents read `AGENTS.md`, but `init` doesn't install or test a setup for them. In this repo, [`AGENTS.md`](AGENTS.md) is the entry point; Antigravity and Codex read generated copies of the same guidance in `.agents/` and `.codex/`.
+After `decks init`, Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Windsurf and OpenCode use one shared set of deck-writing rules and skills. `AGENTS.md` gives the reading order; thin imports or references cover platforms that need their own entry point. The Markdown guidance lives under `.claude/` for compatibility and is readable by every agent. Only Claude Code gets automatic prompt/write hooks and native `deck-author` registration; other agents run `decks check` and `decks lint` during each edit cycle. Installation and reference paths are tested; this does not claim a live deck-authoring run in every agent. This repository also keeps generated Antigravity/Codex copies for its own development; init does not duplicate those copies into user projects.
 
 - **`deck-author` agent** (`.claude/agents/deck-author.md`) builds or revises one deck per session.
 - **`building-a-deck` skill** covers the full workflow: scaffold, sourcing data, verification, build, and when a deck counts as done.

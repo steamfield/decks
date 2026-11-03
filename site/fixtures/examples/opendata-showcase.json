@@ -1,0 +1,54 @@
+{
+  "title": "OpenData: public data, made usable for AI agents",
+  "slides": 2,
+  "slideTitles": [
+    "OpenData: public data, made usable for AI agents",
+    "Every dataset we clean joins the Dataset Graph."
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 1,
+      "lead": "Twenty-nine files. No headers. No changelog.",
+      "body": "About 7,691 unnamed fields per row, and the salary field alone has sat in 14 different columns."
+    },
+    {
+      "slide": 1,
+      "beat": 1,
+      "beats": 1,
+      "lead": "We reconcile it once. One dataset, one query.",
+      "body": "Every file mapped onto one schema and published as a single dataset."
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 3,
+      "lead": "969 datasets. 203 agencies. 1.6 billion rows.",
+      "body": "Every square is one dataset OpenData agents cleaned and published."
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 3,
+      "lead": "17 categories, four of them most of the catalog.",
+      "body": "Education, government, health and economics are 566 of the 952."
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 3,
+      "lead": "952 datasets. 3,291 relationships.",
+      "body": "952 of the 969 are ready and linked. The graph is how an agent sees the connections."
+    },
+    {
+      "slide": 2,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Seven weeks, and the graph grew by half.",
+      "body": "630 datasets and 2,135 links in July; 952 and 3,291 today."
+    }
+  ]
+}
