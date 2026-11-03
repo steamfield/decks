@@ -18,7 +18,7 @@ const text = lines.join("\n");
 <div class="border-line-strong bg-panel flex items-start gap-3 rounded-md border p-3">
   <pre class="text-ink min-w-0 flex-1 font-mono text-[13px] leading-6 whitespace-pre-wrap"><code>{
     lines.map((line, index) => (
-      <span class="block pl-[2ch] -indent-[2ch]"><span aria-hidden="true" class="text-muted select-none">$ </span>{
+      <span class="block pl-[2ch] -indent-[2ch]"><span aria-hidden="true" class="copy-prompt text-muted select-none">$ </span>{
         // A long line wraps only between words, never inside a package name or a
         // flag, and the continuation hangs under the command.
         line.split(" ").map((word, i) => (

@@ -81,6 +81,20 @@ test("install tabs switch commands once hydrated", async ({ page }) => {
   );
 });
 
+test("the theme switch swaps the default and warm slides", async ({ page }) => {
+  await page.goto("/");
+  const still = (name: string) => page.locator(`#themes [data-still="${name}"]`);
+  await expect(still("default")).toBeVisible();
+  await expect(still("warm")).toBeHidden();
+  await page
+    .getByRole("group", { name: "Show the slide with" })
+    .getByText("With this theme.json")
+    .click();
+  await expect(still("warm")).toBeVisible();
+  await expect(still("default")).toBeHidden();
+  await expect(page.getByRole("radio", { name: "With this theme.json" })).toBeChecked();
+});
+
 test("copy buttons appear once the clipboard API is there", async ({ page }) => {
   await page.goto("/");
   // The install tabs' button; the theme.json frame gets its own Copy too.
@@ -318,7 +332,7 @@ test("reduced motion loads a paused live deck without recorded media", async ({ 
   expect(recordings).toEqual([]);
 });
 
-for (const width of [360, 768, 1280, 1440, 1920]) {
+for (const width of [360, 768, 800, 1024, 1280, 1440, 1920]) {
   test(`at ${width}px the player shares the page's one column and keeps 16:9`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -331,6 +345,25 @@ for (const width of [360, 768, 1280, 1440, 1920]) {
     const expectedWidth = Math.min(1296, width - gutter * 2);
     expect(frame?.x).toBeCloseTo((width - expectedWidth) / 2, 0);
     expect(frame?.width).toBeCloseTo(expectedWidth, 0);
+    // The toolbar's groups never overlap, in one row or two.
+    const groups = await page.evaluate(() =>
+      [".player-examples", ".player-position", ".player-transport", ".player-actions"].map(
+        (selector) => {
+          const box = document.querySelector(selector)?.getBoundingClientRect();
+          if (!box) throw new Error(`missing ${selector}`);
+          return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
+        },
+      ),
+    );
+    for (const [i, a] of groups.entries())
+      for (const b of groups.slice(i + 1)) {
+        const overlap =
+          a.left < b.right - 1 &&
+          b.left < a.right - 1 &&
+          a.top < b.bottom - 1 &&
+          b.top < a.bottom - 1;
+        expect(overlap).toBe(false);
+      }
     for (const edge of ["header a[href='/']", "#hero-title"]) {
       const left = await page.locator(edge).first().boundingBox();
       expect(left?.x).toBeCloseTo(frame?.x ?? 0, 0);

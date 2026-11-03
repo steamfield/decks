@@ -16,7 +16,7 @@ import {
   Section,
   Transcript,
 } from "../components/landing/sections";
-import { site } from "../config";
+import { agents, countWord, site } from "../config";
 import { ENTRIES, loadExamples } from "../data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../data/fixtures";
 import { loadProjectFiles, setupCommands } from "../data/project";
@@ -193,7 +193,8 @@ const stills = (name: string) => ({
     lede="Colors, fonts and cover branding come from one theme file. A deck's theme.json sets only the keys it lists, and the rest keep their defaults."
   >
     <div class="themes-grid">
-      <div class="theme-switch">
+      <fieldset class="theme-switch">
+        <legend class="sr-only">Show the slide with</legend>
         <input type="radio" name="theme-still" id="still-default" class="sr-only" checked />
         <input type="radio" name="theme-still" id="still-warm" class="sr-only" />
         <div class="theme-tabs">
@@ -244,7 +245,7 @@ const stills = (name: string) => ({
             </picture>
           </figure>
         </div>
-      </div>
+      </fieldset>
       <div class="theme-source">
         <figure class="code-frame code-wrap" data-block>
           <figcaption>theme.json</figcaption>
@@ -263,7 +264,7 @@ const stills = (name: string) => ({
     id="requirements"
     tone="band"
     title="Requirements and limits"
-    lede="Decks runs on Slidev with shared instructions for seven agent platforms."
+    lede={`Decks runs on Slidev with shared instructions for ${countWord(agents.length)} agent platforms.`}
   >
     <div class="requirements-grid">
       <Requirements items={site.requirements} />
@@ -287,7 +288,9 @@ const stills = (name: string) => ({
 
   <section class="closing-cta" aria-label="Install Decks">
     <div class="page-column closing-row" data-reveal>
-      <p class="closing-line">Decks is free under the {site.license} license.</p>
+      <p class="closing-line">
+        {site.license ? `Decks is free under the ${site.license} license.` : "Decks is free."}
+      </p>
       <div class="hero-actions">
         <a class="button-primary" href="#install">
           Install Decks

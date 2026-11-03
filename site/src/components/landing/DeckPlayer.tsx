@@ -150,6 +150,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenError, setFullscreenError] = useState("");
   const wrapper = useRef<HTMLDivElement>(null);
+  const rail = useRef<HTMLElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const target = useRef<Position>(example ? startOf(example) : { slide: 1, beat: 0 });
   const desired = useRef<Position>(target.current);
@@ -377,6 +378,22 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
     [],
   );
 
+  // Keep the current slide visible in a rail that scrolls sideways (long decks, phones).
+  const railSlide = deck?.slide ?? target.current.slide;
+  useEffect(() => {
+    const list = rail.current;
+    const current = list?.children[railSlide - 1] as HTMLElement | undefined;
+    if (!list || !current) return;
+    const left = current.offsetLeft;
+    const right = left + current.offsetWidth;
+    if (left >= list.scrollLeft && right <= list.scrollLeft + list.clientWidth) return;
+    const smooth = Boolean(window.matchMedia?.(MOTION).matches);
+    list.scrollTo?.({
+      left: left - (list.clientWidth - current.offsetWidth) / 2,
+      behavior: smooth ? "smooth" : "auto",
+    });
+  }, [railSlide]);
+
   const pick = useCallback(
     (name: string) => {
       const next = examples.findIndex((item) => item.name === name);
@@ -419,8 +436,8 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
   const status = loading
     ? "Loading interactive deck…"
     : phase === "ready"
-      ? "Interactive"
-      : "Interactive deck could not open";
+      ? "Live deck"
+      : "The deck did not answer";
   const play = () => {
     openingHold.current = false;
     if (playing) {
@@ -515,7 +532,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
           <div className="player-position">
             <span className="player-status" role="status">
               <span aria-hidden="true">
-                {loading ? "Loading" : phase === "failed" ? "Offline" : "Live"}
+                {loading ? "Loading" : phase === "failed" ? "Not responding" : "Live"}
               </span>
               <span className="sr-only">{status}</span>
             </span>
@@ -608,7 +625,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
             )}
             {phase === "failed" && (
               <div className="player-failure">
-                <p>The deck did not answer.</p>
+                <p role="alert">The deck did not answer.</p>
                 <button className="player-retry" type="button" onClick={retry}>
                   Retry
                 </button>
@@ -617,7 +634,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
           </div>
         </div>
         {example.slides > 1 && (
-          <nav className="player-rail js-only" aria-label="Slides">
+          <nav className="player-rail js-only" aria-label="Slides" ref={rail}>
             {Array.from({ length: example.slides }, (_, i) => (
               <button
                 type="button"
@@ -625,6 +642,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
                 key={`slide-${i + 1}`}
                 className="rail-slide"
                 aria-current={shown.slide === i + 1 ? "step" : undefined}
+                title={titles[i] || undefined}
                 onClick={() => step(command.go(i + 1, 0))}
               >
                 <span
@@ -632,13 +650,19 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
                   aria-hidden="true"
                   style={{ "--progress": progress(i + 1) } as CSSProperties}
                 />
-                {/* The name reads "Slide 2: Title" and still contains the visible "2 Title". */}
-                <span className="rail-number">
-                  <span className="sr-only">Slide </span>
-                  {i + 1}
-                  <span className="sr-only">:</span>
-                </span>{" "}
-                <span className="rail-title">{titles[i] || `Slide ${i + 1}`}</span>
+                {titles[i] ? (
+                  <>
+                    {/* The name reads "Slide 2: Title" and still contains the visible "2 Title". */}
+                    <span className="rail-number">
+                      <span className="sr-only">Slide </span>
+                      {i + 1}
+                      <span className="sr-only">:</span>
+                    </span>{" "}
+                    <span className="rail-title">{titles[i]}</span>
+                  </>
+                ) : (
+                  <span className="rail-title">Slide {i + 1}</span>
+                )}
               </button>
             ))}
           </nav>

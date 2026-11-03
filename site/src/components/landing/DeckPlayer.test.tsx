@@ -182,7 +182,7 @@ describe("DeckPlayer", () => {
     const slides = rail.querySelectorAll("button");
     expect([...slides].map((slide) => slide.textContent)).toEqual([
       "Slide 1: Cover",
-      "Slide 2: Slide 2",
+      "Slide 2",
       "Slide 3: Close",
     ]);
     const fill = () =>
@@ -634,7 +634,7 @@ describe("DeckPlayer", () => {
         { type: "decks:cmd", cmd: "go", slide: 2, beat: 1, requestId: 2 },
       ]);
       retried.state({ beat: 1, requestId: 2 });
-      expect(screen.getByRole("status")).toHaveTextContent("Interactive");
+      expect(screen.getByRole("status")).toHaveTextContent("Live deck");
       expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
     },
   );

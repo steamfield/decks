@@ -10,6 +10,7 @@ import {
   HookPanel,
   ReleaseBanner,
   Requirements,
+  Section,
   Transcript,
 } from "./sections";
 
@@ -28,12 +29,12 @@ const run: AgentRun = {
   ],
 };
 
-const example = (name: string, label: string): Example =>
+const example = (name: string, label: string, kind = "talk"): Example =>
   ({
     name,
     title: `${name} title`,
     href: `/demo/${name}/`,
-    provenance: { kind: "talk", label },
+    provenance: { kind, label },
     poster: { base: `/posters/${name}`, width: 1280, height: 720 },
     states: [],
   }) as unknown as Example;
@@ -122,6 +123,48 @@ describe("landing sections", () => {
     expect(link).toHaveAttribute("data-example", "a");
     expect(link.querySelector("img")).toHaveAttribute("src", "/posters/a-640.webp");
     expect(screen.getByText("From the talks")).toBeInTheDocument();
+  });
+
+  it("tags each example row with how the deck was made", () => {
+    render(
+      <ExampleGallery
+        examples={[
+          example("a", "Drafted by Claude Code", "agent"),
+          example("b", "From a talk", "talk"),
+          example("c", "Template deck", "template"),
+          example("d", "Made by hand", "hand"),
+        ]}
+      />,
+    );
+    const rows = screen.getAllByRole("link");
+    expect(rows.map((row) => row.getAttribute("data-kind"))).toEqual([
+      "agent",
+      "talk",
+      "template",
+      "hand",
+    ]);
+    expect(rows.map((row) => row.querySelector(".kind-tag")?.textContent)).toEqual([
+      "Agent",
+      "Talk",
+      "Template",
+      "By hand",
+    ]);
+  });
+
+  it("sits a section on the canvas unless it asks for a band", () => {
+    const { container, rerender } = render(
+      <Section id="s" title="A claim.">
+        <p>Body</p>
+      </Section>,
+    );
+    expect(container.querySelector("section")).toHaveAttribute("data-tone", "canvas");
+    expect(screen.getByRole("region", { name: "A claim." })).toBeInTheDocument();
+    rerender(
+      <Section id="s" title="A claim." tone="band">
+        <p>Body</p>
+      </Section>,
+    );
+    expect(container.querySelector("section")).toHaveAttribute("data-tone", "band");
   });
 
   it("prints a deck's text for readers without JavaScript", () => {

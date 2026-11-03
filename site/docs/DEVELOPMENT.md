@@ -14,7 +14,7 @@
 | `src/data/` | `examples.json` (the example registry), build-time loaders for the examples, the recorded fixtures and the scaffolded file tree |
 | `src/lib/player/` | The embed contract, caption and counter formatting, and the example types (`stateAt`, `markAt`, `draftLine`) |
 | `src/lib/tokens.ts` | The landing page's tokens, derived from the product theme |
-| `src/scripts/site.ts` | Theme toggle (docs), command and code copy buttons (shown only when the clipboard API is there), gallery picks, copy page and the TOC highlight |
+| `src/scripts/site.ts` | Theme toggle (docs), command and code copy buttons (shown only when the clipboard API is there), gallery picks, copy page, the TOC highlight, and on the landing page the header's scroll edge and the section scroll reveal |
 | `src/layouts/` | `BaseLayout` (head, header, footer) and `DocsLayout` (sidebar, TOC, pager) |
 
 ## Docs pages
@@ -36,7 +36,7 @@ Astro's default processor is Sätteri, which doesn't run remark or rehype plugin
 
 ## Islands and scripts
 
-Landing sections are React components rendered to HTML at build time. Only components named in `site.islands` may take a `client:` directive, and only on the landing page; the build test compares the hydrated islands with that list and fails on any island in `/docs/`. `DeckPlayer` uses `client:visible`; `InstallTabs` sits in the getting-started section and uses `client:idle` so it is ready before anyone scrolls to it. Interactive behaviour shared by every page (theme, copy buttons, TOC, gallery picks) goes in `src/scripts/site.ts` as plain DOM code that does nothing when its markup is absent.
+Landing sections are React components rendered to HTML at build time. Only components named in `site.islands` may take a `client:` directive, and only on the landing page; the build test compares the hydrated islands with that list and fails on any island in `/docs/`. `DeckPlayer` uses `client:visible`; `InstallTabs` sits in the getting-started section and uses `client:idle` so it is ready before anyone scrolls to it. Interactive behaviour shared by every page (theme, copy buttons, TOC, gallery picks) goes in `src/scripts/site.ts` as plain DOM code that does nothing when its markup is absent. Two pieces are landing-only: the sticky header shows its bottom edge once a sentinel scrolls away, and `[data-reveal]` blocks below the fold start pending and rise in on intersection or focus. The reveal does nothing under reduced motion or without IntersectionObserver, and print shows every block.
 
 The header, hero and showcase share one column (`.page-column`): 1360px with 32px gutters, or 16px below 768px. The player keeps its 16:9 composition; viewport height does not cap its width.
 

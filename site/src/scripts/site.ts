@@ -130,19 +130,21 @@ function setupReveal() {
   const pending = [...document.querySelectorAll<HTMLElement>("[data-reveal]")].filter(
     (element) => element.getBoundingClientRect().top > window.innerHeight,
   );
+  const reveal = (element: Element) => {
+    element.removeAttribute("data-pending");
+    observer.unobserve(element);
+  };
   const observer = new IntersectionObserver(
     (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.removeAttribute("data-pending");
-        observer.unobserve(entry.target);
-      }
+      for (const entry of entries) if (entry.isIntersecting) reveal(entry.target);
     },
     { rootMargin: "0px 0px -15% 0px" },
   );
   for (const element of pending) {
     element.setAttribute("data-pending", "");
     observer.observe(element);
+    // Keyboard focus can land in a block before it crosses the threshold.
+    element.addEventListener("focusin", () => reveal(element), { once: true });
   }
 }
 

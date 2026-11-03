@@ -149,7 +149,7 @@ export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
       </figcaption>
       <ol>
         <li className="transcript-prompt">
-          <span aria-hidden="true" className="text-data select-none">
+          <span aria-hidden="true" className="run-glyph select-none">
             ❯{" "}
           </span>
           claude -p "{run.prompt}"
@@ -163,7 +163,7 @@ export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
             <div className="min-w-0">
               {step.calls.map((call) => (
                 <p key={call} className="text-ink break-words">
-                  <span aria-hidden="true" className="text-data select-none">
+                  <span aria-hidden="true" className="run-glyph select-none">
                     ●{" "}
                   </span>
                   {call}

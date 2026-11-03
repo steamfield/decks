@@ -1,14 +1,17 @@
 /*
  * The landing page. Dark only: BaseLayout sets the --color-* tokens from the
  * product's default.json (src/lib/tokens.ts), so the page canvas is the slide
- * canvas. Depth comes from a surface ladder and hairlines, never shadows:
- * canvas (page, hero, slide), band (alternate sections), raised (controls, and
- * panels inside a band). Radii: 8px for the player and panels, 6px for
+ * canvas. Depth comes from a surface ladder and hairlines: canvas (page,
+ * hero, slide), band (alternate sections), raised (controls, and panels inside
+ * a band). The open examples menu is the one shadow. Decorative marks are the
+ * brand rule, the hero's dot grid and the terminal frame's window dots. Radii: 8px for the player and panels, 6px for
  * controls, 4px for chips. One container: header, hero, player and sections
  * share a single left edge.
  */
 
 html[data-page="landing"] {
+  /* Focused elements and anchors land below the sticky header. */
+  scroll-padding-top: calc(var(--header-height) + 8px);
   --radius-lg: 8px;
   --header-height: 56px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -97,7 +100,24 @@ html[data-page="landing"] :focus-visible {
 
 /* Hero: a statement on the left, the install path on the right, the deck below. */
 .hero {
+  position: relative;
+  isolation: isolate;
   padding-block: 72px 96px;
+}
+/* A faint violet dot grid, echoing a chart grid, fading out from the headline. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-rule-2) 34%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 75% 60% at 25% 25%, #000 20%, transparent 75%);
+  pointer-events: none;
 }
 .hero-head {
   display: grid;
@@ -240,6 +260,7 @@ html[data-page="landing"] :focus-visible {
   width: 100%;
 }
 .player {
+  position: relative;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   background: var(--color-panel);
@@ -297,6 +318,8 @@ html[data-page="landing"] :focus-visible {
   color: var(--color-ink);
 }
 .example-selector[aria-pressed="true"] {
+  outline: 1px solid var(--color-line-strong);
+  outline-offset: -1px;
   background: var(--color-raised);
   color: var(--color-ink);
 }
@@ -444,10 +467,27 @@ html[data-page="landing"] :focus-visible {
   color: var(--color-ink);
 }
 
-/* The slide: the page's own canvas, so no inner frame. */
-.player-frame {
-  padding: 0;
+/* Touch screens get 44px targets at every width. */
+@media (pointer: coarse) {
+  .control,
+  .open-deck {
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+  .nav-install,
+  .theme-tabs label,
+  .example-selector,
+  .more-examples > summary {
+    min-height: 44px;
+  }
+  .theme-tabs label {
+    display: inline-flex;
+    align-items: center;
+  }
 }
+
+/* The slide: the page's own canvas, so no inner frame. */
 .player-canvas {
   position: relative;
   aspect-ratio: 16 / 9;
@@ -479,10 +519,9 @@ html[data-page="landing"] :focus-visible {
   grid-auto-columns: minmax(11rem, 1fr);
   overflow-x: auto;
   border-top: 1px solid var(--color-line);
-  scrollbar-width: none;
-}
-.player-rail::-webkit-scrollbar {
-  display: none;
+  /* A thin scrollbar says the rail scrolls when a deck has more slides than fit. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
 }
 .rail-slide {
   position: relative;
@@ -505,7 +544,6 @@ html[data-page="landing"] :focus-visible {
 .rail-slide[aria-current] {
   color: var(--color-ink);
 }
-.rail-slide::before,
 .rail-progress {
   position: absolute;
   top: -1px;
@@ -513,18 +551,13 @@ html[data-page="landing"] :focus-visible {
   right: 0;
   height: 2px;
 }
-.rail-slide::before {
-  content: "";
-  background: transparent;
-}
 .rail-progress {
   background: var(--color-data);
   transform-origin: left;
   transform: scaleX(var(--progress, 0));
-  transition: transform 600ms var(--ease-out);
 }
 .rail-number {
-  color: var(--color-line-strong);
+  color: var(--color-muted);
   font-family: var(--font-mono);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
@@ -640,6 +673,7 @@ html[data-page="landing"] :focus-visible {
   border-radius: 0;
 }
 .player:fullscreen .player-toolbar {
+  position: static;
   flex: 0 0 auto;
   border-radius: 0;
 }
@@ -661,8 +695,11 @@ html[data-page="landing"] :focus-visible {
   overflow-y: auto;
 }
 
-/* Small screens: two toolbar rows, touch-sized controls, a scrolling rail. */
-@media (max-width: 767px) {
+/*
+ * Narrow players: two toolbar rows, touch-sized controls, a scrolling rail.
+ * The one-row toolbar needs about 900px before its three groups collide.
+ */
+@media (max-width: 899px) {
   .player-toolbar {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
@@ -692,7 +729,9 @@ html[data-page="landing"] :focus-visible {
     grid-column: 1 / -1;
     justify-self: end;
   }
-  .player-status {
+  /* The dot and word go; the status element stays for screen readers. */
+  .player-status::before,
+  .player-status > [aria-hidden] {
     display: none;
   }
   .control {
@@ -795,7 +834,7 @@ html[data-page="landing"] :focus-visible {
 .panel {
   overflow: hidden;
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--color-panel);
 }
 
@@ -809,6 +848,14 @@ html[data-page="landing"] :focus-visible {
   font-size: 0.875rem;
 }
 
+.requirement {
+  display: grid;
+  gap: 0.125rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  padding-block: 0.75rem;
+  font-size: 14px;
+  line-height: 1.6;
+}
 .requirement:last-child {
   border-bottom: 0;
 }
@@ -899,10 +946,11 @@ html[data-page="landing"] :focus-visible {
 
 .hook-panel > figcaption {
   flex-direction: column;
+  border-bottom-color: color-mix(in srgb, var(--color-block) 30%, var(--color-line));
 }
 
 .hook-line {
-  border: 1px solid var(--color-line);
+  border: 1px solid color-mix(in srgb, var(--color-block) 35%, var(--color-line));
   border-radius: var(--radius-sm);
   background: var(--color-canvas);
   padding: 0.75rem;
@@ -1036,6 +1084,16 @@ html[data-page="landing"] :focus-visible {
   font-size: 20px;
   font-variant-numeric: tabular-nums;
 }
+.run-figures > div {
+  border-left: 2px solid var(--color-agent);
+  padding-left: 12px;
+}
+.run-figures > div:nth-child(2) {
+  border-left-color: var(--color-talk);
+}
+.run-figures > div:nth-child(3) {
+  border-left-color: var(--color-template);
+}
 .requirements-grid {
   display: grid;
   grid-template-columns: 1.35fr 1fr;
@@ -1048,15 +1106,6 @@ html[data-page="landing"] :focus-visible {
   border-top: 1px solid var(--color-line);
   border-radius: 0;
   background: transparent;
-}
-.requirement {
-  display: grid;
-  gap: 0.125rem 1rem;
-  border-bottom: 1px solid var(--color-line);
-  padding: 0.75rem 1rem;
-  padding-inline: 0;
-  font-size: 14px;
-  line-height: 1.6;
 }
 .docs-links {
   display: flex;
@@ -1084,27 +1133,7 @@ html[data-page="landing"] :focus-visible {
  * player and the closing call to action; a faint violet dot grid sits behind
  * the hero; provenance, run output and the hook's verdict carry their hues.
  */
-.hero {
-  position: relative;
-  isolation: isolate;
-}
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-rule-2) 34%, transparent) 1px,
-    transparent 1.5px
-  );
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse 75% 60% at 25% 25%, #000 20%, transparent 75%);
-  pointer-events: none;
-}
-.player {
-  position: relative;
-}
+
 .player::before {
   content: "";
   background: var(--brand-rule);
@@ -1120,7 +1149,7 @@ html[data-page="landing"] :focus-visible {
 .player:fullscreen::before {
   display: none;
 }
-.hero-intro .select-none {
+.hero-intro .copy-prompt {
   color: var(--color-action);
 }
 
@@ -1157,18 +1186,8 @@ html[data-page="landing"] :focus-visible {
 .agent-links a:hover {
   text-decoration: underline;
 }
-.run-figures > div {
-  border-left: 2px solid var(--color-agent);
-  padding-left: 12px;
-}
-.run-figures > div:nth-child(2) {
-  border-left-color: var(--color-talk);
-}
-.run-figures > div:nth-child(3) {
-  border-left-color: var(--color-template);
-}
 /* Tool-call bullets and the prompt caret in the run. */
-.text-data {
+.run-glyph {
   color: var(--color-data);
 }
 .terminal {
@@ -1195,14 +1214,8 @@ html[data-page="landing"] :focus-visible {
 .hook-panel {
   border-color: color-mix(in srgb, var(--color-block) 45%, var(--color-line));
 }
-.hook-panel > figcaption {
-  border-bottom-color: color-mix(in srgb, var(--color-block) 30%, var(--color-line));
-}
 .hook-panel strong {
   color: var(--color-block);
-}
-.hook-line {
-  border-color: color-mix(in srgb, var(--color-block) 35%, var(--color-line));
 }
 
 /* Install: the commands beside three label-and-detail rows. */
@@ -1318,6 +1331,10 @@ html[data-page="landing"] :focus-visible {
   gap: 48px;
 }
 .theme-switch {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1342,6 +1359,8 @@ html[data-page="landing"] :focus-visible {
 }
 #still-default:checked ~ .theme-tabs label[for="still-default"],
 #still-warm:checked ~ .theme-tabs label[for="still-warm"] {
+  outline: 1px solid var(--color-line-strong);
+  outline-offset: -1px;
   background: var(--color-raised);
   color: var(--color-ink);
 }
@@ -1355,7 +1374,6 @@ html[data-page="landing"] :focus-visible {
 }
 .theme-stills > .still {
   grid-area: 1 / 1;
-  transition: opacity 300ms var(--ease-out);
 }
 #still-default:checked ~ .theme-stills [data-still="warm"],
 #still-warm:checked ~ .theme-stills [data-still="default"] {
@@ -1404,8 +1422,17 @@ html[data-page="landing"] :focus-visible {
   line-height: 1.15;
 }
 
-/* Scroll reveal: src/scripts/site.ts marks rows still below the fold as pending. */
-@media (prefers-reduced-motion: no-preference) {
+/*
+ * Motion, only when allowed and only on screen (print shows every block).
+ * Scroll reveal: src/scripts/site.ts marks rows still below the fold pending.
+ */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .rail-progress {
+    transition: transform 600ms var(--ease-out);
+  }
+  .theme-stills > .still {
+    transition: opacity 300ms var(--ease-out);
+  }
   [data-reveal] {
     transition:
       opacity 640ms var(--ease-out),

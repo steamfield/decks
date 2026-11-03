@@ -22,6 +22,20 @@ const run = (runner: "bunx" | "npx" | "pnpm", args: string) =>
   runner === "pnpm" ? `pnpm exec decks ${args}` : `${runner} -p slidev-addon-decks decks ${args}`;
 const peers = "slidev-addon-decks @slidev/cli slidev-theme-the-unnamed";
 
+/** The agents the installed guidance supports. The requirements row, the hero's fine print and the section lede all read this list. */
+export const agents = [
+  "Claude Code",
+  "Codex",
+  "Cursor",
+  "Copilot",
+  "Gemini CLI",
+  "Windsurf",
+  "OpenCode",
+];
+const numberWords = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+/** A count under ten as a word ("seven"), otherwise digits. */
+export const countWord = (n: number) => numberWords[n] ?? String(n);
+
 /** packages/decks/package.json, read at build time. */
 function packageJson(): { version?: string; license?: string } {
   try {
@@ -36,6 +50,7 @@ function packageJson(): { version?: string; license?: string } {
 }
 const pkg = packageJson();
 const license = pkg.license ?? "";
+const price = license ? `Free, ${license}` : "Free";
 
 export const site = {
   name: "Decks",
@@ -58,9 +73,9 @@ export const site = {
   /** The hero's install block: three lines, one copy button. */
   quickstart: [`bun add ${peers}`, run("bunx", "init"), run("bunx", "new my-talk --story")],
   /** Shown under the hero's install block. */
-  price: license ? `Free, ${license}` : "Free",
+  price,
   /** The hero's last line, under the install block and buttons. */
-  heroFineprint: `${license ? `Free, ${license}` : "Free"}. Runs on Slidev, with shared guidance for Claude Code, Codex, Cursor and four other agents.`,
+  heroFineprint: `${price}. Runs on Slidev, with shared guidance for ${agents.slice(0, 3).join(", ")} and ${countWord(agents.length - 3)} other agents.`,
   install: [
     {
       label: "bun",
@@ -85,7 +100,7 @@ export const site = {
   requirements: [
     {
       label: "Agent",
-      text: "Claude Code, Codex, Cursor, Copilot, Gemini CLI, Windsurf or OpenCode. Shared guidance; automatic writing hooks in Claude Code.",
+      text: `${agents.slice(0, -1).join(", ")} or ${agents.at(-1)}. Shared guidance; automatic writing hooks in Claude Code.`,
     },
     {
       label: "Slides",
