@@ -86,8 +86,7 @@ function assertNotDeny(payload, name, opts) {
   )
 }
 
-// A user project with one deck. A deck is a directory under a deck root that
-// holds a slides.md, so the fixture needs the file for decks/my-talk to count.
+// A user project with one deck, decks/my-talk.
 const USER = scratch('decks-hook-user-')
 mkdirSync(join(USER, 'decks/my-talk'), { recursive: true })
 writeFileSync(join(USER, 'decks/my-talk/slides.md'), '---\nsrc: ./pages/01.md\n---\n')
@@ -173,9 +172,9 @@ assertDeny(
     'denies in a deck of a worktree under .claude/worktrees/',
     { project },
   )
-  assertNotDeny(
+  assertDeny(
     write(join(wt, 'decks/y/pages/01.md'), 'An em — dash.'),
-    'allows a worktree directory with no slides.md',
+    'denies in a worktree deck built pages-first (no slides.md yet)',
     { project },
   )
   assertNotDeny(
@@ -202,9 +201,9 @@ assertNotDeny(
   write(join(ROOT, 'site/src/components/X.vue'), '<template><p>An em — dash.</p></template>'),
   "allows the site's components in this repo (its own dir is named decks)",
 )
-assertNotDeny(
+assertDeny(
   write('decks/no-slides/pages/01.md', 'An em — dash.'),
-  'allows a directory under decks/ with no slides.md',
+  'denies in a deck under decks/ built pages-first (no slides.md yet)',
   inUser,
 )
 assertDeny(
@@ -444,6 +443,23 @@ assertNotDeny(
   assertNotDeny(
     edit(page, '\nZ fine', '\nZ'),
     'allows appending after a line that already has a hit',
+    { project },
+  )
+  writeFileSync(page, '# Head.\nremove me\nLet that sink in.\n')
+  assertNotDeny(
+    edit(page, '', 'remove me\n'),
+    'deleting a whole line does not blame the pre-existing hit on the next line',
+    { project },
+  )
+  const stage = join(project, 'decks/d/components/S.vue')
+  mkdirSync(dirname(stage), { recursive: true })
+  writeFileSync(
+    stage,
+    '<script setup>\nconst COPY = [\n  // { lead: "x" },\n  { lead: "Let that sink in." },\n]\n</script>\n',
+  )
+  assertNotDeny(
+    edit(stage, '', '  // { lead: "x" },\n'),
+    'deleting a COPY line does not blame the pre-existing hit on the next entry',
     { project },
   )
   writeFileSync(page, fm + 'Old — bad.\n\nGood line.\n')

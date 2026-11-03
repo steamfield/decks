@@ -20,4 +20,8 @@ export declare function runInit(
   opts?: { rootDir?: string; log?: (s: string) => void; packageDir?: string },
 ): InitResult
 export declare function lineDiff(before: string, after: string): string
-export declare function mergeHooks(settings: Record<string, any>, entries: unknown[]): string[]
+export declare function mergeHooks(
+  settings: Record<string, any>,
+  entries: unknown[],
+  opts?: { add?: boolean },
+): string[]

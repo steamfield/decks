@@ -17,14 +17,37 @@ if [ -f "$cli" ]; then
 fi
 [ "$2" = lint ] || exit 0
 
-# The payload's file_path, made relative to the project (or to its worktree).
+# The payload's file_path, made relative to the project, or to the worktree
+# under .claude/worktrees/ it sits in (a checkout of its own).
 path=$(sed -n 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)
-path=${path#"$CLAUDE_PROJECT_DIR"/}
-path=${path#.claude/worktrees/*/}
+base=$CLAUDE_PROJECT_DIR
+path=${path#"$base"/}
+case "$path" in
+  .claude/worktrees/*/*)
+    rest=${path#.claude/worktrees/}
+    base=$base/.claude/worktrees/${rest%%/*}
+    path=${rest#*/} ;;
+esac
 case "$path" in
   /* | node_modules/* | */node_modules/*) exit 0 ;;
-  {{deckGlob}}/slides.md | {{deckGlob}}/pages/*.md | {{deckGlob}}/components/*.vue)
-    echo "BLOCKED: slidev-addon-decks is not installed; deck prose can't be linted. Install it, or remove the decks hooks from .claude/settings.json." >&2
-    exit 2 ;;
 esac
-exit 0
+
+# Deck prose is <root>/<deck>/slides.md, pages/*.md or components/*.vue, with
+# <deck> one directory. At the project root (decksDir ".") <deck> must also
+# hold a slides.md, so src/components is not a deck.
+root={{decksDir}}
+if [ "$root" != . ]; then
+  case "$path" in
+    "$root"/*) path=${path#"$root"/} ;;
+    *) exit 0 ;;
+  esac
+fi
+deck=${path%%/*}
+[ "$deck" != "$path" ] || exit 0
+case "${path#*/}" in
+  slides.md) ;;
+  pages/*.md | components/*.vue) [ "$root" != . ] || [ -f "$base/$deck/slides.md" ] || exit 0 ;;
+  *) exit 0 ;;
+esac
+echo "BLOCKED: slidev-addon-decks is not installed; deck prose can't be linted. Install it, or remove the decks hooks from .claude/settings.json." >&2
+exit 2

@@ -647,8 +647,8 @@ await testCase('10 hook: MultiEdit, an unreplayable Edit, a ./talks decksDir, ho
       file_path: join(deckProj, 'talks/q3/pages/01.md'),
       content: `# A title.\n\n${PLANTED}, the moon sets the schedule.\n`,
     }
-    const notDeck = runHook(deckProj, 'Write', plantedTalk)
-    check(notDeck.status === 0 && !denied(notDeck), 'talks/q3 without a slides.md is not a deck', show(notDeck))
+    const pagesFirst = runHook(deckProj, 'Write', plantedTalk)
+    check(denied(pagesFirst), 'a talks/q3 page written before its slides.md is denied', show(pagesFirst))
     write(deckProj, 'talks/q3/slides.md', '---\n---\n')
     const talks = runHook(deckProj, 'Write', plantedTalk)
     check(denied(talks), 'with decksDir "./talks/" a planted talks/ page is denied', show(talks))

@@ -126,6 +126,27 @@ describe('decks init, fresh project', () => {
     expect(settings(root).hooks.PreToolUse).toHaveLength(1)
   })
 
+  it('without the package, rewrites an older owned hook command to decks.sh and adds none', () => {
+    const node = 'node "$CLAUDE_PROJECT_DIR/node_modules/slidev-addon-decks/scripts/deck.mjs" hook'
+    const old = {
+      hooks: { PreToolUse: [{ matcher: 'Edit|Write|MultiEdit', hooks: [{ type: 'command', command: `${node} lint || exit 2` }] }] },
+    }
+    const root = project({ '.claude/settings.json': JSON.stringify(old) })
+    rmSync(join(root, 'node_modules'), { recursive: true })
+    const r = init(root)
+    expect(r.code).toBe(1)
+    expect(settings(root).hooks).toEqual({
+      PreToolUse: [{ matcher: 'Edit|Write|MultiEdit', hooks: [{ type: 'command', command: LINT_CMD }] }],
+    })
+    const run = spawnSync('sh', ['-c', settings(root).hooks.PreToolUse[0].hooks[0].command], {
+      input: JSON.stringify({ tool_name: 'Write', tool_input: { file_path: join(root, 'README.md'), content: 'x' } }),
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    })
+    expect(run.status).toBe(0)
+    expect(r.warnings.join('\n')).toMatch(/still has the decks hooks \(PreToolUse\)/)
+  })
+
   it('warns when its hooks are in settings.json but the package is missing', () => {
     const root = project()
     init(root)
@@ -333,7 +354,7 @@ describe('decks init, the decks.sh hook wrapper', () => {
   it.each([
     ['decks', 'decks/x/pages/01.md', 'src/index.ts'],
     ["it's here", "it's here/x/slides.md", 'decks/x/pages/01.md'],
-    ['.', 'x/components/A.vue', 'src/index.ts'],
+    ['.', 'x/slides.md', 'src/index.ts'],
   ])('without the package, decksDir %j: refuses %s, allows %s', (decksDir, deck, other) => {
     const root = project({ 'decks.json': JSON.stringify({ _config: { decksDir } }) })
     init(root)
@@ -344,6 +365,31 @@ describe('decks init, the decks.sh hook wrapper', () => {
     expect(sh(root, 'lint', write(root, `node_modules/p/${deck}`)).status).toBe(0)
     const prompt = sh(root, 'prompt', { prompt: 'write a deck' })
     expect([prompt.status, prompt.stdout, prompt.stderr]).toEqual([0, '', ''])
+  })
+
+  it('without the package, decksDir ".": refuses only in a top-level directory holding a slides.md', () => {
+    const root = project({ 'decks.json': '{ "_config": { "decksDir": "." } }\n', 'talk/slides.md': '---\n---\n' })
+    init(root)
+    rmSync(join(root, 'node_modules'), { recursive: true })
+    for (const allowed of ['src/components/Button.vue', 'src/pages/index.md', 'docs/pages/intro.md', 'talk/x/pages/01.md'])
+      expect([allowed, sh(root, 'lint', write(root, allowed)).status]).toEqual([allowed, 0])
+    for (const refused of ['talk/pages/01.md', 'talk/components/A.vue', 'new/slides.md'])
+      expect([refused, sh(root, 'lint', write(root, refused)).status]).toEqual([refused, 2])
+    // A worktree is judged against its own files.
+    mkdirSync(join(root, '.claude/worktrees/w/wt-talk'), { recursive: true })
+    writeFileSync(join(root, '.claude/worktrees/w/wt-talk/slides.md'), '---\n---\n')
+    expect(sh(root, 'lint', write(root, '.claude/worktrees/w/wt-talk/pages/01.md')).status).toBe(2)
+    expect(sh(root, 'lint', write(root, '.claude/worktrees/w/talk/pages/01.md')).status).toBe(0)
+  })
+
+  it('without the package, a named decksDir: refuses <root>/<deck>/ prose by path, not a nested directory', () => {
+    const root = project({ 'decks.json': '{ "_config": { "decksDir": "talks" } }\n' })
+    init(root)
+    rmSync(join(root, 'node_modules'), { recursive: true })
+    for (const refused of ['talks/q3/pages/01.md', 'talks/q3/pages/sub/01.md', 'talks/q3/components/A.vue', 'talks/q3/slides.md'])
+      expect([refused, sh(root, 'lint', write(root, refused)).status]).toEqual([refused, 2])
+    for (const allowed of ['talks/a/b/pages/x.md', 'talks/pages/x.md', 'talks/q3/data/x.md', 'src/talks/q3/pages/x.md'])
+      expect([allowed, sh(root, 'lint', write(root, allowed)).status]).toEqual([allowed, 0])
   })
 
   it('with the package, runs its `decks hook` and exits 2 when node fails', () => {

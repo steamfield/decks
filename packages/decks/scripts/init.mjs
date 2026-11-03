@@ -177,8 +177,12 @@ function ownHooksIn(settings) {
     .map((e) => e.event)
 }
 
-/** Merge init's hooks into a settings object in place. Returns one note per hook. Throws on a settings shape it can't merge into. */
-export function mergeHooks(settings, entries) {
+/**
+ * Merge init's hooks into a settings object in place. Returns one note per
+ * hook. With `add: false` it only rewrites hooks already there. Throws on a
+ * settings shape it can't merge into.
+ */
+export function mergeHooks(settings, entries, { add = true } = {}) {
   if (!isObject(settings)) throw new InitError(`.claude/settings.json is ${JSON.stringify(settings)}, not a JSON object`)
   if (settings.hooks !== undefined && !isObject(settings.hooks))
     throw new InitError(`"hooks" in .claude/settings.json is ${JSON.stringify(settings.hooks)}, not an object`)
@@ -187,8 +191,9 @@ export function mergeHooks(settings, entries) {
     if (groups !== undefined && !Array.isArray(groups)) throw new InitError(`hooks.${e.event} in .claude/settings.json is not an array`)
   }
   const notes = []
-  settings.hooks ??= {}
+  if (add) settings.hooks ??= {}
   for (const e of entries) {
+    if (!add && !settings.hooks?.[e.event]) continue
     const groups = (settings.hooks[e.event] ??= [])
     const mine = groups
       .flatMap((g) => (Array.isArray(g?.hooks) ? g.hooks : []))
@@ -198,7 +203,7 @@ export function mergeHooks(settings, entries) {
     } else if (mine) {
       mine.command = e.command
       notes.push(`${e.event}: updated the command`)
-    } else {
+    } else if (add) {
       groups.push({ ...(e.matcher ? { matcher: e.matcher } : {}), hooks: [{ type: 'command', command: e.command }] })
       notes.push(`${e.event}: added`)
     }
@@ -302,7 +307,7 @@ function install(force, rootDir, log, packageDir) {
     target: HOOK_SCRIPT,
     text: fill(
       readFileSync(join(packageDir, 'agent', 'hooks', 'decks.sh'), 'utf8'),
-      { pkg: shellQuote(pkg), deckGlob: decksDir === '.' ? '*' : `${shellQuote(decksDir)}/*` },
+      { pkg: shellQuote(pkg), decksDir: shellQuote(decksDir) },
       'hooks/decks.sh',
     ),
   })
@@ -361,16 +366,42 @@ function install(force, rootDir, log, packageDir) {
   // 2. Hooks in .claude/settings.json.
   const settingsPath = join(rootDir, '.claude', 'settings.json')
   let settingsReport = { notes: [], diff: '' }
+  /** Merge the hooks into settings.json; `add: false` only rewrites the ones already there. */
+  const mergeSettings = (add) => {
+    const before = existsSync(settingsPath) ? readFileSync(settingsPath, 'utf8') : ''
+    try {
+      let settings
+      try {
+        settings = before.trim() ? JSON.parse(before) : {}
+      } catch (err) {
+        throw new InitError(`.claude/settings.json does not parse (${err.message})`)
+      }
+      const notes = mergeHooks(settings, hookEntries(), { add })
+      const after = JSON.stringify(settings, null, 2) + '\n'
+      const changed = before.trim() === '' ? add : JSON.stringify(JSON.parse(before)) !== JSON.stringify(settings)
+      if (changed) writeFileSync(settingsPath, after)
+      settingsReport = { notes, diff: changed ? lineDiff(before, after) : '' }
+      return settings
+    } catch (err) {
+      if (!(err instanceof InitError)) throw err
+      code = 1
+      settingsReport.notes.push(`not changed: ${err.message}. Fix it, or add the hooks by hand (see the decks init docs).`)
+      return null
+    }
+  }
   if (!installedPkg) {
     code = 1
-    settingsReport.notes.push(`not changed: ${PACKAGE} is not installed, so the hooks would have no script to run.`)
     warnings.push(
       `${PACKAGE} is not installed in this project. Install it (${installCmd}) and re-run init to add the hooks.`,
     )
+    // Hooks an earlier init added still run. Point them at decks.sh, which
+    // works without the package, so an older command naming the missing
+    // script does not block every write. None are added.
     let present = []
-    try {
-      present = ownHooksIn(JSON.parse(readFileSync(settingsPath, 'utf8')))
-    } catch {}
+    if (files[HOOK_SCRIPT] !== 'collision' && existsSync(settingsPath)) present = ownHooksIn(mergeSettings(false))
+    settingsReport.notes.unshift(
+      `${settingsReport.diff ? 'none added' : 'not changed'}: ${PACKAGE} is not installed, so new hooks would have no script to run.`,
+    )
     if (present.length)
       warnings.push(
         `.claude/settings.json still has the decks hooks (${present.join(', ')}), but ${PACKAGE} is not installed: ` +
@@ -382,24 +413,7 @@ function install(force, rootDir, log, packageDir) {
     settingsReport.notes.push(`not changed: ${HOOK_SCRIPT} is a file init did not write, and the hooks would run it.`)
     warnings.push(`Rename or move ${HOOK_SCRIPT} and re-run init to add the hooks.`)
   } else {
-    const before = existsSync(settingsPath) ? readFileSync(settingsPath, 'utf8') : ''
-    try {
-      let settings
-      try {
-        settings = before.trim() ? JSON.parse(before) : {}
-      } catch (err) {
-        throw new InitError(`.claude/settings.json does not parse (${err.message})`)
-      }
-      const notes = mergeHooks(settings, hookEntries())
-      const after = JSON.stringify(settings, null, 2) + '\n'
-      const changed = before.trim() === '' || JSON.stringify(JSON.parse(before)) !== JSON.stringify(settings)
-      if (changed) writeFileSync(settingsPath, after)
-      settingsReport = { notes, diff: changed ? lineDiff(before, after) : '' }
-    } catch (err) {
-      if (!(err instanceof InitError)) throw err
-      code = 1
-      settingsReport.notes.push(`not changed: ${err.message}. Fix it, or add the hooks by hand (see the decks init docs).`)
-    }
+    mergeSettings(true)
   }
 
   // 3. The marked block in AGENTS.md and/or CLAUDE.md.

@@ -90,8 +90,9 @@ function locate(filePath, projectDir) {
 /**
  * Whether a path is deck prose: slides.md, pages/*.md or components/*.vue of a
  * deck, which is a directory directly under a deck root (decks/, the
- * registry's decksDir, examples/ in the Decks repo) holding a slides.md, or a
- * registered deck. The path is judged relative to the project (or to the
+ * registry's decksDir, examples/ in the Decks repo), or a registered deck. A
+ * decksDir of "." (the project root) also needs the directory to hold a
+ * slides.md. The path is judged relative to the project (or to the
  * worktree under .claude/worktrees/ it sits in), so a `decks/` directory above
  * the project brings nothing into scope. Never node_modules.
  */
@@ -101,12 +102,15 @@ export function inScope(filePath, projectDir, registry) {
   const { base, rel } = at
   if (/(^|\/)node_modules\//.test(rel)) return false
   if (at.worktree) registry = readRegistry(base)
-  // A Write creating slides.md is what makes the directory a deck.
-  const isDeck = (dir) => rel === `${dir}/slides.md` || existsSync(join(base, dir, 'slides.md'))
+  // At the project root a directory is a deck only once it holds a slides.md
+  // (a Write creating slides.md is what makes it one), so src/components is
+  // not deck prose. Under a named root the path alone decides, which covers a
+  // deck built pages-first.
+  const isRootDeck = (dir) => rel === `${dir}/slides.md` || existsSync(join(base, dir, 'slides.md'))
   for (const root of deckRoots(registry, base)) {
     const rest = root === '.' ? rel : rel.startsWith(`${root}/`) ? rel.slice(root.length + 1) : null
     const m = rest && UNDER_DECK.exec(rest)
-    if (m && isDeck(root === '.' ? m[1] : `${root}/${m[1]}`)) return true
+    if (m && (root !== '.' || isRootDeck(m[1]))) return true
   }
   return deckDirs(registry).some((dir) => new RegExp(`^${escape(dir)}/${DECK_FILE}$`).test(rel))
 }
@@ -191,15 +195,17 @@ function reportable(afterHits, beforeHits, touched) {
 }
 
 /**
- * The 1-based line numbers of `src` the ranges cover; an empty range marks its
- * line. A range that opens with the newline ending a line starts on the next
- * one, so appending after a line does not count as touching it.
+ * The 1-based line numbers of `src` the ranges cover. An empty range (a
+ * deletion) marks no line: what a deletion exposes is found by `reportable`.
+ * A range that opens with the newline ending a line starts on the next one,
+ * so appending after a line does not count as touching it.
  */
 function linesOf(src, ranges) {
   const lineAt = (p) => src.slice(0, p).split('\n').length
   const lines = new Set()
   for (let [s, t] of ranges) {
-    if (t > s && src[s] === '\n') s++
+    if (t === s) continue
+    if (src[s] === '\n') s++
     const end = lineAt(Math.max(s, t - 1))
     for (let l = lineAt(s); l <= end; l++) lines.add(l)
   }
