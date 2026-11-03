@@ -64,7 +64,7 @@ demo: ## Lint, check and build the example decks into public/demo/, record them,
 demo-build: ## Build the example decks into public/demo/ only (what a deploy needs)
 	node scripts/demo.mjs --build
 
-deploy-check: build ## Serve dist/ through wrangler pages dev and check headers, canonical URLs and 404
+deploy-check: build ## Serve dist/ through wrangler dev and check headers, canonical URLs and 404
 	node --test tests/deploy.test.mjs
 
 # Production normally deploys from Cloudflare's Git integration (AGENTS.md, Deploy).
@@ -72,8 +72,8 @@ deploy-check: build ## Serve dist/ through wrangler pages dev and check headers,
 deploy-preview: build ## Upload dist/ as a preview for BRANCH (needs CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
 	@test -n "$$CLOUDFLARE_API_TOKEN" -a -n "$$CLOUDFLARE_ACCOUNT_ID" || { echo "Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID." >&2; exit 1; }
 	@test -n "$(BRANCH)" || { echo "Set BRANCH, e.g. make deploy-preview BRANCH=my-change." >&2; exit 1; }
-	bunx wrangler pages deploy dist --branch "$(BRANCH)"
+	bunx wrangler versions upload --preview-alias "$(BRANCH)"
 
 deploy: build ## Upload dist/ to production (needs CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
 	@test -n "$$CLOUDFLARE_API_TOKEN" -a -n "$$CLOUDFLARE_ACCOUNT_ID" || { echo "Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID." >&2; exit 1; }
-	bunx wrangler pages deploy dist --branch main
+	bunx wrangler deploy

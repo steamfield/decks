@@ -28,7 +28,7 @@ Run these from `site/`. They are the only supported way to build, test, and run 
 | `node scripts/edits.mjs` | Write each agent example's edit fixture from git |
 | `node scripts/excerpt-run.mjs keeling-1 <log.jsonl>` | Write a run's transcript fixture from its stream-json log (the logs stay outside the repo) |
 | `make demo-build` | Deck builds only, into `public/demo/` (what a deploy needs) |
-| `make deploy-check` | Serve `dist/` through `wrangler pages dev`; checks headers, canonical URLs, 404 |
+| `make deploy-check` | Serve `dist/` through `wrangler dev`; checks headers, canonical URLs, 404 |
 | `stacks verify` | The definition of done (install through serve) |
 
 Each target also has a `bun run <target>` alias in `package.json`. `make demo` needs the parent repo's dependencies (`bun install` at the repo root) and Playwright's Chromium.
@@ -103,7 +103,7 @@ Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` bloc
 
 ## Deploy
 
-Cloudflare Pages project `decks-site`, production at decks.steamfield.io, deployed by Cloudflare's Git integration: root directory `site`, build command `make demo-build build` (the deck builds are gitignored, so the deploy builds them; it needs `bun install` at the repo root first), output `dist`, bun as the package manager. `PUBLIC_POSTHOG_KEY` and `PUBLIC_POSTHOG_HOST` are Pages build variables. `make deploy-check` verifies headers and URLs locally; `make deploy-preview BRANCH=…` and `make deploy` upload from a machine with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Headers live in `public/_headers`; add `public/_redirects` only for moved pages.
+Cloudflare Worker `decks` serving `dist/` as static assets, production at decks.steamfield.io, deployed by Cloudflare's Git integration (Workers Builds) with root directory `site`. Everything else lives in `wrangler.jsonc`: the assets directory, trailing-slash and 404 handling, the `decks.steamfield.io` custom domain (attached by `wrangler deploy`), and a `build.command` that runs only in Workers Builds (`WORKERS_CI=1`): `bun install` at the repo root and in `site/`, then `make demo-build build`, since the deck builds are gitignored. `PUBLIC_POSTHOG_KEY` and `PUBLIC_POSTHOG_HOST` are build variables on the Worker. `make deploy-check` verifies headers and URLs locally; `make deploy-preview BRANCH=…` (a preview version) and `make deploy` upload from a machine with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Headers live in `public/_headers` (framing is `SAMEORIGIN` because the player embeds `/demo/`); add `public/_redirects` only for moved pages.
 
 ## Build workarounds
 
@@ -122,8 +122,8 @@ Cloudflare Pages project `decks-site`, production at decks.steamfield.io, deploy
 
 ## Pending user actions
 
-- Create the Cloudflare Pages project with Git integration (settings under Deploy) and attach decks.steamfield.io. Until the repo is public and the package is on npm, the GitHub links 404 and the install line fails.
-- Create a PostHog project, set `PUBLIC_POSTHOG_KEY` (and host) as Pages build variables, and enable cookieless tracking in its settings.
+- Until the repo is public and the package is on npm, the GitHub links 404 and the install line fails.
+- Create a PostHog project, set `PUBLIC_POSTHOG_KEY` (and host) as build variables on the `decks` Worker, and enable cookieless tracking in its settings.
 - Optional: allow `make demo`, `make demo-build` and `make deploy-check` in `.claude/settings.json`.
 - The parent repo formats with Prettier (`.prettierrc`); this directory has its own Biome and Prettier config, which take precedence here. If the root ever adopts Biome, exclude `site/` or extend this `biome.json`, and add `.claude/worktrees/` to the root `.gitignore`.
 

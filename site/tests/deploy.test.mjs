@@ -1,5 +1,5 @@
-// Serves the built dist/ through `wrangler pages dev`, Cloudflare's local Pages
-// runtime, reading wrangler.jsonc the way a deploy does. Needs no account.
+// Serves the built dist/ through `wrangler dev`, Cloudflare's local Workers
+// runtime, reading wrangler.jsonc's static assets the way a deploy does. Needs no account.
 // Run after `astro build` (make deploy-check).
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -25,12 +25,11 @@ async function freePort() {
 
 before(async () => {
   const port = await freePort();
-  state = mkdtempSync(join(tmpdir(), "pages-dev-"));
+  state = mkdtempSync(join(tmpdir(), "wrangler-dev-"));
   child = spawn(
     process.execPath,
     [
       "node_modules/wrangler/bin/wrangler.js",
-      "pages",
       "dev",
       "--ip",
       "127.0.0.1",
@@ -56,13 +55,13 @@ before(async () => {
   const deadline = Date.now() + 60_000;
   for (;;) {
     if (child.exitCode !== null) {
-      assert.fail(`wrangler pages dev exited:\n${output}`);
+      assert.fail(`wrangler dev exited:\n${output}`);
     }
     try {
       if ((await fetch(base, { signal: AbortSignal.timeout(1_000) })).ok) break;
     } catch {}
     if (Date.now() > deadline) {
-      assert.fail(`wrangler pages dev never answered:\n${output}`);
+      assert.fail(`wrangler dev never answered:\n${output}`);
     }
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
@@ -94,14 +93,16 @@ test("pages carry the security headers and a revalidating cache", async () => {
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
-  assert.equal(response.headers.get("x-frame-options"), "DENY");
+  // SAMEORIGIN, not DENY: the hero player frames the decks under /demo/.
+  assert.equal(response.headers.get("x-frame-options"), "SAMEORIGIN");
   assert.match(response.headers.get("cache-control") ?? "", /max-age=0/);
 });
 
-test("Pages gives each docs page one trailing-slash URL without redirect rules", async () => {
+test("each docs page has one trailing-slash URL without redirect rules", async () => {
   for (const path of ["/docs", "/docs/index.html"]) {
     const response = await get(path);
-    assert.equal(response.status, 308, path);
+    // Workers static assets redirect with 307; every page also sets rel=canonical.
+    assert.equal(response.status, 307, path);
     assert.equal(response.headers.get("location"), "/docs/", path);
   }
 });
