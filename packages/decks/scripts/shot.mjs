@@ -44,8 +44,9 @@ export async function shot({
           return `${el.textContent.trim()} @${Math.round(r.x)},${Math.round(r.y)} op=${getComputedStyle(el).opacity}`
         })
         .catch(() => 'no chip')
-      console.log(`click ${c}: chip=${chip}\n  ${lead.split('\n')[0]}`)
-      await page.screenshot({ path: resolve(out, `slide-${slide}-c${c}.png`) })
+      const file = resolve(out, `slide-${slide}-c${c}.png`)
+      await page.screenshot({ path: file })
+      console.log(`click ${c}: chip=${chip}\n  ${lead.split('\n')[0]}\n  -> ${file}`)
     }
     console.log('errors:', errors.length ? errors : 'none')
   } finally {
