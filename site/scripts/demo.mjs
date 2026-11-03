@@ -1,17 +1,25 @@
-// `make demo`: builds every example deck into public/demo/<name>/ for the player,
-// records what each deck reports through the embed contract into
-// fixtures/tapes/<name>.json, takes each poster from the same build through the
-// same contract the player uses (at the start step, once the deck reports it
-// settled, so entrances have finished drawing), and takes the NORMAL/WARM stills
+// `make demo`: builds every example deck in src/data/examples.json into
+// public/demo/<name>/ for the player, records what each deck reports through the
+// embed contract into fixtures/examples/<name>.json, takes each poster from the
+// same build through the same contract the player uses (at the start step, once
+// the deck reports it settled, so entrances have finished drawing), records the
+// hero loop for each example marked `loop`, and takes the normal and warm stills
 // with the repository's own `shot` script.
 //
 //   node scripts/demo.mjs            # everything
 //   node scripts/demo.mjs --build    # deck builds only (what a deploy needs)
-//   node scripts/demo.mjs --no-shots # builds and recordings, keep the posters and stills
+//   node scripts/demo.mjs --no-shots # builds and recordings, keep posters, loops and stills
+//   node scripts/demo.mjs --loops    # builds and loops only
+//
+// A loop is the deck in the player's frame from its start step: three steps
+// forward, then three back, so it shows the stepped build and the reverse replay
+// and ends where it began. It is written to public/loops/<name>.{webm,mp4}, and
+// fixtures/examples/<name>.loop.json holds the step shown at each time so the
+// caption under the video can follow it. Needs ffmpeg on PATH.
 //
 // Run from site/. The parent repository must have its dependencies installed
-// (`bun install` at the root). Posters, stills and recordings are committed;
-// public/demo/ and .demo/ are not.
+// (`bun install` at the root). Posters, loops, stills and recordings are
+// committed; public/demo/ and .demo/ are not.
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -21,16 +29,27 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 import sharp from "sharp";
 import { deepMerge } from "../../packages/decks/theme/resolve.ts";
-import { START_BEATS, TAPE_NAMES } from "../src/data/tapes.ts";
 
 const site = resolve(import.meta.dirname, "..");
 const repo = resolve(site, "..");
 const work = join(site, ".demo");
-const TAPES = TAPE_NAMES;
+const { examples: ENTRIES } = JSON.parse(
+  readFileSync(join(site, "src/data/examples.json"), "utf8"),
+);
+const NAMES = ENTRIES.map((entry) => entry.name);
+const startBeatOf = (name) => ENTRIES.find((entry) => entry.name === name)?.startBeat ?? 0;
+/** The loop's frame size, its dwell on each step, and the steps it takes. */
+const LOOP = {
+  width: 960,
+  height: 540,
+  dwellMs: 2600,
+  steps: ["next", "next", "next", "prev", "prev", "prev"],
+};
 /** The NORMAL/WARM stills: this deck, at its start slide, after this many clicks. */
 const STILL = { deck: "tides", clicks: 1 };
 const buildOnly = process.argv.includes("--build");
 const noShots = process.argv.includes("--no-shots");
+const loopsOnly = process.argv.includes("--loops");
 
 const log = (message) => console.log(`demo: ${message}`);
 
@@ -208,7 +227,7 @@ async function record(page, port, name) {
   }
   const story = states.find((s) => s.lead);
   const startSlide = story?.slide ?? 1;
-  const startBeat = START_BEATS[name] ?? 0;
+  const startBeat = startBeatOf(name);
   if (!states.some((s) => s.slide === startSlide && s.beat === startBeat))
     throw new Error(`${name}: no step ${startBeat + 1} on start slide ${startSlide}`);
   return {
@@ -242,6 +261,112 @@ async function poster(page, port, name, { startSlide, startBeat }) {
     { timeout: 30_000 },
   );
   return page.locator("#deck").screenshot();
+}
+
+/**
+ * The hero loop: the deck at the loop's frame size, from its start step through
+ * LOOP.steps, filmed by Playwright and re-encoded by ffmpeg to small WebM (VP9)
+ * and MP4 (H.264) files. Each mark is the time a step began, from the trim point.
+ */
+async function loopVideo(browser, port, name, { startSlide, startBeat }) {
+  const raw = join(work, "loops", name);
+  rmSync(raw, { recursive: true, force: true });
+  const size = { width: LOOP.width, height: LOOP.height };
+  const context = await browser.newContext({ viewport: size, recordVideo: { dir: raw, size } });
+  const page = await context.newPage();
+  const began = Date.now();
+  const now = () => (Date.now() - began) / 1000;
+  await page.goto(`http://localhost:${port}/__harness.html`);
+  const query = startBeat ? `?clicks=${startBeat}` : "";
+  await page.evaluate((src) => {
+    const deck = document.getElementById("deck");
+    deck.style.width = "100vw";
+    deck.style.height = "100vh";
+    deck.src = src;
+  }, `/demo/${name}/index.html#/${startSlide}${query}`);
+  const settledCount = () =>
+    page.evaluate(
+      () => window.messages.filter((m) => m.type === "decks:state" && m.settled).length,
+    );
+  await page.waitForFunction(
+    ([slide, beat]) =>
+      window.messages.some(
+        (m) => m.type === "decks:state" && m.settled && m.slide === slide && m.beat === beat,
+      ),
+    [startSlide, startBeat],
+    { timeout: 30_000 },
+  );
+  // Let fonts and the first draw finish before the loop starts.
+  await page.waitForTimeout(800);
+  const trim = now();
+  const marks = [{ t: 0, slide: startSlide, beat: startBeat }];
+  await page.waitForTimeout(LOOP.dwellMs);
+  for (const cmd of LOOP.steps) {
+    const before = await settledCount();
+    const t = Number((now() - trim).toFixed(2));
+    await page.evaluate((m) => window.send(m), { type: "decks:cmd", cmd });
+    await page.waitForFunction(
+      (n) => window.messages.filter((m) => m.type === "decks:state" && m.settled).length > n,
+      before,
+      { timeout: 30_000 },
+    );
+    const state = await page.evaluate(() =>
+      window.messages.filter((m) => m.type === "decks:state" && m.settled).at(-1),
+    );
+    marks.push({ t, slide: state.slide, beat: state.beat });
+    await page.waitForTimeout(LOOP.dwellMs);
+  }
+  const end = now();
+  const video = page.video();
+  await context.close();
+  const input = await video.path();
+  const out = join(site, "public/loops", name);
+  mkdirSync(dirname(out), { recursive: true });
+  const cut = [
+    "-y",
+    "-loglevel",
+    "error",
+    "-ss",
+    trim.toFixed(2),
+    "-to",
+    end.toFixed(2),
+    "-i",
+    input,
+    "-an",
+    "-r",
+    "24",
+  ];
+  run("ffmpeg", [
+    ...cut,
+    "-c:v",
+    "libvpx-vp9",
+    "-b:v",
+    "0",
+    "-crf",
+    "48",
+    "-row-mt",
+    "1",
+    `${out}.webm`,
+  ]);
+  run("ffmpeg", [
+    ...cut,
+    "-c:v",
+    "libx264",
+    "-crf",
+    "34",
+    "-preset",
+    "veryslow",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    `${out}.mp4`,
+  ]);
+  writeFileSync(
+    join(site, "fixtures/examples", `${name}.loop.json`),
+    `${JSON.stringify({ width: LOOP.width, height: LOOP.height, marks }, null, 2)}\n`,
+  );
+  log(`wrote public/loops/${name}.{webm,mp4} and fixtures/examples/${name}.loop.json`);
 }
 
 /** Converts one 1920x1080 shot into the 640 and 1280 AVIF and WebP files the page uses. */
@@ -291,25 +416,31 @@ function warmCopy(name) {
 async function main() {
   run("bun", ["run", "lint"], { cwd: repo });
   run("bun", ["run", "check"], { cwd: repo });
-  for (const name of TAPES) build(name);
+  for (const name of NAMES) build(name);
   if (buildOnly) return;
 
-  mkdirSync(join(site, "fixtures/tapes"), { recursive: true });
+  mkdirSync(join(site, "fixtures/examples"), { recursive: true });
   const server = await staticServer();
   const browser = await chromium.launch();
   const recordings = {};
   try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-    for (const name of TAPES) {
+    for (const name of NAMES) {
       log(`recording ${name}`);
       recordings[name] = await record(page, server.port, name);
       writeFileSync(
-        join(site, "fixtures/tapes", `${name}.json`),
+        join(site, "fixtures/examples", `${name}.json`),
         `${JSON.stringify(recordings[name], null, 2)}\n`,
       );
     }
     if (!noShots) {
-      for (const name of TAPES) {
+      for (const entry of ENTRIES.filter((e) => e.loop)) {
+        log(`loop ${entry.name}`);
+        await loopVideo(browser, server.port, entry.name, recordings[entry.name]);
+      }
+    }
+    if (!noShots && !loopsOnly) {
+      for (const name of NAMES) {
         const { startSlide, startBeat } = recordings[name];
         log(`poster ${name} at slide ${startSlide}, step ${startBeat + 1}`);
         await encode(
@@ -322,8 +453,8 @@ async function main() {
     await browser.close();
     server.close();
   }
-  run("bunx", ["biome", "format", "--write", "fixtures/tapes"], { cwd: site });
-  if (noShots) return;
+  run("bunx", ["biome", "format", "--write", "fixtures/examples"], { cwd: site });
+  if (noShots || loopsOnly) return;
 
   const { startSlide } = recordings[STILL.deck];
   const normal = await shot(

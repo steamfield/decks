@@ -1,0 +1,17 @@
+{
+  "_readme": "The example decks the landing page shows, in gallery order. The first is the hero. name: the directory under examples/ and the path under /demo/. startBeat: the 0-based step on the first story slide where the poster, the loop and the live deck start (0 when omitted). provenance: agent (drafted by Claude Code, then edited by hand), talk (one of the talks Decks was extracted from), template or hand. run: the recorded agent run behind an agent deck, a fixture in fixtures/ written by scripts/excerpt-smoke.mjs, and setup: repo (this repository's own agent setup) or init (a fresh project set up with decks init). edits: the commit with the raw agent output and the commit with the hand edit, which scripts/edits.mjs diffs into fixtures/examples/<name>.edits.json. loop: true when make demo captures a hero loop into public/loops/.",
+  "examples": [
+    {
+      "name": "tides",
+      "startBeat": 1,
+      "provenance": "agent",
+      "run": { "fixture": "smoke-1.json", "setup": "repo" },
+      "edits": { "from": "97b8a6b", "to": "44994cb" },
+      "loop": true
+    },
+    { "name": "opendata-pitch", "provenance": "talk" },
+    { "name": "agent-experience", "provenance": "talk" },
+    { "name": "od-story-templates", "startBeat": 1, "provenance": "template" },
+    { "name": "od-templates", "startBeat": 1, "provenance": "template" }
+  ]
+}
