@@ -1,15 +1,22 @@
 import { readdirSync, readFileSync } from "node:fs";
+import { gzipSync } from "node:zlib";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { site } from "../src/config";
-import { loadTapes } from "../src/data/tapes";
+import { loadExamples } from "../src/data/examples";
 
-// The first docs page on disk stands in for every docs page.
-const firstDoc = readdirSync("src/content/docs", { recursive: true, encoding: "utf8" })
+// The first two docs pages on disk stand in for every docs page.
+const [firstDoc, secondDoc] = readdirSync("src/content/docs", {
+  recursive: true,
+  encoding: "utf8",
+})
   .filter((file) => file.endsWith(".md"))
-  .sort()[0];
-const DOC = `/docs/${firstDoc?.replace(/\.md$/, "")}/`;
+  .sort()
+  .map((file) => `/docs/${file.replace(/\.md$/, "")}/`);
+const DOC = firstDoc ?? "/docs/";
 const [firstInstall, secondInstall] = site.install;
+const examples = loadExamples();
+const hero = examples[0];
 
 // Headless Chromium denies the decks' screen wake lock; the deck logs that and carries on.
 const IGNORED = /Wake Lock permission request denied/;
@@ -23,29 +30,43 @@ function collectErrors(page: Page) {
   return errors;
 }
 
-for (const path of ["/", DOC]) {
-  for (const scheme of ["light", "dark"] as const) {
-    test(`${path} in ${scheme} passes axe with no console errors`, async ({ page }) => {
-      const errors = collectErrors(page);
-      await page.emulateMedia({ colorScheme: scheme });
-      await page.goto(path);
-      await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${scheme}\\b`));
-      const results = await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-        .analyze();
-      expect(results.violations).toEqual([]);
-      expect(errors).toEqual([]);
-    });
-  }
+async function axe(page: Page) {
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(results.violations).toEqual([]);
 }
 
-test("the theme choice persists from the landing page to the docs", async ({ page }) => {
+for (const scheme of ["light", "dark"] as const) {
+  test(`the landing page stays dark under a ${scheme} system theme and passes axe`, async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+    await expect(page.locator("[data-theme-toggle]")).toHaveCount(0);
+    await axe(page);
+    expect(errors).toEqual([]);
+  });
+
+  test(`a docs page in ${scheme} passes axe with no console errors`, async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto(DOC);
+    await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${scheme}\\b`));
+    await axe(page);
+    expect(errors).toEqual([]);
+  });
+}
+
+test("the docs theme choice persists from page to page", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
-  await page.goto("/");
+  await page.goto(DOC);
   const toggle = page.getByRole("button", { name: "Dark theme" });
   await toggle.click();
   await expect(toggle).toHaveAttribute("aria-pressed", "true");
-  await page.goto(DOC);
+  await page.goto(secondDoc ?? DOC);
   await expect(page.locator("html")).toHaveClass(/\bdark\b/);
 });
 
@@ -53,7 +74,14 @@ test("install tabs switch commands once hydrated", async ({ page }) => {
   test.skip(!secondInstall, "only one install option");
   await page.goto("/");
   await page.getByRole("tab", { name: secondInstall?.label, exact: true }).click();
-  await expect(page.getByRole("tabpanel")).toContainText(secondInstall?.command ?? "");
+  await expect(page.getByRole("tabpanel")).toContainText(
+    secondInstall?.command.split("\n")[0] ?? "",
+  );
+});
+
+test("copy buttons appear once the clipboard API is there", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Copy the three install commands" })).toBeVisible();
 });
 
 test.describe("without JavaScript", () => {
@@ -68,12 +96,35 @@ test.describe("without JavaScript", () => {
       await expect(page.getByRole("navigation", { name: "Docs" })).toBeVisible();
     }
     await page.goto("/");
-    await expect(page.getByRole("tabpanel")).toContainText(firstInstall?.command ?? "");
+    await expect(page.getByRole("tabpanel")).toContainText(
+      firstInstall?.command.split("\n")[0] ?? "",
+    );
+  });
+
+  test("the landing page shows the poster, the deck's text and links to every deck", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator(".player-canvas img")).toBeVisible();
+    await expect(page.locator(".player video")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Play" })).toBeHidden();
+    await expect(page.locator("button[data-copy]").first()).toBeHidden();
+    for (const example of examples) {
+      await expect(page.locator(`a[data-example="${example.name}"]`)).toHaveAttribute(
+        "href",
+        example.href,
+      );
+    }
+    await expect(page.getByText(`${hero?.title}: the deck's text`)).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Open the example deck", exact: true }),
+    ).toBeVisible();
   });
 });
 
 // The player against a stand-in deck that speaks the embed contract (e2e/fixtures/stub-deck.html),
-// so these tests don't depend on `make demo` having built the real decks.
+// so these tests don't depend on `make demo` having built the real decks. The stub has three
+// slides; slide 2 has three steps, like the hero's start slide.
 const stub = readFileSync("e2e/fixtures/stub-deck.html", "utf8");
 
 async function withStubDecks(page: Page) {
@@ -83,97 +134,216 @@ async function withStubDecks(page: Page) {
 }
 
 const live = (page: Page) => page.locator("[aria-live=polite]");
+const player = (page: Page) => page.locator("[data-player]");
+const lead = (page: Page) => page.locator(".caption-lead");
 
 test.describe("the deck player", () => {
   test.beforeEach(async ({ page }) => {
     await withStubDecks(page);
+    // Reduced motion: the poster, no loop, so Play boots the deck directly.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
   });
 
-  test("loads nothing until PLAY, then drives the deck in an inert iframe", async ({ page }) => {
+  test("loads nothing until Play, then drives the deck in an inert iframe", async ({ page }) => {
     const errors = collectErrors(page);
     await expect(page.locator("iframe")).toHaveCount(0);
     await page.getByRole("button", { name: "Play" }).click();
     const frame = page.locator("iframe");
     await expect(frame).toHaveAttribute("tabindex", "-1");
     await expect(frame).toHaveAttribute("inert", "");
-    await expect(frame).toHaveAttribute("title", /controlled by the player above/);
-    // tides starts on step 2 (START_BEATS), where its chart is drawn; the stub opens on step 1
-    // and the player steers it there.
+    await expect(frame).toHaveAttribute("title", /controlled by the player/);
+    // The hero starts on its registry startBeat (step 2); the stub opens on step 1 and the
+    // player steers it there.
     await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.");
-    await expect(page.locator(".now-playing")).toContainText("Second beat body.");
-    // PLAY holds each step for its reading time, then advances by itself.
+    await expect(page.locator(".caption-body")).toHaveText("Second beat body.");
+    // Play holds each step for its reading time, then advances by itself.
     await expect(live(page)).toHaveText("Slide 2 of 3, step 3 of 3. Third beat lead.", {
       timeout: 12_000,
     });
     expect(errors).toEqual([]);
   });
 
-  test("steps with the keys and with arrow keys inside the faceplate", async ({ page }) => {
+  test("steps with the buttons and with arrow keys on the focused player", async ({ page }) => {
     await page.getByRole("button", { name: "Step forward" }).click();
     await expect(live(page)).toHaveText("Slide 2 of 3, step 3 of 3. Third beat lead.");
-    await page.getByRole("button", { name: "Step back" }).press("ArrowLeft");
+    await player(page).focus();
+    await page.keyboard.press("ArrowLeft");
     await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.");
-    await page.getByRole("button", { name: "Slide forward" }).click();
+    await page.keyboard.press("Shift+ArrowRight");
     // A slide without a story card falls back to its title.
     await expect(live(page)).toHaveText("Slide 3 of 3, step 1 of 2. Stub closing slide");
-    await expect(page.locator(".now-playing")).toContainText("Stub closing slide");
+    await expect(lead(page)).toHaveText("Stub closing slide");
   });
 
-  test("swaps tapes from the shelf with the keyboard", async ({ page }) => {
-    const shelf = page.getByRole("group", { name: "Load an example deck" });
-    await shelf.getByRole("radio").first().focus();
-    await page.keyboard.press("ArrowDown");
-    await expect(shelf.getByRole("radio").nth(1)).toBeChecked();
-    await expect(page.getByText("Tape: opendata-pitch")).toBeVisible();
-    // The pick boots the new tape once the door has closed.
-    await expect(page.locator("iframe")).toHaveAttribute("src", /\/demo\/opendata-pitch\//);
-    await expect(page.getByRole("list", { name: /side A$/ })).toBeVisible();
-  });
-
-  test("swaps instantly under reduced motion", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.locator(".shelf-slot").nth(2).click();
-    await expect(page.locator(".deck")).toHaveAttribute("data-swap", "idle");
-    await expect(page.getByText("Tape: agent-experience")).toBeVisible();
+  test("a gallery pick loads that deck into the player and scrolls there", async ({ page }) => {
+    const pick = examples[1];
+    test.skip(!pick, "only one example");
+    await page.locator(`a[data-example="${pick?.name}"]`).click();
+    await expect(page.locator("iframe")).toHaveAttribute("src", new RegExp(`/demo/${pick?.name}/`));
+    await expect(player(page)).toBeInViewport();
+    await expect(player(page)).toBeFocused();
+    await expect(page.locator(".player-titlebar")).toContainText(pick?.provenance.label ?? "");
+    expect(new URL(page.url()).pathname).toBe("/");
   });
 });
 
-test("at 360px the player has 44px keys, legible copy and no sideways scroll", async ({ page }) => {
+test.describe("the hero loop", () => {
+  test.skip(!hero?.loop, "the hero has no loop yet: the poster stands in");
+
+  test("plays muted under no-preference and hands over to the live deck", async ({ page }) => {
+    await withStubDecks(page);
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    const video = page.locator(".player video");
+    await expect(video).toHaveJSProperty("muted", true);
+    await expect(page.locator("iframe")).toHaveCount(0);
+    await page.getByRole("button", { name: "Step forward" }).click();
+    await expect(video).toHaveCount(0);
+    await expect(page.locator("iframe")).toHaveAttribute("src", /\/demo\/[\w-]+\/index\.html#\//);
+    await expect(live(page)).toHaveText(/^Slide \d of 3, step \d of \d\./);
+  });
+
+  test("shows the poster under reduced motion", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.locator(".player-canvas img")).toBeVisible();
+    await expect(page.locator(".player video")).toHaveCount(0);
+  });
+});
+
+/** Fraction of the player inside the viewport, its box, and the frame's top. */
+async function playerGeometry(page: Page) {
+  return page.evaluate(() => {
+    const box = document.querySelector("[data-player]")?.getBoundingClientRect();
+    const canvas = document.querySelector(".player-canvas")?.getBoundingClientRect();
+    if (!box || !canvas) throw new Error("no player");
+    const visible = Math.max(0, Math.min(box.bottom, innerHeight) - Math.max(box.top, 0));
+    return {
+      top: box.top,
+      bottom: box.bottom,
+      width: box.width,
+      visible: visible / box.height,
+      frameTop: canvas.top,
+    };
+  });
+}
+
+/** Content blocks outside the player that are wider than it. */
+function widerThanPlayer(page: Page) {
+  return page.evaluate(() => {
+    const player = document.querySelector("[data-player]");
+    const width = player?.getBoundingClientRect().width ?? 0;
+    const blocks = document.querySelectorAll(
+      "main :is(p, h1, h2, h3, pre, figure, img, video, ul, ol, table, dl, [data-block])",
+    );
+    return [...blocks]
+      .filter((block) => !player?.contains(block) && block.getClientRects().length > 0)
+      .map((block) => ({
+        block: `${block.tagName.toLowerCase()}.${block.className}`,
+        width: Math.round(block.getBoundingClientRect().width),
+      }))
+      .filter((block) => block.width > Math.ceil(width));
+  });
+}
+
+test.describe("R1: the player is in the first viewport", () => {
+  test.beforeEach(async ({ page }) => withStubDecks(page));
+
+  for (const state of ["poster", "booted"] as const) {
+    test(`at 1440x900, ${state}: fully visible and the widest element`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.goto("/");
+      if (state === "booted") {
+        await page.getByRole("button", { name: "Step forward" }).click();
+        await expect(player(page)).toHaveAttribute("data-phase", "ready");
+      }
+      const geometry = await playerGeometry(page);
+      expect(geometry.top).toBeGreaterThanOrEqual(0);
+      expect(geometry.bottom).toBeLessThanOrEqual(900);
+      expect(await widerThanPlayer(page)).toEqual([]);
+    });
+
+    test(`at 1280x800, ${state}: 80% visible, frame top above 40%`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.goto("/");
+      if (state === "booted") {
+        await page.getByRole("button", { name: "Step forward" }).click();
+        await expect(player(page)).toHaveAttribute("data-phase", "ready");
+      }
+      const geometry = await playerGeometry(page);
+      expect(geometry.visible).toBeGreaterThanOrEqual(0.8);
+      expect(geometry.frameTop).toBeLessThan(800 * 0.4);
+      expect(await widerThanPlayer(page)).toEqual([]);
+    });
+  }
+});
+
+test.describe("R2: the caption is page text at body size", () => {
+  for (const [width, height] of [
+    [1440, 900],
+    [1280, 800],
+    [768, 1024],
+    [360, 780],
+  ] as const) {
+    test(`at ${width}px the caption shows and changes with each step`, async ({ page }) => {
+      await withStubDecks(page);
+      await page.setViewportSize({ width, height });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.goto("/");
+      const caption = page.locator(".player-caption");
+      await expect(caption).toBeVisible();
+      for (const text of [lead(page), page.locator(".caption-body")]) {
+        if ((await text.count()) === 0) continue;
+        const size = await text.evaluate((element) =>
+          Number.parseFloat(getComputedStyle(element).fontSize),
+        );
+        expect(size).toBeGreaterThanOrEqual(16);
+      }
+      const before = await lead(page).textContent();
+      expect(before?.trim()).not.toBe("");
+      await page.getByRole("button", { name: "Step forward" }).click();
+      await expect(lead(page)).not.toHaveText(before ?? "");
+      await expect(live(page)).toContainText(/step \d of \d/);
+    });
+  }
+});
+
+test("at 360px the controls are 44px and nothing scrolls sideways", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/");
-  for (const key of await page.locator(".deck .key").all()) {
-    const box = await key.boundingBox();
+  const controls = await page.locator(".player .control").all();
+  expect(controls.length).toBeGreaterThanOrEqual(5);
+  for (const control of controls) {
+    const box = await control.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
   }
-  const lead = page.locator(".now-playing p").nth(1);
-  const size = await lead.evaluate((element) =>
-    Number.parseFloat(getComputedStyle(element).fontSize),
-  );
-  expect(size).toBeGreaterThanOrEqual(18);
+  await expect(page.getByRole("link", { name: "Open the deck (best in landscape)" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });
 
-test.describe("the landing page without JavaScript", () => {
-  test.use({ javaScriptEnabled: false });
-
-  test("shows the poster, the deck's text and links to every deck build", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.locator(".tv-picture img")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Play" })).toBeHidden();
-    await expect(page.locator("button[data-copy]").first()).toBeHidden();
-    for (const tape of loadTapes()) {
-      await expect(page.locator(`.shelf a[href="${tape.href}"]`)).toHaveCount(1);
+test("the page weighs 350 KB or less before interaction at 1440", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const sizes = new Map<string, number>();
+  page.on("response", async (response) => {
+    try {
+      const body = await response.body();
+      const type = response.headers()["content-type"] ?? "";
+      // A static host compresses text; images and video go over as they are.
+      const text = /text|javascript|json|svg|xml/.test(type);
+      sizes.set(response.url(), text ? gzipSync(body).length : body.length);
+    } catch {
+      // Redirects and aborted range requests have no body.
     }
-    await expect(page.getByText("Tides run on the Moon's clock: the deck's text")).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Open the example deck", exact: true }),
-    ).toBeVisible();
   });
-});
-
-test("copy buttons appear once the clipboard API is there", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.getByRole("button", { name: "Copy both install commands" })).toBeVisible();
+  await page.goto("/", { waitUntil: "networkidle" });
+  // Let the loop (if any) finish loading.
+  await page.waitForLoadState("networkidle");
+  const total = [...sizes.values()].reduce((sum, size) => sum + size, 0);
+  const report = [...sizes].map(([url, size]) => `${Math.round(size / 1000)} KB ${url}`).join("\n");
+  expect(total, report).toBeLessThanOrEqual(350_000);
 });

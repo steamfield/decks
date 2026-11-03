@@ -7,18 +7,23 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { resolveTheme } from "../../packages/decks/theme/resolve.ts";
+import { computeEdits } from "../scripts/edits.mjs";
 import { runHook } from "../scripts/hook.mjs";
 import { site } from "./config";
-import { loadHookDenial, loadSmokeRun, runFigures } from "./data/fixtures";
 import {
   deckDir,
+  ENTRIES,
+  EXAMPLE_NAMES,
+  editsPath,
+  loadEdits,
+  loadExample,
   loadRecording,
-  loadTape,
   recordingPath,
-  START_BEATS,
-  TAPE_NAMES,
-} from "./data/tapes";
-import { contrast } from "./lib/contrast";
+  startBeatOf,
+} from "./data/examples";
+import { loadHookDenial, loadRun, runFigures } from "./data/fixtures";
+import { loadProjectFiles } from "./data/project";
+import { draftLine } from "./lib/player/example";
 
 const repo = join(process.cwd(), "..");
 const read = (path: string) => readFileSync(join(repo, path), "utf8");
@@ -60,7 +65,7 @@ const shown = [
   ...site.install.flatMap((option) =>
     splitCommands(option.command).map((line) => ({ file: `config: ${option.label}`, line })),
   ),
-  ...site.afterInstall.map((line) => ({ file: "config: after install", line })),
+  { file: "config: what you get", line: site.devCommand },
   ...docsCommands.filter(
     ({ line }) => deckInvocation.test(line) || /^(bun add|npm i|pnpm add) /.test(line),
   ),
@@ -85,11 +90,12 @@ describe("every shown command matches the CLI", () => {
     }
   });
 
-  it.each(
-    shown.filter(({ file, line }) => !file.startsWith("config:") && deckInvocation.test(line)),
-  )("$file: $line pins the package with -p slidev-addon-decks", ({ line }) => {
-    expect(deckInvocation.exec(line)?.[2]).toBe(pinned);
-  });
+  it.each(shown.filter(({ line }) => deckInvocation.test(line)))(
+    "$file: $line pins the package with -p slidev-addon-decks",
+    ({ line }) => {
+      expect(deckInvocation.exec(line)?.[2]).toBe(pinned);
+    },
+  );
 
   it("pins the package in every docs page's inline decks commands", () => {
     for (const file of readdirSync(docsDir, { recursive: true, encoding: "utf8" })) {
@@ -116,9 +122,8 @@ describe("every shown command matches the CLI", () => {
   });
 
   it("quotes the README's quickstart", () => {
-    // The README pins the package with -p; the landing config still uses the bare form.
-    const bare = readme.replaceAll(pinned, "");
-    for (const line of site.quickstart) expect(bare).toContain(line.split(" --story")[0]);
+    for (const line of site.quickstart) expect(readme).toContain(line);
+    expect(readme).toContain(site.devCommand);
   });
 });
 
@@ -131,8 +136,7 @@ describe("copy matches the repository", () => {
   it("states the README's runtime requirements", () => {
     const node = /Node 20\.19\+ or 22\.12\+/;
     expect(readme).toMatch(node);
-    expect(site.requirements.join(" ")).toMatch(node);
-    expect(site.fit.yes.join(" ")).toMatch(node);
+    expect(site.requirements.map((row) => row.text).join(" ")).toMatch(node);
     expect(readme).toMatch(/Bun is optional/);
   });
 
@@ -140,29 +144,71 @@ describe("copy matches the repository", () => {
     const version = JSON.parse(read("packages/decks/package.json")).dependencies[
       "@opendata-ai/openchart-core"
     ];
-    expect(site.fit.no.join(" ")).toContain(`OpenChart is at ${version}`);
+    expect(site.requirements.map((row) => row.text).join(" ")).toContain(`OpenChart ${version}`);
+  });
+
+  it("notes only files decks init and decks new really write", () => {
+    const files = loadProjectFiles();
+    for (const path of Object.keys(site.files)) expect(files, path).toContain(path);
   });
 });
 
-describe("the recorded agent run", () => {
-  const run = loadSmokeRun();
+const hero = ENTRIES[0];
 
-  it("is a successful run of the tides prompt", () => {
+describe("the hero's recorded agent run", () => {
+  if (!hero?.run) throw new Error("the hero example in examples.json names no run fixture");
+  const setup = hero.run.setup;
+  const run = loadRun(hero.run.fixture);
+  const bash = run.steps.flatMap((step) => step.calls).filter((call) => call.startsWith("Bash("));
+
+  it("is a successful run that ends with a build", () => {
     expect(run.steps.length).toBeGreaterThan(5);
     expect(run.steps.at(-1)?.output).toMatch(/built in/);
-    expect(run.steps.find((step) => step.calls[0] === "Bash(bun run check)")?.output).toBe(
-      "All page files match their manifests.",
-    );
   });
 
-  it("gives the figures the page and caption quote", () => {
-    const figures = runFigures(run);
-    expect(figures).toEqual({ turns: 87, minutes: "8.3", cost: "$3.17" });
-    const player = readFileSync(
-      join(process.cwd(), "src/components/landing/DeckPlayer.tsx"),
-      "utf8",
+  it("gives the title bar, the draft line and the cost line their figures", () => {
+    const example = loadExample(hero);
+    expect(example.run).toEqual({ prompt: run.prompt, setup, ...runFigures(run) });
+    if (!example.run) throw new Error("the hero example loaded without its run");
+    const line = draftLine(example.run, example.edits);
+    expect(line).toContain(`Drafted in ${Math.floor(Number(runFigures(run).minutes))} minutes`);
+  });
+
+  // A run in a decks init project calls the package's CLI; the placeholder hero
+  // (tides) was drafted inside this repository, where the same subcommands run
+  // through the root package.json scripts. Either way every command must exist.
+  if (setup === "init") {
+    it.each(bash.map((call) => call.slice(5, -1)).filter((line) => / decks /.test(line)))(
+      "the transcript's %s is the pinned package command",
+      (line) => {
+        const [, , pin, bin = "", rest = ""] = deckInvocation.exec(line) ?? [];
+        expect(pin).toBe(pinned);
+        expect(Object.keys(pkg.bin)).toContain(bin);
+        expect(subcommands).toContain(rest.split(/\s+/)[0]);
+      },
     );
-    expect(player).toContain(`${Math.floor(Number(figures.minutes))}-minute run`);
+  } else {
+    const scripts = (JSON.parse(read("package.json")) as { scripts: Record<string, string> })
+      .scripts;
+    it.each(bash.map((call) => /^Bash\(bun run ([\w:-]+)/.exec(call)?.[1]).filter(Boolean))(
+      "the transcript's bun run %s is a repository script",
+      (name) => {
+        const script = scripts[name as string] ?? "";
+        expect(script, `package.json scripts.${name}`).not.toBe("");
+        const sub = /deck\.mjs (\S+)/.exec(script)?.[1];
+        if (sub) expect(subcommands).toContain(sub);
+      },
+    );
+
+    it("is labelled as a run in this repository, not a decks init project", () => {
+      expect(loadExample(hero).provenance.label).toContain("this repository's agent setup");
+    });
+  }
+
+  it("has the hand edit's diff and caption pairs as git computes them", () => {
+    if (!hero.edits) return;
+    expect(existsSync(editsPath(hero.name)), "run node scripts/edits.mjs").toBe(true);
+    expect(loadEdits(hero.name)).toEqual(computeEdits(hero.name, hero.edits.from, hero.edits.to));
   });
 });
 
@@ -174,7 +220,7 @@ describe("the prose-lint hook", () => {
 });
 
 describe("example decks", () => {
-  it.each(TAPE_NAMES)("%s is an example deck with a recording from make demo", (name) => {
+  it.each(EXAMPLE_NAMES)("%s is an example deck with a recording from make demo", (name) => {
     expect(existsSync(join(deckDir(name), "slides.md"))).toBe(true);
     expect(existsSync(recordingPath(name)), `${recordingPath(name)}: run make demo`).toBe(true);
     const recording = loadRecording(name);
@@ -183,8 +229,8 @@ describe("example decks", () => {
     expect(recording?.slideTitles).toHaveLength(recording?.slides ?? -1);
     expect(recording?.startSlide).toBeGreaterThanOrEqual(1);
     expect(recording?.startSlide).toBeLessThanOrEqual(recording?.slides ?? 0);
-    // The poster was shot at the recorded start step: re-run make demo after changing START_BEATS.
-    expect(recording?.startBeat).toBe(START_BEATS[name] ?? 0);
+    // The poster was shot at the recorded start step: re-run make demo after changing startBeat.
+    expect(recording?.startBeat).toBe(startBeatOf(name));
     expect(
       recording?.states.some(
         (s) => s.slide === recording.startSlide && s.beat === recording.startBeat,
@@ -193,7 +239,7 @@ describe("example decks", () => {
     expect(recording?.states.length).toBeGreaterThanOrEqual(recording?.slides ?? 1);
   });
 
-  it.each(TAPE_NAMES)("%s has a poster in both formats and sizes", (name) => {
+  it.each(EXAMPLE_NAMES)("%s has a poster in both formats and sizes", (name) => {
     for (const file of [
       `${name}-640.avif`,
       `${name}-1280.avif`,
@@ -204,14 +250,16 @@ describe("example decks", () => {
     }
   });
 
-  it.each(TAPE_NAMES)("%s's cassette label is readable in its own colors", (name) => {
-    const { theme } = loadTape(name);
-    expect(contrast(theme.paper, theme.ink)).toBeGreaterThanOrEqual(4.5);
+  it.each(ENTRIES)("$name says how it was made", (entry) => {
+    const { provenance } = loadExample(entry);
+    expect(provenance.label.length).toBeGreaterThan(0);
+    if (entry.provenance === "talk") {
+      expect(provenance.label).toBe("From the talks Decks was extracted from");
+    }
   });
 
-  it("colors od-templates' cassette from its own warm theme", () => {
-    expect(loadTape("od-templates").theme.ink).toBe("#15110e");
-    expect(loadTape("tides").theme.ink).toBe("#09090b");
+  it("puts a deck with a recorded run first, as the hero", () => {
+    expect(ENTRIES[0]?.provenance).toBe("agent");
   });
 });
 
