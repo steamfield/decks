@@ -13,7 +13,7 @@
 | `src/components/landing/` | Landing sections (static React) and the two islands, `DeckPlayer` and `InstallTabs` |
 | `src/data/` | `examples.json` (the example registry), build-time loaders for the examples, the recorded fixtures and the scaffolded file tree |
 | `src/lib/player/` | The embed contract, caption and counter formatting, and the example types (`stateAt`, `markAt`, `draftLine`) |
-| `src/lib/tokens.ts` | The landing page's graphite and ice-blue tokens |
+| `src/lib/tokens.ts` | The landing page's tokens, derived from the product theme |
 | `src/scripts/site.ts` | Theme toggle (docs), command and code copy buttons (shown only when the clipboard API is there), gallery picks, copy page and the TOC highlight |
 | `src/layouts/` | `BaseLayout` (head, header, footer) and `DocsLayout` (sidebar, TOC, pager) |
 
@@ -38,11 +38,11 @@ Astro's default processor is Sätteri, which doesn't run remark or rehype plugin
 
 Landing sections are React components rendered to HTML at build time. Only components named in `site.islands` may take a `client:` directive, and only on the landing page; the build test compares the hydrated islands with that list and fails on any island in `/docs/`. `DeckPlayer` uses `client:visible`; `InstallTabs` sits in the getting-started section and uses `client:idle` so it is ready before anyone scrolls to it. Interactive behaviour shared by every page (theme, copy buttons, TOC, gallery picks) goes in `src/scripts/site.ts` as plain DOM code that does nothing when its markup is absent.
 
-The hero showcase is centered with a 1600px maximum width and 24px minimum gutters on desktop, or 12px below 768px. The player keeps its 16:9 composition; viewport height does not cap its width.
+The header, hero and showcase share one column (`.page-column`): 1360px with 32px gutters, or 16px below 768px. The player keeps its 16:9 composition; viewport height does not cap its width.
 
 ## Theme
 
-The landing page is dark only. `BaseLayout` sets `class="dark"` and `data-page="landing"` on `<html>` and inlines the site-specific tokens from `src/lib/tokens.ts`. Graphite surfaces separate the page from the original deck canvas; ice blue identifies actions, selected items and focus. Token tests check text and control contrast. The landing has no theme toggle.
+The landing page is dark only. `BaseLayout` sets `class="dark"` and `data-page="landing"` on `<html>` and inlines the tokens from `src/lib/tokens.ts`, which reads them from the product theme: canvas (the page, the hero and the slide, untinted), band (alternate sections, with hairline edges) and raised (controls, and panels inside a band, where landing.css moves `--color-panel` up a step), both tinted toward the theme's blue-violet with `mix()`. Semantic hue tokens (`agent`, `talk`, `template`, `hand`, `pass`, `block`) and the brand rule stops (`rule-1` to `rule-4`) come from the theme's ramps. Cyan is the action color; its lighter steps mark links, focus and live state. Token tests check text and control contrast on every surface and that the bands stay distinguishable. The landing has no theme toggle.
 
 Docs pages keep both themes. The inline head script adds `dark` or `light` to `<html>` before paint, from `localStorage.theme` or the system preference. Without JavaScript neither class is set and a `prefers-color-scheme` media query supplies the dark tokens. Components use the token utilities (`bg-canvas`, `text-ink`, `text-muted`, `border-line`, `bg-panel`, `text-accent`), so both paths style the same markup. New colors become tokens in both theme blocks of `global.css`; the browser step runs axe against both themes.
 

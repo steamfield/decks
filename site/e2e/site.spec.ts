@@ -83,7 +83,8 @@ test("install tabs switch commands once hydrated", async ({ page }) => {
 
 test("copy buttons appear once the clipboard API is there", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "Copy", exact: true })).toBeVisible();
+  // The install tabs' button; the theme.json frame gets its own Copy too.
+  await expect(page.getByRole("button", { name: "Copy", exact: true }).first()).toBeVisible();
 });
 
 test.describe("without JavaScript", () => {
@@ -156,7 +157,7 @@ test.describe("the interactive player", () => {
     await page.goto("/");
     await player(page).scrollIntoViewIfNeeded();
   });
-  test("opens the interactive deck automatically, paused under reduced motion, with a working chooser", async ({
+  test("opens the interactive deck automatically, paused under reduced motion, with a working slide rail", async ({
     page,
   }) => {
     const errors = collectErrors(page);
@@ -166,10 +167,14 @@ test.describe("the interactive player", () => {
     await expect(page.locator("iframe")).toHaveAttribute("title", /interactive deck/);
     await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
     expect(await position(page)).toBe(`slide ${startSlide} beat ${startBeat}`);
-    await page.getByLabel(/^Choose slide/).click();
-    await page.getByRole("button", { name: /^2\. / }).click();
+    await page
+      .getByRole("navigation", { name: "Slides" })
+      .getByRole("button", { name: /^Slide 2\b/ })
+      .click();
     await expect.poll(() => position(page)).toBe("slide 2 beat 0");
-    await expect(page.getByLabel(/^Choose slide/)).toBeFocused();
+    await expect(
+      page.getByRole("navigation", { name: "Slides" }).getByRole("button", { name: /^Slide 2\b/ }),
+    ).toHaveAttribute("aria-current", "step");
     await expect(lead(page)).toHaveText("First beat lead.");
     expect(errors).toEqual([]);
   });
@@ -264,8 +269,14 @@ test.describe("the interactive player", () => {
       .getByRole("button", { name: pick.featured?.label ?? pick.title, exact: true })
       .click();
     await expect(player(page)).toHaveAttribute("data-phase", "ready");
-    await expect(page.locator(".titlebar-title")).toHaveAttribute("title", pick.title);
-    await expect(page.locator(".titlebar-title")).toHaveText(pick.featured?.label ?? pick.title);
+    // The switcher marks the pick; the player's name carries the full title.
+    await expect(
+      page.getByRole("button", { name: pick.featured?.label ?? pick.title, exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(player(page)).toHaveAttribute(
+      "aria-label",
+      new RegExp(`^Deck player: ${pick.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.`),
+    );
     await expect(page.locator("iframe")).toHaveAttribute("src", new RegExp(`/demo/${pick.name}/`));
     await expect.poll(() => position(page)).toBe(`slide ${pick.startSlide} beat ${pick.startBeat}`);
   });
@@ -308,17 +319,22 @@ test("reduced motion loads a paused live deck without recorded media", async ({ 
 });
 
 for (const width of [360, 768, 1280, 1440, 1920]) {
-  test(`at ${width}px canvas respects gutters and the 1600px cap with 16:9`, async ({ page }) => {
+  test(`at ${width}px the player shares the page's one column and keeps 16:9`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     const box = await page.locator(".player-canvas").boundingBox();
-    const gutter = width < 768 ? 12 : 24;
+    const gutter = width < 768 ? 16 : 32;
     const frame = await player(page).boundingBox();
     expect(box).not.toBeNull();
-    const expectedWidth = Math.min(1600, width - gutter * 2);
+    // One 1360px column (1296px of content) for the header, hero and player.
+    const expectedWidth = Math.min(1296, width - gutter * 2);
     expect(frame?.x).toBeCloseTo((width - expectedWidth) / 2, 0);
     expect(frame?.width).toBeCloseTo(expectedWidth, 0);
+    for (const edge of ["header a[href='/']", "#hero-title"]) {
+      const left = await page.locator(edge).first().boundingBox();
+      expect(left?.x).toBeCloseTo(frame?.x ?? 0, 0);
+    }
     expect((box?.width ?? 0) / (box?.height ?? 1)).toBeCloseTo(16 / 9, 2);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,

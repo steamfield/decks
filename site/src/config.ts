@@ -59,6 +59,8 @@ export const site = {
   quickstart: [`bun add ${peers}`, run("bunx", "init"), run("bunx", "new my-talk --story")],
   /** Shown under the hero's install block. */
   price: license ? `Free, ${license}` : "Free",
+  /** The hero's last line, under the install block and buttons. */
+  heroFineprint: `${license ? `Free, ${license}` : "Free"}. Runs on Slidev, with shared guidance for Claude Code, Codex, Cursor and four other agents.`,
   install: [
     {
       label: "bun",

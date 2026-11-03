@@ -1,12 +1,12 @@
 // Static landing sections. They render to HTML at build time and ship no
 // JavaScript; only components listed in site.islands may take a client: directive.
 // Page callouts are plain panels: the slide's story card never doubles as chrome.
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Comparison, Link, Requirement } from "../../config";
 import type { AgentRun, HookDenial } from "../../data/fixtures";
 import { runFigures } from "../../data/fixtures";
 import { treeLines } from "../../lib/file-tree";
-import type { Example } from "../../lib/player/example";
+import type { Example, ProvenanceKind } from "../../lib/player/example";
 import { runMinutes } from "../../lib/player/format";
 
 export function ReleaseBanner({ announcement }: { announcement: Link | null }) {
@@ -20,37 +20,35 @@ export function ReleaseBanner({ announcement }: { announcement: Link | null }) {
   );
 }
 
-export function Hero({ tagline, description }: { tagline: string; description: string }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <h1 className="hero-title">{tagline}</h1>
-      <p className="hero-lede">{description}</p>
-    </div>
-  );
-}
-
-/** A landing section: a topic heading and an optional lede over the content. */
+/**
+ * A landing section: a topic heading and an optional lede over the content.
+ * `tone` alternates the page between canvas and band; a band lifts its panels.
+ */
 export function Section({
   id,
   title,
   lede,
+  tone = "canvas",
   children,
 }: {
   id: string;
   title: string;
   lede?: ReactNode;
+  tone?: "canvas" | "band";
   children: ReactNode;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="landing-section">
-      <div className="page-column flex flex-col gap-6">
-        <div className="flex max-w-[44rem] flex-col gap-2">
+    <section id={id} aria-labelledby={`${id}-title`} className="landing-section" data-tone={tone}>
+      <div className="page-column flex flex-col">
+        <div className="flex max-w-[44rem] flex-col gap-4" data-reveal>
           <h2 id={`${id}-title`} className="section-title">
             {title}
           </h2>
-          {lede && <p className="text-ink-2 leading-relaxed">{lede}</p>}
+          {lede && <p className="section-lede">{lede}</p>}
         </div>
-        {children}
+        <div className="section-body" data-reveal style={{ "--delay": "120ms" } as CSSProperties}>
+          {children}
+        </div>
       </div>
     </section>
   );
@@ -140,8 +138,9 @@ export function CompareTable({ rows }: { rows: Comparison[] }) {
 export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
   const figures = runFigures(run);
   return (
-    <figure className="panel transcript" data-block>
+    <figure className="panel transcript terminal" data-block>
       <figcaption>
+        <span className="terminal-dots" aria-hidden="true" />
         <span className="text-ink font-medium">The run that drafted {deck}, abbreviated</span>
         <span className="text-muted">
           {figures.turns} turns, {runMinutes(figures.minutes)}, {figures.cost}. {run.shownCalls} of{" "}
@@ -150,7 +149,7 @@ export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
       </figcaption>
       <ol>
         <li className="transcript-prompt">
-          <span aria-hidden="true" className="text-muted select-none">
+          <span aria-hidden="true" className="text-data select-none">
             ❯{" "}
           </span>
           claude -p "{run.prompt}"
@@ -222,18 +221,31 @@ export function HookPanel({ denial }: { denial: HookDenial }) {
   );
 }
 
+const KIND_LABEL: Record<ProvenanceKind, string> = {
+  agent: "Agent",
+  talk: "Talk",
+  template: "Template",
+  hand: "By hand",
+};
+
 /**
- * The example decks as 16:9 thumbnails with how each was made. Each is a link to
- * the deck's static build; src/scripts/site.ts turns a click into loading that
- * deck in the hero player and scrolling there.
+ * The example decks as rows: a 16:9 thumbnail, the title, and how each was made,
+ * tagged in that provenance's hue. Each row links to the deck's static build;
+ * src/scripts/site.ts turns a click into loading that deck in the hero player
+ * and scrolling there.
  */
 export function ExampleGallery({ examples }: { examples: Example[] }) {
   if (examples.length === 0) return null;
   return (
-    <ul className="gallery">
+    <ul className="example-list">
       {examples.map((example) => (
         <li key={example.name}>
-          <a href={example.href} data-example={example.name} className="gallery-item">
+          <a
+            href={example.href}
+            data-example={example.name}
+            data-kind={example.provenance.kind}
+            className="example-row"
+          >
             {example.poster ? (
               <img
                 src={`${example.poster.base}-640.webp`}
@@ -245,9 +257,17 @@ export function ExampleGallery({ examples }: { examples: Example[] }) {
             ) : (
               <span className="gallery-empty" />
             )}
-            <span className="gallery-title">{example.title}</span>
+            <span className="example-text">
+              <span className="example-title">{example.title}</span>
+              <span className="example-provenance">
+                <span className="kind-tag">{KIND_LABEL[example.provenance.kind]}</span>
+                {example.provenance.label}
+              </span>
+            </span>
+            <span className="example-action" aria-hidden="true">
+              Load in player <span>→</span>
+            </span>
           </a>
-          <p className="gallery-provenance">{example.provenance.label}</p>
         </li>
       ))}
     </ul>

@@ -1,4 +1,11 @@
-import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { track } from "../../lib/analytics";
 import { Events } from "../../lib/events";
 import {
@@ -24,8 +31,6 @@ type Position = { slide: number; beat: number };
 
 /** How long a deck may take to answer before the player gives up and links to it. */
 export const BOOT_TIMEOUT_MS = 15_000;
-/** Most pips the caption bar draws; a slide with more steps shows the counter alone. */
-const MAX_PIPS = 12;
 
 const MOTION = "(prefers-reduced-motion: no-preference)";
 
@@ -480,17 +485,10 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
       {item.featured?.label ?? item.title}
     </button>
   );
+  const progress = (slide: number) =>
+    slide < shown.slide ? 1 : slide === shown.slide ? (shown.beat + 1) / steps : 0;
   return (
     <div className="player-stack">
-      <nav className="player-example-picker" aria-label="Example decks">
-        <div className="featured-examples">{prominent.map(choose)}</div>
-        {rest.length > 0 && (
-          <details className="more-examples">
-            <summary>More examples</summary>
-            <div className="more-examples-list">{rest.map(choose)}</div>
-          </details>
-        )}
-      </nav>
       {/* biome-ignore lint/a11y/useSemanticElements: group contains the full-screen deck and controls. */}
       <div
         ref={wrapper}
@@ -505,75 +503,66 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
         data-fullscreen={fullscreen || undefined}
       >
         <div className="player-toolbar">
-          <div className="player-selection">
-            <span className="titlebar-title" title={example.title}>
-              {example.featured?.label ?? example.title}
-            </span>
+          <nav className="player-examples" aria-label="Example decks">
+            {prominent.map(choose)}
+            {rest.length > 0 && (
+              <details className="more-examples">
+                <summary>More</summary>
+                <div className="more-examples-list">{rest.map(choose)}</div>
+              </details>
+            )}
+          </nav>
+          <div className="player-position">
             <span className="player-status" role="status">
               <span aria-hidden="true">
-                {loading ? "Loading…" : phase === "failed" ? "Could not open" : status}
+                {loading ? "Loading" : phase === "failed" ? "Offline" : "Live"}
               </span>
               <span className="sr-only">{status}</span>
             </span>
+            <span className="counter">
+              <span aria-hidden="true">
+                Slide {shown.slide} · Step {shown.beat + 1} of {steps}
+              </span>
+              <span className="sr-only">
+                Slide {shown.slide} of {shown.slides}, step {shown.beat + 1} of {steps}
+              </span>
+            </span>
           </div>
-          <div className="player-transport controls js-only">
-            <Control
-              label="Step back"
-              icon="back"
-              disabled={equal(inputPosition, moved(example, inputPosition, command.prev()))}
-              onClick={() => step(command.prev())}
-            />
-            <Control
-              label={running ? "Pause" : phase === "ready" && atEnd(shown) ? "Replay" : "Play"}
-              icon={running ? "pause" : "play"}
-              onClick={play}
-              primary
-            />
-            <Control
-              label="Step forward"
-              icon="next"
-              disabled={equal(inputPosition, moved(example, inputPosition, command.next()))}
-              onClick={() => step(command.next())}
-            />
-            <details className="player-slide-select">
-              <summary aria-label={`Choose slide: Slide ${shown.slide} / ${shown.slides}`}>
-                Slide {shown.slide} / {shown.slides}
-              </summary>
-              <div className="player-slide-options">
-                {Array.from({ length: example.slides }, (_, i) => (
-                  <button
-                    type="button"
-                    // biome-ignore lint/suspicious/noArrayIndexKey: slide numbers are stable identities.
-                    key={`slide-${i + 1}`}
-                    aria-current={shown.slide === i + 1 ? "step" : undefined}
-                    onClick={(event) => {
-                      step(command.go(i + 1, 0));
-                      const details = event.currentTarget.closest("details");
-                      if (details) {
-                        details.open = false;
-                        details.querySelector("summary")?.focus();
-                      }
-                    }}
-                  >
-                    {i + 1}. {titles[i] || `Slide ${i + 1}`}
-                  </button>
-                ))}
-              </div>
-            </details>
-          </div>
-          <div className="player-actions">
-            {canFullscreen && (
+          <div className="player-controls">
+            <div className="player-transport controls js-only">
               <Control
-                label="Full screen"
-                icon="fullscreen"
-                onClick={toggleFullscreen}
-                pressed={fullscreen}
+                label="Step back"
+                icon="back"
+                disabled={equal(inputPosition, moved(example, inputPosition, command.prev()))}
+                onClick={() => step(command.prev())}
               />
-            )}
+              <Control
+                label={running ? "Pause" : phase === "ready" && atEnd(shown) ? "Replay" : "Play"}
+                icon={running ? "pause" : "play"}
+                onClick={play}
+                primary
+              />
+              <Control
+                label="Step forward"
+                icon="next"
+                disabled={equal(inputPosition, moved(example, inputPosition, command.next()))}
+                onClick={() => step(command.next())}
+              />
+            </div>
+            <div className="player-actions">
+              {canFullscreen && (
+                <Control
+                  label="Full screen"
+                  icon="fullscreen"
+                  onClick={toggleFullscreen}
+                  pressed={fullscreen}
+                />
+              )}
+              <a className="open-deck" href={deckLink} target="_blank" rel="noopener">
+                <span className="open-deck-label">Open deck</span> <span aria-hidden="true">↗</span>
+              </a>
+            </div>
           </div>
-          <a className="open-deck" href={deckLink} target="_blank" rel="noopener">
-            Open deck <span aria-hidden="true">↗</span>
-          </a>
         </div>
         <div className="player-frame">
           <div className="player-canvas">
@@ -627,61 +616,60 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
             )}
           </div>
         </div>
-        <div className="player-caption">
-          <div className="caption-text">
-            <div className="caption-copy-stack">
-              <div className="caption-current">
-                <p className="caption-lead">{caption.lead}</p>
-                {caption.body && <p className="caption-body">{caption.body}</p>}
-              </div>
-              {example.states.map((state) => (
-                <div
-                  className="caption-measure"
-                  aria-hidden="true"
-                  key={`${state.slide}-${state.beat}`}
-                >
-                  <p className="measure-lead">{state.lead || titles[state.slide - 1]}</p>
-                  {state.body && <p className="measure-body">{state.body}</p>}
-                </div>
-              ))}
-            </div>
-            {example.featured?.hint && (
-              <p
-                className="player-interaction-hint"
-                aria-hidden={phase !== "ready"}
-                data-visible={phase === "ready"}
+        {example.slides > 1 && (
+          <nav className="player-rail js-only" aria-label="Slides">
+            {Array.from({ length: example.slides }, (_, i) => (
+              <button
+                type="button"
+                // biome-ignore lint/suspicious/noArrayIndexKey: slide numbers are stable identities.
+                key={`slide-${i + 1}`}
+                className="rail-slide"
+                aria-current={shown.slide === i + 1 ? "step" : undefined}
+                onClick={() => step(command.go(i + 1, 0))}
               >
-                {example.featured.hint}
-              </p>
-            )}
-            {fullscreenError && <p role="status">{fullscreenError}</p>}
+                <span
+                  className="rail-progress"
+                  aria-hidden="true"
+                  style={{ "--progress": progress(i + 1) } as CSSProperties}
+                />
+                {/* The name reads "Slide 2: Title" and still contains the visible "2 Title". */}
+                <span className="rail-number">
+                  <span className="sr-only">Slide </span>
+                  {i + 1}
+                  <span className="sr-only">:</span>
+                </span>{" "}
+                <span className="rail-title">{titles[i] || `Slide ${i + 1}`}</span>
+              </button>
+            ))}
+          </nav>
+        )}
+        <div className="player-caption">
+          <div className="caption-copy-stack">
+            <div className="caption-current">
+              <p className="caption-lead">{caption.lead}</p>
+              {caption.body && <p className="caption-body">{caption.body}</p>}
+            </div>
+            {example.states.map((state) => (
+              <div
+                className="caption-measure"
+                aria-hidden="true"
+                key={`${state.slide}-${state.beat}`}
+              >
+                <p className="measure-lead">{state.lead || titles[state.slide - 1]}</p>
+                {state.body && <p className="measure-body">{state.body}</p>}
+              </div>
+            ))}
           </div>
-          <div className="caption-side">
-            <span className="caption-meta">
-              {steps <= MAX_PIPS && (
-                <span aria-hidden="true" className="pips">
-                  {Array.from({ length: steps }, (_, pip) => (
-                    <span
-                      // biome-ignore lint/suspicious/noArrayIndexKey: step positions are stable identities.
-                      key={`step-${pip}`}
-                      className="pip"
-                      data-state={
-                        pip < shown.beat ? "past" : pip === shown.beat ? "now" : undefined
-                      }
-                    />
-                  ))}
-                </span>
-              )}
-              <span className="counter">
-                <span aria-hidden="true">
-                  Slide {shown.slide} · Step {shown.beat + 1} of {steps}
-                </span>
-                <span className="sr-only">
-                  Slide {shown.slide} of {shown.slides}, step {shown.beat + 1} of {steps}
-                </span>
-              </span>
-            </span>
-          </div>
+          {example.featured?.hint && (
+            <p
+              className="player-interaction-hint"
+              aria-hidden={phase !== "ready"}
+              data-visible={phase === "ready"}
+            >
+              {example.featured.hint}
+            </p>
+          )}
+          {fullscreenError && <p role="status">{fullscreenError}</p>}
           <p className="sr-only" aria-live="polite">
             {spoken}
           </p>

@@ -55,24 +55,41 @@ describe("landing page tokens", () => {
   const tokens = landingTokens();
   const theme = productTheme();
 
-  it("uses a graphite page palette around the product canvas", () => {
-    expect(tokens.canvas).toBe("#10151d");
-    expect(tokens.panel).toBe("#19222e");
-    expect(tokens.frame).toBe(theme.surfaces.canvas);
-    expect(tokens.canvas).not.toBe(tokens.frame);
-    expect(tokens.action).toBe(tokens.accent);
-    expect(tokens.action).not.toBe(theme.ramps.amber[1]);
+  it("keeps the slide canvas as the page canvas and tints the rest toward the theme's blue-violet", () => {
+    expect(tokens.canvas).toBe(theme.surfaces.canvas);
+    expect(tokens.frame).toBe(tokens.canvas);
+    expect(tokens.action).toBe(theme.ramps.cyan[1]);
+    for (const surface of ["band", "raised", "line"]) {
+      const [r = 0, , b = 0] = [1, 3, 5].map((i) =>
+        Number.parseInt(get(tokens, surface).slice(i, i + 2), 16),
+      );
+      expect(b).toBeGreaterThan(r);
+    }
+  });
+
+  it("keeps the alternating section bands distinguishable from the canvas", () => {
+    // A theme edit that flattens band into canvas would merge every section.
+    expect(contrast(get(tokens, "band"), get(tokens, "canvas"))).toBeGreaterThanOrEqual(1.08);
+    expect(contrast(get(tokens, "raised"), get(tokens, "band"))).toBeGreaterThanOrEqual(1.08);
   });
 
   it.each(
-    ["canvas", "panel"].flatMap((surface) =>
+    ["canvas", "band", "raised"].flatMap((surface) =>
+      ["agent", "talk", "template", "hand", "pass", "block"].map((hue) => [hue, surface]),
+    ),
+  )("the %s hue on %s is readable as text (4.5:1)", (hue, surface) => {
+    expect(contrast(get(tokens, hue), get(tokens, surface))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(
+    ["canvas", "band", "raised"].flatMap((surface) =>
       ["ink", "ink-2", "muted", "accent", "data"].map((fg) => [fg, surface]),
     ),
   )("%s text on %s is at least 4.5:1", (fg, surface) => {
     expect(contrast(get(tokens, fg), get(tokens, surface))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it.each(["canvas", "panel"])(
+  it.each(["canvas", "band", "raised"])(
     "control borders (line-strong) on %s are at least 3:1",
     (surface) => {
       expect(contrast(get(tokens, "line-strong"), get(tokens, surface))).toBeGreaterThanOrEqual(3);
@@ -81,7 +98,8 @@ describe("landing page tokens", () => {
 
   it("puts readable text on the action color", () => {
     expect(contrast(get(tokens, "action-ink"), get(tokens, "action"))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(get(tokens, "action"), get(tokens, "panel"))).toBeGreaterThanOrEqual(3);
+    for (const surface of ["canvas", "band", "raised"])
+      expect(contrast(get(tokens, "action"), get(tokens, surface))).toBeGreaterThanOrEqual(3);
   });
 
   it("writes every token as a variable on the landing page's root", () => {

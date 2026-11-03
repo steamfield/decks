@@ -176,6 +176,28 @@ describe("DeckPlayer", () => {
     expect(screen.getByText("Slide 2 of 3, step 2 of 2. Second lead.")).toBeInTheDocument();
   });
 
+  it("lists every slide in the rail, fills progress by step and jumps to a picked slide", () => {
+    render(<DeckPlayer examples={examples} />);
+    const rail = screen.getByRole("navigation", { name: "Slides" });
+    const slides = rail.querySelectorAll("button");
+    expect([...slides].map((slide) => slide.textContent)).toEqual([
+      "Slide 1: Cover",
+      "Slide 2: Slide 2",
+      "Slide 3: Close",
+    ]);
+    const fill = () =>
+      [...rail.querySelectorAll<HTMLElement>(".rail-progress")].map((bar) =>
+        bar.style.getPropertyValue("--progress"),
+      );
+    expect(slides[1]).toHaveAttribute("aria-current", "step");
+    expect(fill()).toEqual(["1", "0.5", "0"]);
+    const d = deck();
+    d.say({ type: "decks:ready" });
+    d.state({});
+    fireEvent.click(screen.getByRole("button", { name: /^Slide 3\b.*Close$/ }));
+    expect(d.sent.at(-1)).toMatchObject({ cmd: "go", slide: 3, beat: 0 });
+  });
+
   it("starts on a later step when the example's start step is not the first", () => {
     const later = { ...hero, startBeat: 1 };
     render(<DeckPlayer examples={[later]} />);

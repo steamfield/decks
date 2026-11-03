@@ -7,7 +7,6 @@ import {
   DeckProse,
   ExampleGallery,
   FileTree,
-  Hero,
   HookPanel,
   ReleaseBanner,
   Requirements,
@@ -47,11 +46,6 @@ describe("landing sections", () => {
     expect(screen.getByRole("link", { name: "v1 is out" })).toHaveAttribute("href", "/releases");
     rerender(<ReleaseBanner announcement={null} />);
     expect(container).toBeEmptyDOMElement();
-  });
-
-  it("puts the tagline in the page heading", () => {
-    render(<Hero tagline="Slides that move" description="A Slidev addon." />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Slides that move");
   });
 
   it("lists requirements as label and text, and renders nothing without any", () => {
@@ -123,7 +117,7 @@ describe("landing sections", () => {
     render(
       <ExampleGallery examples={[example("a", "Template deck"), example("b", "From the talks")]} />,
     );
-    const link = screen.getByRole("link", { name: "a title" });
+    const link = screen.getByRole("link", { name: /^a title/ });
     expect(link).toHaveAttribute("href", "/demo/a/");
     expect(link).toHaveAttribute("data-example", "a");
     expect(link.querySelector("img")).toHaveAttribute("src", "/posters/a-640.webp");

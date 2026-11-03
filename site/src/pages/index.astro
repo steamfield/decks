@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Code } from "astro:components";
+import CopyBlock from "../components/CopyBlock.astro";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
 import {
@@ -47,31 +48,82 @@ const stills = (name: string) => ({
 
   <section aria-labelledby="hero-title" class="hero">
     <div class="page-column hero-head">
-      <h1 id="hero-title" class="hero-title">
-        {site.tagline}
-      </h1>
-      <div class="hero-intro">
-        <p class="hero-lede">{site.heroDescription}</p>
+      <div>
+        <h1 id="hero-title" class="hero-title hero-in">
+          {site.tagline}
+        </h1>
+        <p class="hero-lede hero-in" style="--delay: 120ms">
+          {site.heroDescription}
+        </p>
+      </div>
+      <div class="hero-intro hero-in" style="--delay: 240ms">
+        <CopyBlock
+          lines={site.quickstart}
+          label="Copy the install commands"
+          track="install_copied"
+          trackMethod="hero"
+        />
         <div class="hero-actions">
           <a class="button-primary" href="#install">
-            Install Decks <span aria-hidden="true">↗</span>
+            Install Decks
           </a>
           <a class="button-secondary" href="/docs/getting-started/quickstart/">
             Read the docs <span aria-hidden="true">→</span>
           </a>
         </div>
+        <p class="hero-fineprint">{site.heroFineprint}</p>
       </div>
     </div>
-    <div class="showcase-column">
+    <div class="page-column hero-in-media" style="--delay: 360ms">
       <DeckPlayer client:visible examples={examples} />
     </div>
     {hero && <DeckProse example={hero} />}
   </section>
 
+  {agentRun && agentFigures && agentExample && (
+    <Section
+      id="agent"
+      tone="band"
+      title={`Claude Code drafted this deck from one prompt in ${agentFigures.minutes} minutes.`}
+      lede="The Keeling curve deck below came from a fresh project set up with the commands above, then a second Claude Code session revised it."
+    >
+      <div class="agent-evidence">
+        <div class="agent-prompt">
+          <p class="evidence-label">The prompt</p>
+          <blockquote>{agentRun.prompt}</blockquote>
+          <dl class="run-figures">
+            <div>
+              <dt>Draft time</dt>
+              <dd>{agentFigures.minutes} min</dd>
+            </div>
+            <div>
+              <dt>Claude usage</dt>
+              <dd>{agentFigures.cost}</dd>
+            </div>
+            <div>
+              <dt>Agent turns</dt>
+              <dd>{agentFigures.turns}</dd>
+            </div>
+          </dl>
+          <p class="agent-links">
+            <a href={agentExample.href} data-example={agentExample.name}>
+              Load the Keeling deck in the player <span aria-hidden="true">→</span>
+            </a>
+            <a href="/docs/guides/writing-decks-with-an-agent/">
+              Writing decks with an agent <span aria-hidden="true">→</span>
+            </a>
+          </p>
+          <HookPanel denial={denial} />
+        </div>
+        <Transcript run={agentRun} deck="the Keeling curve deck" />
+      </div>
+    </Section>
+  )}
+
   <Section
     id="install"
-    title="Getting started"
-    lede="Install the components and agent setup, then scaffold a story deck."
+    title="Install it, then ask your agent for a deck."
+    lede="Decks adds slide components, an agent setup and a story-deck scaffold to your project."
   >
     <div class="getting-started-grid">
       <div class="install-block" data-block>
@@ -80,29 +132,26 @@ const stills = (name: string) => ({
           Decks is free and {site.license} licensed. Claude usage is billed separately.
         </p>
       </div>
-      <div class="workflow">
+      <dl class="workflow">
         <div>
-          <h3>Describe the talk</h3>
-          <p>Give your coding agent the topic, audience and the story you want to tell.</p>
+          <dt>Describe the talk</dt>
+          <dd>Give your coding agent the topic, audience and the story you want to tell.</dd>
         </div>
         <div>
-          <h3>Review the draft</h3>
-          <p>
+          <dt>Review the draft</dt>
+          <dd>
             Watch the deck locally with <code>{site.devCommand}</code>. Ask for changes to a slide
             or chart.
-          </p>
+          </dd>
         </div>
         <div>
-          <h3>Check the sources</h3>
-          <p>
+          <dt>Check the sources</dt>
+          <dd>
             Run <code>fact-checking-a-deck</code> before presenting. Each figure stays linked to its
             source.
-          </p>
+          </dd>
         </div>
-        <a href="/docs/getting-started/quickstart/">
-          Follow the quickstart <span aria-hidden="true">→</span>
-        </a>
-      </div>
+      </dl>
     </div>
     <details class="evidence-disclosure" id="what-you-get">
       <summary>
@@ -112,82 +161,16 @@ const stills = (name: string) => ({
         <FileTree files={files} notes={site.files} commands={setupCommands} />
       </div>
     </details>
-  </Section>
-
-  <Section
-    id="agent"
-    title="A deck built with Claude Code"
-    lede="This Keeling curve deck was drafted in a fresh project using the setup above, then revised in a second Claude Code session."
-  >
-    {agentRun && agentFigures && agentExample && (
-      <>
-        <div class="agent-evidence">
-          <div class="agent-prompt">
-            <p class="evidence-label">The prompt</p>
-            <blockquote>{agentRun.prompt}</blockquote>
-            <dl class="run-figures">
-              <div>
-                <dt>Draft time</dt>
-                <dd>{agentFigures.minutes} min</dd>
-              </div>
-              <div>
-                <dt>Claude usage</dt>
-                <dd>{agentFigures.cost}</dd>
-              </div>
-              <div>
-                <dt>Agent turns</dt>
-                <dd>{agentFigures.turns}</dd>
-              </div>
-            </dl>
-            <a href={agentExample.href} data-example={agentExample.name}>
-              Explore the Keeling deck <span aria-hidden="true">→</span>
-            </a>
-          </div>
-          <a
-            href={agentExample.href}
-            data-example={agentExample.name}
-            class="evidence-preview"
-            aria-label="Explore the Keeling curve deck"
-          >
-            <img
-              src={`${agentExample.poster?.base}-1280.webp`}
-              width="1280"
-              height="720"
-              loading="lazy"
-              alt="A sourced chart from the Keeling curve story deck"
-            />
-          </a>
-        </div>
-        <div class="evidence-disclosures">
-          <details class="evidence-disclosure">
-            <summary>
-              The recorded agent run <span>Prompt, tool calls and checks</span>
-            </summary>
-            <div class="disclosure-content">
-              <Transcript run={agentRun} deck="the Keeling curve deck" />
-            </div>
-          </details>
-          <details class="evidence-disclosure">
-            <summary>
-              A write blocked by the prose hook <span>Real output from a planted test line</span>
-            </summary>
-            <div class="disclosure-content">
-              <HookPanel denial={denial} />
-            </div>
-          </details>
-        </div>
-      </>
-    )}
     <p class="text-ink-2">
-      <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> explains
-      the workflow and its checks.
+      <a href="/docs/getting-started/quickstart/">Follow the quickstart</a> for the full setup.
     </p>
   </Section>
 
   <Section
     id="examples"
-    title="Example decks"
-    lede="Pick one to load it into the player at the top of the page."
+    tone="band"
+    title="Every example is a deck you can open and edit."
+    lede="Pick one to load it into the player at the top of the page. Each row says how the deck was made."
   >
     <ExampleGallery examples={examples} />
     <details class="evidence-disclosure">
@@ -206,75 +189,79 @@ const stills = (name: string) => ({
 
   <Section
     id="themes"
-    title="Themes"
+    title="One theme.json restyles every slide."
     lede="Colors, fonts and cover branding come from one theme file. A deck's theme.json sets only the keys it lists, and the rest keep their defaults."
   >
     <div class="themes-grid">
-      <figure class="still">
-        <picture>
-          <source
-            type="image/avif"
-            srcset={stills("normal").avif}
-            sizes="(min-width: 1024px) 420px, 100vw"
-          />
-          <source
-            type="image/webp"
-            srcset={stills("normal").webp}
-            sizes="(min-width: 1024px) 420px, 100vw"
-          />
-          <img
-            src={stills("normal").src}
-            width="1280"
-            height="720"
-            loading="lazy"
-            alt={`A slide from the ${STILL_DECK} deck, "${stillTitle}", with the default theme`}
-          />
-        </picture>
-        <figcaption>Default theme</figcaption>
-      </figure>
-      <figure class="still">
-        <picture>
-          <source
-            type="image/avif"
-            srcset={stills("warm").avif}
-            sizes="(min-width: 1024px) 420px, 100vw"
-          />
-          <source
-            type="image/webp"
-            srcset={stills("warm").webp}
-            sizes="(min-width: 1024px) 420px, 100vw"
-          />
-          <img
-            src={stills("warm").src}
-            width="1280"
-            height="720"
-            loading="lazy"
-            alt="The same slide with the theme.json beside it"
-          />
-        </picture>
-        <figcaption>With this theme.json</figcaption>
-      </figure>
-    </div>
-    <details class="evidence-disclosure">
-      <summary>
-        The theme.json behind this slide <span>Backgrounds and chart colors</span>
-      </summary>
-      <div class="disclosure-content">
+      <div class="theme-switch">
+        <input type="radio" name="theme-still" id="still-default" class="sr-only" checked />
+        <input type="radio" name="theme-still" id="still-warm" class="sr-only" />
+        <div class="theme-tabs">
+          <label for="still-default">Default theme</label>
+          <label for="still-warm">With this theme.json</label>
+        </div>
+        <div class="theme-stills">
+          <figure class="still" data-still="default">
+            <picture>
+              <source
+                type="image/avif"
+                srcset={stills("normal").avif}
+                sizes="(min-width: 1024px) 720px, 100vw"
+              />
+              <source
+                type="image/webp"
+                srcset={stills("normal").webp}
+                sizes="(min-width: 1024px) 720px, 100vw"
+              />
+              <img
+                src={stills("normal").src}
+                width="1280"
+                height="720"
+                loading="lazy"
+                alt={`A slide from the ${STILL_DECK} deck, "${stillTitle}", with the default theme`}
+              />
+            </picture>
+          </figure>
+          <figure class="still" data-still="warm">
+            <picture>
+              <source
+                type="image/avif"
+                srcset={stills("warm").avif}
+                sizes="(min-width: 1024px) 720px, 100vw"
+              />
+              <source
+                type="image/webp"
+                srcset={stills("warm").webp}
+                sizes="(min-width: 1024px) 720px, 100vw"
+              />
+              <img
+                src={stills("warm").src}
+                width="1280"
+                height="720"
+                loading="lazy"
+                alt="The same slide with the theme.json beside it"
+              />
+            </picture>
+          </figure>
+        </div>
+      </div>
+      <div class="theme-source">
         <figure class="code-frame code-wrap" data-block>
           <figcaption>theme.json</figcaption>
           <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
         </figure>
+        <p class="text-muted text-sm">
+          This file changes the background colors and the two chart colors the slide uses. The
+          values come from the warm palette in the template deck.{" "}
+          <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
+        </p>
       </div>
-    </details>
-    <p class="text-muted max-w-[44rem] text-sm">
-      This file changes the background colors and the two chart colors the slide uses. The values
-      come from the warm palette in the template deck.{" "}
-      <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
-    </p>
+    </div>
   </Section>
 
   <Section
     id="requirements"
+    tone="band"
     title="Requirements and limits"
     lede="Decks runs on Slidev with shared instructions for seven agent platforms."
   >
@@ -297,4 +284,18 @@ const stills = (name: string) => ({
       </div>
     </div>
   </Section>
+
+  <section class="closing-cta" aria-label="Install Decks">
+    <div class="page-column closing-row" data-reveal>
+      <p class="closing-line">Decks is free under the {site.license} license.</p>
+      <div class="hero-actions">
+        <a class="button-primary" href="#install">
+          Install Decks
+        </a>
+        <a class="button-secondary" href="/docs/getting-started/quickstart/">
+          Read the docs <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

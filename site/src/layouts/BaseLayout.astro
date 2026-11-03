@@ -94,46 +94,50 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
       Skip to content
     </a>
     <slot name="banner" />
-    <header class:list={["border-line border-b", { "landing-header": landing }]}>
-      <div
-        class:list={[
-          "mx-auto flex h-14 max-w-[1200px] items-center gap-4 px-4 sm:px-8",
-          { "landing-nav": landing },
-        ]}
-      >
-        <a href="/" class="text-ink flex items-baseline gap-2 no-underline">
-          <span class="text-lg font-semibold tracking-tight">{site.name}</span>
-          {!landing && (
+    {landing ? (
+      <>
+        <div data-header-sentinel aria-hidden="true" class="h-px" />
+        <header class="landing-header" data-landing-header>
+          <div class="page-column landing-nav">
+            <a href="/" class="text-ink flex items-center no-underline">
+              <span class="text-lg font-semibold tracking-tight">{site.name}</span>
+            </a>
+            {site.version && <span class="version-chip">v{site.version}</span>}
+            <nav aria-label="Main">
+              <a href="#examples">Examples</a>
+              <a href="/docs/">Docs</a>
+              {site.social.map((link) => (
+                <a href={link.href} class="nav-wide">
+                  {link.label}
+                </a>
+              ))}
+              <a href="#install" class="nav-install">
+                Install
+              </a>
+            </nav>
+          </div>
+        </header>
+      </>
+    ) : (
+      <header class="border-line border-b">
+        <div class="mx-auto flex h-14 max-w-[1200px] items-center gap-4 px-4 sm:px-8">
+          <a href="/" class="text-ink flex items-baseline gap-2 no-underline">
+            <span class="text-lg font-semibold tracking-tight">{site.name}</span>
             <span class="text-muted hidden font-mono text-xs sm:inline">{site.packageName}</span>
-          )}
-        </a>
-        {!landing && site.version && (
-          <span class="text-muted font-mono text-xs">v{site.version}</span>
-        )}
-        <nav aria-label="Main" class="ml-auto flex items-center gap-5 text-sm">
-          {landing && (
-            <a href="#examples" class="no-underline hover:underline">
-              Examples
-            </a>
-          )}
-          <a href="/docs/" class="no-underline hover:underline">
-            Docs
           </a>
-          {landing && (
-            <a href="#install" class="nav-install no-underline">
-              Install
+          {site.version && <span class="text-muted font-mono text-xs">v{site.version}</span>}
+          <nav aria-label="Main" class="ml-auto flex items-center gap-5 text-sm">
+            <a href="/docs/" class="no-underline hover:underline">
+              Docs
             </a>
-          )}
-          {!landing &&
-            site.social.map((link) => (
+            {site.social.map((link) => (
               <a href={link.href} class="no-underline hover:underline">
                 {link.label}
               </a>
             ))}
-        </nav>
-        <!-- Search goes here: a search fragment fills this slot. -->
-        <slot name="search" />
-        {!landing && (
+          </nav>
+          <!-- Search goes here: a search fragment fills this slot. -->
+          <slot name="search" />
           <button
             type="button"
             data-theme-toggle
@@ -142,14 +146,19 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
           >
             Dark theme
           </button>
-        )}
-      </div>
-    </header>
+        </div>
+      </header>
+    )}
     <main id="main" class="flex-1">
       <slot />
     </main>
-    <footer class="border-line text-muted border-t text-sm">
-      <div class="mx-auto grid max-w-[1200px] gap-8 px-4 py-10 sm:grid-cols-[1.4fr_1fr_1fr_1fr] sm:px-8">
+    <footer class:list={["border-line text-muted border-t text-sm", { "bg-band": landing }]}>
+      <div
+        class:list={[
+          "grid gap-8 sm:grid-cols-[1.4fr_1fr_1fr_1fr]",
+          landing ? "page-column py-16" : "mx-auto max-w-[1200px] px-4 py-10 sm:px-8",
+        ]}
+      >
         <div class="flex flex-col gap-2">
           <span class="text-ink font-semibold">{site.name}</span>
           <span>A Steamfield project.</span>

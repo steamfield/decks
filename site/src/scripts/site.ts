@@ -109,6 +109,43 @@ function setupCopyPage() {
   );
 }
 
+/** The landing header shows its bottom edge once the page scrolls under it. */
+function setupHeaderEdge() {
+  const header = document.querySelector<HTMLElement>("[data-landing-header]");
+  const sentinel = document.querySelector("[data-header-sentinel]");
+  if (!header || !sentinel || typeof IntersectionObserver === "undefined") return;
+  new IntersectionObserver(([entry]) => {
+    header.toggleAttribute("data-scrolled", !entry?.isIntersecting);
+  }).observe(sentinel);
+}
+
+/**
+ * Landing sections rise in as they scroll into view. Only blocks still below
+ * the fold are hidden first, so nothing already on screen flashes; without
+ * JavaScript or with reduced motion everything is simply there.
+ */
+function setupReveal() {
+  if (typeof IntersectionObserver === "undefined") return;
+  if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+  const pending = [...document.querySelectorAll<HTMLElement>("[data-reveal]")].filter(
+    (element) => element.getBoundingClientRect().top > window.innerHeight,
+  );
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.removeAttribute("data-pending");
+        observer.unobserve(entry.target);
+      }
+    },
+    { rootMargin: "0px 0px -15% 0px" },
+  );
+  for (const element of pending) {
+    element.setAttribute("data-pending", "");
+    observer.observe(element);
+  }
+}
+
 function setupTocHighlight() {
   const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-toc] a[href^='#']")];
   const byId = new Map(links.map((link) => [decodeURIComponent(link.hash.slice(1)), link]));
@@ -129,6 +166,8 @@ function setupTocHighlight() {
 }
 
 setupThemeToggle();
+setupHeaderEdge();
+setupReveal();
 setupCommandCopy();
 setupGallery();
 // After the layout script has called initAnalytics, which runs once this module has loaded.

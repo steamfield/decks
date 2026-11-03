@@ -19,6 +19,7 @@
 
   --color-canvas: #fafafa;
   --color-panel: #f4f4f5;
+  --color-band: #f4f4f5;
   --color-ink: #09090b;
   --color-ink-2: #3f3f46;
   --color-muted: #52525b;
@@ -37,6 +38,7 @@
   .dark {
     --color-canvas: #09090b;
     --color-panel: #111113;
+    --color-band: #111113;
     --color-ink: #f7f8f8;
     --color-ink-2: #d0d6e0;
     --color-muted: #a1a1aa;
@@ -51,6 +53,7 @@
     :root:not(.light) {
       --color-canvas: #09090b;
       --color-panel: #111113;
+      --color-band: #111113;
       --color-ink: #f7f8f8;
       --color-ink-2: #d0d6e0;
       --color-muted: #a1a1aa;
