@@ -18,8 +18,13 @@ const render = (props: Record<string, string>, slot?: () => unknown) =>
 /** Drop Vue's SSR comment markers so the assertions read as plain markup. */
 const plain = (html: string) => html.replace(/<!--.*?-->/g, '')
 
+/** The text of each `data-part` span, allowing one level of nested spans (`tool-args` wraps its parens). */
 const part = (html: string, name: string) =>
-  [...html.matchAll(new RegExp(`<span data-part="${name}"[^>]*>(.*?)</span>`, 'g'))].map((m) => m[1])
+  [
+    ...html.matchAll(
+      new RegExp(`<span data-part="${name}"[^>]*>((?:<span[^>]*>[^<]*</span>|[^<])*)</span>`, 'g'),
+    ),
+  ].map((m) => m[1].replace(/<[^>]+>/g, ''))
 
 describe('ToolCallCard', () => {
   it('renders the call as slide 9 uses it: header text in order, then the body', async () => {
