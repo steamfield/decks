@@ -30,7 +30,7 @@ export type ExampleEntry = {
   startBeat?: number;
   provenance: ProvenanceKind;
   run?: { fixture: string; setup: "repo" | "init" };
-  edits?: { from: string; to: string; by: Editor };
+  edits?: ({ from: string; to: string } | { commits: string[] }) & { by: Editor };
   loop?: boolean;
 };
 

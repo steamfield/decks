@@ -1,8 +1,10 @@
 // Writes fixtures/examples/<name>.edits.json for each example in
-// src/data/examples.json that names an `edits` pair: the commit with the agent's
-// raw output and the commit with the hand edit. The fixture holds the diff's
-// size for examples/<name>/ and up to two before/after caption lines, picked from
-// single-line replacements of a story card's `lead:` (then `body:`) string.
+// src/data/examples.json that names its `edits`: either a `from`..`to` pair (the
+// commit with the agent's raw output and the commit with the edit) or a list of
+// `commits` (the edit commits only, so a plumbing commit between them is left
+// out). The fixture holds the diff's size for examples/<name>/ and up to two
+// before/after caption lines, picked from single-line replacements of a story
+// card's `lead:` (then `body:`) string.
 // src/content-drift.test.ts recomputes it from git and fails when it drifts.
 //
 //   node scripts/edits.mjs
@@ -26,19 +28,28 @@ function captionText(line) {
   return { field: match[1], text: match[3].replace(/\\(['"`])/g, "$1") };
 }
 
-/** Diff size and before/after caption pairs for examples/<name> between two commits. */
-export function computeEdits(name, from, to) {
+/** A `--numstat` count; git prints `-` for a binary file, which has no lines to count. */
+const lines = (count) => (count === "-" ? 0 : Number(count));
+
+/**
+ * Diff size and before/after caption pairs for examples/<name>, over `from`..`to`
+ * or summed over each of `commits` against its parent. `files` counts each path once.
+ */
+export function computeEdits(name, edits) {
   const path = `examples/${name}`;
-  const stat = git(["diff", "--numstat", from, to, "--", path])
-    .trim()
-    .split("\n")
-    .filter(Boolean)
-    .map((row) => row.split("\t"));
-  const insertions = stat.reduce((sum, [added]) => sum + Number(added), 0);
-  const deletions = stat.reduce((sum, [, removed]) => sum + Number(removed), 0);
+  const ranges = edits.commits ? edits.commits.map((sha) => [`${sha}^`, sha]) : [[edits.from, edits.to]];
+  const stat = ranges.flatMap(([from, to]) =>
+    git(["diff", "--numstat", from, to, "--", path])
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((row) => row.split("\t")),
+  );
+  const insertions = stat.reduce((sum, [added]) => sum + lines(added), 0);
+  const deletions = stat.reduce((sum, [, removed]) => sum + lines(removed), 0);
   const pairs = [];
   let file = "";
-  const hunks = git(["diff", "-U0", from, to, "--", path]).split("\n");
+  const hunks = ranges.flatMap(([from, to]) => git(["diff", "-U0", from, to, "--", path]).split("\n"));
   for (let i = 0; i < hunks.length; i++) {
     const line = hunks[i] ?? "";
     if (line.startsWith("+++ b/")) file = line.slice(`+++ b/${path}/`.length);
@@ -59,9 +70,8 @@ export function computeEdits(name, from, to) {
   }
   const rank = (pair) => (pair.field === "lead" ? 0 : 1);
   return {
-    from,
-    to,
-    files: stat.length,
+    ...(edits.commits ? { commits: edits.commits } : { from: edits.from, to: edits.to }),
+    files: new Set(stat.map((row) => row.at(-1))).size,
     insertions,
     deletions,
     pairs: pairs
@@ -75,7 +85,7 @@ if (import.meta.main) {
   const { examples } = JSON.parse(readFileSync(join(site, "src/data/examples.json"), "utf8"));
   for (const entry of examples) {
     if (!entry.edits) continue;
-    const edits = computeEdits(entry.name, entry.edits.from, entry.edits.to);
+    const edits = computeEdits(entry.name, entry.edits);
     const out = join(site, "fixtures/examples", `${entry.name}.edits.json`);
     writeFileSync(out, `${JSON.stringify(edits, null, 2)}\n`);
     console.log(

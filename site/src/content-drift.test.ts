@@ -193,7 +193,7 @@ describe("the hero's recorded agent run", () => {
       const { label } = loadExample(hero).provenance;
       expect(label).toContain("in a fresh project with decks init");
       if (hero.edits?.by === "claude") expect(label).toContain("in a second Claude Code session");
-      const edits = hero.edits && computeEdits(hero.name, hero.edits.from, hero.edits.to);
+      const edits = hero.edits && computeEdits(hero.name, hero.edits);
       if (edits)
         expect(label).toContain(
           `(+${edits.insertions}/−${edits.deletions} in ${edits.files} files)`,
@@ -220,7 +220,7 @@ describe("the hero's recorded agent run", () => {
   it("has the hand edit's diff and caption pairs as git computes them", () => {
     if (!hero.edits) return;
     expect(existsSync(editsPath(hero.name)), "run node scripts/edits.mjs").toBe(true);
-    expect(loadEdits(hero.name)).toEqual(computeEdits(hero.name, hero.edits.from, hero.edits.to));
+    expect(loadEdits(hero.name)).toEqual(computeEdits(hero.name, hero.edits));
   });
 });
 

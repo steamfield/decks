@@ -99,7 +99,7 @@ export const editedBy = (by: Editor) =>
 
 /** "+30/−18 in 10 files": the edit's size, as git counts it. */
 export const editSize = (edits: Pick<Edits, "insertions" | "deletions" | "files">) =>
-  `+${edits.insertions}/−${edits.deletions} in ${edits.files} files`;
+  `+${edits.insertions}/−${edits.deletions} in ${edits.files} ${edits.files === 1 ? "file" : "files"}`;
 
 /** One sentence under the player: how long the draft took and how much the edit changed. */
 export function draftLine(run: RunSummary, edits: Edits | null): string {
