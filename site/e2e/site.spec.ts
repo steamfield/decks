@@ -554,7 +554,10 @@ test("the real graph survives two complete forward and reverse walks", async ({ 
                 .evaluate(
                   () => (window as unknown as Window & { __rafFrames: number }).__rafFrames,
                 ),
-            { timeout: 3_000 },
+            // A liveness check: a hung deck never paints two frames. The budget
+            // matches the step waits above, because the graph slides draw with
+            // SwiftShader here and two frames there have taken up to 3.7s.
+            { timeout: 15_000 },
           )
           .toBe(2);
         destinations.push({ slide: state.slide, beat: state.beat });
