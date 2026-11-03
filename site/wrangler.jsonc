@@ -2,15 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   // Cloudflare Worker serving the static build; production is decks.steamfield.io
   // (see AGENTS.md, Deploy). Cloudflare's Git integration (Workers Builds) runs
-  // `wrangler deploy` from site/ on every push to main.
+  // `bun run build` (make build, which prepares the decks under WORKERS_CI) and
+  // then `npx wrangler deploy` from site/ on every push to main.
   "name": "decks",
   "compatibility_date": "2026-11-02",
-  "build": {
-    // In Workers Builds (WORKERS_CI=1) the deploy builds the site first: the deck
-    // builds under public/demo/ are gitignored and need the parent repo's
-    // dependencies. Locally, run `make demo-build build` yourself; this is a no-op.
-    "command": "[ -z \"$WORKERS_CI\" ] || (cd .. && bun install --frozen-lockfile && cd site && bun install --frozen-lockfile && make demo-build build)",
-  },
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",

@@ -8,7 +8,7 @@ PORT_E2E ?= 4322
 export PORT_WEB PORT_E2E
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev lint format check test coverage build preview e2e clean demo demo-build deploy-check deploy-preview deploy
+.PHONY: help install dev lint format check test coverage build ci-prepare preview e2e clean demo demo-build deploy-check deploy-preview deploy
 
 help: ## List targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -43,7 +43,14 @@ test: ## Unit and component tests
 coverage: ## Unit and component tests with coverage
 	bunx vitest run --coverage
 
-build: ## Static build into dist/, then the acceptance tests over it
+ci-prepare: ## Workers Builds only: install the parent repo, then build the decks into public/demo/
+	cd .. && bun install --frozen-lockfile
+	node scripts/demo.mjs --build
+
+# Cloudflare Workers Builds (WORKERS_CI=1) runs `bun run build` from site/ on a
+# fresh checkout: install the parent repo and build the decks first, since
+# public/demo/ is gitignored and the site reads ../packages at build time.
+build: $(if $(WORKERS_CI),ci-prepare) ## Static build into dist/, then the acceptance tests over it
 	bunx astro build
 	bunx vitest run --config vitest.build.config.ts
 
