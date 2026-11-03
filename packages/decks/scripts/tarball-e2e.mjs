@@ -71,6 +71,7 @@ const TARGETS = [
   '.claude/rules/story-stage.md',
   '.claude/rules/prose-patterns.md',
   '.claude/rules/project-glossary.md',
+  '.github/instructions/decks.instructions.md',
   '.claude/hooks/decks.sh',
 ]
 const REPO_ONLY = ['bun run', 'examples/', 'packages/decks', '.test.ts', 'tools/']
@@ -250,7 +251,7 @@ let rendered = {}
 await testCase('1 fresh init', () => {
   main = project('main')
   const res = init(main)
-  for (const f of [...TARGETS, '.claude/settings.json', '.claude/decks.json', 'AGENTS.md', 'CLAUDE.md'])
+  for (const f of [...TARGETS, '.claude/settings.json', '.claude/decks.json', 'AGENTS.md', 'CLAUDE.md', 'GEMINI.md'])
     check(existsSync(join(main, f)), `${f} exists`, `init did not write ${f}`)
   const manifest = readJson(main, '.claude/decks.json')
   check(
@@ -273,6 +274,34 @@ await testCase('1 fresh init', () => {
     }
     check(!/\{\{\w+\}\}/.test(text), `${f} has no unfilled {{variable}}`, text.match(/\{\{\w+\}\}/)?.[0])
   }
+
+  const agents = read(main, 'AGENTS.md')
+  check(agents.includes('including Codex and Antigravity'),
+    'AGENTS.md directs non-Claude agents to the shared guidance')
+  const requiredReads = [
+    '.claude/skills/building-a-deck/SKILL.md',
+    '.claude/rules/prose-patterns.md',
+    '.claude/rules/deck-writing.md',
+    '.claude/rules/deck-patterns.md',
+    '.claude/rules/deck-data.md',
+    '.claude/rules/project-glossary.md',
+    '.claude/rules/story-stage.md',
+    'node_modules/slidev-addon-decks/story/README.md',
+    '.claude/skills/fact-checking-a-deck/SKILL.md',
+  ]
+  let previous = -1
+  for (const path of requiredReads) {
+    const position = agents.indexOf('`' + path + '`')
+    check(position > previous, `installed read sequence includes ${path} in order`)
+    previous = position
+  }
+  check(agents.includes('Claude hooks do not run in their sessions'),
+    'the shared guidance explains that non-Claude agents must run checks manually')
+  check(read(main, 'GEMINI.md').includes('@./AGENTS.md'),
+    'Gemini imports the canonical guidance rather than a second workflow')
+  const copilot = read(main, '.github/instructions/decks.instructions.md')
+  check(/applyTo:\s*["']?decks\/\*\*["']?/.test(copilot) && copilot.includes('AGENTS.md'),
+    'Copilot uses a deck-scoped adapter pointing to the canonical guidance', copilot)
 
   // Every path into the installed package that the files cite, exemplars included.
   const cited = new Set()
@@ -391,12 +420,15 @@ await testCase('6a existing AGENTS.md gets the block, replaced in place on re-ru
   )
 })
 
-await testCase('6b only CLAUDE.md gets the block', () => {
+await testCase('6b CLAUDE-only projects get canonical guidance plus a thin import', () => {
   const root = project('claude-md', { 'CLAUDE.md': '# Mine\n' })
   init(root)
   const text = read(root, 'CLAUDE.md')
   check(text.startsWith('# Mine\n') && count(text, START) === 1, 'CLAUDE.md keeps its content and gains one block', text.slice(0, 200))
-  check(!existsSync(join(root, 'AGENTS.md')), 'no AGENTS.md is created')
+  check(existsSync(join(root, 'AGENTS.md')), 'AGENTS.md exists for all other agents')
+  check(text.includes(`${START}\n@AGENTS.md\n${END}`), 'the Claude block imports the canonical guidance')
+  check(read(root, 'AGENTS.md').includes('including Codex and Antigravity'), 'AGENTS.md carries the workflow')
+  check(!text.includes('.claude/rules/'), 'the Claude adapter does not duplicate the rules')
   init(root)
   check(count(read(root, 'CLAUDE.md'), START) === 1, 'a re-run keeps one block')
 })

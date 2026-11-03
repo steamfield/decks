@@ -42,11 +42,13 @@ export const site = {
   /** The npm package. Titles lead with it, since "Decks" alone is unsearchable. */
   packageName: "slidev-addon-decks",
   /** The home page's <title> and OG title. */
-  title: "Decks: slide decks about data, written with Claude Code (slidev-addon-decks)",
+  title: "Decks: animated slide decks, built with agents (slidev-addon-decks)",
   /** The H1. */
-  tagline: "Slide decks about data, written with Claude Code",
+  tagline: "Animated slide decks, built with agents.",
   description:
-    "Decks is a Claude Code setup and a set of Slidev components for talks about data. You describe the talk, and the agent finds sourced numbers, writes the slides and checks them.",
+    "A slide framework for coding agents, with animation tools, interactive visualizations and a workflow for building presentations.",
+  heroDescription:
+    "Give your coding agent a brief. Decks supplies slide components, animation tools and a workflow for presentations with transitions and interactive visualizations.",
   /** Absolute production URL: canonicals, the sitemap, OG images and llms.txt use it. */
   url: "https://decks.steamfield.io",
   repo,
@@ -81,7 +83,7 @@ export const site = {
   requirements: [
     {
       label: "Agent",
-      text: "Claude Code. Other agents can read the AGENTS.md block, but decks init doesn't install or test a setup for them.",
+      text: "Claude Code, Codex, Cursor, Copilot, Gemini CLI, Windsurf or OpenCode. Shared guidance; automatic writing hooks in Claude Code.",
     },
     {
       label: "Slides",

@@ -21,6 +21,7 @@ import { nextTick, onMounted, onScopeDispose, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { configs, useNav } from '@slidev/client'
 import { gsap } from '../story/easings'
+import { routeEmbedNavigation } from '../composables/embed-navigation'
 import { viewTransitionInFlight } from '../story/view-transition'
 
 export type EmbedCommand = 'next' | 'prev' | 'nextSlide' | 'prevSlide' | 'go'
@@ -83,10 +84,13 @@ export function installEmbed(): void {
 
   let last: [number, number] | null = null
   let move = 0
+  let requestId: number | undefined
+  let cards: MutationObserver | undefined
 
   function state(settled: boolean, dir: EmbedDirection): void {
     post({
       type: 'decks:state',
+      ...(requestId === undefined ? {} : { requestId }),
       slide: nav.currentSlideNo.value,
       slides: nav.total.value,
       beat: nav.clicks.value,
@@ -106,7 +110,10 @@ export function installEmbed(): void {
     const tick = () => {
       if (token !== move) return
       quiet = busy() ? 0 : quiet + 1
-      if (quiet >= 2 || performance.now() - start > SETTLE_CAP_MS) state(true, dir)
+      if (quiet >= 2 || performance.now() - start > SETTLE_CAP_MS) {
+        state(true, dir)
+        requestId = undefined
+      }
       else requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
@@ -136,11 +143,61 @@ export function installEmbed(): void {
     if (event.source !== window.parent || event.origin !== origin) return
     const data = event.data
     if (!data || data.type !== 'decks:cmd') return
-    void run(data)
+    if (typeof data.requestId === 'number' && Number.isInteger(data.requestId)) requestId = data.requestId
+    else requestId = undefined
+    const before = [nav.currentSlideNo.value, nav.clicks.value] as const
+    void run(data).then(async () => {
+      await nextTick()
+      // Watch reports changed positions; unchanged commands need an acknowledgement too.
+      if (before[0] === nav.currentSlideNo.value && before[1] === nav.clicks.value) report(null)
+    }).catch((error: unknown) => {
+      console.error("Deck navigation failed", error)
+      post({ type: 'decks:error', message: 'The deck could not navigate.', requestId })
+      requestId = undefined
+    })
   }
 
+  const bridge = new URLSearchParams(window.location.search).has('decks-bridge')
+  const onKey = (event: KeyboardEvent) => {
+    post({ type: 'decks:interaction' })
+    const target = event.target as HTMLElement | null
+    if (target?.closest('input, textarea, select, [contenteditable], [role=slider], [data-decks-own-keys]')) return
+    routeEmbedNavigation(event)
+  }
+  const onInteraction = (event: PointerEvent) => {
+    post({ type: 'decks:interaction' })
+    if ((event.target as HTMLElement | null)?.id !== 'slide-container' || event.button !== 0) return
+    event.stopPropagation()
+    post({ type: 'decks:navigate', cmd: event.clientX > window.innerWidth / 2 ? 'next' : 'prev' })
+  }
+  const onAttention = (event: PointerEvent | FocusEvent) => {
+    const target = event.target instanceof Element ? event.target : null
+    const interactive = target?.closest('button, a[href], input, textarea, select, [contenteditable], [tabindex]:not([tabindex="-1"]), [role="button"], [role="slider"], [data-mark-id], .oc-chart-root canvas, .od-graph3d-host canvas')
+    if (!interactive || (event.relatedTarget instanceof Node && interactive.contains(event.relatedTarget))) return
+    post({ type: 'decks:interaction' })
+  }
+  let controlledStyle: HTMLStyleElement | undefined
+  if (bridge) {
+    document.documentElement.dataset.decksControlled = ''
+    controlledStyle = document.createElement('style')
+    controlledStyle.textContent = 'html[data-decks-controlled] #slide-container > div:not(#slide-content) { display: none !important; }'
+    document.head.append(controlledStyle)
+    window.addEventListener('keydown', onKey, true)
+    window.addEventListener('pointerdown', onInteraction, true)
+    window.addEventListener('pointerover', onAttention, true)
+    window.addEventListener('focusin', onAttention, true)
+  }
   window.addEventListener('message', onMessage)
-  onScopeDispose(() => window.removeEventListener('message', onMessage))
+  onScopeDispose(() => {
+    window.removeEventListener('message', onMessage)
+    window.removeEventListener('keydown', onKey, true)
+    window.removeEventListener('pointerdown', onInteraction, true)
+    window.removeEventListener('pointerover', onAttention, true)
+    window.removeEventListener('focusin', onAttention, true)
+    cards?.disconnect()
+    controlledStyle?.remove()
+    if (bridge) delete document.documentElement.dataset.decksControlled
+  })
 
   onMounted(async () => {
     await router.isReady()
@@ -164,6 +221,20 @@ export function installEmbed(): void {
     })
     last = [nav.currentSlideNo.value, nav.clicks.value]
     report(null)
+
+    // Lazy-mounted stages can publish their first card after navigation settles.
+    let lastCard = JSON.stringify(card())
+    let cardPosition = `${nav.currentSlideNo.value}:${nav.clicks.value}`
+    cards = new MutationObserver(() => {
+      const next = JSON.stringify(card())
+      const position = `${nav.currentSlideNo.value}:${nav.clicks.value}`
+      const moved = position !== cardPosition
+      cardPosition = position
+      if (next === lastCard || !live()) return
+      lastCard = next
+      if (!moved) report(null)
+    })
+    cards.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-lead', 'data-body'] })
 
     // flush: 'post' so the new slide's card has rendered its props.
     watch(

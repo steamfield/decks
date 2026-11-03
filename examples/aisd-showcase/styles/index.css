@@ -1,0 +1,102 @@
+/* Editorial hierarchy for the opening, chapter pauses and closing.
+   Keep the evidence slides' established geometry and the shared addon intact. */
+.od-slide.is-story:is(.aisd-opening, .aisd-section, .aisd-close) .od-cover-body {
+  max-width: calc(82 * var(--lw));
+}
+
+.od-slide.is-story:is(.aisd-opening, .aisd-section, .aisd-close) h1.od-title {
+  margin: 0;
+  font-size: calc(4.6 * var(--sw));
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.od-slide.is-story.aisd-opening .aisd-title-secondary {
+  display: inline-block;
+  margin-top: calc(1.6 * var(--sh));
+  font-size: calc(3.3 * var(--sw));
+  letter-spacing: -0.035em;
+  color: var(--od-text-secondary);
+}
+
+.od-slide.is-story:is(.aisd-opening, .aisd-section, .aisd-close) .od-cover-lede {
+  max-width: calc(57 * var(--lw));
+  margin-top: calc(3.6 * var(--sh));
+  font-size: calc(1.6 * var(--sw));
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.od-slide.is-story.aisd-section {
+  --section-accent: var(--od-cyan);
+  background: var(--od-canvas-cover);
+}
+.od-slide.is-story.aisd-section.is-workforce { --section-accent: var(--od-rose); }
+.od-slide.is-story.aisd-section:is(.is-bridge, .is-funding) { --section-accent: var(--od-amber); }
+
+.od-slide.is-story.aisd-section .od-eyebrow-row {
+  margin-bottom: calc(3.6 * var(--sh));
+}
+.od-slide.is-story.aisd-section .od-eyebrow {
+  font-size: calc(1 * var(--sw));
+  letter-spacing: 0.16em;
+}
+.od-slide.is-story.aisd-section .od-eyebrow-rule {
+  background: var(--section-accent);
+}
+.od-slide.is-story.aisd-section h1.od-title { font-size: calc(5.2 * var(--sw)); }
+.od-slide.is-story.aisd-section.is-bridge h1.od-title { font-size: calc(4.1 * var(--sw)); }
+.od-slide.is-story.aisd-section .od-cover-lede { max-width: calc(58 * var(--lw)); }
+
+/* The close retains a clear right column for the scannable QR. */
+.od-slide.is-story.aisd-close .od-cover-body { max-width: calc(62 * var(--lw)); }
+.od-slide.is-story.aisd-close h1.od-title { font-size: calc(3.6 * var(--sw)); }
+.od-slide.is-story.aisd-close .od-cover-lede { max-width: calc(48 * var(--lw)); }
+
+/* Beat indicators inherit the narrative accent instead of always flashing cyan. */
+html[data-aisd-design] .od-slide:has(.od-story-card.accent-rose) { --beat-accent: var(--od-rose); }
+html[data-aisd-design] .od-slide:has(.od-story-card.accent-amber) { --beat-accent: var(--od-amber); }
+html[data-aisd-design] .od-slide:has(.od-story-card.accent-emerald) { --beat-accent: var(--od-emerald); }
+html[data-aisd-design] .od-slide .od-beat.is-current { background: var(--beat-accent, var(--od-cyan-bright)); }
+
+/* DUR.color for routine cuts; preserve DUR.morph for the campus-grid handoff.
+   A fade holds charts steady and lets the next sentence arrive immediately.
+   Named groups use the same clock, without the old delayed card entrance. */
+html[data-aisd-design]::view-transition-group(*),
+html[data-aisd-design]::view-transition-old(*),
+html[data-aisd-design]::view-transition-new(*) {
+  animation-duration: 340ms;
+}
+html[data-aisd-design][data-od-nav]::view-transition-new(root),
+html[data-aisd-design][data-od-nav]::view-transition-new(od-story-head):only-child,
+html[data-aisd-design][data-od-nav]::view-transition-new(od-story-card-left):only-child,
+html[data-aisd-design][data-od-nav]::view-transition-new(od-story-card-right):only-child {
+  animation-name: od-vt-fade;
+  animation-duration: 340ms;
+  animation-delay: 0ms;
+}
+html[data-aisd-design]::view-transition-old(root),
+html[data-aisd-design]::view-transition-old(od-story-head):only-child,
+html[data-aisd-design]::view-transition-old(od-story-card-left):only-child,
+html[data-aisd-design]::view-transition-old(od-story-card-right):only-child {
+  animation-duration: 340ms;
+}
+html[data-aisd-design]::view-transition-group(od-campus-grid),
+html[data-aisd-design]::view-transition-old(od-campus-grid),
+html[data-aisd-design]::view-transition-new(od-campus-grid) {
+  animation-duration: 600ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-aisd-design]::view-transition-group(*),
+  html[data-aisd-design]::view-transition-old(*),
+  html[data-aisd-design]::view-transition-new(*),
+  html[data-aisd-design][data-od-nav]::view-transition-group(*),
+  html[data-aisd-design][data-od-nav]::view-transition-old(*),
+  html[data-aisd-design][data-od-nav]::view-transition-new(*) {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+  html[data-aisd-design] .od-beat { transition: none; }
+}

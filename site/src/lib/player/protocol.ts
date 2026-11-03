@@ -8,13 +8,15 @@
 // does. `prev` from beat 0 lands on the previous slide's last beat; nextSlide and
 // prevSlide land on beat 0; `go` takes a 1-based slide and clamps it.
 
-export type Command =
+export type Command = { requestId?: number } & (
   | { type: "decks:cmd"; cmd: "next" | "prev" | "nextSlide" | "prevSlide" }
-  | { type: "decks:cmd"; cmd: "go"; slide: number; beat: number };
+  | { type: "decks:cmd"; cmd: "go"; slide: number; beat: number }
+);
 
 export type Direction = "forward" | "backward" | null;
 
 export type DeckState = {
+  requestId?: number;
   /** 1-based slide number. */
   slide: number;
   slides: number;
@@ -33,6 +35,9 @@ export type DeckMeta = { title: string; slides: number; slideTitles: string[] };
 
 export type DeckMessage =
   | { type: "decks:ready" }
+  | { type: "decks:navigate"; cmd: "next" | "prev" | "nextSlide" | "prevSlide" }
+  | { type: "decks:interaction" }
+  | { type: "decks:error"; message: string }
   | ({ type: "decks:meta" } & DeckMeta)
   | ({ type: "decks:state" } & DeckState);
 
@@ -45,6 +50,16 @@ const isCount = (value: unknown): value is number =>
 export function parseDeckMessage(data: unknown): DeckMessage | null {
   if (!isObject(data) || typeof data.type !== "string") return null;
   switch (data.type) {
+    case "decks:error":
+      return typeof data.message === "string"
+        ? { type: "decks:error", message: data.message }
+        : null;
+    case "decks:interaction":
+      return { type: "decks:interaction" };
+    case "decks:navigate":
+      return ["next", "prev", "nextSlide", "prevSlide"].includes(String(data.cmd))
+        ? { type: "decks:navigate", cmd: data.cmd as "next" | "prev" | "nextSlide" | "prevSlide" }
+        : null;
     case "decks:ready":
       return { type: "decks:ready" };
     case "decks:meta": {
@@ -64,6 +79,7 @@ export function parseDeckMessage(data: unknown): DeckMessage | null {
         data.direction === "forward" || data.direction === "backward" ? data.direction : null;
       return {
         type: "decks:state",
+        ...(isCount(data.requestId) ? { requestId: data.requestId } : {}),
         slide,
         slides,
         beat,

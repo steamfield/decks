@@ -55,12 +55,13 @@ describe("landing page tokens", () => {
   const tokens = landingTokens();
   const theme = productTheme();
 
-  it("come from the product's default.json, one step above the slide canvas", () => {
-    expect(tokens.canvas).toBe(theme.surfaces.surface);
+  it("uses a graphite page palette around the product canvas", () => {
+    expect(tokens.canvas).toBe("#10151d");
+    expect(tokens.panel).toBe("#19222e");
     expect(tokens.frame).toBe(theme.surfaces.canvas);
     expect(tokens.canvas).not.toBe(tokens.frame);
-    expect(tokens.data).toBe(theme.ramps.cyan[1]);
-    expect(tokens.action).toBe("#f59e0b");
+    expect(tokens.action).toBe(tokens.accent);
+    expect(tokens.action).not.toBe(theme.ramps.amber[1]);
   });
 
   it.each(

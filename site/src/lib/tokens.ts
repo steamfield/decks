@@ -23,23 +23,23 @@ export const productTheme = (): ProductTheme =>
 export function landingTokens(theme = productTheme()): Record<string, string> {
   return {
     // Page surfaces: one and two steps above the slide canvas.
-    canvas: theme.surfaces.surface,
-    panel: theme.surfaces["surface-raised"],
-    ink: theme.text.primary,
-    "ink-2": theme.text.secondary,
-    muted: theme.text.muted,
-    line: theme.borders.default,
+    canvas: "#10151d",
+    panel: "#19222e",
+    ink: "#edf2f8",
+    "ink-2": "#b8c5d5",
+    muted: "#a7b6c9",
+    line: "#344253",
     "line-strong": theme.text.faint,
-    accent: theme.text.primary,
+    accent: "#9bdcff",
     // The deck frame: the slide's own canvas inside an axis-colored edge.
     frame: theme.surfaces.canvas,
     "frame-edge": theme.borders.axis,
     // Data and live state (step pips, the counter): the cyan ramp.
-    data: theme.ramps.cyan[1],
+    data: "#9bdcff",
     "data-dim": theme.ramps.cyan[0],
     // The one action color: amber step 2, with canvas-colored text on it.
-    action: theme.ramps.amber[1],
-    "action-ink": theme.surfaces.canvas,
+    action: "#9bdcff",
+    "action-ink": "#10151d",
   };
 }
 

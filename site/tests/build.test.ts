@@ -19,7 +19,6 @@ import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
 import { ENTRIES, loadExamples } from "../src/data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../src/data/fixtures";
-import { runMinutes } from "../src/lib/player/format";
 
 const parser = new new Window().DOMParser();
 const read = (root: string, path: string) => readFileSync(join(root, path), "utf8");
@@ -140,7 +139,7 @@ describe("the whole site", () => {
     for (const line of site.quickstart) expect(text).toContain(line);
     expect(text).toContain(site.install[0]?.command.split("\n")[0] ?? "");
     expect(text).toContain(site.devCommand);
-    for (const id of ["requirements", "what-you-get", "agent", "examples", "themes", "install"]) {
+    for (const id of ["requirements", "agent", "examples", "themes", "install"]) {
       expect(home.getElementById(id)?.querySelector("h2"), id).not.toBeNull();
     }
     for (const row of site.requirements) expect(text).toContain(row.text);
@@ -152,11 +151,17 @@ describe("the whole site", () => {
       expect(link?.getAttribute("href"), example.name).toBe(example.href);
       expect(text).toContain(example.provenance.label);
     }
-    const hero = ENTRIES[0];
-    if (hero?.run) {
-      const run = runFigures(loadRun(hero.run.fixture));
-      expect(text).toContain(`${run.turns} turns, ${runMinutes(run.minutes)}, ${run.cost}`);
-    }
+    const files = home.querySelector("details#what-you-get summary");
+    expect(files?.textContent).toContain("Files created by the setup");
+    const agent = ENTRIES.find((entry) => entry.name === "keeling");
+    if (!agent?.run) throw new Error("the retained agent example requires a run fixture");
+    const agentRun = loadRun(agent.run.fixture);
+    const figures = runFigures(agentRun);
+    const evidence = home.getElementById("agent")?.textContent ?? "";
+    expect(evidence).toContain(agentRun.prompt);
+    expect(evidence).toContain(`${figures.minutes} min`);
+    expect(evidence).toContain(figures.cost);
+    expect(evidence).toContain(String(figures.turns));
     for (const rule of loadHookDenial().rules) expect(text).toContain(rule);
     if (site.announcement) expect(text).toContain(site.announcement.label);
     if (site.version) expect(text).toContain(`v${site.version}`);

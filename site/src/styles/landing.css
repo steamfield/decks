@@ -3,31 +3,135 @@
  * product's default.json (src/lib/tokens.ts). The page is one step lighter than
  * the slide canvas, so the deck in its frame reads as an object on the page.
  * Radii: 12px for the deck frame and media, 6px for controls, 4px for chips.
- * Nothing here moves except the hero loop (a video) under DeckPlayer.
+ * Only the live deck animates; loading chrome stays still.
  */
 
+html[data-page="landing"] {
+  --color-raised: #232f3e;
+}
 .page-column {
-  /* The player's width (R1): sized by viewport height, so the title bar, frame and
-     caption bar fit the first viewport. Wide blocks below it stop at this width,
-     so the frame stays the widest thing on the page. */
-  --band: 16px;
-  --chrome: 440px;
-  --player-width: 100%;
-  margin-inline: auto;
   width: 100%;
   max-width: 1200px;
-  padding-inline: 1rem;
+  margin-inline: auto;
+  padding-inline: 32px;
 }
-
-@media (min-width: 768px) {
+.showcase-column {
+  max-width: 1600px;
+  width: calc(100% - 48px);
+  margin-inline: auto;
+}
+.landing-nav {
+  max-width: none;
+  padding-inline: 32px;
+  height: 64px;
+}
+.landing-nav :where(a) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+.landing-header {
+  border-color: transparent;
+}
+.nav-install {
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 8px 14px;
+}
+.hero {
+  padding-block: 36px 64px;
+}
+.hero-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+  margin-bottom: 36px;
+}
+.hero-title {
+  max-width: 560px;
+  font-size: 44px;
+  line-height: 1.06;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.hero-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 2px;
+}
+.hero-lede {
+  color: var(--color-ink-2);
+  font-size: 17px;
+  line-height: 1.6;
+  max-width: 560px;
+}
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.button-primary,
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 44px;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.button-primary {
+  background: var(--color-action);
+  color: var(--color-action-ink);
+}
+.button-secondary {
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+}
+@media (max-width: 767px) {
   .page-column {
-    --player-width: calc(max(720px, (100svh - var(--chrome)) * 16 / 9) + 2 * var(--band) + 2px);
+    padding-inline: 20px;
   }
-}
-
-@media (min-width: 640px) {
-  .page-column {
-    padding-inline: 2rem;
+  .showcase-column {
+    width: calc(100% - 24px);
+  }
+  .landing-nav {
+    padding-inline: 20px;
+    height: 60px;
+    gap: 12px;
+  }
+  .landing-nav nav {
+    gap: 18px;
+  }
+  .nav-install {
+    padding: 8px 10px;
+  }
+  .hero {
+    padding-block: 24px 40px;
+  }
+  .hero-head {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .hero-title {
+    font-size: 30px;
+    line-height: 1.1;
+    max-width: 340px;
+  }
+  .hero-lede {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .hero-intro {
+    gap: 20px;
   }
 }
 
@@ -35,65 +139,13 @@
   color: var(--color-data);
 }
 
-/* Hero: a header row (H1 and lede, install) that leaves the deck its width. */
-.hero {
-  padding-block: 1.25rem 3rem;
-}
-
-.hero-head {
-  display: grid;
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
-}
-
-@media (min-width: 1024px) {
-  .hero-head {
-    grid-template-columns: minmax(0, 1fr) 24rem;
-    align-items: end;
-    gap: 2.5rem;
-  }
-}
-
-.hero-title {
-  font-size: clamp(1.75rem, 1.3rem + 1.4vw, 2.25rem);
-  line-height: 1.12;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-
-.hero-lede {
-  max-width: 46rem;
-  color: var(--color-ink-2);
-  font-size: 1rem;
-  line-height: 1.55;
-}
-
-.hero-install {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.hero-install pre {
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-/*
- * The player is sized by the viewport's height, so the title bar, the frame and
- * the caption bar fit a 1440x900 window (rule R1 in the site RFC), up to the
- * page column. --chrome is everything that isn't the slide: the site header, the
- * hero's header row, the title bar, the caption bar and the frame's band.
- * Below 768px it takes the full width and the frame is not the reading surface.
- */
 .player-stack {
   margin-inline: auto;
-  width: min(100%, var(--player-width));
+  width: 100%;
 }
 
 .player {
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   background: var(--color-panel);
@@ -104,20 +156,6 @@
   outline-offset: 3px;
 }
 
-.player-titlebar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-line);
-  padding: 0.625rem 1rem;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.titlebar-prompt,
 .titlebar-title {
   min-width: 0;
   color: var(--color-ink);
@@ -129,16 +167,8 @@
   font-weight: 600;
 }
 
-.titlebar-caret {
-  color: var(--color-data);
-}
-
-.titlebar-stats {
-  color: var(--color-muted);
-}
-
 .player-frame {
-  padding: var(--band);
+  padding: 0;
 }
 
 .player-canvas {
@@ -146,17 +176,17 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border: 1px solid var(--color-frame-edge);
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   background: var(--color-frame);
 }
 
-.player-canvas :is(img, video, iframe) {
+.player-canvas :is(img, iframe) {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border: 0;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .player-message {
@@ -173,7 +203,8 @@
   display: grid;
   gap: 0.75rem 1.5rem;
   border-top: 1px solid var(--color-line);
-  padding: 0.75rem 1rem;
+  padding: 20px 24px;
+  min-height: 132px;
 }
 
 @media (min-width: 768px) {
@@ -232,8 +263,9 @@
 .control {
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  background: var(--color-raised);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   color: var(--color-ink-2);
@@ -261,12 +293,8 @@
   font-size: 0.875rem;
 }
 
-.phone-only {
-  display: none;
-}
-
 .caption-text {
-  min-height: 4.5rem;
+  min-height: 88px;
 }
 
 .caption-lead {
@@ -295,88 +323,24 @@
     justify-content: space-between;
   }
 
-  .phone-only {
-    display: inline;
-  }
-
   .caption-lead {
     font-size: 1.125rem;
   }
 }
 
-/* Full screen: the whole player, the slide as large as the window allows. */
-.player:fullscreen {
-  display: flex;
-  flex-direction: column;
-  border: 0;
-  border-radius: 0;
-}
-
-.player:fullscreen .player-frame {
-  display: grid;
-  flex: 1;
-  place-items: center;
-  min-height: 0;
-}
-
-.player:fullscreen .player-canvas {
-  width: min(100%, calc((100vh - 15rem) * 16 / 9));
-}
-
-/* Inset by the band and border, so the notes line up with the deck frame's edges
-   and never run wider than it (R1). */
+/* Notes stay aligned with the caption text. */
 .player-notes {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.75rem;
-  padding-inline: calc(var(--band) + 1px);
+  padding-inline: 24px;
   color: var(--color-ink-2);
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
-.edit-pairs {
-  display: grid;
-  gap: 0.5rem 2rem;
-}
-
-@media (min-width: 768px) {
-  .edit-pairs {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.edit-pair {
-  display: grid;
-  grid-template-columns: 3.75rem minmax(0, 1fr);
-  gap: 0 0.5rem;
-}
-
-.edit-pair dt {
-  color: var(--color-muted);
-}
-
-.edit-pair del {
-  color: var(--color-muted);
-}
-
-.edit-pair ins {
-  color: var(--color-ink);
-  text-decoration: none;
-}
-
 /* Sections below the hero. Each block stays narrower than the deck frame. */
-.landing-section {
-  border-top: 1px solid var(--color-line);
-  padding-block: 3.5rem;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-}
 
 .panel {
   overflow: hidden;
@@ -398,17 +362,6 @@
 .requirements,
 .file-tree,
 .compare,
-.install-block {
-  max-width: 44rem;
-}
-
-.requirement {
-  display: grid;
-  gap: 0.125rem 1rem;
-  border-bottom: 1px solid var(--color-line);
-  padding: 0.75rem 1rem;
-}
-
 .requirement:last-child {
   border-bottom: 0;
 }
@@ -568,34 +521,6 @@
   }
 }
 
-/* From 768px each section's column is as wide as the deck frame inside the
-   player (its width less the band and border on each side) and centered like it,
-   so blocks line up with the frame's edges and the frame stays the widest thing
-   on the page (R1). 4rem is the column's inline padding (2rem a side). */
-@media (min-width: 768px) {
-  .landing-section > .page-column {
-    --frame-inset: calc(2 * var(--band) + 2px);
-    max-width: min(
-      calc(1200px - var(--frame-inset)),
-      calc(var(--player-width) - var(--frame-inset) + 4rem)
-    );
-  }
-}
-
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
-  gap: 1.5rem 1.25rem;
-}
-
-.gallery-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  color: var(--color-ink);
-  text-decoration: none;
-}
-
 .gallery-item img,
 .gallery-empty {
   display: block;
@@ -603,28 +528,18 @@
   width: 100%;
   height: auto;
   border: 1px solid var(--color-frame-edge);
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   background: var(--color-frame);
 }
 
 .gallery-title {
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .gallery-item:hover .gallery-title {
   text-decoration: underline;
-}
-
-.gallery-provenance {
-  margin-top: 0.25rem;
-  color: var(--color-muted);
-  font-size: 0.875rem;
-}
-
-.themes-grid {
-  display: grid;
-  gap: 1.25rem;
 }
 
 @media (min-width: 768px) {
@@ -653,8 +568,672 @@
   font-size: 0.875rem;
 }
 
+/* Preview controls belong to the deck, above its canvas. */
+.player-example-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.featured-examples {
+  display: flex;
+  gap: 8px;
+}
+.example-selector,
+.more-examples > summary {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  color: var(--color-ink-2);
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.example-selector[aria-pressed="true"] {
+  color: var(--color-ink);
+  background: var(--color-raised);
+  border-color: #71859d;
+}
+.more-examples {
+  position: relative;
+  margin-left: auto;
+}
+.more-examples > :not(summary) {
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  top: calc(100% + 8px);
+  background: var(--color-panel);
+  padding: 8px;
+  min-width: 240px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+}
+.more-examples .example-selector {
+  width: 100%;
+  justify-content: start;
+  border: 0;
+}
+.player-toolbar {
+  border-radius: 12px 12px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--color-panel);
+  border-bottom: 1px solid var(--color-line);
+}
+.player-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.player-selection .titlebar-title {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 18px;
+}
+.player-status {
+  white-space: nowrap;
+  line-height: 16px;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.player-transport,
+.player-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.player-slide-select {
+  position: relative;
+  color: var(--color-ink-2);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.player-slide-select > summary,
+.more-examples > summary {
+  list-style: none;
+}
+.player-slide-select > summary::-webkit-details-marker,
+.more-examples > summary::-webkit-details-marker {
+  display: none;
+}
+.player-slide-select > summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: var(--color-raised);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.player-slide-select > summary::after,
+.more-examples > summary::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+.player-slide-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: min(320px, 80vw);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-panel);
+  box-shadow: 0 4px 16px #0003;
+}
+.player-slide-options button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  padding: 10px;
+  border-radius: 4px;
+  color: var(--color-ink-2);
+}
+.player-slide-options button:hover,
+.player-slide-options button[aria-current] {
+  background: var(--color-raised);
+  color: var(--color-ink);
+}
+.player-toolbar > .open-deck {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  margin: 0;
+}
+.player-retry {
+  width: 64px;
+  white-space: nowrap;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-action);
+  border-radius: 6px;
+  color: var(--color-action-ink);
+  background: var(--color-action);
+  font-size: 14px;
+  font-weight: 500;
+}
+@media (max-width: 767px) {
+  .player-example-picker {
+    gap: 8px;
+    align-items: stretch;
+  }
+  .featured-examples {
+    flex: 1;
+    gap: 6px;
+  }
+  .example-selector,
+  .more-examples > summary {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .player-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 81px;
+    gap: 8px;
+    padding: 10px;
+  }
+  .player-selection {
+    grid-row: 1;
+    grid-column: 1;
+    flex-wrap: nowrap;
+    gap: 2px;
+    font-size: 13px;
+  }
+  .player-selection .titlebar-title {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .player-status {
+    font-size: 12px;
+  }
+  .player-toolbar > .open-deck {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
+    font-size: 12px;
+  }
+  .player-transport {
+    grid-row: 2;
+    grid-column: 1;
+    gap: 4px;
+    min-width: 0;
+    justify-content: start;
+  }
+  .player-actions {
+    display: contents;
+  }
+  .player-actions .control {
+    grid-row: 2;
+    grid-column: 2;
+    justify-self: end;
+  }
+  .player-slide-select {
+    font-size: 12px;
+  }
+  .player-slide-select > summary {
+    gap: 7px;
+    padding-inline: 7px;
+  }
+  .player-slide-options {
+    left: auto;
+    right: -88px;
+  }
+  .player-toolbar .control {
+    width: 44px;
+    min-width: 44px;
+  }
+  .player-caption {
+    padding: 18px 16px;
+    min-height: 184px;
+  }
+  .caption-lead {
+    font-size: 18px;
+    line-height: 1.4;
+  }
+  .caption-body {
+    font-size: 16px;
+  }
+  .caption-text {
+    min-height: 128px;
+  }
+  .player-notes {
+    padding-inline: 4px;
+  }
+}
+
+@media (max-width: 379px) {
+  .player-toolbar {
+    padding-inline: 6px;
+    gap: 8px 6px;
+  }
+  .player-transport {
+    gap: 2px;
+  }
+  .player-slide-select > summary {
+    padding-inline: 6px;
+    gap: 6px;
+  }
+}
+
+/* Supporting content uses a reading column, with distinct layouts for setup and evidence. */
+.landing-section {
+  border-top: 1px solid var(--color-line);
+  padding-block: 64px;
+}
+.section-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+.landing-section > .page-column {
+  gap: 32px;
+}
+.getting-started-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 64px;
+  align-items: start;
+}
 .install-block {
+  max-width: none;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0;
+}
+.workflow {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.workflow h3,
+.docs-links h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.workflow p {
+  color: var(--color-ink-2);
+  line-height: 1.6;
+  font-size: 15px;
+}
+.workflow code {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.workflow > a {
+  font-size: 14px;
+}
+.evidence-disclosure {
+  border-block: 1px solid var(--color-line);
+}
+.evidence-disclosure + .evidence-disclosure {
+  border-top: 0;
+}
+.evidence-disclosure > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px;
+  padding: 16px 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+.evidence-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.evidence-disclosure > summary::after {
+  content: "+";
+  font-size: 22px;
+  font-weight: 400;
+  margin-left: auto;
+  color: var(--color-muted);
+}
+.evidence-disclosure[open] > summary::after {
+  content: "−";
+}
+.evidence-disclosure > summary span {
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+.disclosure-content {
+  padding-bottom: 24px;
+}
+.disclosure-content > .file-tree,
+.disclosure-content > .compare {
+  max-width: none;
+}
+.agent-evidence {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 64px;
+}
+.agent-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.evidence-label {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+.agent-prompt blockquote {
+  font-size: 24px;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+.run-figures {
+  display: flex;
+  gap: 32px;
+}
+.run-figures dt {
+  color: var(--color-muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.run-figures dd {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.agent-prompt > a {
+  font-size: 14px;
+}
+.evidence-preview img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px 20px;
+}
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.gallery-provenance {
+  margin-top: 0.25rem;
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.themes-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr 1fr;
+}
+.themes-grid > :last-child {
+  grid-column: auto;
+}
+.requirements-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+.requirements {
+  max-width: none;
+  background: transparent;
+  border-inline: 0;
+  border-radius: 0;
+}
+.requirement {
+  display: grid;
+  gap: 0.125rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.75rem 1rem;
+  padding-inline: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.docs-links {
+  display: flex;
+  flex-direction: column;
+}
+.docs-links h3 {
+  margin-bottom: 12px;
+}
+.docs-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 14px;
+  text-decoration: none;
+}
+.docs-links a:hover {
+  color: var(--color-data);
+}
+
+@media (max-width: 767px) {
+  .landing-section {
+    padding-block: 40px;
+  }
+  .section-title {
+    font-size: 24px;
+  }
+  .getting-started-grid,
+  .agent-evidence,
+  .requirements-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 16px;
+  }
+  .themes-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .evidence-disclosure > summary {
+    gap: 12px;
+    font-size: 14px;
+  }
+  .evidence-disclosure > summary span {
+    display: none;
+  }
+  .agent-prompt blockquote {
+    font-size: 22px;
+  }
+  .run-figures {
+    gap: 24px;
+  }
+  .run-figures dd {
+    font-size: 18px;
+  }
+  .player-slide-select > summary {
+    font-size: 12px;
+  }
+}
+
+.caption-copy-stack {
+  display: grid;
+}
+.caption-copy-stack > * {
+  grid-area: 1 / 1;
+}
+.caption-measure {
+  visibility: hidden;
+  pointer-events: none;
+}
+.measure-lead {
+  color: var(--color-ink);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.measure-body {
+  margin-top: 0.125rem;
+  color: var(--color-ink-2);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.player-interaction-hint {
+  margin-top: 12px;
+  color: var(--color-muted);
+  font-size: 14px;
+  min-height: 21px;
+}
+.player-interaction-hint[data-visible="false"] {
+  visibility: hidden;
+}
+@media (max-width: 767px) {
+  .hero-actions {
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+  .hero-actions a {
+    gap: 12px;
+    padding-inline: 12px;
+    font-size: 13px;
+    flex: 1;
+    white-space: nowrap;
+  }
+  .hero-intro {
+    gap: 16px;
+  }
+  .measure-lead {
+    font-size: 18px;
+    line-height: 1.4;
+  }
+  .measure-body {
+    font-size: 16px;
+  }
+}
+
+/* Fullscreen assigns the remaining space to a contained 16:9 canvas. */
+.player:fullscreen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100svh;
+  border: 0;
+  border-radius: 0;
+}
+.player:fullscreen .player-toolbar {
+  flex: 0 0 auto;
+  border-radius: 0;
+}
+.player:fullscreen .player-frame {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  container-type: size;
+}
+.player:fullscreen .player-canvas {
+  width: min(100cqw, calc(100cqh * 16 / 9));
+  max-height: 100%;
+}
+.player:fullscreen .player-caption {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 30svh;
+  overflow-y: auto;
+}
+.player:fullscreen .caption-text {
+  min-height: 0;
+}
+
+/* A small status label leaves the full poster visible during live-deck loading. */
+.player-loading,
+.player-failure {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--color-panel);
+  color: var(--color-ink);
+  font-size: 14px;
+  line-height: 20px;
+}
+.player-loading-indicator {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--color-data);
+}
+@media (max-width: 767px) {
+  .player-loading,
+  .player-failure {
+    left: 12px;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+}
+
+.player-failure {
+  z-index: 2;
+  gap: 16px;
+}
+.player-failure p {
+  margin: 0;
+}
+.player-failure .player-retry {
+  flex-shrink: 0;
 }

@@ -1,4 +1,4 @@
-// `decks init`: install the Decks agent setup into a Claude Code project.
+// `decks init`: install shared Decks guidance and agent entry points.
 //
 //   decks init [--force]
 //
@@ -23,10 +23,11 @@
 //   removing anything and never adding an entry twice, and prints the diff.
 //   When the package isn't installed it skips the hooks, exits 1 with the
 //   install command, and warns if hooks it added earlier are still there.
-// - writes a marked `<!-- decks:start -->` block into AGENTS.md (or CLAUDE.md
-//   when only that exists; both when both carry one), replaced in place on a
-//   re-run. With neither, it creates AGENTS.md and a CLAUDE.md that imports it.
+// - writes a marked `<!-- decks:start -->` block into AGENTS.md for all agents,
+//   and thin imports in CLAUDE.md and GEMINI.md, preserving surrounding text.
+//   A hash-owned Copilot rule references the same AGENTS.md reading order.
 //
+// Symlink destinations and parents outside the project are rejected before writes.
 // An unparseable decks.json or .claude/decks.json stops init before it writes
 // anything, with exit 1; an unusable .claude/settings.json is left alone.
 
@@ -52,14 +53,15 @@ const DEFAULT_PACKAGE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..
 const START = '<!-- decks:start -->'
 const END = '<!-- decks:end -->'
 const HOOK_SCRIPT = '.claude/hooks/decks.sh'
+const COPILOT_RULE = '.github/instructions/decks.instructions.md'
 /** Where init writes files, so the only places a manifest entry may point. */
 const OWNED_DIRS = [...new Set(SOURCES.map((s) => `.claude/${s.split('/')[0]}/`))]
 
 const HELP = `Usage: decks init [--force]
 
-Installs the Decks agent setup for Claude Code into the current project:
+Installs shared Decks guidance and thin agent entry points into the current project:
 .claude/agents, .claude/skills, .claude/rules, two hooks in
-.claude/settings.json, and a marked block in AGENTS.md or CLAUDE.md.
+.claude/settings.json (Claude Code only), AGENTS.md, GEMINI.md, and a\n.github/instructions/decks.instructions.md reference for Copilot.
 
   --force   overwrite files init wrote earlier even if you edited them
             (files init did not write are never touched)`
@@ -224,20 +226,55 @@ function readManifest(manifestPath) {
 /**
  * A manifest key init may remove: a regular file (not a symlink, not a
  * directory) in one of the directories init writes, whose real parent
- * directory is inside the real .claude/. Null for anything else.
+ * directory is inside the real .claude/ (or .github/ for the Copilot rule).
+ * Null for anything else.
  */
 function safeTarget(rootDir, target) {
-  if (!(OWNED_DIRS.some((d) => target.startsWith(d)) || target === HOOK_SCRIPT)) return null
+  if (!(OWNED_DIRS.some((d) => target.startsWith(d)) || target === HOOK_SCRIPT || target === COPILOT_RULE)) return null
   if (target.split('/').some((seg) => seg === '..' || seg === '.' || seg === '')) return null
   const file = resolve(rootDir, target)
   try {
-    const base = realpathSync(join(rootDir, '.claude'))
+    const base = realpathSync(join(rootDir, target === COPILOT_RULE ? '.github' : '.claude'))
     const parent = realpathSync(dirname(file))
     if (!parent.startsWith(base + sep) || !lstatSync(file).isFile()) return null
   } catch {
     return null
   }
   return file
+}
+
+/** Refuse writes through final symlinks or parents resolving outside the project. */
+function assertWriteTarget(rootDir, target) {
+  const root = realpathSync(rootDir)
+  const file = resolve(rootDir, target)
+  let stat
+  try {
+    stat = lstatSync(file)
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw new InitError(`collision at ${target}: destination cannot be inspected (${err.message})`)
+  }
+  if (stat && (stat.isSymbolicLink() || !stat.isFile()))
+    throw new InitError(`collision at ${target}: destination is a symlink or is not a regular file`)
+  let parent = dirname(file)
+  for (;;) {
+    try {
+      lstatSync(parent)
+      break
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw new InitError(`collision at ${target}: destination parent cannot be inspected (${err.message})`)
+      const next = dirname(parent)
+      if (next === parent) break
+      parent = next
+    }
+  }
+  let actual
+  try {
+    actual = realpathSync(parent)
+  } catch {
+    throw new InitError(`collision at ${target}: destination parent cannot be resolved`)
+  }
+  if ((actual !== root && !actual.startsWith(root + sep)) || !lstatSync(actual).isDirectory())
+    throw new InitError(`collision at ${target}: destination parent is not a directory inside the project`)
 }
 
 /** Remove now-empty directories from dir up to (not including) .claude/. */
@@ -279,6 +316,7 @@ function install(force, rootDir, log, packageDir) {
   const bun = usesBun(rootDir)
   const decksDir = readDecksDir(rootDir)
   const manifestPath = join(rootDir, '.claude', 'decks.json')
+  assertWriteTarget(rootDir, '.claude/decks.json')
   const manifest = readManifest(manifestPath)
 
   // Without the package installed, the hook command would point at a missing
@@ -304,6 +342,10 @@ function install(force, rootDir, log, packageDir) {
     text: fill(readFileSync(join(packageDir, 'agent', 'templates', src), 'utf8'), vars, src),
   }))
   sources.push({
+    target: COPILOT_RULE,
+    text: fill(readFileSync(join(packageDir, 'agent', 'adapters', 'copilot.instructions.md'), 'utf8'), vars, 'copilot.instructions.md'),
+  })
+  sources.push({
     target: HOOK_SCRIPT,
     text: fill(
       readFileSync(join(packageDir, 'agent', 'hooks', 'decks.sh'), 'utf8'),
@@ -311,6 +353,13 @@ function install(force, rootDir, log, packageDir) {
       'hooks/decks.sh',
     ),
   })
+  // Check every destination before the first mutation, including missing
+  // parents and metadata files; --force never permits symlink writes.
+  for (const target of [
+    ...sources.map((source) => source.target),
+    '.claude/decks.json', '.claude/settings.json',
+    'AGENTS.md', 'CLAUDE.md', 'GEMINI.md',
+  ]) assertWriteTarget(rootDir, target)
   for (const { target, text } of sources) {
     const file = join(rootDir, target)
     const recorded = manifest.files[target]
@@ -431,7 +480,8 @@ function install(force, rootDir, log, packageDir) {
       instructions.push(`${f}: has ${START} but no ${END}; not changed. Fix the markers and re-run.`)
       continue
     }
-    const next = text.slice(0, s) + block + text.slice(e + END.length)
+    const entry = f === 'CLAUDE.md' ? `${START}\n@AGENTS.md\n${END}` : block
+    const next = text.slice(0, s) + entry + text.slice(e + END.length)
     if (next === text) instructions.push(`${f}: decks block unchanged`)
     else {
       write(f, next)
@@ -441,7 +491,8 @@ function install(force, rootDir, log, packageDir) {
   if (!withBlock.length) {
     const append = (f) => {
       const text = read(f)
-      write(f, `${text.trimEnd()}\n\n${block}\n`)
+      const entry = f === 'CLAUDE.md' ? `${START}\n@AGENTS.md\n${END}` : block
+      write(f, `${text.trimEnd()}\n\n${entry}\n`)
       instructions.push(`${f}: decks block appended`)
     }
     if (read('AGENTS.md') !== null) append('AGENTS.md')
@@ -451,6 +502,33 @@ function install(force, rootDir, log, packageDir) {
       instructions.push('AGENTS.md: created with the decks block')
     }
   }
+  // Older installs (and projects with only CLAUDE.md) may keep their block
+  // there. Give every agent an AGENTS.md entry without changing that file's
+  // existing content or making Codex depend on Claude's import convention.
+  const agents = read('AGENTS.md')
+  if (!agents?.includes(START)) {
+    write('AGENTS.md', agents === null ? `${block}\n` : `${agents.trimEnd()}\n\n${block}\n`)
+    instructions.push(agents === null ? 'AGENTS.md: created with the decks block' : 'AGENTS.md: decks block appended')
+  }
+  // Gemini CLI imports the same neutral entry point. Keep user text outside
+  // the marked block, just as for AGENTS.md and CLAUDE.md.
+  const gemini = read('GEMINI.md')
+  const geminiBlock = `${START}\n@./AGENTS.md\n${END}`
+  if (gemini?.includes(START)) {
+    const start = gemini.indexOf(START)
+    const end = gemini.indexOf(END, start)
+    if (end === -1) {
+      code = 1
+      instructions.push(`GEMINI.md: has ${START} but no ${END}; not changed. Fix the markers and re-run.`)
+    } else {
+      const next = gemini.slice(0, start) + geminiBlock + gemini.slice(end + END.length)
+      if (next !== gemini) write('GEMINI.md', next)
+      instructions.push(`GEMINI.md: decks block ${next === gemini ? 'unchanged' : 'updated in place'}`)
+    }
+  } else if (!/^@(?:\.\/)?AGENTS\.md\s*$/m.test(gemini ?? '')) {
+    write('GEMINI.md', gemini === null ? `${geminiBlock}\n` : `${gemini.trimEnd()}\n\n${geminiBlock}\n`)
+    instructions.push(gemini === null ? 'GEMINI.md: created with the decks import' : 'GEMINI.md: decks import appended')
+  }
   // Claude Code reads CLAUDE.md, not AGENTS.md, so a block in AGENTS.md needs the
   // import, unless CLAUDE.md carries its own copy of the block.
   const claude = read('CLAUDE.md')
@@ -459,7 +537,8 @@ function install(force, rootDir, log, packageDir) {
       write('CLAUDE.md', '@AGENTS.md\n')
       instructions.push('CLAUDE.md: created with `@AGENTS.md`, so Claude Code reads AGENTS.md')
     } else if (!/^@(?:\.\/)?AGENTS\.md\s*$/m.test(claude)) {
-      warnings.push('CLAUDE.md does not import AGENTS.md, so Claude Code will not see the decks block. Add a line `@AGENTS.md` to CLAUDE.md.')
+      write('CLAUDE.md', `${claude.trimEnd()}\n\n${START}\n@AGENTS.md\n${END}\n`)
+      instructions.push('CLAUDE.md: decks import appended')
     }
   }
 
@@ -490,7 +569,7 @@ function install(force, rootDir, log, packageDir) {
   if (settingsReport.diff) lines.push('', settingsReport.diff)
   lines.push('', 'instructions:', ...instructions.map((n) => `  ${n}`))
   if (warnings.length) lines.push('', 'warnings:', ...warnings.map((w) => `  ${w}`))
-  if (installedPkg) lines.push('', `Next: ${vars.decks} new <alias> [--story], then ask Claude Code to build the deck.`)
+  if (installedPkg) lines.push('', `Next: ${vars.decks} new <alias> [--story], then ask your agent to build the deck.`)
   else lines.push('', `Next: ${installCmd}, then re-run ${vars.decks} init.`)
   log(lines.join('\n'))
 

@@ -4,7 +4,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -20,6 +20,7 @@ const TARGETS = [
   '.claude/rules/story-stage.md',
   '.claude/rules/prose-patterns.md',
   '.claude/rules/project-glossary.md',
+  '.github/instructions/decks.instructions.md',
   '.claude/hooks/decks.sh',
 ]
 const LINT_CMD = 'sh "$CLAUDE_PROJECT_DIR/.claude/hooks/decks.sh" hook lint'
@@ -510,6 +511,171 @@ describe('decks init, instructions file', () => {
     expect(read(root, 'CLAUDE.md')).toBe('@AGENTS.md\n')
   })
 
+  it('gives every installed agent an explicit read order and manual checks outside Claude', () => {
+    const root = project()
+    expect(init(root).code).toBe(0)
+    const instructions = read(root, 'AGENTS.md')
+    expect(instructions).toContain('including Codex and Antigravity')
+    const sequence = [
+      '.claude/skills/building-a-deck/SKILL.md',
+      '.claude/rules/prose-patterns.md',
+      '.claude/rules/deck-writing.md',
+      '.claude/rules/deck-patterns.md',
+      '.claude/rules/deck-data.md',
+      '.claude/rules/project-glossary.md',
+      '.claude/rules/story-stage.md',
+      'node_modules/slidev-addon-decks/story/README.md',
+      '.claude/skills/fact-checking-a-deck/SKILL.md',
+    ]
+    let previous = -1
+    for (const path of sequence) {
+      const index = instructions.indexOf('`' + path + '`')
+      expect(index, `${path} follows the previous required read`).toBeGreaterThan(previous)
+      previous = index
+    }
+    expect(instructions).toContain('Claude hooks do not run in their sessions')
+    expect(instructions).toContain(
+      'Other agents must run `npx -p slidev-addon-decks decks check` and `npx -p slidev-addon-decks decks lint` during each edit cycle',
+    )
+    expect(instructions).toContain('reviewing every slide and click state')
+  })
+
+  it('rejects an external Copilot destination parent before changing the project', () => {
+    const root = project()
+    const outside = project()
+    mkdirSync(join(root, '.github'))
+    symlinkSync(outside, join(root, '.github/instructions'))
+    for (const argv of [[], ['--force']]) {
+      const result = init(root, argv)
+      expect(result.code).toBe(1)
+      expect(result.output).toContain('collision at .github/instructions/decks.instructions.md')
+      expect(result.output).toContain('Nothing was changed')
+      expect(existsSync(join(outside, 'decks.instructions.md'))).toBe(false)
+      expect(existsSync(join(root, '.claude'))).toBe(false)
+      expect(existsSync(join(root, 'AGENTS.md'))).toBe(false)
+    }
+  })
+
+  it('rejects an owned Copilot symlink even when its contents match the owned hash', () => {
+    const root = project()
+    init(root)
+    const path = '.github/instructions/decks.instructions.md'
+    const original = read(root, path)
+    const outside = project({ 'host-instructions.md': original })
+    const manifest = read(root, '.claude/decks.json')
+    const agents = read(root, 'AGENTS.md')
+    rmSync(join(root, path))
+    symlinkSync(join(outside, 'host-instructions.md'), join(root, path))
+    for (const argv of [[], ['--force']]) {
+      const result = init(root, argv)
+      expect(result.code).toBe(1)
+      expect(result.output).toContain('collision at ' + path)
+      expect(result.output).toContain('Nothing was changed')
+      expect(read(outside, 'host-instructions.md')).toBe(original)
+      expect(lstatSync(join(root, path)).isSymbolicLink()).toBe(true)
+      expect(read(root, '.claude/decks.json')).toBe(manifest)
+      expect(read(root, 'AGENTS.md')).toBe(agents)
+    }
+  })
+
+  it.each(['AGENTS.md', 'CLAUDE.md', 'GEMINI.md'])(
+    'rejects a symlinked %s without rewriting the external file, even with force',
+    (path) => {
+      const root = project()
+      const host = '# Personal host instructions\n'
+      const outside = project({ 'host-instructions.md': host })
+      symlinkSync(join(outside, 'host-instructions.md'), join(root, path))
+      for (const argv of [[], ['--force']]) {
+        const result = init(root, argv)
+        expect(result.code).toBe(1)
+        expect(result.output).toContain('collision at ' + path)
+        expect(result.output).toContain('Nothing was changed')
+        expect(read(outside, 'host-instructions.md')).toBe(host)
+        expect(lstatSync(join(root, path)).isSymbolicLink()).toBe(true)
+        expect(existsSync(join(root, '.claude'))).toBe(false)
+      }
+    },
+  )
+
+  it('installs a scoped Copilot adapter pointing to the canonical instructions', () => {
+    const root = project({ 'decks.json': '{ "_config": { "decksDir": "talks/" } }\n' })
+    expect(init(root).code).toBe(0)
+    const adapter = read(root, '.github/instructions/decks.instructions.md')
+    expect(adapter).toMatch(/applyTo:\s*["']?talks\/\*\*["']?/)
+    expect(adapter).toContain('AGENTS.md')
+    expect(adapter).not.toContain('.claude/rules/')
+    const manifest = JSON.parse(read(root, '.claude/decks.json'))
+    expect(manifest.files['.github/instructions/decks.instructions.md']).toMatch(/^sha256:/)
+    expect(init(root).files['.github/instructions/decks.instructions.md']).toBe('unchanged')
+    expect(read(root, '.github/instructions/decks.instructions.md')).toBe(adapter)
+  })
+
+  it('keeps user edits to an owned Copilot adapter unless force is explicit', () => {
+    const path = '.github/instructions/decks.instructions.md'
+    const root = project()
+    init(root)
+    const adapter = read(root, path)
+    writeFileSync(join(root, path), adapter + '\nProject-specific instruction.\n')
+    expect(init(root).files[path]).toBe('skipped')
+    expect(read(root, path)).toBe(adapter + '\nProject-specific instruction.\n')
+    expect(init(root, ['--force']).files[path]).toBe('overwritten')
+    expect(read(root, path)).toBe(adapter)
+    expect(init(root).files[path]).toBe('unchanged')
+  })
+
+  it('preserves a custom Copilot adapter without claiming it, even with force', () => {
+    const path = '.github/instructions/decks.instructions.md'
+    const root = project({ [path]: '# Project-owned instructions\n' })
+    for (const argv of [[], ['--force']]) {
+      expect(init(root, argv).files[path]).toBe('collision')
+      expect(read(root, path)).toBe('# Project-owned instructions\n')
+      expect(JSON.parse(read(root, '.claude/decks.json')).files).not.toHaveProperty([path])
+    }
+  })
+
+  it('preserves Gemini project text around one thin import across repeated init', () => {
+    const root = project({ 'GEMINI.md': '# Project-owned instructions\n' })
+    expect(init(root).code).toBe(0)
+    const gemini = read(root, 'GEMINI.md')
+    expect(gemini.startsWith('# Project-owned instructions\n')).toBe(true)
+    expect(gemini).toContain('<!-- decks:start -->\n@./AGENTS.md\n<!-- decks:end -->')
+    expect(gemini).not.toContain('.claude/rules/')
+    expect(gemini.match(/@\.\/AGENTS\.md/g)).toHaveLength(1)
+    init(root)
+    expect(read(root, 'GEMINI.md')).toBe(gemini)
+  })
+
+  it('migrates only the owned Gemini block and retains both surrounding sections', () => {
+    const root = project({ 'GEMINI.md': '# Before\n\n<!-- decks:start -->\nstale adapter\n<!-- decks:end -->\n\n# After\n' })
+    expect(init(root).code).toBe(0)
+    const gemini = read(root, 'GEMINI.md')
+    expect(gemini.startsWith('# Before\n\n')).toBe(true)
+    expect(gemini.endsWith('\n\n# After\n')).toBe(true)
+    expect(gemini).toContain('@./AGENTS.md')
+    expect(gemini).not.toContain('stale adapter')
+    init(root)
+    expect(read(root, 'GEMINI.md')).toBe(gemini)
+  })
+
+  it.each(['@AGENTS.md\n', '@./AGENTS.md\n'])(
+    'keeps an existing Gemini import %s without adding a second entry',
+    (content) => {
+      const root = project({ 'GEMINI.md': '# Gemini\n' + content })
+      init(root)
+      init(root)
+      expect(read(root, 'GEMINI.md')).toBe('# Gemini\n' + content)
+    },
+  )
+
+  it('leaves malformed Gemini block markers untouched and reports the failure', () => {
+    const content = '# Gemini\n<!-- decks:start -->\nunfinished adapter\n'
+    const root = project({ 'GEMINI.md': content })
+    const result = init(root)
+    expect(result.code).toBe(1)
+    expect(result.instructions.join('\n')).toContain('GEMINI.md: has <!-- decks:start --> but no <!-- decks:end -->')
+    expect(read(root, 'GEMINI.md')).toBe(content)
+  })
+
   it('appends to an existing AGENTS.md and replaces the block in place on a re-run', () => {
     const root = project({ 'AGENTS.md': '# Mine\n\nKeep this.\n', 'CLAUDE.md': '@AGENTS.md\n' })
     init(root)
@@ -517,7 +683,7 @@ describe('decks init, instructions file', () => {
     expect(text.startsWith('# Mine\n\nKeep this.\n\n<!-- decks:start -->')).toBe(true)
 
     writeFileSync(join(root, 'AGENTS.md'), text.replace('Slide decks live in', 'STALE') + '\nAfter the block.\n')
-    expect(init(root).instructions).toEqual(['AGENTS.md: decks block updated in place'])
+    expect(init(root).instructions).toEqual(['AGENTS.md: decks block updated in place', 'GEMINI.md: decks block unchanged'])
     const again = read(root, 'AGENTS.md')
     expect(again).not.toContain('STALE')
     expect(again.match(/decks:start/g)).toHaveLength(1)
@@ -525,20 +691,48 @@ describe('decks init, instructions file', () => {
     expect(read(root, 'CLAUDE.md')).toBe('@AGENTS.md\n')
   })
 
-  it('uses CLAUDE.md when only CLAUDE.md exists, and creates no AGENTS.md', () => {
+  it('preserves a CLAUDE-only project and also gives other agents the same instructions', () => {
     const root = project({ 'CLAUDE.md': '# Project\n' })
     init(root)
-    expect(read(root, 'CLAUDE.md')).toMatch(/^# Project\n\n<!-- decks:start -->[\s\S]*<!-- decks:end -->\n$/)
-    expect(existsSync(join(root, 'AGENTS.md'))).toBe(false)
+    expect(read(root, 'CLAUDE.md')).toMatch(
+      /^# Project\n\n<!-- decks:start -->[\s\S]*<!-- decks:end -->\n$/,
+    )
+    const agents = read(root, 'AGENTS.md')
+    expect(agents).toContain('including Codex and Antigravity')
+    expect(read(root, 'CLAUDE.md')).toContain('<!-- decks:start -->\n@AGENTS.md\n<!-- decks:end -->')
+    expect(read(root, 'CLAUDE.md')).not.toContain('Before authoring or revising')
     init(root)
+    expect(read(root, 'AGENTS.md')).toBe(agents)
     expect(read(root, 'CLAUDE.md').match(/decks:start/g)).toHaveLength(1)
   })
+
+  it.each([null, '# Existing agent instructions\n'])(
+    'migrates a previously initialized Claude block to AGENTS.md with existing content %s',
+    (agents) => {
+      const stale = '<!-- decks:start -->\nold Claude-only instructions\n<!-- decks:end -->\n'
+      const root = project({
+        'CLAUDE.md': '# Existing Claude instructions\n\n' + stale,
+        ...(agents === null ? {} : { 'AGENTS.md': agents }),
+      })
+      expect(init(root).code).toBe(0)
+      const current = read(root, 'AGENTS.md')
+      expect(current).toContain('including Codex and Antigravity')
+      if (agents !== null) expect(current.startsWith(agents)).toBe(true)
+      expect(read(root, 'CLAUDE.md').startsWith('# Existing Claude instructions\n')).toBe(true)
+      for (const file of ['AGENTS.md', 'CLAUDE.md']) {
+        expect(read(root, file)).not.toContain('old Claude-only instructions')
+        expect(read(root, file).match(/decks:start/g)).toHaveLength(1)
+      }
+      init(root)
+      expect(read(root, 'AGENTS.md')).toBe(current)
+    },
+  )
 
   it('updates the block in both files when both carry one', () => {
     const stale = '<!-- decks:start -->\nold\n<!-- decks:end -->\n'
     const root = project({ 'AGENTS.md': stale, 'CLAUDE.md': `# Claude\n\n${stale}` })
     const r = init(root)
-    expect(r.instructions).toEqual(['AGENTS.md: decks block updated in place', 'CLAUDE.md: decks block updated in place'])
+    expect(r.instructions).toEqual(['AGENTS.md: decks block updated in place', 'CLAUDE.md: decks block updated in place', 'GEMINI.md: created with the decks import'])
     for (const f of ['AGENTS.md', 'CLAUDE.md']) expect(read(root, f)).not.toContain('\nold\n')
     expect(r.warnings).toEqual([])
   })
@@ -559,11 +753,17 @@ describe('decks init, instructions file', () => {
     expect(read(root, 'AGENTS.md')).toBe(text)
   })
 
-  it('warns when AGENTS.md gets the block but CLAUDE.md does not import it', () => {
+  it('preserves unrelated Claude instructions and appends one import of the canonical guidance', () => {
     const root = project({ 'AGENTS.md': '# Agents\n', 'CLAUDE.md': '# Claude\n' })
     const r = init(root)
-    expect(r.warnings.join('\n')).toMatch(/does not import AGENTS\.md/)
-    expect(read(root, 'CLAUDE.md')).toBe('# Claude\n')
+    expect(r.warnings).toEqual([])
+    const claude = read(root, 'CLAUDE.md')
+    expect(claude.startsWith('# Claude\n')).toBe(true)
+    expect(claude).toContain('<!-- decks:start -->\n@AGENTS.md\n<!-- decks:end -->')
+    expect(claude).not.toContain('.claude/rules/')
+    expect(r.instructions).toContain('CLAUDE.md: decks import appended')
+    init(root)
+    expect(read(root, 'CLAUDE.md')).toBe(claude)
   })
 })
 

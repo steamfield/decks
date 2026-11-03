@@ -1,0 +1,90 @@
+{
+  "title": "AISD Is Heading for State Takeover. Here's What Happened to Houston.",
+  "slides": 3,
+  "slideTitles": [
+    "AISD Is Heading for State Takeover. Here's What Happened to Houston.",
+    "Campus STAAR pass rates.",
+    "Austin’s ratings follow its poverty map."
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 3,
+      "lead": "102 open campuses, rated by TEA.",
+      "body": "Every square is an AISD campus open this year, by its 2025-26 rating."
+    },
+    {
+      "slide": 1,
+      "beat": 1,
+      "beats": 3,
+      "lead": "25 are rated D or F.",
+      "body": "20 of them for three straight years."
+    },
+    {
+      "slide": 1,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Burnet and Webb crossed.",
+      "body": "District-wide, 36 gained a grade; D/F fell from 41 to 31."
+    },
+    {
+      "slide": 1,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Nine more are one F away.",
+      "body": "Six carry a closed school's record. Last year only three were at four."
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 2,
+      "lead": "17 of 24 had higher pass rates.",
+      "body": "6 declined; 1 was unchanged. Above the line means a higher STAAR pass rate in 2026."
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Two crossed. Amber is one F away.",
+      "body": "Six amber campuses closed; their records moved to the schools that took their students."
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Six campuses got worse.",
+      "body": "Below the diagonal, slipping backward."
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 3,
+      "lead": "The east side lights up.",
+      "body": "Each dot is a campus, brighter the poorer it is."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 3,
+      "lead": "Same dots, now colored by rating.",
+      "body": "TEA accountability grades, A through F."
+    },
+    {
+      "slide": 3,
+      "beat": 2,
+      "beats": 3,
+      "lead": "The F campuses trace east Austin.",
+      "body": "F campuses average 91% economically disadvantaged."
+    },
+    {
+      "slide": 3,
+      "beat": 3,
+      "beats": 3,
+      "lead": "The A campuses sit on the west side.",
+      "body": "A campuses average 16%."
+    }
+  ]
+}

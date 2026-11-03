@@ -20,7 +20,13 @@ export type Poster = { base: string; width: number; height: number };
 export type LoopMark = { t: number; slide: number; beat: number };
 
 /** The hero loop: `${base}.webm` and `${base}.mp4`, with the step shown at each time. */
-export type Loop = { base: string; width: number; height: number; marks: LoopMark[] };
+export type Loop = {
+  base: string;
+  width: number;
+  height: number;
+  marks: LoopMark[];
+  sources?: { width: number; height: number; webm: string; mp4: string }[];
+};
 
 export type ProvenanceKind = "agent" | "talk" | "template" | "hand";
 
@@ -53,6 +59,8 @@ export type Example = {
   /** Directory name under examples/, and the path segment under /demo/. */
   name: string;
   title: string;
+  featured?: { label: string; hint: string };
+  attribution?: { label: string; href?: string };
   /** The static build: /demo/<name>/. */
   href: string;
   slides: number;
@@ -74,7 +82,9 @@ export const POSTER_WIDTHS = [640, 1280] as const;
 
 /** srcset for one format: "/posters/tides-640.avif 640w, /posters/tides-1280.avif 1280w". */
 export const posterSrcset = (poster: Poster, ext: "avif" | "webp") =>
-  POSTER_WIDTHS.map((width) => `${poster.base}-${width}.${ext} ${width}w`).join(", ");
+  [...POSTER_WIDTHS, ...(poster.width >= 1920 ? [1920] : [])]
+    .map((width) => `${poster.base}-${width}.${ext} ${width}w`)
+    .join(", ");
 
 /** The recorded state for a position, if `make demo` captured one. */
 export const stateAt = (example: Pick<Example, "states">, slide: number, beat: number) =>

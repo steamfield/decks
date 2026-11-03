@@ -6,8 +6,14 @@ const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: "./e2e",
   workers: 1,
+  reporter: [["list"], ["json", { outputFile: "test-results/results.json" }]],
   forbidOnly: Boolean(process.env.CI),
-  use: { baseURL, trace: "retain-on-failure" },
+  use: {
+    baseURL,
+    trace: "retain-on-failure",
+    // Keep WebGL lifecycle checks stable in headless Chromium without a display.
+    launchOptions: { args: ["--use-angle=swiftshader"] },
+  },
   projects: [
     { name: "desktop", use: { browserName: "chromium", viewport: { width: 1280, height: 800 } } },
     { name: "mobile", use: { ...devices["Pixel 7"], browserName: "chromium" } },

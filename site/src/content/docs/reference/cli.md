@@ -27,7 +27,7 @@ bunx -p slidev-addon-decks decks fact-extract <alias>
 
 | Command | What it does |
 | --- | --- |
-| `decks init [--force]` | Install the Claude Code setup: agent, skills, rules, two hooks and an `AGENTS.md` block. Re-run to update; `--force` overwrites edited files `init` wrote. See [Writing decks with an agent](/docs/guides/writing-decks-with-an-agent/). |
+| `decks init [--force]` | Install shared agent guidance, thin entry points, and Claude Code hooks. Re-run to update; `--force` overwrites edited files `init` wrote. See [Writing decks with an agent](/docs/guides/writing-decks-with-an-agent/). |
 | `decks new <alias> [dir]` | Scaffold a deck into `decksDir` (default `decks/`) and register it. `dir` defaults to the alias and must be a bare name. Creates `decks.json` if it is missing. |
 | `decks dev <alias> [...]` | Start Slidev's dev server with `--open`. Flags after the alias go to Slidev as-is (`--port`, `--remote`, `--bind`). |
 | `decks build <alias>` | Static build to `outDir` (default `dist/{name}`) with `base` (default `/`). |

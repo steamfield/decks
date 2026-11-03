@@ -94,22 +94,42 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
       Skip to content
     </a>
     <slot name="banner" />
-    <header class="border-line border-b">
-      <div class="mx-auto flex h-14 max-w-[1200px] items-center gap-4 px-4 sm:px-8">
+    <header class:list={["border-line border-b", { "landing-header": landing }]}>
+      <div
+        class:list={[
+          "mx-auto flex h-14 max-w-[1200px] items-center gap-4 px-4 sm:px-8",
+          { "landing-nav": landing },
+        ]}
+      >
         <a href="/" class="text-ink flex items-baseline gap-2 no-underline">
           <span class="text-lg font-semibold tracking-tight">{site.name}</span>
-          <span class="text-muted hidden font-mono text-xs sm:inline">{site.packageName}</span>
+          {!landing && (
+            <span class="text-muted hidden font-mono text-xs sm:inline">{site.packageName}</span>
+          )}
         </a>
-        {site.version && <span class="text-muted font-mono text-xs">v{site.version}</span>}
+        {!landing && site.version && (
+          <span class="text-muted font-mono text-xs">v{site.version}</span>
+        )}
         <nav aria-label="Main" class="ml-auto flex items-center gap-5 text-sm">
+          {landing && (
+            <a href="#examples" class="no-underline hover:underline">
+              Examples
+            </a>
+          )}
           <a href="/docs/" class="no-underline hover:underline">
             Docs
           </a>
-          {site.social.map((link) => (
-            <a href={link.href} class="no-underline hover:underline">
-              {link.label}
+          {landing && (
+            <a href="#install" class="nav-install no-underline">
+              Install
             </a>
-          ))}
+          )}
+          {!landing &&
+            site.social.map((link) => (
+              <a href={link.href} class="no-underline hover:underline">
+                {link.label}
+              </a>
+            ))}
         </nav>
         <!-- Search goes here: a search fragment fills this slot. -->
         <slot name="search" />
@@ -134,6 +154,7 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
           <span class="text-ink font-semibold">{site.name}</span>
           <span>A Steamfield project.</span>
           <span>Released under the {site.license} license.</span>
+          {site.version && <span class="font-mono text-xs">v{site.version}</span>}
         </div>
         {site.footer.map((column) => (
           <div class="flex flex-col gap-2">
