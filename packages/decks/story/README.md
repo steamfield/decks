@@ -148,6 +148,15 @@ Three easings, one duration table, no numeric literal outside `easings.ts`
 | `trace` | 1.8 | The cover's hero line, traced end to end |
 | `bloom` | 2.4 | The slowest full-stage bloom |
 
+Staggers are eased too. `easedStagger(i, n, spread)` gives item `i` of `n` a
+start offset across `spread` seconds on an ease-in-out curve, so a cascade
+leaves together, flows, and settles rather than ticking at even steps.
+`InkBars`' `addGrow` and `addReorder` take `{ spread }` (a `DUR` value; 0, the
+default, moves every row at once), and `UnitGrid` eases each cell's own slice
+of `reveal` on `SETTLE`. Overlap a beat's tweens rather than chaining them with
+`'>'`: land a chip or card as a line reaches its end
+(`` `beat0+=${DUR.gather - DUR.card}` ``), not after it stops.
+
 `css-mirror.test.ts` reads the handful of transitions that have to stay in
 CSS (`story-frame.css`'s custom properties, the view-transition rules) back
 and compares them against this table, so a change to `DUR` or the easing

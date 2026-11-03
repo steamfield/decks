@@ -60,4 +60,16 @@ export const DUR = {
 
 export type DurKey = keyof typeof DUR
 
+/**
+ * The start offset, in seconds, of item `i` of `n` when a group of tweens is
+ * spread across `spread` seconds. The offsets follow an ease-in-out curve: the
+ * first few leave close together, the middle flows and the last few settle, so
+ * a cascade reads as one gesture rather than a metronome of even steps.
+ */
+export function easedStagger(i: number, n: number, spread: number): number {
+  if (n <= 1 || spread <= 0) return 0
+  const t = i / (n - 1)
+  return spread * (0.5 - Math.cos(Math.PI * t) / 2)
+}
+
 export { gsap }

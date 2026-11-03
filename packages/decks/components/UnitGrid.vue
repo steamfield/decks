@@ -52,6 +52,7 @@ import {
   inkStyle,
   type Point,
   type UnitGridItem,
+  SETTLE,
   TRACE,
   gsap,
   UNIT_GRID_DEFAULTS,
@@ -149,6 +150,8 @@ const filterAttr = computed(() => {
 
 /** The long move curve, applied per cell when the collapse is staggered. */
 const trace: (t: number) => number = gsap.parseEase(TRACE) ?? ((t) => t)
+/** The settle curve, applied per cell as the field reveals. */
+const settle: (t: number) => number = gsap.parseEase(SETTLE) ?? ((t) => t)
 
 /** With no `collapseInto` box, the share of a cell's own trip over which it fades. */
 const ABSORB_FROM = 0.7
@@ -275,7 +278,11 @@ const layout = computed(() => {
       body: glyph.body,
       marks: glyph.marks,
       // A hashed order offset, so the field does not come in as a wipe.
-      order: (i + hash(`${props.seed}:order`, i) * cols) / Math.max(1, source.value.length),
+      // Normalised by the largest possible value (the last cell plus a full
+      // row of jitter), so every cell finishes by the end of `reveal`.
+      order:
+        (i + hash(`${props.seed}:order`, i) * cols) /
+        Math.max(1, source.value.length - 1 + cols),
       gather: hash(`${props.seed}:gather`, i),
       jx: hashSigned(`${props.seed}:jx`, i, JITTER),
       jy: hashSigned(`${props.seed}:jy`, i, JITTER),
@@ -323,7 +330,9 @@ const cells = computed<Cell[]>(() => {
   )
 
   return layout.value.map((cell, i) => {
-    const local = clamp01((clamp01(props.reveal) - cell.order * spread) / ramp)
+    // Each cell eases in on SETTLE over its own slice of `reveal`, so the
+    // field arrives as many small settles rather than one linear wipe.
+    const local = settle(clamp01((clamp01(props.reveal) - cell.order * spread) / ramp))
     // Quantised, so a slow bloom writes to the DOM for a fraction of frames.
     const shown = q(local, 32)
     const grown = 0.62 + 0.38 * shown

@@ -31,6 +31,7 @@
 import { computed, reactive } from 'vue'
 import {
   DUR,
+  easedStagger,
   FILTER_IDS,
   brushRibbon,
   filterUrl,
@@ -236,13 +237,21 @@ const rendered = computed<RenderRow[]>(() => {
   })
 })
 
-/** Grow every current row from the origin. */
-function addGrow(tl: gsap.core.Timeline, position?: gsap.Position): gsap.core.Timeline {
+/**
+ * Grow every current row from the origin. `spread` (seconds, a DUR value)
+ * cascades the rows top to bottom on `easedStagger`; 0, the default, grows
+ * them together.
+ */
+function addGrow(
+  tl: gsap.core.Timeline,
+  position?: gsap.Position,
+  { spread = 0 }: { spread?: number } = {},
+): gsap.core.Timeline {
   const at = resolvePosition(tl, position ?? '>')
-  for (const id of order) {
-    if (!state[id]) continue
-    tl.to(state[id], { reveal: 1, opacity: 1, duration: DUR.grow }, at)
-  }
+  const ids = order.filter((id) => state[id])
+  ids.forEach((id, i) => {
+    tl.to(state[id], { reveal: 1, opacity: 1, duration: DUR.grow }, at + easedStagger(i, ids.length, spread))
+  })
   return tl
 }
 
@@ -256,16 +265,18 @@ function addReorder(
   next: InkBarRow[],
   nextDomain: [number, number] = props.domain,
   position?: gsap.Position,
+  { spread = 0 }: { spread?: number } = {},
 ): gsap.core.Timeline {
   const target = layoutFor(next, nextDomain)
   const at = resolvePosition(tl, position ?? '>')
-  for (const row of next) {
+  const rows = next.filter((row) => target[row.id] && state[row.id])
+  rows.forEach((row, i) => {
     const slot = target[row.id]
     const current = state[row.id]
-    if (!slot || !current) continue
-    tl.set(current, { text: labelFor(row), label: row.label }, at)
-    tl.to(current, { y: slot.y, len: slot.len, duration: DUR.scale }, at)
-  }
+    const start = at + easedStagger(i, rows.length, spread)
+    tl.set(current, { text: labelFor(row), label: row.label }, start)
+    tl.to(current, { y: slot.y, len: slot.len, duration: DUR.scale }, start)
+  })
   return tl
 }
 

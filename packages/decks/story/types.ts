@@ -102,11 +102,14 @@ export interface InkBarRow {
 
 /** What `InkBars` exposes: grow, then reorder, retire and recolor rows. */
 export interface BarsHandle extends GrowHandle {
+  /** `spread` (seconds, a DUR value) cascades the rows on `easedStagger`; 0 grows them together. */
+  addGrow(tl: gsap.core.Timeline, at?: gsap.Position, opts?: { spread?: number }): gsap.core.Timeline
   addReorder(
     tl: gsap.core.Timeline,
     next: InkBarRow[],
     domain?: [number, number],
     at?: gsap.Position,
+    opts?: { spread?: number },
   ): gsap.core.Timeline
   addExit(tl: gsap.core.Timeline, ids: string[], at?: gsap.Position): gsap.core.Timeline
   addRecolor(
