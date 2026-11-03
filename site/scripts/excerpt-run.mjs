@@ -7,8 +7,11 @@
 // It keeps the calls a reader needs to follow the run (skill, scaffold, rules,
 // sources, data and stage files, check, lint, build) with their first output
 // line, and the run's own turn count, duration and cost. The prompt is passed
-// with -p, so it isn't in the log: it is recorded per run below. Nothing else is
-// typed by hand: re-run it on the log to regenerate the fixture.
+// with -p, so it isn't in the log: it is recorded per run below. A shown Bash
+// command is either cut from the logged command (`run`: split on &&, ;, || and
+// newlines, pipes and redirections dropped) or, where the log's command is too
+// long to show, an abbreviation every word of which must appear in it; the
+// script throws when one doesn't. Re-run it on the log to regenerate the fixture.
 import { readFileSync, writeFileSync } from "node:fs";
 import { basename } from "node:path";
 
@@ -25,8 +28,77 @@ const heredocTargets = (command, pattern) =>
     .filter((file) => pattern.test(file));
 
 /**
- * Each step: which call it is, how it reads, and which output line to keep.
- * `label` names one call; `labels` (with `all`) names several from the matched calls.
+ * The simple commands in one Bash call, as a reader would name them: heredoc
+ * bodies dropped; split on unquoted &&, ||, ; and newlines; everything after an
+ * unquoted pipe dropped; redirections, a leading `(`, `do` or `then` and a
+ * trailing `&` or `)` removed.
+ */
+function commandsIn(command) {
+  const text = command.replace(/<<-?\s*(['"]?)(\w+)\1([^\n]*)\n[\s\S]*?\n\2(?=\n|$)/g, "$3");
+  const parts = [];
+  let current = "";
+  let quote = null;
+  let piped = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const keep = (c) => {
+      if (!piped) current += c;
+    };
+    if (quote) {
+      if (ch === quote) quote = null;
+      keep(ch);
+      continue;
+    }
+    if (ch === "'" || ch === '"') {
+      quote = ch;
+      keep(ch);
+      continue;
+    }
+    const pair = text.slice(i, i + 2);
+    if (pair === "&&" || pair === "||" || ch === ";" || ch === "\n") {
+      parts.push(current);
+      current = "";
+      piped = false;
+      if (pair === "&&" || pair === "||") i++;
+      continue;
+    }
+    if (ch === "|") piped = true;
+    else keep(ch);
+  }
+  parts.push(current);
+  return parts
+    .map((part) =>
+      part
+        .replace(/\s*\d*>>?&?\s*[^\s)]+/g, "")
+        .trim()
+        .replace(/^\(\s*/, "")
+        .replace(/^(do|then)\s+/, "")
+        .replace(/\s*&?\s*\)?\s*$/, "")
+        .trim(),
+    )
+    .filter(Boolean);
+}
+
+/** `cmd` with the variables the same call assigns (`E=path; cat $E/x`) filled in. */
+function expanded(command) {
+  const vars = new Map(
+    [...command.matchAll(/(?:^|[\s;&(])([A-Za-z_]\w*)=("[^"]*"|'[^']*'|[^\s;&]+)/g)].map((m) => [
+      m[1],
+      (m[2] ?? "").replace(/^["']|["']$/g, ""),
+    ]),
+  );
+  return command.replace(/\$\{?([A-Za-z_]\w*)\}?/g, (all, name) => vars.get(name) ?? all);
+}
+
+/** Shows the commands of a call that match `pattern`, as cut from the logged command. */
+const run = (pattern) => (c) =>
+  commandsIn(c.input.command)
+    .filter((command) => pattern.test(command))
+    .map((command) => `Bash(${command})`);
+
+/**
+ * Each step: a name (for errors), which call it is, how the call shows, and which
+ * output line to keep. `show` returns one label or several for each found call.
  */
 const RUNS = {
   // The tides deck, drafted with this repository's own agent setup.
@@ -35,71 +107,81 @@ const RUNS = {
     short: (file) => file.replace(/^.*\/Projects\/decks\//, ""),
     steps: (short) => [
       {
+        name: "skill",
         find: (c) => c.name === "Skill",
-        label: (c) => `Skill(${c.input.skill})`,
+        show: (c) => `Skill(${c.input.skill})`,
         note: "Loads the repo's deck-building workflow.",
         out: (c) => firstLine(c.output),
       },
       {
-        find: (c) =>
-          c.name === "Bash" &&
-          c.input.command === "bun run new tides ocean-tides --story 2>&1 | tail -20",
-        label: () => "Bash(bun run new tides ocean-tides --story)",
+        name: "scaffold",
+        find: (c) => c.name === "Bash" && /^bun run new tides /.test(c.input.command),
+        show: run(/^bun run new /),
         note: "Scaffolds a story deck and registers it.",
         out: (c) => firstLine(c.output, /^Scaffolded/),
       },
       {
+        name: "rules",
         find: (c) => c.name === "Read" && /\.claude\/rules\//.test(c.input.file_path),
         all: true,
-        label: (c) => `Read(${short(c.input.file_path)})`,
+        show: (c) => `Read(${short(c.input.file_path)})`,
         note: "Reads the writing, stage and data rules before drafting.",
       },
       {
+        name: "NOAA tides",
         find: (c) => c.name === "Bash" && /tidesandcurrents\.noaa\.gov\/api/.test(c.input.command),
-        label: () => "Bash(curl api.tidesandcurrents.noaa.gov ... station=8443970)",
+        show: () => "Bash(curl api.tidesandcurrents.noaa.gov ... station=8443970)",
         note: "NOAA tide predictions for Boston.",
       },
       {
+        name: "USNO moon phases",
         find: (c) => c.name === "Bash" && /aa\.usno\.navy\.mil/.test(c.input.command),
-        label: () => "Bash(curl aa.usno.navy.mil/api/moon/phases ...)",
+        show: () => "Bash(curl aa.usno.navy.mil/api/moon/phases ...)",
         note: "US Naval Observatory moon phase dates.",
       },
       {
+        name: "NASA fact sheet",
         find: (c) => c.name === "Bash" && /nssdc\.gsfc\.nasa\.gov/.test(c.input.command),
-        label: () => "Bash(curl nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html)",
+        show: () => "Bash(curl nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html)",
         note: "NASA fact-sheet constants.",
       },
       {
+        name: "data modules",
         find: (c) => c.name === "Write" && /\/data\/[\w-]+\.ts$/.test(c.input.file_path),
         all: true,
-        label: (c) => `Write(${short(c.input.file_path)})`,
+        show: (c) => `Write(${short(c.input.file_path)})`,
         note: "One data module per slide, each figure with its source.",
       },
       {
+        name: "stages",
         find: (c) => c.name === "Write" && /\/components\/\w+Stage\.vue$/.test(c.input.file_path),
         all: true,
-        label: (c) => `Write(${short(c.input.file_path)})`,
+        show: (c) => `Write(${short(c.input.file_path)})`,
         note: "One stage component per story slide.",
       },
       {
+        name: "check",
         find: (c) => c.name === "Bash" && /^cd \S+ && bun run check/.test(c.input.command),
-        label: () => "Bash(bun run check)",
+        show: run(/^bun run check/),
         out: (c) => firstLine(c.output, /All page files/),
       },
       {
-        find: (c) => c.name === "Bash" && c.input.command === "bun run test 2>&1 | tail -40",
-        label: () => "Bash(bun run test)",
+        name: "test",
+        find: (c) => c.name === "Bash" && /^bun run test 2>&1 \| tail -40$/.test(c.input.command),
+        show: run(/^bun run test/),
         out: (c) => firstLine(c.output, /Tests\s+\d+ passed/),
       },
       {
-        find: (c) => c.name === "Bash" && c.input.command === "bun run lint 2>&1 | tail -20",
-        label: () => "Bash(bun run lint)",
+        name: "lint",
+        find: (c) => c.name === "Bash" && /^bun run lint 2>&1 \| tail -20$/.test(c.input.command),
+        show: run(/^bun run lint/),
         note: "The prose lint prints only its own command line: no findings.",
         out: (c) => firstLine(c.output, /content-lint/),
       },
       {
+        name: "build",
         find: (c) => c.name === "Bash" && /^bun run build tides/.test(c.input.command),
-        label: () => "Bash(bun run build tides)",
+        show: run(/^bun run build /),
         out: (c) => firstLine(c.output, /built in/),
       },
     ],
@@ -111,101 +193,99 @@ const RUNS = {
     prompt: "make a 5-slide story deck about what the Keeling curve shows about atmospheric CO2",
     short: (file) => file.replace(/^.*\/scratchpad\/keeling\//, ""),
     steps: (short) => {
-      const decks = "bunx -p slidev-addon-decks decks";
+      const decks = /^bunx -p slidev-addon-decks decks /;
       const checkRound = /^bunx -p slidev-addon-decks decks check 2>&1 \| tail -15;/;
       const recheck = /&& bunx -p slidev-addon-decks decks check 2>&1 \| tail -2 &&/;
+      const heredocs = (pattern) => (c) =>
+        heredocTargets(c.input.command, pattern).map((file) => `Bash(cat > ${file})`);
       return [
         {
+          name: "skill",
           find: (c) => c.name === "Skill",
-          label: (c) => `Skill(${c.input.skill})`,
+          show: (c) => `Skill(${c.input.skill})`,
           note: "Loads the deck-building workflow that decks init installed.",
           out: (c) => firstLine(c.output),
         },
         {
+          name: "rules",
           find: (c) =>
             c.name === "Bash" && /cat \.claude\/rules\/story-stage\.md/.test(c.input.command),
-          label: () =>
-            "Bash(cat .claude/rules/story-stage.md .claude/rules/deck-data.md .claude/rules/deck-writing.md)",
+          show: run(/^cat \.claude\/rules\//),
           note: "Reads the stage, data and writing rules before drafting.",
         },
         {
-          find: (c) =>
-            c.name === "Bash" && c.input.command.startsWith(`${decks} new keeling --story`),
-          label: () => `Bash(${decks} new keeling --story --author "Riley Hilliard")`,
+          name: "scaffold",
+          find: (c) => c.name === "Bash" && /^bunx -p \S+ decks new keeling /.test(c.input.command),
+          show: run(/^bunx -p \S+ decks new /),
           note: "Scaffolds a story deck and registers it.",
           out: (c) => firstLine(c.output, /^Scaffolded/),
         },
         {
+          name: "NOAA CSVs",
           find: (c) =>
             c.name === "Bash" && /gml\.noaa\.gov\/webdata\/ccgg\/trends\/co2/.test(c.input.command),
-          label: () => "Bash(curl gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv ...)",
+          show: () => "Bash(curl gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv ...)",
           note: "NOAA's Mauna Loa monthly, annual and growth-rate files.",
         },
         {
+          name: "exemplar",
           find: (c) =>
             c.name === "Bash" &&
             c.input.command.startsWith(
               "E=node_modules/slidev-addon-decks/agent/exemplars/tides; cat",
             ),
-          label: () => "Bash(cat node_modules/slidev-addon-decks/agent/exemplars/tides/...)",
+          show: () => "Bash(cat node_modules/slidev-addon-decks/agent/exemplars/tides/...)",
           note: "Reads the story deck the package ships as an example.",
         },
         {
+          name: "NOAA seasonal cycle",
           find: (c) =>
             c.name === "Bash" && /gml\.noaa\.gov\/education\/carbon_toolkit/.test(c.input.command),
-          label: () => "Bash(curl gml.noaa.gov/education/carbon_toolkit/basics.html)",
+          show: () => "Bash(curl gml.noaa.gov/education/carbon_toolkit/basics.html)",
           note: "NOAA's explanation of the seasonal cycle.",
         },
         {
+          name: "data modules",
           find: (c) =>
             c.name === "Bash" && heredocTargets(c.input.command, /\.(py|ts)$/).length > 0,
           all: true,
-          labels: (found) =>
-            found.flatMap((c) =>
-              heredocTargets(c.input.command, /\.(py|ts)$/).map((file) => `Bash(cat > ${file})`),
-            ),
+          show: heredocs(/\.(py|ts)$/),
           note: "A script that copies the CSVs into one generated file, then one data module per slide.",
         },
         {
+          name: "stages",
           find: (c) =>
             c.name === "Bash" && heredocTargets(c.input.command, /Stage\.vue$/).length > 0,
           all: true,
-          labels: (found) =>
-            found.flatMap((c) =>
-              heredocTargets(c.input.command, /Stage\.vue$/).map((file) => `Bash(cat > ${file})`),
-            ),
+          show: heredocs(/Stage\.vue$/),
           note: "One stage component per story slide.",
         },
         {
+          name: "data-sources.md",
           find: (c) => c.name === "Write" && /data-sources\.md$/.test(c.input.file_path),
-          label: (c) => `Write(${short(c.input.file_path)})`,
+          show: (c) => `Write(${short(c.input.file_path)})`,
           note: "The fact-check input: each figure and where it came from.",
         },
         {
+          name: "first check round",
           find: (c) => c.name === "Bash" && checkRound.test(c.input.command),
-          labels: () => [
-            `Bash(${decks} check)`,
-            `Bash(${decks} lint keeling)`,
-            `Bash(${decks} build keeling)`,
-          ],
+          show: run(decks),
           out: (c) => firstLine(c.output, /All page files/),
         },
         {
+          name: "screenshots",
           find: (c) =>
             c.name === "Bash" &&
-            c.input.command.startsWith(`for n in 2 3 4 5; do ${decks} shot keeling $n 2`),
-          label: () => `Bash(${decks} shot keeling $n 2 --port 3030)`,
+            /^for n in 2 3 4 5; do bunx \S+ \S+ decks shot /.test(c.input.command),
+          show: run(decks),
           note: "Screenshots slides 2 to 5 at every click, then reads the images and fixes what they show.",
           out: (c) => firstLine(c.output, /^errors:/),
         },
         {
+          name: "second check round",
           find: (c) => c.name === "Bash" && recheck.test(c.input.command),
-          labels: () => [
-            `Bash(${decks} check)`,
-            `Bash(${decks} lint keeling)`,
-            `Bash(${decks} build keeling)`,
-          ],
-          note: "Checks, lints and builds again after the fixes.",
+          show: run(decks),
+          note: "Checks, lints and builds again after the fixes, then lists every figure for the fact-check.",
           out: (c) => firstLine(c.output, /built in/),
         },
       ];
@@ -246,11 +326,28 @@ const excerpt = [];
 /** Tool calls the excerpt shows; one call can appear as several commands. */
 const shownIds = new Set();
 for (const step of spec.steps(spec.short)) {
+  const fail = (why) => {
+    throw new Error(`step "${step.name}": ${why}`);
+  };
   const found = step.all ? calls.filter(step.find) : calls.filter(step.find).slice(0, 1);
-  if (found.length === 0) throw new Error(`no call matches the step "${step.note ?? step.label}"`);
+  if (found.length === 0) fail("no call matches");
+  const shown = found.flatMap((call) => [step.show(call)].flat());
+  if (shown.length === 0) fail("the matched call shows no command");
+  // Every word of a shown Bash command is in the logged command (an abbreviation's
+  // trailing "..." aside), so nothing on the page is a command the agent didn't type.
+  const logged = found.map((call) => expanded(call.input.command ?? "")).join("\n");
+  for (const label of shown) {
+    const command = /^Bash\((.*)\)$/s.exec(label)?.[1];
+    if (command === undefined) continue;
+    for (const word of command.split(/\s+/)) {
+      const part = word.replace(/\.\.\.$/, "");
+      if (part && !logged.includes(part))
+        fail(`"${part}" in ${label} is not in the logged command`);
+    }
+  }
   for (const call of found) shownIds.add(call.id);
   excerpt.push({
-    calls: step.labels ? step.labels(found) : found.map((call) => step.label(call)),
+    calls: shown,
     note: step.note ?? "",
     output: step.out ? step.out(found[0]) : "",
   });

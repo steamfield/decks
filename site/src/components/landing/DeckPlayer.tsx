@@ -5,9 +5,11 @@
 //
 // Before any interaction the frame shows the deck's poster, or a short muted loop
 // captured from the real deck by `make demo` when there is one and motion is
-// allowed. The first control press, arrow key or gallery pick swaps in the live
-// deck, a same-origin iframe driven through the embed contract
-// (src/lib/player/protocol.ts), at the step the loop was showing.
+// allowed (it drops back to the poster if reduced motion is turned on). While the
+// loop runs, Pause stops the video without loading anything, and Play after that
+// loads the live deck. A step control, an arrow key or a gallery pick loads it
+// straight away. The live deck is a same-origin iframe driven through the embed
+// contract (src/lib/player/protocol.ts), opened at the step the loop was showing.
 //
 // Server-rendered, it shows the poster, the start step's caption and a link to
 // the deck's static build, so it reads without JavaScript.
@@ -16,7 +18,6 @@ import {
   type SyntheticEvent,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
 } from "react";
@@ -30,7 +31,16 @@ import {
   posterSrcset,
   stateAt,
 } from "../../lib/player/example";
-import { announcement, counterText, dwellMs, mirrorCopy, stepsOf } from "../../lib/player/format";
+import {
+  announcement,
+  counterText,
+  dwellMs,
+  loopMoves,
+  mirrorCopy,
+  runMinutes,
+  stepsOf,
+} from "../../lib/player/format";
+import { PICK_EVENT } from "../../lib/player/pick";
 import {
   atEnd,
   type Command,
@@ -45,21 +55,10 @@ type Position = { slide: number; beat: number };
 
 /** How long a deck may take to answer before the player gives up and links to it. */
 export const BOOT_TIMEOUT_MS = 15_000;
-/** The window event the example gallery sends (src/scripts/site.ts): `detail` is a deck name. */
-export const PICK_EVENT = "decks:pick";
 /** Most pips the caption bar draws; a slide with more steps shows the counter alone. */
 const MAX_PIPS = 12;
 
-declare global {
-  interface Window {
-    /** A gallery pick made before the player hydrated. */
-    __decksPick?: string;
-  }
-}
-
-const motionAllowed = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia?.("(prefers-reduced-motion: no-preference)").matches === true;
+const MOTION = "(prefers-reduced-motion: no-preference)";
 
 /** The state the player shows for a recorded position, before the live deck answers. */
 function recordedState(example: Example, at: Position): DeckState {
@@ -128,8 +127,6 @@ function Control({
 }
 
 export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; initial?: number }) {
-  const id = useId();
-  const [hydrated, setHydrated] = useState(false);
   const [index, setIndex] = useState(initial);
   const [phase, setPhase] = useState<Phase>("poster");
   const [deck, setDeck] = useState<DeckState | null>(null);
@@ -154,13 +151,20 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
   const example = examples[index] ?? examples[0];
 
   useEffect(() => {
-    setHydrated(true);
     setCanFullscreen(document.fullscreenEnabled === true);
-    const first = examples[initial];
-    if (first?.loop && motionAllowed()) setPhase("loop");
+    const motion = window.matchMedia?.(MOTION);
+    if (examples[initial]?.loop && motion?.matches) setPhase("loop");
+    // Reduced motion turned on while the loop plays: back to the poster.
+    const onMotion = () => {
+      if (!motion?.matches) setPhase((current) => (current === "loop" ? "poster" : current));
+    };
+    motion?.addEventListener?.("change", onMotion);
     const onChange = () => setFullscreen(document.fullscreenElement === wrapper.current);
     document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
+    return () => {
+      motion?.removeEventListener?.("change", onMotion);
+      document.removeEventListener("fullscreenchange", onChange);
+    };
   }, [examples, initial]);
 
   const send = useCallback((message: Command) => {
@@ -291,11 +295,14 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
     track(Events.beatStepped, { cmd: message.cmd });
     setPlaying(false);
     if (phase === "ready") send(message);
+    else if (phase === "booting") pending.current = message;
     else if (idle) boot(here(), message);
   };
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void wrapper.current?.requestFullscreen();
+    // A refused request leaves the state as fullscreenchange last set it.
+    const sync = () => setFullscreen(document.fullscreenElement === wrapper.current);
+    if (document.fullscreenElement) document.exitFullscreen().catch(sync);
+    else wrapper.current?.requestFullscreen().catch(sync);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -304,7 +311,8 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
       ArrowLeft: event.shiftKey ? command.prevSlide() : command.prev(),
     };
     const move = moves[event.key];
-    if (!move) return;
+    // Alt, Cmd and Ctrl arrows belong to the browser (history, text navigation).
+    if (!move || event.altKey || event.metaKey || event.ctrlKey) return;
     event.preventDefault();
     step(move);
   };
@@ -333,6 +341,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
   const frameSrc = `${example.href}index.html#/${at.slide}${at.beat ? `?clicks=${at.beat}` : ""}`;
   const deckLink = `${example.href}#/${shown.slide}${shown.beat ? `?clicks=${shown.beat}` : ""}`;
   const poster = example.poster;
+  const posterStep = stateAt(example, example.startSlide, example.startBeat);
   const sizes = "(min-width: 768px) 900px, 100vw";
 
   return (
@@ -361,7 +370,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
                 claude -p "{example.run.prompt}"
               </p>
               <p className="titlebar-stats">
-                Claude Code · {example.run.minutes} min · {example.run.turns} turns ·{" "}
+                Claude Code · {runMinutes(example.run.minutes)} · {example.run.turns} turns ·{" "}
                 {example.run.cost}
               </p>
             </>
@@ -398,7 +407,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
                 height={example.loop.height}
                 onTimeUpdate={onLoopTime}
                 onPlaying={() => setLoopShowing(true)}
-                aria-label={`${example.title}: a recording of three steps forward and back`}
+                aria-label={`${example.title}: a recording of ${loopMoves(example.loop.marks)}`}
               >
                 <source src={`${example.loop.base}.webm`} type="video/webm" />
                 <source src={`${example.loop.base}.mp4`} type="video/mp4" />
@@ -415,7 +424,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
                     src={`${poster.base}-1280.webp`}
                     width={poster.width}
                     height={poster.height}
-                    alt={`${example.title}, slide ${example.startSlide}: ${caption.lead}`}
+                    alt={`${example.title}, slide ${example.startSlide} of ${example.slides}, step ${example.startBeat + 1} of ${(posterStep?.beats ?? 0) + 1}`}
                     fetchPriority={index === initial ? "high" : "auto"}
                   />
                 </picture>
@@ -458,9 +467,9 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
                 icon="slideNext"
                 onClick={() => step(command.nextSlide())}
               />
-              {hydrated && canFullscreen && (
+              {canFullscreen && (
                 <Control
-                  label={fullscreen ? "Exit full screen" : "Full screen"}
+                  label="Full screen"
                   icon="fullscreen"
                   onClick={toggleFullscreen}
                   pressed={fullscreen}
@@ -493,7 +502,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
               </a>
             </span>
           </div>
-          <p className="sr-only" aria-live="polite" id={`${id}-live`}>
+          <p className="sr-only" aria-live="polite">
             {spoken}
           </p>
         </div>

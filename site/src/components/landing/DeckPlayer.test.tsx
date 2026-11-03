@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Example } from "../../lib/player/example";
+import { PICK_EVENT } from "../../lib/player/pick";
 import type { Command, DeckState } from "../../lib/player/protocol";
-import { BOOT_TIMEOUT_MS, DeckPlayer, PICK_EVENT } from "./DeckPlayer";
+import { BOOT_TIMEOUT_MS, DeckPlayer } from "./DeckPlayer";
 
 const example = (name: string, title: string, extra: Partial<Example> = {}): Example => ({
   name,
@@ -60,13 +61,15 @@ function deck() {
     }
     return element;
   };
+  // The deck's window, not whatever iframe is mounted now, so a test can speak
+  // as a deck the player has already dropped.
   const say = (data: unknown) =>
     act(() => {
       window.dispatchEvent(
         new MessageEvent("message", {
           data,
           origin: window.location.origin,
-          source: frame().contentWindow,
+          source: win as unknown as Window,
         }),
       );
     });
@@ -77,14 +80,26 @@ function deck() {
 
 const caption = () => document.querySelector(".caption-lead")?.textContent;
 
-/** Stubs matchMedia so motion is allowed (or reduced) for the next render. */
+/**
+ * Stubs matchMedia so motion is allowed (or reduced) for the next render. The
+ * returned function changes the setting later, as the system setting would.
+ */
 function motion(allowed: boolean) {
+  let now = allowed;
+  const listeners = new Set<() => void>();
   vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("no-preference") ? allowed : !allowed,
+    get matches() {
+      return query.includes("no-preference") ? now : !now;
+    },
     media: query,
-    addEventListener: () => {},
-    removeEventListener: () => {},
+    addEventListener: (_: string, listener: () => void) => listeners.add(listener),
+    removeEventListener: (_: string, listener: () => void) => listeners.delete(listener),
   }));
+  return (next: boolean) =>
+    act(() => {
+      now = next;
+      for (const listener of listeners) listener();
+    });
 }
 
 beforeEach(() => {
@@ -101,7 +116,7 @@ describe("DeckPlayer", () => {
     render(<DeckPlayer examples={examples} />);
     expect(document.querySelector("iframe")).toBeNull();
     expect(
-      screen.getByRole("img", { name: /Tides run on the Moon's clock, slide 2/ }),
+      screen.getByRole("img", { name: "Tides run on the Moon's clock, slide 2 of 3, step 1 of 2" }),
     ).toHaveAttribute("fetchpriority", "high");
     expect(caption()).toBe("Recorded lead.");
     expect(screen.getByText("Recorded body.")).toBeInTheDocument();
@@ -112,7 +127,7 @@ describe("DeckPlayer", () => {
   it("puts the prompt and the run's figures in the title bar", () => {
     render(<DeckPlayer examples={examples} />);
     expect(screen.getByText(/claude -p "make a deck"/)).toBeInTheDocument();
-    expect(screen.getByText("Claude Code · 8.3 min · 87 turns · $3.17")).toBeInTheDocument();
+    expect(screen.getByText("Claude Code · 8 minutes · 87 turns · $3.17")).toBeInTheDocument();
     expect(
       screen.getByText(
         "Drafted in 8 minutes from this prompt with this repository's agent setup, then edited by hand (+49/−11 in 6 files).",
@@ -228,14 +243,75 @@ describe("DeckPlayer", () => {
     expect(screen.queryByText("Spoofed.")).toBeNull();
   });
 
-  it("gives up on a deck that never answers and links to it", () => {
+  it("gives up on a deck that never answers, links to it, and boots again on a press", () => {
     render(<DeckPlayer examples={examples} />);
+    const player = screen.getByRole("group", { name: /^Deck player/ });
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
+    const d = deck();
     act(() => vi.advanceTimersByTime(BOOT_TIMEOUT_MS + 1));
+    expect(player).toHaveAttribute("data-phase", "failed");
+    expect(document.querySelector("iframe")).toBeNull();
     expect(screen.getByRole("link", { name: "Open it in a new tab" })).toHaveAttribute(
       "href",
       "/demo/tides/",
     );
+    // The dropped deck answering late changes nothing.
+    d.state({ lead: "Too late." });
+    expect(player).toHaveAttribute("data-phase", "failed");
+    expect(screen.queryByText("Too late.")).toBeNull();
+    // A control press tries again.
+    fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
+    expect(player).toHaveAttribute("data-phase", "booting");
+    expect(document.querySelector("iframe")).not.toBeNull();
+  });
+
+  it("keeps the last step pressed while the deck boots and sends it once it is there", () => {
+    render(<DeckPlayer examples={examples} />);
+    fireEvent.click(screen.getByRole("button", { name: "Play" }));
+    fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
+    fireEvent.click(screen.getByRole("button", { name: "Slide forward" }));
+    const d = deck();
+    d.state({});
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "nextSlide" }]);
+  });
+
+  it("leaves Alt, Cmd and Ctrl arrows to the browser", () => {
+    render(<DeckPlayer examples={examples} />);
+    fireEvent.click(screen.getByRole("button", { name: "Play" }));
+    const d = deck();
+    d.state({});
+    const player = screen.getByRole("group", { name: /^Deck player/ });
+    for (const modifier of ["altKey", "metaKey", "ctrlKey"]) {
+      // fireEvent returns false when the handler called preventDefault.
+      expect(fireEvent.keyDown(player, { key: "ArrowLeft", [modifier]: true }), modifier).toBe(
+        true,
+      );
+    }
+    expect(d.sent).toEqual([]);
+    expect(fireEvent.keyDown(player, { key: "ArrowRight" })).toBe(false);
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "next" }]);
+  });
+
+  it("marks full screen with aria-pressed and keeps its state when the browser refuses", async () => {
+    Object.defineProperty(document, "fullscreenEnabled", { value: true, configurable: true });
+    const refuse = vi.fn(() => Promise.reject(new Error("denied")));
+    Object.defineProperty(HTMLElement.prototype, "requestFullscreen", {
+      value: refuse,
+      configurable: true,
+    });
+    try {
+      render(<DeckPlayer examples={examples} />);
+      const button = screen.getByRole("button", { name: "Full screen" });
+      expect(button).toHaveAttribute("aria-pressed", "false");
+      await act(async () => {
+        fireEvent.click(button);
+      });
+      expect(refuse).toHaveBeenCalled();
+      expect(button).toHaveAttribute("aria-pressed", "false");
+    } finally {
+      Reflect.deleteProperty(HTMLElement.prototype, "requestFullscreen");
+      Reflect.deleteProperty(document, "fullscreenEnabled");
+    }
   });
 
   it("loads a deck the gallery picks, live at its start step", () => {
@@ -304,11 +380,30 @@ describe("DeckPlayer", () => {
       );
     });
 
+    it("labels the loop with the moves its marks record", () => {
+      motion(true);
+      render(<DeckPlayer examples={looped} />);
+      expect(document.querySelector("video")).toHaveAttribute(
+        "aria-label",
+        "Tides run on the Moon's clock: a recording of 1 step forward",
+      );
+    });
+
     it("shows the poster instead under reduced motion", () => {
       motion(false);
       render(<DeckPlayer examples={looped} />);
       expect(document.querySelector("video")).toBeNull();
       expect(screen.getByRole("img", { name: /Tides run on the Moon's clock/ })).toBeVisible();
+    });
+
+    it("drops back to the poster when reduced motion is turned on", () => {
+      const change = motion(true);
+      render(<DeckPlayer examples={looped} />);
+      fireEvent.playing(document.querySelector("video") as HTMLVideoElement);
+      change(false);
+      expect(document.querySelector("video")).toBeNull();
+      expect(screen.getByRole("img", { name: /Tides run on the Moon's clock/ })).toBeVisible();
+      expect(document.querySelector("iframe")).toBeNull();
     });
   });
 

@@ -23,6 +23,7 @@ import { loadHookDenial, loadRun } from "../data/fixtures";
 import { loadProjectFiles, setupCommands } from "../data/project";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { Events } from "../lib/events";
+import { runMinutes } from "../lib/player/format";
 
 const examples = loadExamples();
 const [hero] = examples;
@@ -31,10 +32,14 @@ const denial = loadHookDenial();
 const files = loadProjectFiles();
 const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
 const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-default" } as const;
+// The theme stills are shot from this deck (STILL.deck in scripts/demo.mjs), not the hero.
+const STILL_DECK = "tides";
+const stillTitle =
+  examples.find((example) => example.name === STILL_DECK)?.title ?? "A story slide";
 const stills = (name: string) => ({
-  avif: `/stills/tides-${name}-640.avif 640w, /stills/tides-${name}-1280.avif 1280w`,
-  webp: `/stills/tides-${name}-640.webp 640w, /stills/tides-${name}-1280.webp 1280w`,
-  src: `/stills/tides-${name}-1280.webp`,
+  avif: `/stills/${STILL_DECK}-${name}-640.avif 640w, /stills/${STILL_DECK}-${name}-1280.avif 1280w`,
+  webp: `/stills/${STILL_DECK}-${name}-640.webp 640w, /stills/${STILL_DECK}-${name}-1280.webp 1280w`,
+  src: `/stills/${STILL_DECK}-${name}-1280.webp`,
 });
 ---
 
@@ -147,7 +152,7 @@ const stills = (name: string) => ({
             width="1280"
             height="720"
             loading="lazy"
-            alt={`${hero?.title ?? "A story slide"} with the default theme`}
+            alt={`A slide from the ${STILL_DECK} deck, "${stillTitle}", with the default theme`}
           />
         </picture>
         <figcaption>Default theme</figcaption>
@@ -191,7 +196,7 @@ const stills = (name: string) => ({
       <InstallTabs client:idle options={site.install} />
       {heroRun && hero?.run && (
         <p class="text-ink-2 text-sm">
-          A deck like the one above took {Math.round(Number(hero.run.minutes))} minutes and{" "}
+          The draft of the deck at the top of the page took {runMinutes(hero.run.minutes)} and{" "}
           {hero.run.cost} of Claude usage. Decks itself is free and {site.license} licensed.
         </p>
       )}

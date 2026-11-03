@@ -1,6 +1,7 @@
 // @vitest-environment node
 // The landing page and docs quote Decks: commands, figures from a recorded run,
-// the prose-lint hook's answer and each example deck's own title and colors.
+// the prose-lint hook's answer, the edits after each agent draft and each example
+// deck's own title and recording.
 // These checks read the repository around the site, so a renamed command, a
 // changed hook or a stale recording fails here instead of shipping.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -23,8 +24,8 @@ import {
   startSlideOf,
 } from "./data/examples";
 import { loadHookDenial, loadRun, runFigures } from "./data/fixtures";
-import { loadProjectFiles } from "./data/project";
-import { draftLine } from "./lib/player/example";
+import { loadProjectFiles, setupCommands } from "./data/project";
+import { draftLine, editSize } from "./lib/player/example";
 
 const repo = join(process.cwd(), "..");
 const read = (path: string) => readFileSync(join(repo, path), "utf8");
@@ -67,6 +68,7 @@ const shown = [
     splitCommands(option.command).map((line) => ({ file: `config: ${option.label}`, line })),
   ),
   { file: "config: what you get", line: site.devCommand },
+  ...setupCommands.map((line) => ({ file: "page: what you get", line })),
   ...docsCommands.filter(
     ({ line }) => deckInvocation.test(line) || /^(bun add|npm i|pnpm add) /.test(line),
   ),
@@ -75,7 +77,13 @@ const shown = [
 describe("every shown command matches the CLI", () => {
   it("shows commands from the hero, every install tab and the CLI reference", () => {
     const files = new Set(shown.map((command) => command.file));
-    for (const label of ["config: hero", "config: bun", "config: npm", "config: pnpm"]) {
+    for (const label of [
+      "config: hero",
+      "config: bun",
+      "config: npm",
+      "config: pnpm",
+      "page: what you get",
+    ]) {
       expect(files, label).toContain(label);
     }
     expect(files).toContain("reference/cli.md");
@@ -93,7 +101,16 @@ describe("every shown command matches the CLI", () => {
 
   it.each(shown.filter(({ line }) => deckInvocation.test(line)))(
     "$file: $line pins the package with -p slidev-addon-decks",
-    ({ line }) => {
+    ({ file, line }) => {
+      // pnpm has no -p: `pnpm exec` runs the bin of the package the same block's `pnpm add` installed.
+      if (line.startsWith("pnpm exec ")) {
+        const added = shown.some(
+          (other) =>
+            other.file === file && /^pnpm add (.+ )?slidev-addon-decks( |$)/.test(other.line),
+        );
+        expect(added, `${file} installs slidev-addon-decks with pnpm add`).toBe(true);
+        return;
+      }
       expect(deckInvocation.exec(line)?.[2]).toBe(pinned);
     },
   );
@@ -171,14 +188,22 @@ describe("the hero's recorded agent run", () => {
     const example = loadExample(hero);
     expect(example.run).toEqual({ prompt: run.prompt, setup, ...runFigures(run) });
     if (!example.run) throw new Error("the hero example loaded without its run");
-    const line = draftLine(example.run, example.edits);
-    expect(line).toContain(`Drafted in ${Math.round(Number(runFigures(run).minutes))} minutes`);
+    // Written out from fixtures/keeling-1.json (durationMs 1009889, costUsd 2.6054928):
+    // a new hero run changes these on purpose.
+    expect(runFigures(run)).toEqual({ turns: 47, minutes: "16.8", cost: "$2.61" });
+    expect(draftLine(example.run, example.edits)).toContain(
+      "Drafted in 17 minutes from this prompt in a fresh project set up with decks init",
+    );
   });
 
   // A run in a decks init project calls the package's CLI; the placeholder hero
   // (tides) was drafted inside this repository, where the same subcommands run
   // through the root package.json scripts. Either way every command must exist.
   if (setup === "init") {
+    it("calls nothing that only exists in this repository", () => {
+      expect(bash.filter((call) => /\bbun run\b|\bexamples\/|beats\.test/.test(call))).toEqual([]);
+    });
+
     it.each(bash.map((call) => call.slice(5, -1)).filter((line) => / decks /.test(line)))(
       "the transcript's %s is the pinned package command",
       (line) => {
@@ -194,10 +219,7 @@ describe("the hero's recorded agent run", () => {
       expect(label).toContain("in a fresh project with decks init");
       if (hero.edits?.by === "claude") expect(label).toContain("in a second Claude Code session");
       const edits = hero.edits && computeEdits(hero.name, hero.edits);
-      if (edits)
-        expect(label).toContain(
-          `(+${edits.insertions}/−${edits.deletions} in ${edits.files} files)`,
-        );
+      if (edits) expect(label).toContain(`(${editSize(edits)})`);
     });
   } else {
     const scripts = (JSON.parse(read("package.json")) as { scripts: Record<string, string> })
@@ -216,11 +238,22 @@ describe("the hero's recorded agent run", () => {
       expect(loadExample(hero).provenance.label).toContain("this repository's agent setup");
     });
   }
+});
 
-  it("has the hand edit's diff and caption pairs as git computes them", () => {
-    if (!hero.edits) return;
-    expect(existsSync(editsPath(hero.name)), "run node scripts/edits.mjs").toBe(true);
-    expect(loadEdits(hero.name)).toEqual(computeEdits(hero.name, hero.edits));
+describe("the edits after each agent draft", () => {
+  const edited = ENTRIES.filter((entry) => entry.edits);
+
+  it("covers at least the hero", () => {
+    expect(edited.map((entry) => entry.name)).toContain(hero?.name);
+  });
+
+  it.each(edited)("$name has the edit's diff and caption pairs as git computes them", (entry) => {
+    if (!entry.edits) throw new Error(`${entry.name} has no edits`);
+    expect(existsSync(editsPath(entry.name)), "run node scripts/edits.mjs").toBe(true);
+    expect(loadEdits(entry.name)).toEqual(computeEdits(entry.name, entry.edits));
+    const edits = loadExample(entry).edits;
+    if (!edits) throw new Error(`${entry.name} loaded without its edits`);
+    expect(loadExample(entry).provenance.label).toContain(`(${editSize(edits)})`);
   });
 });
 

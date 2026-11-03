@@ -1,5 +1,6 @@
 import { track } from "../lib/analytics";
 import { type EventName, Events } from "../lib/events";
+import { PICK_EVENT } from "../lib/player/pick";
 
 // The one module script every page loads. It isn't an island: docs pages ship no
 // hydrated component, so the theme toggle, copy buttons and the TOC highlight
@@ -70,7 +71,7 @@ function setupGallery() {
       if (!target || !name || event.metaKey || event.ctrlKey || event.shiftKey) return;
       event.preventDefault();
       window.__decksPick = name;
-      window.dispatchEvent(new CustomEvent("decks:pick", { detail: name }));
+      window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: name }));
       const smooth = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
       target.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
       target.focus({ preventScroll: true });

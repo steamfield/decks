@@ -2,6 +2,7 @@
 // and the gallery. Built at build time by src/data/examples.ts from the registry
 // (src/data/examples.json), the deck's own files and the fixtures `make demo`
 // and the generators in scripts/ write.
+import { runMinutes } from "./format";
 
 /** One step as the deck reported it while `make demo` walked it. */
 export type ExampleState = {
@@ -107,7 +108,6 @@ export function draftLine(run: RunSummary, edits: Edits | null): string {
     run.setup === "init"
       ? "in a fresh project set up with decks init"
       : "with this repository's agent setup";
-  const minutes = Math.round(Number(run.minutes));
   const edit = edits ? `, then ${editedBy(edits.by)} (${editSize(edits)})` : "";
-  return `Drafted in ${minutes} minutes from this prompt ${where}${edit}.`;
+  return `Drafted in ${runMinutes(run.minutes)} from this prompt ${where}${edit}.`;
 }

@@ -86,9 +86,10 @@
       "calls": [
         "Bash(bunx -p slidev-addon-decks decks check)",
         "Bash(bunx -p slidev-addon-decks decks lint keeling)",
-        "Bash(bunx -p slidev-addon-decks decks build keeling)"
+        "Bash(bunx -p slidev-addon-decks decks build keeling)",
+        "Bash(bunx -p slidev-addon-decks decks fact-extract keeling)"
       ],
-      "note": "Checks, lints and builds again after the fixes.",
+      "note": "Checks, lints and builds again after the fixes, then lists every figure for the fact-check.",
       "output": "✓ built in 840ms"
     }
   ]

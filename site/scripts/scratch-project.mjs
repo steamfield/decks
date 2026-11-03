@@ -11,8 +11,12 @@ import { join, resolve } from "node:path";
 // dist/, import.meta paths no longer point here.
 const PACKAGE = resolve(process.cwd(), "../packages/decks");
 export const CLI = join(PACKAGE, "scripts/deck.mjs");
-/** The commands, as the page prints them. */
-export const SETUP_COMMANDS = ["decks init", "decks new my-talk --story"];
+/** What init and new are called with, in order. */
+const SETUP_ARGS = [["init"], ["new", "my-talk", "--story"]];
+/** The same commands as the page prints them: pinned, since the bare `decks` on npm is another package. */
+export const SETUP_COMMANDS = SETUP_ARGS.map(
+  (args) => `bunx -p slidev-addon-decks decks ${args.join(" ")}`,
+);
 
 function decks(cwd, args) {
   const result = spawnSync("node", [CLI, ...args], { cwd, encoding: "utf8" });
@@ -34,7 +38,7 @@ export function withScratchProject(fn) {
   try {
     mkdirSync(join(dir, "node_modules"));
     symlinkSync(PACKAGE, join(dir, "node_modules/slidev-addon-decks"), "dir");
-    for (const command of SETUP_COMMANDS) decks(dir, command.split(" ").slice(1));
+    for (const args of SETUP_ARGS) decks(dir, args);
     return fn(dir);
   } finally {
     rmSync(dir, { recursive: true, force: true });

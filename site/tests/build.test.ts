@@ -14,10 +14,12 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Window } from "happy-dom";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
 import { ENTRIES, loadExamples } from "../src/data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../src/data/fixtures";
+import { runMinutes } from "../src/lib/player/format";
 
 const parser = new new Window().DOMParser();
 const read = (root: string, path: string) => readFileSync(join(root, path), "utf8");
@@ -153,7 +155,7 @@ describe("the whole site", () => {
     const hero = ENTRIES[0];
     if (hero?.run) {
       const run = runFigures(loadRun(hero.run.fixture));
-      expect(text).toContain(`${run.turns} turns, ${run.minutes} minutes, ${run.cost}`);
+      expect(text).toContain(`${run.turns} turns, ${runMinutes(run.minutes)}, ${run.cost}`);
     }
     for (const rule of loadHookDenial().rules) expect(text).toContain(rule);
     if (site.announcement) expect(text).toContain(site.announcement.label);
@@ -182,6 +184,12 @@ describe("the whole site", () => {
       .flatMap((value) => value.split(",").map((candidate) => candidate.trim().split(/\s+/)[0]));
     expect(sources.length).toBeGreaterThan(0);
     for (const src of sources) expect(src).toMatch(/^\/(posters|stills|loops|og)\//);
+    // The loop's <video> and a picked deck's poster render only after hydration, so
+    // check where the player takes them from.
+    for (const example of loadExamples()) {
+      if (example.poster) expect(example.poster.base, example.name).toMatch(/^\/posters\//);
+      if (example.loop) expect(example.loop.base, example.name).toMatch(/^\/loops\//);
+    }
     const og = home.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? "";
     expect(new URL(og).pathname).toMatch(/^\/og\//);
   });
@@ -194,8 +202,15 @@ describe("the whole site", () => {
     for (const block of home.body.querySelectorAll("p, h1, h2, h3, li, dt, dd, figcaption, a")) {
       block.append("\n");
     }
-    const strings = (home.body.textContent ?? "")
-      .split("\n")
+    // Text a screen reader or a tooltip shows, which textContent leaves out.
+    const attributes = [...home.querySelectorAll("[alt], [aria-label], [title]")].flatMap(
+      (element) => ["alt", "aria-label", "title"].map((name) => element.getAttribute(name) ?? ""),
+    );
+    const strings = [
+      ...(home.body.textContent ?? "").split("\n"),
+      ...attributes,
+      ...playerStrings(),
+    ]
       .map((line) => line.replace(/\s+/g, " ").trim())
       .filter(Boolean);
     expect(strings.length).toBeGreaterThan(20);
@@ -218,6 +233,34 @@ describe("the whole site", () => {
     );
   });
 });
+
+/**
+ * The player's own strings: its string and template literals and JSX text. Most
+ * show only after hydration or in another state (Pause, the give-up message), so
+ * the built page alone doesn't have them.
+ */
+function playerStrings(): string[] {
+  const path = "src/components/landing/DeckPlayer.tsx";
+  const source = ts.createSourceFile(path, readFileSync(path, "utf8"), ts.ScriptTarget.Latest);
+  const found: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isImportDeclaration(node)) return;
+    if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateHead(node) ||
+      ts.isTemplateMiddle(node) ||
+      ts.isTemplateTail(node) ||
+      ts.isJsxText(node)
+    ) {
+      found.push(node.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  // Prose only: at least two words, which leaves out class names, keys and paths.
+  return found.filter((text) => /[A-Za-z]+\s+[A-Za-z]+/.test(text));
+}
 
 describe("adding a docs page", () => {
   it("is one file: navigation, pager, exports and sitemap pick it up", () => {

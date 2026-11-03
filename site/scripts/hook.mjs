@@ -11,7 +11,6 @@ import { withScratchProject } from "./scratch-project.mjs";
 
 export const PLANTED = '<p class="od-lede">At its core, the tide is a game-changer.</p>';
 export const TARGET = "decks/my-talk/pages/01-cover.md";
-export const HOOK = ".claude/hooks/decks.sh hook lint";
 
 export function runHook() {
   return withScratchProject((dir) => {
@@ -33,7 +32,7 @@ export function runHook() {
       "stdin:$1",
     );
     return {
-      hook: HOOK,
+      hook: command,
       tool: "Write",
       file: TARGET,
       line: PLANTED,

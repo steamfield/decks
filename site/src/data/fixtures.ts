@@ -1,5 +1,5 @@
 // Build-time loaders for the recorded fixtures the landing page quotes. The run
-// comes from a real stream-json log (scripts/excerpt-smoke.mjs); the hook panel
+// comes from a real stream-json log (scripts/excerpt-run.mjs); the hook panel
 // is the package's hook answering a planted line (scripts/capture-hook.mjs).
 // src/content-drift.test.ts checks both.
 import { readFileSync } from "node:fs";

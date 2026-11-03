@@ -280,8 +280,10 @@ async function loopVideo(browser, port, name, { startSlide, startBeat, states })
   rmSync(raw, { recursive: true, force: true });
   const size = { width: LOOP.width, height: LOOP.height };
   const context = await browser.newContext({ viewport: size, recordVideo: { dir: raw, size } });
-  const page = await context.newPage();
+  // Playwright starts the page's video when it creates the page, so the clock starts
+  // just before: a mark can only come out a few milliseconds late, never early.
   const began = Date.now();
+  const page = await context.newPage();
   const now = () => (Date.now() - began) / 1000;
   await page.goto(`http://localhost:${port}/__harness.html`);
   const query = startBeat ? `?clicks=${startBeat}` : "";

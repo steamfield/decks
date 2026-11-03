@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { announcement, counterText, dwellMs, mirrorCopy, stepsOf } from "./format";
+import {
+  announcement,
+  counterText,
+  dwellMs,
+  loopMoves,
+  mirrorCopy,
+  runMinutes,
+  stepsOf,
+} from "./format";
 import type { DeckState } from "./protocol";
 
 const state: DeckState = {
@@ -48,5 +56,21 @@ describe("player readouts", () => {
     expect(dwellMs({ lead: "", body: "" })).toBe(3000);
     expect(dwellMs({ lead: "One two three four five six", body: "" })).toBe(3600);
     expect(dwellMs({ lead: "word ".repeat(80), body: "" })).toBe(9000);
+  });
+
+  it("rounds a run's duration to whole minutes", () => {
+    expect(runMinutes("16.8")).toBe("17 minutes");
+    expect(runMinutes(8.3)).toBe("8 minutes");
+    expect(runMinutes("1.2")).toBe("1 minute");
+  });
+
+  it("describes a loop's moves from its marks", () => {
+    const at = (slide: number, beat: number) => ({ slide, beat });
+    expect(loopMoves([at(5, 1), at(5, 0), at(4, 2), at(4, 1), at(4, 2), at(5, 0), at(5, 1)])).toBe(
+      "3 steps back, then 3 steps forward",
+    );
+    expect(loopMoves([at(2, 0), at(2, 1), at(3, 0), at(2, 2)])).toBe(
+      "2 steps forward, then 1 step back",
+    );
   });
 });

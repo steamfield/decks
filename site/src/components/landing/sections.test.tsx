@@ -97,7 +97,7 @@ describe("landing sections", () => {
     render(<Transcript run={run} deck="the tides deck" />);
     const figure = screen.getByRole("figure");
     expect(figure).toHaveTextContent("The run that drafted the tides deck, abbreviated");
-    expect(figure).toHaveTextContent("87 turns, 8.3 minutes, $3.17. 3 of 85 tool calls shown.");
+    expect(figure).toHaveTextContent("87 turns, 8 minutes, $3.17. 3 of 85 tool calls shown.");
     expect(figure).toHaveTextContent('claude -p "make a deck"');
     expect(within(figure).getAllByRole("listitem")).toHaveLength(3);
   });

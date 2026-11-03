@@ -37,7 +37,9 @@ const lines = (count) => (count === "-" ? 0 : Number(count));
  */
 export function computeEdits(name, edits) {
   const path = `examples/${name}`;
-  const ranges = edits.commits ? edits.commits.map((sha) => [`${sha}^`, sha]) : [[edits.from, edits.to]];
+  const ranges = edits.commits
+    ? edits.commits.map((sha) => [`${sha}^`, sha])
+    : [[edits.from, edits.to]];
   const stat = ranges.flatMap(([from, to]) =>
     git(["diff", "--numstat", from, to, "--", path])
       .trim()
@@ -49,7 +51,9 @@ export function computeEdits(name, edits) {
   const deletions = stat.reduce((sum, [, removed]) => sum + lines(removed), 0);
   const pairs = [];
   let file = "";
-  const hunks = ranges.flatMap(([from, to]) => git(["diff", "-U0", from, to, "--", path]).split("\n"));
+  const hunks = ranges.flatMap(([from, to]) =>
+    git(["diff", "-U0", from, to, "--", path]).split("\n"),
+  );
   for (let i = 0; i < hunks.length; i++) {
     const line = hunks[i] ?? "";
     if (line.startsWith("+++ b/")) file = line.slice(`+++ b/${path}/`.length);

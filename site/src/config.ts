@@ -13,22 +13,29 @@ export type Comparison = { topic: string; vclick: string; decks: string };
 export type Requirement = { label: string; text: string };
 
 const repo = "https://github.com/steamfield/decks";
-/** Every decks command runs through the package: the bare `decks` on npm is unrelated. */
-const run = (runner: "bunx" | "npx", args: string) =>
-  `${runner} -p slidev-addon-decks decks ${args}`;
+/**
+ * Every decks command runs through the package: the bare `decks` on npm is
+ * unrelated. bunx and npx pin it with -p; pnpm has no -p, so `pnpm exec` runs
+ * the bin the `pnpm add` line above it installed.
+ */
+const run = (runner: "bunx" | "npx" | "pnpm", args: string) =>
+  runner === "pnpm" ? `pnpm exec decks ${args}` : `${runner} -p slidev-addon-decks decks ${args}`;
 const peers = "slidev-addon-decks @slidev/cli slidev-theme-the-unnamed";
 
-/** The package's version, read from packages/decks/package.json at build time. */
-function packageVersion(): string {
+/** packages/decks/package.json, read at build time. */
+function packageJson(): { version?: string; license?: string } {
   try {
     // Builds and tests run from site/; import.meta.url points into dist/ once bundled.
-    const pkg = readFileSync(join(process.cwd(), "..", "packages/decks/package.json"), "utf8");
-    return (JSON.parse(pkg) as { version?: string }).version ?? "";
+    return JSON.parse(
+      readFileSync(join(process.cwd(), "..", "packages/decks/package.json"), "utf8"),
+    );
   } catch {
-    // Built outside the decks repository: hide the version.
-    return "";
+    // Built outside the decks repository: hide the version and the license.
+    return {};
   }
 }
+const pkg = packageJson();
+const license = pkg.license ?? "";
 
 export const site = {
   name: "Decks",
@@ -44,12 +51,12 @@ export const site = {
   url: "https://decks.steamfield.io",
   repo,
   /** Current release, shown in the header. Empty hides it. */
-  version: packageVersion(),
+  version: pkg.version ?? "",
   announcement: null as Link | null,
   /** The hero's install block: three lines, one copy button. */
   quickstart: [`bun add ${peers}`, run("bunx", "init"), run("bunx", "new my-talk --story")],
   /** Shown under the hero's install block. */
-  price: "Free, Apache-2.0",
+  price: license ? `Free, ${license}` : "Free",
   install: [
     {
       label: "bun",
@@ -63,7 +70,7 @@ export const site = {
     },
     {
       label: "pnpm",
-      command: [`pnpm add ${peers}`, run("npx", "init"), run("npx", "new my-talk --story")].join(
+      command: [`pnpm add ${peers}`, run("pnpm", "init"), run("pnpm", "new my-talk --story")].join(
         "\n",
       ),
     },
@@ -167,7 +174,8 @@ export const site = {
   ] as FooterColumn[],
   social: [{ label: "GitHub", href: repo }] as Link[],
   releasesUrl: `${repo}/blob/main/CHANGELOG.md`,
-  license: "Apache-2.0",
+  /** From the package's package.json. */
+  license,
   /** Components that hydrate on the landing page. The build test fails on any other island. */
   islands: ["DeckPlayer", "InstallTabs"],
 };

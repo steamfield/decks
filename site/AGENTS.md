@@ -64,9 +64,9 @@ Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` bloc
 
 - Copy is literal: say what the product does. Section headings are topic labels, not questions. No slogans, no "not X but Y", no em dashes. The landing unit is a "step"; "beat" is defined in the docs. `make build` runs the package's prose lint over the landing text (R6); mark a quoted bad example with `data-lint-skip`.
 - Every number on the page comes from a generated fixture or the repository, and `src/content-drift.test.ts` checks it. Never type a figure, a transcript line or a slide title by hand: re-run the generator. Every landing image comes from `public/posters/`, `stills/`, `loops/` or `og/` (R3, build test), and each example says how it was made.
-- Every shown `decks` command pins the package: `bunx -p slidev-addon-decks decks …`. The bare `decks` on npm is unrelated.
+- Every shown `decks` command pins the package: `bunx -p slidev-addon-decks decks …` (pnpm, which has no `-p`, uses `pnpm exec decks …` after its `pnpm add`). The bare `decks` on npm is unrelated.
 - The landing page is dark only and takes its colors from the product theme; docs keep light and dark. No textures, glows or extra display faces: Inter and JetBrains Mono only. `src/styles/tokens.test.ts` checks contrast.
-- The player fits the first viewport (R1: fully at 1440x900, 80% at 1280x800) and is the widest element; wide blocks stop at `--player-width`. The caption is page text at body size at every width (R2). Both are e2e checks.
+- The player fits the first viewport (R1: fully at 1440x900, 80% at 1280x800) and its deck frame is the widest element: from 768px the sections below are centered at the frame's width. The caption is page text at body size at every width (R2). Both are e2e checks.
 - Motion: only the hero loop and the live deck move. The loop is muted, plays only under `prefers-reduced-motion: no-preference` and is the poster otherwise. Page weight before interaction stays at or under 350 KB at 1440, loop included (e2e).
 - Islands: `DeckPlayer` (`client:visible`) and `InstallTabs` (`client:idle`). Each server-renders a useful state: posters, deck text and links without JavaScript.
 - The embed contract's deck side is in the addon (`bun run test:embed` at the repo root). `beats` is the last beat index, so a slide has `beats + 1` steps.

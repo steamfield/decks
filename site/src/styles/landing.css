@@ -146,7 +146,7 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border: 1px solid var(--color-frame-edge);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
   background: var(--color-frame);
 }
 
@@ -291,10 +291,6 @@
     height: 44px;
   }
 
-  .page-column {
-    --band: 8px;
-  }
-
   .controls {
     justify-content: space-between;
   }
@@ -327,11 +323,14 @@
   width: min(100%, calc((100vh - 15rem) * 16 / 9));
 }
 
+/* Inset by the band and border, so the notes line up with the deck frame's edges
+   and never run wider than it (R1). */
 .player-notes {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.75rem;
+  padding-inline: calc(var(--band) + 1px);
   color: var(--color-ink-2);
   font-size: 0.875rem;
   line-height: 1.5;
@@ -569,11 +568,18 @@
   }
 }
 
-.landing-section .page-column > *,
-.gallery,
-.agent-grid,
-.themes-grid {
-  max-width: var(--player-width);
+/* From 768px each section's column is as wide as the deck frame inside the
+   player (its width less the band and border on each side) and centered like it,
+   so blocks line up with the frame's edges and the frame stays the widest thing
+   on the page (R1). 4rem is the column's inline padding (2rem a side). */
+@media (min-width: 768px) {
+  .landing-section > .page-column {
+    --frame-inset: calc(2 * var(--band) + 2px);
+    max-width: min(
+      calc(1200px - var(--frame-inset)),
+      calc(var(--player-width) - var(--frame-inset) + 4rem)
+    );
+  }
 }
 
 .gallery {

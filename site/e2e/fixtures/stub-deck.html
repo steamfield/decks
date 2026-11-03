@@ -37,7 +37,8 @@
       window.__stubCommands = [];
       const post = (message) => window.parent.postMessage(message, location.origin);
       const state = (settled, direction) => {
-        const card = SLIDES[slide - 1].beats[beat];
+        // A test can route this page in with window.STUB_CARD set: every step then shows that card.
+        const card = window.STUB_CARD ?? SLIDES[slide - 1].beats[beat];
         document.getElementById("where").textContent = `slide ${slide} beat ${beat}`;
         post({ type: "decks:state", slide, slides: SLIDES.length, beat, beats: SLIDES[slide - 1].beats.length - 1, lead: card.lead, body: card.body, settled, direction });
       };

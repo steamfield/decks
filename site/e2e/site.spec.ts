@@ -135,11 +135,30 @@ const stubStep = (slide: number, beat: number) =>
 const startSlide = hero?.startSlide ?? 2;
 const startBeat = hero?.startBeat ?? 0;
 
-async function withStubDecks(page: Page) {
+/** Routes the stub in for every deck; with `card`, every step of it shows that card. */
+async function withStubDecks(page: Page, card?: { lead: string; body: string }) {
+  const body = card
+    ? stub.replace(
+        "<script>",
+        `<script>window.STUB_CARD = ${JSON.stringify(card)};</script>\n<script>`,
+      )
+    : stub;
   await page.route("**/demo/*/index.html*", (route) =>
-    route.fulfill({ contentType: "text/html", body: stub }),
+    route.fulfill({ contentType: "text/html", body }),
   );
 }
+
+/** The stub's lead at a step: a story slide's card, else the slide's title. */
+const stubLead = (slide: number, beat: number) =>
+  slide === 1 ? "Stub cover" : slide === STUB_SLIDES ? "Stub closing slide" : STUB_LEADS[beat];
+/** Every step of the stub from slide 2 on, in order. */
+const STUB_WALK = [2, 3, 4, 5].flatMap((slide) => [0, 1, 2].map((beat) => ({ slide, beat })));
+STUB_WALK.push({ slide: STUB_SLIDES, beat: 0 }, { slide: STUB_SLIDES, beat: 1 });
+
+/** The hero's longest recorded caption, lead and body together. */
+const longest = [...(hero?.states ?? [])].sort(
+  (a, b) => b.lead.length + b.body.length - (a.lead.length + a.body.length),
+)[0];
 
 const live = (page: Page) => page.locator("[aria-live=polite]");
 const player = (page: Page) => page.locator("[data-player]");
@@ -207,19 +226,35 @@ test.describe("the deck player", () => {
 test.describe("the hero loop", () => {
   test.skip(!hero?.loop, "the hero has no loop yet: the poster stands in");
 
-  test("plays muted under no-preference and hands over to the live deck", async ({ page }) => {
+  test("plays muted under no-preference and hands over to the live deck at the loop's step", async ({
+    page,
+  }) => {
     await withStubDecks(page);
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto("/");
     const video = page.locator(".player video");
     await expect(video).toHaveJSProperty("muted", true);
     await expect(page.locator("iframe")).toHaveCount(0);
-    await page.getByRole("button", { name: "Step forward" }).click();
-    await expect(video).toHaveCount(0);
-    await expect(page.locator("iframe")).toHaveAttribute("src", /\/demo\/[\w-]+\/index\.html#\//);
-    await expect(live(page)).toHaveText(
-      new RegExp(`^Slide \\d of ${STUB_SLIDES}, step \\d of \\d\\.`),
+    // A mark away from the start step, so landing there can't be a coincidence.
+    const mark = hero?.loop?.marks.find((m) => m.slide !== startSlide || m.beat !== startBeat);
+    if (!mark) throw new Error("the hero loop has no mark away from its start step");
+    // Pause the loop (nothing loads), seek it to the mark, then Play loads the live deck there.
+    await page.getByRole("button", { name: "Pause" }).click();
+    await expect(page.locator("iframe")).toHaveCount(0);
+    await video.evaluate((element: HTMLVideoElement, t) => {
+      element.currentTime = t;
+    }, mark.t + 0.3);
+    await expect(lead(page)).toHaveText(
+      hero?.states.find((s) => s.slide === mark.slide && s.beat === mark.beat)?.lead ?? "",
     );
+    await page.getByRole("button", { name: "Play" }).click();
+    await expect(video).toHaveCount(0);
+    const query = mark.beat ? `\\?clicks=${mark.beat}` : "";
+    await expect(page.locator("iframe")).toHaveAttribute(
+      "src",
+      new RegExp(`/demo/${hero?.name}/index\\.html#/${mark.slide}${query}$`),
+    );
+    await expect(live(page)).toHaveText(stubStep(mark.slide, mark.beat));
   });
 
   test("shows the poster under reduced motion", async ({ page }) => {
@@ -247,11 +282,11 @@ async function playerGeometry(page: Page) {
   });
 }
 
-/** Content blocks outside the player that are wider than it. */
+/** Content blocks outside the player that are wider than the deck frame inside it. */
 function widerThanPlayer(page: Page) {
   return page.evaluate(() => {
     const player = document.querySelector("[data-player]");
-    const width = player?.getBoundingClientRect().width ?? 0;
+    const width = document.querySelector(".player-canvas")?.getBoundingClientRect().width ?? 0;
     const blocks = document.querySelectorAll(
       "main :is(p, h1, h2, h3, pre, figure, img, video, ul, ol, table, dl, [data-block])",
     );
@@ -297,7 +332,48 @@ test.describe("R1: the player is in the first viewport", () => {
       expect(await widerThanPlayer(page)).toEqual([]);
     });
   }
+
+  // The stub's one-line captions are the easy case: the caption bar grows with the
+  // text, so check the hero's longest recorded caption too.
+  test.describe("with the hero's longest caption", () => {
+    test.skip(!longest, "the hero has no recording yet");
+    const card = { lead: longest?.lead ?? "", body: longest?.body ?? "" };
+    const boot = async (page: Page, width: number, height: number) => {
+      await withStubDecks(page, card);
+      await page.setViewportSize({ width, height });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.goto("/");
+      await page.getByRole("button", { name: "Step forward" }).click();
+      await expect(player(page)).toHaveAttribute("data-phase", "ready");
+      await expect(lead(page)).toHaveText(card.lead);
+    };
+
+    test("at 1440x900 the player still ends inside the viewport", async ({ page }) => {
+      await boot(page, 1440, 900);
+      const geometry = await playerGeometry(page);
+      expect(geometry.top).toBeGreaterThanOrEqual(0);
+      expect(geometry.bottom).toBeLessThanOrEqual(900);
+    });
+
+    test("at 1280x800 the player is still 80% visible, frame top above 40%", async ({ page }) => {
+      await boot(page, 1280, 800);
+      const geometry = await playerGeometry(page);
+      expect(geometry.visible).toBeGreaterThanOrEqual(0.8);
+      expect(geometry.frameTop).toBeLessThan(800 * 0.4);
+    });
+  });
 });
+
+/** The caption's lead and body are at least body size (16px). */
+async function expectBodySize(page: Page) {
+  for (const text of [lead(page), page.locator(".caption-body")]) {
+    if ((await text.count()) === 0) continue;
+    const size = await text.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    );
+    expect(size).toBeGreaterThanOrEqual(16);
+  }
+}
 
 test.describe("R2: the caption is page text at body size", () => {
   for (const [width, height] of [
@@ -311,20 +387,44 @@ test.describe("R2: the caption is page text at body size", () => {
       await page.setViewportSize({ width, height });
       await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto("/");
-      const caption = page.locator(".player-caption");
-      await expect(caption).toBeVisible();
-      for (const text of [lead(page), page.locator(".caption-body")]) {
-        if ((await text.count()) === 0) continue;
-        const size = await text.evaluate((element) =>
-          Number.parseFloat(getComputedStyle(element).fontSize),
-        );
-        expect(size).toBeGreaterThanOrEqual(16);
+      await expect(page.locator(".player-caption")).toBeVisible();
+      await expectBodySize(page);
+      expect((await lead(page).textContent())?.trim()).not.toBe("");
+      // Back to the first story slide, then forward through every step of the stub.
+      for (let slide = startSlide; slide > 2; slide--) {
+        await page.getByRole("button", { name: "Slide back" }).click();
+        await expect(live(page)).toHaveText(stubStep(slide - 1, 0));
       }
-      const before = await lead(page).textContent();
-      expect(before?.trim()).not.toBe("");
-      await page.getByRole("button", { name: "Step forward" }).click();
-      await expect(lead(page)).not.toHaveText(before ?? "");
-      await expect(live(page)).toContainText(/step \d of \d/);
+      let previous = "";
+      for (const [index, at] of STUB_WALK.entries()) {
+        if (index > 0) await page.getByRole("button", { name: "Step forward" }).click();
+        const steps = at.slide === STUB_SLIDES ? 2 : 3;
+        const words = stubLead(at.slide, at.beat) ?? "";
+        await expect(live(page)).toHaveText(
+          `Slide ${at.slide} of ${STUB_SLIDES}, step ${at.beat + 1} of ${steps}. ${words}`,
+        );
+        await expect(lead(page)).toHaveText(words);
+        // The closing slide's two steps share its title; every other step changes the lead.
+        if (words !== previous) await expect(lead(page)).not.toHaveText(previous);
+        previous = words;
+      }
+      await expectBodySize(page);
+    });
+
+    test(`at ${width}px the loop's caption is body size and follows the video`, async ({
+      page,
+    }) => {
+      test.skip(!hero?.loop, "the hero has no loop yet");
+      await page.setViewportSize({ width, height });
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.goto("/");
+      await expect(page.locator(".player video")).toHaveCount(1);
+      await expectBodySize(page);
+      const before = (await lead(page).textContent()) ?? "";
+      expect(before.trim()).not.toBe("");
+      // The second mark comes a few seconds in.
+      await expect(lead(page)).not.toHaveText(before, { timeout: 15_000 });
+      await expectBodySize(page);
     });
   }
 });
@@ -346,22 +446,55 @@ test("at 360px the controls are 44px and nothing scrolls sideways", async ({ pag
 test("the page weighs 350 KB or less before interaction at 1440", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  const sizes = new Map<string, number>();
-  page.on("response", async (response) => {
-    try {
-      const body = await response.body();
-      const type = response.headers()["content-type"] ?? "";
-      // A static host compresses text; images and video go over as they are.
-      const text = /text|javascript|json|svg|xml/.test(type);
-      sizes.set(response.url(), text ? gzipSync(body).length : body.length);
-    } catch {
-      // Redirects and aborted range requests have no body.
-    }
+  // Every request through the DevTools protocol, so the loop's range requests,
+  // which have no body Playwright can read, are counted by the bytes that arrived.
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Network.enable");
+  type Request = { url: string; mime: string; bytes: number; done: boolean };
+  const requests = new Map<string, Request>();
+  cdp.on("Network.requestWillBeSent", ({ requestId, request }) => {
+    requests.set(requestId, { url: request.url, mime: "", bytes: 0, done: false });
+  });
+  cdp.on("Network.responseReceived", ({ requestId, response }) => {
+    const request = requests.get(requestId);
+    if (request) request.mime = response.mimeType;
+  });
+  cdp.on("Network.dataReceived", ({ requestId, encodedDataLength }) => {
+    const request = requests.get(requestId);
+    if (request) request.bytes += encodedDataLength;
+  });
+  const finished = new Map<string, number>();
+  cdp.on("Network.loadingFinished", ({ requestId, encodedDataLength }) => {
+    finished.set(requestId, encodedDataLength);
+    const request = requests.get(requestId);
+    if (request) request.done = true;
+  });
+  cdp.on("Network.loadingFailed", ({ requestId }) => {
+    // An aborted range request: what arrived before the abort is in its dataReceived bytes.
+    const request = requests.get(requestId);
+    if (request) request.done = true;
   });
   await page.goto("/", { waitUntil: "networkidle" });
   // Let the loop (if any) finish loading.
   await page.waitForLoadState("networkidle");
-  const total = [...sizes.values()].reduce((sum, size) => sum + size, 0);
-  const report = [...sizes].map(([url, size]) => `${Math.round(size / 1000)} KB ${url}`).join("\n");
+  const sizes: [string, number][] = [];
+  for (const [id, request] of requests) {
+    if (request.url.startsWith("data:")) continue;
+    expect(request.done, `still loading, so unmeasured: ${request.url}`).toBe(true);
+    // A static host compresses text, and the preview server doesn't, so text is
+    // counted gzipped from its body; images and video go over as they are.
+    if (/text|javascript|json|svg|xml/.test(request.mime) && finished.has(id)) {
+      const { body, base64Encoded } = await cdp.send("Network.getResponseBody", { requestId: id });
+      sizes.push([
+        request.url,
+        gzipSync(Buffer.from(body, base64Encoded ? "base64" : "utf8")).length,
+      ]);
+    } else {
+      sizes.push([request.url, finished.get(id) ?? request.bytes]);
+    }
+  }
+  expect(sizes.length).toBeGreaterThan(0);
+  const total = sizes.reduce((sum, [, size]) => sum + size, 0);
+  const report = sizes.map(([url, size]) => `${Math.round(size / 1000)} KB ${url}`).join("\n");
   expect(total, report).toBeLessThanOrEqual(350_000);
 });

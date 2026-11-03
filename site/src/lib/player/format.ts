@@ -42,3 +42,31 @@ export function dwellMs(mirror: Mirror): number {
   const count = words(mirror.lead) + words(mirror.body);
   return Math.min(9000, Math.max(3000, 1800 + count * 300));
 }
+
+/**
+ * A recorded run's duration as every line on the page shows it: whole minutes,
+ * "17 minutes" for 16.8. The title bar, the draft line, the transcript and the
+ * install line all go through this, so they agree.
+ */
+export function runMinutes(minutes: string | number): string {
+  const whole = Math.round(Number(minutes));
+  return `${whole} ${whole === 1 ? "minute" : "minutes"}`;
+}
+
+type Step = { slide: number; beat: number };
+
+/** "3 steps back, then 3 steps forward": the moves between a loop's marks, in order. */
+export function loopMoves(marks: Step[]): string {
+  const runs: { way: "forward" | "back"; count: number }[] = [];
+  marks.slice(1).forEach((mark, i) => {
+    const prev = marks[i] as Step;
+    const ahead = mark.slide > prev.slide || (mark.slide === prev.slide && mark.beat > prev.beat);
+    const way = ahead ? "forward" : "back";
+    const last = runs.at(-1);
+    if (last?.way === way) last.count++;
+    else runs.push({ way, count: 1 });
+  });
+  return runs
+    .map(({ way, count }) => `${count} ${count === 1 ? "step" : "steps"} ${way}`)
+    .join(", then ");
+}

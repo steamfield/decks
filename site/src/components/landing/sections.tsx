@@ -7,6 +7,7 @@ import type { AgentRun, HookDenial } from "../../data/fixtures";
 import { runFigures } from "../../data/fixtures";
 import { treeLines } from "../../lib/file-tree";
 import type { Example } from "../../lib/player/example";
+import { runMinutes } from "../../lib/player/format";
 
 export function ReleaseBanner({ announcement }: { announcement: Link | null }) {
   if (!announcement) return null;
@@ -143,7 +144,7 @@ export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
       <figcaption>
         <span className="text-ink font-medium">The run that drafted {deck}, abbreviated</span>
         <span className="text-muted">
-          {figures.turns} turns, {figures.minutes} minutes, {figures.cost}. {run.shownCalls} of{" "}
+          {figures.turns} turns, {runMinutes(figures.minutes)}, {figures.cost}. {run.shownCalls} of{" "}
           {run.toolCalls} tool calls shown.
         </span>
       </figcaption>
@@ -154,8 +155,12 @@ export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
           </span>
           claude -p "{run.prompt}"
         </li>
-        {run.steps.map((step) => (
-          <li key={step.calls.join()} className="transcript-step">
+        {run.steps.map((step, index) => (
+          <li
+            // biome-ignore lint/suspicious/noArrayIndexKey: two steps can show the same commands (a check round run twice), and steps never reorder.
+            key={`${index}-${step.calls.join()}`}
+            className="transcript-step"
+          >
             <div className="min-w-0">
               {step.calls.map((call) => (
                 <p key={call} className="text-ink break-words">

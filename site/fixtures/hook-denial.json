@@ -1,5 +1,5 @@
 {
-  "hook": ".claude/hooks/decks.sh hook lint",
+  "hook": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/decks.sh\" hook lint",
   "tool": "Write",
   "file": "decks/my-talk/pages/01-cover.md",
   "line": "<p class=\"od-lede\">At its core, the tide is a game-changer.</p>",
