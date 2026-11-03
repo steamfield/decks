@@ -3,78 +3,76 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Code } from "astro:components";
 import CopyBlock from "../components/CopyBlock.astro";
-import TypeSwitch from "../components/TypeSwitch.astro";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
 import {
   CompareTable,
   DeckProse,
-  FitLists,
+  ExampleGallery,
+  FileTree,
   Hero,
   HookPanel,
-  JCard,
   ReleaseBanner,
   Requirements,
   Section,
   Transcript,
 } from "../components/landing/sections";
 import { site } from "../config";
-import { loadHookDenial, loadSmokeRun } from "../data/fixtures";
-import { loadTapes } from "../data/tapes";
+import { ENTRIES, loadExamples } from "../data/examples";
+import { loadHookDenial, loadRun } from "../data/fixtures";
+import { loadProjectFiles, setupCommands } from "../data/project";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { Events } from "../lib/events";
 
-const tapes = loadTapes();
-const [tides] = tapes;
-const run = loadSmokeRun();
+const examples = loadExamples();
+const [hero] = examples;
+const heroRun = ENTRIES[0]?.run ? loadRun(ENTRIES[0].run.fixture) : null;
 const denial = loadHookDenial();
+const files = loadProjectFiles();
 const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
 const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-default" } as const;
+const stills = (name: string) => ({
+  avif: `/stills/tides-${name}-640.avif 640w, /stills/tides-${name}-1280.avif 1280w`,
+  webp: `/stills/tides-${name}-640.webp 640w, /stills/tides-${name}-1280.webp 1280w`,
+  src: `/stills/tides-${name}-1280.webp`,
+});
 ---
 
-<BaseLayout title={site.tagline} path="/">
+<BaseLayout title={site.tagline} path="/" landing>
   <ReleaseBanner slot="banner" announcement={site.announcement} />
 
-  <section aria-labelledby="hero-title" class="hero-room">
-    <div class="mx-auto flex max-w-[1200px] flex-col gap-10 px-4 pt-14 pb-16 sm:px-8 sm:pt-20">
-      <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:items-end">
-        <div id="hero-title">
-          <Hero tagline={site.tagline} description={site.description} />
-        </div>
-        <div class="flex flex-col gap-3">
-          <CopyBlock
-            lines={site.quickstart}
-            label="Copy both install commands"
-            track={Events.installCopied}
-            trackMethod="hero"
-          />
-          <p class="text-muted text-sm">
-            Run both lines together. The <code>decks</code> package on npm is unrelated, so{" "}
-            <code>bunx decks</code> only finds this one after the install.
-          </p>
-          <p class="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium">
-            <a href="/docs/getting-started/quickstart/">Read the docs</a>
-            <a href={site.repo}>GitHub</a>
-          </p>
-        </div>
+  <section aria-labelledby="hero-title" class="hero">
+    <div class="page-column hero-head">
+      <div id="hero-title">
+        <Hero tagline={site.tagline} description={site.description} />
       </div>
-      <DeckPlayer
-        client:visible
-        tapes={tapes}
-        changesHref={`${site.repo}/compare/97b8a6b...main`}
-      />
-      {tides && <DeckProse tape={tides} />}
+      <div class="hero-install">
+        <CopyBlock
+          lines={site.quickstart}
+          label="Copy the three install commands"
+          track={Events.installCopied}
+          trackMethod="hero"
+        />
+        <p class="text-muted text-sm">
+          {site.price}. <a href="#requirements">Requirements and limits</a> ·{" "}
+          <a href="/docs/getting-started/quickstart/">Docs</a>
+        </p>
+      </div>
     </div>
+    <div class="page-column">
+      <DeckPlayer client:visible examples={examples} />
+    </div>
+    {hero && <DeckProse example={hero} />}
   </section>
 
   <Section
-    id="fit"
+    id="requirements"
     title="Requirements and limits"
-    lede="Decks runs on Slidev with one base theme, slidev-theme-the-unnamed, and every slide is dark."
+    lede="Decks fits a talk that explains numbers one step at a time, built with Claude Code on Slidev."
   >
-    <FitLists yes={site.fit.yes} no={site.fit.no} />
-    <p class="text-ink-2 mt-6">
-      To use Decks in a deck you already have, see{" "}
+    <Requirements items={site.requirements} />
+    <p class="text-ink-2">
+      To use Decks in a Slidev deck you already have, see{" "}
       <a href="/docs/getting-started/add-decks-to-an-existing-deck/">
         Add Decks to an existing Slidev deck
       </a>
@@ -83,69 +81,120 @@ const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-def
   </Section>
 
   <Section
-    id="why"
-    title="Compared with v-click"
-    lede="Slidev's v-click shows or hides one element per click. A story slide redraws the whole chart from the current click count."
+    id="what-you-get"
+    title="What you get"
+    lede="The agent setup and a scaffolded story deck, as the commands write them into an empty project."
   >
-    <CompareTable rows={site.compare} />
-  </Section>
-
-  <Section
-    id="box"
-    title="What's included"
-    lede="Side A is the npm package. Side B is the repository, which adds screenshot tools, example decks and the Claude Code setup."
-  >
-    <JCard title={`Decks ${site.version}`} a={site.jcard.a} b={site.jcard.b} />
-  </Section>
-
-  <Section
-    id="theme"
-    title="Themes"
-    lede="Colors, fonts and cover branding come from one theme file. A deck's theme.json sets only the keys it lists, and the rest keep their defaults."
-  >
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] [&>*]:min-w-0">
-      <TypeSwitch />
-      <div class="flex min-w-0 flex-col gap-3">
-        <figure class="code-frame code-wrap">
-          <figcaption>theme.json (WARM)</figcaption>
-          <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
-        </figure>
-        <p class="text-muted text-sm">
-          This file changes the background colors and the two chart colors the tides deck uses. The
-          values come from the warm palette in the template deck.{" "}
-          <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
-        </p>
-      </div>
-    </div>
+    <FileTree files={files} notes={site.files} commands={setupCommands} />
+    <p class="text-ink-2 max-w-[44rem]">
+      Then ask Claude Code for the talk. To change it later, ask for a revision of one slide, run
+      the <code>fact-checking-a-deck</code> skill before you present, and keep{" "}
+      <code>{site.devCommand}</code> open to watch each edit land.
+    </p>
   </Section>
 
   <Section
     id="agent"
-    title="Writing decks with Claude Code"
-    lede="The agent setup is in the repository, not the npm package: an agent, two skills, writing rules and a lint hook. Clone the repository and run Claude Code from its root."
+    title="How the agent builds a deck"
+    lede="The agent loads the deck-building skill, reads the writing and data rules, fetches its sources, writes one data file and one stage per slide, then checks and builds the deck."
   >
-    <div class="flex flex-col gap-8">
-      <CopyBlock
-        lines={[site.clone, "cd decks", "bun install", "claude"]}
-        label="Copy the clone commands"
-      />
-      <Transcript run={run} />
+    <div class="agent-grid">
+      {heroRun && hero && <Transcript run={heroRun} deck={`the ${hero.name} deck`} />}
       <HookPanel denial={denial} />
-      <p class="text-ink-2">
-        <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> explains
-        each piece and how to run it.
+    </div>
+    <p class="text-ink-2">
+      <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> covers
+      each file and how to run it.
+    </p>
+  </Section>
+
+  <Section
+    id="examples"
+    title="Example decks"
+    lede="Pick one to load it into the player at the top of the page."
+  >
+    <ExampleGallery examples={examples} />
+    <div class="flex flex-col gap-3">
+      <h3 class="text-ink text-lg font-semibold">Compared with v-click</h3>
+      <p class="text-ink-2 max-w-[44rem]">
+        Slidev's v-click shows or hides one element per click. A story slide redraws the whole chart
+        from the current click count.
       </p>
+      <CompareTable rows={site.compare} />
     </div>
   </Section>
 
+  <Section
+    id="themes"
+    title="Themes"
+    lede="Colors, fonts and cover branding come from one theme file. A deck's theme.json sets only the keys it lists, and the rest keep their defaults."
+  >
+    <div class="themes-grid">
+      <figure class="still">
+        <picture>
+          <source
+            type="image/avif"
+            srcset={stills("normal").avif}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <source
+            type="image/webp"
+            srcset={stills("normal").webp}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <img
+            src={stills("normal").src}
+            width="1280"
+            height="720"
+            loading="lazy"
+            alt={`${hero?.title ?? "A story slide"} with the default theme`}
+          />
+        </picture>
+        <figcaption>Default theme</figcaption>
+      </figure>
+      <figure class="still">
+        <picture>
+          <source
+            type="image/avif"
+            srcset={stills("warm").avif}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <source
+            type="image/webp"
+            srcset={stills("warm").webp}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <img
+            src={stills("warm").src}
+            width="1280"
+            height="720"
+            loading="lazy"
+            alt="The same slide with the theme.json beside it"
+          />
+        </picture>
+        <figcaption>With this theme.json</figcaption>
+      </figure>
+      <figure class="code-frame code-wrap" data-block>
+        <figcaption>theme.json</figcaption>
+        <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
+      </figure>
+    </div>
+    <p class="text-muted max-w-[44rem] text-sm">
+      This file changes the background colors and the two chart colors the slide uses. The values
+      come from the warm palette in the template deck.{" "}
+      <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
+    </p>
+  </Section>
+
   <Section id="install" title="Install">
-    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
-      <div class="flex flex-col gap-4">
-        <InstallTabs client:idle options={site.install} />
-        <p class="text-ink-2 text-sm">Then start the dev server:</p>
-        <CopyBlock lines={site.afterInstall} label="Copy the dev command" />
-      </div>
-      <Requirements items={site.requirements} />
+    <div class="install-block" data-block>
+      <InstallTabs client:idle options={site.install} />
+      {heroRun && hero?.run && (
+        <p class="text-ink-2 text-sm">
+          A deck like the one above took {Math.round(Number(hero.run.minutes))} minutes and{" "}
+          {hero.run.cost} of Claude usage. Decks itself is free and {site.license} licensed.
+        </p>
+      )}
     </div>
   </Section>
 </BaseLayout>

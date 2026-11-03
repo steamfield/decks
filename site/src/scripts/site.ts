@@ -56,11 +56,24 @@ function setupCommandCopy() {
   }
 }
 
-/** The NORMAL/WARM switch works without JavaScript; this only records that it moved. */
-function setupThemeSwitch() {
-  for (const input of document.querySelectorAll<HTMLInputElement>("input[data-tape-type]")) {
-    input.addEventListener("change", () => {
-      if (input.checked) track(Events.themeSwitched, { position: input.value });
+/**
+ * The example gallery: each thumbnail links to the deck's static build. With
+ * JavaScript, a click loads that deck into the hero player instead and scrolls
+ * to it. A pick made before the player hydrates waits on window.__decksPick.
+ */
+function setupGallery() {
+  const player = () => document.querySelector<HTMLElement>("[data-player]");
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("a[data-example]")) {
+    link.addEventListener("click", (event) => {
+      const target = player();
+      const name = link.dataset.example;
+      if (!target || !name || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      event.preventDefault();
+      window.__decksPick = name;
+      window.dispatchEvent(new CustomEvent("decks:pick", { detail: name }));
+      const smooth = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+      target.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
+      target.focus({ preventScroll: true });
     });
   }
 }
@@ -116,7 +129,7 @@ function setupTocHighlight() {
 
 setupThemeToggle();
 setupCommandCopy();
-setupThemeSwitch();
+setupGallery();
 // After the layout script has called initAnalytics, which runs once this module has loaded.
 queueMicrotask(trackQuickstart);
 setupCodeCopy();

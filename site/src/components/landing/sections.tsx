@@ -1,10 +1,12 @@
 // Static landing sections. They render to HTML at build time and ship no
 // JavaScript; only components listed in site.islands may take a client: directive.
+// Page callouts are plain panels: the slide's story card never doubles as chrome.
 import type { ReactNode } from "react";
-import type { Comparison, Link, Track } from "../../config";
-import type { HookDenial, SmokeRun } from "../../data/fixtures";
+import type { Comparison, Link, Requirement } from "../../config";
+import type { AgentRun, HookDenial } from "../../data/fixtures";
 import { runFigures } from "../../data/fixtures";
-import type { Tape } from "../../lib/player/tape";
+import { treeLines } from "../../lib/file-tree";
+import type { Example } from "../../lib/player/example";
 
 export function ReleaseBanner({ announcement }: { announcement: Link | null }) {
   if (!announcement) return null;
@@ -19,14 +21,14 @@ export function ReleaseBanner({ announcement }: { announcement: Link | null }) {
 
 export function Hero({ tagline, description }: { tagline: string; description: string }) {
   return (
-    <div className="flex max-w-3xl flex-col gap-5">
-      <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">{tagline}</h1>
-      <p className="text-ink-2 text-lg leading-relaxed">{description}</p>
+    <div className="flex flex-col gap-3">
+      <h1 className="hero-title">{tagline}</h1>
+      <p className="hero-lede">{description}</p>
     </div>
   );
 }
 
-/** A landing section: heading column on the left, content on the right from lg up. */
+/** A landing section: a topic heading and an optional lede over the content. */
 export function Section({
   id,
   title,
@@ -39,67 +41,92 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="border-line border-t">
-      <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-14 sm:px-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-12 lg:py-20">
-        <div className="flex flex-col gap-3">
-          <span aria-hidden="true" className="memphis-band" />
-          <h2 id={`${id}-title`} className="display-heading text-[1.7rem] text-balance">
+    <section id={id} aria-labelledby={`${id}-title`} className="landing-section">
+      <div className="page-column flex flex-col gap-6">
+        <div className="flex max-w-[44rem] flex-col gap-2">
+          <h2 id={`${id}-title`} className="section-title">
             {title}
           </h2>
           {lede && <p className="text-ink-2 leading-relaxed">{lede}</p>}
         </div>
-        <div className="min-w-0">{children}</div>
+        {children}
       </div>
     </section>
   );
 }
 
-export function FitLists({ yes, no }: { yes: string[]; no: string[] }) {
+/** What Decks needs and what it can't do, as label and text rows. */
+export function Requirements({ items }: { items: Requirement[] }) {
+  if (items.length === 0) return null;
   return (
-    <div className="grid gap-6 sm:grid-cols-2">
-      {[
-        { title: "Fits if", items: yes, mark: "+" },
-        { title: "Doesn't fit if", items: no, mark: "−" },
-      ].map((list) => (
-        <div key={list.title} className="border-line rounded-md border p-4">
-          <h3 className="text-ink mb-3 font-semibold">{list.title}</h3>
-          <ul className="flex flex-col gap-2">
-            {list.items.map((item) => (
-              <li key={item} className="text-ink-2 flex gap-3 leading-snug">
-                <span aria-hidden="true" className="text-muted w-3 shrink-0 font-mono">
-                  {list.mark}
-                </span>
-                {item}
-              </li>
-            ))}
-          </ul>
+    <dl className="panel requirements" data-block>
+      {items.map((item) => (
+        <div key={item.label} className="requirement">
+          <dt>{item.label}</dt>
+          <dd>{item.text}</dd>
         </div>
       ))}
-    </div>
+    </dl>
+  );
+}
+
+/** The files `decks init` and `decks new` wrote, each with a few words on what it does. */
+export function FileTree({
+  files,
+  notes,
+  commands,
+}: {
+  files: string[];
+  notes: Record<string, string>;
+  commands: string[];
+}) {
+  if (files.length === 0) return null;
+  return (
+    <figure className="panel file-tree" data-block>
+      <figcaption>
+        After <code>bun add</code>, then{" "}
+        {commands.map((c, i) => (
+          <span key={c}>
+            {i > 0 && " and "}
+            <code>{c}</code>
+          </span>
+        ))}
+      </figcaption>
+      <ul>
+        {treeLines(files).map((line) => (
+          <li
+            key={`${line.depth}-${line.label}-${line.path ?? ""}`}
+            style={{ paddingInlineStart: `${line.depth * 1.25}rem` }}
+            data-dir={line.path === null || undefined}
+          >
+            <span className="tree-name">{line.label}</span>
+            {line.path && notes[line.path] && <span className="tree-note">{notes[line.path]}</span>}
+          </li>
+        ))}
+      </ul>
+    </figure>
   );
 }
 
 /** Three rows, each a topic and the two approaches side by side; stacks on narrow screens. */
 export function CompareTable({ rows }: { rows: Comparison[] }) {
+  if (rows.length === 0) return null;
   return (
-    <div className="border-line divide-line flex flex-col divide-y rounded-md border">
-      <div
-        aria-hidden="true"
-        className="bg-panel hidden gap-6 px-4 py-3 text-sm md:grid md:grid-cols-[8rem_1fr_1fr]"
-      >
+    <div className="panel compare" data-block>
+      <div aria-hidden="true" className="compare-head">
         <span />
-        <span className="text-ink font-semibold">v-click and a chart library</span>
-        <span className="text-ink font-semibold">Decks story slide</span>
+        <span>v-click and a chart library</span>
+        <span>Decks story slide</span>
       </div>
       {rows.map((row) => (
-        <div key={row.topic} className="grid gap-2 px-4 py-4 md:grid-cols-[8rem_1fr_1fr] md:gap-6">
+        <div key={row.topic} className="compare-row">
           <h3 className="text-ink font-medium">{row.topic}</h3>
-          <p className="text-ink-2 leading-relaxed">
-            <span className="text-muted block text-xs md:sr-only">v-click and a chart library</span>
+          <p className="text-ink-2">
+            <span className="compare-label">v-click and a chart library</span>
             {row.vclick}
           </p>
-          <p className="text-ink leading-relaxed">
-            <span className="text-muted block text-xs md:sr-only">Decks story slide</span>
+          <p className="text-ink">
+            <span className="compare-label">Decks story slide</span>
             {row.decks}
           </p>
         </div>
@@ -108,84 +135,32 @@ export function CompareTable({ rows }: { rows: Comparison[] }) {
   );
 }
 
-function Side({ side, title, tracks }: { side: string; title: string; tracks: Track[] }) {
-  return (
-    <div className="flex flex-col gap-3 p-4">
-      <h3 className="flex items-baseline gap-3">
-        <span className="border-line-strong rounded-xs border px-1.5 text-xs font-semibold tracking-[0.12em] uppercase">
-          Side {side}
-        </span>
-        <span className="text-ink font-semibold">{title}</span>
-      </h3>
-      <ol className="flex flex-col">
-        {tracks.map((track, index) => (
-          <li
-            key={track.name}
-            className="border-line flex items-baseline gap-3 border-b border-dashed py-2 last:border-b-0"
-          >
-            <span className="text-muted w-5 shrink-0 text-right font-mono text-xs tabular-nums">
-              {index + 1}
-            </span>
-            <span className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3">
-              <a href={track.href} className="text-ink">
-                {track.name}
-              </a>
-              <span className="text-muted font-mono text-xs">{track.note}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-/** The J-card: a spine with the title in marker hand, side A the package, side B the repo. */
-export function JCard({ title, a, b }: { title: string; a: Track[]; b: Track[] }) {
-  return (
-    <div className="border-line-strong bg-panel grid overflow-hidden rounded-sm border md:grid-cols-[4.5rem_1fr_1fr]">
-      <div className="border-line-strong flex items-center justify-center border-b p-3 md:border-r md:border-b-0">
-        <p className="font-hand text-2xl leading-none md:[writing-mode:vertical-rl] md:rotate-180">
-          {title}
-        </p>
-      </div>
-      <Side side="A" title="The npm package" tracks={a} />
-      <div className="border-line-strong border-t md:border-t-0 md:border-l">
-        <Side side="B" title="The repository" tracks={b} />
-      </div>
-    </div>
-  );
-}
-
-export function Transcript({ run }: { run: SmokeRun }) {
+/** The recorded run's excerpt, every step at once: no inner scroll, no replay. */
+export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
   const figures = runFigures(run);
   const shown = run.steps.reduce((sum, step) => sum + step.calls.length, 0);
   return (
-    <figure className="border-line overflow-hidden rounded-md border">
-      <figcaption className="border-line bg-panel flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b px-4 py-2 text-sm">
-        <span className="text-ink font-medium">
-          Excerpt from the real run that drafted the tides deck, abbreviated
-        </span>
+    <figure className="panel transcript" data-block>
+      <figcaption>
+        <span className="text-ink font-medium">The run that drafted {deck}, abbreviated</span>
         <span className="text-muted">
           {figures.turns} turns, {figures.minutes} minutes, {figures.cost}. {shown} of{" "}
           {run.toolCalls} tool calls shown.
         </span>
       </figcaption>
-      <ol className="divide-line flex flex-col divide-y font-mono text-[13px]">
-        <li className="px-4 py-3">
+      <ol>
+        <li className="transcript-prompt">
           <span aria-hidden="true" className="text-muted select-none">
             ❯{" "}
           </span>
-          <span className="text-ink">claude -p "{run.prompt}"</span>
+          claude -p "{run.prompt}"
         </li>
         {run.steps.map((step) => (
-          <li
-            key={step.calls.join()}
-            className="grid gap-x-6 gap-y-1 px-4 py-3 md:grid-cols-[minmax(0,1fr)_16rem]"
-          >
+          <li key={step.calls.join()} className="transcript-step">
             <div className="min-w-0">
               {step.calls.map((call) => (
                 <p key={call} className="text-ink break-words">
-                  <span aria-hidden="true" className="text-muted select-none">
+                  <span aria-hidden="true" className="text-data select-none">
                     ●{" "}
                   </span>
                   {call}
@@ -200,7 +175,7 @@ export function Transcript({ run }: { run: SmokeRun }) {
                 </p>
               )}
             </div>
-            {step.note && <p className="text-muted font-sans text-sm">{step.note}</p>}
+            {step.note && <p className="transcript-note">{step.note}</p>}
           </li>
         ))}
       </ol>
@@ -208,20 +183,21 @@ export function Transcript({ run }: { run: SmokeRun }) {
   );
 }
 
+/** A planted line, the write hook's real answer, and a plain note that it was a test. */
 export function HookPanel({ denial }: { denial: HookDenial }) {
   return (
-    <figure className="border-line overflow-hidden rounded-md border">
-      <figcaption className="border-line bg-panel border-b px-4 py-3">
-        <p className="text-ink font-medium">
-          We sent this line to the lint hook as a test write, and the hook blocked it.
-        </p>
-        <p className="text-muted mt-1 text-sm">
-          <code>{denial.hook}</code> blocks a file write when the text matches a list of phrases
-          common in AI-written prose. This test was a {denial.tool} to <code>{denial.file}</code>.
+    <figure className="panel hook-panel" data-block>
+      <figcaption>
+        <p className="text-ink font-medium">A test write, blocked by the hook</p>
+        <p className="text-muted text-sm">
+          We sent this line to the write hook of a project set up with <code>decks init</code>, as a{" "}
+          {denial.tool} to <code>{denial.file}</code>. <code>{denial.hook}</code> blocks a write to
+          deck prose when the text matches a list of phrases common in AI-written prose, including
+          the captions in a story slide's code.
         </p>
       </figcaption>
-      <div className="flex flex-col gap-3 p-4">
-        <pre className="bg-panel border-line rounded-sm border p-3 text-[13px] break-words whitespace-pre-wrap">
+      <div className="flex flex-col gap-3 p-4" data-lint-skip>
+        <pre className="hook-line">
           <code>{denial.line}</code>
         </pre>
         <p className="text-ink text-sm">
@@ -234,7 +210,7 @@ export function HookPanel({ denial }: { denial: HookDenial }) {
           ))}
           .
         </p>
-        <pre className="text-ink-2 text-[12px] leading-5 break-words whitespace-pre-wrap">
+        <pre className="hook-reason">
           <code>{denial.reason.join("\n")}</code>
         </pre>
       </div>
@@ -242,29 +218,46 @@ export function HookPanel({ denial }: { denial: HookDenial }) {
   );
 }
 
-export function Requirements({ items }: { items: string[] }) {
+/**
+ * The example decks as 16:9 thumbnails with how each was made. Each is a link to
+ * the deck's static build; src/scripts/site.ts turns a click into loading that
+ * deck in the hero player and scrolling there.
+ */
+export function ExampleGallery({ examples }: { examples: Example[] }) {
+  if (examples.length === 0) return null;
   return (
-    <div className="flex flex-col gap-3">
-      <h3 className="text-ink font-semibold">What you need</h3>
-      <ul className="flex flex-col gap-2">
-        {items.map((item) => (
-          <li key={item} className="text-ink-2 leading-snug">
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul className="gallery">
+      {examples.map((example) => (
+        <li key={example.name}>
+          <a href={example.href} data-example={example.name} className="gallery-item">
+            {example.poster ? (
+              <img
+                src={`${example.poster.base}-640.webp`}
+                width={640}
+                height={360}
+                loading="lazy"
+                alt=""
+              />
+            ) : (
+              <span className="gallery-empty" />
+            )}
+            <span className="gallery-title">{example.title}</span>
+          </a>
+          <p className="gallery-provenance">{example.provenance.label}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 
-/** Without JavaScript: the start deck's text, beat by beat, as `make demo` recorded it. */
-export function DeckProse({ tape }: { tape: Tape }) {
-  const withText = tape.states.filter((state) => state.lead || state.body);
+/** Without JavaScript: the hero deck's text, step by step, as `make demo` recorded it. */
+export function DeckProse({ example }: { example: Example }) {
+  const withText = example.states.filter((state) => state.lead || state.body);
   if (withText.length === 0) return null;
   return (
-    <div className="no-js-only flex max-w-3xl flex-col gap-3">
-      <h2 className="text-ink text-base font-semibold">{tape.title}: the deck's text</h2>
-      <ol className="flex flex-col gap-3">
+    <div className="no-js-only page-column flex flex-col gap-3 pb-10">
+      <h2 className="text-ink text-base font-semibold">{example.title}: the deck's text</h2>
+      <ol className="flex max-w-[44rem] flex-col gap-3">
         {withText.map((state) => (
           <li key={`${state.slide}-${state.beat}`} className="flex flex-col gap-0.5">
             <span className="text-muted text-xs">
@@ -276,7 +269,7 @@ export function DeckProse({ tape }: { tape: Tape }) {
         ))}
       </ol>
       <p>
-        <a href={tape.href}>Open the example deck</a>
+        <a href={example.href}>Open the example deck</a>
       </p>
     </div>
   );

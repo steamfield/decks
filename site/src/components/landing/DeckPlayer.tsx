@@ -1,23 +1,29 @@
-// The hero: a 90s hi-fi stack. A TV shows the slide, the DX-90 cassette deck
-// below it is the controller, and a shelf beside it holds one cassette per
-// example deck. The deck loads in a same-origin iframe inside the TV screen on
-// the first PLAY, step or cassette pick, and the faceplate drives it through the
-// embed contract in src/lib/player/protocol.ts.
+// The hero player: a real example deck in a frame, with a title bar above it (the
+// prompt that drafted it and the run's figures) and a caption bar under it (step
+// pips, the counter, the controls, and the current step's caption as page text,
+// because the slide's own card is too small to read at landing-page width).
 //
-// Server-rendered, it shows the poster, the start step's text and a shelf of
-// links to each static deck build, so it reads without JavaScript. Hydration
-// turns the shelf into a radio group and shows the transport keys.
-import { type KeyboardEvent, useCallback, useEffect, useId, useRef, useState } from "react";
+// Before any interaction the frame shows the deck's poster, or a short muted loop
+// captured from the real deck by `make demo` when there is one and motion is
+// allowed. The first control press, arrow key or gallery pick swaps in the live
+// deck, a same-origin iframe driven through the embed contract
+// (src/lib/player/protocol.ts), at the step the loop was showing.
+//
+// Server-rendered, it shows the poster, the start step's caption and a link to
+// the deck's static build, so it reads without JavaScript.
+import {
+  type KeyboardEvent,
+  type SyntheticEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { track } from "../../lib/analytics";
 import { Events } from "../../lib/events";
-import {
-  announcement,
-  counterText,
-  dwellMs,
-  meterLevels,
-  mirrorCopy,
-  stepsOf,
-} from "../../lib/player/format";
+import { draftLine, type Example, markAt, posterSrcset, stateAt } from "../../lib/player/example";
+import { announcement, counterText, dwellMs, mirrorCopy, stepsOf } from "../../lib/player/format";
 import {
   atEnd,
   type Command,
@@ -26,40 +32,35 @@ import {
   type DeckState,
   parseDeckMessage,
 } from "../../lib/player/protocol";
-import { posterSrcset, stateAt, type Tape, tapePosition } from "../../lib/player/tape";
-import { play as playSound, setSfxEnabled, sfxEnabled } from "../../lib/sfx";
-import {
-  CassetteArt,
-  CassetteDefs,
-  Led,
-  PianoKey,
-  RollingCounter,
-  Screw,
-  Vfd,
-  VfdFlag,
-  VuMeter,
-} from "./hifi";
-import { JCard, Spine } from "./rack";
 
-type Phase = "poster" | "booting" | "ready" | "failed";
-/** The tape-load sequence: door opens, old tape rises out, new tape slides in, door closes. */
-type Swap = "idle" | "open" | "out" | "in" | "close";
+type Phase = "poster" | "loop" | "booting" | "ready" | "failed";
+type Position = { slide: number; beat: number };
 
 /** How long a deck may take to answer before the player gives up and links to it. */
 export const BOOT_TIMEOUT_MS = 15_000;
-/** Milliseconds from the pick to each stage of the tape-load sequence. */
-export const SWAP_TIMING = { out: 180, in: 460, close: 820, done: 1040 } as const;
+/** The window event the example gallery sends (src/scripts/site.ts): `detail` is a deck name. */
+export const PICK_EVENT = "decks:pick";
+/** Most pips the caption bar draws; a slide with more steps shows the counter alone. */
+const MAX_PIPS = 12;
 
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+declare global {
+  interface Window {
+    /** A gallery pick made before the player hydrated. */
+    __decksPick?: string;
+  }
+}
 
-/** The state the player shows before the deck boots: the poster's beat, as `make demo` recorded it. */
-function posterState(tape: Tape): DeckState {
-  const recorded = stateAt(tape, tape.startSlide, tape.startBeat);
+const motionAllowed = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(prefers-reduced-motion: no-preference)").matches === true;
+
+/** The state the player shows for a recorded position, before the live deck answers. */
+function recordedState(example: Example, at: Position): DeckState {
+  const recorded = stateAt(example, at.slide, at.beat);
   return {
-    slide: tape.startSlide,
-    slides: tape.slides,
-    beat: tape.startBeat,
+    slide: at.slide,
+    slides: example.slides,
+    beat: at.beat,
     beats: recorded?.beats ?? 0,
     lead: recorded?.lead ?? "",
     body: recorded?.body ?? "",
@@ -68,45 +69,99 @@ function posterState(tape: Tape): DeckState {
   };
 }
 
-export function DeckPlayer({
-  tapes,
-  initial = 0,
-  changesHref,
+const startOf = (example: Example): Position => ({
+  slide: example.startSlide,
+  beat: example.startBeat,
+});
+
+function Icon({ name }: { name: keyof typeof ICONS }) {
+  return (
+    <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false">
+      <path d={ICONS[name]} fill="currentColor" />
+    </svg>
+  );
+}
+
+const ICONS = {
+  slideBack: "M4 4h2v12H4zM16 4v12L8 10z",
+  back: "M14 4v12L5 10z",
+  play: "M6 4v12l10-6z",
+  pause: "M5 4h3.5v12H5zM11.5 4H15v12h-3.5z",
+  next: "M6 4v12l9-6z",
+  slideNext: "M4 4v12l8-6zM14 4h2v12h-2z",
+  fullscreen: "M3 3h5v2H5v3H3zM12 3h5v5h-2V5h-3zM3 12h2v3h3v2H3zM15 12h2v5h-5v-2h3z",
+} as const;
+
+function Control({
+  label,
+  icon,
+  onClick,
+  pressed,
+  primary = false,
 }: {
-  tapes: Tape[];
-  initial?: number;
-  /** Where the tides caption's "See the edits" link goes. */
-  changesHref?: string;
+  label: string;
+  icon: keyof typeof ICONS;
+  onClick: () => void;
+  pressed?: boolean;
+  primary?: boolean;
 }) {
+  return (
+    <button
+      type="button"
+      className="control"
+      data-primary={primary || undefined}
+      aria-label={label}
+      aria-pressed={pressed}
+      title={label}
+      onClick={onClick}
+    >
+      <Icon name={icon} />
+    </button>
+  );
+}
+
+export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; initial?: number }) {
   const id = useId();
   const [hydrated, setHydrated] = useState(false);
   const [index, setIndex] = useState(initial);
-  const [swap, setSwap] = useState<Swap>("idle");
   const [phase, setPhase] = useState<Phase>("poster");
   const [deck, setDeck] = useState<DeckState | null>(null);
   const [meta, setMeta] = useState<DeckMeta | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [loopAt, setLoopAt] = useState<Position | null>(null);
+  const [loopPaused, setLoopPaused] = useState(false);
+  /** The loop has drawn a frame: the poster under it can go. */
+  const [loopShowing, setLoopShowing] = useState(false);
   const [bootCount, setBootCount] = useState(0);
   const [spoken, setSpoken] = useState("");
-  const [sound, setSound] = useState(false);
-  const [peek, setPeek] = useState<number | null>(null);
+  const [canFullscreen, setCanFullscreen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const wrapper = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
+  const video = useRef<HTMLVideoElement>(null);
   const pending = useRef<Command | null>(null);
+  const target = useRef<Position>({ slide: 1, beat: 0 });
   const positioned = useRef(false);
   const bootTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const swapTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const tape = tapes[index] ?? tapes[0];
+  const example = examples[index] ?? examples[0];
+
   useEffect(() => {
     setHydrated(true);
-    setSound(sfxEnabled());
-  }, []);
+    setCanFullscreen(document.fullscreenEnabled === true);
+    const first = examples[initial];
+    if (first?.loop && motionAllowed()) setPhase("loop");
+    const onChange = () => setFullscreen(document.fullscreenElement === wrapper.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, [examples, initial]);
 
   const send = useCallback((message: Command) => {
     frame.current?.contentWindow?.postMessage(message, window.location.origin);
   }, []);
 
-  const boot = useCallback((then: Command | null) => {
+  const boot = useCallback((at: Position, then: Command | null) => {
+    target.current = at;
     pending.current = then;
     positioned.current = false;
     setDeck(null);
@@ -122,7 +177,7 @@ export function DeckPlayer({
 
   // Messages from the deck. Only the current iframe, only this origin.
   useEffect(() => {
-    if (!tape) return;
+    if (!example) return;
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       if (!frame.current || event.source !== frame.current.contentWindow) return;
@@ -135,9 +190,10 @@ export function DeckPlayer({
       if (message.type !== "decks:state") return;
       const { type: _type, ...state } = message;
       if (!positioned.current) {
-        // The deck opens wherever its URL points; the poster shows the start step.
-        if (state.slide !== tape.startSlide || state.beat !== tape.startBeat) {
-          if (state.settled) send(command.go(tape.startSlide, tape.startBeat));
+        // The deck opens wherever its URL points; the picture shows the target step.
+        const { slide, beat } = target.current;
+        if (state.slide !== slide || state.beat !== beat) {
+          if (state.settled) send(command.go(slide, beat));
           return;
         }
         if (!state.settled) return;
@@ -150,105 +206,91 @@ export function DeckPlayer({
       }
       setDeck(state);
       if (state.settled) {
-        const titles = meta?.slideTitles ?? tape.slideTitles;
+        const titles = meta?.slideTitles ?? example.slideTitles;
         setSpoken(announcement(state, titles[state.slide - 1] ?? ""));
       }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [tape, send, meta]);
+  }, [example, send, meta]);
 
-  // PLAY: hold each settled beat for its reading time, then advance; stop at the end.
+  // Play: hold each settled step for its reading time, then advance; stop at the end.
   useEffect(() => {
     if (!playing || phase !== "ready" || !deck?.settled) return;
     if (atEnd(deck)) {
       setPlaying(false);
       return;
     }
-    const titles = meta?.slideTitles ?? tape?.slideTitles ?? [];
+    const titles = meta?.slideTitles ?? example?.slideTitles ?? [];
     const timer = setTimeout(() => send(command.next()), dwellMs(mirrorCopy(deck, titles)));
     return () => clearTimeout(timer);
-  }, [playing, phase, deck, meta, tape, send]);
+  }, [playing, phase, deck, meta, example, send]);
 
-  useEffect(
-    () => () => {
-      clearTimeout(bootTimer.current);
-      for (const timer of swapTimers.current) clearTimeout(timer);
+  useEffect(() => () => clearTimeout(bootTimer.current), []);
+
+  /** Load a deck the gallery picked: the live deck at its start step. */
+  const pick = useCallback(
+    (name: string) => {
+      const next = examples.findIndex((item) => item.name === name);
+      const picked = examples[next];
+      if (!picked) return;
+      track(Events.exampleSelected, { example: picked.name });
+      setIndex(next);
+      setPlaying(false);
+      setLoopAt(null);
+      setSpoken(`${picked.title} loaded.`);
+      boot(startOf(picked), null);
     },
-    [],
+    [examples, boot],
   );
 
-  if (!tape) return null;
+  useEffect(() => {
+    const onPick = (event: Event) => {
+      const name = (event as CustomEvent<string>).detail;
+      window.__decksPick = undefined;
+      if (typeof name === "string") pick(name);
+    };
+    window.addEventListener(PICK_EVENT, onPick);
+    if (window.__decksPick) {
+      pick(window.__decksPick);
+      window.__decksPick = undefined;
+    }
+    return () => window.removeEventListener(PICK_EVENT, onPick);
+  }, [pick]);
+
+  if (!example) return null;
+
+  /** Where the live deck should open: the loop's step when it was showing, else the start. */
+  const here = (): Position => (phase === "loop" && loopAt ? loopAt : startOf(example));
+  const idle = phase === "poster" || phase === "loop" || phase === "failed";
 
   const play = () => {
-    playSound("key");
-    if (playing) return;
-    track(Events.playerPlayed, { tape: tape.name });
+    if (phase === "loop" && !loopPaused) {
+      video.current?.pause();
+      setLoopPaused(true);
+      return;
+    }
+    if (playing) {
+      setPlaying(false);
+      return;
+    }
+    track(Events.playerPlayed, { example: example.name });
     setPlaying(true);
-    if (phase === "ready" && deck && atEnd(deck)) send(command.go(tape.startSlide, tape.startBeat));
-    else if (phase === "poster" || phase === "failed") boot(null);
-  };
-  const pause = () => {
-    playSound("key");
-    setPlaying(false);
+    if (phase === "ready" && deck && atEnd(deck)) send(command.go(example.startSlide, 0));
+    else if (idle) boot(here(), null);
   };
   const step = (message: Command) => {
-    playSound("key");
     track(Events.beatStepped, { cmd: message.cmd });
     setPlaying(false);
     if (phase === "ready") send(message);
-    else if (phase === "poster" || phase === "failed") boot(message);
+    else if (idle) boot(here(), message);
+  };
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void wrapper.current?.requestFullscreen();
   };
 
-  const pick = (next: number) => {
-    if (next === index && swap === "idle") return;
-    const target = tapes[next];
-    if (!target) return;
-    track(Events.tapeSelected, { tape: target.name });
-    for (const timer of swapTimers.current) clearTimeout(timer);
-    clearTimeout(bootTimer.current);
-    setPlaying(false);
-    const insert = () => {
-      setIndex(next);
-      setPhase("poster");
-      setDeck(null);
-      setMeta(null);
-      setSpoken(`${target.title} loaded.`);
-    };
-    if (prefersReducedMotion()) {
-      insert();
-      setSwap("idle");
-      // A quick run of picks boots only the last one.
-      swapTimers.current = [setTimeout(() => boot(null), 300)];
-      return;
-    }
-    playSound("door");
-    setSwap("open");
-    const at = (ms: number, run: () => void) => setTimeout(run, ms);
-    swapTimers.current = [
-      at(SWAP_TIMING.out, () => setSwap("out")),
-      at(SWAP_TIMING.in, () => {
-        insert();
-        setSwap("in");
-      }),
-      at(SWAP_TIMING.close, () => {
-        playSound("door");
-        setSwap("close");
-      }),
-      at(SWAP_TIMING.done, () => {
-        setSwap("idle");
-        playSound("hiss");
-        boot(null);
-      }),
-    ];
-  };
-
-  const toggleSound = () => {
-    setSfxEnabled(!sound);
-    setSound(!sound);
-  };
-
-  const onFaceplateKey = (event: KeyboardEvent) => {
+  const onKeyDown = (event: KeyboardEvent) => {
     const moves: Record<string, Command> = {
       ArrowRight: event.shiftKey ? command.nextSlide() : command.next(),
       ArrowLeft: event.shiftKey ? command.prevSlide() : command.prev(),
@@ -259,354 +301,217 @@ export function DeckPlayer({
     step(move);
   };
 
-  const shown = deck ?? posterState(tape);
-  const titles = meta?.slideTitles.length ? meta.slideTitles : tape.slideTitles;
-  const mirror = mirrorCopy(shown, titles);
-  const levels = meterLevels(shown);
+  const onLoopTime = (event: SyntheticEvent<HTMLVideoElement>) => {
+    if (!example.loop) return;
+    const mark = markAt(example.loop, event.currentTarget.currentTime);
+    if (mark && (mark.slide !== loopAt?.slide || mark.beat !== loopAt?.beat)) {
+      setLoopAt({ slide: mark.slide, beat: mark.beat });
+    }
+  };
+
+  const shown =
+    deck ??
+    (phase === "loop" && loopAt
+      ? recordedState(example, loopAt)
+      : recordedState(example, phase === "booting" ? target.current : startOf(example)));
+  const titles = meta?.slideTitles.length ? meta.slideTitles : example.slideTitles;
+  const caption = mirrorCopy(shown, titles);
   const steps = stepsOf(shown);
-  const moving = phase === "ready" && deck !== null && !deck.settled;
-  const spin = moving
-    ? deck?.direction === "backward"
-      ? "backward"
-      : "forward"
-    : playing && phase === "ready"
-      ? "forward"
-      : "still";
-  const ended = phase === "ready" && deck !== null && atEnd(deck);
-  // The VFD prints slide and step as numbers: a 14-segment S and B read as 5 and 8.
-  const display =
-    phase === "booting"
-      ? "LOAD"
-      : phase === "failed"
-        ? "NO TAPE"
-        : `${String(shown.slide).padStart(2, "0")} ${shown.beat + 1}/${steps}`;
-  const displaySpoken =
-    phase === "booting"
-      ? "Loading"
-      : phase === "failed"
-        ? "No tape"
-        : `${counterText(shown)}: slide ${shown.slide} of ${shown.slides}, step ${shown.beat + 1} of ${steps}`;
-  const position = tapePosition(tape, shown.slide, shown.beat);
-  const progress = position.total > 1 ? position.index / (position.total - 1) : 0;
-  const slideTitle = titles[shown.slide - 1]?.trim() || `Slide ${shown.slide}`;
-  const osd =
-    phase === "booting"
-      ? "Loading"
-      : phase === "failed"
-        ? "No signal"
-        : playing
-          ? "Play ▶"
-          : phase === "ready"
-            ? "Pause"
-            : "Stop";
+  const looping = phase === "loop" && !loopPaused;
+  const running = looping || (playing && (phase === "ready" || phase === "booting"));
   // index.html by name: the Astro dev server serves no directory index from public/.
-  // Slidev reads ?clicks= inside the hash, so the deck lands on the start step directly.
-  const frameSrc = `${tape.href}index.html#/${tape.startSlide}${tape.startBeat ? `?clicks=${tape.startBeat}` : ""}`;
-  const doorOpen = swap === "open" || swap === "out" || swap === "in";
-  const card = tapes[peek ?? index] ?? tape;
+  // Slidev reads ?clicks= inside the hash, so the deck lands on the step directly.
+  const at = target.current;
+  const frameSrc = `${example.href}index.html#/${at.slide}${at.beat ? `?clicks=${at.beat}` : ""}`;
+  const deckLink = `${example.href}#/${shown.slide}${shown.beat ? `?clicks=${shown.beat}` : ""}`;
+  const poster = example.poster;
+  const sizes = "(min-width: 768px) 900px, 100vw";
 
   return (
-    <div className="hifi flex flex-col gap-8">
-      <CassetteDefs />
-      <div className="grid items-end gap-10 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="stand">
-          <div className="tv">
-            <div className="tv-cabinet">
-              <Screw className="tv-screw-l" turn={35} />
-              <Screw className="tv-screw-r" turn={-15} />
-              <div className="tv-screen">
-                <div className="tv-osd" aria-hidden="true">
-                  <span>{osd}</span>
-                  <span>
-                    S{shown.slide} {shown.beat + 1}/{steps}
-                  </span>
-                </div>
-                <div className="tv-picture">
-                  {phase !== "poster" && (
-                    <iframe
-                      key={`${tape.name}-${bootCount}`}
-                      ref={frame}
-                      src={frameSrc}
-                      title={`${tape.title}, controlled by the player above`}
-                      tabIndex={-1}
-                      inert
-                      allow="screen-wake-lock"
-                      className="absolute inset-0 size-full border-0"
-                    />
-                  )}
-                  {phase !== "ready" &&
-                    (tape.poster ? (
-                      <picture>
-                        <source
-                          type="image/avif"
-                          srcSet={posterSrcset(tape.poster, "avif")}
-                          sizes="(min-width: 1280px) 760px, 92vw"
-                        />
-                        <source
-                          type="image/webp"
-                          srcSet={posterSrcset(tape.poster, "webp")}
-                          sizes="(min-width: 1280px) 760px, 92vw"
-                        />
-                        <img
-                          src={`${tape.poster.base}-1280.webp`}
-                          width={tape.poster.width}
-                          height={tape.poster.height}
-                          alt={`${tape.title}, slide ${tape.startSlide}: ${mirror.lead}`}
-                          fetchPriority={index === initial ? "high" : "auto"}
-                          className="absolute inset-0 size-full object-cover"
-                        />
-                      </picture>
-                    ) : (
-                      <span className="tv-nosignal">No poster yet. Run make demo.</span>
-                    ))}
-                  {phase === "failed" && (
-                    <p className="tv-message">
-                      The deck didn't load.{" "}
-                      <a href={tape.href} target="_blank" rel="noopener">
-                        Open it in a new tab
-                      </a>
-                    </p>
-                  )}
-                </div>
-                <p className="tv-osd tv-osd-title">{slideTitle}</p>
-                <span aria-hidden="true" className="tv-glass" />
-              </div>
-              <div className="tv-chin">
-                <span aria-hidden="true" className="tv-grille" />
-                <span className="tv-badge">
-                  <span className="brand">Decks</span>
-                  <span className="legend">Vision 21</span>
-                </span>
-                <span className="legend flex items-center gap-1.5">
-                  <Led on={phase === "ready" || phase === "booting"} color="green" />
-                  Power
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <fieldset onKeyDown={onFaceplateKey} className="deck faceplate min-w-0" data-swap={swap}>
-            <legend className="sr-only">Deck player</legend>
-            <Screw className="deck-screw tl" turn={10} />
-            <Screw className="deck-screw tr" turn={70} />
-            <Screw className="deck-screw bl" turn={-40} />
-            <Screw className="deck-screw br" turn={25} />
-            <div className="deck-top">
-              <span className="deck-brand">
-                <span className="brand">Decks</span>
-                <span className="model">DX-90</span>
-              </span>
-              <span className="legend hidden sm:inline">Stereo cassette deck</span>
-              <span className="legend ml-auto flex items-center gap-1.5">
-                <Led on={ended} color="amber" />
-                Auto stop
-              </span>
-            </div>
-            <div className="deck-main">
-              <div className="well">
-                <span className="legend well-legend">Tape: {tape.name}</span>
-                <div className="well-inner">
-                  <div className="cassette-holder" data-stage={swap}>
-                    <CassetteArt
-                      theme={tape.theme}
-                      title={tape.title}
-                      steps={position.total}
-                      progress={progress}
-                      spin={spin}
-                      className="block w-full"
-                    />
-                  </div>
-                </div>
-                <span aria-hidden="true" className="door" data-open={doorOpen || undefined}>
-                  <span className="door-glass" />
-                  <span className="door-print">⏏ Push open</span>
-                </span>
-              </div>
-              <div className="deck-readouts">
-                <Vfd main={display} spoken={displaySpoken}>
-                  <span className="vfd-label">Slide</span>
-                  <span className="vfd-label">Step</span>
-                  <span className="grow" />
-                  <VfdFlag on={playing}>Play</VfdFlag>
-                  <VfdFlag on={!playing && phase === "ready"}>Pause</VfdFlag>
-                  <VfdFlag on={phase === "booting"}>Load</VfdFlag>
-                  <VfdFlag on={ended}>End</VfdFlag>
-                </Vfd>
-                <div className="counter-row">
-                  <span className="legend">Counter</span>
-                  <RollingCounter value={position.index + 1} />
-                  <button
-                    type="button"
-                    className="mini-key js-only"
-                    onClick={() => step(command.go(1, 0))}
-                    aria-label="Reset: go to the first slide"
-                  >
-                    <span aria-hidden="true">Reset</span>
-                  </button>
-                </div>
-                <div className="vu-pair">
-                  <VuMeter
-                    label="Step"
-                    level={levels.beat}
-                    kick={moving}
-                    peak={levels.beat >= 1 && steps > 1}
-                  />
-                  <VuMeter label="Deck" level={levels.deck} kick={moving} peak={ended} />
-                </div>
-                <meter
-                  className="sr-only"
-                  min={0}
-                  max={steps}
-                  value={shown.beat + 1}
-                  aria-label="Step meter"
-                >
-                  Step {shown.beat + 1} of {steps}
-                </meter>
-                <meter
-                  className="sr-only"
-                  min={0}
-                  max={Math.max(shown.slides, shown.slide)}
-                  value={shown.slide}
-                  aria-label="Deck meter"
-                >
-                  Slide {shown.slide} of {shown.slides}
-                </meter>
-              </div>
-            </div>
-            <div className="deck-keys">
-              <div className="js-only contents">
-                <PianoKey
-                  glyph="◀◀"
-                  legend="Slide"
-                  name="Slide back"
-                  onClick={() => step(command.prevSlide())}
-                />
-                <PianoKey
-                  glyph="◀"
-                  legend="Step"
-                  name="Step back"
-                  onClick={() => step(command.prev())}
-                />
-                <PianoKey
-                  glyph="▶"
-                  legend="Play"
-                  onClick={play}
-                  latched={playing}
-                  led={{ on: playing, color: "green" }}
-                />
-                <PianoKey
-                  glyph="❚❚"
-                  legend="Pause"
-                  onClick={pause}
-                  latched={!playing && phase === "ready"}
-                  led={{ on: !playing && phase === "ready", color: "amber" }}
-                />
-                <PianoKey
-                  glyph="▶"
-                  legend="Step"
-                  name="Step forward"
-                  onClick={() => step(command.next())}
-                />
-                <PianoKey
-                  glyph="▶▶"
-                  legend="Slide"
-                  name="Slide forward"
-                  onClick={() => step(command.nextSlide())}
-                />
-              </div>
-              <div className="key-slot">
-                <span className="legend">Full deck</span>
-                <a href={tape.href} target="_blank" rel="noopener" className="key key-eject">
-                  <span aria-hidden="true">⏏</span>
-                  <span className="sr-only">Eject: open the example deck in a new tab</span>
-                </a>
-              </div>
-            </div>
-            <div className="deck-bottom">
-              <label className="toggle js-only">
-                <input type="checkbox" checked={sound} onChange={toggleSound} className="sr-only" />
-                <span aria-hidden="true" className="toggle-track">
-                  <span className="toggle-knob" />
-                </span>
-                <span className="legend">Sound</span>
-              </label>
-              <span className="legend ml-auto">Arrow keys step when a key has focus</span>
-            </div>
-          </fieldset>
-          <div aria-hidden="true" className="stand-top" />
+    <div className="player-stack">
+      {/* The player takes focus (tabIndex 0) so the arrow keys step the deck while the iframe inside stays inert. It is a div, not a fieldset, because it is also the full-screen element. */}
+      {/* biome-ignore lint/a11y/useSemanticElements: see above */}
+      <div
+        ref={wrapper}
+        role="group"
+        aria-label={`Deck player: ${example.title}. Arrow keys step, Shift moves a slide.`}
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: see above
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        className="player"
+        data-player
+        data-phase={phase}
+        data-fullscreen={fullscreen || undefined}
+      >
+        <div className="player-titlebar">
+          {example.run ? (
+            <>
+              <p className="titlebar-prompt">
+                <span aria-hidden="true" className="titlebar-caret">
+                  ❯
+                </span>{" "}
+                claude -p "{example.run.prompt}"
+              </p>
+              <p className="titlebar-stats">
+                Claude Code · {example.run.minutes} min · {example.run.turns} turns ·{" "}
+                {example.run.cost}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="titlebar-title">{example.title}</p>
+              <p className="titlebar-stats">{example.provenance.label}</p>
+            </>
+          )}
         </div>
 
-        <section aria-labelledby={`${id}-rack`} className="shelf-wrap">
-          <h2 id={`${id}-rack`} className="shelf-title">
-            Example decks
-          </h2>
-          {hydrated ? (
-            <fieldset className="shelf min-w-0" onMouseLeave={() => setPeek(null)}>
-              <legend className="sr-only">Load an example deck</legend>
-              {tapes.map((item, position) => (
-                <label
-                  key={item.name}
-                  className="shelf-slot"
-                  onMouseEnter={() => setPeek(position)}
-                  onFocus={() => setPeek(position)}
-                  onBlur={() => setPeek(null)}
-                >
-                  <input
-                    type="radio"
-                    name={`${id}-tape`}
-                    value={item.name}
-                    checked={position === index}
-                    onChange={() => pick(position)}
-                    aria-label={`${item.title}, ${item.slides} slides`}
-                    className="sr-only"
+        <div className="player-frame">
+          <div className="player-canvas">
+            {(phase === "booting" || phase === "ready") && (
+              <iframe
+                key={`${example.name}-${bootCount}`}
+                ref={frame}
+                src={frameSrc}
+                title={`${example.title}, controlled by the player`}
+                tabIndex={-1}
+                inert
+                allow="screen-wake-lock"
+              />
+            )}
+            {phase === "loop" && example.loop && (
+              <video
+                ref={video}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                width={example.loop.width}
+                height={example.loop.height}
+                onTimeUpdate={onLoopTime}
+                onPlaying={() => setLoopShowing(true)}
+                aria-label={`${example.title}: a recording of three steps forward and back`}
+              >
+                <source src={`${example.loop.base}.webm`} type="video/webm" />
+                <source src={`${example.loop.base}.mp4`} type="video/mp4" />
+              </video>
+            )}
+            {/* The poster stays over the loop until the video plays, so it needs no poster image of its own. */}
+            {phase !== "ready" &&
+              !(phase === "loop" && loopShowing) &&
+              (poster ? (
+                <picture>
+                  <source type="image/avif" srcSet={posterSrcset(poster, "avif")} sizes={sizes} />
+                  <source type="image/webp" srcSet={posterSrcset(poster, "webp")} sizes={sizes} />
+                  <img
+                    src={`${poster.base}-1280.webp`}
+                    width={poster.width}
+                    height={poster.height}
+                    alt={`${example.title}, slide ${example.startSlide}: ${caption.lead}`}
+                    fetchPriority={index === initial ? "high" : "auto"}
                   />
-                  <Spine tape={item} loaded={position === index && swap === "idle"} />
-                </label>
+                </picture>
+              ) : (
+                <p className="player-message">No poster yet. Run make demo.</p>
               ))}
-            </fieldset>
-          ) : (
-            <ul className="shelf">
-              {tapes.map((item) => (
-                <li key={item.name} className="shelf-slot">
-                  <a href={item.href} className="block">
-                    <Spine tape={item} loaded={false} />
-                    <span className="sr-only">Open {item.title}</span>
-                  </a>
-                  {item.poster && (
-                    <img
-                      src={`${item.poster.base}-640.webp`}
-                      width={640}
-                      height={360}
-                      loading="lazy"
-                      alt={`${item.title}, slide ${item.startSlide}`}
-                      className="no-js-only mt-2 aspect-video w-full rounded-xs"
+            {phase === "failed" && (
+              <p className="player-message">
+                The deck didn't load.{" "}
+                <a href={example.href} target="_blank" rel="noopener">
+                  Open it in a new tab
+                </a>
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="player-caption">
+          <div className="caption-text">
+            <p className="caption-lead">{caption.lead}</p>
+            {caption.body && <p className="caption-body">{caption.body}</p>}
+          </div>
+          <div className="caption-side">
+            <span className="controls js-only">
+              <Control
+                label="Slide back"
+                icon="slideBack"
+                onClick={() => step(command.prevSlide())}
+              />
+              <Control label="Step back" icon="back" onClick={() => step(command.prev())} />
+              <Control
+                label={running ? "Pause" : "Play"}
+                icon={running ? "pause" : "play"}
+                onClick={play}
+                primary
+              />
+              <Control label="Step forward" icon="next" onClick={() => step(command.next())} />
+              <Control
+                label="Slide forward"
+                icon="slideNext"
+                onClick={() => step(command.nextSlide())}
+              />
+              {hydrated && canFullscreen && (
+                <Control
+                  label={fullscreen ? "Exit full screen" : "Full screen"}
+                  icon="fullscreen"
+                  onClick={toggleFullscreen}
+                  pressed={fullscreen}
+                />
+              )}
+            </span>
+            <span className="caption-meta">
+              {steps <= MAX_PIPS && (
+                <span aria-hidden="true" className="pips">
+                  {Array.from({ length: steps }, (_, pip) => (
+                    <span
+                      // biome-ignore lint/suspicious/noArrayIndexKey: pips are positions, not items.
+                      key={pip}
+                      className="pip"
+                      data-state={
+                        pip < shown.beat ? "past" : pip === shown.beat ? "now" : undefined
+                      }
                     />
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          {hydrated && <JCard tape={card} />}
-        </section>
+                  ))}
+                </span>
+              )}
+              <span className="counter">
+                <span aria-hidden="true">{counterText(shown)}</span>
+                <span className="sr-only">
+                  Slide {shown.slide} of {shown.slides}, step {shown.beat + 1} of {steps}
+                </span>
+              </span>
+              <a className="open-deck" href={deckLink} target="_blank" rel="noopener">
+                Open the deck<span className="phone-only"> (best in landscape)</span>
+              </a>
+            </span>
+          </div>
+          <p className="sr-only" aria-live="polite" id={`${id}-live`}>
+            {spoken}
+          </p>
+        </div>
       </div>
 
-      <div className="now-playing">
-        <p className="legend-ink">Now playing: {tape.title}</p>
-        <p className="text-ink text-xl font-semibold tracking-tight text-balance sm:text-2xl">
-          {mirror.lead}
-        </p>
-        {mirror.body && <p className="text-ink-2 text-base leading-relaxed">{mirror.body}</p>}
-        <p className="sr-only" aria-live="polite" id={`${id}-live`}>
-          {spoken}
-        </p>
-        {tape.name === "tides" && (
-          <p className="text-muted mt-2 text-sm">
-            Claude Code drafted this deck in one 8-minute run with the repository's agent setup, and
-            it was fact-checked and edited by hand afterward.{" "}
-            {changesHref && <a href={changesHref}>See the changes</a>}
-          </p>
-        )}
-      </div>
+      {example.run && (
+        <div className="player-notes">
+          <p>{draftLine(example.run, example.edits)}</p>
+          {example.edits && example.edits.pairs.length > 0 && (
+            <dl className="edit-pairs">
+              {example.edits.pairs.map((pair) => (
+                <div key={pair.before} className="edit-pair">
+                  <dt>Draft</dt>
+                  <dd>
+                    <del>{pair.before}</del>
+                  </dd>
+                  <dt>Edited</dt>
+                  <dd>
+                    <ins>{pair.after}</ins>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      )}
     </div>
   );
 }

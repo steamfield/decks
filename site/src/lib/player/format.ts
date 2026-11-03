@@ -1,14 +1,14 @@
-// What the faceplate and the page text show for a deck position. Pure functions,
-// so the counter, the meters, the aria-live line and the mirrored copy agree.
+// What the caption bar shows for a deck position. Pure functions, so the
+// counter, the step pips, the aria-live line and the caption text agree.
 import type { DeckState } from "./protocol";
 
 /** Steps on a slide: `beats` is the last beat's index, so one more than it. */
 export const stepsOf = (state: Pick<DeckState, "beat" | "beats">) =>
   Math.max(state.beats, state.beat) + 1;
 
-/** The counter: "S2·B3" (slide 2, beat 3, both 1-based). */
-export const counterText = (state: Pick<DeckState, "slide" | "beat">) =>
-  `S${state.slide}·B${state.beat + 1}`;
+/** The counter: "2 · 3/4" (slide 2, step 3 of 4, 1-based). */
+export const counterText = (state: Pick<DeckState, "slide" | "beat" | "beats">) =>
+  `${state.slide} · ${state.beat + 1}/${stepsOf(state)}`;
 
 /** The aria-live line: "Slide 2 of 5, step 3 of 4." plus the lead when there is one. */
 export function announcement(state: DeckState, fallbackTitle = ""): string {
@@ -20,8 +20,8 @@ export function announcement(state: DeckState, fallbackTitle = ""): string {
 export type Mirror = { lead: string; body: string };
 
 /**
- * The page text under the window. A story slide shows its card; a slide without
- * one (a cover, a conventional slide) falls back to its title, then its number.
+ * The caption bar's text. A story slide shows its card; a slide without one (a
+ * cover, a conventional slide) falls back to its title, then its number.
  */
 export function mirrorCopy(
   state: Pick<DeckState, "slide" | "lead" | "body">,
@@ -30,15 +30,6 @@ export function mirrorCopy(
   if (state.lead || state.body) return { lead: state.lead, body: state.body };
   const title = titles[state.slide - 1]?.trim();
   return { lead: title || `Slide ${state.slide}`, body: "" };
-}
-
-/** 0..1 positions for the two meters: within the slide's beats, and within the deck. */
-export function meterLevels(state: DeckState) {
-  const steps = stepsOf(state);
-  return {
-    beat: steps <= 1 ? 1 : state.beat / (steps - 1),
-    deck: state.slides <= 1 ? 1 : (state.slide - 1) / (state.slides - 1),
-  };
 }
 
 const words = (text: string) => text.split(/\s+/).filter(Boolean).length;

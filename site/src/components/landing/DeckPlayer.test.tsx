@@ -1,18 +1,10 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Example } from "../../lib/player/example";
 import type { Command, DeckState } from "../../lib/player/protocol";
-import type { Tape, TapeTheme } from "../../lib/player/tape";
-import { BOOT_TIMEOUT_MS, DeckPlayer } from "./DeckPlayer";
+import { BOOT_TIMEOUT_MS, DeckPlayer, PICK_EVENT } from "./DeckPlayer";
 
-const theme: TapeTheme = {
-  ink: "#09090b",
-  paper: "#f7f8f8",
-  stripes: ["#06b6d4", "#f59e0b", "#f43f5e"],
-  brand: "Decks",
-  shell: { kind: "clear" },
-};
-
-const tape = (name: string, title: string): Tape => ({
+const example = (name: string, title: string, extra: Partial<Example> = {}): Example => ({
   name,
   title,
   href: `/demo/${name}/`,
@@ -24,11 +16,25 @@ const tape = (name: string, title: string): Tape => ({
     { slide: 2, beat: 0, beats: 1, lead: "Recorded lead.", body: "Recorded body." },
     { slide: 2, beat: 1, beats: 1, lead: "Recorded second lead.", body: "" },
   ],
-  theme,
+  provenance: { kind: "template", label: "Template deck" },
   poster: { base: `/posters/${name}`, width: 1280, height: 720 },
+  loop: null,
+  run: null,
+  edits: null,
+  ...extra,
 });
 
-const tapes = [tape("tides", "Tides run on the Moon's clock"), tape("other", "Another deck")];
+const hero = example("tides", "Tides run on the Moon's clock", {
+  provenance: { kind: "agent", label: "Drafted by Claude Code, then edited by hand" },
+  run: { prompt: "make a deck", setup: "repo", turns: 87, minutes: "8.3", cost: "$3.17" },
+  edits: {
+    files: 6,
+    insertions: 49,
+    deletions: 11,
+    pairs: [{ file: "a.vue", before: "Old caption.", after: "New caption." }],
+  },
+});
+const examples = [hero, example("other", "Another deck")];
 
 const base: DeckState = {
   slide: 2,
@@ -53,7 +59,6 @@ function deck() {
     }
     return element;
   };
-  const spy = () => frame();
   const say = (data: unknown) =>
     act(() => {
       window.dispatchEvent(
@@ -65,125 +70,142 @@ function deck() {
       );
     });
   const state = (patch: Partial<DeckState>) => say({ type: "decks:state", ...base, ...patch });
-  return { frame, sent, spy, say, state };
+  frame();
+  return { sent, say, state };
+}
+
+const caption = () => document.querySelector(".caption-lead")?.textContent;
+
+/** Stubs matchMedia so motion is allowed (or reduced) for the next render. */
+function motion(allowed: boolean) {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: query.includes("no-preference") ? allowed : !allowed,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
 }
 
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
+  motion(false);
 });
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe("DeckPlayer", () => {
-  it("shows the poster and the recorded start beat before anything loads", () => {
-    render(<DeckPlayer tapes={tapes} />);
+  it("shows the poster and the recorded start step's caption before anything loads", () => {
+    render(<DeckPlayer examples={examples} />);
     expect(document.querySelector("iframe")).toBeNull();
     expect(
       screen.getByRole("img", { name: /Tides run on the Moon's clock, slide 2/ }),
     ).toHaveAttribute("fetchpriority", "high");
-    expect(screen.getByText("Recorded lead.")).toBeInTheDocument();
-    expect(screen.getByText(/^S2·B1: slide 2 of 3, step 1 of 2$/)).toBeInTheDocument();
-    expect(screen.getByText("02 1/2")).toBeInTheDocument();
+    expect(caption()).toBe("Recorded lead.");
+    expect(screen.getByText("Recorded body.")).toBeInTheDocument();
+    expect(screen.getByText("Slide 2 of 3, step 1 of 2")).toBeInTheDocument();
+    expect(screen.getByText("2 · 1/2")).toBeInTheDocument();
   });
 
-  it("boots the deck on PLAY, as an inert, untabbable, titled iframe", async () => {
-    render(<DeckPlayer tapes={tapes} />);
+  it("puts the prompt and the run's figures in the title bar", () => {
+    render(<DeckPlayer examples={examples} />);
+    expect(screen.getByText(/claude -p "make a deck"/)).toBeInTheDocument();
+    expect(screen.getByText("Claude Code · 8.3 min · 87 turns · $3.17")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Drafted in 8 minutes from this prompt with this repository's agent setup, then edited by hand (+49/−11 in 6 files).",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Old caption.").tagName).toBe("DEL");
+    expect(screen.getByText("New caption.").tagName).toBe("INS");
+  });
+
+  it("boots the deck on Play, as an inert, untabbable, titled iframe", () => {
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const frame = document.querySelector("iframe");
     expect(frame?.getAttribute("src")).toBe("/demo/tides/index.html#/2");
     expect(frame?.getAttribute("tabindex")).toBe("-1");
     expect(frame?.hasAttribute("inert")).toBe(true);
     expect(frame?.getAttribute("title")).toMatch(/Tides run on the Moon's clock/);
-    expect(screen.getByText("LOAD")).toBeInTheDocument();
   });
 
-  it("steers a deck that opened elsewhere to the start slide, then reports position", () => {
-    render(<DeckPlayer tapes={tapes} />);
+  it("steers a deck that opened elsewhere to the start step, then sends the queued step", () => {
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
     const d = deck();
-    d.spy();
     d.say({ type: "decks:ready" });
     d.say({ type: "decks:meta", title: "Tides", slides: 3, slideTitles: ["Cover", "", "Close"] });
     d.state({ slide: 1, beats: 0, lead: "", body: "" });
     expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 0 }]);
     d.state({});
-    // The queued step goes out once the deck stands on the poster's beat.
     expect(d.sent.at(-1)).toEqual({ type: "decks:cmd", cmd: "next" });
     d.state({ beat: 1, lead: "Second lead.", settled: false, direction: "forward" });
-    expect(screen.getByText("Second lead.")).toBeInTheDocument();
-    expect(document.querySelector(".hub")?.getAttribute("data-spin")).toBe("forward");
+    expect(caption()).toBe("Second lead.");
     d.state({ beat: 1, lead: "Second lead." });
-    expect(document.querySelector(".hub")?.getAttribute("data-spin")).toBe("still");
     expect(screen.getByText("Slide 2 of 3, step 2 of 2. Second lead.")).toBeInTheDocument();
   });
 
-  it("starts on a later step when the tape's start step is not the first", () => {
-    const later = { ...tape("tides", "Tides run on the Moon's clock"), startBeat: 1 };
-    render(<DeckPlayer tapes={[later]} />);
-    // The poster's state is the start step's recorded text.
-    expect(screen.getByText("Recorded second lead.")).toBeInTheDocument();
+  it("starts on a later step when the example's start step is not the first", () => {
+    const later = { ...hero, startBeat: 1 };
+    render(<DeckPlayer examples={[later]} />);
+    expect(caption()).toBe("Recorded second lead.");
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     expect(document.querySelector("iframe")?.getAttribute("src")).toBe(
       "/demo/tides/index.html#/2?clicks=1",
     );
     const d = deck();
-    d.spy();
     d.state({});
     expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 1 }]);
   });
 
   it("falls back to the slide title when a slide has no story card", () => {
-    render(<DeckPlayer tapes={tapes} />);
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
-    d.spy();
     d.say({ type: "decks:meta", title: "Tides", slides: 3, slideTitles: ["Cover", "", "Close"] });
     d.state({});
     d.state({ slide: 3, beat: 0, beats: 0, lead: "", body: "" });
-    expect(screen.getByText("Close", { selector: ".now-playing > p" })).toBeInTheDocument();
-    // The TV's on-screen display carries the slide title too.
-    expect(screen.getByText("Close", { selector: ".tv-osd-title" })).toBeInTheDocument();
+    expect(caption()).toBe("Close");
   });
 
-  it("plays beat by beat after a reading pause and stops at the end", () => {
-    render(<DeckPlayer tapes={tapes} />);
+  it("plays step by step after a reading pause and stops at the end", () => {
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
-    d.spy();
     d.state({});
     expect(d.sent).toEqual([]);
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(9000));
     expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "next" }]);
     d.state({ slide: 3, beat: 0, beats: 0, lead: "", body: "" });
     act(() => vi.advanceTimersByTime(9000));
     expect(d.sent).toHaveLength(1);
-    expect(screen.getByRole("button", { name: "Play" })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByText("End")).toHaveAttribute("data-on");
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
   });
 
   it("pauses", () => {
-    render(<DeckPlayer tapes={tapes} />);
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
-    d.spy();
     d.state({});
     fireEvent.click(screen.getByRole("button", { name: "Pause" }));
     act(() => vi.advanceTimersByTime(9000));
     expect(d.sent).toEqual([]);
   });
 
-  it("steps with the arrow keys only from inside the faceplate", () => {
-    render(<DeckPlayer tapes={tapes} />);
+  it("steps with the arrow keys only from inside the player", () => {
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
-    d.spy();
     d.state({});
     fireEvent.keyDown(document.body, { key: "ArrowRight" });
     expect(d.sent).toEqual([]);
-    const faceplate = screen.getByRole("group", { name: "Deck player" });
-    fireEvent.keyDown(faceplate, { key: "ArrowRight" });
-    fireEvent.keyDown(faceplate, { key: "ArrowLeft", shiftKey: true });
+    const player = screen.getByRole("group", { name: /^Deck player/ });
+    expect(player).toHaveAttribute("tabindex", "0");
+    fireEvent.keyDown(player, { key: "ArrowRight" });
+    fireEvent.keyDown(player, { key: "ArrowLeft", shiftKey: true });
     expect(d.sent).toEqual([
       { type: "decks:cmd", cmd: "next" },
       { type: "decks:cmd", cmd: "prevSlide" },
@@ -191,7 +213,7 @@ describe("DeckPlayer", () => {
   });
 
   it("ignores messages from anything but its own iframe", () => {
-    render(<DeckPlayer tapes={tapes} />);
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     act(() => {
       window.dispatchEvent(
@@ -206,7 +228,7 @@ describe("DeckPlayer", () => {
   });
 
   it("gives up on a deck that never answers and links to it", () => {
-    render(<DeckPlayer tapes={tapes} />);
+    render(<DeckPlayer examples={examples} />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     act(() => vi.advanceTimersByTime(BOOT_TIMEOUT_MS + 1));
     expect(screen.getByRole("link", { name: "Open it in a new tab" })).toHaveAttribute(
@@ -215,40 +237,86 @@ describe("DeckPlayer", () => {
     );
   });
 
-  it("swaps cassettes from the rack, a group of native radios", () => {
-    render(<DeckPlayer tapes={tapes} />);
-    const rack = screen.getByRole("group", { name: "Load an example deck" });
-    const [first, second] = within(rack).getAllByRole("radio");
-    expect(first).toBeChecked();
-    fireEvent.click(second as HTMLElement);
-    act(() => vi.advanceTimersByTime(1500));
-    expect(second).toBeChecked();
-    expect(screen.getByText("Tape: other")).toBeInTheDocument();
-    // The pick boots the new deck once the cassette is in.
+  it("loads a deck the gallery picks, live at its start step", () => {
+    render(<DeckPlayer examples={examples} />);
+    act(() => {
+      window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: "other" }));
+    });
     expect(document.querySelector("iframe")?.getAttribute("src")).toBe("/demo/other/index.html#/2");
+    expect(screen.getByText("Another deck")).toBeInTheDocument();
+    expect(screen.getByText("Template deck")).toBeInTheDocument();
+    // A deck without a recorded run has no draft line.
+    expect(screen.queryByText(/^Drafted in/)).toBeNull();
   });
 
-  it("renders the rack as links to each static build until it hydrates", async () => {
+  it("takes a pick made before it hydrated", () => {
+    window.__decksPick = "other";
+    render(<DeckPlayer examples={examples} />);
+    expect(document.querySelector("iframe")?.getAttribute("src")).toBe("/demo/other/index.html#/2");
+    expect(window.__decksPick).toBeUndefined();
+  });
+
+  describe("with a loop", () => {
+    const loop = {
+      base: "/loops/tides",
+      width: 1280,
+      height: 720,
+      marks: [
+        { t: 0, slide: 2, beat: 0 },
+        { t: 2, slide: 2, beat: 1 },
+      ],
+    };
+    const looped = [{ ...hero, loop }, examples[1] as Example];
+
+    it("plays the muted loop when motion is allowed, captioned from its marks", () => {
+      motion(true);
+      render(<DeckPlayer examples={looped} />);
+      const video = document.querySelector("video") as HTMLVideoElement;
+      expect(video).not.toBeNull();
+      expect(video.muted).toBe(true);
+      expect([...video.querySelectorAll("source")].map((s) => s.getAttribute("src"))).toEqual([
+        "/loops/tides.webm",
+        "/loops/tides.mp4",
+      ]);
+      // The poster covers the video until its first frame plays.
+      expect(document.querySelector("picture")).not.toBeNull();
+      fireEvent.playing(video);
+      expect(document.querySelector("picture")).toBeNull();
+      Object.defineProperty(video, "currentTime", { value: 2.4, configurable: true });
+      fireEvent.timeUpdate(video);
+      expect(caption()).toBe("Recorded second lead.");
+      // Play/pause pauses the loop without loading the deck.
+      fireEvent.click(screen.getByRole("button", { name: "Pause" }));
+      expect(document.querySelector("iframe")).toBeNull();
+    });
+
+    it("hands over to the live deck at the step the loop was showing", () => {
+      motion(true);
+      render(<DeckPlayer examples={looped} />);
+      const video = document.querySelector("video") as HTMLVideoElement;
+      Object.defineProperty(video, "currentTime", { value: 2.4, configurable: true });
+      fireEvent.timeUpdate(video);
+      fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
+      expect(document.querySelector("video")).toBeNull();
+      expect(document.querySelector("iframe")?.getAttribute("src")).toBe(
+        "/demo/tides/index.html#/2?clicks=1",
+      );
+    });
+
+    it("shows the poster instead under reduced motion", () => {
+      motion(false);
+      render(<DeckPlayer examples={looped} />);
+      expect(document.querySelector("video")).toBeNull();
+      expect(screen.getByRole("img", { name: /Tides run on the Moon's clock/ })).toBeVisible();
+    });
+  });
+
+  it("server-renders the poster, the caption and a link to the deck, no controls needed", async () => {
     const { renderToString } = await import("react-dom/server");
-    const html = renderToString(<DeckPlayer tapes={tapes} />);
-    expect(html).toContain('href="/demo/tides/"');
-    expect(html).toContain('href="/demo/other/"');
-    expect(html).not.toContain('type="radio"');
-  });
-
-  it("shows the loaded tape's J-card, its slide titles split over two sides", () => {
-    render(<DeckPlayer tapes={tapes} />);
-    const sideA = screen.getByRole("list", { name: "Tides run on the Moon's clock, side A" });
-    const sideB = screen.getByRole("list", { name: "Tides run on the Moon's clock, side B" });
-    expect(
-      within(sideA)
-        .getAllByRole("listitem")
-        .map((item) => item.textContent),
-    ).toEqual(["Cover", "Slide 2"]);
-    expect(
-      within(sideB)
-        .getAllByRole("listitem")
-        .map((item) => item.textContent),
-    ).toEqual(["Close"]);
+    const html = renderToString(<DeckPlayer examples={examples} />);
+    expect(html).toContain('href="/demo/tides/#/2"');
+    expect(html).toContain("Recorded lead.");
+    expect(html).not.toContain("<iframe");
+    expect(html).not.toContain("<video");
   });
 });

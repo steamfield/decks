@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { announcement, counterText, dwellMs, meterLevels, mirrorCopy, stepsOf } from "./format";
+import { announcement, counterText, dwellMs, mirrorCopy, stepsOf } from "./format";
 import type { DeckState } from "./protocol";
 
 const state: DeckState = {
@@ -15,7 +15,7 @@ const state: DeckState = {
 
 describe("player readouts", () => {
   it("counts slides and beats from one", () => {
-    expect(counterText(state)).toBe("S2·B3");
+    expect(counterText(state)).toBe("2 · 3/4");
     expect(stepsOf({ beat: 0, beats: 0 })).toBe(1);
     expect(stepsOf({ beat: 0, beats: 2 })).toBe(3);
     expect(stepsOf({ beat: 4, beats: 3 })).toBe(5);
@@ -41,14 +41,6 @@ describe("player readouts", () => {
     expect(mirrorCopy({ slide: 3, lead: "", body: "" }, ["Cover", " "])).toEqual({
       lead: "Slide 3",
       body: "",
-    });
-  });
-
-  it("fills the meters by position in the slide and in the deck", () => {
-    expect(meterLevels(state)).toEqual({ beat: 2 / 3, deck: 1 / 4 });
-    expect(meterLevels({ ...state, beats: 0, beat: 0, slides: 1, slide: 1 })).toEqual({
-      beat: 1,
-      deck: 1,
     });
   });
 

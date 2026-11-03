@@ -1,9 +1,11 @@
 // @vitest-environment node
-// WCAG contrast for every token pair the site draws text or controls with, in
-// both page themes, and for the hardware, which stays dark in both.
+// WCAG contrast for every token pair the site draws text or controls with: the
+// docs in both page themes, and the landing page, which is dark only and takes
+// its colors from the product's default.json.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { contrast } from "../lib/contrast";
+import { landingCss, landingTokens, productTheme } from "../lib/tokens";
 
 const css = readFileSync(new URL("./global.css", import.meta.url), "utf8");
 
@@ -49,26 +51,41 @@ describe("the dark theme block matches the no-JavaScript fallback", () => {
   });
 });
 
-describe("hardware tokens", () => {
+describe("landing page tokens", () => {
+  const tokens = landingTokens();
+  const theme = productTheme();
+
+  it("come from the product's default.json, one step above the slide canvas", () => {
+    expect(tokens.canvas).toBe(theme.surfaces.surface);
+    expect(tokens.frame).toBe(theme.surfaces.canvas);
+    expect(tokens.canvas).not.toBe(tokens.frame);
+    expect(tokens.data).toBe(theme.ramps.cyan[1]);
+    expect(tokens.action).toBe("#f59e0b");
+  });
+
   it.each(
-    ["hw-face", "hw-raised", "hw-well"].flatMap((surface) =>
-      ["hw-ink", "hw-ink-2", "hw-print", "live"].map((fg) => [fg, surface]),
+    ["canvas", "panel"].flatMap((surface) =>
+      ["ink", "ink-2", "muted", "accent", "data"].map((fg) => [fg, surface]),
     ),
-  )("%s on %s is at least 4.5:1", (fg, surface) => {
-    expect(contrast(get(light, fg), get(light, surface))).toBeGreaterThanOrEqual(4.5);
+  )("%s text on %s is at least 4.5:1", (fg, surface) => {
+    expect(contrast(get(tokens, fg), get(tokens, surface))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it.each(["silver-hi", "silver-lo"])("button labels on %s are at least 4.5:1", (surface) => {
-    expect(contrast(get(light, "silver-ink"), get(light, surface))).toBeGreaterThanOrEqual(4.5);
+  it.each(["canvas", "panel"])(
+    "control borders (line-strong) on %s are at least 3:1",
+    (surface) => {
+      expect(contrast(get(tokens, "line-strong"), get(tokens, surface))).toBeGreaterThanOrEqual(3);
+    },
+  );
+
+  it("puts readable text on the action color", () => {
+    expect(contrast(get(tokens, "action-ink"), get(tokens, "action"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(get(tokens, "action"), get(tokens, "panel"))).toBeGreaterThanOrEqual(3);
   });
 
-  it("keeps unlit segments well below the lit amber", () => {
-    expect(contrast(get(light, "live-off"), get(light, "hw-well"))).toBeLessThan(1.5);
-  });
-
-  it("is not redefined by the dark page theme", () => {
-    for (const name of Object.keys(light).filter((key) => /^(hw|live|silver)/.test(key))) {
-      expect(block(".dark {")[name], name).toBeUndefined();
-    }
+  it("writes every token as a variable on the landing page's root", () => {
+    const css = landingCss(tokens);
+    expect(css.startsWith('html[data-page="landing"]{')).toBe(true);
+    for (const name of Object.keys(tokens)) expect(css).toContain(`--color-${name}:`);
   });
 });

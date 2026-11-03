@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import { site } from "../config";
+import { landingCss } from "../lib/tokens";
 import "../styles/global.css";
 
 interface Props {
@@ -13,6 +14,8 @@ interface Props {
   /** This page's Markdown export, linked as rel="alternate". */
   markdown?: string;
   noindex?: boolean;
+  /** The landing page: dark only, in the product's own colors, with no theme toggle. */
+  landing?: boolean;
 }
 const {
   title,
@@ -21,6 +24,7 @@ const {
   image = "/og/index.png",
   markdown,
   noindex = false,
+  landing = false,
 } = Astro.props;
 const canonical = new URL(path, site.url);
 const ogImage = new URL(image, site.url);
@@ -30,7 +34,7 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class={landing ? "dark" : undefined} data-page={landing ? "landing" : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -53,16 +57,14 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <Font cssVariable="--ff-inter" preload />
     <Font cssVariable="--ff-mono" />
-    <Font cssVariable="--ff-dseg" />
-    <Font cssVariable="--ff-marker" />
-    <Font cssVariable="--ff-display" />
-    <Font cssVariable="--ff-legend" />
-    <Font cssVariable="--ff-pen" />
+    {landing && <style is:inline set:html={landingCss()} />}
     <script is:inline>
-      // Before paint: mark JavaScript on, then the stored theme, else the system preference.
+      // Before paint: mark JavaScript on, then the stored theme, else the system
+      // preference. The landing page is dark only and arrives with .dark set.
       (() => {
         const root = document.documentElement;
         root.classList.add("js");
+        if (root.dataset.page === "landing") return;
         try {
           const stored = localStorage.getItem("theme");
           const dark = stored
@@ -111,14 +113,16 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
         </nav>
         <!-- Search goes here: a search fragment fills this slot. -->
         <slot name="search" />
-        <button
-          type="button"
-          data-theme-toggle
-          hidden
-          class="border-line-strong text-ink-2 hover:text-ink rounded-sm border px-2 py-1 text-xs"
-        >
-          Dark theme
-        </button>
+        {!landing && (
+          <button
+            type="button"
+            data-theme-toggle
+            hidden
+            class="border-line-strong text-ink-2 hover:text-ink rounded-sm border px-2 py-1 text-xs"
+          >
+            Dark theme
+          </button>
+        )}
       </div>
     </header>
     <main id="main" class="flex-1">
