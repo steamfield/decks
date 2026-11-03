@@ -46,9 +46,9 @@
   },
   "overrides": {
     "three": "0.185.1",
-    "@opendata-ai/openchart-core": "9.0.0-rc.2",
-    "@opendata-ai/openchart-engine": "9.0.0-rc.2",
-    "@opendata-ai/openchart-vanilla": "9.0.0-rc.2",
-    "@opendata-ai/openchart-vue": "9.0.0-rc.2"
+    "@opendata-ai/openchart-core": "9.0.0",
+    "@opendata-ai/openchart-engine": "9.0.0",
+    "@opendata-ai/openchart-vanilla": "9.0.0",
+    "@opendata-ai/openchart-vue": "9.0.0"
   }
 }
