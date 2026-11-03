@@ -1,6 +1,6 @@
 ---
 title: Writing decks with an agent
-description: What decks init installs for Claude Code (the deck-author agent, two skills, six rules, two hooks and two exemplar decks), how to re-run it, and how to ask for a deck.
+description: What decks init installs for Claude Code (an agent, two skills, six rules, two hooks, two exemplar decks), how to re-run it, and how to ask for a deck.
 group: guides
 order: 2
 ---

@@ -1,6 +1,6 @@
 ---
 title: The decks CLI
-description: Every decks command (init, new, dev, build, export, list, check, lint, shot, snap, fact-extract, hook), its arguments and flags, and the decks.json registry it reads.
+description: Every decks command, from init and new to lint, shot and fact-extract, with its arguments and flags, plus the decks.json registry it reads.
 group: reference
 order: 1
 sidebarLabel: decks CLI
