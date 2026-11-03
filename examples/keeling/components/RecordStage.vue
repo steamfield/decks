@@ -20,7 +20,7 @@ const GRID = [320, 360, 400, 440].map((v) => ({ y: sy(v), text: `${v} ppm` }))
 const COPY = [
   {
     lead: 'Carbon dioxide above Mauna Loa, every month.',
-    body: `Monthly means in parts per million, from ${FIRST_LABEL} on. Scripps ran it first, NOAA since ${NOAA_FROM}.`,
+    body: `Monthly means in parts per million, from ${FIRST_LABEL}. Scripps data to April ${NOAA_FROM}, NOAA after.`,
   },
   {
     lead: `It started at ${FIRST.y} ppm.`,

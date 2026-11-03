@@ -20,16 +20,16 @@ const HALF_X = sx(HALF_YEAR)
 
 const COPY = [
   {
-    lead: `Yearly averages, ${FIRST.x} to ${LAST.x}.`,
-    body: `Carbon dioxide rose ${RISE_LABEL}, from ${FIRST.y} to ${LAST.y} ppm.`,
+    lead: `Carbon dioxide rose ${RISE_LABEL} since ${FIRST.x}.`,
+    body: `Yearly averages, from ${FIRST.y} ppm in ${FIRST.x} to ${LAST.y} in ${LAST.x}.`,
   },
   {
     lead: `The halfway mark fell in ${HALF_YEAR}.`,
     body: `The first half of the rise took ${YEARS_BEFORE} years. The second half took ${YEARS_AFTER}.`,
   },
   {
-    lead: 'No year has come in lower.',
-    body: `Every annual average since ${FIRST.x} is higher than the one before it.`,
+    lead: 'Every year beat the one before.',
+    body: `No annual average since ${FIRST.x} has fallen below the previous year's.`,
   },
 ]
 

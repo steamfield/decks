@@ -1,7 +1,9 @@
 <script setup lang="ts">
 /**
  * Slide 4: the average yearly rise in each decade. Bars grow, the first and
- * last full decades light, then the partial current decade.
+ * last full decades light, then the partial current decade. The rise is not
+ * steeper every decade (the 1990s sit below the 1980s), so the headline
+ * compares the record's end with its first decade instead.
  */
 import { ref } from 'vue'
 import { ink, useStage, type BarsHandle } from 'slidev-addon-decks/story'
@@ -20,11 +22,11 @@ const Y_BAND: [number, number] = [230, 640]
 
 const COPY = [
   {
-    lead: 'How much carbon dioxide rose each year.',
+    lead: "Each bar is a decade's average yearly rise.",
     body: 'NOAA annual growth at Mauna Loa, averaged across each decade, in ppm per year.',
   },
   {
-    lead: `The ${LAST_FULL_DECADE} rose ${SPEEDUP_LABEL} as fast.`,
+    lead: `In the ${LAST_FULL_DECADE}, it rose ${SPEEDUP_LABEL} as fast.`,
     body: `Measured against the ${FIRST_DECADE}, the first full decade of the record.`,
   },
   {
@@ -70,7 +72,7 @@ const { clicks, copy, beats } = useStage({
     </template>
 
     <template #overlay>
-      <h2 class="od-story-head">The climb is getting steeper.</h2>
+      <h2 class="od-story-head">The climb is steeper now than in the {{ FIRST_DECADE }}.</h2>
       <StoryLink href="https://gml.noaa.gov/ccgg/trends/gr.html" label="NOAA GML, Mauna Loa annual growth rate" />
     </template>
 

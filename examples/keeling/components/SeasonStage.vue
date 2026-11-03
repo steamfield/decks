@@ -24,7 +24,7 @@ const COPY = [
     body: `The same monthly means, ${FROM} through ${TO}.`,
   },
   {
-    lead: 'Highs in spring, lows in fall.',
+    lead: 'Highs in late spring, lows in early fall.',
     body: `Every year peaked in ${HIGH_MONTHS} and bottomed out in ${LOW_MONTHS}.`,
   },
   {

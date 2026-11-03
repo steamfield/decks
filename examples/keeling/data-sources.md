@@ -37,7 +37,7 @@ are what the 2026-10-09 files produce.
 | Monthly series | March 1958 to September 2026, 823 months | `SERIES`, every row of the file |
 | First month and value | March 1958, 315.71 ppm | `FIRST` = first row |
 | Highest month and value | May 2026, 432.34 ppm | `PEAK` = max of `average` |
-| Scripps then NOAA, NOAA since 1974 | 1974 | `NOAA_FROM`; file header: "Data from March 1958 through April 1974 have been obtained by C. David Keeling of the Scripps Institution of Oceanography" |
+| Scripps data to April 1974, NOAA after | 1974 | `NOAA_FROM`; file header: "Data from March 1958 through April 1974 have been obtained by C. David Keeling of the Scripps Institution of Oceanography" |
 | Axis ticks / gridlines | 1958, 1980, 2000, 2020; 320 to 440 ppm | geometry |
 
 ## Slide 3: The curve breathes once a year
@@ -53,7 +53,7 @@ are what the 2026-10-09 files produce.
 | Mechanism: plants draw CO2 down in the growing season, respiration and decay release it | mechanism | NOAA GML carbon cycle basics, https://gml.noaa.gov/education/carbon_toolkit/basics.html: "there is a clear seasonal cycle in atmospheric CO2 as plants photosynthesize during the growing season, removing large amounts of CO2. Respiration (from both plants and animals) and decomposition ... release CO2 back into the atmosphere." |
 | Site note | Dec 2022 to early July 2023 measured at Maunakea, about 21 miles north, during the Mauna Loa eruption shutdown | file header. Not on the slide; speaker context only |
 
-## Slide 4: The climb is getting steeper
+## Slide 4: The climb is steeper now than in the 1960s
 
 `data/decades.ts`, from `co2_gr_mlo.csv` column `ann inc` (ppm/yr), plain mean of the years in each decade.
 
@@ -67,6 +67,11 @@ are what the 2026-10-09 files produce.
 | 2010s | 2.425 → 2.42 (JS `toFixed(2)` on the float mean) | `DECADES` |
 | 2020s, partial | 2020 to 2025, 6 years, 2.5617 → 2.56 | `CURRENT_YEARS`, `CURRENT_PPM` |
 | 2010s vs 1960s | 2.425 / 0.857 = 2.83 → "2.8 times" | `SPEEDUP_LABEL` |
+| "This decade is running faster still" | 2020s 2.56 > 2010s 2.42 | the module throws at build time if the partial decade's mean is not above the last full decade's. It rests on six years, 2024 alone at 3.33; 2025 was 2.23 |
+
+The rise is not steeper every decade: the 1990s (1.51) sit below the 1980s (1.61). The
+headline compares the record's end with the 1960s rather than claiming each decade beat the one
+before it.
 
 ## Slide 5: Half the rise came in the last 23 years
 

@@ -42,3 +42,8 @@ export const DOMAIN: [number, number] = [0, Math.ceil(Math.max(...DECADES.map((d
 const current = DECADES[DECADES.length - 1]
 export const CURRENT_YEARS = current.years
 export const CURRENT_PPM = current.ppm.toFixed(2)
+
+/** The last card says this decade is running faster than the last full one. Checked, not assumed. */
+if (!(current.ppm > lastFull.ppm)) {
+  throw new Error(`decades.ts: the ${current.decade}s mean (${CURRENT_PPM}) is not above the ${lastFull.decade}s; the Slide 4 card is wrong`)
+}
