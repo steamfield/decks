@@ -8,11 +8,10 @@
  * holds the card copy to its budget (eight words of lead, twenty of body,
  * `.claude/rules/story-stage.md`).
  *
- * It also runs the error rows of `tools/ai-rhetoric-patterns.tsv` over every
- * lead and body. `tools/content-lint.sh` skips `<script>`, which is where a
- * story deck keeps all of its visible prose, so without this the lint never
- * sees a story card. A line carrying `lint-allow` (all patterns) or
- * `lint-allow: id, id` is exempt, as in content-lint.
+ * It also runs the error rows of the AI-rhetoric patterns over every lead and
+ * body, through the same scanner `decks lint` and the write hook use
+ * (`../lint/scan.mjs`), so a card that would fail the lint fails here too. A
+ * line carrying `lint-allow` (all patterns) or `lint-allow: id, id` is exempt.
  *
  * A card that says nothing at a beat is `{ lead: '' }` (see `BeatCopy`): it
  * counts as a beat and as zero words.
@@ -20,7 +19,8 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { ROOT_DIR, storyDecks } from './test-decks'
+import { FIELD, copyLiteral as copyLiteralAt, copyStrings, loadPatterns } from '../lint/scan.mjs'
+import { storyDecks } from './test-decks'
 
 const LEAD_WORDS = 8
 const BODY_WORDS = 20
@@ -42,18 +42,8 @@ interface Stanza {
 
 /** The `[ ... ]` after `const COPY =`, by bracket depth, or null. */
 function copyLiteral(src: string): string | null {
-  const start = src.search(/^const COPY(?::[^=]+)? = \[/m)
-  if (start < 0) return null
-  const open = src.indexOf('[', start)
-  let depth = 0
-  for (let i = open; i < src.length; i++) {
-    if (src[i] === '[') depth++
-    else if (src[i] === ']' && --depth === 0) return src.slice(open, i + 1)
-  }
-  return null
+  return copyLiteralAt(src)?.text ?? null
 }
-
-const FIELD = /\b(lead|body):\s*('(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|"(?:[^"\\]|\\.)*")/g
 
 function parseCopy(literal: string): { lead: string; body: string }[] {
   const out: { lead: string; body: string }[] = []
@@ -71,40 +61,9 @@ function parseCopy(literal: string): { lead: string; body: string }[] {
   return out
 }
 
-interface LintPattern {
-  id: string
-  re: RegExp
-}
-
-/**
- * The error-severity rows of the shared pattern file, as JS regexes. The file
- * is POSIX ERE for grep; the only construct here that differs in JS is the
- * bracket class `[[:space:]]`.
- */
-function errorPatterns(): LintPattern[] {
-  const tsv = readFileSync(join(ROOT_DIR, 'tools', 'ai-rhetoric-patterns.tsv'), 'utf8')
-  return tsv
-    .split('\n')
-    .filter((line) => line && !line.startsWith('#'))
-    .map((line) => line.split('\t'))
-    .filter(([, sev]) => sev === 'error')
-    .map(([id, , ere]) => ({ id, re: new RegExp(ere.replaceAll('[[:space:]]', '\\s')) }))
-}
-
-/** Every lead/body string in a copy literal, with the ids its line exempts. */
-function copyStrings(literal: string): { text: string; allow: string[] | '*' }[] {
-  return [...literal.matchAll(FIELD)].map((m) => {
-    const lineStart = literal.lastIndexOf('\n', m.index) + 1
-    const lineEnd = literal.indexOf('\n', m.index)
-    const line = literal.slice(lineStart, lineEnd < 0 ? undefined : lineEnd)
-    const ids = /lint-allow:\s*([\w,\s-]+)/.exec(line)?.[1]
-    const allow = ids
-      ? ids.split(',').map((id) => id.trim())
-      : line.includes('lint-allow')
-        ? '*'
-        : []
-    return { text: m[2].slice(1, -1), allow }
-  })
+/** The error-severity rows of the shared pattern file. */
+function errorPatterns() {
+  return loadPatterns().filter((p) => p.severity === 'error')
 }
 
 /** Words in a copy string; a `${…}` expression counts as one word. */
@@ -224,7 +183,7 @@ describe('beats', () => {
       "  { lead: 'Quoted — verbatim.' }, // lint-allow: em-dash",
       ']',
     ].join('\n')
-    const hits = copyStrings(copyLiteral(src) ?? '').filter(
+    const hits = copyStrings(src).filter(
       ({ text, allow }) =>
         allow !== '*' && patterns.some((p) => !allow.includes(p.id) && p.re.test(text)),
     )
@@ -236,9 +195,7 @@ describe('beats', () => {
     const hits: string[] = []
     for (const deck of DECKS) {
       for (const stage of stages(deck)) {
-        const literal = copyLiteral(readFileSync(stage.file, 'utf8'))
-        if (!literal) continue
-        for (const { text, allow } of copyStrings(literal)) {
+        for (const { text, allow } of copyStrings(readFileSync(stage.file, 'utf8'))) {
           if (allow === '*') continue
           for (const p of patterns) {
             if (!allow.includes(p.id) && p.re.test(text))

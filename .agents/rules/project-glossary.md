@@ -14,7 +14,8 @@ This table starts empty. Add a row per column or code term your decks put in fro
 | Column / code term | Prose term | Notes |
 |---|---|---|
 
-To have the lint hook enforce a row, add a `terminology-<slug>` line at the bottom of `tools/ai-rhetoric-patterns.tsv` (`error` blocks the write, `warn` only reports) and say so in the Notes column. The two rows this glossary started from, for a deck series on Texas school finance, show the shape:
+<!-- decks:repo-only -->
+To have the lint hook enforce a row, add a `terminology-<slug>` line at the bottom of `packages/decks/lint/ai-rhetoric-patterns.tsv` (`error` blocks the write, `warn` only reports) and say so in the Notes column. The two rows this glossary started from, for a deck series on Texas school finance, show the shape:
 
 <!--
 | `state_revenue` | "state aid" or "state funding" | Never "state revenue". Enforced as an error. |
@@ -23,3 +24,10 @@ To have the lint hook enforce a row, add a `terminology-<slug>` line at the bott
 terminology-state-revenue	error	\b[Ss]tate revenue\b	Write "state aid" or "state funding" (not "state revenue").
 terminology-local-tax	warn	\b[Ll]ocal tax revenue\b	Prefer "local property tax collections".
 -->
+<!-- /decks:repo-only -->
+<!-- decks:user: Nothing enforces these rows automatically: whoever writes or reviews the slides applies them. Two rows from a deck series on Texas school finance show the shape:
+
+```md
+| `state_revenue` | "state aid" or "state funding" | Never "state revenue". |
+| `local_tax_revenue` | "local property tax collections" | Prefer it over "local tax revenue". |
+``` -->

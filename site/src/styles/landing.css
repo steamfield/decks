@@ -1,0 +1,660 @@
+/*
+ * The landing page. Dark only: BaseLayout sets the --color-* tokens from the
+ * product's default.json (src/lib/tokens.ts). The page is one step lighter than
+ * the slide canvas, so the deck in its frame reads as an object on the page.
+ * Radii: 12px for the deck frame and media, 6px for controls, 4px for chips.
+ * Nothing here moves except the hero loop (a video) under DeckPlayer.
+ */
+
+.page-column {
+  /* The player's width (R1): sized by viewport height, so the title bar, frame and
+     caption bar fit the first viewport. Wide blocks below it stop at this width,
+     so the frame stays the widest thing on the page. */
+  --band: 16px;
+  --chrome: 440px;
+  --player-width: 100%;
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  .page-column {
+    --player-width: calc(max(720px, (100svh - var(--chrome)) * 16 / 9) + 2 * var(--band) + 2px);
+  }
+}
+
+@media (min-width: 640px) {
+  .page-column {
+    padding-inline: 2rem;
+  }
+}
+
+.text-data {
+  color: var(--color-data);
+}
+
+/* Hero: a header row (H1 and lede, install) that leaves the deck its width. */
+.hero {
+  padding-block: 1.25rem 3rem;
+}
+
+.hero-head {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-head {
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    align-items: end;
+    gap: 2.5rem;
+  }
+}
+
+.hero-title {
+  font-size: clamp(1.75rem, 1.3rem + 1.4vw, 2.25rem);
+  line-height: 1.12;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.hero-lede {
+  max-width: 46rem;
+  color: var(--color-ink-2);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.hero-install {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hero-install pre {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/*
+ * The player is sized by the viewport's height, so the title bar, the frame and
+ * the caption bar fit a 1440x900 window (rule R1 in the site RFC), up to the
+ * page column. --chrome is everything that isn't the slide: the site header, the
+ * hero's header row, the title bar, the caption bar and the frame's band.
+ * Below 768px it takes the full width and the frame is not the reading surface.
+ */
+.player-stack {
+  margin-inline: auto;
+  width: min(100%, var(--player-width));
+}
+
+.player {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-panel);
+}
+
+.player:focus-visible {
+  outline: 2px solid var(--color-data);
+  outline-offset: 3px;
+}
+
+.player-titlebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.625rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.titlebar-prompt,
+.titlebar-title {
+  min-width: 0;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.titlebar-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.titlebar-caret {
+  color: var(--color-data);
+}
+
+.titlebar-stats {
+  color: var(--color-muted);
+}
+
+.player-frame {
+  padding: var(--band);
+}
+
+.player-canvas {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--color-frame-edge);
+  border-radius: var(--radius-lg);
+  background: var(--color-frame);
+}
+
+.player-canvas :is(img, video, iframe) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+.player-message {
+  position: absolute;
+  inset: auto 1rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+  padding: 0.5rem 0.75rem;
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
+.player-caption {
+  display: grid;
+  gap: 0.75rem 1.5rem;
+  border-top: 1px solid var(--color-line);
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .player-caption {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+}
+
+.caption-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.caption-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+.pips {
+  display: flex;
+  gap: 5px;
+}
+
+.pip {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--color-data-dim);
+  border-radius: 2px;
+}
+
+.pip[data-state="past"] {
+  background: var(--color-data-dim);
+}
+
+.pip[data-state="now"] {
+  border-color: var(--color-data);
+  background: var(--color-data);
+}
+
+.counter {
+  color: var(--color-data);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.controls {
+  display: flex;
+  gap: 4px;
+}
+
+.control {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  color: var(--color-ink-2);
+}
+
+.control:hover {
+  border-color: var(--color-line-strong);
+  color: var(--color-ink);
+}
+
+.control[data-primary] {
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-action-ink);
+}
+
+.control[aria-pressed="true"] {
+  border-color: var(--color-data);
+  color: var(--color-data);
+}
+
+.open-deck {
+  margin-inline-start: auto;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.phone-only {
+  display: none;
+}
+
+.caption-text {
+  min-height: 4.5rem;
+}
+
+.caption-lead {
+  color: var(--color-ink);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.caption-body {
+  margin-top: 0.125rem;
+  color: var(--color-ink-2);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  .control {
+    width: 44px;
+    height: 44px;
+  }
+
+  .controls {
+    justify-content: space-between;
+  }
+
+  .phone-only {
+    display: inline;
+  }
+
+  .caption-lead {
+    font-size: 1.125rem;
+  }
+}
+
+/* Full screen: the whole player, the slide as large as the window allows. */
+.player:fullscreen {
+  display: flex;
+  flex-direction: column;
+  border: 0;
+  border-radius: 0;
+}
+
+.player:fullscreen .player-frame {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 0;
+}
+
+.player:fullscreen .player-canvas {
+  width: min(100%, calc((100vh - 15rem) * 16 / 9));
+}
+
+/* Inset by the band and border, so the notes line up with the deck frame's edges
+   and never run wider than it (R1). */
+.player-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-inline: calc(var(--band) + 1px);
+  color: var(--color-ink-2);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.edit-pairs {
+  display: grid;
+  gap: 0.5rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .edit-pairs {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.edit-pair {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr);
+  gap: 0 0.5rem;
+}
+
+.edit-pair dt {
+  color: var(--color-muted);
+}
+
+.edit-pair del {
+  color: var(--color-muted);
+}
+
+.edit-pair ins {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+/* Sections below the hero. Each block stays narrower than the deck frame. */
+.landing-section {
+  border-top: 1px solid var(--color-line);
+  padding-block: 3.5rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.panel {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+}
+
+.panel > figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+}
+
+.requirements,
+.file-tree,
+.compare,
+.install-block {
+  max-width: 44rem;
+}
+
+.requirement {
+  display: grid;
+  gap: 0.125rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.75rem 1rem;
+}
+
+.requirement:last-child {
+  border-bottom: 0;
+}
+
+.requirement dt {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.requirement dd {
+  color: var(--color-ink-2);
+}
+
+@media (min-width: 640px) {
+  .requirement {
+    grid-template-columns: 6rem minmax(0, 1fr);
+  }
+}
+
+.file-tree > figcaption {
+  display: block;
+}
+
+.file-tree ul {
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.file-tree li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 1rem;
+  padding-block: 0.1875rem;
+}
+
+.tree-name {
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.file-tree li[data-dir] .tree-name {
+  color: var(--color-muted);
+}
+
+.tree-note {
+  color: var(--color-muted);
+  font-family: var(--font-sans);
+}
+
+.agent-grid {
+  display: grid;
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.transcript ol {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.transcript li {
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.625rem 1rem;
+}
+
+.transcript li:last-child {
+  border-bottom: 0;
+}
+
+.transcript-prompt {
+  color: var(--color-ink);
+}
+
+.transcript-step {
+  display: grid;
+  gap: 0.125rem 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .transcript-step {
+    grid-template-columns: minmax(0, 1fr) 12rem;
+  }
+}
+
+.transcript-note {
+  color: var(--color-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+}
+
+.hook-panel > figcaption {
+  flex-direction: column;
+}
+
+.hook-line {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-canvas);
+  padding: 0.75rem;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.hook-reason {
+  color: var(--color-ink-2);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.compare-head {
+  display: none;
+}
+
+.compare-row {
+  display: grid;
+  gap: 0.5rem;
+  border-top: 1px solid var(--color-line);
+  padding: 0.875rem 1rem;
+  line-height: 1.5;
+}
+
+.compare-label {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .compare-head,
+  .compare-row {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .compare-head {
+    padding: 0.625rem 1rem;
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .compare-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* From 768px each section's column is as wide as the deck frame inside the
+   player (its width less the band and border on each side) and centered like it,
+   so blocks line up with the frame's edges and the frame stays the widest thing
+   on the page (R1). 4rem is the column's inline padding (2rem a side). */
+@media (min-width: 768px) {
+  .landing-section > .page-column {
+    --frame-inset: calc(2 * var(--band) + 2px);
+    max-width: min(
+      calc(1200px - var(--frame-inset)),
+      calc(var(--player-width) - var(--frame-inset) + 4rem)
+    );
+  }
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: 1.5rem 1.25rem;
+}
+
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.gallery-item img,
+.gallery-empty {
+  display: block;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-frame-edge);
+  border-radius: var(--radius-lg);
+  background: var(--color-frame);
+}
+
+.gallery-title {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.gallery-item:hover .gallery-title {
+  text-decoration: underline;
+}
+
+.gallery-provenance {
+  margin-top: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.themes-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  /* The two stills side by side, the theme.json that makes the difference under them. */
+  .themes-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .themes-grid > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.still img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-frame-edge);
+  border-radius: var(--radius-lg);
+}
+
+.still figcaption {
+  margin-top: 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.install-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

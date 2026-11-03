@@ -1,0 +1,96 @@
+{
+  "source": "keeling-run.jsonl",
+  "session": "e744d47c-88cb-401e-8603-c5881febde4c",
+  "prompt": "make a 5-slide story deck about what the Keeling curve shows about atmospheric CO2",
+  "turns": 47,
+  "durationMs": 1009889,
+  "costUsd": 2.6054928000000004,
+  "toolCalls": 45,
+  "shownCalls": 12,
+  "steps": [
+    {
+      "calls": ["Skill(building-a-deck)"],
+      "note": "Loads the deck-building workflow that decks init installed.",
+      "output": "Launching skill: building-a-deck"
+    },
+    {
+      "calls": [
+        "Bash(cat .claude/rules/story-stage.md .claude/rules/deck-data.md .claude/rules/deck-writing.md)"
+      ],
+      "note": "Reads the stage, data and writing rules before drafting.",
+      "output": ""
+    },
+    {
+      "calls": [
+        "Bash(bunx -p slidev-addon-decks decks new keeling --story --author \"Riley Hilliard\")"
+      ],
+      "note": "Scaffolds a story deck and registers it.",
+      "output": "Scaffolded decks/keeling/ and registered alias \"keeling\"."
+    },
+    {
+      "calls": ["Bash(curl gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv ...)"],
+      "note": "NOAA's Mauna Loa monthly, annual and growth-rate files.",
+      "output": ""
+    },
+    {
+      "calls": ["Bash(cat node_modules/slidev-addon-decks/agent/exemplars/tides/...)"],
+      "note": "Reads the story deck the package ships as an example.",
+      "output": ""
+    },
+    {
+      "calls": ["Bash(curl gml.noaa.gov/education/carbon_toolkit/basics.html)"],
+      "note": "NOAA's explanation of the seasonal cycle.",
+      "output": ""
+    },
+    {
+      "calls": [
+        "Bash(cat > scripts/extract.py)",
+        "Bash(cat > record.ts)",
+        "Bash(cat > seasons.ts)",
+        "Bash(cat > decades.ts)",
+        "Bash(cat > halfway.ts)"
+      ],
+      "note": "A script that copies the CSVs into one generated file, then one data module per slide.",
+      "output": ""
+    },
+    {
+      "calls": [
+        "Bash(cat > components/RecordStage.vue)",
+        "Bash(cat > components/SeasonStage.vue)",
+        "Bash(cat > components/DecadeStage.vue)",
+        "Bash(cat > components/HalfwayStage.vue)"
+      ],
+      "note": "One stage component per story slide.",
+      "output": ""
+    },
+    {
+      "calls": ["Write(decks/keeling/data-sources.md)"],
+      "note": "The fact-check input: each figure and where it came from.",
+      "output": ""
+    },
+    {
+      "calls": [
+        "Bash(bunx -p slidev-addon-decks decks check)",
+        "Bash(bunx -p slidev-addon-decks decks lint keeling)",
+        "Bash(bunx -p slidev-addon-decks decks build keeling)"
+      ],
+      "note": "",
+      "output": "All page files match their manifests."
+    },
+    {
+      "calls": ["Bash(bunx -p slidev-addon-decks decks shot keeling $n 2 --port 3030)"],
+      "note": "Screenshots slides 2 to 5 at every click, then reads the images and fixes what they show.",
+      "output": "errors: none"
+    },
+    {
+      "calls": [
+        "Bash(bunx -p slidev-addon-decks decks check)",
+        "Bash(bunx -p slidev-addon-decks decks lint keeling)",
+        "Bash(bunx -p slidev-addon-decks decks build keeling)",
+        "Bash(bunx -p slidev-addon-decks decks fact-extract keeling)"
+      ],
+      "note": "Checks, lints and builds again after the fixes, then lists every figure for the fact-check.",
+      "output": "✓ built in 840ms"
+    }
+  ]
+}

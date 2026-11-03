@@ -1,0 +1,13 @@
+{
+  "surfaces": {
+    "canvas": "#15110e",
+    "canvas-cover": "#120f0c",
+    "surface": "#1d1814",
+    "surface-raised": "#26201b",
+    "muted": "#3a3029"
+  },
+  "ramps": {
+    "cyan": ["#2f8f83", "#3fae9f", "#62c7b8", "#9be0d4"],
+    "amber": ["#c9741c", "#e8913a", "#f2b05e", "#f8cf8f"]
+  }
+}

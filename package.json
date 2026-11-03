@@ -18,9 +18,12 @@
     "shot": "bun packages/decks/scripts/shot.mjs",
     "snap": "bun packages/decks/scripts/snap.mjs",
     "snap:diff": "bun packages/decks/scripts/snap.mjs diff",
-    "lint": "./tools/content-lint.sh",
-    "fact-extract": "bun tools/content-fact-extract.mjs",
-    "test:hooks": "bash .claude/hooks/tests/run-hook-tests.sh"
+    "lint": "bun packages/decks/scripts/deck.mjs lint",
+    "fact-extract": "bun packages/decks/scripts/deck.mjs fact-extract",
+    "test:hooks": "node .claude/hooks/tests/run-hook-tests.mjs",
+    "render:agent": "node packages/decks/scripts/render-agent.mjs",
+    "test:embed": "bun packages/decks/scripts/embed-check.mjs",
+    "test:tarball": "node packages/decks/scripts/tarball-e2e.mjs"
   },
   "dependencies": {
     "3d-force-graph": "^1.80.0",

@@ -1,0 +1,205 @@
+---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Code } from "astro:components";
+import CopyBlock from "../components/CopyBlock.astro";
+import { DeckPlayer } from "../components/landing/DeckPlayer";
+import { InstallTabs } from "../components/landing/InstallTabs";
+import {
+  CompareTable,
+  DeckProse,
+  ExampleGallery,
+  FileTree,
+  Hero,
+  HookPanel,
+  ReleaseBanner,
+  Requirements,
+  Section,
+  Transcript,
+} from "../components/landing/sections";
+import { site } from "../config";
+import { ENTRIES, loadExamples } from "../data/examples";
+import { loadHookDenial, loadRun } from "../data/fixtures";
+import { loadProjectFiles, setupCommands } from "../data/project";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { Events } from "../lib/events";
+import { runMinutes } from "../lib/player/format";
+
+const examples = loadExamples();
+const [hero] = examples;
+const heroRun = ENTRIES[0]?.run ? loadRun(ENTRIES[0].run.fixture) : null;
+const denial = loadHookDenial();
+const files = loadProjectFiles();
+const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
+const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-default" } as const;
+// The theme stills are shot from this deck (STILL.deck in scripts/demo.mjs), not the hero.
+const STILL_DECK = "tides";
+const stillTitle =
+  examples.find((example) => example.name === STILL_DECK)?.title ?? "A story slide";
+const stills = (name: string) => ({
+  avif: `/stills/${STILL_DECK}-${name}-640.avif 640w, /stills/${STILL_DECK}-${name}-1280.avif 1280w`,
+  webp: `/stills/${STILL_DECK}-${name}-640.webp 640w, /stills/${STILL_DECK}-${name}-1280.webp 1280w`,
+  src: `/stills/${STILL_DECK}-${name}-1280.webp`,
+});
+---
+
+<BaseLayout title={site.tagline} path="/" landing>
+  <ReleaseBanner slot="banner" announcement={site.announcement} />
+
+  <section aria-labelledby="hero-title" class="hero">
+    <div class="page-column hero-head">
+      <div id="hero-title">
+        <Hero tagline={site.tagline} description={site.description} />
+      </div>
+      <div class="hero-install">
+        <CopyBlock
+          lines={site.quickstart}
+          label="Copy the three install commands"
+          track={Events.installCopied}
+          trackMethod="hero"
+        />
+        <p class="text-muted text-sm">
+          {site.price}. <a href="#requirements">Requirements and limits</a> ·{" "}
+          <a href="/docs/getting-started/quickstart/">Docs</a>
+        </p>
+      </div>
+    </div>
+    <div class="page-column">
+      <DeckPlayer client:visible examples={examples} />
+    </div>
+    {hero && <DeckProse example={hero} />}
+  </section>
+
+  <Section
+    id="requirements"
+    title="Requirements and limits"
+    lede="Decks fits a talk that explains numbers one step at a time, built with Claude Code on Slidev."
+  >
+    <Requirements items={site.requirements} />
+    <p class="text-ink-2">
+      To use Decks in a Slidev deck you already have, see{" "}
+      <a href="/docs/getting-started/add-decks-to-an-existing-deck/">
+        Add Decks to an existing Slidev deck
+      </a>
+      .
+    </p>
+  </Section>
+
+  <Section
+    id="what-you-get"
+    title="What you get"
+    lede="The agent setup and a scaffolded story deck, as the commands write them into an empty project."
+  >
+    <FileTree files={files} notes={site.files} commands={setupCommands} />
+    <p class="text-ink-2 max-w-[44rem]">
+      Then ask Claude Code for the talk. To change it later, ask for a revision of one slide, run
+      the <code>fact-checking-a-deck</code> skill before you present, and keep{" "}
+      <code>{site.devCommand}</code> open to watch each edit land.
+    </p>
+  </Section>
+
+  <Section
+    id="agent"
+    title="How the agent builds a deck"
+    lede="The agent loads the deck-building skill, reads the writing and data rules, fetches its sources, writes one data file and one stage per slide, then checks and builds the deck."
+  >
+    <div class="agent-grid">
+      {heroRun && hero && <Transcript run={heroRun} deck={`the ${hero.name} deck`} />}
+      <HookPanel denial={denial} />
+    </div>
+    <p class="text-ink-2">
+      <a href="/docs/guides/writing-decks-with-an-agent/">Writing decks with an agent</a> covers
+      each file and how to run it.
+    </p>
+  </Section>
+
+  <Section
+    id="examples"
+    title="Example decks"
+    lede="Pick one to load it into the player at the top of the page."
+  >
+    <ExampleGallery examples={examples} />
+    <div class="flex flex-col gap-3">
+      <h3 class="text-ink text-lg font-semibold">Compared with v-click</h3>
+      <p class="text-ink-2 max-w-[44rem]">
+        Slidev's v-click shows or hides one element per click. A story slide redraws the whole chart
+        from the current click count.
+      </p>
+      <CompareTable rows={site.compare} />
+    </div>
+  </Section>
+
+  <Section
+    id="themes"
+    title="Themes"
+    lede="Colors, fonts and cover branding come from one theme file. A deck's theme.json sets only the keys it lists, and the rest keep their defaults."
+  >
+    <div class="themes-grid">
+      <figure class="still">
+        <picture>
+          <source
+            type="image/avif"
+            srcset={stills("normal").avif}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <source
+            type="image/webp"
+            srcset={stills("normal").webp}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <img
+            src={stills("normal").src}
+            width="1280"
+            height="720"
+            loading="lazy"
+            alt={`A slide from the ${STILL_DECK} deck, "${stillTitle}", with the default theme`}
+          />
+        </picture>
+        <figcaption>Default theme</figcaption>
+      </figure>
+      <figure class="still">
+        <picture>
+          <source
+            type="image/avif"
+            srcset={stills("warm").avif}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <source
+            type="image/webp"
+            srcset={stills("warm").webp}
+            sizes="(min-width: 1024px) 420px, 100vw"
+          />
+          <img
+            src={stills("warm").src}
+            width="1280"
+            height="720"
+            loading="lazy"
+            alt="The same slide with the theme.json beside it"
+          />
+        </picture>
+        <figcaption>With this theme.json</figcaption>
+      </figure>
+      <figure class="code-frame code-wrap" data-block>
+        <figcaption>theme.json</figcaption>
+        <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
+      </figure>
+    </div>
+    <p class="text-muted max-w-[44rem] text-sm">
+      This file changes the background colors and the two chart colors the slide uses. The values
+      come from the warm palette in the template deck.{" "}
+      <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
+    </p>
+  </Section>
+
+  <Section id="install" title="Install">
+    <div class="install-block" data-block>
+      <InstallTabs client:idle options={site.install} />
+      {heroRun && hero?.run && (
+        <p class="text-ink-2 text-sm">
+          The draft of the deck at the top of the page took {runMinutes(hero.run.minutes)} and{" "}
+          {hero.run.cost} of Claude usage. Decks itself is free and {site.license} licensed.
+        </p>
+      )}
+    </div>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,74 @@
+<!doctype html>
+<!--
+  A stand-in deck for the player's browser tests. It speaks the embed contract
+  (src/lib/player/protocol.ts) the way the addon does: decks:ready, decks:meta,
+  then decks:state on load, on each move (settled: false) and when the beat
+  "animation" ends (settled: true). Routed in place of /demo/<name>/ by e2e tests.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stub deck</title>
+    <style>
+      body { margin: 0; background: #09090b; color: #f7f8f8; font: 32px system-ui; display: grid; place-items: center; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <p id="where"></p>
+    <script>
+      // A cover, four story slides of three steps (the examples start on slides 2 to 5),
+      // and a closing slide with no card. Slide 6 also stands in for od-templates' start.
+      const story = () => ({ title: "", beats: [
+        { lead: "First beat lead.", body: "First beat body." },
+        { lead: "Second beat lead.", body: "Second beat body." },
+        { lead: "Third beat lead.", body: "" },
+      ] });
+      const SLIDES = [
+        { title: "Stub cover", beats: [{ lead: "", body: "" }] },
+        story(),
+        story(),
+        story(),
+        story(),
+        { title: "Stub closing slide", beats: [{ lead: "", body: "" }, { lead: "", body: "" }] },
+      ];
+      const SETTLE_MS = Number(new URLSearchParams(location.search).get("settle") ?? 120);
+      let slide = Number((location.hash.match(/#\/(\d+)/) || [])[1] || 1);
+      let beat = 0;
+      window.__stubCommands = [];
+      const post = (message) => window.parent.postMessage(message, location.origin);
+      const state = (settled, direction) => {
+        // A test can route this page in with window.STUB_CARD set: every step then shows that card.
+        const card = window.STUB_CARD ?? SLIDES[slide - 1].beats[beat];
+        document.getElementById("where").textContent = `slide ${slide} beat ${beat}`;
+        post({ type: "decks:state", slide, slides: SLIDES.length, beat, beats: SLIDES[slide - 1].beats.length - 1, lead: card.lead, body: card.body, settled, direction });
+      };
+      const move = (nextSlide, nextBeat, direction) => {
+        slide = nextSlide;
+        beat = nextBeat;
+        state(false, direction);
+        setTimeout(() => state(true, direction), SETTLE_MS);
+      };
+      window.addEventListener("message", (event) => {
+        if (event.origin !== location.origin || event.data?.type !== "decks:cmd") return;
+        const { cmd } = event.data;
+        window.__stubCommands.push(cmd);
+        const beats = SLIDES[slide - 1].beats.length;
+        if (cmd === "next") {
+          if (beat < beats - 1) move(slide, beat + 1, "forward");
+          else if (slide < SLIDES.length) move(slide + 1, 0, "forward");
+        } else if (cmd === "prev") {
+          if (beat > 0) move(slide, beat - 1, "backward");
+          else if (slide > 1) move(slide - 1, SLIDES[slide - 2].beats.length - 1, "backward");
+        } else if (cmd === "nextSlide" && slide < SLIDES.length) move(slide + 1, 0, "forward");
+        else if (cmd === "prevSlide" && slide > 1) move(slide - 1, 0, "backward");
+        else if (cmd === "go") move(event.data.slide, event.data.beat ?? 0, null);
+      });
+      if (window.parent !== window) {
+        post({ type: "decks:ready" });
+        post({ type: "decks:meta", title: "Stub deck", slides: SLIDES.length, slideTitles: SLIDES.map((s) => s.title) });
+        state(false, null);
+        setTimeout(() => state(true, null), SETTLE_MS);
+      }
+    </script>
+  </body>
+</html>

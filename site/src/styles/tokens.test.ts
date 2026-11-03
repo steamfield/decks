@@ -1,0 +1,91 @@
+// @vitest-environment node
+// WCAG contrast for every token pair the site draws text or controls with: the
+// docs in both page themes, and the landing page, which is dark only and takes
+// its colors from the product's default.json.
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import { contrast } from "../lib/contrast";
+import { landingCss, landingTokens, productTheme } from "../lib/tokens";
+
+const css = readFileSync(new URL("./global.css", import.meta.url), "utf8");
+
+/** The token values declared inside one block: `@theme static {` or `.dark {`. */
+function block(opener: string) {
+  const start = css.indexOf(opener);
+  if (start === -1) throw new Error(`${opener} missing from global.css`);
+  const body = css.slice(start, css.indexOf("}", start));
+  return Object.fromEntries(
+    [...body.matchAll(/--color-([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2]]),
+  ) as Record<string, string>;
+}
+
+const light = block("@theme static {");
+const dark = { ...light, ...block(".dark {") };
+const themes = { light, dark };
+const get = (tokens: Record<string, string>, name: string) => {
+  const value = tokens[name];
+  if (!value) throw new Error(`--color-${name} missing`);
+  return value;
+};
+
+describe.each(Object.entries(themes))("%s page tokens", (_name, tokens) => {
+  it.each(
+    ["canvas", "panel"].flatMap((surface) =>
+      ["ink", "ink-2", "muted", "accent"].map((fg) => [fg, surface]),
+    ),
+  )("%s text on %s is at least 4.5:1", (fg, surface) => {
+    expect(contrast(get(tokens, fg), get(tokens, surface))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(["canvas", "panel"])(
+    "control borders (line-strong) on %s are at least 3:1",
+    (surface) => {
+      expect(contrast(get(tokens, "line-strong"), get(tokens, surface))).toBeGreaterThanOrEqual(3);
+    },
+  );
+});
+
+describe("the dark theme block matches the no-JavaScript fallback", () => {
+  it("declares the same values in .dark and in the prefers-color-scheme block", () => {
+    expect(block(":root:not(.light) {")).toEqual(block(".dark {"));
+  });
+});
+
+describe("landing page tokens", () => {
+  const tokens = landingTokens();
+  const theme = productTheme();
+
+  it("come from the product's default.json, one step above the slide canvas", () => {
+    expect(tokens.canvas).toBe(theme.surfaces.surface);
+    expect(tokens.frame).toBe(theme.surfaces.canvas);
+    expect(tokens.canvas).not.toBe(tokens.frame);
+    expect(tokens.data).toBe(theme.ramps.cyan[1]);
+    expect(tokens.action).toBe("#f59e0b");
+  });
+
+  it.each(
+    ["canvas", "panel"].flatMap((surface) =>
+      ["ink", "ink-2", "muted", "accent", "data"].map((fg) => [fg, surface]),
+    ),
+  )("%s text on %s is at least 4.5:1", (fg, surface) => {
+    expect(contrast(get(tokens, fg), get(tokens, surface))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(["canvas", "panel"])(
+    "control borders (line-strong) on %s are at least 3:1",
+    (surface) => {
+      expect(contrast(get(tokens, "line-strong"), get(tokens, surface))).toBeGreaterThanOrEqual(3);
+    },
+  );
+
+  it("puts readable text on the action color", () => {
+    expect(contrast(get(tokens, "action-ink"), get(tokens, "action"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(get(tokens, "action"), get(tokens, "panel"))).toBeGreaterThanOrEqual(3);
+  });
+
+  it("writes every token as a variable on the landing page's root", () => {
+    const css = landingCss(tokens);
+    expect(css.startsWith('html[data-page="landing"]{')).toBe(true);
+    for (const name of Object.keys(tokens)) expect(css).toContain(`--color-${name}:`);
+  });
+});

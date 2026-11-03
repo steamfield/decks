@@ -1,0 +1,2 @@
+# The AI-rhetoric pattern file is parsed line by line; keep it LF in every checkout.
+*.tsv text eol=lf

@@ -87,13 +87,21 @@ inside 4+-space-indented HTML becomes an indented code block and fails with
 
 ```bash
 bun run check                 # manifest vs pages/ drift + unregistered decks    (every edit cycle)
+<!-- decks:repo-only -->
 bun run typecheck             # first-party TS errors (node_modules noise filtered)  (every edit cycle)
 bun run test                  # unit suites + story guards (beats incl. COPY lint, durations, frame units, vt-names)  (every edit cycle)
+<!-- /decks:repo-only -->
 bun run shot <n> [clicks]     # per-slide screenshot, card lead, chip position, console errors  (story: after each new/changed stage; restart the dev server first)
+<!-- decks:repo-only -->
 bun run snap <dir>            # whole-deck pixel walk                            (only around an addon refactor)
 bun run snap:diff <a> <b>     # diff two walks; on the pitch, s01-c0/s04-c2/s04-c3/s13-c0 have a noise floor, everything else should be 0.000%
+<!-- /decks:repo-only -->
+<!-- decks:user: bun run snap <dir>            # whole-deck screenshot walk                       (before and after a theme or styles change) -->
 bun run build <alias>         # must pass before any review                      (before handing off)
+<!-- decks:repo-only -->
 bun run lint                  # prose lint (also enforced by the write hook)      (before handing off)
+<!-- /decks:repo-only -->
+<!-- decks:user: bun run lint                  # prose lint incl. story COPY (also enforced by the write hook)  (every edit cycle) -->
 bun run fact-extract <alias>  # every number in the deck, to trace to data-sources.md   (before handing off)
 ```
 
@@ -114,12 +122,17 @@ wrong for exactly this reason and would have shipped unread.
 
 ## 7. Definition of done (story deck)
 
+<!-- decks:repo-only -->
 1. `bun run check`, `bun run typecheck`, `bun run test` clean, and the story
    guards (`beats`, `durations`, `frame-units`, `vt-names`) report scanning
    this deck.
-2. `bun run build <alias>` succeeds. For a change to `packages/decks/` or to
+<!-- /decks:repo-only -->
+<!-- decks:user: 1. `bun run check` clean (manifest drift plus lint errors, story `COPY`
+   included), and each stage's `COPY` length, beat count and the page's
+   `clicks:` agree (`.claude/rules/story-stage.md`). -->
+2. `bun run build <alias>` succeeds.<!-- decks:repo-only --> For a change to `packages/decks/` or to
    the story engine, `bun run build:all` (every registered deck, galleries
-   included).
+   included).<!-- /decks:repo-only -->
 3. `bun run lint` clean.
 4. Every figure `bun run fact-extract <alias>` lists is traced (run the
    `fact-checking-a-deck` skill); `data-sources.md` has a section per visible slide, every
@@ -128,8 +141,12 @@ wrong for exactly this reason and would have shipped unread.
 5. Dev server restarted after the last component was added; `bun run shot`
    on every new or changed slide prints `errors: none` and a card lead per
    click that matches the `COPY` entry.
+<!-- decks:repo-only -->
 6. For a refactor of `packages/decks/`: `snap` baseline before, `snap:diff` after,
    every frame under its noise floor or explained, never widened.
+<!-- /decks:repo-only -->
+<!-- decks:user: 6. For a theme or shared-styles change: a `snap` walk before and after, and
+   every changed frame explained. -->
 7. `bun run export <alias>` produces a PDF with every click state
    (`animated: true` set).
 8. The author's own visual QA is the last step, and the only one that judges

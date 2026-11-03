@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint-ai-rhetoric.sh"
+            "command": "node \"$CLAUDE_PROJECT_DIR/packages/decks/scripts/deck.mjs\" hook lint || exit 2"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/user-prompt-submit.sh"
+            "command": "node \"$CLAUDE_PROJECT_DIR/packages/decks/scripts/deck.mjs\" hook prompt"
           }
         ]
       }

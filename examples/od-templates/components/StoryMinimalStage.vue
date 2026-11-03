@@ -45,7 +45,8 @@ const CHIP_Y = yScale(Y_DOMAIN, Y_RANGE)(1.9)
 /**
  * One card per beat, in beat order. Its length is the beat count, so this
  * array and the `clicks:` in the manifest are the only two numbers that have
- * to agree (`beats.test.ts` checks that, and the eight/twenty word budget).
+ * to agree. The eight/twenty word budget per card is in
+ * `.claude/rules/story-stage.md`; `decks lint` scans this COPY for AI-prose patterns.
  */
 const COPY = [
   { lead: 'A thousand datasets, hand curated.', body: 'Small enough to read end to end.' },

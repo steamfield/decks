@@ -18,7 +18,10 @@ Verify every number in a deck against the source recorded for it. No estimation,
 ### 1. Extract the manifest
 
 ```bash
-bun run fact-extract <alias>          # alias from decks.json; or: bun tools/content-fact-extract.mjs <deck-dir>
+<!-- decks:repo-only -->
+bun run fact-extract <alias>          # alias from decks.json; or: bun packages/decks/scripts/deck.mjs fact-extract <deck-dir>
+<!-- /decks:repo-only -->
+<!-- decks:user: bun run fact-extract <alias>          # alias from decks.json -->
 ```
 
 The extractor produces three sections: data arrays (every array literal in `data/*.ts` and in the `<script>` of pages and components, which includes story `COPY` arrays), prose numeric claims in `slides.md` and `pages/*.md`, and external links in number-bearing sentences. Treat this output as your working checklist, together with every exported figure constant in `data/*.ts` (the extractor lists arrays, not scalar constants, so read the data modules too).

@@ -1,3 +1,7 @@
+---
+title: Data, made usable for the agent era.
+---
+
 <!--
 SLIDE 1 · COVER: the catalog graph orbiting behind the title
 -->

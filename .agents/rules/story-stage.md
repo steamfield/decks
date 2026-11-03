@@ -10,10 +10,10 @@ globs: "**/examples/*/components/*Stage.vue,**/decks/*/components/*Stage.vue,**/
 A story slide is one pinned visualization whose state animates from beat to
 beat on arrow keys, with a floating prose card carrying the arc. This file is
 the authoring contract for a stage component. The engine's full API,
-lifecycle, and component list live in `packages/decks/story/README.md`; read
-that before touching `packages/decks/story/` itself. `examples/opendata-pitch`
-is the reference deck; `examples/od-story-templates` is the gallery of isolated
-patterns.
+lifecycle, and component list live in `packages/decks/story/README.md`<!-- decks:repo-only -->; read
+that before touching `packages/decks/story/` itself<!-- /decks:repo-only -->. `examples/opendata-pitch`
+is the reference deck<!-- decks:repo-only -->; `examples/od-story-templates` is the gallery of isolated
+patterns<!-- /decks:repo-only -->.
 
 ## Write a stage on `useStage`
 
@@ -72,8 +72,9 @@ existed then, so a remount leaves them animating orphans while fresh children
 sit on screen at their resting state, and the line never sweeps. A
 timeline-driven mark re-arms on re-entry without the key; keep the key for
 state no timeline owns (a CSS keyframe, a canvas, a child with its own
-playhead). `handle-refs.test.ts` fails on a driven ref inside the key.
+playhead).<!-- decks:repo-only --> `handle-refs.test.ts` fails on a driven ref inside the key.<!-- /decks:repo-only -->
 
+<!-- decks:repo-only -->
 ## Beats, COPY, and clicks must agree, and now something checks it
 
 Three numbers used to be kept in three places by hand: the copy array's
@@ -85,6 +86,15 @@ budget: eight words for `lead`, twenty for `body`. A card that already
 carries more than budget is pinned by name in `OVER_BUDGET_TODAY` inside the
 test; trimming the copy is a content decision, and the pin entry comes out
 the same commit the copy is trimmed.
+<!-- /decks:repo-only -->
+<!-- decks:user: ## Beats, COPY, and clicks must agree
+
+Three numbers have to agree: the copy array's length, the `:beats` count,
+and `clicks:` in the page's manifest stanza, which is the beat count minus
+one. `useStage` ties the first two together by construction; keep `clicks:`
+in step by hand, and confirm it with `bun run shot`, which prints one card
+lead per click. The card budget is eight words for `lead` and twenty for
+`body`. -->
 
 A beat with no card is `{ lead: '' }`: it still counts toward the beat count,
 and the template hides the card at that beat with `v-if="copy.lead"`. Do not
@@ -98,11 +108,11 @@ viewport (`--od-fw`/`--od-fh` in `story-frame.css`). Anything sized relative
 to that frame uses `calc(N * var(--sw))` / `calc(N * var(--sh))`, never a raw
 `vw`/`vh`: on a screen that is not 16:9 (which is what full screen usually
 gives you) a viewport unit sizes off the window while everything around it
-sizes off the frame, and the slide clips. `frame-units.test.ts` scans every
+sizes off the frame, and the slide clips.<!-- decks:repo-only --> `frame-units.test.ts` scans every
 story deck's components, pages, data, and styles for a raw viewport length
 and fails on one outside its small allowlist (the frame's own `--od-fw`/
 `--od-fh` declarations, the cover background gradient, the drift keyframes,
-and a documented fallback pattern). `useStageMap()` converts between viewBox
+and a documented fallback pattern).<!-- /decks:repo-only --> `useStageMap()` converts between viewBox
 units and overlay percentages for anything that has to sit on top of a mark.
 
 ## `StoryLayer` and view-transition hand-offs
@@ -112,17 +122,19 @@ over the stage, for ink that needs to sit on an HTML element so it can carry
 a `view-transition-name`. An svg `<g>` cannot carry one; a div can. The
 caller's `class` (a `vt-*` name) falls through to the wrapping div.
 
-A hand-off is two rules in `story-frame.css`: one assigns the
+A hand-off is two rules<!-- decks:repo-only --> in `story-frame.css`<!-- /decks:repo-only --><!-- decks:user: , in `packages/decks/styles/story-frame.css` for the addon's own and in the deck's `styles/index.css` for a deck-local one -->: one assigns the
 `view-transition-name` under `.vt-on` (set only in the real slide view, from
 `$renderContext === 'slide'`), one nulls it again inside the presenter, the
 print container, and the overview, collapsed into a single `:is(...)` rule.
-Only adjacent slides may share a name. `vt-names.test.ts` compares the set of
+Only adjacent slides may share a name.<!-- decks:repo-only --> `vt-names.test.ts` compares the set of
 `vt-*` classes assigned under `.vt-on` against the set nulled in the `:is()`
 list and fails if either side is missing one, so adding a hand-off is one new
 name in two places, not three selector lists. `.od-story-head` and
 `.od-story-card` also carry names without a `vt-` class of their own and are
 checked the same way; `vt-on` itself is the gate class, not a hand-off name,
-and is excluded from both sides of the comparison.
+and is excluded from both sides of the comparison.<!-- /decks:repo-only --><!-- decks:user:  Every name assigned under `.vt-on`
+goes in the `:is()` list too, so adding a hand-off is one new name in two
+places. -->
 
 ## Mark style and hue
 
@@ -134,7 +146,7 @@ returns one of four ramp steps for a token hue (`cyan`, `amber`, `rose`,
 `emerald`, `violet`, `slate`); step 1 is the floor and holds 3:1 against the
 canvas. The ramps come from the deck theme: a deck's `theme.json` can recolor
 any of the six hues (four `#rrggbb` steps, lighter as they go, replaced whole)
-but not rename or add one, and `theme.test.ts` holds step 1 to 3:1 against
+but not rename or add one, and <!-- decks:repo-only -->`theme.test.ts` holds step 1 to 3:1<!-- /decks:repo-only --><!-- decks:user: step 1 has to hold 3:1 --> against
 `surfaces.canvas`. A stage reads every color through `ink()` or
 `slidev-addon-decks/theme`, never a hex literal, so a recolor reaches it. Grey is the default ink; one saturated series per stage carries the
 `hue` argument. Seeds for anything hashed (`brushRibbon`, `InkLine`) come from
@@ -186,18 +198,20 @@ htmlAttrs:
   data-od-story: ""
 ```
 
-`data-od-story` is the marker the guard tests (`packages/decks/story/test-decks.ts`),
-the router guard in `packages/decks/setup/main.ts`, and the view-transition rules in
+`data-od-story` is the marker <!-- decks:repo-only -->the guard tests (`packages/decks/story/test-decks.ts`),
+<!-- /decks:repo-only -->the router guard in `packages/decks/setup/main.ts`, and the view-transition rules in
 `packages/decks/styles/story-frame.css` all key on. Do not use Slidev's own `transition: view-transition`:
 it swaps the slideshow container between a div and a `TransitionGroup` on
 every route change, and a click is a route change, so every click would
 remount every slide. `packages/decks/setup/main.ts` runs `document.startViewTransition`
 itself from a router guard instead.
 
+<!-- decks:repo-only -->
 Never write the literal string `data-od-story` inside a conventional deck's
 `slides.md` prose or comments: `test-decks.ts` enrols any deck whose
 `slides.md` contains that string, so a stray mention in a comment silently
 puts a conventional deck through the story guards.
+<!-- /decks:repo-only -->
 
 ## Review-agent brief
 
@@ -215,6 +229,7 @@ not copy to paste into the slide.
   including unresolved-component failures. Restart the dev server first if a
   component file was added or moved (Slidev's auto-import list is built at
   startup).
+<!-- decks:repo-only -->
 - `bun run snap <dir> [port]` / `bun run snap:diff <a> <b>`: whole-deck pixel
   walk and diff. The port defaults to 3030, the same as `shot`; a parity gate
   run from a worktree passes 3031 and points its own dev server at that port,
@@ -226,3 +241,9 @@ not copy to paste into the slide.
 - `bun run test` (vitest over `packages/decks/{story,scripts,theme}`): the
   guard tests above, the theme contrast test, plus the unit suites.
 - `bun run typecheck`, `bun run check`, `bun run build <alias>`.
+<!-- /decks:repo-only -->
+<!-- decks:user: - `bun run snap <dir>`: whole-deck screenshot walk. Walk before and after a
+  theme or shared-styles change and compare the frames.
+- `bun run lint`: the prose patterns over pages, components and every story
+  card's `lead`/`body`.
+- `bun run check`, `bun run build <alias>`. -->

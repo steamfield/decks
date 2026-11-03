@@ -9,7 +9,7 @@ paths:
 
 ## Architecture
 
-One bun workspace. The addon and runner are `packages/decks/` (npm name `slidev-addon-decks`, bin `decks`); your decks live in `decks/` (where `bun run new` scaffolds) and the shipped ones in `examples/`. Each deck has its own directory with `slides.md` (headmatter + `src:` manifest) and `pages/` (one file per slide). `canvasWidth: 1920`, `aspectRatio: 16/9`, `layout: full` on every slide.
+<!-- decks:repo-only -->One bun workspace. The addon and runner are `packages/decks/` (npm name `slidev-addon-decks`, bin `decks`); your decks live in `decks/` (where `bun run new` scaffolds) and the shipped ones in `examples/`. <!-- /decks:repo-only --><!-- decks:user: Your decks live in `decks/` (where `bun run new` scaffolds). The addon and the `decks` CLI are the installed `slidev-addon-decks` package, at `packages/decks/`; read it, never edit it.  -->Each deck has its own directory with `slides.md` (headmatter + `src:` manifest) and `pages/` (one file per slide). `canvasWidth: 1920`, `aspectRatio: 16/9`, `layout: full` on every slide.
 
 Slidev auto-imports Vue components from the directory adjacent to `slides.md`. The addon extends this with cross-deck components.
 
@@ -31,13 +31,15 @@ addons: ["slidev-addon-decks"]
 
 **QR codes:** `<OdQrCard url="https://..." label="..." sublabel="..." />`, rendered at runtime (uqr), no generated SVG. Record the target URL in `data-sources.md`.
 
-**Cover and close slides:** build from the addon primitives: `<OdCoverHead url="example.com" />` (omit `url` to use the theme's `brand.url`; a `null` one shows nothing), `<OdEyebrow>label</OdEyebrow>`, `<OdByline>` for the mono meta row, root class `is-close` (+ a `glow-*`) for the close background, `<OdQrCard url="...">` for the CTA. `examples/agent-experience/pages/01-cover.md` and `10-closing.md` are the canonical usage. The logo and wordmark come from the theme's `brand` (see Theme below). (`opendata-pitch` builds its cover and close out of `StoryCover` instead, so it is not the example to copy for a normal deck.) Byline: three spans separated by `od-dim` bullets — name · role · month year.
+**Cover and close slides:** build from the addon primitives: `<OdCoverHead url="example.com" />` (omit `url` to use the theme's `brand.url`; a `null` one shows nothing), `<OdEyebrow>label</OdEyebrow>`, `<OdByline>` for the mono meta row, root class `is-close` (+ a `glow-*`) for the close background, `<OdQrCard url="...">` for the CTA. `examples/agent-experience/pages/01-cover.md` and `10-closing.md` are the canonical usage. The logo and wordmark come from the theme's `brand` (see Theme below). (<!-- decks:repo-only -->`opendata-pitch` builds its cover and close out of `StoryCover` instead<!-- /decks:repo-only --><!-- decks:user: `tides` builds its cover out of `StoryCover` instead -->, so it is not the example to copy for a normal deck.) Byline: three spans separated by `od-dim` bullets — name · role · month year.
 
+<!-- decks:repo-only -->
 Promote-on-second-use: a component stays deck-specific until a second deck needs it, then move it into the addon.
+<!-- /decks:repo-only -->
 
 ## Story slides
 
-A story slide is one pinned visualization whose state animates from beat to beat on arrow keys, with a floating prose card carrying the arc. `examples/opendata-pitch` is the reference deck; `examples/od-story-templates` is the pattern gallery. The full authoring contract (beats/copy/clicks, frame units, marks, hue, view-transition hand-offs, the verification loop) is `.claude/rules/story-stage.md`; the library API and lifecycle are `packages/decks/story/README.md`. Read both before writing a stage component rather than reverse-engineering one from `opendata-pitch`.
+A story slide is one pinned visualization whose state animates from beat to beat on arrow keys, with a floating prose card carrying the arc. `examples/opendata-pitch` is the reference deck<!-- decks:repo-only -->; `examples/od-story-templates` is the pattern gallery<!-- /decks:repo-only -->. The full authoring contract (beats/copy/clicks, frame units, marks, hue, view-transition hand-offs, the verification loop) is `.claude/rules/story-stage.md`; the library API and lifecycle are `packages/decks/story/README.md`. Read both before writing a stage component rather than reverse-engineering one from `opendata-pitch`.
 
 **Component naming.** Slidev's icon resolver treats a PascalCase prefix that matches an iconify collection (`Bi`, `Fa`, `Mdi`, ...) as an icon: `BigNumber` resolved to `bi/g-number` and broke every slide. Prefix story components `Ink`, `Story`, `Unit` or similar. This applies to every component in the package, not only the story family.
 
@@ -46,12 +48,12 @@ A story slide is one pinned visualization whose state animates from beat to beat
 Three tiers, in order of preference.
 
 1. **Utilities in the markup first.** Slidev bundles UnoCSS with the Tailwind-compatible preset, so `flex`, `gap-4`, `text-sm`, `items-end` and the rest work in every page and component with no config. Use them for layout, spacing and typography in ordinary (non-story) slides and inside HTML overlays. The one deck-specific exception is the story frame: anything that has to scale with the 1920x1080 frame uses `calc(N * var(--sw))` / `calc(N * var(--sh))`, which has no utility, and SVG `<text>` is sized in viewBox units. Those stay in CSS.
-2. **Custom CSS, scoped by the tool.** `<style scoped>` in a `.vue` stage or addon component for rules only it needs; Vue scopes them at compile time, so names inside can be short and local (`.name`, `.meta`) rather than prefixed chains. `packages/decks/styles/*.css` is for rules two decks or two components share, and it ships to every deck, so an addon block stays under an ancestor selector (`.od-slide.is-story .od-story-card { ... }`) rather than a bare class. State and variants are `is-*` / `anchor-*` companions (`is-wide`, `is-link`, `anchor-right`). BEM punctuation (`__`, `--`) is not used and should not be introduced; a few pre-scoping names (`od-story-card-lead` and similar) are left alone until the block they belong to is next rewritten.
+2. **Custom CSS, scoped by the tool.** `<style scoped>` in a `.vue` stage or addon component for rules only it needs; Vue scopes them at compile time, so names inside can be short and local (`.name`, `.meta`) rather than prefixed chains. <!-- decks:repo-only -->`packages/decks/styles/*.css` is for rules two decks or two components share, and it ships to every deck, so an addon block stays under an ancestor selector (`.od-slide.is-story .od-story-card { ... }`) rather than a bare class.<!-- /decks:repo-only --><!-- decks:user: A deck's `styles/index.css` (Slidev loads it for that deck) is for rules two of its components share; keep each block under an ancestor selector (`.od-slide.is-story .od-story-card { ... }`) rather than a bare class. --> State and variants are `is-*` / `anchor-*` companions (`is-wide`, `is-link`, `anchor-right`). BEM punctuation (`__`, `--`) is not used and should not be introduced; a few pre-scoping names (`od-story-card-lead` and similar) are left alone until the block they belong to is next rewritten.
 
    **`@scope` is not a free wrapper.** Under `@scope (.od-slide.is-story) { .od-story-head { ... } }`, the rule's specificity is the *inner* selector alone: `.od-story-head` at (0,1,0), not the scope's donor selector. The theme's `.slidev-layout h2` rule is (0,1,1) and would still beat it, so wrapping a heading rule in `@scope` silently drops it back to the theme's size. Qualify the element (`h2.od-story-head`, (0,2,0)) or prefix with `:scope` (`:scope .od-story-head`, also (0,2,0)) before relying on `@scope` for a heading; a non-heading rule under an element the theme doesn't style (`div`, `p` inside a card body) has no such trap.
 3. **Inline `:style` only for JS values.** Beat progress (`opacity: String(s.chip)`), geometry computed from data, a colour from `ink()`, a CSS custom property set from a prop. A static value in a `:style` object is a defect; move it to a class.
 
-**Heading classes lose to the theme.** `.slidev-layout h1/h2/h3` (from the Slidev theme) sit at specificity (0,1,1); `.od-title`/`.od-h2`/`.od-h3` are (0,1,0) and lose whenever both apply to the same element, which is every slide (`.slidev-layout` wraps every slide's content). So `h1.od-title` renders at 36px (the theme's 2.25rem), not the 4.4rem the class declares, and `h2.od-h2` at 30px, not 2.9rem; the theme's line-height and margin win too. This is the render the snap gate is pinned to, so it is not a bug to fix in this pass. See the typography table below, which lists rendered values, not source values. `h2.od-story-head` is unaffected: its selector is `.od-slide.is-story .od-story-head`, at (0,3,0), which already beats the theme.
+**Heading classes lose to the theme.** `.slidev-layout h1/h2/h3` (from the Slidev theme) sit at specificity (0,1,1); `.od-title`/`.od-h2`/`.od-h3` are (0,1,0) and lose whenever both apply to the same element, which is every slide (`.slidev-layout` wraps every slide's content). So `h1.od-title` renders at 36px (the theme's 2.25rem), not the 4.4rem the class declares, and `h2.od-h2` at 30px, not 2.9rem; the theme's line-height and margin win too.<!-- decks:repo-only --> This is the render the snap gate is pinned to, so it is not a bug to fix in this pass.<!-- /decks:repo-only --> See the typography table below, which lists rendered values, not source values. `h2.od-story-head` is unaffected: its selector is `.od-slide.is-story .od-story-head`, at (0,3,0), which already beats the theme.
 
 ## Slide comment header
 
@@ -272,10 +274,10 @@ One source: `packages/decks/theme/default.json`. A deck recolors or rebrands its
 
 - Objects merge key by key; arrays (`ramps.<hue>`, `categorical`) are replaced whole.
 - Aliases use `{group.token}` and `{ramps.<hue>.<1-4>}` (e.g. `"glows": { "secondary": "{ramps.amber.2}" }`), resolved after the merge, so an alias in the default follows your override.
-- The six hue names (`cyan`, `amber`, `rose`, `emerald`, `violet`, `slate`) are fixed slots: recolor them, don't rename or add. Each ramp is four `#rrggbb` colors getting lighter, and step 1 must clear 3:1 against `surfaces.canvas` (`theme.test.ts` enforces it for the default and the example).
+- The six hue names (`cyan`, `amber`, `rose`, `emerald`, `violet`, `slate`) are fixed slots: recolor them, don't rename or add. Each ramp is four `#rrggbb` colors getting lighter, and step 1 must clear 3:1 against `surfaces.canvas`<!-- decks:repo-only --> (`theme.test.ts` enforces it for the default and the example)<!-- /decks:repo-only -->.
 - Glows must be hex (they become `--od-glow-K-rgb` triplets). Themes stay dark: `the-unnamed` forces `colorSchema: dark`.
 - `brand` is `{ name, url, "wordmark-gradient", logo }`. `logo` is `{ "view-box", "svg" }` or `null` (no mark); `url: null` hides the cover URL. A custom mark only animates if it reuses the `od-intro*`/`od-settle-*` classes `OdLogo.vue` animates. `bun run new ... --brand "Name" --url example.com` writes this block for you.
-- Edits live-reload in `bun run dev` and apply at build time. `examples/od-templates/theme.json` is the worked example (a full alternate palette and brand); `examples/opendata-pitch/theme.json` overrides only the brand.
+- Edits live-reload in `bun run dev` and apply at build time. <!-- decks:repo-only -->`examples/od-templates/theme.json` is the worked example (a full alternate palette and brand); `examples/opendata-pitch/theme.json` overrides only the brand.<!-- /decks:repo-only --><!-- decks:user: `examples/agent-experience/theme.json` overrides only the brand. -->
 
 In CSS, never use raw hex values. The theme renders to custom properties: `surfaces.K` and `accents.K` -> `--od-K`, `text.primary` -> `--od-text`, `text.K` -> `--od-text-K`, `borders.default` -> `--od-border`, `borders.K` -> `--od-border-K`, `glows.K` -> `--od-glow-K-rgb` (use as `rgba(var(--od-glow-amber-rgb), 0.2)`), `fonts.K` -> `--od-font-K`. The ones you'll reach for:
 
@@ -304,6 +306,7 @@ transition: slide-left
 aspectRatio: 16/9
 canvasWidth: 1920
 fonts:
+  provider: none        # Inter is self-hosted by the addon (styles/fonts.css)
   fallbacks: false
   webfonts: [Inter]
   sans: Inter, sans-serif
@@ -345,7 +348,7 @@ src: ./pages/NN-slug.md
 
 ## Scripts
 
-Decks are registered in `decks.json` at the repo root (alias -> entry, URL slug, `animated` flag; `_config` sets `decksDir`, `outDir`, `base`) and driven by `packages/decks/scripts/deck.mjs` (the `decks` bin):
+Decks are registered in `decks.json` at the repo root (alias -> entry, URL slug, `animated` flag; `_config` sets `decksDir`, `outDir`, `base`) and driven by <!-- decks:repo-only -->`packages/decks/scripts/deck.mjs` (the `decks` bin)<!-- /decks:repo-only --><!-- decks:user: the `decks` CLI from `slidev-addon-decks` -->:
 
 ```bash
 bun run new <alias> <dir> [--story] [--author "Name"] [--brand "Name"] [--url example.com]   # scaffold into decks/<dir> + register
@@ -353,6 +356,8 @@ bun run dev <alias>
 bun run build <alias>       # -> dist/<name> (decks.json _config.outDir)
 bun run export <alias>      # static: --dark --with-clicks --with-toc; animated: --dark --with-clicks --wait 1500
 bun run check               # orphaned/missing pages vs src: manifests (also gates build --all)
+bun run lint                # AI-rhetoric patterns over pages, slides.md and components
+bun run fact-extract <alias>   # every figure in the deck, for the fact-check
 ```
 
 Set `"animated": true` in `decks.json` for decks with OpenChart or scripted demos: the TOC export step errors on HTML-only slides and animations need the wait to settle. The runner owns export flags; never pass them by hand.

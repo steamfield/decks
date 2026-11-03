@@ -18,8 +18,10 @@ noticing.
 ## Provenance header
 
 Every module opens with a comment naming where its numbers came from: the
-query, the file, the commit, or the document. `examples/opendata-pitch/data/isbe-files.ts`
-is the pattern:
+query, the file, the commit, or the document. <!-- decks:repo-only -->`examples/opendata-pitch/data/isbe-files.ts`
+is the pattern<!-- /decks:repo-only --><!-- decks:user: This header, from a deck
+about a state report card corpus, is the pattern; every module under
+`examples/tides/data/` follows it -->:
 
 ```ts
 /**
@@ -74,5 +76,5 @@ This is the fact-check input.
 A section per visible slide; a hidden slide keeps its section too, so
 unhiding it later does not leave the fact-check input behind. Fact-checking a
 deck runs the `fact-checking-a-deck` skill, which starts from
-`bun run fact-extract <alias>` (`tools/content-fact-extract.mjs`) at the repo
+`bun run fact-extract <alias>`<!-- decks:repo-only --> (`tools/content-fact-extract.mjs`)<!-- /decks:repo-only --> at the repo
 root.

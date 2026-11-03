@@ -18,11 +18,13 @@ packages/decks/       # the addon (npm: slidev-addon-decks)
   story/              # the story engine (import from slidev-addon-decks/story) + guard tests
   theme/              # default.json (the one theme source), resolver, contrast test
   styles/             # base, layout, components, stats, story-frame, story-marks
-  scripts/            # deck.mjs (the `decks` bin) + shot, snap, browser, frames
+  scripts/            # deck.mjs (the `decks` bin) + init, hook, lint, shot, snap, fact-extract, render-agent
+  lint/               # scan.mjs and ai-rhetoric-patterns.tsv (the pattern list)
+  agent/              # what `decks init` installs: rendered templates, instructions.md, exemplars/, INVENTORY.md
   templates/          # what `decks new` scaffolds
 examples/             # shipped decks: opendata-pitch, agent-experience, od-templates, od-story-templates
 decks/                # your decks (`bun run new` writes here)
-tools/                # content-lint.sh, ai-rhetoric-patterns.tsv, content-fact-extract.mjs
+tools/                # content-lint.sh and content-fact-extract.mjs (wrappers over `decks`)
 <deck>/
   slides.md           # headmatter + src: manifest
   pages/NN-slug.md    # one file per slide
@@ -46,13 +48,15 @@ bun run export <alias>         # PDF export (flags picked per deck from decks.js
 bun run new <alias> <dir> [--story] [--author "Name"] [--brand "Name"] [--url example.com]
                                # scaffold decks/<dir> (conventional or story) + register it
 bun run list                   # registered decks
-bun run check                  # orphaned/missing pages vs src: manifests
+bun run check                  # orphaned/missing pages vs src: manifests, plus error-level lint hits
 bun run build:all              # build every registered deck except `skipAll` ones; runs check first
 bun run typecheck              # tsc over .ts only; a stage's .vue script is not read
 bun run test                   # unit suites, story guards, theme contrast, story-card COPY lint
-bun run lint                   # AI-rhetoric lint over deck pages, slides.md and components
+bun run lint                   # AI-rhetoric lint over deck pages, slides.md, components and story-stage COPY
 bun run fact-extract <alias>   # every figure in a deck, for the fact-check
-bun run test:hooks             # tests for the two Claude Code hooks in .claude/hooks/
+bun run test:hooks             # tests for the two Claude Code hooks (`decks hook`, run through .claude/hooks/)
+bun run render:agent           # render .claude/ into packages/decks/agent/ (what `decks init` installs)
+bun run test:tarball           # pack the package; run init, lint, check and the hooks in scratch projects
 bun run shot <n> [clicks]      # headless screenshots of slide n at each click (dev server on :3030)
 bun run snap <dir> [port]      # whole-deck screenshot walk against the dev server
 bun run snap:diff <a> <b>      # per-frame pixel diff between two snap walks
@@ -91,7 +95,7 @@ Decks with data-driven charts maintain `<deck>/data-sources.md` mapping slide nu
 
 Read `.claude/rules/deck-writing.md` before writing or revising any slide text. Slide prose is not article prose in miniature. The rules that trip people coming from articles: a headline is a claim ending in a period rather than a topic label, three single-sentence bullets is the ceiling, there are no paragraphs anywhere, and a normal conventional slide runs about 70 visible words (`agent-experience` is the exemplar deck; a story card's budget is eight/twenty words instead, per `.claude/rules/story-stage.md`).
 
-The anti-slop pattern set is `tools/ai-rhetoric-patterns.tsv`; `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; `bun run test` runs the error patterns over story-card `COPY`, which the lint can't see; and in Claude Code a write hook blocks error-level patterns as they are written.
+The anti-slop pattern set is `packages/decks/lint/ai-rhetoric-patterns.tsv`; `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; it also scans story-card `COPY`; and in Claude Code a write hook blocks error-level patterns as they are written.
 
 ## Agent ops
 
@@ -100,6 +104,7 @@ Claude Code is the primary agent. Its config is `.claude/`:
 - `agents/deck-author.md`: builds or revises one deck per session.
 - `skills/building-a-deck/`, `skills/fact-checking-a-deck/`.
 - `rules/`: the files named above; each attaches by path.
-- `hooks/lint-ai-rhetoric.sh` (PreToolUse on Edit/Write/MultiEdit: denies error-level AI-rhetoric patterns in deck prose; refuses the write if `tools/content-lint.sh` is missing) and `hooks/user-prompt-submit.sh` (adds the deck-writing reminder when a prompt asks to write or revise a deck). Both need `jq` on PATH. Wired in `.claude/settings.json`; tested by `bun run test:hooks`.
+- Hooks are Node: `node packages/decks/scripts/deck.mjs hook lint` (PreToolUse on Edit/Write/MultiEdit: denies error-level AI-rhetoric patterns in deck prose; refuses the write if the scanner can't run) and `hook prompt` (adds the deck-writing reminder when a prompt asks to write or revise a deck). They need no `jq`. Wired in `.claude/settings.json`; `hooks/*.sh` are thin wrappers kept for old paths; tested by `bun run test:hooks`.
+- `decks init` installs this setup into user projects from `packages/decks/agent/`, which is rendered from `.claude/`. When a `.claude/` rule, skill or agent changes, run `bun run render:agent` (the drift test in `bun run test` fails otherwise).
 
 Antigravity and Codex read the same guidance through generated copies: `.agents/rules/` (rules with Antigravity glob frontmatter), `.agents/skills/` (symlinks into `.claude/skills/`), and `.codex/agents/deck-author.toml`. They were generated once from `.claude/`; when you change a rule, skill or the agent, update the matching generated copy in the same commit. Never edit only the copy.

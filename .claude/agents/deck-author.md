@@ -29,8 +29,12 @@ which overrides it where the two disagree.
 
 ## Architecture
 
+<!-- decks:repo-only -->
 - One bun workspace; the addon and runner are `packages/decks/` (`slidev-addon-decks`),
   new decks go in `decks/`, shipped examples are in `examples/`
+<!-- /decks:repo-only -->
+<!-- decks:user: - Decks live in `decks/`, registered in `decks.json`; the addon and the `decks`
+  CLI are the installed `slidev-addon-decks` package (`packages/decks/`) -->
 - Page-per-slide: each slide is a separate `.md` file in `<deck>/pages/`
 - `slides.md` uses `src:` manifest to compose pages
 - `canvasWidth: 1920`, `aspectRatio: 16/9`
@@ -61,8 +65,9 @@ review-agent brief, definition of done, build) is
 3. **Charts:** `OpenChart.vue` with the addon's `slideChartTheme` /
    `slideChartAnimation` import from `slidev-addon-decks/chart-theme`. Never
    copy-paste the theme block between slides.
-4. **Copy:** runs through the AI-rhetoric lint (`bun run lint` for pages and
-   templates, `bun run test` for story `COPY`, and a write hook that blocks
+4. **Copy:** runs through the AI-rhetoric lint (<!-- decks:repo-only -->`bun run lint` for pages and
+   templates, `bun run test` for story `COPY`,<!-- /decks:repo-only --><!-- decks:user: `bun run lint` for pages,
+   components and story `COPY`, --> and a write hook that blocks
    error-level patterns); word budgets and headline rules are in
    `.claude/rules/deck-writing.md`.
 5. **Data provenance:** every on-slide figure traces to `<deck>/data-sources.md`
@@ -70,19 +75,24 @@ review-agent brief, definition of done, build) is
    see `.claude/rules/deck-data.md`. Never invent a figure; if the user gives
    you none and you cannot source one, write the slide without it or mark it
    `FLAG: author-reported`.
-6. **Build validation:** `bun run check`, `bun run typecheck`, `bun run test`,
-   `bun run lint`, `bun run build <alias>`, and for a story deck
+6. **Build validation:** `bun run check`, <!-- decks:repo-only -->`bun run typecheck`, `bun run test`,
+   <!-- /decks:repo-only -->`bun run lint`, `bun run build <alias>`, and for a story deck
    `bun run shot`/`bun run snap` per `.claude/rules/story-stage.md`.
 
 ## Gotchas
 
 - `deck-patterns`, `story-stage`, `deck-data`, `deck-writing`,
   `prose-patterns` and `project-glossary` live in `.claude/rules/` and
-  auto-attach to files under `examples/` and `decks/` (and the addon, for the
-  first two). Don't duplicate their content here.
-- `examples/od-templates/` and `examples/od-story-templates/` are gallery
+  auto-attach to files under `examples/` and `decks/`<!-- decks:repo-only --> (and the addon, for the
+  first two)<!-- /decks:repo-only -->. Don't duplicate their content here.
+- <!-- decks:repo-only -->`examples/od-templates/` and `examples/od-story-templates/` are gallery
   decks, useful for copying a pattern, not the canonical reference for either
-  deck shape. Use `examples/agent-experience/` (conventional) or
+  deck shape. <!-- /decks:repo-only -->Use `examples/agent-experience/` (conventional) or
   `examples/opendata-pitch/` (story) as the model.
+<!-- decks:repo-only -->
 - Don't edit `examples/` or `packages/decks/` when the task is your own deck;
   a component a second deck needs moves into the addon only on request.
+<!-- /decks:repo-only -->
+<!-- decks:user: - Don't edit anything under `packages/decks/`, the exemplars included: it is the
+  installed package, and the next install overwrites it. Copy a pattern into
+  your deck instead. -->

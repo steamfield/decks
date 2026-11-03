@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { DUR } from '../story/easings'
-import { frameName } from './frames'
+import { frameName, hashUrl } from './frames.mjs'
 
 describe('frameName', () => {
   it('names a frame by zero padded slide and click count', () => {
@@ -15,8 +15,19 @@ describe('frameName', () => {
     expect(frameName('http://localhost:3031/12?clicks=0')).toBe('s12-c0.png')
   })
 
+  it('reads the route after the hash for a hash-routed deck', () => {
+    expect(frameName('http://localhost:3031/#/4?clicks=2')).toBe('s04-c2.png')
+    expect(frameName('http://localhost:3031/#/1')).toBe('s01-c0.png')
+  })
+
   it('treats the root as slide 1', () => {
     expect(frameName('http://localhost:3031/')).toBe('s01-c0.png')
+  })
+})
+
+describe('hashUrl', () => {
+  it('moves the path and query behind the hash', () => {
+    expect(hashUrl('http://localhost:3031/4?clicks=2')).toBe('http://localhost:3031/#/4?clicks=2')
   })
 })
 
