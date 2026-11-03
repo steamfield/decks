@@ -103,12 +103,32 @@ describe('decks init, fresh project', () => {
     expect(r.output).toContain('+ ')
   })
 
-  it('warns, and still writes, when the package is not installed', () => {
-    const root = project()
+  it('without the package installed, writes the agent files but no hooks, and exits 1 with the install command', () => {
+    const root = project({ 'bun.lock': '' })
     rmSync(join(root, 'node_modules'), { recursive: true })
     const r = init(root)
-    expect(r.code).toBe(0)
+    expect(r.code).toBe(1)
+    for (const t of TARGETS) expect(r.files[t]).toBe('written')
+    expect(existsSync(join(root, '.claude/settings.json'))).toBe(false)
+    expect(r.output).toContain('bun add -d slidev-addon-decks')
     expect(r.warnings.join('\n')).toMatch(/not installed/)
+
+    // Installing and re-running adds the hooks.
+    mkdirSync(join(root, 'node_modules/slidev-addon-decks'), { recursive: true })
+    writeFileSync(join(root, 'node_modules/slidev-addon-decks/package.json'), '{}\n')
+    expect(init(root).code).toBe(0)
+    expect(settings(root).hooks.PreToolUse).toHaveLength(1)
+  })
+
+  it('stops with a named error, writing nothing, when decks.json does not parse or decksDir is not a string', () => {
+    for (const registry of ['{ nope', '{ "_config": { "decksDir": 3 } }']) {
+      const root = project({ 'decks.json': registry })
+      const r = init(root)
+      expect(r.code).toBe(1)
+      expect(r.output).toMatch(/^decks init: decks\.json/)
+      expect(existsSync(join(root, '.claude'))).toBe(false)
+      expect(existsSync(join(root, 'AGENTS.md'))).toBe(false)
+    }
   })
 })
 
@@ -156,6 +176,58 @@ describe('decks init, re-run', () => {
     expect(init(root).files[t]).toBe('unchanged')
   })
 
+  it('treats a CRLF copy of an unedited file as unedited', () => {
+    const root = project()
+    init(root)
+    const t = '.claude/rules/deck-data.md'
+    const crlf = read(root, t).replace(/\n/g, '\r\n')
+    writeFileSync(join(root, t), crlf)
+    expect(init(root).files[t]).toBe('unchanged')
+    expect(read(root, t)).toBe(crlf)
+
+    // An older template checked out with CRLF still updates.
+    const old = 'older template\n'
+    writeFileSync(join(root, t), old.replace(/\n/g, '\r\n'))
+    const manifest = JSON.parse(read(root, '.claude/decks.json'))
+    manifest.files[t] = `sha256:${createHash('sha256').update(old).digest('hex')}`
+    writeFileSync(join(root, '.claude/decks.json'), JSON.stringify(manifest))
+    expect(init(root).files[t]).toBe('updated')
+  })
+
+  it('leaves an unparseable .claude/decks.json alone and exits 1 without writing anything', () => {
+    const root = project({ '.claude/decks.json': '{ broken' })
+    const r = init(root)
+    expect(r.code).toBe(1)
+    expect(r.output).toMatch(/\.claude\/decks\.json does not parse/)
+    expect(read(root, '.claude/decks.json')).toBe('{ broken')
+    expect(existsSync(join(root, '.claude/agents'))).toBe(false)
+    expect(existsSync(join(root, 'AGENTS.md'))).toBe(false)
+  })
+
+  it('removes an unedited file the package no longer ships, and keeps an edited one', () => {
+    const root = project()
+    init(root)
+    const hash = (text: string) => `sha256:${createHash('sha256').update(text).digest('hex')}`
+    const files = { '.claude/skills/retired/SKILL.md': 'retired\n', '.claude/rules/old.md': 'old\n' }
+    for (const [t, text] of Object.entries(files)) {
+      mkdirSync(dirname(join(root, t)), { recursive: true })
+      writeFileSync(join(root, t), text)
+    }
+    const manifest = JSON.parse(read(root, '.claude/decks.json'))
+    manifest.files['.claude/skills/retired/SKILL.md'] = hash('retired\n')
+    manifest.files['.claude/rules/old.md'] = hash('the version init wrote\n')
+    manifest.files['../outside.md'] = hash('x')
+    writeFileSync(join(root, '.claude/decks.json'), JSON.stringify(manifest))
+
+    const r = init(root)
+    expect(r.files['.claude/skills/retired/SKILL.md']).toBe('removed')
+    expect(existsSync(join(root, '.claude/skills/retired'))).toBe(false)
+    expect(r.files['.claude/rules/old.md']).toBe('kept')
+    expect(read(root, '.claude/rules/old.md')).toBe('old\n')
+    expect(r.output).toMatch(/removed[\s\S]*retired\/SKILL\.md[\s\S]*kept[\s\S]*rules\/old\.md/)
+    expect(Object.keys(JSON.parse(read(root, '.claude/decks.json')).files).sort()).toEqual([...TARGETS].sort())
+  })
+
   it('never touches a file it did not write, even with --force', () => {
     const root = project({ '.claude/rules/deck-patterns.md': 'mine\n' })
     const r = init(root)
@@ -201,6 +273,31 @@ describe('decks init, settings merge', () => {
     expect(pre[0].hooks[0].command).toMatch(/^node .*deck\.mjs" hook lint \|\| exit 2$/)
   })
 
+  it('recognizes its hooks in the workspace path form and does not add them twice', () => {
+    const ws = 'node "$CLAUDE_PROJECT_DIR/packages/decks/scripts/deck.mjs" hook'
+    const old = {
+      hooks: {
+        PreToolUse: [{ matcher: 'Edit|Write|MultiEdit', hooks: [{ type: 'command', command: `${ws} lint || exit 2` }] }],
+        UserPromptSubmit: [{ hooks: [{ type: 'command', command: `${ws} prompt` }] }],
+      },
+    }
+    const root = project({ '.claude/settings.json': JSON.stringify(old) })
+    init(root)
+    expect(settings(root).hooks.PreToolUse).toHaveLength(1)
+    expect(settings(root).hooks.UserPromptSubmit).toHaveLength(1)
+  })
+
+  it.each(['null', '[]', '{ "hooks": "x" }', '{ "hooks": { "PreToolUse": {} } }'])(
+    'leaves settings.json alone and exits 1 when it is valid JSON of the wrong shape: %s',
+    (text) => {
+      const root = project({ '.claude/settings.json': text })
+      const r = init(root)
+      expect(r.code).toBe(1)
+      expect(r.settings.notes.join('\n')).toMatch(/^not changed: .*(not a JSON object|not an object|not an array)/)
+      expect(read(root, '.claude/settings.json')).toBe(text)
+    },
+  )
+
   it('leaves settings.json alone and exits 1 when it does not parse', () => {
     const root = project({ '.claude/settings.json': '{ not json' })
     const r = init(root)
@@ -239,6 +336,31 @@ describe('decks init, instructions file', () => {
     expect(existsSync(join(root, 'AGENTS.md'))).toBe(false)
     init(root)
     expect(read(root, 'CLAUDE.md').match(/decks:start/g)).toHaveLength(1)
+  })
+
+  it('updates the block in both files when both carry one', () => {
+    const stale = '<!-- decks:start -->\nold\n<!-- decks:end -->\n'
+    const root = project({ 'AGENTS.md': stale, 'CLAUDE.md': `# Claude\n\n${stale}` })
+    const r = init(root)
+    expect(r.instructions).toEqual(['AGENTS.md: decks block updated in place', 'CLAUDE.md: decks block updated in place'])
+    for (const f of ['AGENTS.md', 'CLAUDE.md']) expect(read(root, f)).not.toContain('\nold\n')
+    expect(r.warnings).toEqual([])
+  })
+
+  it('accepts `@./AGENTS.md` as the import', () => {
+    const root = project({ 'AGENTS.md': '# Agents\n', 'CLAUDE.md': '@./AGENTS.md\n' })
+    const r = init(root)
+    expect(r.warnings).toEqual([])
+    expect(read(root, 'CLAUDE.md')).toBe('@./AGENTS.md\n')
+  })
+
+  it('leaves a file with a start marker and no end marker alone, and exits 1', () => {
+    const text = '# Agents\n\n<!-- decks:start -->\nhalf a block\n'
+    const root = project({ 'AGENTS.md': text, 'CLAUDE.md': '@AGENTS.md\n' })
+    const r = init(root)
+    expect(r.code).toBe(1)
+    expect(r.instructions.join('\n')).toMatch(/AGENTS\.md: has <!-- decks:start --> but no <!-- decks:end -->/)
+    expect(read(root, 'AGENTS.md')).toBe(text)
   })
 
   it('warns when AGENTS.md gets the block but CLAUDE.md does not import it', () => {

@@ -18,7 +18,7 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 | `bun run new <alias> <dir> [--story] …` | A, BD, DP | CLI | `{{decks}} new …` |
 | `bun run dev <alias>` | BD, DP | CLI | `{{decks}} dev <alias>` |
 | `bun run build <alias>` | A, BD, DP, SS | CLI | `{{decks}} build <alias>` |
-| `bun run build:all` | BD (definition of done 2) | Delete | Repo-only: it gates a change to `packages/decks/`. `decks build --all` exists, but a user's deck work doesn't need it. |
+| `bun run build:all` | BD (definition of done 2) | CLI + Delete | Mapped to `{{decks}} build --all`. Its one use, the gate for a change to `packages/decks/` in BD, sits in a repo-only block, so the rendered BD drops it. |
 | `bun run export <alias>` | BD, DP | CLI | `{{decks}} export <alias>` |
 | `bun run list` | BD | CLI | `{{decks}} list` |
 | `bun run check` | A, BD, DP, SS | CLI | `{{decks}} check` (manifest drift plus `decks lint` errors) |
@@ -27,7 +27,7 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 | `bun run typecheck` | A, BD, SS | Delete | A user project has no repo `tsc` config to run |
 | `bun run shot <n> [clicks]` | A, BD, SS | CLI | `{{decks}} shot <alias> <n> [clicks]` (the package CLI takes the alias) |
 | `bun run snap <dir> [port]` | A, BD, SS | CLI | `{{decks}} snap <alias>`, reframed as a before/after walk for a theme or styles change |
-| `bun run snap:diff <a> <b>` and the pitch noise-floor frames | BD, SS | Delete | No `decks` subcommand; pixel parity is a repo refactor gate |
+| `bun run snap:diff <a> <b>` and the pitch noise-floor frames | BD, SS | Delete + user wording | `decks snap diff <a> <b>` exists, but the noise-floor parity gate is a repo refactor gate, so the passages stay repo-only; BD's user wording asks for a `snap` walk before and after a theme or styles change |
 | `bun run fact-extract <alias>` | BD, DD, FC, DP | CLI | `{{decks}} fact-extract <alias>` |
 | `bun tools/content-fact-extract.mjs <deck-dir>` | FC | Delete | Covered by `{{decks}} fact-extract <alias>` |
 | `bun run test:hooks`, `bun run test:embed` | AGENTS.md only | n/a | Not in the agent setup |
@@ -36,7 +36,7 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 
 | Reference | Where | Kind | Rendered as |
 |---|---|---|---|
-| `examples/agent-experience` (and `pages/01-cover.md`, `10-closing.md`, `03-interview.md`, `components/AxErrorCards.vue`) | A, BD, DP, DW | Exemplar | `{{exemplars}}/agent-experience/…`, a copy with brand, cover, byline and QR neutralized |
+| `examples/agent-experience` (and `pages/01-cover.md`, `10-closing.md`, `03-interview.md`, `components/AxErrorCards.vue`) | A, BD, DP, DW | Exemplar | `{{exemplars}}/agent-experience/…`, a copy with brand, cover, byline, QR and tool-call server neutralized, and `data-sources.md` marked illustrative (its citations point into a private repo). The render fails if a brand string survives |
 | `examples/opendata-pitch` as the story reference | A, BD, DP, SS | Exemplar | `{{exemplars}}/tides` (copy of `examples/tides`, the RFC's story exemplar) |
 | `examples/opendata-pitch/data-sources.md` | BD | Exemplar | `{{exemplars}}/tides/data-sources.md` |
 | `` `opendata-pitch` `` in a claim that holds for tides | DP (story slides), DW (word-budget note) | Exemplar | `` `tides` `` |
@@ -71,7 +71,7 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 
 | Reference | Where | Kind | Replacement |
 |---|---|---|---|
-| `tools/ai-rhetoric-patterns.tsv` | DW, PG, `tools/content-lint.sh`, hooks | Variable | Ships as `{{pkg}}/lint/ai-rhetoric-patterns.tsv`; DW points there |
+| `packages/decks/lint/ai-rhetoric-patterns.tsv` (was `tools/`) | DW, PG, `tools/content-lint.sh`, hooks | Variable | Ships as `{{pkg}}/lint/ai-rhetoric-patterns.tsv`; DW points there |
 | Adding a `terminology-*` row to the TSV to enforce a glossary term | PG | Delete + user wording | "Nothing enforces these rows automatically"; the package has no project-local pattern file |
 | `tools/content-lint.sh` | hooks, `ai-rhetoric-patterns.tsv` header | CLI | `decks lint [alias]` |
 | `tools/content-fact-extract.mjs` | DD, FC | CLI | `decks fact-extract <alias>` |
@@ -83,4 +83,4 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 
 `.claude/rules/*.md`, `.claude/skills/*/SKILL.md` and `.claude/agents/deck-author.md` paths, `slidev-addon-decks/*` import specifiers, and `decks.json` keep their names: `init` writes the files to the same paths and the package exports the same specifiers.
 
-The scaffold templates in `packages/decks/templates/` still mention `packages/decks/` and `beats.test.ts` in comments that `decks new` copies into a user's deck. They are outside this render; the tides exemplar copy rewrites the same two comments.
+The scaffold templates in `packages/decks/templates/` are outside this render and carry no repo-only references. The tides exemplar copy rewrites three repo-path comments in its `slides.md` (`packages/decks/setup/main.ts`, `packages/decks/styles/story-frame.css` with the guard tests, and `beats.test.ts`).

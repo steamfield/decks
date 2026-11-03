@@ -3,13 +3,17 @@
 // deck on a free port, wait for it to answer, and stop it when done.
 
 import { spawn } from 'node:child_process'
+import { realpathSync } from 'node:fs'
 import { createServer } from 'node:net'
 
-/** Whether `port` can be bound on `host`; a host this machine lacks counts as free. */
+/**
+ * Whether `port` can be bound on `host`. A host this machine lacks (no such
+ * address, or IPv6 turned off) counts as free.
+ */
 function bindable(port, host) {
   return new Promise((done) => {
     const probe = createServer()
-    probe.once('error', (err) => done(err.code === 'EADDRNOTAVAIL'))
+    probe.once('error', (err) => done(err.code === 'EADDRNOTAVAIL' || err.code === 'EAFNOSUPPORT'))
     probe.listen(port, host, () => probe.close(() => done(true)))
   })
 }
@@ -34,10 +38,35 @@ async function answers(origin) {
   }
 }
 
-/** The origin of a server already on `port`, or null when nothing answers there. */
-export async function existingServer(port) {
+/**
+ * Whether the server already on `port` is a Slidev dev server for `entry`
+ * (an absolute slides.md path). Resolves `{ origin }` when it is, or
+ * `{ error }` saying what answers there instead. Slidev's page carries a
+ * `slidev:version` meta tag, and in dev a `slidev:entry` one naming the deck.
+ */
+export async function existingServer(port, entry) {
   const origin = `http://localhost:${port}`
-  return (await answers(origin)) ? origin : null
+  let html
+  try {
+    const res = await fetch(origin, { signal: AbortSignal.timeout(5000) })
+    if (!res.ok) return { error: `${origin} answers HTTP ${res.status}, not a Slidev page` }
+    html = await res.text()
+  } catch (err) {
+    return { error: `nothing answers on ${origin} (${err.cause?.code ?? err.message})` }
+  }
+  if (!/property="slidev:version"/.test(html))
+    return { error: `${origin} is not a Slidev dev server (no slidev:version in its page)` }
+  const served = /property="slidev:entry"\s+content="([^"]*)"/.exec(html)?.[1]
+  // Through realpath, so a symlinked temp dir or a drive-letter case is not a mismatch.
+  const norm = (p) => {
+    try {
+      p = realpathSync.native(p)
+    } catch {}
+    return p.replaceAll('\\', '/').toLowerCase()
+  }
+  if (served && entry && norm(served) !== norm(entry))
+    return { error: `${origin} serves a different deck (${served}), not ${entry}` }
+  return { origin }
 }
 
 /**
@@ -62,10 +91,14 @@ export async function startServer({ args, cwd, port, timeoutMs = 120_000 }) {
     if (exited === null) child.kill('SIGTERM')
   }
   process.once('exit', stop)
-  for (const sig of ['SIGINT', 'SIGTERM'])
+  // 128 + the signal number, as a shell reports a process killed by it.
+  for (const [sig, code] of [
+    ['SIGINT', 130],
+    ['SIGTERM', 143],
+  ])
     process.once(sig, () => {
       stop()
-      process.exit(130)
+      process.exit(code)
     })
 
   const deadline = Date.now() + timeoutMs

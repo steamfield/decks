@@ -56,9 +56,10 @@ Re-running `init` is safe:
 - A file whose hash still matches is updated to the new version.
 - A file you edited is skipped and reported. `--force` overwrites it.
 - A file that exists at one of those paths but that `init` never wrote is a collision. `init` reports it and leaves it alone, with or without `--force`. Rename or move your file and re-run to install the Decks version.
-- The `decks:start` block is replaced in place.
+- A file an earlier `init` wrote that the package no longer ships is removed if you haven't edited it, and kept and reported if you have.
+- The `decks:start` block is replaced in place, in both `AGENTS.md` and `CLAUDE.md` if both carry one.
 
-If the package isn't installed yet, `init` warns that the hook and exemplar paths point at `node_modules/slidev-addon-decks`, which doesn't exist until you install it.
+If the package isn't installed, `init` writes the agent files and the instructions block but not the hooks, prints the install command and exits 1. Install the package and re-run `init` to add the hooks. The write hook refuses every Edit and Write when its script is missing, so if you uninstall the package, remove the two `decks hook` entries from `.claude/settings.json` too.
 
 ### CLI reference
 
@@ -104,7 +105,7 @@ Claude Code is the supported agent. After `decks init`, ask it for a deck in pla
 - **`building-a-deck` skill** covers the full workflow: scaffold, sourcing data, verification, build, and when a deck counts as done.
 - **`fact-checking-a-deck` skill** reruns the source behind each figure, using the query or source recorded in the deck's `data-sources.md`, and checks the data arrays, card copy and slide text against the results.
 - **Rules** in `.claude/rules/` attach by path when you edit files under your decks directory. They cover slide prose (`deck-writing.md`), layout, charts and theme (`deck-patterns.md`), story stages (`story-stage.md`), data provenance (`deck-data.md`), a catalog of AI writing patterns to avoid (`prose-patterns.md`) and your own terminology (`project-glossary.md`, which starts empty).
-- **Hooks.** `decks hook lint` runs before every Edit, Write and MultiEdit and denies deck prose that matches an error-level pattern in the package's `lint/ai-rhetoric-patterns.tsv`. If the scanner can't run, it refuses the write instead of letting it through. `decks hook prompt` adds a reminder of the writing rules when a prompt asks for deck work. Both are Node, so they need no `jq` and no shell.
+- **Hooks.** `decks hook lint` runs before every Edit, Write and MultiEdit and denies deck prose that matches an error-level pattern in the package's `lint/ai-rhetoric-patterns.tsv`. If the scanner can't run, it refuses the write instead of letting it through. `decks hook prompt` adds a reminder of the writing rules when a prompt asks for deck work. Both are Node scripts, so they need no `jq` or bash; Claude Code runs the hook command through its own hook shell.
 - **Exemplars.** The skills point the agent at two decks inside the package, `node_modules/slidev-addon-decks/agent/exemplars/tides` (story) and `.../agent-experience` (conventional), to read and not edit.
 
 In this repo the same setup is the source, in `.claude/` and `tools/`. `bun run render:agent` renders it into `packages/decks/agent/`, which is what `init` installs. The checks outside the agent:

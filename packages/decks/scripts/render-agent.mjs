@@ -18,30 +18,23 @@
 //   5. refuses to write if a repo-only reference survives (LEFTOVER).
 //
 // Exemplars are copies of two example decks: tides (story) verbatim apart from
-// two repo-path comments, and agent-experience (conventional) with its brand,
-// cover and byline neutralized. packages/decks/agent/INVENTORY.md is the table
+// three repo-path comments, and agent-experience (conventional) with its brand,
+// cover, byline and tool-call server neutralized, and its data-sources.md marked
+// illustrative (its citations point into a private repo). EXEMPLAR_FORBIDDEN
+// fails the render if a brand string survives. packages/decks/agent/INVENTORY.md is the table
 // of every mapping and why.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { SOURCES } from './agent-sources.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 export const REPO_ROOT = resolve(here, '..', '..', '..')
 export const AGENT_DIR = resolve(here, '..', 'agent')
 
 /** Rendered from `.claude/<path>` into `agent/templates/<path>`; `decks init` writes each to `.claude/<path>`. */
-export const SOURCES = [
-  'agents/deck-author.md',
-  'skills/building-a-deck/SKILL.md',
-  'skills/fact-checking-a-deck/SKILL.md',
-  'rules/deck-patterns.md',
-  'rules/deck-writing.md',
-  'rules/deck-data.md',
-  'rules/story-stage.md',
-  'rules/prose-patterns.md',
-  'rules/project-glossary.md',
-]
+export { SOURCES }
 
 /** Ordered: the specific CLI shapes run before the generic `bun run <cmd>` rule. */
 const MAPPINGS = [
@@ -155,7 +148,18 @@ const EXEMPLARS = {
       ['<span>Riley Hilliard</span>', '<span>Your Name</span>'],
       ['<span>tryopendata.ai</span>', '<span>example.com</span>'],
     ],
+    'pages/09-openchart.md': [['server="opendata"', 'server="data-api"']],
     'data-sources.md': [
+      [
+        '# Agent Experience deck — data provenance\n',
+        '# Agent Experience deck: data provenance\n\n' +
+          "> Illustrative. This deck was built in a private repository, so the file paths, line numbers,\n" +
+          "> commits and articles cited below don't resolve in your project. They show the shape of a\n" +
+          '> provenance entry: every figure names the artifact it came from.\n',
+      ],
+      [/^(##? .*?) — /gm, '$1: '],
+      ["\"Data: OpenData's own MCP server, API, and OpenChart\"", '"Data: our own MCP server, API, and OpenChart"'],
+      ['(server `opendata`, tool `openchart`)', '(server `data-api`, tool `openchart`)'],
       [
         '- QR code points at https://labs.tryopendata.ai/designing-an-api-for-llms, the article this',
         '- QR code points at https://example.com/write-up, standing in for the article this',
@@ -166,6 +170,15 @@ const EXEMPLARS = {
       ],
     ],
   },
+}
+
+/**
+ * Strings that must not survive in an exemplar copy: the agent-experience deck
+ * is neutralized, so a brand or byline left in it is a missed edit. (tides
+ * keeps its byline on purpose and has no entry.)
+ */
+const EXEMPLAR_FORBIDDEN = {
+  'agent-experience': [/open-?data|tryopendata/i, /Riley Hilliard/, /^#.*—/m],
 }
 
 function applyEdits(text, edits, name) {
@@ -207,6 +220,10 @@ export function renderAgent(repoRoot = REPO_ROOT) {
       if (edits[file]) {
         text = applyEdits(text, edits[file], `examples/${deck}/${file}`)
         used.add(file)
+      }
+      for (const re of EXEMPLAR_FORBIDDEN[deck] ?? []) {
+        const m = re.exec(text)
+        if (m) throw new Error(`examples/${deck}/${file}: ${JSON.stringify(m[0])} survived neutralizing; add an edit in EXEMPLARS`)
       }
       out.set(`exemplars/${deck}/${file}`, text)
     }

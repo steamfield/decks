@@ -43,10 +43,31 @@ function readRegistry(projectDir) {
   }
 }
 
-/** Directories (relative to the project) whose children are decks. */
-function deckRoots(registry) {
-  const roots = new Set(['examples', 'decks'])
-  if (registry._config?.decksDir) roots.add(registry._config.decksDir.replace(/\/+$/, ''))
+/** A decksDir as the registry spells it, without `./` or a trailing `/`; `.` for the root. */
+export function normalizeDir(dir) {
+  return dir.replace(/^(\.\/)+/, '').replace(/\/+$/, '') || '.'
+}
+
+/** True in the Decks repo itself: the addon is a workspace package, not a dependency. */
+function isDecksRepo(projectDir) {
+  try {
+    const pkg = JSON.parse(readFileSync(join(projectDir, 'packages/decks/package.json'), 'utf8'))
+    return pkg.name === 'slidev-addon-decks'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Directories (relative to the project) whose children are decks: `decks`,
+ * the registry's decksDir, and `examples` only inside the Decks repo, where
+ * the shipped decks live. In a user project `examples/` is the user's own.
+ */
+function deckRoots(registry, projectDir) {
+  const roots = new Set(['decks'])
+  const dir = registry._config?.decksDir
+  if (typeof dir === 'string') roots.add(normalizeDir(dir))
+  if (isDecksRepo(projectDir)) roots.add('examples')
   return [...roots]
 }
 
@@ -62,18 +83,22 @@ const DECK_FILE = '(?:pages/.+\\.md|slides\\.md|components/.+\\.vue)'
 
 /**
  * Whether a path is deck prose: slides.md, pages/*.md or components/*.vue of a
- * deck under a deck root (examples/, decks/, the registry's decksDir) at any
- * prefix, so absolute and worktree paths count, or of any registered deck.
- * Never node_modules.
+ * deck under a deck root (decks/, the registry's decksDir, examples/ in the
+ * Decks repo) at any prefix, so absolute and worktree paths count, or of any
+ * registered deck. Never node_modules.
  */
 export function inScope(filePath, projectDir, registry) {
   const path = filePath.split(sep).join('/')
   if (/(^|\/)node_modules\//.test(path)) return false
-  const roots = deckRoots(registry).map(escape).join('|')
-  if (new RegExp(`(?:^|/)(?:${roots})/.+?/${DECK_FILE}$`).test(path)) return true
   const rel = (isAbsolute(filePath) ? relative(projectDir, filePath) : filePath)
     .split(sep)
     .join('/')
+  const roots = deckRoots(registry, projectDir)
+  const named = roots.filter((r) => r !== '.').map(escape)
+  if (named.length && new RegExp(`(?:^|/)(?:${named.join('|')})/.+?/${DECK_FILE}$`).test(path))
+    return true
+  // decksDir "." puts the decks at the project root.
+  if (roots.includes('.') && new RegExp(`^[^/.][^/]*/${DECK_FILE}$`).test(rel)) return true
   return deckDirs(registry).some((dir) => new RegExp(`^${escape(dir)}/${DECK_FILE}$`).test(rel))
 }
 
@@ -85,28 +110,69 @@ function writtenText(toolName, input) {
 }
 
 /**
- * The file as it will read after the call, or null when an edit cannot be
- * replayed against the file on disk.
+ * Replay the call against the file on disk: the file as it will read after,
+ * plus the `[start, end)` character ranges of it the call wrote. Null when an
+ * edit cannot be replayed (no file, an old_string that is not there).
  */
-function resultingFile(toolName, input, path) {
-  if (toolName === 'Write') return input.content ?? ''
+function replay(toolName, input, path) {
+  if (toolName === 'Write') {
+    const content = input.content ?? ''
+    return { src: content, ranges: [[0, content.length]] }
+  }
   let src
   try {
     src = readFileSync(path, 'utf8')
   } catch {
     return null
   }
+  let ranges = []
   const edits = toolName === 'Edit' ? [input] : (input.edits ?? [])
   for (const e of edits) {
-    if (typeof e?.old_string !== 'string' || !src.includes(e.old_string)) return null
-    src = e.replace_all
-      ? src.replaceAll(e.old_string, () => e.new_string ?? '')
-      : src.replace(e.old_string, () => e.new_string ?? '')
+    const from = e?.old_string
+    const to = e?.new_string ?? ''
+    if (typeof from !== 'string' || !from || !src.includes(from)) return null
+    const hits = []
+    for (let at = src.indexOf(from); at >= 0; at = src.indexOf(from, at + from.length)) {
+      hits.push(at)
+      if (!e.replace_all) break
+    }
+    const delta = to.length - from.length
+    // An offset in the old text, carried into the new one.
+    const carry = (p) => {
+      let shift = 0
+      for (const at of hits) {
+        if (p >= at + from.length) shift += delta
+        else if (p > at) return at + shift + Math.min(p - at, to.length)
+        else break
+      }
+      return p + shift
+    }
+    ranges = ranges.map(([s, t]) => [carry(s), carry(t)])
+    let next = ''
+    let last = 0
+    hits.forEach((at, i) => {
+      next += src.slice(last, at) + to
+      last = at + from.length
+      const start = at + i * delta
+      ranges.push([start, start + to.length])
+    })
+    src = next + src.slice(last)
   }
-  return src
+  return { src, ranges }
 }
 
-const DENY_FOOTER = `Line numbers refer to the NEW text being written. Rewrite the flagged
+/** The 1-based line numbers of `src` the ranges cover; an empty range marks its line. */
+function linesOf(src, ranges) {
+  const lineAt = (p) => src.slice(0, p).split('\n').length
+  const lines = new Set()
+  for (const [s, t] of ranges) {
+    const end = lineAt(Math.max(s, t - 1))
+    for (let l = lineAt(s); l <= end; l++) lines.add(l)
+  }
+  return lines
+}
+
+const DENY_FOOTER = `Rewrite the flagged
 phrasing (don't synonym-swap). A rewrite that keeps the same sentence
 skeleton with new words still reads as AI; change the structure, or
 just state the fact plainly. If a hit is a legitimate direct quote,
@@ -146,35 +212,49 @@ export async function lintHook() {
         'Reinstall slidev-addon-decks, or restore lint/ai-rhetoric-patterns.tsv in it.',
     )
   }
-
   const opts = { errorsOnly: true }
-  const lines = scan
-    .scanEntries(scan.proseLines(text), patterns, opts)
-    .map((hit) => scan.formatHit('stdin', hit))
+  const lines = []
+  const absolute = isAbsolute(filePath) ? filePath : resolve(projectDir, filePath)
+  const after = replay(toolName, input, absolute)
+  let where = 'Line numbers refer to the NEW text being written.'
 
-  // Card copy lives in <script setup>, which the prose pass skips. Scan the
-  // COPY array of the file as it will read after the call, and report only
-  // strings this call writes, so a fragment edit is judged in context.
-  if (filePath.endsWith('.vue')) {
-    const absolute = isAbsolute(filePath) ? filePath : resolve(projectDir, filePath)
-    const after = resultingFile(toolName, input, absolute)
-    const strings =
-      after === null
-        ? scan.fieldStrings(text)
-        : scan.copyStrings(after).filter((s) => text.includes(s.raw))
-    for (const s of strings) {
-      const at = text.indexOf(s.raw)
-      const entry = { ...s, line: at < 0 ? s.line : text.slice(0, at).split('\n').length }
-      for (const hit of scan.scanEntries([entry], patterns, opts))
-        lines.push(scan.formatHit('stdin', hit) + ' (story card COPY)')
+  if (after) {
+    // Judge the file as it will read after the call, so frontmatter, fences
+    // and comments are known from context, and report only the lines the call
+    // wrote. A Write is the whole file.
+    const touched = linesOf(after.src, after.ranges)
+    let label = 'stdin'
+    if (toolName !== 'Write') {
+      label = relative(projectDir, absolute).split(sep).join('/')
+      where = `Line numbers refer to ${label} as it will read after this edit.`
     }
+    for (const hit of scan.scanEntries(scan.proseLines(after.src), patterns, opts))
+      if (touched.has(hit.line)) lines.push(scan.formatHit(label, hit))
+    // Card copy lives in <script setup>, which the prose pass skips.
+    if (filePath.endsWith('.vue')) {
+      const strings = scan.copyStrings(after.src).filter((s) => {
+        const last = s.line + s.raw.split('\n').length - 1
+        for (let l = s.line; l <= last; l++) if (touched.has(l)) return true
+        return false
+      })
+      for (const hit of scan.scanEntries(strings, patterns, opts))
+        lines.push(scan.formatHit(label, hit) + ' (story card COPY)')
+    }
+  } else {
+    // The edit cannot be replayed (no file yet, or old_string is not in it):
+    // scan the written text alone, as a fragment cut from a file.
+    for (const hit of scan.scanEntries(scan.proseLines(text, { fragment: true }), patterns, opts))
+      lines.push(scan.formatHit('stdin', hit))
+    if (filePath.endsWith('.vue'))
+      for (const hit of scan.scanEntries(scan.fieldStrings(text), patterns, opts))
+        lines.push(scan.formatHit('stdin', hit) + ' (story card COPY)')
   }
   if (!lines.length) return
 
   emit({
     hookEventName: 'PreToolUse',
     permissionDecision: 'deny',
-    permissionDecisionReason: `BLOCKED: AI-rhetoric patterns found in prose.\n\n${lines.join('\n')}\n\n${DENY_FOOTER}`,
+    permissionDecisionReason: `BLOCKED: AI-rhetoric patterns found in prose.\n\n${lines.join('\n')}\n\n${where} ${DENY_FOOTER}`,
   })
 }
 
@@ -198,7 +278,7 @@ function deckWorkInProgress(projectDir, registry) {
     encoding: 'utf8',
   })
   if (top.status !== 0) return false
-  const dirs = [...deckRoots(registry), ...deckDirs(registry)].filter((d) =>
+  const dirs = [...deckRoots(registry, projectDir), ...deckDirs(registry)].filter((d) =>
     existsSync(join(projectDir, d)),
   )
   if (!dirs.length) return false
@@ -209,9 +289,24 @@ function deckWorkInProgress(projectDir, registry) {
   return status.status === 0 && /\/(pages|components)\/|slides\.md/.test(status.stdout)
 }
 
+/**
+ * How the project runs the CLI: `bunx` when the nearest lockfile is bun's,
+ * else `npx`. The same rule `decks init` uses for the instructions it writes.
+ */
+function runner(projectDir) {
+  const locks = ['bun.lock', 'bun.lockb', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock']
+  for (let d = resolve(projectDir); ; d = dirname(d)) {
+    if (locks.some((l) => existsSync(join(d, l))))
+      return existsSync(join(d, 'bun.lock')) || existsSync(join(d, 'bun.lockb')) ? 'bunx' : 'npx'
+    if (dirname(d) === d) return 'npx'
+  }
+}
+
 /** The reminder. Inside the Decks repo it names the repo scripts; elsewhere the CLI. */
-function reminder(inRepo) {
-  const lint = inRepo ? '`bun run lint`' : '`bunx -p slidev-addon-decks decks lint`'
+function reminder(projectDir) {
+  const lint = isDecksRepo(projectDir)
+    ? '`bun run lint`'
+    : `\`${runner(projectDir)} -p slidev-addon-decks decks lint\``
   return `Deck writing reminder (see .claude/rules/deck-writing.md):
 - Slides are NOT short articles. The audience gets one pass at reading speed while someone talks over it. The slide carries only what must be read; the speaker carries the rest.
 - Word budget: ~70 visible words on a normal slide. A story card is eight words of lead, twenty of body. 150 means split the slide. Four figures means it is a bug.
@@ -221,16 +316,6 @@ function reminder(inRepo) {
 - Anti-slop shapes carry over unchanged (${lint} covers each deck's \`pages/*.md\`, \`slides.md\`, \`components/*.vue\` and story-card COPY): never "X is real", never characterize a finding instead of stating it, never negation-then-assertion, never an em dash. Catalog: .claude/rules/prose-patterns.md.
 - Article rules that do NOT apply here: paragraph construction, leading each paragraph with its point, prose density, and paragraph-level structural review.
 - Every figure traces to a query in \`<deck>/data-sources.md\` and a \`<deck>/data/*.ts\` constant (.claude/rules/deck-data.md). Deck fact-check runs the \`fact-checking-a-deck\` skill.`
-}
-
-/** True in the Decks repo itself: the addon is a workspace package, not a dependency. */
-function isDecksRepo(projectDir) {
-  try {
-    const pkg = JSON.parse(readFileSync(join(projectDir, 'packages/decks/package.json'), 'utf8'))
-    return pkg.name === 'slidev-addon-decks'
-  } catch {
-    return false
-  }
 }
 
 export async function promptHook() {
@@ -247,7 +332,7 @@ export async function promptHook() {
   if (!fires && REVISION.test(prompt))
     fires = deckWorkInProgress(projectDir, readRegistry(projectDir))
   if (!fires) return
-  emit({ hookEventName: 'UserPromptSubmit', additionalContext: reminder(isDecksRepo(projectDir)) })
+  emit({ hookEventName: 'UserPromptSubmit', additionalContext: reminder(projectDir) })
 }
 
 export async function hookCommand(args) {

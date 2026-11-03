@@ -3,26 +3,34 @@
 //   decks init [--force]
 //
 // Writes the deck-author agent, the building-a-deck and fact-checking-a-deck
-// skills and the six deck rules under .claude/, from the templates rendered by
-// render-agent.mjs, with the project's decksDir (decks.json _config, default
-// `decks`), the CLI command and the installed package's path filled in. Then:
+// skills and the six deck rules (agent-sources.mjs) under .claude/, from the
+// templates render-agent.mjs renders in the repo, with the project's decksDir
+// (decks.json _config, default `decks`), the CLI command and the installed
+// package's path filled in. Then:
 //
 // - records each file it wrote, with a content hash, in .claude/decks.json. A
 //   re-run updates a file whose hash still matches, skips one the user edited,
 //   and never touches a file it did not write (a name collision). --force
-//   overwrites edited files it owns; collisions stay untouched even then.
+//   overwrites edited files it owns; collisions stay untouched even then. A
+//   file an earlier version wrote and this one no longer ships is removed if
+//   unedited, kept and reported if edited. Hashes are over LF text.
 // - adds the two hooks (`decks hook lint` on Edit|Write|MultiEdit, `decks hook
 //   prompt` on UserPromptSubmit) to .claude/settings.json, never removing
-//   anything and never adding an entry twice, and prints the diff.
+//   anything and never adding an entry twice, and prints the diff. When the
+//   package isn't installed it skips the hooks (the write hook would block every
+//   write) and exits 1 with the install command.
 // - writes a marked `<!-- decks:start -->` block into AGENTS.md (or CLAUDE.md
-//   when only that exists), replaced in place on a re-run. With neither, it
-//   creates AGENTS.md and a CLAUDE.md that imports it.
+//   when only that exists; both when both carry one), replaced in place on a
+//   re-run. With neither, it creates AGENTS.md and a CLAUDE.md that imports it.
+//
+// An unparseable decks.json or .claude/decks.json stops init before it writes
+// anything, with exit 1; an unusable .claude/settings.json is left alone.
 
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SOURCES } from './render-agent.mjs'
+import { SOURCES } from './agent-sources.mjs'
 
 const PACKAGE = 'slidev-addon-decks'
 const DEFAULT_PACKAGE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -49,20 +57,35 @@ function findUp(dir, test) {
   }
 }
 
+/** A problem init reports by name and exits 1 on, without a stack. */
+class InitError extends Error {}
+
+const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+
+/** Parse a JSON file, or throw an InitError naming the file. */
+function readJson(file, label) {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'))
+  } catch (err) {
+    throw new InitError(`${label} does not parse (${err.message}).`)
+  }
+}
+
 /** The project's deck directory from decks.json, default `decks`. */
 function readDecksDir(rootDir) {
   const file = join(rootDir, 'decks.json')
   if (!existsSync(file)) return 'decks'
-  const dir = JSON.parse(readFileSync(file, 'utf8'))?._config?.decksDir ?? 'decks'
+  const registry = readJson(file, 'decks.json')
+  const dir = isObject(registry) && isObject(registry._config) ? registry._config.decksDir ?? 'decks' : 'decks'
+  if (typeof dir !== 'string') throw new InitError(`decks.json: _config.decksDir must be a string, got ${JSON.stringify(dir)}.`)
   return dir.replace(/^\.\//, '').replace(/\/+$/, '') || '.'
 }
 
-/** `bunx` when the project's lockfile is bun's, else `npx`. Both pin the package name. */
-function runnerFor(rootDir) {
+/** True when the nearest lockfile is bun's. */
+function usesBun(rootDir) {
   const locks = ['bun.lock', 'bun.lockb', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock']
   const dir = findUp(rootDir, (d) => locks.some((l) => existsSync(join(d, l))))
-  const bun = dir && (existsSync(join(dir, 'bun.lock')) || existsSync(join(dir, 'bun.lockb')))
-  return `${bun ? 'bunx' : 'npx'} -p ${PACKAGE} decks`
+  return Boolean(dir && (existsSync(join(dir, 'bun.lock')) || existsSync(join(dir, 'bun.lockb'))))
 }
 
 /** Path from the project root to the installed package, `/`-separated, or null when it is not installed. */
@@ -103,27 +126,37 @@ export function lineDiff(before, after) {
   return out.join('\n')
 }
 
-/** The hook entries init owns, identified by package name plus subcommand. */
+/**
+ * The hook entries init owns. A command is init's when it names the package or
+ * runs `scripts/deck.mjs" hook <sub>` (the workspace form), plus the subcommand.
+ */
 function hookEntries(pkg) {
   const cmd = (sub) => `node "$CLAUDE_PROJECT_DIR/${pkg}/scripts/deck.mjs" hook ${sub}`
+  const owns = (sub) => (c) => (c.includes(PACKAGE) || /scripts\/deck\.mjs"?\s/.test(c)) && new RegExp(`\\bhook ${sub}\\b`).test(c)
   return [
     // `|| exit 2` keeps the write hook closed when node can't start the CLI at all
     // (package uninstalled): Claude Code treats exit 1 as non-blocking.
-    { event: 'PreToolUse', matcher: 'Edit|Write|MultiEdit', command: `${cmd('lint')} || exit 2`, owns: /\bhook lint\b/ },
-    { event: 'UserPromptSubmit', command: cmd('prompt'), owns: /\bhook prompt\b/ },
+    { event: 'PreToolUse', matcher: 'Edit|Write|MultiEdit', command: `${cmd('lint')} || exit 2`, owns: owns('lint') },
+    { event: 'UserPromptSubmit', command: cmd('prompt'), owns: owns('prompt') },
   ]
 }
 
-/** Merge init's hooks into a settings object in place. Returns one note per hook. */
+/** Merge init's hooks into a settings object in place. Returns one note per hook. Throws on a settings shape it can't merge into. */
 export function mergeHooks(settings, entries) {
+  if (!isObject(settings)) throw new InitError(`.claude/settings.json is ${JSON.stringify(settings)}, not a JSON object`)
+  if (settings.hooks !== undefined && !isObject(settings.hooks))
+    throw new InitError(`"hooks" in .claude/settings.json is ${JSON.stringify(settings.hooks)}, not an object`)
+  for (const e of entries) {
+    const groups = settings.hooks?.[e.event]
+    if (groups !== undefined && !Array.isArray(groups)) throw new InitError(`hooks.${e.event} in .claude/settings.json is not an array`)
+  }
   const notes = []
   settings.hooks ??= {}
   for (const e of entries) {
     const groups = (settings.hooks[e.event] ??= [])
-    if (!Array.isArray(groups)) throw new Error(`hooks.${e.event} in .claude/settings.json is not an array`)
     const mine = groups
       .flatMap((g) => (Array.isArray(g?.hooks) ? g.hooks : []))
-      .find((h) => typeof h?.command === 'string' && h.command.includes(PACKAGE) && e.owns.test(h.command))
+      .find((h) => typeof h?.command === 'string' && e.owns(h.command))
     if (mine?.command === e.command) {
       notes.push(`${e.event}: already present`)
     } else if (mine) {
@@ -137,9 +170,36 @@ export function mergeHooks(settings, entries) {
   return notes
 }
 
+/** Read .claude/decks.json, or throw an InitError: init can't tell what it owns without it. */
+function readManifest(manifestPath) {
+  if (!existsSync(manifestPath)) return { files: {} }
+  const manifest = readJson(manifestPath, '.claude/decks.json')
+  if (!isObject(manifest) || (manifest.files !== undefined && !isObject(manifest.files)))
+    throw new InitError('.claude/decks.json is not an object with a "files" object.')
+  manifest.files ??= {}
+  return manifest
+}
+
+/** A manifest key init may act on: a path under .claude/ that stays inside it. */
+function safeTarget(rootDir, target) {
+  const base = resolve(rootDir, '.claude')
+  const file = resolve(rootDir, target)
+  return target.startsWith('.claude/') && file.startsWith(base + sep) ? file : null
+}
+
+/** Remove now-empty directories from dir up to (not including) .claude/. */
+function pruneEmpty(rootDir, dir) {
+  const base = resolve(rootDir, '.claude')
+  for (let d = dir; d.startsWith(base + sep); d = dirname(d)) {
+    if (readdirSync(d).length) return
+    rmdirSync(d)
+  }
+}
+
 /**
  * Run `decks init` against rootDir. Returns { code, files, settings, instructions, warnings }.
- * `files` maps each target to written | updated | unchanged | skipped | overwritten | collision.
+ * `files` maps each target to written | updated | unchanged | skipped | overwritten | collision,
+ * or, for a file an earlier init wrote that the package no longer ships, removed | kept.
  */
 export function runInit(argv = [], { rootDir = process.cwd(), log = console.log, packageDir = DEFAULT_PACKAGE_DIR } = {}) {
   if (argv.includes('-h') || argv.includes('--help')) {
@@ -151,36 +211,39 @@ export function runInit(argv = [], { rootDir = process.cwd(), log = console.log,
     log(`decks init: unknown argument ${unknown.join(' ')}\n\n${HELP}`)
     return { code: 1 }
   }
-  const force = argv.includes('--force')
+  try {
+    return install(argv.includes('--force'), rootDir, log, packageDir)
+  } catch (err) {
+    if (!(err instanceof InitError)) throw err
+    log(`decks init: ${err.message} Nothing was changed; fix it and re-run.`)
+    return { code: 1 }
+  }
+}
+
+function install(force, rootDir, log, packageDir) {
   const warnings = []
   const version = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8')).version
+  const bun = usesBun(rootDir)
+  const decksDir = readDecksDir(rootDir)
+  const manifestPath = join(rootDir, '.claude', 'decks.json')
+  const manifest = readManifest(manifestPath)
 
-  let pkg = installedPackage(rootDir)
-  if (!pkg) {
-    pkg = `node_modules/${PACKAGE}`
-    warnings.push(
-      `${PACKAGE} is not installed in this project, so the hooks and exemplar paths point at ${pkg}, ` +
-        `which does not exist yet. Install it (bun add -d ${PACKAGE}, or npm i -D ${PACKAGE}) before using the agent.`,
-    )
-  }
+  // Without the package installed, the hook command would point at a missing
+  // script and its `|| exit 2` would block every Edit and Write in the project.
+  const installedPkg = installedPackage(rootDir)
+  const pkg = installedPkg ?? `node_modules/${PACKAGE}`
+  const installCmd = bun ? `bun add -d ${PACKAGE}` : `npm i -D ${PACKAGE}`
   const vars = {
-    decks: runnerFor(rootDir),
-    decksDir: readDecksDir(rootDir),
+    decks: `${bun ? 'bunx' : 'npx'} -p ${PACKAGE} decks`,
+    decksDir,
     pkg,
     exemplars: `${pkg}/agent/exemplars`,
   }
+  let code = 0
 
   // 1. Agent, skills and rules, under the ownership manifest.
-  const manifestPath = join(rootDir, '.claude', 'decks.json')
-  let manifest = { files: {} }
-  if (existsSync(manifestPath)) {
-    try {
-      manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
-      manifest.files ??= {}
-    } catch (err) {
-      warnings.push(`.claude/decks.json does not parse (${err.message}); treating every existing file as one init did not write.`)
-    }
-  }
+  // Hashes and comparisons use LF text, so a CRLF checkout (git autocrlf) is not an edit.
+  const lf = (text) => text.replace(/\r\n/g, '\n')
   const files = {}
   const owned = {}
   for (const src of SOURCES) {
@@ -192,7 +255,7 @@ export function runInit(argv = [], { rootDir = process.cwd(), log = console.log,
     if (!existsSync(file)) {
       status = 'written'
     } else {
-      const current = readFileSync(file, 'utf8')
+      const current = lf(readFileSync(file, 'utf8'))
       if (current === text) status = 'unchanged'
       else if (!recorded) status = 'collision'
       else if (sha256(current) === recorded) status = 'updated'
@@ -206,6 +269,20 @@ export function runInit(argv = [], { rootDir = process.cwd(), log = console.log,
     // An edited file keeps its old hash, so the next run still sees the edit.
     if (status === 'skipped') owned[target] = recorded
     else if (status !== 'collision') owned[target] = sha256(text)
+  }
+  // Files an earlier init wrote that this version no longer ships: remove the
+  // unedited ones, keep (and stop owning) the edited ones.
+  for (const [target, recorded] of Object.entries(manifest.files)) {
+    if (target in files) continue
+    const file = safeTarget(rootDir, target)
+    if (!file || !existsSync(file)) continue
+    if (sha256(lf(readFileSync(file, 'utf8'))) === recorded) {
+      rmSync(file)
+      pruneEmpty(rootDir, dirname(file))
+      files[target] = 'removed'
+    } else {
+      files[target] = 'kept'
+    }
   }
   mkdirSync(dirname(manifestPath), { recursive: true })
   writeFileSync(
@@ -225,43 +302,57 @@ export function runInit(argv = [], { rootDir = process.cwd(), log = console.log,
 
   // 2. Hooks in .claude/settings.json.
   const settingsPath = join(rootDir, '.claude', 'settings.json')
-  const before = existsSync(settingsPath) ? readFileSync(settingsPath, 'utf8') : ''
   let settingsReport = { notes: [], diff: '' }
-  let code = 0
-  try {
-    const settings = before.trim() ? JSON.parse(before) : {}
-    const notes = mergeHooks(settings, hookEntries(pkg))
-    const after = JSON.stringify(settings, null, 2) + '\n'
-    const changed = before.trim() === '' || JSON.stringify(JSON.parse(before)) !== JSON.stringify(settings)
-    if (changed) writeFileSync(settingsPath, after)
-    settingsReport = { notes, diff: changed ? lineDiff(before, after) : '' }
-  } catch (err) {
+  if (!installedPkg) {
     code = 1
-    settingsReport.notes.push(`not changed: ${err.message}. Add the hooks by hand (see the decks init docs).`)
+    settingsReport.notes.push(`not changed: ${PACKAGE} is not installed, so the hooks would have no script to run.`)
+    warnings.push(
+      `${PACKAGE} is not installed in this project. Install it (${installCmd}) and re-run init to add the hooks.`,
+    )
+  } else {
+    const before = existsSync(settingsPath) ? readFileSync(settingsPath, 'utf8') : ''
+    try {
+      let settings
+      try {
+        settings = before.trim() ? JSON.parse(before) : {}
+      } catch (err) {
+        throw new InitError(`.claude/settings.json does not parse (${err.message})`)
+      }
+      const notes = mergeHooks(settings, hookEntries(pkg))
+      const after = JSON.stringify(settings, null, 2) + '\n'
+      const changed = before.trim() === '' || JSON.stringify(JSON.parse(before)) !== JSON.stringify(settings)
+      if (changed) writeFileSync(settingsPath, after)
+      settingsReport = { notes, diff: changed ? lineDiff(before, after) : '' }
+    } catch (err) {
+      if (!(err instanceof InitError)) throw err
+      code = 1
+      settingsReport.notes.push(`not changed: ${err.message}. Fix it, or add the hooks by hand (see the decks init docs).`)
+    }
   }
 
-  // 3. The marked block in AGENTS.md or CLAUDE.md.
+  // 3. The marked block in AGENTS.md and/or CLAUDE.md.
   const block = `${START}\n${fill(readFileSync(join(packageDir, 'agent', 'instructions.md'), 'utf8'), vars, 'instructions.md').trimEnd()}\n${END}`
   const instructions = []
   const read = (f) => (existsSync(join(rootDir, f)) ? readFileSync(join(rootDir, f), 'utf8') : null)
   const write = (f, text) => writeFileSync(join(rootDir, f), text)
-  const withBlock = ['AGENTS.md', 'CLAUDE.md'].find((f) => read(f)?.includes(START))
-  if (withBlock) {
-    const text = read(withBlock)
+  const withBlock = ['AGENTS.md', 'CLAUDE.md'].filter((f) => read(f)?.includes(START))
+  for (const f of withBlock) {
+    const text = read(f)
     const s = text.indexOf(START)
     const e = text.indexOf(END, s)
     if (e === -1) {
       code = 1
-      instructions.push(`${withBlock}: has ${START} but no ${END}; not changed. Fix the markers and re-run.`)
-    } else {
-      const next = text.slice(0, s) + block + text.slice(e + END.length)
-      if (next === text) instructions.push(`${withBlock}: decks block unchanged`)
-      else {
-        write(withBlock, next)
-        instructions.push(`${withBlock}: decks block updated in place`)
-      }
+      instructions.push(`${f}: has ${START} but no ${END}; not changed. Fix the markers and re-run.`)
+      continue
     }
-  } else {
+    const next = text.slice(0, s) + block + text.slice(e + END.length)
+    if (next === text) instructions.push(`${f}: decks block unchanged`)
+    else {
+      write(f, next)
+      instructions.push(`${f}: decks block updated in place`)
+    }
+  }
+  if (!withBlock.length) {
     const append = (f) => {
       const text = read(f)
       write(f, `${text.trimEnd()}\n\n${block}\n`)
@@ -274,13 +365,14 @@ export function runInit(argv = [], { rootDir = process.cwd(), log = console.log,
       instructions.push('AGENTS.md: created with the decks block')
     }
   }
-  // Claude Code reads CLAUDE.md, not AGENTS.md, so a block in AGENTS.md needs the import.
-  if (read('AGENTS.md')?.includes(START)) {
-    const claude = read('CLAUDE.md')
+  // Claude Code reads CLAUDE.md, not AGENTS.md, so a block in AGENTS.md needs the
+  // import, unless CLAUDE.md carries its own copy of the block.
+  const claude = read('CLAUDE.md')
+  if (read('AGENTS.md')?.includes(START) && !claude?.includes(START)) {
     if (claude === null) {
       write('CLAUDE.md', '@AGENTS.md\n')
       instructions.push('CLAUDE.md: created with `@AGENTS.md`, so Claude Code reads AGENTS.md')
-    } else if (!/^@AGENTS\.md\s*$/m.test(claude)) {
+    } else if (!/^@(?:\.\/)?AGENTS\.md\s*$/m.test(claude)) {
       warnings.push('CLAUDE.md does not import AGENTS.md, so Claude Code will not see the decks block. Add a line `@AGENTS.md` to CLAUDE.md.')
     }
   }
@@ -293,6 +385,8 @@ export function runInit(argv = [], { rootDir = process.cwd(), log = console.log,
     unchanged: 'unchanged',
     skipped: 'skipped (edited since init wrote it; --force overwrites)',
     collision: 'collision (exists and init did not write it; left untouched)',
+    removed: 'removed (no longer shipped, and unedited)',
+    kept: 'kept (no longer shipped, but you edited it; it is yours now)',
   }
   const lines = [`decks init (${PACKAGE} ${version})`, '']
   for (const [status, label] of Object.entries(groups)) {
@@ -310,7 +404,8 @@ export function runInit(argv = [], { rootDir = process.cwd(), log = console.log,
   if (settingsReport.diff) lines.push('', settingsReport.diff)
   lines.push('', 'instructions:', ...instructions.map((n) => `  ${n}`))
   if (warnings.length) lines.push('', 'warnings:', ...warnings.map((w) => `  ${w}`))
-  lines.push('', `Next: ${vars.decks} new <alias> [--story], then ask Claude Code to build the deck.`)
+  if (installedPkg) lines.push('', `Next: ${vars.decks} new <alias> [--story], then ask Claude Code to build the deck.`)
+  else lines.push('', `Next: ${installCmd}, then re-run ${vars.decks} init.`)
   log(lines.join('\n'))
 
   return { code, files, settings: settingsReport, instructions, warnings, vars }

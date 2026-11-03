@@ -15,9 +15,10 @@
 //   decks list               show the registry
 //   decks check              orphaned/missing pages vs src: manifests, unregistered
 //                            decks, and error-level `decks lint` hits
-//   decks lint [alias|file ...] [--strict] [--errors-only]
+//   decks lint [alias|deck-dir|file ...] [--strict] [--errors-only]
 //                            AI-rhetoric scan of slides.md, pages/*.md, components/*.vue
-//                            and story-stage COPY arrays (every deck when no target);
+//                            and story-stage COPY arrays (with no target: every
+//                            registered deck plus every <decksDir>/*/slides.md);
 //                            exit 1 on an error hit (any hit with --strict), 2 when
 //                            the pattern file is missing
 //   decks lint --stdin [--errors-only]   scan prose piped in
@@ -59,14 +60,28 @@ if (cmd === 'hook') {
 const NO_REGISTRY =
   `No decks.json in ${rootDir}. Run decks from the directory that holds the deck registry,` +
   ' or create one with `decks new <alias>`.'
-// `new` starts a registry in an empty project; `lint` of files or stdin and
-// `snap diff` need none; every other command needs one.
-const registryFree = cmd === 'new' || cmd === 'init' || cmd === 'lint' || (cmd === 'snap' && rest[0] === 'diff')
+// `new` starts a registry in an empty project; `lint` of files, decks on disk
+// or stdin, `fact-extract` of a deck directory and `snap diff` need none;
+// every other command needs one.
+const registryFree =
+  cmd === 'new' ||
+  cmd === 'init' ||
+  cmd === 'lint' ||
+  cmd === 'fact-extract' ||
+  (cmd === 'snap' && rest[0] === 'diff')
 if (!existsSync(registryPath) && !registryFree) {
   console.error(NO_REGISTRY)
   process.exit(1)
 }
-const registry = existsSync(registryPath) ? JSON.parse(readFileSync(registryPath, 'utf8')) : {}
+let registry = {}
+if (existsSync(registryPath)) {
+  try {
+    registry = JSON.parse(readFileSync(registryPath, 'utf8'))
+  } catch (err) {
+    console.error(`${registryPath} is not valid JSON: ${err.message}`)
+    process.exit(1)
+  }
+}
 const decks = Object.fromEntries(Object.entries(registry).filter(([k]) => !k.startsWith('_')))
 const config = {
   decksDir: 'decks',
@@ -131,14 +146,20 @@ function takeFlag(args, name) {
 async function withDevServer(deck, port, fn) {
   const { existingServer, freePort, startServer } = await import('./server.mjs')
   if (port) {
-    const origin = await existingServer(port)
+    const { origin, error } = await existingServer(port, resolve(rootDir, deck.entry))
     if (!origin)
       die(
-        `Nothing answers on port ${port}. Start one with \`decks dev <alias> --port ${port}\`, or drop --port.`,
+        `--port ${port}: ${error}. Start one with \`decks dev <alias> --port ${port}\`, or drop --port.`,
       )
+    console.log(`Using the dev server at ${origin}`)
     return fn(origin)
   }
-  const free = await freePort(3030)
+  let free
+  try {
+    free = await freePort(3030)
+  } catch (err) {
+    die(`Could not find a free port for the dev server: ${err.message}`)
+  }
   console.log(
     `Starting a dev server for ${deck.entry} on port ${free} (pass --port N to use a running one)`,
   )
@@ -366,6 +387,7 @@ switch (cmd) {
     await lintCommand(rest, {
       rootDir,
       decks: existsSync(registryPath) ? decks : null,
+      decksDir: config.decksDir,
       die,
       noRegistry: NO_REGISTRY,
     })

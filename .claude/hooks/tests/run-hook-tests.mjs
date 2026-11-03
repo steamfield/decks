@@ -131,6 +131,18 @@ assertNotDeny(
   'honors lint-allow on a tag line',
 )
 assertDeny(
+  write('decks/my-talk/pages/02.md', "Here's the thing about tides. <!-- speaker cue -->"),
+  'scans the rest of a line that ends in an HTML comment',
+)
+assertDeny(
+  write('decks/my-talk/pages/02.md', '<p>At its core, tides.</p> {/* note */}'),
+  'scans the rest of a line that carries a JSX comment',
+)
+assertDeny(
+  edit('decks/my-talk/pages/02.md', '---\n\nAt its core, the moon sets the tide.'),
+  'denies a phrase after a leading --- in an Edit fragment (no file to replay)',
+)
+assertDeny(
   write('/Users/test/.claude/worktrees/foo/examples/x/pages/01.md', 'An em — dash.'),
   'denies with a worktree-prefixed path',
 )
@@ -242,6 +254,63 @@ assertNotDeny(
   assertNotDeny(write('decks/q3/pages/01.md', 'Clean.'), 'allows clean prose in a user project', {
     project,
   })
+  assertNotDeny(
+    write('examples/demo/pages/01.md', 'An em — dash.'),
+    'examples/ is not a deck root in a user project',
+    { project },
+  )
+  // An Edit is judged in the file it lands in: a `---` slide separator at the
+  // top of new_string is not frontmatter there.
+  const page = join(project, 'talks/q3/pages/01.md')
+  mkdirSync(dirname(page), { recursive: true })
+  writeFileSync(page, '---\nlayout: full\n---\n\n# Tides rise twice a day.\n\nEND\n')
+  assertDeny(
+    edit(page, '---\n\nAt its core, the moon sets the tide.\n\nEND', 'END'),
+    'denies a phrase after a leading --- in a replayed Edit',
+    { project },
+  )
+  {
+    const r = assertDeny(
+      {
+        tool_name: 'MultiEdit',
+        tool_input: {
+          file_path: page,
+          edits: [
+            { old_string: '# Tides rise twice a day.', new_string: '# Tides rise twice daily.' },
+            { old_string: 'END', new_string: 'Clean line.\nThis is a seamless tide.' },
+          ],
+        },
+      },
+      'denies a phrase in the second edit of a replayed MultiEdit',
+      { project },
+    )
+    const reason = r.json?.hookSpecificOutput?.permissionDecisionReason ?? ''
+    check(
+      reason.includes('talks/q3/pages/01.md:8 [ai-vocab]') && !reason.includes(':5 '),
+      'a replayed MultiEdit reports file line numbers, only on lines it wrote',
+      () => reason.slice(0, 300),
+    )
+  }
+  writeFileSync(page, '---\nlayout: full\n---\n\nThis is a seamless tide. <!-- lint-allow -->\n\nEND\n')
+  assertNotDeny(
+    edit(page, 'Clean ending.', 'END'),
+    'a replayed Edit is not blamed for lines it did not write',
+    { project },
+  )
+  rmSync(project, { recursive: true, force: true })
+}
+{
+  // decksDir spelled "./talks/" in decks.json.
+  const project = scratch('decks-hook-dotdir-')
+  writeFileSync(join(project, 'decks.json'), JSON.stringify({ _config: { decksDir: './talks/' } }))
+  assertDeny(write('talks/q4/pages/01.md', 'An em — dash.'), 'denies under a ./talks/ decksDir', {
+    project,
+  })
+  assertDeny(
+    write(join(project, 'talks/q4/slides.md'), 'An em — dash.'),
+    'denies under a ./talks/ decksDir (absolute path)',
+    { project },
+  )
   rmSync(project, { recursive: true, force: true })
 }
 
@@ -262,6 +331,22 @@ assertNotDeny(
     'refuses (exit 2) when the patterns file is missing',
     () => `rc=${r.rc} err=${r.err.slice(0, 160)}`,
   )
+  for (const [what, tsv] of [
+    ['is empty', ''],
+    ['holds only comments and warns', '# id\tseverity\tregex\tmessage\nx\twarn\tfoo\tbar\n'],
+    ['has an unknown severity', 'x\terror\tfoo\tbar\ny\terorr\tbaz\tqux\n'],
+  ]) {
+    writeFileSync(join(copy, 'lint/ai-rhetoric-patterns.tsv'), tsv)
+    const h = runHook('lint', write('decks/my-talk/pages/02.md', 'Clean prose.'), {
+      deck: join(copy, 'scripts/deck.mjs'),
+    })
+    check(
+      h.rc === 2 && h.err.includes('cannot load the AI-rhetoric scanner'),
+      `refuses (exit 2) when the patterns file ${what}`,
+      () => `rc=${h.rc} err=${h.err.slice(0, 200)}`,
+    )
+  }
+  rmSync(join(copy, 'lint/ai-rhetoric-patterns.tsv'))
   const outside = runHook('lint', write('README.md', 'Clean prose.'), {
     deck: join(copy, 'scripts/deck.mjs'),
   })
@@ -339,10 +424,18 @@ silent('', 'silent on an empty prompt')
   const r = fires('write a deck', 'fires in a user project', project)
   check(
     !/examples\/|packages\/|bun run|beats\.test/.test(r.ctx) &&
-      r.ctx.includes('bunx -p slidev-addon-decks decks lint') &&
+      r.ctx.includes('npx -p slidev-addon-decks decks lint') &&
       r.ctx.includes('.claude/rules/deck-writing.md'),
     'outside the repo the reminder names no repo-only path',
     () => r.ctx,
+  )
+  writeFileSync(join(project, 'bun.lock'), '{}\n')
+  check(
+    fires('write a deck', 'fires with a bun lockfile', project).ctx.includes(
+      'bunx -p slidev-addon-decks decks lint',
+    ),
+    'with a bun lockfile the reminder names bunx',
+    () => '',
   )
   const git = (...args) => spawnSync('git', args, { cwd: project, encoding: 'utf8' })
   git('init', '-q')

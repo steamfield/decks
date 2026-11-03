@@ -4,9 +4,9 @@
 
 ### Package (`slidev-addon-decks`)
 
-- `decks init [--force]` installs the Claude Code setup into a project: the `deck-author` agent, the `building-a-deck` and `fact-checking-a-deck` skills, six rules, two hooks in `.claude/settings.json`, and a marked `decks:start` block in `AGENTS.md` (or `CLAUDE.md`). Files are rendered with the project's `decksDir`, the CLI command and the installed package path. `.claude/decks.json` records what `init` wrote with a content hash: a re-run updates unedited files, skips edited ones, leaves colliding files alone, and `--force` overwrites only edited files `init` wrote.
+- `decks init [--force]` installs the Claude Code setup into a project: the `deck-author` agent, the `building-a-deck` and `fact-checking-a-deck` skills, six rules, two hooks in `.claude/settings.json`, and a marked `decks:start` block in `AGENTS.md` (or `CLAUDE.md`). Files are rendered with the project's `decksDir`, the CLI command and the installed package path. `.claude/decks.json` records what `init` wrote with a content hash: a re-run updates unedited files, skips edited ones, leaves colliding files alone, and `--force` overwrites only edited files `init` wrote. A file an earlier version wrote and this one no longer ships is removed when unedited, kept and reported when edited; hashes are taken over LF text, so a CRLF checkout isn't an edit. Without the package installed, `init` skips the hooks and exits 1 with the install command. An unparseable `decks.json`, `.claude/decks.json` or `.claude/settings.json`, or a settings file of the wrong shape, is left untouched and `init` exits 1.
 - New `decks` subcommands: `lint` (AI-rhetoric scan of pages, `slides.md`, components and story-stage `COPY` arrays; `--strict`, `--errors-only`, `--stdin`), `shot`, `snap` and `snap diff`, `fact-extract`, and `hook lint` and `hook prompt`. `check` now also fails on error-level lint hits.
-- The Claude Code hooks are Node (`decks hook lint`, `decks hook prompt`), so they need no `jq` or shell and work on Windows. The write hook refuses the write when the scanner can't run.
+- The Claude Code hooks are Node (`decks hook lint`, `decks hook prompt`), so they need no `jq` or bash scripts; Claude Code runs them through its hook shell. The write hook refuses the write when the scanner can't run.
 - The pattern list ships in the package as `lint/ai-rhetoric-patterns.tsv`.
 - `playwright-chromium`, `pngjs` and `pixelmatch` are optional peer dependencies for `shot`, `snap` and `snap diff`.
 - Two exemplar decks ship under `agent/exemplars/` for the skills to read: `tides` (story) and `agent-experience` (conventional, with neutral branding).
@@ -15,7 +15,7 @@
 ### Repo
 
 - `.claude/` stays the source of the agent setup. `bun run render:agent` renders it into `packages/decks/agent/`, and the drift test in `bun run test` fails when the two disagree. `bun run test:tarball` packs the package and runs `init`, `lint`, `check` and the hooks in scratch projects.
-- `tools/ai-rhetoric-patterns.tsv` is a symlink to the packaged copy, and `tools/content-lint.sh` and `tools/content-fact-extract.mjs` are wrappers around `decks lint` and `decks fact-extract`.
+- `tools/ai-rhetoric-patterns.tsv` moved to `packages/decks/lint/` (no symlink, so Windows clones work), and `tools/content-lint.sh` and `tools/content-fact-extract.mjs` are wrappers around `decks lint` and `decks fact-extract`.
 - `.claude/hooks/*.sh` are thin wrappers around `decks hook`, and the hook tests run as Node (`bun run test:hooks`).
 
 ## 0.1.0 (unreleased)

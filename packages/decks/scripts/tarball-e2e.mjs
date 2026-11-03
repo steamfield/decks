@@ -11,7 +11,10 @@
 // every bunx call gets a dead registry (127.0.0.1:9) so a fallback to the
 // registry fails loudly instead of running something else. The hooks run
 // through the exact command string init wrote to .claude/settings.json, under
-// `sh -c` with CLAUDE_PROJECT_DIR set, as Claude Code runs them.
+// `sh -c` with CLAUDE_PROJECT_DIR set, as Claude Code runs them. One case
+// installs with npm instead and runs the CLI as `npx -p slidev-addon-decks
+// decks …`; another runs init from the unpacked tarball in a project that
+// does not have the package installed.
 //
 // shot and snap need a Chromium: the case installs playwright-chromium in its
 // project (the repo's installed version, whose browser build is most likely
@@ -22,6 +25,7 @@
 // Not shipped: package.json `files` excludes this script.
 
 import { createHash } from 'node:crypto'
+import { connect } from 'node:net'
 import { spawnSync } from 'node:child_process'
 import {
   appendFileSync,
@@ -175,6 +179,27 @@ function reported(stdout, label) {
 /** Every hook command under `event` in a settings object. */
 const hookCommands = (settings, event) =>
   (settings.hooks?.[event] ?? []).flatMap((g) => (g.hooks ?? []).map((h) => h.command))
+
+/** Whether anything accepts a TCP connection on `port` at `host`. */
+function listening(port, host) {
+  return new Promise((done) => {
+    const sock = connect({ port, host })
+    sock.setTimeout(1000)
+    sock.once('connect', () => (sock.destroy(), done(true)))
+    sock.once('timeout', () => (sock.destroy(), done(false)))
+    sock.once('error', () => done(false))
+  })
+}
+
+/** Whether `port` is still served on either loopback address, polled for up to `ms`. */
+async function stillListening(port, ms = 10_000) {
+  const until = Date.now() + ms
+  for (;;) {
+    const up = (await listening(port, '127.0.0.1')) || (await listening(port, '::1'))
+    if (!up || Date.now() > until) return up
+    await new Promise((r) => setTimeout(r, 250))
+  }
+}
 
 // ---------------------------------------------------------------- setup
 
@@ -513,7 +538,7 @@ await testCase('9a decks lint, check and the missing-playwright hint', () => {
   }
 })
 
-await testCase('9b decks shot and snap produce PNGs', () => {
+await testCase('9b decks shot and snap produce PNGs', async () => {
   const add = run('bun', ['add', '-d', playwrightSpec()], { cwd: deckProj })
   if (add.status !== 0) return skip(`could not install ${playwrightSpec()}: ${tail(add.out, 300)}`)
   const probeJs =
@@ -547,6 +572,173 @@ await testCase('9b decks shot and snap produce PNGs', () => {
   const frames = existsSync(snapDir) ? readdirSync(snapDir).filter((f) => f.endsWith('.png')) : []
   // Cover plus the stage's three beats.
   check(frames.length >= 4, 'decks snap writes a PNG per slide and click (at least 4)', frames.join(', '))
+
+  // Each run started its own dev server; none may outlive the command.
+  const ports = [shot, one, snap].flatMap((r) =>
+    [...r.out.matchAll(/Starting a dev server for \S+ on port (\d+)/g)].map((m) => Number(m[1])),
+  )
+  check(ports.length === 3, 'shot, shot and snap each started a dev server', ports.join(', '))
+  for (const port of [...new Set(ports)])
+    check(!(await stillListening(port)), `nothing is left listening on port ${port}`)
+})
+
+await testCase('10 hook: MultiEdit, an unreplayable Edit, a ./talks decksDir, hook prompt', () => {
+  if (!lintCmd) return check(false, 'case 7 found the hook command')
+  const pagePath = join(deckProj, PAGE)
+  write(deckProj, PAGE, '---\nlayout: full\n---\n\n# Tide range doubles at the full moon.\n\nEND\n')
+  const multi = runHook(deckProj, 'MultiEdit', {
+    file_path: pagePath,
+    edits: [
+      { old_string: '# Tide range doubles', new_string: '# Tide range nearly doubles' },
+      { old_string: 'END', new_string: `---\n\n${PLANTED}, the moon sets the schedule.` },
+    ],
+  })
+  check(denied(multi), 'a MultiEdit planting the phrase after a --- separator is denied', show(multi))
+  const cleanMulti = runHook(deckProj, 'MultiEdit', {
+    file_path: pagePath,
+    edits: [{ old_string: 'END', new_string: 'Boston sees two high tides a day.' }],
+  })
+  check(cleanMulti.status === 0 && cleanMulti.stdout.trim() === '', 'a clean MultiEdit is allowed', show(cleanMulti))
+
+  // old_string is not in the file, so the hook cannot replay it and scans
+  // the new text alone, COPY fields included.
+  const fallback = runHook(deckProj, 'Edit', {
+    file_path: join(deckProj, STAGE),
+    old_string: "lead: 'not in this file'",
+    new_string: `lead: '${PLANTED}, a thousand datasets.'`,
+  })
+  check(denied(fallback), 'an Edit that cannot be replayed is still scanned and denied', show(fallback))
+  check(
+    /story card COPY/.test(fallback.decision?.permissionDecisionReason ?? ''),
+    'the fallback flags the COPY field',
+    show(fallback),
+  )
+
+  const registryText = read(deckProj, 'decks.json')
+  const registry = JSON.parse(registryText)
+  write(deckProj, 'decks.json', JSON.stringify({ ...registry, _config: { ...registry._config, decksDir: './talks/' } }))
+  try {
+    const talks = runHook(deckProj, 'Write', {
+      file_path: join(deckProj, 'talks/q3/pages/01.md'),
+      content: `# A title.\n\n${PLANTED}, the moon sets the schedule.\n`,
+    })
+    check(denied(talks), 'with decksDir "./talks/" a planted talks/ page is denied', show(talks))
+  } finally {
+    write(deckProj, 'decks.json', registryText)
+  }
+
+  const promptCmd = hookCommands(readJson(deckProj, '.claude/settings.json'), 'UserPromptSubmit').find((c) =>
+    /hook prompt/.test(c),
+  )
+  check(!!promptCmd, 'settings.json carries the prompt hook command')
+  if (!promptCmd) return
+  const prompt = (text) => {
+    const res = run('sh', ['-c', promptCmd], {
+      cwd: deckProj,
+      input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', cwd: deckProj, prompt: text }),
+      env: { CLAUDE_PROJECT_DIR: deckProj },
+      timeout: 30_000,
+    })
+    let ctx = ''
+    try {
+      ctx = JSON.parse(res.stdout).hookSpecificOutput?.additionalContext ?? ''
+    } catch {}
+    return { ...res, ctx }
+  }
+  const fired = prompt('draft the slides for my talk')
+  check(fired.status === 0 && /Deck writing reminder/.test(fired.ctx), 'hook prompt adds the reminder', show(fired))
+  check(fired.ctx.includes('bunx -p slidev-addon-decks decks lint'), 'the reminder names bunx in a bun project', fired.ctx)
+  const quiet = prompt('bump vitest to the latest version')
+  check(quiet.status === 0 && quiet.stdout.trim() === '', 'hook prompt stays silent on unrelated work', show(quiet))
+})
+
+await testCase('11 npm project: npx instructions, hooks and lint', () => {
+  const root = join(base, `${String(++projects).padStart(2, '0')}-npm`)
+  write(root, 'package.json', JSON.stringify({ name: 'scratch-npm', private: true }, null, 2) + '\n')
+  const add = run(
+    'npm',
+    [
+      'install',
+      '--no-audit',
+      '--no-fund',
+      tarball,
+      `@slidev/cli@${rootPkg.dependencies['@slidev/cli']}`,
+      `slidev-theme-the-unnamed@${rootPkg.dependencies['slidev-theme-the-unnamed']}`,
+    ],
+    { cwd: root },
+  )
+  if (!check(add.status === 0, 'npm install of the tarball exits 0', tail(add.out))) return
+  check(existsSync(join(root, 'package-lock.json')) && !existsSync(join(root, 'bun.lock')), 'the project has an npm lockfile only')
+  const npx = (args) =>
+    run('npx', ['-p', PACKAGE, 'decks', ...args], { cwd: root, env: { NPM_CONFIG_REGISTRY: DEAD_REGISTRY } })
+  const res = npx(['init'])
+  check(res.status === 0, 'npx decks init exits 0', tail(res.out))
+  const texts = [...TARGETS, 'AGENTS.md'].filter((f) => existsSync(join(root, f))).map((f) => [f, read(root, f)])
+  check(
+    texts.some(([, t]) => t.includes(`npx -p ${PACKAGE} decks`)),
+    'the instructions name the npx form',
+    texts.map(([f]) => f).join(', '),
+  )
+  for (const [f, t] of texts) check(!t.includes('bunx'), `${f} never names bunx`)
+
+  const scaffold = npx(['new', 'talk', 'my-talk', '--story'])
+  check(scaffold.status === 0, 'npx decks new talk my-talk --story exits 0', tail(scaffold.out))
+  const lint = npx(['lint'])
+  check(lint.status === 0, 'npx decks lint exits 0 on the scaffold', tail(lint.out))
+  write(root, PAGE, `# A title.\n\n${PLANTED}, the moon sets the schedule.\n`)
+  const bad = npx(['lint'])
+  check(bad.status === 1 && /banned-phrase/.test(bad.stdout), 'npx decks lint fails on a planted page', tail(bad.out))
+  rmSync(join(root, PAGE))
+
+  const settings = readJson(root, '.claude/settings.json')
+  const cmd = hookCommands(settings, 'PreToolUse').find((c) => /hook lint/.test(c))
+  if (!check(!!cmd, 'settings.json carries the lint hook command')) return
+  const saved = lintCmd
+  lintCmd = cmd
+  try {
+    const page = runHook(root, 'Write', { file_path: join(root, PAGE), content: `# A title.\n\n${PLANTED}, x.\n` })
+    check(denied(page), 'the npm project hook denies a planted page', show(page))
+    const outside = runHook(root, 'Write', { file_path: join(root, 'notes.md'), content: `${PLANTED}.\n` })
+    check(outside.status === 0 && outside.stdout.trim() === '', 'and allows a write outside the decks', show(outside))
+  } finally {
+    lintCmd = saved
+  }
+  const promptCmd = hookCommands(settings, 'UserPromptSubmit').find((c) => /hook prompt/.test(c))
+  const fired = run('sh', ['-c', promptCmd ?? 'false'], {
+    cwd: root,
+    input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', cwd: root, prompt: 'write a deck' }),
+    env: { CLAUDE_PROJECT_DIR: root },
+  })
+  check(fired.stdout.includes(`npx -p ${PACKAGE} decks lint`), 'the prompt reminder names npx', show(fired))
+})
+
+await testCase('12 init without the package installed never blocks writes outside decks', () => {
+  const unpacked = join(base, 'unpacked')
+  mkdirSync(unpacked, { recursive: true })
+  const untar = run('tar', ['-xzf', tarball, '-C', unpacked])
+  if (!check(untar.status === 0, 'the tarball unpacks', tail(untar.out))) return
+  const root = join(base, `${String(++projects).padStart(2, '0')}-not-installed`)
+  write(root, 'package.json', JSON.stringify({ name: 'scratch-not-installed', private: true }, null, 2) + '\n')
+  write(root, 'bun.lock', '{}\n')
+  const res = run('node', [join(unpacked, 'package', 'scripts', 'deck.mjs'), 'init'], { cwd: root })
+  check(!existsSync(join(root, 'node_modules', PACKAGE)), 'the package is not installed in the project')
+  const settingsPath = join(root, '.claude', 'settings.json')
+  const cmd = existsSync(settingsPath)
+    ? hookCommands(readJson(root, '.claude/settings.json'), 'PreToolUse').find((c) => /hook lint/.test(c))
+    : undefined
+  if (!cmd) return check(true, 'init wrote no lint hook')
+  const saved = lintCmd
+  lintCmd = cmd
+  try {
+    const h = runHook(root, 'Write', { file_path: join(root, 'src/index.ts'), content: 'export const x = 1\n' })
+    check(
+      h.status === 0 && h.decision?.permissionDecision !== 'deny',
+      'a Write to src/index.ts through the written hook is allowed',
+      `init exit ${res.status}\n         ${show(h)}`,
+    )
+  } finally {
+    lintCmd = saved
+  }
 })
 
 // ---------------------------------------------------------------- report

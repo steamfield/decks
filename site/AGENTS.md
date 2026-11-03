@@ -76,7 +76,7 @@ Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` bloc
 
 ## Testing
 
-- `make test`: protocol, readouts, tape math, sections and player component tests (Testing Library, happy-dom; the iframe's window is a stand-in), token contrast, docs rules, and the content-drift test, which runs the real prose-lint hook (needs `jq`).
+- `make test`: protocol, readouts, tape math, sections and player component tests (Testing Library, happy-dom; the iframe's window is a stand-in), token contrast, docs rules, and the content-drift test, which runs the real prose-lint hook (Node, through `.claude/hooks/lint-ai-rhetoric.sh`).
 - `make build`: acceptance tests over `dist/` (docs pages, links, islands, landing content, a probe page built in a temp parent that links the repo back in).
 - `make e2e`: axe in light and dark on `/` and a docs page, the player against the stub deck (boot, PLAY timing, keys, shelf keyboard, reduced motion), 360px keys and overflow, no-JS rendering, copy buttons.
 - Weakening or skipping a test to get green is a failure, not a fix.
@@ -112,7 +112,6 @@ Cloudflare Pages project `decks-site`, production at decks.steamfield.io, deploy
 
 - A light-slide variant of the player (decks stay dark).
 - Re-theming the hero player live (would need a second deck build and a reload).
-- A `decks agent-init` command so the agent section can say "run this" instead of "clone".
 - A blog or changelog pages.
 
 ## Pending user actions

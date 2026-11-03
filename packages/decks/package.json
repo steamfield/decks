@@ -42,9 +42,12 @@
     "lint",
     "!lint/*.test.*",
     "agent",
+    "!agent/INVENTORY.md",
     "scripts",
     "!scripts/*.test.ts",
     "!scripts/embed-check.mjs",
+    "!scripts/render-agent.mjs",
+    "!scripts/render-agent.d.mts",
     "!scripts/tarball-e2e.mjs",
     "!scripts/viewer-browser.mjs"
   ],

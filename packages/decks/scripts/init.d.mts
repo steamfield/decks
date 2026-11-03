@@ -1,4 +1,12 @@
-export type FileStatus = 'written' | 'updated' | 'unchanged' | 'skipped' | 'overwritten' | 'collision'
+export type FileStatus =
+  | 'written'
+  | 'updated'
+  | 'unchanged'
+  | 'skipped'
+  | 'overwritten'
+  | 'collision'
+  | 'removed'
+  | 'kept'
 export interface InitResult {
   code: number
   files: Record<string, FileStatus>

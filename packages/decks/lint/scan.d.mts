@@ -33,7 +33,7 @@ export interface Hit {
 export declare const PATTERNS_FILE: string
 export declare const FIELD: RegExp
 export declare function loadPatterns(file?: string): Pattern[]
-export declare function proseLines(src: string): Entry[]
+export declare function proseLines(src: string, opts?: { fragment?: boolean }): Entry[]
 export declare function copyLiteral(src: string): { text: string; offset: number } | null
 export declare function fieldStrings(src: string, from?: number, to?: number): CopyString[]
 export declare function copyStrings(src: string): CopyString[]

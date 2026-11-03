@@ -1,16 +1,20 @@
-# Agent Experience deck — data provenance
+# Agent Experience deck: data provenance
+
+> Illustrative. This deck was built in a private repository, so the file paths, line numbers,
+> commits and articles cited below don't resolve in your project. They show the shape of a
+> provenance entry: every figure names the artifact it came from.
 
 Every number and quote on a slide maps to a real artifact: a repo file, a commit, a
 published article, or a cited paper. This is the fact-check input.
 
-## Slide 2 — The lineage (external framing)
+## Slide 2: The lineage (external framing)
 - UX -> DX -> AX and "every product has an agent experience": Mathias Biilmann, Netlify,
   "Introducing AX" (Jan 2025) and "One Year of AX". Cite as external framing, not our claim.
 - "AX extends DX, it doesn't replace it": a16z, Martin Casado, "Agent Experience" podcast.
 - Human-vs-agent contrast rows are framing, not measured. "Carries no memory unless you give
   it some" deliberately hedged (context windows / memory tooling exist).
 
-## Slide 3 — The method
+## Slide 3: The method
 - The task, the watch-then-post-mortem loop, and the SQL-quoting quote:
   blog/src/content/blog/designing-an-api-for-llms.mdx (the article's own blockquote,
   "~10-15% of queries fail on first try", suggested fix = parameterized `?` + params).
@@ -22,7 +26,7 @@ published article, or a cited paper. This is the fact-check input.
 - FLAG: "interview the agent" is presented as our named practice, not a citation. Anthropic's
   evaluate/collaborate loop is the nearest prior art; we're extending it, not claiming to invent.
 
-## Slide 4 — The result (all measured on ONE research task, labeled as such)
+## Slide 4: The result (all measured on ONE research task, labeled as such)
 - 72 -> 8 calls / -89%: designing-an-api-for-llms.mdx hero figure + prose ("Actual was 89%").
   SOURCE-LINE CAVEAT on slide: in-repo round-2 snapshot recorded 72 -> 9; better sampling
   removed the last schema probe (round-2 design doc).
@@ -34,11 +38,11 @@ published article, or a cited paper. This is the fact-check input.
 - 7 fixes, one commit "feat(api): implement agent feedback round 2 improvements —
   Address all 7 findings from the agent feedback evaluation" (2026-03-29).
 
-## Slide 5 — Section divider (no data)
+## Slide 5: Section divider (no data)
 - Pure transition into the build half. "Four rules" counts the four cards on slide 6;
   "one of them is the error path" points at slide 7. No new claims, nothing to check.
 
-## Slide 6 — Design rules (each code-anchored)
+## Slide 6: Design rules (each code-anchored)
 - Batch discover + server-side dedup + join hints: backend/backend/api/discover.py:154.
 - Enriched self-describing discover (value_range, sample_values, distinct_count, unit inline):
   backend/backend/schemas/discover.py, DiscoverColumn (line 25).
@@ -49,7 +53,7 @@ published article, or a cited paper. This is the fact-check input.
 - Columnar default: backend/backend/schemas/sql_query.py:22 (Field(default="columnar")).
   ~45% figure hedged to "flat tabular data" (columnar wins only on uniform tables).
 
-## Slide 7 — Errors as an interface
+## Slide 7: Errors as an interface
 - PARAM_COUNT_MISMATCH + verbatim hint: backend/backend/api/sql_query.py:78-79
   (has passing tests: backend/tests/api/test_sql_query.py:1508/1530/1588).
 - Unknown-column self-correction (appends real column list): enrichBinderError,
@@ -60,12 +64,12 @@ published article, or a cited paper. This is the fact-check input.
   Precise +37-40pp / 0-of-9 -> 7-of-9 kept OFF the slide face (single preprint, one task,
   Claude-specific); slide says only "by a wide margin on Claude models."
 
-## Slide 8 — Section divider (no data)
+## Slide 8: Section divider (no data)
 - Second movement break: slides 3-7 are what agents fail at, slides 9-10 are what they're
   good at. "The clean runs said something too" summarizes the same transcripts cited on
   slide 3; no new claims, nothing to check.
 
-## Slide 9 — OpenChart, config over code
+## Slide 9: OpenChart, config over code
 - "JSON is the native output format of LLMs... generate it directly... without imperative
   drawing code": blog/src/content/blog/openchart-is-now-open-source.mdx:485.
 - Declarative ChartSpec shape ({mark, encoding, chrome}): mcp/src/tools/openchart.ts
@@ -73,7 +77,7 @@ published article, or a cited paper. This is the fact-check input.
 - Microsoft YAML/JSON declarative agents: Microsoft Agent Framework docs (one nod; PayPal
   dev-time numbers cut per devil's advocate as the pitchiest, weakest-sourced claim).
 
-## Slide 10 — Closing
+## Slide 10: Closing
 - "Loop is still running / logs every failed call": the validation observer in
   mcp/src/server.ts (installValidationObserver) logs input-validation failures to the logging pipeline,
   tagged INPUT_VALIDATION, so the next round starts with data. Later AX passes shipped
@@ -99,7 +103,7 @@ every anchor above still resolves.
   useScriptedDemo (manifest declares `clicks: 3`). Card content and wording unchanged.
 - Slide 8's ChartSpec block moved inside a tool-call card (now the deck-local
   `ToolCallCard.vue`)
-  (server `opendata`, tool `openchart`), which matches how an agent actually emits the
+  (server `data-api`, tool `openchart`), which matches how an agent actually emits the
   spec. The spec text itself is unchanged and still illustrative-but-structurally-real.
 - Slide 9 close now uses the shared QR pattern (OdQrCard). Closing line unchanged.
 - Deck CSS dropped the `od-kv-grid` class from `.ax-rules` / `.ax-errors` (both fully
@@ -119,6 +123,6 @@ Deck went from 9 slides to 10. No number on a slide changed; all anchors above s
   agents" line moved off the string-hazards card into the slide source row. Same citation
   (Anthropic, "Writing effective tools for AI agents"), same wording, different position.
 - Slide 1 byline is now `Your Name · Your role · August 2026`. The old
-  "Data: OpenData's own MCP server, API, and OpenChart" row is dropped from the slide face;
+  "Data: our own MCP server, API, and OpenChart" row is dropped from the slide face;
   that provenance is this file.
 - Slides 9 and 10 got copy rewrites (headline, closing lede). No new factual claims.

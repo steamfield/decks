@@ -12,7 +12,7 @@ SLIDE 9 · OpenChart: config is the agent's native tongue.
       <p class="od-body" style="margin:1.3rem 0 0; max-width:30vw;">So OpenChart takes a JSON spec and returns a chart. No components to scaffold, no renderer to import, no drawing calls.</p>
     </div>
     <div style="display:flex; flex-direction:column; justify-content:center;">
-      <ToolCallCard server="opendata" tool="openchart" args="ChartSpec" time="1 call">
+      <ToolCallCard server="data-api" tool="openchart" args="ChartSpec" time="1 call">
         <pre class="ax-spec"><span class="k">mark</span>:     bar
 <span class="k">encoding</span>:
   <span class="k">x</span>:     year

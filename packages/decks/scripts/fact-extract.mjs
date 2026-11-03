@@ -23,7 +23,14 @@ import { join, dirname } from "path";
 function resolveDeckDir(arg) {
   const registry = join(process.cwd(), "decks.json");
   if (existsSync(registry)) {
-    const deck = JSON.parse(readFileSync(registry, "utf-8"))[arg];
+    let parsed;
+    try {
+      parsed = JSON.parse(readFileSync(registry, "utf-8"));
+    } catch (err) {
+      console.error(`${registry} is not valid JSON: ${err.message}`);
+      process.exit(1);
+    }
+    const deck = parsed[arg];
     if (deck && deck.entry) return dirname(join(process.cwd(), deck.entry));
   }
   if (existsSync(join(arg, "slides.md"))) return arg;

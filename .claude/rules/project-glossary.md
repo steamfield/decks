@@ -16,7 +16,7 @@ This table starts empty. Add a row per column or code term your decks put in fro
 |---|---|---|
 
 <!-- decks:repo-only -->
-To have the lint hook enforce a row, add a `terminology-<slug>` line at the bottom of `tools/ai-rhetoric-patterns.tsv` (`error` blocks the write, `warn` only reports) and say so in the Notes column. The two rows this glossary started from, for a deck series on Texas school finance, show the shape:
+To have the lint hook enforce a row, add a `terminology-<slug>` line at the bottom of `packages/decks/lint/ai-rhetoric-patterns.tsv` (`error` blocks the write, `warn` only reports) and say so in the Notes column. The two rows this glossary started from, for a deck series on Texas school finance, show the shape:
 
 <!--
 | `state_revenue` | "state aid" or "state funding" | Never "state revenue". Enforced as an error. |

@@ -24,7 +24,7 @@ packages/decks/       # the addon (npm: slidev-addon-decks)
   templates/          # what `decks new` scaffolds
 examples/             # shipped decks: opendata-pitch, agent-experience, od-templates, od-story-templates
 decks/                # your decks (`bun run new` writes here)
-tools/                # content-lint.sh and content-fact-extract.mjs (wrappers over `decks`); ai-rhetoric-patterns.tsv is a symlink to packages/decks/lint/
+tools/                # content-lint.sh and content-fact-extract.mjs (wrappers over `decks`)
 <deck>/
   slides.md           # headmatter + src: manifest
   pages/NN-slug.md    # one file per slide
@@ -95,7 +95,7 @@ Decks with data-driven charts maintain `<deck>/data-sources.md` mapping slide nu
 
 Read `.claude/rules/deck-writing.md` before writing or revising any slide text. Slide prose is not article prose in miniature. The rules that trip people coming from articles: a headline is a claim ending in a period rather than a topic label, three single-sentence bullets is the ceiling, there are no paragraphs anywhere, and a normal conventional slide runs about 70 visible words (`agent-experience` is the exemplar deck; a story card's budget is eight/twenty words instead, per `.claude/rules/story-stage.md`).
 
-The anti-slop pattern set is `packages/decks/lint/ai-rhetoric-patterns.tsv` (`tools/ai-rhetoric-patterns.tsv` links to it); `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; it also scans story-card `COPY`; and in Claude Code a write hook blocks error-level patterns as they are written.
+The anti-slop pattern set is `packages/decks/lint/ai-rhetoric-patterns.tsv`; `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; it also scans story-card `COPY`; and in Claude Code a write hook blocks error-level patterns as they are written.
 
 ## Agent ops
 

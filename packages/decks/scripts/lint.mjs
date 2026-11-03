@@ -4,10 +4,10 @@
 //
 // Exit codes match content-lint.sh: 0 clean (or warnings only), 1 an
 // error-severity hit (or any hit under --strict), 2 the patterns file is
-// missing or unreadable.
+// missing, unreadable or holds no error-severity rows.
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { join, relative, resolve, sep } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import {
   PATTERNS_FILE,
   formatHit,
@@ -41,7 +41,7 @@ function patternsOrExit() {
   try {
     return loadPatterns()
   } catch (err) {
-    console.error(`error: patterns file not found or unreadable: ${PATTERNS_FILE} (${err.message})`)
+    console.error(`error: patterns file missing, unreadable or invalid: ${PATTERNS_FILE} (${err.message})`)
     process.exit(2)
   }
 }
@@ -78,30 +78,81 @@ export function lintText(text, { errorsOnly = false, log = console.log } = {}) {
   return { errors, warns }
 }
 
+const USAGE =
+  'Usage: decks lint [alias|deck-dir|file ...] [--strict] [--errors-only]  |  decks lint --stdin [--errors-only]'
+const FLAGS = new Set(['--strict', '--errors-only', '--stdin'])
+
+/** True in the Decks repo itself, where the shipped decks sit in examples/. */
+function isDecksRepo(rootDir) {
+  try {
+    const pkg = JSON.parse(readFileSync(join(rootDir, 'packages/decks/package.json'), 'utf8'))
+    return pkg.name === 'slidev-addon-decks'
+  } catch {
+    return false
+  }
+}
+
+/** Absolute dirs of `<root>/*` that hold a slides.md. */
+function decksUnder(root) {
+  if (!existsSync(root)) return []
+  return readdirSync(root, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name !== 'node_modules' && !e.name.startsWith('.'))
+    .map((e) => join(root, e.name))
+    .filter((dir) => existsSync(join(dir, 'slides.md')))
+}
+
 /**
- * The `decks lint` command. `targets` are aliases or file paths; none means
- * every registered deck. `decks` maps alias -> registry entry, or is null when
- * there is no registry (then only file paths and --stdin work).
+ * Every deck to lint when no target is given: the registered ones, plus any
+ * deck on disk under decksDir (and examples/ in the Decks repo) that the
+ * registry does not list yet. Absolute dirs, deduplicated.
  */
-export async function lintCommand(args, { rootDir, decks, die, noRegistry }) {
+export function allDeckDirs({ rootDir, decks, decksDir = 'decks' }) {
+  const dir = decksDir.replace(/^(\.\/)+/, '').replace(/\/+$/, '') || '.'
+  const roots = [resolve(rootDir, dir), ...(isDecksRepo(rootDir) ? [join(rootDir, 'examples')] : [])]
+  return [
+    ...new Set([
+      ...Object.values(decks ?? {})
+        .filter((d) => typeof d?.entry === 'string')
+        .map((d) => dirname(resolve(rootDir, d.entry))),
+      ...roots.flatMap(decksUnder),
+    ]),
+  ]
+}
+
+/**
+ * The `decks lint` command. `targets` are aliases, deck directories or file
+ * paths; none means every deck (see allDeckDirs). `decks` maps alias ->
+ * registry entry, or is null when there is no registry.
+ */
+export async function lintCommand(args, { rootDir, decks, decksDir, die, noRegistry }) {
+  const unknown = args.filter((a) => a.startsWith('--') && !FLAGS.has(a))
+  if (unknown.length) die(`Unknown flag ${unknown.join(', ')}.\n${USAGE}`)
   const strict = args.includes('--strict')
   const errorsOnly = args.includes('--errors-only')
   const stdin = args.includes('--stdin')
   const targets = args.filter((a) => !a.startsWith('--'))
   let counts
   if (stdin) {
+    if (targets.length) die(`--stdin takes no targets.\n${USAGE}`)
     const chunks = []
     for await (const chunk of process.stdin) chunks.push(chunk)
     counts = lintText(Buffer.concat(chunks).toString('utf8'), { errorsOnly })
   } else {
-    if (!decks && !targets.length) die(noRegistry)
     const files = []
-    for (const target of targets.length ? targets : Object.keys(decks)) {
+    if (!targets.length) {
+      const dirs = allDeckDirs({ rootDir, decks, decksDir })
+      if (!dirs.length) die(decks ? `No decks found to lint.\n${USAGE}` : noRegistry)
+      for (const dir of dirs) files.push(...deckFiles(dir))
+    }
+    for (const target of targets) {
       const deck = decks?.[target]
+      const path = resolve(rootDir, target)
       if (deck) files.push(...deckFiles(resolve(rootDir, deck.entry, '..')))
-      else if (existsSync(resolve(rootDir, target))) files.push(resolve(rootDir, target))
-      else
+      else if (!existsSync(path))
         die(`Unknown deck or file "${target}". Known decks: ${Object.keys(decks ?? {}).join(', ')}`)
+      else if (!statSync(path).isDirectory()) files.push(path)
+      else if (existsSync(join(path, 'slides.md'))) files.push(...deckFiles(path))
+      else die(`${target} is a directory with no slides.md; pass a deck directory, an alias or a file.\n${USAGE}`)
     }
     counts = lintFiles(files, { rootDir, errorsOnly })
   }

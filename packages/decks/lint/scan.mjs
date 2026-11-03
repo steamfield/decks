@@ -20,22 +20,31 @@ export const PATTERNS_FILE = fileURLToPath(new URL('./ai-rhetoric-patterns.tsv',
 /**
  * The pattern rows as JS regexes. The file is POSIX ERE (it was written for
  * grep); the only construct in it that JS reads differently is the bracket
- * class `[[:space:]]`. Throws when the file is missing or a row will not
- * compile, so a caller that must fail closed can.
+ * class `[[:space:]]`. Throws when the file is missing, a row will not
+ * compile, a row's severity is not error or warn, or no error row loads (an
+ * empty or truncated file), so a caller that must fail closed can.
  */
 export function loadPatterns(file = PATTERNS_FILE) {
-  return readFileSync(file, 'utf8')
+  const patterns = readFileSync(file, 'utf8')
     .split('\n')
     .filter((line) => line && !line.startsWith('#'))
     .map((line) => line.split('\t'))
     .filter(([id]) => id)
-    .map(([id, severity, ere, message]) => ({
-      id,
-      severity,
-      message,
-      re: new RegExp(ere.replaceAll('[[:space:]]', '\\s')),
-      context: new RegExp(`.{0,30}(?:${ere.replaceAll('[[:space:]]', '\\s')}).{0,30}`),
-    }))
+    .map(([id, severity, ere, message]) => {
+      if (severity !== 'error' && severity !== 'warn')
+        throw new Error(`${file}: pattern "${id}" has severity "${severity}", not error or warn`)
+      if (!ere) throw new Error(`${file}: pattern "${id}" has no regex`)
+      return {
+        id,
+        severity,
+        message,
+        re: new RegExp(ere.replaceAll('[[:space:]]', '\\s')),
+        context: new RegExp(`.{0,30}(?:${ere.replaceAll('[[:space:]]', '\\s')}).{0,30}`),
+      }
+    })
+  if (!patterns.some((p) => p.severity === 'error'))
+    throw new Error(`${file} has no error-severity patterns (empty or truncated?)`)
+  return patterns
 }
 
 /** The ids a line exempts: '*' for all, a list, or none. */
@@ -59,10 +68,15 @@ function allowOf(line) {
  * A line-by-line port of the awk extractor content-lint.sh carried: it skips
  * frontmatter (except description:, which is user-facing card copy), fences,
  * <script>/<style>, HTML and JSX comments, imports, link lists, <Disclosure>
- * blocks and lines opening with `{`. A line that opens with a tag keeps the
- * text between tags, since slide text sits inline in markup.
+ * blocks and lines opening with `{`. A one-line comment is cut out of its line
+ * and the rest is scanned. A line that opens with a tag keeps the text between
+ * tags, since slide text sits inline in markup.
+ *
+ * `fragment: true` is for a piece cut from the middle of a file (an Edit's
+ * new_string): its first line is not a frontmatter fence, since a `---` there
+ * is as likely a Slidev slide separator.
  */
-export function proseLines(src) {
+export function proseLines(src, { fragment = false } = {}) {
   const out = []
   let fm = false
   let fc = false
@@ -76,7 +90,7 @@ export function proseLines(src) {
     let text = raw
     const nr = i + 1
     const emit = (t, allow = allowOf(t)) => out.push({ line: nr, allow, text: t })
-    if (nr === 1 && /^---\s*$/.test(text)) return void (fm = true)
+    if (nr === 1 && !fragment && /^---\s*$/.test(text)) return void (fm = true)
     if (fm && /^---\s*$/.test(text)) return void (fm = false)
     if (fm && /^description:\s*[>|]/.test(text)) return void (dfm = true)
     if (fm && dfm && /^\s/.test(text)) return emit(text)
@@ -90,21 +104,22 @@ export function proseLines(src) {
     if (/^\s*<style/.test(text)) return void (sc = true)
     if (/^\s*<\/style>/.test(text)) return void (sc = false)
     if (sc) return
-    if (/\{\/\*.*\*\/\}/.test(text) && !text.includes('lint-allow')) return
-    if (/<!--.*-->/.test(text) && !text.includes('lint-allow')) return
-    if (/^\s*\{\/\*/.test(text) && !/\*\/\}/.test(text)) return void (cm = true)
-    if (cm && /\*\/\}/.test(text)) return void (cm = false)
-    if (/^\s*<!--/.test(text) && !/-->/.test(text)) return void (cm = true)
-    if (cm && /-->/.test(text)) return void (cm = false)
-    if (cm) return
+    if (cm) {
+      if (/\*\/\}|-->/.test(text)) cm = false
+      return
+    }
+    // Allow ids are read before the comment carrying them is cut out.
+    const allow = allowOf(text)
+    text = text.replace(/<!--.*?-->/g, '').replace(/\{\/\*.*?\*\/\}/g, '')
+    if (!/\S/.test(text)) return
+    if (/^\s*\{\/\*/.test(text)) return void (cm = true)
+    if (/^\s*<!--/.test(text)) return void (cm = true)
     if (/^\s*(import |export )/.test(text)) return
     if (/^\s*-\s+\[/.test(text)) return
     if (/<Disclosure/.test(text)) return void (dl = true)
     if (/<\/Disclosure/.test(text)) return void (dl = false)
     if (dl) return
     if (/^\s*<[A-Za-z/]/.test(text)) {
-      // Allow ids are read before the strip removes the comment carrying them.
-      const allow = allowOf(text)
       text = text
         .replace(/<[^>]*>/g, '')
         .replace(/<[^>]*$/, '')
@@ -115,7 +130,7 @@ export function proseLines(src) {
     if (/description=/.test(text)) return
     if (/<\/a>/.test(text)) text = text.replace(/<a( [^>]*)?>/g, '').replace(/<\/a>/g, '')
     if (/^\s*\{/.test(text)) return
-    emit(text)
+    emit(text, allow)
   })
   return out
 }
