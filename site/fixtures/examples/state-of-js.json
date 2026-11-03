@@ -1,0 +1,106 @@
+{
+  "title": "In 2025, 87% of survey respondents had used webpack. 26% of them would use it again.",
+  "slides": 5,
+  "slideTitles": [
+    "In 2025, 87% of survey respondents had used webpack. 26% of them would use it again.",
+    "webpack retention fell from 95% to 26% as Vite use rose from 29% to 84%.",
+    "26 of every 100 webpack users would use it again, against 98 of every 100 Vite users.",
+    "Of 12 build tools in 2025, webpack ranked first in use and last in retention.",
+    "Since 2021, Jest retention fell to 65% as Vitest use rose to 54%."
+  ],
+  "startSlide": 2,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Most respondents have used webpack.",
+      "body": "87% had used it in the 2025 survey. 2018 and 2019 are estimated from the trend."
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Its retention fell in every edition since 2017.",
+      "body": "Retention is the share of users who would use it again: 95% in 2017, 26% in 2025."
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Vite usage rose from 29% to 84%.",
+      "body": "Share of respondents who had used it, 2021 to 2025. Its retention held at 97% to 98%."
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 1,
+      "lead": "26 of 100 would use webpack again.",
+      "body": "Each square is one percent of webpack's 2025 users. The lit ones would use it again."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 1,
+      "lead": "98 of 100 would use Vite again.",
+      "body": "Vite's retention has been 97% or higher in every edition from 2021 to 2025."
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 2,
+      "lead": "By 2025 usage, webpack and Vite lead.",
+      "body": "Share of respondents who had used each of the 12 build tools the survey asked about."
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 2,
+      "lead": "By retention, Vite ranks first and webpack last.",
+      "body": "Share of each tool's users who would use it again: 98% for Vite, 26% for webpack."
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The other 10 sit between 65% and 94%.",
+      "body": "webpack trails the next-lowest tool, Parcel, by 39 points."
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 3,
+      "lead": "Jest usage went from 72% to 75%.",
+      "body": "Share of respondents who had used it, in the 2021 and 2025 editions."
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 3,
+      "lead": "Jest retention fell from 92% to 65%.",
+      "body": "It had held at 96% in every edition from 2018 to 2020."
+    },
+    {
+      "slide": 5,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Vitest usage rose from 2% to 54%.",
+      "body": "Share of respondents who had used it, in the same two editions."
+    },
+    {
+      "slide": 5,
+      "beat": 3,
+      "beats": 3,
+      "lead": "97% of Vitest users would use it again.",
+      "body": "Higher than Jest's retention in any edition, including its 96% peak."
+    }
+  ]
+}

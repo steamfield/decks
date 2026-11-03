@@ -41,6 +41,13 @@
       "loop": true
     },
     {
+      "name": "state-of-js",
+      "provenance": "agent",
+      "attribution": {
+        "label": "Drafted by a Claude Code subagent with this repository's agent setup, then fact-checked and edited in the session that dispatched it"
+      }
+    },
+    {
       "name": "tides",
       "startBeat": 1,
       "provenance": "agent",
