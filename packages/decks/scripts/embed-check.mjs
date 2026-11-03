@@ -1,7 +1,7 @@
 // Contract test for the embed control (packages/decks/setup/embed.ts), against
 // built decks.
 //
-//   bun run build:all && bun run test:embed [alias ...]   # default: tides templates
+//   bun run build:all && bun run test:embed [alias ...]   # default: tides templates keeling
 //
 // Serves each deck's build from decks.json's outDir, embeds it in a same-origin
 // test page, sends `decks:cmd` messages and asserts the `decks:*` replies:
@@ -15,7 +15,7 @@ import { extname, join, resolve } from 'node:path'
 import { chromium } from 'playwright-chromium'
 
 const registry = JSON.parse(readFileSync('decks.json', 'utf8'))
-const aliases = process.argv.slice(2).length ? process.argv.slice(2) : ['tides', 'templates']
+const aliases = process.argv.slice(2).length ? process.argv.slice(2) : ['tides', 'templates', 'keeling']
 
 const TYPES = {
   '.html': 'text/html',

@@ -13,6 +13,7 @@ transition:
   css: false
 htmlAttrs:
   data-od-story: ""
+routerMode: hash
 aspectRatio: 16/9
 canvasWidth: 1920
 fonts:
