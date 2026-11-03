@@ -14,10 +14,12 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Window } from "happy-dom";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
-import { loadHookDenial, loadSmokeRun, runFigures } from "../src/data/fixtures";
-import { loadTapes } from "../src/data/tapes";
+import { ENTRIES, loadExamples } from "../src/data/examples";
+import { loadHookDenial, loadRun, runFigures } from "../src/data/fixtures";
+import { runMinutes } from "../src/lib/player/format";
 
 const parser = new new Window().DOMParser();
 const read = (root: string, path: string) => readFileSync(join(root, path), "utf8");
@@ -103,7 +105,8 @@ describe("the whole site", () => {
         const target = path.endsWith("/") ? `${path}index.html` : path;
         if (!existsSync(join("dist", target))) {
           broken.push(`${file}: ${href}`);
-        } else if (hash && target.endsWith(".html")) {
+        } else if (hash && !hash.startsWith("/") && target.endsWith(".html")) {
+          // "#/2?clicks=1" is a Slidev route inside a deck build, not an element id.
           if (!page("dist", target).getElementById(decodeURIComponent(hash))) {
             broken.push(`${file}: ${href} (no #${hash})`);
           }
@@ -128,24 +131,95 @@ describe("the whole site", () => {
     expect(home.querySelector('meta[property="og:image"]')?.getAttribute("content")).toBe(
       absolute("/og/index.png"),
     );
+    // The landing page is dark only and carries the product's tokens inline.
+    const html = home.documentElement;
+    expect(html.getAttribute("data-page")).toBe("landing");
+    expect(html.classList.contains("dark")).toBe(true);
+    expect(home.querySelector("[data-theme-toggle]")).toBeNull();
     const text = home.body.textContent ?? "";
     for (const line of site.quickstart) expect(text).toContain(line);
     expect(text).toContain(site.install[0]?.command.split("\n")[0] ?? "");
-    for (const id of ["fit", "why", "box", "theme", "agent", "install"]) {
+    expect(text).toContain(site.devCommand);
+    for (const id of ["requirements", "what-you-get", "agent", "examples", "themes", "install"]) {
       expect(home.getElementById(id)?.querySelector("h2"), id).not.toBeNull();
     }
-    // The player server-renders without a deck: no iframe, a rack of links to each build.
+    for (const row of site.requirements) expect(text).toContain(row.text);
+    // The player server-renders without a deck: no iframe, the hero's poster and a link to it.
     expect(home.querySelector("iframe")).toBeNull();
-    for (const tape of loadTapes()) {
-      expect(home.querySelector(`a[href="${tape.href}"]`), tape.name).not.toBeNull();
+    const examples = loadExamples();
+    for (const example of examples) {
+      const link = home.querySelector(`a[data-example="${example.name}"]`);
+      expect(link?.getAttribute("href"), example.name).toBe(example.href);
+      expect(text).toContain(example.provenance.label);
     }
-    const run = runFigures(loadSmokeRun());
-    expect(text).toContain(`${run.turns} turns, ${run.minutes} minutes, ${run.cost}`);
+    const hero = ENTRIES[0];
+    if (hero?.run) {
+      const run = runFigures(loadRun(hero.run.fixture));
+      expect(text).toContain(`${run.turns} turns, ${runMinutes(run.minutes)}, ${run.cost}`);
+    }
     for (const rule of loadHookDenial().rules) expect(text).toContain(rule);
     if (site.announcement) expect(text).toContain(site.announcement.label);
     if (site.version) expect(text).toContain(`v${site.version}`);
     expect(text).toContain(`${site.license} license`);
     expect(readFileSync("dist/og/index.png").subarray(1, 4).toString()).toBe("PNG");
+  });
+
+  it("shows only real product output as images (R3)", () => {
+    const home = page("dist", "index.html");
+    const sources = [
+      ...[...home.querySelectorAll("img")].flatMap((img) => [
+        img.getAttribute("src"),
+        img.getAttribute("srcset"),
+      ]),
+      ...[...home.querySelectorAll("source")].flatMap((source) => [
+        source.getAttribute("src"),
+        source.getAttribute("srcset"),
+      ]),
+      ...[...home.querySelectorAll("video")].flatMap((video) => [
+        video.getAttribute("src"),
+        video.getAttribute("poster"),
+      ]),
+    ]
+      .filter((value): value is string => Boolean(value))
+      .flatMap((value) => value.split(",").map((candidate) => candidate.trim().split(/\s+/)[0]));
+    expect(sources.length).toBeGreaterThan(0);
+    for (const src of sources) expect(src).toMatch(/^\/(posters|stills|loops|og)\//);
+    // The loop's <video> and a picked deck's poster render only after hydration, so
+    // check where the player takes them from.
+    for (const example of loadExamples()) {
+      if (example.poster) expect(example.poster.base, example.name).toMatch(/^\/posters\//);
+      if (example.loop) expect(example.loop.base, example.name).toMatch(/^\/loops\//);
+    }
+    const og = home.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? "";
+    expect(new URL(og).pathname).toMatch(/^\/og\//);
+  });
+
+  it("passes the package's prose lint over the landing text (R6)", () => {
+    const home = page("dist", "index.html");
+    // The hook panel quotes a planted bad line on purpose; it carries data-lint-skip.
+    for (const skip of home.querySelectorAll("[data-lint-skip], script, style, pre")) skip.remove();
+    // One line per block, so a match reports the block it came from.
+    for (const block of home.body.querySelectorAll("p, h1, h2, h3, li, dt, dd, figcaption, a")) {
+      block.append("\n");
+    }
+    // Text a screen reader or a tooltip shows, which textContent leaves out.
+    const attributes = [...home.querySelectorAll("[alt], [aria-label], [title]")].flatMap(
+      (element) => ["alt", "aria-label", "title"].map((name) => element.getAttribute(name) ?? ""),
+    );
+    const strings = [
+      ...(home.body.textContent ?? "").split("\n"),
+      ...attributes,
+      ...playerStrings(),
+    ]
+      .map((line) => line.replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+    expect(strings.length).toBeGreaterThan(20);
+    const lint = spawnSync("node", ["../packages/decks/scripts/deck.mjs", "lint", "--stdin"], {
+      input: strings.join("\n"),
+      encoding: "utf8",
+    });
+    expect(`${lint.stdout}${lint.stderr}`.trim()).toBe("");
+    expect(lint.status).toBe(0);
   });
 
   it("serves robots.txt, the sitemap index and an unindexed 404 page", () => {
@@ -160,6 +234,34 @@ describe("the whole site", () => {
   });
 });
 
+/**
+ * The player's own strings: its string and template literals and JSX text. Most
+ * show only after hydration or in another state (Pause, the give-up message), so
+ * the built page alone doesn't have them.
+ */
+function playerStrings(): string[] {
+  const path = "src/components/landing/DeckPlayer.tsx";
+  const source = ts.createSourceFile(path, readFileSync(path, "utf8"), ts.ScriptTarget.Latest);
+  const found: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isImportDeclaration(node)) return;
+    if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateHead(node) ||
+      ts.isTemplateMiddle(node) ||
+      ts.isTemplateTail(node) ||
+      ts.isJsxText(node)
+    ) {
+      found.push(node.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  // Prose only: at least two words, which leaves out class names, keys and paths.
+  return found.filter((text) => /[A-Za-z]+\s+[A-Za-z]+/.test(text));
+}
+
 describe("adding a docs page", () => {
   it("is one file: navigation, pager, exports and sitemap pick it up", () => {
     // The site reads its parent repository (package, example decks), so the copy
@@ -169,6 +271,7 @@ describe("adding a docs page", () => {
     try {
       for (const entry of [
         "src",
+        "scripts",
         "public",
         "fixtures",
         "demo",

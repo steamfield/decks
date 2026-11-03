@@ -41,7 +41,7 @@ describe("without a key", () => {
     const sdk = fakeSdk();
     const warn = vi.spyOn(console, "warn");
     await analytics.initAnalytics({ key: "" }, sdk.load);
-    analytics.track(Events.tapeSelected);
+    analytics.track(Events.exampleSelected);
     analytics.identify("user_1");
     analytics.reset();
     expect(sdk.load).not.toHaveBeenCalled();
@@ -54,17 +54,17 @@ describe("with a key", () => {
   it("replays calls made before init in order", async () => {
     const sdk = fakeSdk();
     const init = analytics.initAnalytics({ key: "phc_test" }, sdk.load);
-    analytics.track(Events.tapeSelected, { position: 1 });
+    analytics.track(Events.exampleSelected, { position: 1 });
     analytics.identify("user_1");
     await init;
     expect(sdk.calls).toEqual([]);
     sdk.fireLoaded();
-    analytics.track(Events.tapeSelected, { position: 2 });
+    analytics.track(Events.exampleSelected, { position: 2 });
     analytics.reset();
     expect(sdk.calls).toEqual([
-      ["capture", "tape_selected", { position: 1 }],
+      ["capture", "example_selected", { position: 1 }],
       ["identify", "user_1", undefined],
-      ["capture", "tape_selected", { position: 2 }],
+      ["capture", "example_selected", { position: 2 }],
       ["reset"],
     ]);
   });
@@ -73,7 +73,7 @@ describe("with a key", () => {
     const sdk = fakeSdk();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const init = analytics.initAnalytics({ key: "phc_test" }, sdk.load);
-    for (let i = 0; i < 60; i++) analytics.track(Events.tapeSelected, { i });
+    for (let i = 0; i < 60; i++) analytics.track(Events.exampleSelected, { i });
     await init;
     sdk.fireLoaded();
     expect(sdk.calls).toHaveLength(50);
@@ -83,9 +83,9 @@ describe("with a key", () => {
   it("turns analytics off when the SDK fails to load", async () => {
     const blocked = vi.fn(() => Promise.reject(new Error("blocked")));
     const init = analytics.initAnalytics({ key: "phc_test" }, blocked);
-    analytics.track(Events.tapeSelected, { position: 1 });
+    analytics.track(Events.exampleSelected, { position: 1 });
     await expect(init).resolves.toBeUndefined();
-    analytics.track(Events.tapeSelected, { position: 2 });
+    analytics.track(Events.exampleSelected, { position: 2 });
     // A later init starts clean: nothing queued before the failure is replayed.
     const sdk = fakeSdk();
     await analytics.initAnalytics({ key: "phc_test" }, sdk.load);
@@ -125,8 +125,8 @@ describe("with a key", () => {
     const load = async () => ({ default: posthog });
     const config = { key: "phc_test", host: "http://127.0.0.1:9" };
     await analytics.initAnalytics(config, load);
-    analytics.track(Events.tapeSelected);
-    expect(seen).toContain("tape_selected");
+    analytics.track(Events.exampleSelected);
+    expect(seen).toContain("example_selected");
     expect(posthog.config.autocapture).toBe(false);
     expect(posthog.config.capture_pageview).toBe("history_change");
     expect(posthog.config.cookieless_mode).toBe("always");

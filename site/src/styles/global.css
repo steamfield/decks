@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "./hifi.css";
+@import "./landing.css";
 @plugin "@tailwindcss/typography";
 
 /*
@@ -10,18 +10,12 @@
  * the same neutrals inverted. `static` emits every token, because CSS below reads
  * them with var().
  *
- * The hw-* and live-* tokens are the hardware: the deck player, the cassettes and
- * the NORMAL/WARM switch. They stay dark in both modes, like a real object on the
- * page. Amber (live) means a live readout and nothing else.
+ * The landing page is dark only: BaseLayout overrides these tokens there with the
+ * product's own palette (src/lib/tokens.ts), which landing.css also reads.
  */
 @theme static {
   --font-sans: var(--ff-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--ff-mono), ui-monospace, "SF Mono", Menlo, monospace;
-  --font-seg: var(--ff-dseg), ui-monospace, monospace;
-  --font-hand: var(--ff-marker), cursive;
-  --font-display: var(--ff-display), ui-sans-serif, sans-serif;
-  --font-legend: var(--ff-legend), ui-sans-serif, sans-serif;
-  --font-pen: var(--ff-pen), cursive;
 
   --color-canvas: #fafafa;
   --color-panel: #f4f4f5;
@@ -32,23 +26,10 @@
   --color-line-strong: #71717a;
   --color-accent: #18181b;
 
-  --color-hw-face: #111113;
-  --color-hw-raised: #18181b;
-  --color-hw-well: #09090b;
-  --color-hw-edge: #27272a;
-  --color-hw-print: #a1a1aa;
-  --color-hw-ink: #f7f8f8;
-  --color-hw-ink-2: #d0d6e0;
-  --color-live: #fbbf24;
-  --color-live-2: #f59e0b;
-  --color-live-off: #2a2110;
-  --color-silver-hi: #f4f4f5;
-  --color-silver-lo: #a1a1aa;
-  --color-silver-ink: #18181b;
-
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
+  --radius-lg: 12px;
 }
 
 @layer base {
@@ -103,11 +84,6 @@
 /* Shown only with JavaScript off; .js is set by the head script. */
 .js .no-js-only {
   display: none;
-}
-
-/* The hardware keeps its own focus ring: the page ring is dark in light mode. */
-.hw :focus-visible {
-  outline-color: var(--color-live);
 }
 
 /* Docs prose follows the tokens in both themes. */

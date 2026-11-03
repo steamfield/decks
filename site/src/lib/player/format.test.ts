@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { announcement, counterText, dwellMs, meterLevels, mirrorCopy, stepsOf } from "./format";
+import {
+  announcement,
+  counterText,
+  dwellMs,
+  loopMoves,
+  mirrorCopy,
+  runMinutes,
+  stepsOf,
+} from "./format";
 import type { DeckState } from "./protocol";
 
 const state: DeckState = {
@@ -15,7 +23,7 @@ const state: DeckState = {
 
 describe("player readouts", () => {
   it("counts slides and beats from one", () => {
-    expect(counterText(state)).toBe("S2·B3");
+    expect(counterText(state)).toBe("2 · 3/4");
     expect(stepsOf({ beat: 0, beats: 0 })).toBe(1);
     expect(stepsOf({ beat: 0, beats: 2 })).toBe(3);
     expect(stepsOf({ beat: 4, beats: 3 })).toBe(5);
@@ -44,17 +52,25 @@ describe("player readouts", () => {
     });
   });
 
-  it("fills the meters by position in the slide and in the deck", () => {
-    expect(meterLevels(state)).toEqual({ beat: 2 / 3, deck: 1 / 4 });
-    expect(meterLevels({ ...state, beats: 0, beat: 0, slides: 1, slide: 1 })).toEqual({
-      beat: 1,
-      deck: 1,
-    });
-  });
-
   it("holds a beat longer for more words, within 3 to 9 seconds", () => {
     expect(dwellMs({ lead: "", body: "" })).toBe(3000);
     expect(dwellMs({ lead: "One two three four five six", body: "" })).toBe(3600);
     expect(dwellMs({ lead: "word ".repeat(80), body: "" })).toBe(9000);
+  });
+
+  it("rounds a run's duration to whole minutes", () => {
+    expect(runMinutes("16.8")).toBe("17 minutes");
+    expect(runMinutes(8.3)).toBe("8 minutes");
+    expect(runMinutes("1.2")).toBe("1 minute");
+  });
+
+  it("describes a loop's moves from its marks", () => {
+    const at = (slide: number, beat: number) => ({ slide, beat });
+    expect(loopMoves([at(5, 1), at(5, 0), at(4, 2), at(4, 1), at(4, 2), at(5, 0), at(5, 1)])).toBe(
+      "3 steps back, then 3 steps forward",
+    );
+    expect(loopMoves([at(2, 0), at(2, 1), at(3, 0), at(2, 2)])).toBe(
+      "2 steps forward, then 1 step back",
+    );
   });
 });

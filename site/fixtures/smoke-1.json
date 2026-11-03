@@ -6,6 +6,7 @@
   "durationMs": 495917,
   "costUsd": 3.169083600000001,
   "toolCalls": 85,
+  "shownCalls": 20,
   "steps": [
     {
       "calls": ["Skill(building-a-deck)"],

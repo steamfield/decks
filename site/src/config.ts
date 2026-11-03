@@ -8,84 +8,124 @@ import { join } from "node:path";
 
 export type Link = { label: string; href: string };
 export type InstallOption = { label: string; command: string };
-export type Track = { name: string; note: string; href: string };
 export type FooterColumn = { title: string; links: Link[] };
 export type Comparison = { topic: string; vclick: string; decks: string };
+export type Requirement = { label: string; text: string };
 
 const repo = "https://github.com/steamfield/decks";
+/**
+ * Every decks command runs through the package: the bare `decks` on npm is
+ * unrelated. bunx and npx pin it with -p; pnpm has no -p, so `pnpm exec` runs
+ * the bin the `pnpm add` line above it installed.
+ */
+const run = (runner: "bunx" | "npx" | "pnpm", args: string) =>
+  runner === "pnpm" ? `pnpm exec decks ${args}` : `${runner} -p slidev-addon-decks decks ${args}`;
+const peers = "slidev-addon-decks @slidev/cli slidev-theme-the-unnamed";
 
-/** The package's version, read from packages/decks/package.json at build time. */
-function packageVersion(): string {
+/** packages/decks/package.json, read at build time. */
+function packageJson(): { version?: string; license?: string } {
   try {
     // Builds and tests run from site/; import.meta.url points into dist/ once bundled.
-    const pkg = readFileSync(join(process.cwd(), "..", "packages/decks/package.json"), "utf8");
-    return (JSON.parse(pkg) as { version?: string }).version ?? "";
+    return JSON.parse(
+      readFileSync(join(process.cwd(), "..", "packages/decks/package.json"), "utf8"),
+    );
   } catch {
-    // Built outside the decks repository: hide the version.
-    return "";
+    // Built outside the decks repository: hide the version and the license.
+    return {};
   }
 }
+const pkg = packageJson();
+const license = pkg.license ?? "";
 
 export const site = {
   name: "Decks",
   /** The npm package. Titles lead with it, since "Decks" alone is unsearchable. */
   packageName: "slidev-addon-decks",
   /** The home page's <title> and OG title. */
-  title: "Decks (slidev-addon-decks): step-by-step chart slides for Slidev",
-  tagline: "Step-by-step chart slides for Slidev",
+  title: "Decks: slide decks about data, written with Claude Code (slidev-addon-decks)",
+  /** The H1. */
+  tagline: "Slide decks about data, written with Claude Code",
   description:
-    "Decks is a Slidev addon for talks that walk through data. A story slide holds one chart. Each press of the right arrow moves the chart to its next step and changes the caption beside it, and the left arrow plays that step backward. The package also has chart and annotation components, a theme file, and a decks command that creates, runs, builds and exports decks.",
+    "Decks is a Claude Code setup and a set of Slidev components for talks about data. You describe the talk, and the agent finds sourced numbers, writes the slides and checks them.",
   /** Absolute production URL: canonicals, the sitemap, OG images and llms.txt use it. */
   url: "https://decks.steamfield.io",
   repo,
   /** Current release, shown in the header. Empty hides it. */
-  version: packageVersion(),
+  version: pkg.version ?? "",
   announcement: null as Link | null,
-  /** The hero block. Both lines copy as one: `decks` on npm is an unrelated package. */
-  quickstart: [
-    "bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed",
-    "bunx decks new my-talk --story",
-  ],
+  /** The hero's install block: three lines, one copy button. */
+  quickstart: [`bun add ${peers}`, run("bunx", "init"), run("bunx", "new my-talk --story")],
+  /** Shown under the hero's install block. */
+  price: license ? `Free, ${license}` : "Free",
   install: [
     {
       label: "bun",
-      command:
-        "bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed\nbunx decks new my-talk --story",
+      command: [`bun add ${peers}`, run("bunx", "init"), run("bunx", "new my-talk --story")].join(
+        "\n",
+      ),
     },
     {
       label: "npm",
-      command:
-        "npm i slidev-addon-decks @slidev/cli slidev-theme-the-unnamed && npx decks new my-talk --story",
+      command: [`npm i ${peers}`, run("npx", "init"), run("npx", "new my-talk --story")].join("\n"),
     },
     {
       label: "pnpm",
-      command:
-        "pnpm add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed && pnpm exec decks new my-talk --story",
+      command: [`pnpm add ${peers}`, run("pnpm", "init"), run("pnpm", "new my-talk --story")].join(
+        "\n",
+      ),
     },
   ] as InstallOption[],
-  /** Shown under the install tabs: the next command in the new project. */
-  afterInstall: ["bunx decks dev my-talk"],
-  clone: "git clone https://github.com/steamfield/decks.git",
+  /** The dev server for the new deck, named in "What you get". */
+  devCommand: run("bunx", "dev my-talk"),
+  /** Section 2. The only place the page lists what Decks needs and what it can't do. */
   requirements: [
-    "Node 20.19+ or 22.12+ (Vite's minimum). The decks command and Slidev run on Node.",
-    "Bun is optional for a project using the package. A clone of the repository needs it for the workspace and scripts.",
-    "Chromium for PDF export and for the shot and snap scripts.",
-  ],
-  fit: {
-    yes: [
-      "You present with Slidev, or are willing to switch.",
-      "Your talk explains numbers one step at a time.",
-      "Dark slides suit you.",
-      "You have Node 20.19+ or 22.12+.",
-    ],
-    no: [
-      "You need light slides.",
-      "You need a Slidev base theme other than slidev-theme-the-unnamed.",
-      "You need Keynote or PowerPoint files. Export is PDF only.",
-      "You need a chart library with a stable release. OpenChart is at 9.0.0-rc.2.",
-    ],
-  },
-  /** Section 4: three differences from v-click plus a chart library. */
+    {
+      label: "Agent",
+      text: "Claude Code. Other agents can read the AGENTS.md block, but decks init doesn't install or test a setup for them.",
+    },
+    {
+      label: "Slides",
+      text: "Slidev with the slidev-theme-the-unnamed base theme. Every slide is dark; there is no light slide theme.",
+    },
+    {
+      label: "Runtime",
+      text: "Node 20.19+ or 22.12+ (Vite's minimum). Bun is optional.",
+    },
+    {
+      label: "Export",
+      text: "PDF only, through Chromium. No Keynote or PowerPoint files.",
+    },
+    {
+      label: "Charts",
+      text: "OpenChart 9.0.0-rc.2, a release candidate.",
+    },
+  ] as Requirement[],
+  /** Section 3: a few words per file `decks init` and `decks new my-talk --story` write. */
+  files: {
+    ".claude/agents/deck-author.md": "the agent that builds or revises one deck",
+    ".claude/skills/building-a-deck/SKILL.md": "scaffold, write, check, build",
+    ".claude/skills/fact-checking-a-deck/SKILL.md": "re-runs the source behind every figure",
+    ".claude/rules/deck-writing.md": "headline, bullet and word budgets",
+    ".claude/rules/deck-patterns.md": "layouts, type and chart specs",
+    ".claude/rules/deck-data.md": "where each figure's source goes",
+    ".claude/rules/story-stage.md": "how a story slide is written",
+    ".claude/rules/prose-patterns.md": "the AI-prose patterns the hook blocks",
+    ".claude/rules/project-glossary.md": "your terms; starts empty",
+    ".claude/hooks/decks.sh": "runs the package's lint and prompt hooks",
+    ".claude/settings.json": "the two hook entries, merged into yours",
+    ".claude/decks.json": "the files init wrote, with their hashes",
+    "AGENTS.md": "a marked Decks block with the commands",
+    "CLAUDE.md": "imports AGENTS.md",
+    "decks.json": "the deck registry",
+    "decks/my-talk/slides.md": "headmatter and the page list",
+    "decks/my-talk/pages/01-cover.md": "the cover",
+    "decks/my-talk/pages/02-first.md": "the first story slide",
+    "decks/my-talk/components/FirstStage.vue": "its chart and captions, step by step",
+    "decks/my-talk/data/first.ts": "its figures, each with a source comment",
+    "decks/my-talk/data-sources.md": "slide-by-slide sources for the fact-check",
+    "decks/my-talk/styles/index.css": "deck-only CSS",
+  } as Record<string, string>,
+  /** Section 5: three differences from v-click plus a chart library. */
   compare: [
     {
       topic: "Going back",
@@ -106,56 +146,6 @@ export const site = {
       decks: "A chart can stay on screen from one slide into the next.",
     },
   ] as Comparison[],
-  /** Section 5: the J-card. Side A is the npm package, side B is the repository. */
-  jcard: {
-    a: [
-      {
-        name: "Story engine",
-        note: "slidev-addon-decks/story",
-        href: "/docs/concepts/beats-and-the-story-timeline/",
-      },
-      { name: "Ink marks", note: "InkLine, InkBars, InkChip", href: "/docs/concepts/ink-marks/" },
-      {
-        name: "OpenChart wrapper, Graph3D",
-        note: "<OpenChart :spec>",
-        href: "/docs/reference/components/",
-      },
-      {
-        name: "Slide chrome and layout CSS",
-        note: "cover, footer, byline, QR card",
-        href: "/docs/reference/components/",
-      },
-      { name: "Viewer", note: "text resize, pinch zoom", href: "/docs/reference/components/" },
-      { name: "The decks CLI", note: "new, dev, build, export", href: "/docs/reference/cli/" },
-    ] as Track[],
-    b: [
-      {
-        name: "shot and snap",
-        note: "screenshots and pixel diffs",
-        href: "/docs/guides/checking-a-deck/",
-      },
-      {
-        name: "deck-author agent",
-        note: ".claude/agents",
-        href: "/docs/guides/writing-decks-with-an-agent/",
-      },
-      {
-        name: "building-a-deck, fact-checking-a-deck",
-        note: "skills",
-        href: "/docs/guides/writing-decks-with-an-agent/",
-      },
-      {
-        name: "Prose-lint hook",
-        note: "lint-ai-rhetoric.sh",
-        href: "/docs/guides/checking-a-deck/",
-      },
-      {
-        name: "Example decks",
-        note: "examples/",
-        href: "/docs/getting-started/your-first-story-deck/",
-      },
-    ] as Track[],
-  },
   footer: [
     {
       title: "Product",
@@ -184,7 +174,8 @@ export const site = {
   ] as FooterColumn[],
   social: [{ label: "GitHub", href: repo }] as Link[],
   releasesUrl: `${repo}/blob/main/CHANGELOG.md`,
-  license: "Apache-2.0",
+  /** From the package's package.json. */
+  license,
   /** Components that hydrate on the landing page. The build test fails on any other island. */
   islands: ["DeckPlayer", "InstallTabs"],
 };

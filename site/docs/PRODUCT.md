@@ -1,175 +1,124 @@
 # Decks landing page: product spec
 
-> Status: built (2026-11-02). Started as `plans/landing-page.md`, revised after a devil's-advocate review, then changed during the build by three directions from Riley: every example deck as its own cassette, a hyper-real 90s hi-fi look, and a copy rewrite (`plans/landing-copy.md`). This file is the spec as built; "Changes during the build" at the end lists what moved and why.
+> Status: rebuilt (2026-11-02) from the RFC `plans/2026-11-02-decks-site-agent-first-rfc.md` in the opendata repo, Phase 3. That RFC holds the reasoning, the rules R1-R6 and the decisions; this file is the spec as built. History is at the end.
 
 ## TL;DR
 
-A one-page site plus docs for Decks at `site/` in this repo, scaffolded with `stacks new astro-product-site` (the stack rr's site uses). The centerpiece is a 90s living-room hi-fi stack under the hero copy: a TV shows a real Decks example deck, the DX-90 cassette deck below it is the controller, and a shelf beside it holds one cassette per example deck. PLAY steps through the deck at reading pace; the keys step and skip; the VFD, the mechanical counter, the VU meters and the tape packs show real position; and the current step's caption is mirrored as page text under the stack, because slide text at hero scale is too small to read. Picking a cassette plays an eject-and-insert sequence and boots that deck. Every moving part is a working control or a real readout.
+A one-page site plus docs for Decks at `site/` in this repo, scaffolded with `stacks new astro-product-site`. Decks is a Claude Code setup plus the Slidev components data talks need, so the page shows that loop: a prompt goes in, and a real deck comes out that you can step through on the page. The hero is a player: the prompt and the run's figures in a title bar, the deck in a frame sized to fit the first viewport, and a caption bar under it with the current step's text as page text and the controls. Everything shown is real product output, labelled with how it was made.
 
 ## Problem
 
-- **Who:** a developer or technical speaker who gives data-heavy talks, writes in Markdown, often already uses Slidev, and increasingly has a coding agent draft slides. Secondary reader: the agent itself, via `llms.txt` and the docs.
-- **What:** Slidev gives them Markdown slides and `v-click`, but a chart that builds in steps, rewinds cleanly and keeps its prose next to the right step is hand-built every time. Agents asked for decks produce generic prose and unsourced numbers. Today there is nowhere to see a story slide move before installing.
-- **Evidence:** the five talks this layer was extracted from; the Phase 3 smoke run (`smoke-1.jsonl`): `claude -p "make a 5-slide story deck about how ocean tides work"` ran 87 turns in 8.3 minutes for $3.17 and produced a deck with NOAA, USNO and NASA sources that passed `check`, test, lint and build. No visitor data, so analytics are in scope.
-- **Why now:** 0.1.0 is prepped. The page should exist when the repo goes public and the package is published.
+- **Who:** a developer or technical speaker who gives data-heavy talks, uses Claude Code, and may already use Slidev. Secondary reader: the agent itself, via `llms.txt` and the docs.
+- **What:** agents asked for decks produce generic prose and unsourced numbers, and Slidev's `v-click` makes a chart that builds in steps and rewinds cleanly a hand job every time. Decks gives the agent a setup (`decks init`: an agent, skills, rules, a prose-lint hook) and the components.
+- **Evidence:** the talks Decks was extracted from; the recorded run `keeling-run.jsonl` (47 turns, 16.8 minutes, $2.61) that drafted the Keeling-curve deck from NOAA Mauna Loa data in a fresh `decks init` project; and the earlier run `smoke-1.jsonl` (87 turns, 8.3 minutes, $3.17) that drafted the tides deck with this repository's own setup.
 
 ## Job to be done
 
-When I have a talk with real numbers in it, I want to see a slide where the chart and the argument advance together and rewind cleanly, and learn quickly whether it fits my setup, so I can decide whether to start my next talk on Decks.
+When I have a talk with real numbers in it, I want to see what the agent produces from a prompt and step through it, and learn quickly whether it fits my setup, so I can decide whether to start my next talk with Decks.
 
-## Journey
+## Rules (from the RFC)
 
-| Moment | What happens |
-|---|---|
-| Entry | GitHub repo header, a launch post, steamfield.io's product grid, Slidev addon listings. |
-| First viewport | H1, lede, the install block with one copy button, Docs and GitHub links. The hi-fi stack starts just below, with the TV showing a poster frame of the first story slide at its start step (shot from the deck build through the embed contract once that step has settled, so it can't drift from the deck and matches the first frame after PLAY). |
-| Core action | Press `PLAY`: the deck boots (LOAD on the VFD), then advances one step every few seconds through the story; the step's caption appears as page text under the stack. Or pick another cassette from the shelf. |
-| Feedback | Chart moves, the counter drums roll, needles kick and settle, hubs turn, the tape winds from one hub to the other, mirrored copy changes. Copy shows "Copied". |
-| Recovery | No JS: poster plus the tides deck's full text as page text, a link "Open the example deck", and the shelf as links to every static deck build with its poster. Copy buttons and transport keys hidden; commands selectable. A deck that doesn't answer in 15 s gets "The deck didn't load." and a link. |
-| Return | `/docs/`, `llms.txt`, GitHub, CHANGELOG. |
-
-## Experience qualities
-
-**Playable**, **literal** (product copy says what things do; hardware voice only in control labels), **honest about fit** (constraints are shown right after the hero, not at the bottom).
+- **R1.** The player (title bar, frame, caption bar) is fully visible at 1440x900 and at least 80% visible at 1280x800 with the frame's top above 40% of the viewport. Its deck frame is the widest element on the page. e2e, poster and booted states, and booted with the hero's longest recorded caption.
+- **R2.** The caption is page text at body size under the frame, at 1440, 1280, 768 and 360, and changes with each step. The in-slide story card is never the reading surface. e2e.
+- **R3.** Every visual is real product output, labelled with how it was made. Every landing image comes from `/posters/`, `/stills/`, `/loops/` or `/og/`. Build test.
+- **R4.** No theme borrowed from another domain, and no chrome that needs explaining.
+- **R5.** A visitor tells cause and effect from the first viewport. A five-person user test, a release gate.
+- **R6.** Copy follows the writer rules; headings label topics. `make build` runs the package's prose lint over the landing text.
 
 ## Page outline
 
-Section headings are topic labels, not questions. The copy is `plans/landing-copy.md`, applied verbatim; the strings live in `src/config.ts`, `src/pages/index.astro`, `sections.tsx` and `DeckPlayer.tsx`.
+The strings live in `src/config.ts`, `src/pages/index.astro`, `sections.tsx` and `DeckPlayer.tsx`. Everything deck-specific comes from `src/data/examples.json` and generated fixtures, so swapping the hero is a registry entry plus fixtures.
 
 1. **Hero.**
-   - `<title>` and OG title: "Decks (slidev-addon-decks): step-by-step chart slides for Slidev". Docs pages: "{page} | Decks (slidev-addon-decks)".
-   - H1: "Step-by-step chart slides for Slidev"
-   - Lede (also the meta description): "Decks is a Slidev addon for talks that walk through data. A story slide holds one chart. Each press of the right arrow moves the chart to its next step and changes the caption beside it, and the left arrow plays that step backward. The package also has chart and annotation components, a theme file, and a decks command that creates, runs, builds and exports decks."
-   - Install block, one copy button for both lines:
-     ```
-     bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed
-     bunx decks new my-talk --story
-     ```
-     Note under it: "Run both lines together. The decks package on npm is unrelated, so bunx decks only finds this one after the install." Links: Read the docs, GitHub.
-2. **The hi-fi stack** (see Design). Under it, "Now playing: {deck title}", the current step's lead and body as page text, and for tides: "Claude Code drafted this deck in one 8-minute run with the repository's agent setup, and it was fact-checked and edited by hand afterward. [See the changes]" linking `compare/97b8a6b...main` (the raw agent output commit against the shipped deck; 6 files, +57/-12).
-3. **Requirements and limits.** Lede: "Decks runs on Slidev with one base theme, slidev-theme-the-unnamed, and every slide is dark." Fits if: you present with Slidev, or are willing to switch; your talk explains numbers one step at a time; dark slides suit you; you have Node 20.19+ or 22.12+. Doesn't fit if: you need light slides; a Slidev base theme other than slidev-theme-the-unnamed; Keynote or PowerPoint files (export is PDF only); a chart library with a stable release (OpenChart is at 9.0.0-rc.2). Then a link to "Add Decks to an existing Slidev deck".
-4. **Compared with v-click.** Lede: "Slidev's v-click shows or hides one element per click. A story slide redraws the whole chart from the current click count." Three rows (Going back, Captions, The next slide), columns "v-click and a chart library" and "Decks story slide". Static, no island; stacks on narrow screens with each cell labelled.
-5. **What's included.** A J-card: spine with "Decks 0.1.0" in marker hand, side A "The npm package" (story engine, Ink marks, OpenChart wrapper and Graph3D, slide chrome and layout CSS, viewer, the `decks` CLI), side B "The repository" (`shot` and `snap`, the deck-author agent, the two skills, the prose-lint hook, example decks). Each track links to its doc page. This stays the package and repo contents card; the per-deck J-cards live on the shelf.
-6. **Themes.** A two-position `NORMAL` / `WARM` tape-type switch (radio inputs and CSS, works without JS) over two stills of the same tides slide, built with the default theme and with `demo/warm-theme.json` (14 lines: surfaces and the two ramps tides draws with, cyan and amber, values from `examples/od-templates/theme.json`). Beside them, that real file, and "This file changes the background colors and the two chart colors the tides deck uses. The values come from the warm palette in the template deck." The hero player is not re-themed.
-7. **Writing decks with Claude Code.**
-   - Lede: "The agent setup is in the repository, not the npm package: an agent, two skills, writing rules and a lint hook. Clone the repository and run Claude Code from its root." Then the clone, `cd decks`, `bun install`, `claude` block.
-   - "Excerpt from the real run that drafted the tides deck, abbreviated", with "87 turns, 8.3 minutes, $3.17. 20 of 85 tool calls shown." Built by `scripts/excerpt-smoke.mjs` from `smoke-1.jsonl` into `fixtures/smoke-1.json`: the prompt, the `building-a-deck` skill loading, the scaffold, the three rules read, NOAA, USNO and NASA fetches, the data and stage files, then `check`, `test`, `lint` and `build tides`. The prompt itself is not in the stream-json log (it was passed with `-p`); it comes from this spec.
-   - Hook panel: "We sent this line to the lint hook as a test write, and the hook blocked it." The planted line, the decision (`deny`), rules `banned-phrase` and `ai-vocab`, and the hook's own reason text, captured by `scripts/capture-hook.mjs` (the scanner's temp file path is shortened to `stdin`). The content-drift test runs the hook again on every `make test`.
-8. **Install.** Tabs: bun (the two hero lines), npm (`npm i ... && npx decks new my-talk --story`), pnpm (`pnpm add ... && pnpm exec decks new my-talk --story`), then `bunx decks dev my-talk`. What you need: Node 20.19+ or 22.12+ (Vite's minimum; the decks command and Slidev run on Node), Bun optional for a project using the package and needed for a clone of the repository, Chromium for PDF export and the shot and snap scripts.
-9. **Footer.** Product / Docs / Community columns, "A Steamfield project.", the license.
+   - Header row: H1 "Slide decks about data, written with Claude Code" and the lede on the left; on the right, the three install lines with one copy button and "Free, Apache-2.0".
+   - Player title bar: the run's prompt as a terminal line and "Claude Code · N min · N turns · $N"; for an example with no run, its title and provenance.
+   - Frame: sized by viewport height so the whole player fits (R1). Before interaction it shows a muted loop from the real deck (three steps forward and three back, or back first when the start step is near the end) when motion is allowed, else the poster. The first interaction boots the live deck in an inert iframe at the step the loop was showing.
+   - Caption bar: the current step's lead and body as page text (R2), controls (slide back, step back, play/pause, step forward, slide forward, full screen), step pips, the `slide · step/steps` counter and "Open the deck". The player takes focus and handles the arrow keys.
+   - Phones (under 768px): the same parts stacked, 44px controls, "Open the deck (best in landscape)".
+   - Under the player: "Drafted in N minutes from this prompt …, then fact-checked and edited in a second Claude Code session (+A/−B in C files)." (or "then edited by hand" for a hand edit) and up to two before/after caption lines from the edit, from git.
+2. **Requirements and limits:** Claude Code, Slidev with `slidev-theme-the-unnamed` and dark slides, Node 20.19+ or 22.12+, PDF export only, OpenChart at its release candidate. The only place the page lists them.
+3. **What you get:** the real file tree after `decks init` and `decks new my-talk --story`, generated at build time by running both in a temp directory, each file annotated in a few words. Then one line on iterating, with `decks dev`.
+4. **How the agent builds a deck:** the recorded run's transcript, static and abbreviated, and the hook panel: a planted line, the hook's real denial from a scratch `decks init` project, and a plain note that it was a test write.
+5. **Example decks:** 16:9 thumbnails with provenance ("Drafted by Claude Code …, then edited by hand (+A/−B in C files)", "From the talks Decks was extracted from", "Template deck"). Picking one loads it into the hero player and scrolls there. Then the v-click comparison.
+6. **Themes:** the same slide under the default theme and under `demo/warm-theme.json`, with that file.
+7. **Install:** bun, npm and pnpm tabs, each with the install line, `-p slidev-addon-decks decks init` and `decks new`; then the cost line from the run.
+8. **Footer.**
+
+## Design
+
+The page and the deck must not blur together. Decks renders on `#09090b`; the page sits one step lighter and the deck reads as an object on it.
+
+| Role | Value | Source |
+|---|---|---|
+| Page background | `surface #111113` | default.json |
+| Panels | `surface-raised` | default.json |
+| Deck frame | the deck's canvas `#09090b` inside a 1px `borders.axis` edge and a 16px band (8px on phones) | default.json |
+| Text | `text.primary/secondary/muted/faint` | default.json |
+| Data and live state (pips, counter) | cyan ramp | default.json |
+| Action (play) | amber step 2 `#f59e0b` | default.json |
+| Body and headings | Inter (variable), self-hosted | the face slides use |
+| Code and transcript | JetBrains Mono | |
+| Radii | 12px player and media, 6px controls, 4px chips | product |
+
+- Tokens are read from `default.json` at build time (`src/lib/tokens.ts`); `src/styles/tokens.test.ts` checks contrast.
+- Product components stay out of the chrome: page callouts are plain panels, never the story card.
+- Identity comes from the deck, the transcript and the real files. No textures, patterns, glows or extra display faces.
+- The landing page is dark only. Docs keep the light/dark toggle and the two-theme axe check.
+- Motion only where the product moves: the hero loop, then the live deck, behind `prefers-reduced-motion: no-preference`. No sound, the H1 doesn't animate, nothing flashes above 3 Hz.
+- OG cards: the page title and description over the hero deck's poster, in the landing colors.
+
+## The embed contract
+
+Deck side in the addon (`bun run test:embed` at the repo root).
+
+- Parent to deck: `{ type: 'decks:cmd', cmd: 'next'|'prev'|'nextSlide'|'prevSlide'|'go', slide?, beat? }`. `prev` from beat 0 lands on the previous slide's last beat; `nextSlide`/`prevSlide` land on beat 0; `go` takes a 1-based slide and clamps it.
+- Deck to parent: `decks:ready`, then `decks:meta {title, slides, slideTitles}`, then `decks:state {slide, slides, beat, beats, lead, body, settled, direction}` with `settled: false` on each move and `true` once motion stops. `beats` is the last beat index, so a slide has `beats + 1` steps. `lead`/`body` are empty on non-story slides, and the page falls back to the slide title.
+- The iframe is same origin under `/demo/<name>/` (`routerMode: hash`), `inert`, `tabindex="-1"`, titled "{deck title}, controlled by the player". It loads on the first interaction at `index.html#/{slide}?clicks={step}`; a deck that opens elsewhere is sent `go`. Messages from any other source or origin are ignored. A deck that doesn't answer in 15 s gets "The deck didn't load." and a link.
+- `aria-live` announces "Slide N of M, step B of K." plus the lead on each settled step.
 
 ## Docs (`/docs/`)
 
 - Getting started: Quickstart, Your first story deck, Add Decks to an existing Slidev deck.
 - Concepts: Beats and the story timeline, Ink marks, Story vs conventional decks.
-- Guides: Theming with `theme.json`, Writing decks with an agent (clone-based), Checking a deck (`check`, `shot`, `snap`, lint, fact-extract), Exporting to PDF.
+- Guides: Theming with `theme.json`, Writing decks with an agent, Checking a deck, Exporting to PDF.
 - Reference: `decks` CLI, `decks.json`, `theme.json` tokens, Components.
 
-Written from README, AGENTS.md, `packages/decks/story/README.md` and the rules' theme section. A content-drift test checks every command shown (hero block, all install tabs, CLI reference) against `deck.mjs` usage strings and `package.json` `bin`.
-
-## Design
-
-**Concept:** a 90s living-room hi-fi stack, built to be believed by someone who owned one. A TV set sits on top and shows the slide; the cassette deck below is the controller; a shelf beside them holds the tapes. The hardware brand and models are invented: DECKS, the DX-90 stereo cassette deck, the Vision 21 TV. No real makers, logos, the Compact Cassette mark, noise-reduction logos or real tape-type nomenclature. Markings are literal (`PLAY`, `STEP`, `SLIDE`, `COUNTER`, `AUTO STOP`, `TAPE TYPE: NORMAL / WARM`).
-
-**Deliberately unlike steamfield.io** (80s CRT, neon, terminal replays): a 90s satin-black component stack, not a neon arcade; glow only where the real thing glows (the VFD and LEDs); the TV is a plain living-room set with a glass reflection and vignette, not a phosphor CRT; the agent section is a static annotated transcript, not a replay.
-
-**The TV.** A charcoal plastic cabinet with a bezel seam, screws and a speaker grille, a 4:3 tube with rounded corners, a glass highlight and an inner vignette. The 16:9 slide sits letterboxed; the top bar is the on-screen display (transport state, `S2 1/3`) and the bottom bar shows the slide title in OSD type. That title replaces the plain "Slide N" heading the first build had under the player. The poster (AVIF and WebP at 640 and 1280, explicit size, `fetchpriority="high"`) and the iframe live in the screen.
-
-**The DX-90 faceplate.** Satin black with feTurbulence noise, a chamfered inner bevel, a seam under the brand row, four screws and printed legends in Michroma.
-
-- Cassette well with a smoked, translucent door and its specular streak; behind it, a real cassette drawn in SVG: shell plastic, five screws, the label, the window, two toothed hubs that turn while a step is moving or PLAY is on, and brown tape packs whose radii track position in the deck (the left pack shrinks, the right grows, at constant tape area).
-- A VFD with lit and ghost segments: slide and step as numbers (`02 1/3`; a 14-segment S and B read as 5 and 8, so the text form `S2·B1` is the screen-reader line), plus PLAY, PAUSE, LOAD and END flags.
-- A three-drum mechanical counter (the step number in the recorded walk), with RESET (go to slide 1).
-- Two backlit cream VU meters with a dB scale and red zone: left is position within the slide's steps, right is position within the deck. The needle overshoots and settles when a transition starts (ballistics driven by the deck's `settled` events, not random). Peak LEDs light on the last step and at the end.
-- Piano-key transport with brushed-aluminum caps and a dark front lip: slide back, step back, PLAY, PAUSE, step forward, slide forward, and the eject key, which opens the full deck in a new tab. PLAY and PAUSE latch down and have LEDs. Keys are at least 44px, in two rows on phones.
-- AUTO STOP LED at the end of the deck, a SOUND slide switch (off by default; synthesized key clunks, door and tape hiss through Web Audio, no files, never autoplays).
-
-**Tape load.** Picking a cassette: the door swings open, the old tape rises out, the picked tape slides in from the shelf side, the door closes, then the deck boots. About a second; under reduced motion the swap is instant. A quick run of picks boots only the last one.
-
-**The shelf.** A smoked-acrylic rack of cassette cases seen end-on: each spine is the deck's J-card spine with the title in marker hand and its three ramp colors. Shells vary like 90s tapes: tides clear, opendata-pitch smoke, and agent-experience, od-story-templates and od-templates tinted with step 2 of their own cyan, violet and amber ramps. All colors (paper, ink, stripes, tint) come from each deck's resolved theme (its `theme.json` over `default.json`, through the package's resolver at build time), so the warm template deck's cassette is visibly warm. Hovering or focusing a spine pulls it out and shows its J-card; the loaded tape's slot reads "In the deck". The shelf is a group of native radio inputs (arrow keys move and pick), with a visible focus ring. Without JavaScript it is a list of links to each static deck build plus each poster.
-
-**J-cards.** The deck's title in marker hand on a highlighter swipe, a sticker with the slide count, a red "Don't tape over" scrawl (example tapes only), a Memphis confetti corner, and the tracklist in ballpoint: the deck's slide titles as the deck reports them through `decks:meta`, split into side A and side B.
-
-**Page patterns.** Memphis squiggles and confetti (teal, purple, magenta, yellow) faintly around the hero and as a printed band above each section heading. Section headings in Bungee. Body copy stays Inter.
-
-**Color.** Page surfaces and text come from the product's `default.json` (canvas `#09090b`, text `#f7f8f8` / `#d0d6e0` / `#a1a1aa`), with light mode as the same neutrals inverted. The hardware has its own fixed palette and stays dark in both modes. The VFD is blue-green, LEDs are red, green and amber. `src/styles/tokens.test.ts` checks every text pair in both themes.
-
-**Type.**
-
-| Role | Face | License |
-| --- | --- | --- |
-| Body, H1, ledes | Inter (variable), self-hosted, preloaded | OFL |
-| Section headings, shelf heading, J-card sticker | Bungee | OFL |
-| Hardware legends | Michroma | OFL |
-| VFD and the OG card display | DSEG14 Classic (TTF copy for satori) | OFL |
-| Cassette labels, spines, J-card titles | Permanent Marker | Apache-2.0 |
-| J-card tracklists | Reenie Beanie | OFL |
-| Code and the TV's OSD | JetBrains Mono | OFL |
-
-All self-hosted through Astro's `fonts` config; a face downloads only when a glyph in it is drawn.
-
-**The embed contract** (deck side in the addon, `bun run test:embed` at the repo root):
-
-- Parent to deck: `{ type: 'decks:cmd', cmd: 'next'|'prev'|'nextSlide'|'prevSlide'|'go', slide?, beat? }`. `prev` from beat 0 lands on the previous slide's last beat; `nextSlide`/`prevSlide` land on beat 0; `go` takes a 1-based slide and clamps it.
-- Deck to parent: `decks:ready`, then `decks:meta {title, slides, slideTitles}`, then `decks:state {slide, slides, beat, beats, lead, body, settled, direction}` with `settled: false` on each move and `true` once motion stops (a tides step settles in about 575 ms). A superseded move never reports settled. `beats` is Slidev's clicksTotal, the last beat index, so a slide has `beats + 1` steps. `lead`/`body` are empty on non-story slides, and the page falls back to the slide title.
-- The iframe is same origin under `/demo/<name>/` (each deck built with that base and `routerMode: hash`), `inert`, `tabindex="-1"`, titled "{deck title}, controlled by the player above", with `allow="screen-wake-lock"`. It loads only after PLAY, a step or a cassette pick, at `index.html#/{start slide}?clicks={start step}`; a deck that opens elsewhere is sent `go` and the poster stays up until it reports the start step settled. The start step is 0 except where the first step's chart is still empty (`START_BEATS` in `src/data/tapes.ts`: tides and both template decks start on step 2, because their line draws on the way to it). Messages from any other source or origin are ignored. Arrow keys work only when focus is inside the faceplate (Shift moves a slide).
-- `aria-live` announces "Slide N of M, step B of K." plus the lead (or the slide title) on each settled step.
-
-**Motion:** the finished state is the default CSS; hubs, needles, drums, the door, the tape swap and the shelf pull-out sit behind `prefers-reduced-motion: no-preference`; the H1 never animates; nothing flashes above 3 Hz; nothing autoplays; sound is off by default.
-
-**OG card:** the DX-90 faceplate with the page title in the VFD (DSEG14), the description in Inter, one per page via satori.
-
-## Scope
-
-In: landing page, `/docs`, the hi-fi stack with all five example decks, the two-still theme switch, the static transcript excerpt and hook panel, OG cards, `llms.txt`, sitemap, PostHog via one module (inert without a key), Cloudflare Pages config, token contrast test, Playwright + axe from the stack.
-
-Also in, outside `site/`:
-- `examples/tides/` from the smoke deck: real lede restored (the "seamless dance" line was a hook-gap test plant from `smoke-2.jsonl`, not agent output), byline fixed, fact-check pass, the embed `setup/` file, `routerMode: hash`, self-hosted Inter. The raw agent output is committed first as its own commit so the caption can link the diff. README's example table and CHANGELOG updated.
-- `deck.mjs` shebang changed from bun to node (it imports only `node:` modules and already spawns Slidev under Node), so the `decks` bin runs under `npx` without Bun. Then requirements read "Node 20+; Bun optional".
-- `make demo` in `site/`: lint + check the decks, build all five into `site/public/demo/<name>/` (gitignored; the deploy runs `make demo-build` before the site build), record each deck through the embed contract into `fixtures/tapes/<name>.json`, shoot the five posters from those builds at each tape's start step after the settled event, and run `shot` for the two theme stills (committed, since they need a browser).
-
-Out: three.js, easter eggs, blog, a re-themeable hero player, a third tape-type position, `@steamfield/ui` (private, unpublished), VU meters or LEDs as decoration (each one shows a real value), sound that plays without the switch.
+The content-drift test checks every command shown (hero, install tabs, the dev line, the docs) against `deck.mjs` and the package's `bin`, and requires the `-p slidev-addon-decks` form for every bunx and npx line. The pnpm tab uses `pnpm exec decks …`, which runs the package its own `pnpm add` line installed (pnpm has no `-p`).
 
 ## Success measures
 
-`install_copied` per session (after release only), `player_played`, `beat_stepped` per session, `tape_selected`, `theme_switched`, `docs_quickstart_viewed`. Guardrails: mobile LCP under 2.5s in poster state, axe clean in both modes, page weight before play measured on each build. The first target was 350 KB; the hi-fi redesign added display faces and SVG and moved the budget (see Measurements).
+`install_copied` per session (after release), `player_played`, `beat_stepped` per session, `example_selected`, `docs_quickstart_viewed`. Guardrails: page weight before interaction at or under 350 KB at 1440, loop included (e2e); axe clean; R1 and R2 at four sizes; the R5 user test before release.
 
-## Open questions
+## Open items
 
-1. **Launch:** the GitHub link 404s and the install line fails until the repo is public and the package is on npm. Proposal: build now, deploy at release to `decks.steamfield.io` (Cloudflare Pages like the siblings). If it goes up earlier, it gets `noindex` and a "not yet released" banner.
-2. **Agent setup for package users:** the page says "clone the repo". A `decks agent-init` command that copies `.claude/` and `tools/` into a project would let section 7 say "run this" instead. Worth building before launch?
+- **R5 user test:** five people who use Claude Code or Cursor; a release gate.
+- **Launch:** the GitHub links 404 and the install lines fail until the repo is public and the package is on npm.
 
-## Build notes
+## The hero deck
 
-- `site/` in the decks repo with its own `package.json`, outside the bun workspace.
-- Scaffold with the local stacks build (`~/Projects/stacks/packages/cli/dist/stacks`; the global 0.7.0 lacks this stack): `stacks new astro-product-site site` with `cloudflare-pages` and `posthog`; follow `.stacks/BRIEF.md`; green on `stacks verify --all`.
+The hero is `examples/keeling`, the Keeling-curve story deck from the RFC's Phase 2, and tides moved to the gallery.
+
+- **The run.** A scratch project with only `bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed` and `bunx -p slidev-addon-decks decks init`, committed before the run; then `claude -p "make a 5-slide story deck about what the Keeling curve shows about atmospheric CO2" --output-format stream-json`: 47 turns, 16.8 minutes, $2.61. `scripts/excerpt-run.mjs keeling-1` turns the log into `fixtures/keeling-1.json`; the log itself stays outside the repo, as `smoke-1.jsonl` does.
+- **Not a stranger's clean machine.** The project had nothing but `bun add` and `decks init`, but the machine also had the user's global `~/.claude/CLAUDE.md`, which Claude Code loads in every project. That is visible in the run: the agent called `on-port` and `wait-for`, helpers that file names. A visitor's results will differ by whatever their own global setup adds.
+- **Commits.** The raw agent output (6a5b4b1), the plumbing (3f8f992: `decks.json`, `routerMode: hash`, `test:embed`), and the edit (60dcbfd), each on its own so the edit's diff stands alone. `edits` in `examples.json` lists the content commits, 60dcbfd and e8dd230 (the guard follow-up), each diffed against its parent; ac258c6 (a path-only fix) sits between them and is left out of the count.
+- **The edit** was made by a second Claude Code session after a fact-check that re-downloaded the NOAA files and matched all 23 figures. It fixed the six copy issues the fact-check raised, replaced slide 4's "The climb is getting steeper" (the 1990s mean is below the 1980s) with a comparison against the 1960s, added a check that the 2020s mean stays above the 2010s (the "faster still" card rests on six years), which throws when the data module loads and runs in `bun run test` (`slidev build` bundles the module without running it), and moved the byline from the user's name to Claude Code. The page labels it "fact-checked and edited in a second Claude Code session", never "by hand".
+- **Compared with tides** (the RFC's Phase 2 check that a fresh project does as well as this repository's setup):
+
+  | | Tides (`smoke-1`) | Keeling (`keeling-1`) |
+  | --- | --- | --- |
+  | Setup | This repository's agent setup | A fresh project: `bun add` and `decks init` only |
+  | Run | 87 turns, 8.3 min, $3.17 | 47 turns, 16.8 min, $2.61 |
+  | Sources | NOAA tide predictions, USNO moon phases, NASA fact sheets | NOAA GML Mauna Loa CSVs; every figure is derived at load from a module a script generates from them |
+  | What the draft leaves out | Nothing listed | A table of excluded claims in `data-sources.md` |
+  | Review | Edited by hand: +49/−11 in 6 files | Fact-checked (0 wrong figures; 6 copy issues and 2 claims without a guard), then edited in a second Claude Code session (size in `fixtures/examples/keeling.edits.json`) |
+
+  The fresh project did at least as well on sourcing: fewer turns, a lower cost, and figures computed from the source files rather than copied into constants. It took twice as long. The bundled tides exemplar (`agent/exemplars/tides` in the package) was the agent's model for the story slides. It wrote its own Playwright script for screenshots because `decks shot` didn't print where it saved them; `shot` prints each path since 4691f99 on main.
+- **Start frame:** slide 5, step 2 (`startSlide: 5`, `startBeat: 1`): the headline, the halfway rule at 2002, the chip and the card all say the same thing. The loop runs back three steps into slide 4 and forward again, since slide 5 has only one step after the start. From the end of the deck, Play starts over at the first story slide.
 
 ## Measurements
 
-Production build (`astro preview`), 2026-11-02, before PLAY, no interaction:
+Production build (`astro preview`), 2026-11-02, 1440x900, before interaction, with the keeling loop playing: 309 KB (text gzipped). Loop 127 KB (WebM), fonts 68 KB, the React client 64 KB, HTML 18 KB, poster 13 KB, CSS 8 KB. Re-measure after any change to fonts, the poster, the loop or the hero; the e2e weight test fails above 350 KB.
 
-| | Desktop 1440 | Mobile 360 (1.6 Mbps, 150 ms, 4x CPU) |
-| --- | --- | --- |
-| Transferred | 295 KB in 22 requests | 252 KB in 19 requests |
-| Fonts | 164 KB | 136 KB |
-| Scripts | 82 KB (React client 65 KB, player 9 KB) | 73 KB |
-| Images | 16 KB (poster 10 KB, a still 6 KB) | 10 KB |
-| LCP | the poster `<img>` (tides-1280.avif), 80 ms | the hero lede paragraph, 760 ms |
+## History
 
-Under the original 350 KB target. Fonts are the biggest share; the next cut would be subsetting Inter or dropping Reenie Beanie for the tracklists. Re-measure after any change to fonts, the poster or the hero.
-
-## Changes during the build
-
-| Change | Why |
-| --- | --- |
-| The player became a TV plus a DX-90 cassette deck, with a shelf of five cassettes and per-deck J-cards | Riley's direction: each example deck as its own tape, then a hyper-real 90s hi-fi look. Glow is allowed for the VFD and LEDs; a display face, hardware legend face and pen face were added. |
-| Copy rewritten from `plans/landing-copy.md`; section headings are topic labels | Riley's copy purge. The landing unit is "step"; "beat" is defined in the docs. |
-| Amber is no longer "the live color" | The VFD is blue-green like real ones; LEDs keep their own colors. |
-| The counter reads `02 1/3` on the VFD instead of `S2·B3` | DSEG14 draws S and B like 5 and 8. `S2·B3` stays as the screen-reader text. |
-| `beats` is the last beat index (Slidev's clicksTotal) | As implemented in the addon; the page shows `beats + 1` steps. |
-| Posters, stills and deck recordings are committed; deck builds are not | Posters and recordings need a browser; deck builds don't, so the deploy builds them with `make demo-build`. |
-| The caption links GitHub's compare view `97b8a6b...main` | The raw agent output is commit 97b8a6b; the repo is private until release, so the link 404s until then. |
-| Requirements read Node 20.19+ or 22.12+ | The README after the CLI moved to Node. |
-| The shelf is native radio inputs, not ARIA radios on buttons | Native radios give arrow-key behavior for free and pass Biome's a11y rules. |
-| Footer columns are not landmarks | A second "Docs" navigation landmark broke the docs-menu check. |
-| Light code theme is `github-light-high-contrast` | `github-light` fails AA on some TypeScript tokens. |
+The first build (2026-11-02, `plans/landing-page.md` and `plans/landing-copy.md`) dressed the player as a 90s hi-fi stack: a TV for the deck, a cassette deck as the controller, a shelf of cassettes with J-cards, VU meters, a VFD and five display faces. It looked good but read as a Slidev addon with a theme, not an agent setup; the caption under a TV was secondary; and the hardware needed explaining. The RFC above replaced it with the agent-first page: the run in the title bar, a frame sized to the viewport, the caption as page text, real files and real runs throughout. The hi-fi components, styles, sounds and fonts were removed in the same branch.

@@ -26,7 +26,7 @@ test-results/
 Thumbs.db
 
 # Example deck builds and their temporary copies, written by `make demo`.
-# Posters, stills and fixtures/tapes/ are committed: they need a browser to make.
+# Posters, stills, loops and fixtures/examples/ are committed: they need a browser to make.
 public/demo/
 .demo/
 

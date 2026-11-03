@@ -1,0 +1,18 @@
+{
+  "commits": ["60dcbfd", "e8dd230"],
+  "files": 14,
+  "insertions": 139,
+  "deletions": 53,
+  "pairs": [
+    {
+      "file": "components/DecadeStage.vue",
+      "before": "How much carbon dioxide rose each year.",
+      "after": "Each bar is a decade's average yearly rise."
+    },
+    {
+      "file": "components/HalfwayStage.vue",
+      "before": "No year has come in lower.",
+      "after": "Every year beat the one before."
+    }
+  ]
+}

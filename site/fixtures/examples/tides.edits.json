@@ -1,0 +1,19 @@
+{
+  "from": "97b8a6b",
+  "to": "44994cb",
+  "files": 6,
+  "insertions": 49,
+  "deletions": 11,
+  "pairs": [
+    {
+      "file": "components/TideRangeStage.vue",
+      "before": "Long, narrow bays get the biggest tides.",
+      "after": "Funnel-shaped bays get the biggest tides."
+    },
+    {
+      "file": "components/TideRangeStage.vue",
+      "before": "The Gulf of Mexico barely moves.",
+      "after": "Pensacola's tide barely moves."
+    }
+  ]
+}

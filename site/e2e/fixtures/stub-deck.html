@@ -16,13 +16,19 @@
   <body>
     <p id="where"></p>
     <script>
+      // A cover, four story slides of three steps (the examples start on slides 2 to 5),
+      // and a closing slide with no card. Slide 6 also stands in for od-templates' start.
+      const story = () => ({ title: "", beats: [
+        { lead: "First beat lead.", body: "First beat body." },
+        { lead: "Second beat lead.", body: "Second beat body." },
+        { lead: "Third beat lead.", body: "" },
+      ] });
       const SLIDES = [
         { title: "Stub cover", beats: [{ lead: "", body: "" }] },
-        { title: "", beats: [
-          { lead: "First beat lead.", body: "First beat body." },
-          { lead: "Second beat lead.", body: "Second beat body." },
-          { lead: "Third beat lead.", body: "" },
-        ] },
+        story(),
+        story(),
+        story(),
+        story(),
         { title: "Stub closing slide", beats: [{ lead: "", body: "" }, { lead: "", body: "" }] },
       ];
       const SETTLE_MS = Number(new URLSearchParams(location.search).get("settle") ?? 120);
@@ -31,7 +37,8 @@
       window.__stubCommands = [];
       const post = (message) => window.parent.postMessage(message, location.origin);
       const state = (settled, direction) => {
-        const card = SLIDES[slide - 1].beats[beat];
+        // A test can route this page in with window.STUB_CARD set: every step then shows that card.
+        const card = window.STUB_CARD ?? SLIDES[slide - 1].beats[beat];
         document.getElementById("where").textContent = `slide ${slide} beat ${beat}`;
         post({ type: "decks:state", slide, slides: SLIDES.length, beat, beats: SLIDES[slide - 1].beats.length - 1, lead: card.lead, body: card.body, settled, direction });
       };

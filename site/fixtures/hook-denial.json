@@ -1,7 +1,7 @@
 {
-  "hook": ".claude/hooks/lint-ai-rhetoric.sh",
+  "hook": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/decks.sh\" hook lint",
   "tool": "Write",
-  "file": "examples/tides/pages/01-cover.md",
+  "file": "decks/my-talk/pages/01-cover.md",
   "line": "<p class=\"od-lede\">At its core, the tide is a game-changer.</p>",
   "decision": "deny",
   "rules": ["banned-phrase", "ai-vocab"],

@@ -7,8 +7,9 @@ import { site } from "./src/config.ts";
 import { codeTitle, docsHastPlugins } from "./src/lib/markdown.ts";
 
 // Self-hosted at build time from installed packages: no font request leaves the site.
-// A family's file downloads only when a page draws a glyph in it, so the display
-// faces cost nothing on pages that don't use them. Only Inter is preloaded.
+// Two families: Inter (variable), the face the slides use, and JetBrains Mono for
+// commands and the transcript. A family's file downloads only when a page draws a
+// glyph in it. Only Inter is preloaded.
 const local = (name, cssVariable, src, fallbacks, weight = "400") => ({
   provider: fontProviders.local(),
   name,
@@ -37,27 +38,6 @@ export default defineConfig({
       "--ff-mono",
       "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2",
       ["monospace"],
-    ),
-    local("DSEG14 Classic", "--ff-dseg", "dseg/fonts/DSEG14-Classic/DSEG14Classic-Regular.woff2", [
-      "monospace",
-    ]),
-    local("Bungee", "--ff-display", "@fontsource/bungee/files/bungee-latin-400-normal.woff2", [
-      "sans-serif",
-    ]),
-    local("Michroma", "--ff-legend", "@fontsource/michroma/files/michroma-latin-400-normal.woff2", [
-      "sans-serif",
-    ]),
-    local(
-      "Reenie Beanie",
-      "--ff-pen",
-      "@fontsource/reenie-beanie/files/reenie-beanie-latin-400-normal.woff2",
-      ["cursive"],
-    ),
-    local(
-      "Permanent Marker",
-      "--ff-marker",
-      "@fontsource/permanent-marker/files/permanent-marker-latin-400-normal.woff2",
-      ["cursive"],
     ),
   ],
   integrations: [

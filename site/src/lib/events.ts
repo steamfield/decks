@@ -4,14 +4,12 @@
 export const Events = {
   /** An install command was copied; `method` is hero, bun, npm or pnpm. */
   installCopied: "install_copied",
-  /** PLAY was pressed on the deck player; `tape` is the deck name. */
+  /** Play was pressed on the deck player; `example` is the deck name. */
   playerPlayed: "player_played",
-  /** A transport step was used; `cmd` is next, prev, nextSlide or prevSlide. */
+  /** A step control or arrow key was used; `cmd` is next, prev, nextSlide or prevSlide. */
   beatStepped: "beat_stepped",
-  /** A cassette was picked from the rack; `tape` is the deck name. */
-  tapeSelected: "tape_selected",
-  /** The NORMAL/WARM switch moved; `position` is normal or warm. */
-  themeSwitched: "theme_switched",
+  /** An example deck was picked from the gallery; `example` is the deck name. */
+  exampleSelected: "example_selected",
   /** The Quickstart docs page was viewed. */
   docsQuickstartViewed: "docs_quickstart_viewed",
 } as const;
