@@ -25,10 +25,12 @@ export const PATTERNS_FILE = fileURLToPath(new URL('./ai-rhetoric-patterns.tsv',
  * empty or truncated file), so a caller that must fail closed can.
  */
 export function loadPatterns(file = PATTERNS_FILE) {
+  // CRLF, blank and whitespace-only lines are tolerated, so a Windows checkout
+  // or a trailing blank line does not read as a broken row.
   const patterns = readFileSync(file, 'utf8')
-    .split('\n')
-    .filter((line) => line && !line.startsWith('#'))
-    .map((line) => line.split('\t'))
+    .split(/\r?\n/)
+    .filter((line) => line.trim() && !line.startsWith('#'))
+    .map((line) => line.replace(/\r$/, '').split('\t'))
     .filter(([id]) => id)
     .map(([id, severity, ere, message]) => {
       if (severity !== 'error' && severity !== 'warn')
@@ -105,11 +107,14 @@ export function proseLines(src, { fragment = false } = {}) {
     if (/^\s*<\/style>/.test(text)) return void (sc = false)
     if (sc) return
     if (cm) {
-      if (/\*\/\}|-->/.test(text)) cm = false
-      return
+      // The comment ends on this line: what follows its terminator is scanned.
+      const close = /\*\/\}|-->/.exec(text)
+      if (!close) return
+      cm = false
+      text = text.slice(close.index + close[0].length)
     }
     // Allow ids are read before the comment carrying them is cut out.
-    const allow = allowOf(text)
+    const allow = allowOf(raw)
     text = text.replace(/<!--.*?-->/g, '').replace(/\{\/\*.*?\*\/\}/g, '')
     if (!/\S/.test(text)) return
     if (/^\s*\{\/\*/.test(text)) return void (cm = true)

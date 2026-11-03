@@ -86,6 +86,14 @@ function assertNotDeny(payload, name, opts) {
   )
 }
 
+// A user project with one deck. A deck is a directory under a deck root that
+// holds a slides.md, so the fixture needs the file for decks/my-talk to count.
+const USER = scratch('decks-hook-user-')
+mkdirSync(join(USER, 'decks/my-talk'), { recursive: true })
+writeFileSync(join(USER, 'decks/my-talk/slides.md'), '---\nsrc: ./pages/01.md\n---\n')
+const inUser = { project: USER }
+process.on('exit', () => rmSync(USER, { recursive: true, force: true }))
+
 console.log('== decks hook lint ==')
 
 assertDeny(
@@ -95,10 +103,12 @@ assertDeny(
 assertDeny(
   edit('decks/my-talk/pages/02-point.md', "Here's the thing about tides."),
   'denies banned phrase in a decks/ page (Edit)',
+  inUser,
 )
 assertDeny(
   multiedit('decks/my-talk/slides.md', 'A seamless data experience.'),
   'denies AI vocab in slides.md (MultiEdit)',
+  inUser,
 )
 assertDeny(
   write(
@@ -106,10 +116,12 @@ assertDeny(
     '<template>\n  <p class="od-lede">\n    It\'s not just about water.\n  </p>\n</template>',
   ),
   "denies not-just-reveal in a deck component's template text",
+  inUser,
 )
 assertDeny(
-  write(join(ROOT, 'decks/my-talk/pages/01-cover.md'), 'An em — dash.'),
+  write(join(USER, 'decks/my-talk/pages/01-cover.md'), 'An em — dash.'),
   'denies with an absolute path',
+  inUser,
 )
 assertDeny(
   edit(
@@ -117,35 +129,118 @@ assertDeny(
     '  <template #lede>Tides are a seamless dance.</template>',
   ),
   'denies prose inline in a one-line tag (StoryCover slot)',
+  inUser,
 )
 assertDeny(
   edit('decks/my-talk/pages/03.md', '<h2 class="od-h2">At its core, the cache wins.</h2>'),
   'denies prose inline in a heading tag',
+  inUser,
 )
 assertNotDeny(
   edit('decks/my-talk/pages/03.md', '<div class="od-twocol" style="gap: 2rem;">'),
   'allows a tag-only line',
+  inUser,
 )
 assertNotDeny(
   edit('decks/my-talk/pages/03.md', '<p>Quoted — verbatim.</p> <!-- lint-allow: em-dash -->'),
   'honors lint-allow on a tag line',
+  inUser,
 )
 assertDeny(
   write('decks/my-talk/pages/02.md', "Here's the thing about tides. <!-- speaker cue -->"),
   'scans the rest of a line that ends in an HTML comment',
+  inUser,
 )
 assertDeny(
   write('decks/my-talk/pages/02.md', '<p>At its core, tides.</p> {/* note */}'),
   'scans the rest of a line that carries a JSX comment',
+  inUser,
 )
 assertDeny(
   edit('decks/my-talk/pages/02.md', '---\n\nAt its core, the moon sets the tide.'),
   'denies a phrase after a leading --- in an Edit fragment (no file to replay)',
+  inUser,
+)
+{
+  // A worktree under .claude/worktrees/<name>/ is a checkout of its own: its
+  // decks count, judged against its own files.
+  const project = scratch('decks-hook-wt-')
+  const wt = join(project, '.claude/worktrees/foo')
+  mkdirSync(join(wt, 'decks/x'), { recursive: true })
+  writeFileSync(join(wt, 'decks/x/slides.md'), '---\n---\n')
+  assertDeny(
+    write(join(wt, 'decks/x/pages/01.md'), 'An em — dash.'),
+    'denies in a deck of a worktree under .claude/worktrees/',
+    { project },
+  )
+  assertNotDeny(
+    write(join(wt, 'decks/y/pages/01.md'), 'An em — dash.'),
+    'allows a worktree directory with no slides.md',
+    { project },
+  )
+  assertNotDeny(
+    write('/Users/test/.claude/worktrees/foo/decks/x/pages/01.md', 'An em — dash.'),
+    'allows a worktree-shaped path outside the project',
+    { project },
+  )
+  rmSync(project, { recursive: true, force: true })
+}
+{
+  // Scope is judged on the path inside the project, so a `decks/` directory
+  // above it brings nothing in.
+  const parent = scratch('decks-hook-parent-')
+  const project = join(parent, 'decks/myapp')
+  mkdirSync(join(project, 'src/components'), { recursive: true })
+  assertNotDeny(
+    write(join(project, 'src/components/Button.vue'), '<template><p>An em — dash.</p></template>'),
+    'allows app components in a project that sits under a decks/ directory',
+    { project },
+  )
+  rmSync(parent, { recursive: true, force: true })
+}
+assertNotDeny(
+  write(join(ROOT, 'site/src/components/X.vue'), '<template><p>An em — dash.</p></template>'),
+  "allows the site's components in this repo (its own dir is named decks)",
+)
+assertNotDeny(
+  write('decks/no-slides/pages/01.md', 'An em — dash.'),
+  'allows a directory under decks/ with no slides.md',
+  inUser,
 )
 assertDeny(
-  write('/Users/test/.claude/worktrees/foo/examples/x/pages/01.md', 'An em — dash.'),
-  'denies with a worktree-prefixed path',
+  write('decks/new-talk/slides.md', '---\n---\n\nAn em — dash.'),
+  'denies in the slides.md a Write creates (the file that makes the deck)',
+  inUser,
 )
+assertNotDeny(
+  write('decks/my-talk/nested/pages/01.md', 'An em — dash.'),
+  'a deck is one directory below the root, not two',
+  inUser,
+)
+{
+  // decksDir "." puts the decks at the project root: only top-level
+  // directories holding a slides.md are decks.
+  for (const spelling of ['.', './']) {
+    const project = scratch('decks-hook-rootdir-')
+    writeFileSync(join(project, 'decks.json'), JSON.stringify({ _config: { decksDir: spelling } }))
+    mkdirSync(join(project, 'talk'), { recursive: true })
+    writeFileSync(join(project, 'talk/slides.md'), '---\n---\n')
+    assertNotDeny(
+      write('src/components/Button.vue', '<template><p>An em — dash.</p></template>'),
+      `decksDir "${spelling}": allows src/components (no slides.md)`,
+      { project },
+    )
+    assertNotDeny(
+      write('docs/pages/intro.md', 'An em — dash.'),
+      `decksDir "${spelling}": allows docs/pages (no slides.md)`,
+      { project },
+    )
+    assertDeny(write('talk/pages/01.md', 'An em — dash.'), `decksDir "${spelling}": denies in a deck at the root`, {
+      project,
+    })
+    rmSync(project, { recursive: true, force: true })
+  }
+}
 {
   const r = assertDeny(
     write(
@@ -176,22 +271,27 @@ assertNotDeny(
 assertNotDeny(
   write('decks/my-talk/data/tides.ts', 'export const X = 1 // seamless'),
   'allows data modules (not prose)',
+  inUser,
 )
 assertNotDeny(
   write('decks/my-talk/pages/02.md', 'Normal prose.\n```\ncode with — dashes\n```\nMore prose.'),
   'allows em-dash inside a code fence',
+  inUser,
 )
 assertNotDeny(
   write('decks/my-talk/pages/02.md', 'Direct quote with — dash <!-- lint-allow: em-dash -->'),
   'allows em-dash with a lint-allow marker',
+  inUser,
 )
 assertNotDeny(
   write('decks/my-talk/pages/02.md', 'In other words, the cost is high.'),
   'allows warn-only content (colon-reveal)',
+  inUser,
 )
 assertNotDeny(
   write('decks/my-talk/slides.md', '---\ntitle: "A seamless deck"\n---\nClean prose here.'),
   'allows AI vocab in frontmatter (skipped)',
+  inUser,
 )
 assertNotDeny(
   { tool_name: 'Read', tool_input: { file_path: 'decks/x/pages/01.md' } },
@@ -216,10 +316,12 @@ assertDeny(
     STAGE.replace('High water twice a day.', 'Tides are a seamless dance.'),
   ),
   'denies a planted line in a COPY array (Write)',
+  inUser,
 )
 assertNotDeny(
   write('decks/my-talk/components/TideStage.vue', STAGE),
   'allows clean COPY, lint-allow lines and non-COPY script strings',
+  inUser,
 )
 {
   // An Edit fragment is judged against the file it lands in.
@@ -303,12 +405,51 @@ assertNotDeny(
   // decksDir spelled "./talks/" in decks.json.
   const project = scratch('decks-hook-dotdir-')
   writeFileSync(join(project, 'decks.json'), JSON.stringify({ _config: { decksDir: './talks/' } }))
+  mkdirSync(join(project, 'talks/q4'), { recursive: true })
+  writeFileSync(join(project, 'talks/q4/slides.md'), '---\n---\n')
   assertDeny(write('talks/q4/pages/01.md', 'An em — dash.'), 'denies under a ./talks/ decksDir', {
     project,
   })
   assertDeny(
     write(join(project, 'talks/q4/slides.md'), 'An em — dash.'),
     'denies under a ./talks/ decksDir (absolute path)',
+    { project },
+  )
+  writeFileSync(join(project, 'decks.json'), JSON.stringify({ _config: { decksDir: '././talks' } }))
+  assertDeny(write('talks/q4/pages/01.md', 'An em — dash.'), 'denies under a ././talks decksDir', {
+    project,
+  })
+  rmSync(project, { recursive: true, force: true })
+}
+{
+  // Edits replayed against the file: deletions, appends and exposed prose.
+  const project = scratch('decks-hook-replay-')
+  mkdirSync(join(project, 'decks/d/pages'), { recursive: true })
+  writeFileSync(join(project, 'decks/d/slides.md'), '---\n---\n')
+  const page = join(project, 'decks/d/pages/01.md')
+  const fm = '---\nlayout: full\n---\n\n'
+  writeFileSync(page, fm + "Here's the XX thing.\n")
+  assertDeny(
+    edit(page, '', 'XX '),
+    'denies an Edit with an empty new_string whose deletion leaves a banned phrase',
+    { project },
+  )
+  writeFileSync(page, fm + '<!--\nLine one.\nIt is worth noting the tide.\n-->\n')
+  assertDeny(
+    edit(page, '', '<!--\n'),
+    'denies an Edit with an empty new_string that un-comments a banned line',
+    { project },
+  )
+  writeFileSync(page, fm + 'Old — bad.\nZ\n')
+  assertNotDeny(
+    edit(page, '\nZ fine', '\nZ'),
+    'allows appending after a line that already has a hit',
+    { project },
+  )
+  writeFileSync(page, fm + 'Old — bad.\n\nGood line.\n')
+  assertNotDeny(
+    edit(page, 'Better line.\nAnother.', 'Good line.'),
+    'a hit that only moved down the file is not new',
     { project },
   )
   rmSync(project, { recursive: true, force: true })
@@ -325,6 +466,7 @@ assertNotDeny(
   }
   const r = runHook('lint', write('decks/my-talk/pages/02.md', 'Clean prose.'), {
     deck: join(copy, 'scripts/deck.mjs'),
+    project: USER,
   })
   check(
     r.rc === 2 && r.err.includes('cannot load the AI-rhetoric scanner'),
@@ -339,6 +481,7 @@ assertNotDeny(
     writeFileSync(join(copy, 'lint/ai-rhetoric-patterns.tsv'), tsv)
     const h = runHook('lint', write('decks/my-talk/pages/02.md', 'Clean prose.'), {
       deck: join(copy, 'scripts/deck.mjs'),
+      project: USER,
     })
     check(
       h.rc === 2 && h.err.includes('cannot load the AI-rhetoric scanner'),
@@ -451,6 +594,31 @@ silent('', 'silent on an empty prompt')
   rmSync(project, { recursive: true, force: true })
 }
 
+{
+  // decksDir ".": only top-level directories holding a slides.md are decks, so
+  // an uncommitted app component is not deck work in progress.
+  const project = scratch('decks-prompt-root-')
+  writeFileSync(join(project, 'decks.json'), JSON.stringify({ _config: { decksDir: '.' } }))
+  mkdirSync(join(project, 'talk/pages'), { recursive: true })
+  mkdirSync(join(project, 'src/components'), { recursive: true })
+  writeFileSync(join(project, 'talk/slides.md'), '---\nsrc: ./pages/01.md\n---\n')
+  writeFileSync(join(project, 'talk/pages/01.md'), 'One.\n')
+  writeFileSync(join(project, 'src/components/Button.vue'), '<template />\n')
+  const git = (...args) => spawnSync('git', args, { cwd: project, encoding: 'utf8' })
+  git('init', '-q')
+  git('add', '-A')
+  git('-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '-qm', 'init')
+  writeFileSync(join(project, 'src/components/Button.vue'), '<template><b /></template>\n')
+  silent(
+    'tighten this bullet',
+    'decksDir ".": a modified app component is not deck work in progress',
+    project,
+  )
+  writeFileSync(join(project, 'talk/pages/01.md'), 'One, edited.\n')
+  fires('tighten this bullet', 'decksDir ".": a modified deck page is', project)
+  rmSync(project, { recursive: true, force: true })
+}
+
 console.log('== settings.json wiring ==')
 
 const settings = JSON.parse(readFileSync(join(ROOT, '.claude/settings.json'), 'utf8'))
@@ -478,7 +646,7 @@ check(
       encoding: 'utf8',
       env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT },
     })
-  const r = sh(pre, JSON.stringify(write('decks/my-talk/pages/02.md', 'An em — dash.')))
+  const r = sh(pre, JSON.stringify(write('examples/tides/pages/99-x.md', 'An em — dash.')))
   check(
     r.status === 0 && r.stdout.includes('"deny"'),
     'the wired PreToolUse command denies a planted line',
@@ -486,7 +654,7 @@ check(
   )
   const gone = sh(
     pre.replace('deck.mjs', 'missing-deck.mjs'),
-    JSON.stringify(write('decks/my-talk/pages/02.md', 'Clean.')),
+    JSON.stringify(write('examples/tides/pages/99-x.md', 'Clean.')),
   )
   check(
     gone.status === 2,

@@ -22,7 +22,7 @@ With npm, use `npx -p slidev-addon-decks decks ...`. Then ask Claude Code for th
 - **`building-a-deck` skill** covers the whole workflow: scaffold, sourcing data, verification, build, and when a deck counts as done.
 - **`fact-checking-a-deck` skill** reruns the source behind each figure, using the query or source recorded in the deck's `data-sources.md`, and checks the data arrays, card copy and slide text against the results.
 - **Rules** in `.claude/rules/` attach by path when you edit files under your decks directory. They cover slide prose (`deck-writing.md`), layout, charts and theme (`deck-patterns.md`), story stages (`story-stage.md`), data provenance (`deck-data.md`), a catalog of AI writing patterns to avoid (`prose-patterns.md`) and your own terminology (`project-glossary.md`, which starts empty).
-- **Hooks** in `.claude/settings.json`. `decks hook lint` runs before every Edit, Write and MultiEdit and denies deck prose that matches an error-level pattern from the package's pattern list. It also checks the `COPY` arrays in story stages. If the scanner can't run, it refuses the write instead of letting it through. `decks hook prompt` adds a reminder of the writing rules when a prompt asks for deck work. Both are Node scripts, so they need no `jq` or bash; Claude Code runs the hook command through its own hook shell.
+- **Hooks** in `.claude/settings.json`. `decks hook lint` runs before every Edit, Write and MultiEdit and denies deck prose that matches an error-level pattern from the package's pattern list. It also checks the `COPY` arrays in story stages. If the scanner can't run, it refuses the write instead of letting it through. `decks hook prompt` adds a reminder of the writing rules when a prompt asks for deck work. Both are Node scripts behind `.claude/hooks/decks.sh`, a short POSIX `sh` wrapper that `init` writes, so they need no `jq` or bash.
 - **Instructions block.** A section between `<!-- decks:start -->` and `<!-- decks:end -->` in `AGENTS.md` (or `CLAUDE.md`) lists the `decks` commands for the agent. With neither file present, `init` creates `AGENTS.md` and a `CLAUDE.md` that imports it.
 - **Exemplars.** The skills point the agent at two decks inside the package to read and not edit: `node_modules/slidev-addon-decks/agent/exemplars/tides` (story) and `.../agent-experience` (conventional).
 
@@ -43,7 +43,7 @@ To keep a file as your own, delete its entry from `.claude/decks.json`.
 
 If the package isn't installed when you run `init`, it writes the agent files and the instructions block but not the hooks, prints the install command and exits 1. Install the package and re-run `init` to add the hooks; the exemplar paths in the skills resolve once it is installed.
 
-The write hook refuses every Edit and Write when its script is missing. If you uninstall the package, remove the two `decks hook` entries from `.claude/settings.json` as well.
+When the hooks are committed but the package is missing (a fresh clone before you install, or after you uninstall it), the write hook refuses writes to deck prose under your decks directory, since it can't lint them, and allows every other write. The prompt hook does nothing. If you stop using Decks, remove the two `decks.sh` entries from `.claude/settings.json`.
 
 ## Data provenance
 

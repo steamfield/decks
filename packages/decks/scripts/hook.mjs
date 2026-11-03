@@ -15,6 +15,7 @@
 import { existsSync, readFileSync, writeSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { deckNamesUnder, isDecksRepo, normalizeDir } from './project.mjs'
 
 /** Read stdin to the end. */
 async function stdinText() {
@@ -34,27 +35,15 @@ function emit(hookSpecificOutput) {
   writeSync(1, JSON.stringify({ hookSpecificOutput }) + '\n')
 }
 
-/** The project's registry, or {} when there is none or it does not parse. */
+const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+
+/** The project's registry, or {} when there is none, it does not parse, or it is not an object. */
 function readRegistry(projectDir) {
   try {
-    return JSON.parse(readFileSync(join(projectDir, 'decks.json'), 'utf8'))
+    const registry = JSON.parse(readFileSync(join(projectDir, 'decks.json'), 'utf8'))
+    return isObject(registry) ? registry : {}
   } catch {
     return {}
-  }
-}
-
-/** A decksDir as the registry spells it, without `./` or a trailing `/`; `.` for the root. */
-export function normalizeDir(dir) {
-  return dir.replace(/^(\.\/)+/, '').replace(/\/+$/, '') || '.'
-}
-
-/** True in the Decks repo itself: the addon is a workspace package, not a dependency. */
-function isDecksRepo(projectDir) {
-  try {
-    const pkg = JSON.parse(readFileSync(join(projectDir, 'packages/decks/package.json'), 'utf8'))
-    return pkg.name === 'slidev-addon-decks'
-  } catch {
-    return false
   }
 }
 
@@ -65,7 +54,7 @@ function isDecksRepo(projectDir) {
  */
 function deckRoots(registry, projectDir) {
   const roots = new Set(['decks'])
-  const dir = registry._config?.decksDir
+  const dir = isObject(registry._config) ? registry._config.decksDir : undefined
   if (typeof dir === 'string') roots.add(normalizeDir(dir))
   if (isDecksRepo(projectDir)) roots.add('examples')
   return [...roots]
@@ -75,30 +64,50 @@ function deckRoots(registry, projectDir) {
 function deckDirs(registry) {
   return Object.entries(registry)
     .filter(([alias, d]) => !alias.startsWith('_') && typeof d?.entry === 'string')
-    .map(([, d]) => dirname(d.entry).split(sep).join('/'))
+    .map(([, d]) => toPosix(dirname(d.entry)))
 }
 
+const toPosix = (p) => p.split(sep).join('/')
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const DECK_FILE = '(?:pages/.+\\.md|slides\\.md|components/.+\\.vue)'
+const UNDER_DECK = new RegExp(`^([^/]+)/(${DECK_FILE})$`)
+
+/**
+ * Where a path sits for the hooks: `{ base, rel }`, the checkout it belongs to
+ * and its `/`-separated path inside it, or null when it lies outside the
+ * project. A path under `.claude/worktrees/<name>/` belongs to that worktree,
+ * a checkout of its own.
+ */
+function locate(filePath, projectDir) {
+  const abs = isAbsolute(filePath) ? filePath : resolve(projectDir, filePath)
+  const rel = toPosix(relative(projectDir, abs))
+  if (!rel || rel === '..' || rel.startsWith('../') || isAbsolute(rel)) return null
+  const wt = /^\.claude\/worktrees\/([^/]+)\/(.+)$/.exec(rel)
+  if (wt) return { base: join(projectDir, '.claude', 'worktrees', wt[1]), rel: wt[2], worktree: true }
+  return { base: projectDir, rel }
+}
 
 /**
  * Whether a path is deck prose: slides.md, pages/*.md or components/*.vue of a
- * deck under a deck root (decks/, the registry's decksDir, examples/ in the
- * Decks repo) at any prefix, so absolute and worktree paths count, or of any
- * registered deck. Never node_modules.
+ * deck, which is a directory directly under a deck root (decks/, the
+ * registry's decksDir, examples/ in the Decks repo) holding a slides.md, or a
+ * registered deck. The path is judged relative to the project (or to the
+ * worktree under .claude/worktrees/ it sits in), so a `decks/` directory above
+ * the project brings nothing into scope. Never node_modules.
  */
 export function inScope(filePath, projectDir, registry) {
-  const path = filePath.split(sep).join('/')
-  if (/(^|\/)node_modules\//.test(path)) return false
-  const rel = (isAbsolute(filePath) ? relative(projectDir, filePath) : filePath)
-    .split(sep)
-    .join('/')
-  const roots = deckRoots(registry, projectDir)
-  const named = roots.filter((r) => r !== '.').map(escape)
-  if (named.length && new RegExp(`(?:^|/)(?:${named.join('|')})/.+?/${DECK_FILE}$`).test(path))
-    return true
-  // decksDir "." puts the decks at the project root.
-  if (roots.includes('.') && new RegExp(`^[^/.][^/]*/${DECK_FILE}$`).test(rel)) return true
+  const at = locate(filePath, projectDir)
+  if (!at) return false
+  const { base, rel } = at
+  if (/(^|\/)node_modules\//.test(rel)) return false
+  if (at.worktree) registry = readRegistry(base)
+  // A Write creating slides.md is what makes the directory a deck.
+  const isDeck = (dir) => rel === `${dir}/slides.md` || existsSync(join(base, dir, 'slides.md'))
+  for (const root of deckRoots(registry, base)) {
+    const rest = root === '.' ? rel : rel.startsWith(`${root}/`) ? rel.slice(root.length + 1) : null
+    const m = rest && UNDER_DECK.exec(rest)
+    if (m && isDeck(root === '.' ? m[1] : `${root}/${m[1]}`)) return true
+  }
   return deckDirs(registry).some((dir) => new RegExp(`^${escape(dir)}/${DECK_FILE}$`).test(rel))
 }
 
@@ -125,6 +134,7 @@ function replay(toolName, input, path) {
   } catch {
     return null
   }
+  const before = src
   let ranges = []
   const edits = toolName === 'Edit' ? [input] : (input.edits ?? [])
   for (const e of edits) {
@@ -158,14 +168,38 @@ function replay(toolName, input, path) {
     })
     src = next + src.slice(last)
   }
-  return { src, ranges }
+  return { src, ranges, before }
 }
 
-/** The 1-based line numbers of `src` the ranges cover; an empty range marks its line. */
+/**
+ * The hits to report from a replayed call: each one on a line it wrote, plus
+ * each one it exposed without writing, such as prose a deleted `<!--` line
+ * used to comment out. A hit on an untouched line is exposed when the file
+ * before the call had no hit of that pattern on that text; hits are matched
+ * by pattern and text, so one that only moved down the file is not new.
+ */
+function reportable(afterHits, beforeHits, touched) {
+  const key = (h) => `${h.id}\0${h.text}`
+  const seen = new Map()
+  for (const h of beforeHits) seen.set(key(h), (seen.get(key(h)) ?? 0) + 1)
+  return afterHits.filter((h) => {
+    if (touched(h)) return true
+    const n = seen.get(key(h)) ?? 0
+    if (n) seen.set(key(h), n - 1)
+    return !n
+  })
+}
+
+/**
+ * The 1-based line numbers of `src` the ranges cover; an empty range marks its
+ * line. A range that opens with the newline ending a line starts on the next
+ * one, so appending after a line does not count as touching it.
+ */
 function linesOf(src, ranges) {
   const lineAt = (p) => src.slice(0, p).split('\n').length
   const lines = new Set()
-  for (const [s, t] of ranges) {
+  for (let [s, t] of ranges) {
+    if (t > s && src[s] === '\n') s++
     const end = lineAt(Math.max(s, t - 1))
     for (let l = lineAt(s); l <= end; l++) lines.add(l)
   }
@@ -198,7 +232,10 @@ export async function lintHook() {
   const registry = readRegistry(projectDir)
   if (!inScope(filePath, projectDir, registry)) return
   const text = writtenText(toolName, input)
-  if (!text) return
+  // An empty Write writes no prose. An Edit with an empty new_string can still
+  // expose some (a deletion that joins a phrase, or opens a comment), so the
+  // replay below decides.
+  if (toolName === 'Write' && !text) return
 
   // Loaded only now, so a broken scanner never blocks writes outside decks.
   let scan, patterns
@@ -228,16 +265,26 @@ export async function lintHook() {
       label = relative(projectDir, absolute).split(sep).join('/')
       where = `Line numbers refer to ${label} as it will read after this edit.`
     }
-    for (const hit of scan.scanEntries(scan.proseLines(after.src), patterns, opts))
-      if (touched.has(hit.line)) lines.push(scan.formatHit(label, hit))
+    const prose = (src) => scan.scanEntries(scan.proseLines(src), patterns, opts)
+    const beforeProse = after.before === undefined ? [] : prose(after.before)
+    for (const hit of reportable(prose(after.src), beforeProse, (h) => touched.has(h.line)))
+      lines.push(scan.formatHit(label, hit))
     // Card copy lives in <script setup>, which the prose pass skips.
     if (filePath.endsWith('.vue')) {
-      const strings = scan.copyStrings(after.src).filter((s) => {
-        const last = s.line + s.raw.split('\n').length - 1
-        for (let l = s.line; l <= last; l++) if (touched.has(l)) return true
-        return false
-      })
-      for (const hit of scan.scanEntries(strings, patterns, opts))
+      const strings = scan.copyStrings(after.src)
+      // A string counts as written when the call wrote any line it spans.
+      const written = new Set(
+        strings
+          .filter((s) => {
+            const last = s.line + s.raw.split('\n').length - 1
+            for (let l = s.line; l <= last; l++) if (touched.has(l)) return true
+            return false
+          })
+          .map((s) => s.line),
+      )
+      const copy = (list) => scan.scanEntries(list, patterns, opts)
+      const beforeCopy = after.before === undefined ? [] : copy(scan.copyStrings(after.before))
+      for (const hit of reportable(copy(strings), beforeCopy, (h) => written.has(h.line)))
         lines.push(scan.formatHit(label, hit) + ' (story card COPY)')
     }
   } else {
@@ -278,7 +325,11 @@ function deckWorkInProgress(projectDir, registry) {
     encoding: 'utf8',
   })
   if (top.status !== 0) return false
-  const dirs = [...deckRoots(registry, projectDir), ...deckDirs(registry)].filter((d) =>
+  // Only real decks: a root's children holding a slides.md, and registered decks.
+  const onDisk = deckRoots(registry, projectDir).flatMap((root) =>
+    deckNamesUnder(join(projectDir, root)).map((name) => (root === '.' ? name : `${root}/${name}`)),
+  )
+  const dirs = [...new Set([...onDisk, ...deckDirs(registry)])].filter((d) =>
     existsSync(join(projectDir, d)),
   )
   if (!dirs.length) return false

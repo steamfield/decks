@@ -2,8 +2,9 @@
  * `decks init` against scratch projects: what it writes, what a re-run
  * changes, and what it must never touch.
  */
+import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -19,7 +20,10 @@ const TARGETS = [
   '.claude/rules/story-stage.md',
   '.claude/rules/prose-patterns.md',
   '.claude/rules/project-glossary.md',
+  '.claude/hooks/decks.sh',
 ]
+const LINT_CMD = 'sh "$CLAUDE_PROJECT_DIR/.claude/hooks/decks.sh" hook lint'
+const PROMPT_CMD = 'sh "$CLAUDE_PROJECT_DIR/.claude/hooks/decks.sh" hook prompt'
 
 const dirs: string[] = []
 afterEach(() => {
@@ -71,6 +75,12 @@ describe('decks init, fresh project', () => {
     expect(read(root, '.claude/rules/deck-writing.md')).toContain('"talks/*/pages/*.md"')
   })
 
+  it('normalizes a ././talks decksDir the way lint and the hook do', () => {
+    const root = project({ 'decks.json': '{ "_config": { "decksDir": "././talks/" } }\n' })
+    expect(init(root).vars.decksDir).toBe('talks')
+    expect(read(root, '.claude/skills/building-a-deck/SKILL.md')).toContain('`talks/<dir-name>/`')
+  })
+
   it('uses npx without a bun lockfile, and defaults decksDir to decks', () => {
     const root = project()
     init(root)
@@ -87,19 +97,15 @@ describe('decks init, fresh project', () => {
     for (const hash of Object.values(manifest.files)) expect(hash).toMatch(/^sha256:[0-9a-f]{64}$/)
   })
 
-  it('adds both hooks, pointing at the installed package', () => {
+  it('adds both hooks, running decks.sh, which points at the installed package', () => {
     const root = project()
     const r = init(root)
     const s = settings(root)
     expect(s.hooks.PreToolUse).toEqual([
-      {
-        matcher: 'Edit|Write|MultiEdit',
-        hooks: [
-          { type: 'command', command: 'node "$CLAUDE_PROJECT_DIR/node_modules/slidev-addon-decks/scripts/deck.mjs" hook lint || exit 2' },
-        ],
-      },
+      { matcher: 'Edit|Write|MultiEdit', hooks: [{ type: 'command', command: LINT_CMD }] },
     ])
-    expect(s.hooks.UserPromptSubmit[0].hooks[0].command).toMatch(/deck\.mjs" hook prompt$/)
+    expect(s.hooks.UserPromptSubmit[0].hooks[0].command).toBe(PROMPT_CMD)
+    expect(read(root, '.claude/hooks/decks.sh')).toContain(`cli="$CLAUDE_PROJECT_DIR"/'node_modules/slidev-addon-decks'/scripts/deck.mjs`)
     expect(r.output).toContain('+ ')
   })
 
@@ -118,6 +124,15 @@ describe('decks init, fresh project', () => {
     writeFileSync(join(root, 'node_modules/slidev-addon-decks/package.json'), '{}\n')
     expect(init(root).code).toBe(0)
     expect(settings(root).hooks.PreToolUse).toHaveLength(1)
+  })
+
+  it('warns when its hooks are in settings.json but the package is missing', () => {
+    const root = project()
+    init(root)
+    rmSync(join(root, 'node_modules'), { recursive: true })
+    const r = init(root)
+    expect(r.code).toBe(1)
+    expect(r.warnings.join('\n')).toMatch(/still has the decks hooks \(PreToolUse, UserPromptSubmit\).*writes to deck prose under decks\/ are refused/)
   })
 
   it('stops with a named error, writing nothing, when decks.json does not parse or decksDir is not a string', () => {
@@ -216,7 +231,6 @@ describe('decks init, re-run', () => {
     const manifest = JSON.parse(read(root, '.claude/decks.json'))
     manifest.files['.claude/skills/retired/SKILL.md'] = hash('retired\n')
     manifest.files['.claude/rules/old.md'] = hash('the version init wrote\n')
-    manifest.files['../outside.md'] = hash('x')
     writeFileSync(join(root, '.claude/decks.json'), JSON.stringify(manifest))
 
     const r = init(root)
@@ -236,6 +250,117 @@ describe('decks init, re-run', () => {
     expect(init(root, ['--force']).files['.claude/rules/deck-patterns.md']).toBe('collision')
     expect(read(root, '.claude/rules/deck-patterns.md')).toBe('mine\n')
     expect(JSON.parse(read(root, '.claude/decks.json')).files).not.toHaveProperty(['.claude/rules/deck-patterns.md'])
+  })
+})
+
+describe('decks init, manifest entries it must not remove', () => {
+  const hash = (text: string) => `sha256:${createHash('sha256').update(text).digest('hex')}`
+
+  /** Plant `entries` (manifest key -> file text, written where the key points) and re-run init. */
+  function plant(root: string, entries: Record<string, string>) {
+    const manifest = JSON.parse(read(root, '.claude/decks.json'))
+    for (const [key, text] of Object.entries(entries)) manifest.files[key] = hash(text)
+    writeFileSync(join(root, '.claude/decks.json'), JSON.stringify(manifest))
+    return init(root)
+  }
+
+  it.each([
+    ['../outside.md', 'outside.md'],
+    ['.claude/../x.md', 'x.md'],
+    ['.claude/rules/../../y.md', 'y.md'],
+    ['.claude/settings.json', '.claude/settings.json'],
+    ['.claude/notes.md', '.claude/notes.md'],
+  ])('keeps %s, a key outside the directories init writes, even with a matching hash', (key, file) => {
+    const root = project()
+    init(root)
+    const text = file === '.claude/settings.json' ? read(root, file) : 'mine\n'
+    if (!existsSync(join(root, file))) writeFileSync(join(root, file), text)
+    const r = plant(root, { [key]: text })
+    expect(r.code).toBe(0)
+    expect(read(root, file)).toBe(text)
+    expect(r.files[key]).toBeUndefined()
+  })
+
+  it('keeps a file reached through a symlinked directory', () => {
+    const root = project()
+    init(root)
+    const outside = mkdtempSync(join(tmpdir(), 'decks-init-outside-'))
+    dirs.push(outside)
+    writeFileSync(join(outside, 'SKILL.md'), 'theirs\n')
+    symlinkSync(outside, join(root, '.claude/skills/linked'), 'dir')
+    const r = plant(root, { '.claude/skills/linked/SKILL.md': 'theirs\n' })
+    expect(r.files['.claude/skills/linked/SKILL.md']).toBeUndefined()
+    expect(read(outside, 'SKILL.md')).toBe('theirs\n')
+  })
+
+  it('keeps a symlink, and does not follow it', () => {
+    const root = project()
+    init(root)
+    const outside = mkdtempSync(join(tmpdir(), 'decks-init-outside-'))
+    dirs.push(outside)
+    writeFileSync(join(outside, 'target.md'), 'theirs\n')
+    symlinkSync(join(outside, 'target.md'), join(root, '.claude/rules/link.md'))
+    const r = plant(root, { '.claude/rules/link.md': 'theirs\n' })
+    expect(r.files['.claude/rules/link.md']).toBeUndefined()
+    expect(existsSync(join(root, '.claude/rules/link.md'))).toBe(true)
+    expect(read(outside, 'target.md')).toBe('theirs\n')
+  })
+
+  it('skips a key that names a directory, without crashing', () => {
+    const root = project()
+    init(root)
+    mkdirSync(join(root, '.claude/skills/a-dir'), { recursive: true })
+    const r = plant(root, { '.claude/skills/a-dir': 'x' })
+    expect(r.code).toBe(0)
+    expect(existsSync(join(root, '.claude/skills/a-dir'))).toBe(true)
+  })
+})
+
+describe('decks init, the decks.sh hook wrapper', () => {
+  /** Run decks.sh the way Claude Code runs the hook command. */
+  const sh = (root: string, sub: string, payload: object) =>
+    spawnSync('sh', [join(root, '.claude/hooks/decks.sh'), 'hook', sub], {
+      input: JSON.stringify(payload),
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    })
+  const write = (root: string, path: string) => ({
+    tool_name: 'Write',
+    tool_input: { file_path: join(root, path), content: 'An em \u2014 dash.' },
+  })
+
+  // The stub package has no scripts/deck.mjs, which is the missing-package case.
+  it.each([
+    ['decks', 'decks/x/pages/01.md', 'src/index.ts'],
+    ["it's here", "it's here/x/slides.md", 'decks/x/pages/01.md'],
+    ['.', 'x/components/A.vue', 'src/index.ts'],
+  ])('without the package, decksDir %j: refuses %s, allows %s', (decksDir, deck, other) => {
+    const root = project({ 'decks.json': JSON.stringify({ _config: { decksDir } }) })
+    init(root)
+    const refused = sh(root, 'lint', write(root, deck))
+    expect(refused.status).toBe(2)
+    expect(refused.stderr).toMatch(/slidev-addon-decks is not installed; deck prose can't be linted/)
+    expect(sh(root, 'lint', write(root, other)).status).toBe(0)
+    expect(sh(root, 'lint', write(root, `node_modules/p/${deck}`)).status).toBe(0)
+    const prompt = sh(root, 'prompt', { prompt: 'write a deck' })
+    expect([prompt.status, prompt.stdout, prompt.stderr]).toEqual([0, '', ''])
+  })
+
+  it('with the package, runs its `decks hook` and exits 2 when node fails', () => {
+    const root = project({
+      'node_modules/slidev-addon-decks/scripts/deck.mjs': 'process.stdout.write(process.argv.slice(2).join(" ")); process.exit(Number(process.env.CODE ?? 0))\n',
+    })
+    init(root)
+    const ok = sh(root, 'lint', write(root, 'src/index.ts'))
+    expect([ok.status, ok.stdout]).toEqual([0, 'hook lint'])
+    const run = (code: string) =>
+      spawnSync('sh', [join(root, '.claude/hooks/decks.sh'), 'hook', 'lint'], {
+        input: '{}',
+        encoding: 'utf8',
+        env: { ...process.env, CLAUDE_PROJECT_DIR: root, CODE: code },
+      }).status
+    expect(run('1')).toBe(2)
+    expect(sh(root, 'prompt', {}).stdout).toBe('hook prompt')
   })
 })
 
@@ -270,7 +395,32 @@ describe('decks init, settings merge', () => {
     init(root)
     const pre = settings(root).hooks.PreToolUse
     expect(pre).toHaveLength(1)
-    expect(pre[0].hooks[0].command).toMatch(/^node .*deck\.mjs" hook lint \|\| exit 2$/)
+    expect(pre[0].hooks[0].command).toBe(LINT_CMD)
+  })
+
+  it('rewrites the earlier node form, `|| exit 2` and all, to decks.sh', () => {
+    const node = 'node "$CLAUDE_PROJECT_DIR/node_modules/slidev-addon-decks/scripts/deck.mjs" hook'
+    const old = {
+      hooks: {
+        PreToolUse: [{ matcher: 'Edit|Write|MultiEdit', hooks: [{ type: 'command', command: `${node} lint || exit 2` }] }],
+        UserPromptSubmit: [{ hooks: [{ type: 'command', command: `${node} prompt` }] }],
+      },
+    }
+    const root = project({ '.claude/settings.json': JSON.stringify(old) })
+    init(root)
+    expect(settings(root).hooks.PreToolUse).toEqual([
+      { matcher: 'Edit|Write|MultiEdit', hooks: [{ type: 'command', command: LINT_CMD }] },
+    ])
+    expect(settings(root).hooks.UserPromptSubmit).toEqual([{ hooks: [{ type: 'command', command: PROMPT_CMD }] }])
+  })
+
+  it('wires no hooks, and exits 1, when .claude/hooks/decks.sh is a file init did not write', () => {
+    const root = project({ '.claude/hooks/decks.sh': 'echo mine\n' })
+    const r = init(root)
+    expect(r.code).toBe(1)
+    expect(r.files['.claude/hooks/decks.sh']).toBe('collision')
+    expect(read(root, '.claude/hooks/decks.sh')).toBe('echo mine\n')
+    expect(existsSync(join(root, '.claude/settings.json'))).toBe(false)
   })
 
   it('recognizes its hooks in the workspace path form and does not add them twice', () => {

@@ -14,11 +14,15 @@
 //   overwrites edited files it owns; collisions stay untouched even then. A
 //   file an earlier version wrote and this one no longer ships is removed if
 //   unedited, kept and reported if edited. Hashes are over LF text.
-// - adds the two hooks (`decks hook lint` on Edit|Write|MultiEdit, `decks hook
-//   prompt` on UserPromptSubmit) to .claude/settings.json, never removing
-//   anything and never adding an entry twice, and prints the diff. When the
-//   package isn't installed it skips the hooks (the write hook would block every
-//   write) and exits 1 with the install command.
+// - writes .claude/hooks/decks.sh (owned the same way), a POSIX sh wrapper that
+//   runs the installed package's `decks hook`. Without the package it refuses
+//   writes to deck prose under decksDir and allows everything else, so a fresh
+//   clone or an uninstall never blocks work outside the decks.
+// - adds the two hooks (`decks.sh hook lint` on Edit|Write|MultiEdit,
+//   `decks.sh hook prompt` on UserPromptSubmit) to .claude/settings.json, never
+//   removing anything and never adding an entry twice, and prints the diff.
+//   When the package isn't installed it skips the hooks, exits 1 with the
+//   install command, and warns if hooks it added earlier are still there.
 // - writes a marked `<!-- decks:start -->` block into AGENTS.md (or CLAUDE.md
 //   when only that exists; both when both carry one), replaced in place on a
 //   re-run. With neither, it creates AGENTS.md and a CLAUDE.md that imports it.
@@ -27,15 +31,29 @@
 // anything, with exit 1; an unusable .claude/settings.json is left alone.
 
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  rmSync,
+  rmdirSync,
+  writeFileSync,
+} from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SOURCES } from './agent-sources.mjs'
+import { normalizeDir } from './project.mjs'
 
 const PACKAGE = 'slidev-addon-decks'
 const DEFAULT_PACKAGE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const START = '<!-- decks:start -->'
 const END = '<!-- decks:end -->'
+const HOOK_SCRIPT = '.claude/hooks/decks.sh'
+/** Where init writes files, so the only places a manifest entry may point. */
+const OWNED_DIRS = [...new Set(SOURCES.map((s) => `.claude/${s.split('/')[0]}/`))]
 
 const HELP = `Usage: decks init [--force]
 
@@ -78,8 +96,11 @@ function readDecksDir(rootDir) {
   const registry = readJson(file, 'decks.json')
   const dir = isObject(registry) && isObject(registry._config) ? registry._config.decksDir ?? 'decks' : 'decks'
   if (typeof dir !== 'string') throw new InitError(`decks.json: _config.decksDir must be a string, got ${JSON.stringify(dir)}.`)
-  return dir.replace(/^\.\//, '').replace(/\/+$/, '') || '.'
+  return normalizeDir(dir)
 }
+
+/** A string as one single-quoted POSIX sh word. */
+const shellQuote = (s) => `'${s.replaceAll("'", `'\\''`)}'`
 
 /** True when the nearest lockfile is bun's. */
 function usesBun(rootDir) {
@@ -127,18 +148,33 @@ export function lineDiff(before, after) {
 }
 
 /**
- * The hook entries init owns. A command is init's when it names the package or
- * runs `scripts/deck.mjs" hook <sub>` (the workspace form), plus the subcommand.
+ * The hook entries init owns. A command is init's when it runs decks.sh, names
+ * the package, or runs `scripts/deck.mjs" hook <sub>` (the workspace form),
+ * plus the subcommand. The commands run decks.sh, which handles a missing
+ * package itself (see the header).
  */
-function hookEntries(pkg) {
-  const cmd = (sub) => `node "$CLAUDE_PROJECT_DIR/${pkg}/scripts/deck.mjs" hook ${sub}`
-  const owns = (sub) => (c) => (c.includes(PACKAGE) || /scripts\/deck\.mjs"?\s/.test(c)) && new RegExp(`\\bhook ${sub}\\b`).test(c)
+function hookEntries() {
+  const cmd = (sub) => `sh "$CLAUDE_PROJECT_DIR/${HOOK_SCRIPT}" hook ${sub}`
+  const owns = (sub) => (c) =>
+    (c.includes(PACKAGE) || /scripts\/deck\.mjs"?\s/.test(c) || c.includes(HOOK_SCRIPT)) &&
+    new RegExp(`\\bhook ${sub}\\b`).test(c)
   return [
-    // `|| exit 2` keeps the write hook closed when node can't start the CLI at all
-    // (package uninstalled): Claude Code treats exit 1 as non-blocking.
-    { event: 'PreToolUse', matcher: 'Edit|Write|MultiEdit', command: `${cmd('lint')} || exit 2`, owns: owns('lint') },
+    { event: 'PreToolUse', matcher: 'Edit|Write|MultiEdit', command: cmd('lint'), owns: owns('lint') },
     { event: 'UserPromptSubmit', command: cmd('prompt'), owns: owns('prompt') },
   ]
+}
+
+/** The events of settings whose hooks include one init owns. */
+function ownHooksIn(settings) {
+  if (!isObject(settings) || !isObject(settings.hooks)) return []
+  return hookEntries()
+    .filter((e) => Array.isArray(settings.hooks[e.event]))
+    .filter((e) =>
+      settings.hooks[e.event]
+        .flatMap((g) => (Array.isArray(g?.hooks) ? g.hooks : []))
+        .some((h) => typeof h?.command === 'string' && e.owns(h.command)),
+    )
+    .map((e) => e.event)
 }
 
 /** Merge init's hooks into a settings object in place. Returns one note per hook. Throws on a settings shape it can't merge into. */
@@ -180,11 +216,23 @@ function readManifest(manifestPath) {
   return manifest
 }
 
-/** A manifest key init may act on: a path under .claude/ that stays inside it. */
+/**
+ * A manifest key init may remove: a regular file (not a symlink, not a
+ * directory) in one of the directories init writes, whose real parent
+ * directory is inside the real .claude/. Null for anything else.
+ */
 function safeTarget(rootDir, target) {
-  const base = resolve(rootDir, '.claude')
+  if (!(OWNED_DIRS.some((d) => target.startsWith(d)) || target === HOOK_SCRIPT)) return null
+  if (target.split('/').some((seg) => seg === '..' || seg === '.' || seg === '')) return null
   const file = resolve(rootDir, target)
-  return target.startsWith('.claude/') && file.startsWith(base + sep) ? file : null
+  try {
+    const base = realpathSync(join(rootDir, '.claude'))
+    const parent = realpathSync(dirname(file))
+    if (!parent.startsWith(base + sep) || !lstatSync(file).isFile()) return null
+  } catch {
+    return null
+  }
+  return file
 }
 
 /** Remove now-empty directories from dir up to (not including) .claude/. */
@@ -246,9 +294,19 @@ function install(force, rootDir, log, packageDir) {
   const lf = (text) => text.replace(/\r\n/g, '\n')
   const files = {}
   const owned = {}
-  for (const src of SOURCES) {
-    const target = `.claude/${src}`
-    const text = fill(readFileSync(join(packageDir, 'agent', 'templates', src), 'utf8'), vars, src)
+  const sources = SOURCES.map((src) => ({
+    target: `.claude/${src}`,
+    text: fill(readFileSync(join(packageDir, 'agent', 'templates', src), 'utf8'), vars, src),
+  }))
+  sources.push({
+    target: HOOK_SCRIPT,
+    text: fill(
+      readFileSync(join(packageDir, 'agent', 'hooks', 'decks.sh'), 'utf8'),
+      { pkg: shellQuote(pkg), deckGlob: decksDir === '.' ? '*' : `${shellQuote(decksDir)}/*` },
+      'hooks/decks.sh',
+    ),
+  })
+  for (const { target, text } of sources) {
     const file = join(rootDir, target)
     const recorded = manifest.files[target]
     let status
@@ -275,7 +333,7 @@ function install(force, rootDir, log, packageDir) {
   for (const [target, recorded] of Object.entries(manifest.files)) {
     if (target in files) continue
     const file = safeTarget(rootDir, target)
-    if (!file || !existsSync(file)) continue
+    if (!file) continue
     if (sha256(lf(readFileSync(file, 'utf8'))) === recorded) {
       rmSync(file)
       pruneEmpty(rootDir, dirname(file))
@@ -309,6 +367,20 @@ function install(force, rootDir, log, packageDir) {
     warnings.push(
       `${PACKAGE} is not installed in this project. Install it (${installCmd}) and re-run init to add the hooks.`,
     )
+    let present = []
+    try {
+      present = ownHooksIn(JSON.parse(readFileSync(settingsPath, 'utf8')))
+    } catch {}
+    if (present.length)
+      warnings.push(
+        `.claude/settings.json still has the decks hooks (${present.join(', ')}), but ${PACKAGE} is not installed: ` +
+          `writes to deck prose under ${decksDir === '.' ? 'the project root' : `${decksDir}/`} are refused until you install it. ` +
+          'If you stopped using Decks, remove those hooks.',
+      )
+  } else if (files[HOOK_SCRIPT] === 'collision') {
+    code = 1
+    settingsReport.notes.push(`not changed: ${HOOK_SCRIPT} is a file init did not write, and the hooks would run it.`)
+    warnings.push(`Rename or move ${HOOK_SCRIPT} and re-run init to add the hooks.`)
   } else {
     const before = existsSync(settingsPath) ? readFileSync(settingsPath, 'utf8') : ''
     try {
@@ -318,7 +390,7 @@ function install(force, rootDir, log, packageDir) {
       } catch (err) {
         throw new InitError(`.claude/settings.json does not parse (${err.message})`)
       }
-      const notes = mergeHooks(settings, hookEntries(pkg))
+      const notes = mergeHooks(settings, hookEntries())
       const after = JSON.stringify(settings, null, 2) + '\n'
       const changed = before.trim() === '' || JSON.stringify(JSON.parse(before)) !== JSON.stringify(settings)
       if (changed) writeFileSync(settingsPath, after)

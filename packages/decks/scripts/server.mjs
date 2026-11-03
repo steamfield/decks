@@ -29,6 +29,17 @@ export async function freePort(start = 3030) {
   throw new Error(`no free port in ${start}-${start + 199}`)
 }
 
+const ENTITIES = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>' }
+
+/** An HTML attribute value as text: the named entities HTML escaping writes, and numeric ones (`&#39;`, `&#039;`, `&#x27;`). */
+export function decodeEntities(text) {
+  return text.replace(/&(?:(amp|quot|apos|lt|gt)|#(\d+)|#x([0-9a-f]+));/gi, (m, name, dec, hex) => {
+    if (name) return ENTITIES[name.toLowerCase()]
+    const code = dec ? Number(dec) : parseInt(hex, 16)
+    return code <= 0x10ffff ? String.fromCodePoint(code) : m
+  })
+}
+
 async function answers(origin) {
   try {
     const res = await fetch(origin, { signal: AbortSignal.timeout(2000) })
@@ -56,15 +67,21 @@ export async function existingServer(port, entry) {
   }
   if (!/property="slidev:version"/.test(html))
     return { error: `${origin} is not a Slidev dev server (no slidev:version in its page)` }
-  const served = /property="slidev:entry"\s+content="([^"]*)"/.exec(html)?.[1]
-  // Through realpath, so a symlinked temp dir or a drive-letter case is not a mismatch.
+  const raw = /property="slidev:entry"\s+content="([^"]*)"/.exec(html)?.[1]
+  if (raw === undefined)
+    return { error: `${origin} is not a Slidev dev server for this deck (no slidev:entry in its page)` }
+  const served = decodeEntities(raw)
+  // Through realpath, so a symlinked temp dir is not a mismatch; case folds only
+  // where the file system usually ignores it.
+  const fold = process.platform === 'win32' || process.platform === 'darwin'
   const norm = (p) => {
     try {
       p = realpathSync.native(p)
     } catch {}
-    return p.replaceAll('\\', '/').toLowerCase()
+    p = p.replaceAll('\\', '/')
+    return fold ? p.toLowerCase() : p
   }
-  if (served && entry && norm(served) !== norm(entry))
+  if (entry && norm(served) !== norm(entry))
     return { error: `${origin} serves a different deck (${served}), not ${entry}` }
   return { origin }
 }

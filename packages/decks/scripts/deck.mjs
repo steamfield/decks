@@ -81,6 +81,10 @@ if (existsSync(registryPath)) {
     console.error(`${registryPath} is not valid JSON: ${err.message}`)
     process.exit(1)
   }
+  if (registry === null || typeof registry !== 'object' || Array.isArray(registry)) {
+    console.error(`${registryPath} is ${JSON.stringify(registry)}, not a JSON object of decks.`)
+    process.exit(1)
+  }
 }
 const decks = Object.fromEntries(Object.entries(registry).filter(([k]) => !k.startsWith('_')))
 const config = {
@@ -437,7 +441,7 @@ switch (cmd) {
   }
   case 'fact-extract': {
     const { factExtract } = await import('./fact-extract.mjs')
-    factExtract(rest[0])
+    factExtract(rest[0], { rootDir, registry })
     break
   }
   case 'list': {

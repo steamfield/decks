@@ -71,6 +71,7 @@ const TARGETS = [
   '.claude/rules/story-stage.md',
   '.claude/rules/prose-patterns.md',
   '.claude/rules/project-glossary.md',
+  '.claude/hooks/decks.sh',
 ]
 const REPO_ONLY = ['bun run', 'examples/', 'packages/decks', '.test.ts', 'tools/']
 // banned-phrase, severity error, in lint/ai-rhetoric-patterns.tsv.
@@ -254,7 +255,7 @@ await testCase('1 fresh init', () => {
   const manifest = readJson(main, '.claude/decks.json')
   check(
     JSON.stringify(Object.keys(manifest.files ?? {}).sort()) === JSON.stringify([...TARGETS].sort()),
-    '.claude/decks.json records exactly the nine files',
+    `.claude/decks.json records exactly the ${TARGETS.length} files`,
     JSON.stringify(Object.keys(manifest.files ?? {})),
   )
   for (const f of TARGETS) {
@@ -262,7 +263,7 @@ await testCase('1 fresh init', () => {
     rendered[f] = read(main, f)
     check(manifest.files?.[f] === sha256(rendered[f]), `${f} hash in the manifest matches the file`, manifest.files?.[f])
   }
-  check(reported(res.stdout, 'written:').length === TARGETS.length, 'report lists the nine files as written', tail(res.stdout))
+  check(reported(res.stdout, 'written:').length === TARGETS.length, `report lists the ${TARGETS.length} files as written`, tail(res.stdout))
 
   const texts = { ...rendered, 'AGENTS.md': read(main, 'AGENTS.md'), 'CLAUDE.md': read(main, 'CLAUDE.md') }
   for (const [f, text] of Object.entries(texts)) {
@@ -298,7 +299,7 @@ await testCase('2 idempotent re-run', () => {
   const after = snapshot(main)
   const changed = Object.keys({ ...before, ...after }).filter((f) => before[f] !== after[f])
   check(!changed.length, 'no file changes on disk', changed.join(', '))
-  check(reported(res.stdout, 'unchanged:').length === TARGETS.length, 'report lists the nine files as unchanged', tail(res.stdout))
+  check(reported(res.stdout, 'unchanged:').length === TARGETS.length, `report lists the ${TARGETS.length} files as unchanged`, tail(res.stdout))
   const settings = readJson(main, '.claude/settings.json')
   const lint = hookCommands(settings, 'PreToolUse').filter((c) => /hook lint/.test(c))
   const prompt = hookCommands(settings, 'UserPromptSubmit').filter((c) => /hook prompt/.test(c))
@@ -506,12 +507,36 @@ await testCase('8 hook refuses when the scanner cannot run', () => {
   renameSync(lib, `${lib}.moved`)
   try {
     const h = runHook(deckProj, 'Write', planted)
-    check(h.status === 2, 'package gone: the `|| exit 2` path blocks with exit 2', show(h))
+    check(h.status === 2, 'package gone: decks.sh refuses a deck Write with exit 2', show(h))
   } finally {
     renameSync(`${lib}.moved`, lib)
   }
   const back = runHook(deckProj, 'Write', planted)
   check(denied(back), 'with the package restored the hook denies again', show(back))
+})
+
+await testCase('8b hooks committed, node_modules absent: only deck prose is refused', () => {
+  if (!lintCmd) return check(false, 'case 7 found the hook command')
+  // A fresh clone with .claude/ committed and nothing installed yet.
+  const modules = join(deckProj, 'node_modules')
+  renameSync(modules, `${modules}.moved`)
+  try {
+    const app = runHook(deckProj, 'Write', { file_path: join(deckProj, 'src/index.ts'), content: 'export const x = 1\n' })
+    check(app.status === 0 && app.stderr === '', 'a Write to src/index.ts is allowed', show(app))
+    const page = runHook(deckProj, 'Write', { file_path: join(deckProj, 'decks/x/pages/01.md'), content: 'Two tides a day.\n' })
+    check(page.status === 2, 'a Write to decks/x/pages/01.md is refused with exit 2', show(page))
+    check(/slidev-addon-decks is not installed; deck prose can't be linted/.test(page.stderr), 'the refusal says the package is missing', show(page))
+    const promptCmd = hookCommands(readJson(deckProj, '.claude/settings.json'), 'UserPromptSubmit').find((c) => /hook prompt/.test(c))
+    const prompt = run('sh', ['-c', promptCmd ?? 'exit 9'], {
+      cwd: deckProj,
+      input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', cwd: deckProj, prompt: 'write a deck' }),
+      env: { CLAUDE_PROJECT_DIR: deckProj },
+      timeout: 30_000,
+    })
+    check(prompt.status === 0 && prompt.stdout === '' && prompt.stderr === '', 'the prompt hook exits 0 silently', show(prompt))
+  } finally {
+    renameSync(`${modules}.moved`, modules)
+  }
 })
 
 await testCase('9a decks lint, check and the missing-playwright hint', () => {
@@ -618,13 +643,18 @@ await testCase('10 hook: MultiEdit, an unreplayable Edit, a ./talks decksDir, ho
   const registry = JSON.parse(registryText)
   write(deckProj, 'decks.json', JSON.stringify({ ...registry, _config: { ...registry._config, decksDir: './talks/' } }))
   try {
-    const talks = runHook(deckProj, 'Write', {
+    const plantedTalk = {
       file_path: join(deckProj, 'talks/q3/pages/01.md'),
       content: `# A title.\n\n${PLANTED}, the moon sets the schedule.\n`,
-    })
+    }
+    const notDeck = runHook(deckProj, 'Write', plantedTalk)
+    check(notDeck.status === 0 && !denied(notDeck), 'talks/q3 without a slides.md is not a deck', show(notDeck))
+    write(deckProj, 'talks/q3/slides.md', '---\n---\n')
+    const talks = runHook(deckProj, 'Write', plantedTalk)
     check(denied(talks), 'with decksDir "./talks/" a planted talks/ page is denied', show(talks))
   } finally {
     write(deckProj, 'decks.json', registryText)
+    rmSync(join(deckProj, 'talks'), { recursive: true, force: true })
   }
 
   const promptCmd = hookCommands(readJson(deckProj, '.claude/settings.json'), 'UserPromptSubmit').find((c) =>

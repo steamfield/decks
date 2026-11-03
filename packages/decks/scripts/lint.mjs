@@ -16,6 +16,7 @@ import {
   proseLines,
   scanSource,
 } from '../lint/scan.mjs'
+import { deckNamesUnder, isDecksRepo, normalizeDir } from './project.mjs'
 
 /** A deck's lintable files: slides.md, pages/**\/*.md, components/**\/*.vue. */
 export function deckFiles(deckDir) {
@@ -82,24 +83,8 @@ const USAGE =
   'Usage: decks lint [alias|deck-dir|file ...] [--strict] [--errors-only]  |  decks lint --stdin [--errors-only]'
 const FLAGS = new Set(['--strict', '--errors-only', '--stdin'])
 
-/** True in the Decks repo itself, where the shipped decks sit in examples/. */
-function isDecksRepo(rootDir) {
-  try {
-    const pkg = JSON.parse(readFileSync(join(rootDir, 'packages/decks/package.json'), 'utf8'))
-    return pkg.name === 'slidev-addon-decks'
-  } catch {
-    return false
-  }
-}
-
 /** Absolute dirs of `<root>/*` that hold a slides.md. */
-function decksUnder(root) {
-  if (!existsSync(root)) return []
-  return readdirSync(root, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && e.name !== 'node_modules' && !e.name.startsWith('.'))
-    .map((e) => join(root, e.name))
-    .filter((dir) => existsSync(join(dir, 'slides.md')))
-}
+const decksUnder = (root) => deckNamesUnder(root).map((name) => join(root, name))
 
 /**
  * Every deck to lint when no target is given: the registered ones, plus any
@@ -107,8 +92,7 @@ function decksUnder(root) {
  * registry does not list yet. Absolute dirs, deduplicated.
  */
 export function allDeckDirs({ rootDir, decks, decksDir = 'decks' }) {
-  const dir = decksDir.replace(/^(\.\/)+/, '').replace(/\/+$/, '') || '.'
-  const roots = [resolve(rootDir, dir), ...(isDecksRepo(rootDir) ? [join(rootDir, 'examples')] : [])]
+  const roots = [resolve(rootDir, normalizeDir(decksDir)), ...(isDecksRepo(rootDir) ? [join(rootDir, 'examples')] : [])]
   return [
     ...new Set([
       ...Object.values(decks ?? {})
@@ -124,19 +108,20 @@ export function allDeckDirs({ rootDir, decks, decksDir = 'decks' }) {
  * paths; none means every deck (see allDeckDirs). `decks` maps alias ->
  * registry entry, or is null when there is no registry.
  */
-export async function lintCommand(args, { rootDir, decks, decksDir, die, noRegistry }) {
-  const unknown = args.filter((a) => a.startsWith('--') && !FLAGS.has(a))
+export async function lintCommand(args, { rootDir, decks, decksDir, die, noRegistry, log = console.log }) {
+  if (args.includes('-h') || args.includes('--help')) return log(USAGE)
+  const unknown = args.filter((a) => a.startsWith('-') && !FLAGS.has(a))
   if (unknown.length) die(`Unknown flag ${unknown.join(', ')}.\n${USAGE}`)
   const strict = args.includes('--strict')
   const errorsOnly = args.includes('--errors-only')
   const stdin = args.includes('--stdin')
-  const targets = args.filter((a) => !a.startsWith('--'))
+  const targets = args.filter((a) => !a.startsWith('-'))
   let counts
   if (stdin) {
     if (targets.length) die(`--stdin takes no targets.\n${USAGE}`)
     const chunks = []
     for await (const chunk of process.stdin) chunks.push(chunk)
-    counts = lintText(Buffer.concat(chunks).toString('utf8'), { errorsOnly })
+    counts = lintText(Buffer.concat(chunks).toString('utf8'), { errorsOnly, log })
   } else {
     const files = []
     if (!targets.length) {
@@ -154,7 +139,7 @@ export async function lintCommand(args, { rootDir, decks, decksDir, die, noRegis
       else if (existsSync(join(path, 'slides.md'))) files.push(...deckFiles(path))
       else die(`${target} is a directory with no slides.md; pass a deck directory, an alias or a file.\n${USAGE}`)
     }
-    counts = lintFiles(files, { rootDir, errorsOnly })
+    counts = lintFiles(files, { rootDir, errorsOnly, log })
   }
   if (counts.errors || (strict && counts.warns)) process.exitCode = 1
 }

@@ -18,24 +18,27 @@
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 
-// An alias registered in decks.json (read from the current directory) wins;
-// otherwise the argument is a deck directory.
-function resolveDeckDir(arg) {
-  const registry = join(process.cwd(), "decks.json");
-  if (existsSync(registry)) {
-    let parsed;
-    try {
-      parsed = JSON.parse(readFileSync(registry, "utf-8"));
-    } catch (err) {
-      console.error(`${registry} is not valid JSON: ${err.message}`);
-      process.exit(1);
-    }
-    const deck = parsed[arg];
-    if (deck && deck.entry) return dirname(join(process.cwd(), deck.entry));
-  }
+const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+
+// An alias in the registry wins; otherwise the argument is a deck directory.
+function resolveDeckDir(arg, registry, rootDir) {
+  const deck = isObject(registry) ? registry[arg] : undefined;
+  if (isObject(deck) && typeof deck.entry === "string") return dirname(join(rootDir, deck.entry));
   if (existsSync(join(arg, "slides.md"))) return arg;
   console.error(`No deck alias "${arg}" in decks.json and no slides.md under ${arg}/`);
   process.exit(1);
+}
+
+/** decks.json in rootDir, parsed; {} when there is none. Exits 1 when it does not parse. */
+function readRegistry(rootDir) {
+  const file = join(rootDir, "decks.json");
+  if (!existsSync(file)) return {};
+  try {
+    return JSON.parse(readFileSync(file, "utf-8"));
+  } catch (err) {
+    console.error(`${file} is not valid JSON: ${err.message}`);
+    process.exit(1);
+  }
 }
 
 // A number with a unit, currency, separator or decimal: the shapes a slide
@@ -242,11 +245,15 @@ function printManifest({ chartData, numericClaims, citations }) {
   }
 }
 
-/** `decks fact-extract <alias|deck-dir>`: print the manifest to stdout. */
-export function factExtract(target) {
+/**
+ * `decks fact-extract <alias|deck-dir>`: print the manifest to stdout.
+ * `registry` is decks.json as the caller already parsed it (deck.mjs); without
+ * one it is read from `rootDir`.
+ */
+export function factExtract(target, { rootDir = process.cwd(), registry = readRegistry(rootDir) } = {}) {
   if (!target) {
     console.error("Usage:\n  decks fact-extract <alias>\n  decks fact-extract <deck-dir>");
     process.exit(1);
   }
-  printManifest(processDeck(resolveDeckDir(target)));
+  printManifest(processDeck(resolveDeckDir(target, registry, rootDir)));
 }
