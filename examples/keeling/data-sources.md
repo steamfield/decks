@@ -14,7 +14,7 @@ mkdir -p /tmp/keeling-raw
 curl -sfL https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv     -o /tmp/keeling-raw/co2_mm_mlo.csv
 curl -sfL https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_annmean_mlo.csv -o /tmp/keeling-raw/co2_annmean_mlo.csv
 curl -sfL https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_gr_mlo.csv     -o /tmp/keeling-raw/co2_gr_mlo.csv
-python3 -I decks/keeling/scripts/extract.py /tmp/keeling-raw
+python3 -I examples/keeling/scripts/extract.py /tmp/keeling-raw
 ```
 
 `extract.py` writes `data/noaa.generated.ts` verbatim from the CSVs. Every derived value
