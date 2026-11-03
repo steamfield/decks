@@ -8,11 +8,14 @@
 import { ref } from 'vue'
 import { ink, useStage, type BarsHandle } from 'slidev-addon-decks/story'
 import {
+  CURRENT_ID,
   CURRENT_PPM,
   CURRENT_YEARS,
   DOMAIN,
   FIRST_DECADE,
+  FIRST_ID,
   LAST_FULL_DECADE,
+  LAST_FULL_ID,
   ROWS,
   SPEEDUP_LABEL,
 } from '../data/decades'
@@ -36,9 +39,6 @@ const COPY = [
 ]
 
 const bars = ref<BarsHandle | null>(null)
-const firstId = ROWS[0].id
-const lastFullId = ROWS[ROWS.length - 2].id
-const currentId = ROWS[ROWS.length - 1].id
 
 const { clicks, copy, beats } = useStage({
   copy: COPY,
@@ -46,10 +46,10 @@ const { clicks, copy, beats } = useStage({
     // A beat label marks the state its click lands on, so each beat's tweens sit before its label.
     bars.value?.addGrow(tl)
     beat(0)
-    bars.value?.addRecolor(tl, firstId, ink('cyan', 3))
-    bars.value?.addRecolor(tl, lastFullId, ink('cyan', 3), '<')
+    bars.value?.addRecolor(tl, FIRST_ID, ink('cyan', 3))
+    bars.value?.addRecolor(tl, LAST_FULL_ID, ink('cyan', 3), '<')
     beat(1)
-    bars.value?.addRecolor(tl, currentId, ink('amber', 3))
+    bars.value?.addRecolor(tl, CURRENT_ID, ink('amber', 3))
     beat(2)
   },
 })

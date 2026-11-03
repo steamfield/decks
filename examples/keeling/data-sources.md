@@ -17,10 +17,16 @@ curl -sfL https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_gr_mlo.csv     -o /tm
 python3 -I examples/keeling/scripts/extract.py /tmp/keeling-raw
 ```
 
-`extract.py` writes `data/noaa.generated.ts` verbatim from the CSVs. Every derived value
-(peaks, swings, decade means, halfway year) is computed in the per-slide `data/*.ts`
-modules at build time, so a refresh updates the slides without hand edits. Values below
+`extract.py` writes `data/noaa.generated.ts` verbatim from the CSVs, and exits without
+writing on an empty cell, a NOAA missing-value sentinel or a value not above zero. Every
+derived value (peaks, swings, decade means, halfway year) is computed in the per-slide
+`data/*.ts` modules, so a refresh updates the slides without hand edits. Values below
 are what the 2026-10-09 files produce.
+
+Some modules also check a claim the slide types rather than computes, and throw when it
+stops holding. `slidev build` bundles those modules without running them, so the checks
+run in `bun run test` (`packages/decks/story/data-guards.test.ts` loads every story
+deck's `data/*.ts`). Run it after every refresh.
 
 ---
 
@@ -38,7 +44,7 @@ are what the 2026-10-09 files produce.
 | First month and value | March 1958, 315.71 ppm | `FIRST` = first row |
 | Highest month and value | May 2026, 432.34 ppm | `PEAK` = max of `average` |
 | Scripps data to April 1974, NOAA after | 1974 | `NOAA_FROM`; file header: "Data from March 1958 through April 1974 have been obtained by C. David Keeling of the Scripps Institution of Oceanography" |
-| Axis ticks / gridlines | 1958, 1980, 2000, 2020; 320 to 440 ppm | geometry |
+| Axis ticks / gridlines | 1958, 1980, 2000, 2020; 320 to 440 ppm | geometry; `Y_DOMAIN` top and `GRID_PPM` are `PEAK` rounded up to the next 40 |
 
 ## Slide 3: The curve breathes once a year
 
@@ -49,6 +55,7 @@ are what the 2026-10-09 files produce.
 | Window | 2021 through 2025 | `FROM`, `TO` |
 | High months | May (2021, 2022, 2023, 2025), June (2024) → "May or June" | `HIGHS`, `HIGH_MONTHS` |
 | Low months | September (2021, 2023, 2024, 2025), October (2022) → "September or October" | `LOWS`, `LOW_MONTHS` |
+| "Highs in late spring, lows in early fall" | every high in May or June, every low in September or October | typed lead; `seasons.ts` throws if a high or low falls outside those months |
 | Yearly swing range | 4.9 to 6.1 ppm (2024: 426.91 − 422.03 = 4.88; 2025: 430.51 − 424.37 = 6.14) | `SWING_LABEL` |
 | Mechanism: plants draw CO2 down in the growing season, respiration and decay release it | mechanism | NOAA GML carbon cycle basics, https://gml.noaa.gov/education/carbon_toolkit/basics.html: "there is a clear seasonal cycle in atmospheric CO2 as plants photosynthesize during the growing season, removing large amounts of CO2. Respiration (from both plants and animals) and decomposition ... release CO2 back into the atmosphere." |
 | Site note | Dec 2022 to early July 2023 measured at Maunakea, about 21 miles north, during the Mauna Loa eruption shutdown | file header. Not on the slide; speaker context only |
@@ -67,7 +74,7 @@ are what the 2026-10-09 files produce.
 | 2010s | 2.425 → 2.42 (JS `toFixed(2)` on the float mean) | `DECADES` |
 | 2020s, partial | 2020 to 2025, 6 years, 2.5617 → 2.56 | `CURRENT_YEARS`, `CURRENT_PPM` |
 | 2010s vs 1960s | 2.425 / 0.857 = 2.83 → "2.8 times" | `SPEEDUP_LABEL` |
-| "This decade is running faster still" | 2020s 2.56 > 2010s 2.42 | the module throws at build time if the partial decade's mean is not above the last full decade's. It rests on six years, 2024 alone at 3.33; 2025 was 2.23 |
+| "This decade is running faster still" | 2020s 2.56 > 2010s 2.42 | `decades.ts` throws if the partial decade's mean is not above the last full decade's (run by `bun run test`). It rests on six years, 2024 alone at 3.33; 2025 was 2.23 |
 
 The rise is not steeper every decade: the 1990s (1.51) sit below the 1980s (1.61). The
 headline compares the record's end with the 1960s rather than claiming each decade beat the one
@@ -84,8 +91,9 @@ before it.
 | Total rise | 111.37 → "111 ppm" | `RISE_LABEL` |
 | Halfway value | 371.665 ppm | `HALF` = (315.98 + 427.35) / 2 |
 | Halfway year | 2002 (2001: 371.32, below; 2002: 373.45, above) | `HALF_YEAR`, first year with mean ≥ `HALF` |
-| Years before / after | 43 (1959 to 2002), 23 (2002 to 2025) | `YEARS_BEFORE`, `YEARS_AFTER` |
-| Every annual mean higher than the year before | true | `ALWAYS_UP`; the module throws at build time if this stops holding. Cross-check: smallest `ann inc` in `co2_gr_mlo.csv` is 0.31 (1964) |
+| Years before / after | 43 (1959 to 2002), 23 (2002 to 2025) | `YEARS_BEFORE`, `YEARS_AFTER`; the on-slide headline reads `YEARS_AFTER`, and `halfway.ts` throws if it is not the 23 typed in the `slides.md` title |
+| Every annual mean higher than the year before | true | `ALWAYS_UP`, cross-checked by `MIN_GROWTH`: smallest `ann inc` in `co2_gr_mlo.csv`, 0.31 (1964). `halfway.ts` throws if either stops holding (run by `bun run test`) |
+| Axis range | 300 to 440 ppm | `Y_DOMAIN`, top = `LAST.y` rounded up to the next 40 |
 
 ---
 

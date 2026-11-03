@@ -5,10 +5,9 @@
  */
 import { reactive, ref } from 'vue'
 import { DUR, ink, useStage, xScale, yScale, type LineHandle, type RuleHandle } from 'slidev-addon-decks/story'
-import { FIRST, HALF, HALF_YEAR, LAST, RISE_LABEL, SERIES, YEARS_AFTER, YEARS_BEFORE } from '../data/halfway'
+import { FIRST, HALF, HALF_YEAR, LAST, RISE_LABEL, SERIES, Y_DOMAIN, YEARS_AFTER, YEARS_BEFORE } from '../data/halfway'
 
 const X_DOMAIN: [number, number] = [FIRST.x, LAST.x]
-const Y_DOMAIN: [number, number] = [300, 440]
 const X_RANGE: [number, number] = [260, 1660]
 const Y_RANGE: [number, number] = [620, 230]
 const sx = xScale(X_DOMAIN, X_RANGE)

@@ -5,17 +5,16 @@
  */
 import { reactive, ref } from 'vue'
 import { DUR, useStage, xScale, yScale, type LineHandle, type RuleHandle } from 'slidev-addon-decks/story'
-import { FIRST, FIRST_LABEL, LAST, NOAA_FROM, PEAK, PEAK_LABEL, SERIES } from '../data/record'
+import { FIRST, FIRST_LABEL, GRID_PPM, LAST, NOAA_FROM, PEAK, PEAK_LABEL, SERIES, Y_DOMAIN } from '../data/record'
 
 const X_DOMAIN: [number, number] = [Math.floor(FIRST.x), Math.ceil(LAST.x)]
-const Y_DOMAIN: [number, number] = [300, 440]
 const X_RANGE: [number, number] = [260, 1660]
 const Y_RANGE: [number, number] = [620, 230]
 const sx = xScale(X_DOMAIN, X_RANGE)
 const sy = yScale(Y_DOMAIN, Y_RANGE)
 
 const TICKS = [FIRST.year, 1980, 2000, 2020].map((y) => ({ x: sx(y), text: String(y) }))
-const GRID = [320, 360, 400, 440].map((v) => ({ y: sy(v), text: `${v} ppm` }))
+const GRID = GRID_PPM.map((v) => ({ y: sy(v), text: `${v} ppm` }))
 
 const COPY = [
   {

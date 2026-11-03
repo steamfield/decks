@@ -39,3 +39,17 @@ const monthSet = (rs: { month: number }[]) =>
 /** The month(s) each year's high and low fell in, for the card. */
 export const HIGH_MONTHS = monthSet(HIGHS)
 export const LOW_MONTHS = monthSet(LOWS)
+
+/**
+ * The second card's lead is typed: "Highs in late spring, lows in early fall."
+ * It holds while every high lands in May or June and every low in September or
+ * October. `bun run test` loads this module (data-guards.test.ts), so a refresh
+ * that breaks the pattern fails the test run.
+ */
+const off = [
+  ...HIGHS.filter((r) => r.month !== 5 && r.month !== 6).map((r) => `${r.year} high in ${MONTHS[r.month - 1]}`),
+  ...LOWS.filter((r) => r.month !== 9 && r.month !== 10).map((r) => `${r.year} low in ${MONTHS[r.month - 1]}`),
+]
+if (off.length > 0) {
+  throw new Error(`seasons.ts: ${off.join(', ')}; the Slide 3 card says highs in late spring, lows in early fall`)
+}
