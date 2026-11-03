@@ -1,5 +1,6 @@
 ---
 import { Font } from "astro:assets";
+import Logo from "../components/Logo.astro";
 import { site } from "../config";
 import { landingCss } from "../lib/tokens";
 import "../styles/global.css";
@@ -41,7 +42,10 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
     {markdown && <link rel="alternate" type="text/markdown" href={markdown} />}
@@ -99,7 +103,8 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
         <div data-header-sentinel aria-hidden="true" class="h-px" />
         <header class="landing-header" data-landing-header>
           <div class="page-column landing-nav">
-            <a href="/" class="text-ink flex items-center no-underline">
+            <a href="/" class="text-ink flex items-center gap-2 no-underline">
+              <Logo />
               <span class="text-lg font-semibold tracking-tight">{site.name}</span>
             </a>
             {site.version && <span class="version-chip">v{site.version}</span>}
@@ -121,7 +126,8 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
     ) : (
       <header class="border-line border-b">
         <div class="mx-auto flex h-14 max-w-[1200px] items-center gap-4 px-4 sm:px-8">
-          <a href="/" class="text-ink flex items-baseline gap-2 no-underline">
+          <a href="/" class="text-ink flex items-center gap-2 no-underline">
+            <Logo />
             <span class="text-lg font-semibold tracking-tight">{site.name}</span>
             <span class="text-muted hidden font-mono text-xs sm:inline">{site.packageName}</span>
           </a>

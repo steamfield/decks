@@ -5,6 +5,7 @@
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import sharp from "sharp";
+import { MARK, markColors } from "./brand";
 import { landingTokens } from "./tokens";
 
 export type Card = { title: string; description: string; siteName: string };
@@ -20,6 +21,24 @@ export function clip(value: string, max: number): string {
   if (value.length <= max) return value;
   const cut = value.slice(0, max - 1);
   return `${cut.slice(0, cut.lastIndexOf(" ") > 0 ? cut.lastIndexOf(" ") : cut.length)}…`;
+}
+
+/** The Decks mark beside the site name, drawn as vector shapes (not an image) in the header's colors. */
+function mark(): Node {
+  const { back, front } = markColors();
+  return {
+    type: "svg",
+    props: {
+      width: 32,
+      height: 32,
+      viewBox: "0 0 32 32",
+      style: { marginRight: 12 },
+      children: [
+        { type: "path", props: { d: MARK.back, fill: back } },
+        { type: "rect", props: { ...MARK.front, fill: front } },
+      ],
+    },
+  };
 }
 
 /** The still: 560x315 at the card's lower right, framed like the player's deck. */
@@ -43,7 +62,16 @@ export function ogCard({ title, description, siteName }: Card, still: string | n
     },
     [
       div({ display: "flex", flexDirection: "column", width: 1088 }, [
-        div({ display: "flex", fontSize: 22, color: color.muted, marginBottom: 16 }, siteName),
+        div(
+          {
+            display: "flex",
+            alignItems: "center",
+            fontSize: 22,
+            color: color.muted,
+            marginBottom: 16,
+          },
+          [mark(), siteName],
+        ),
         div(
           { display: "flex", fontSize: 54, fontWeight: 700, lineHeight: 1.12, letterSpacing: -1 },
           clip(title, 72),

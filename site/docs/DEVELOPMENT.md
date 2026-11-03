@@ -9,7 +9,8 @@
 | `src/lib/docs.ts` | Pure docs rules: sidebar order, pager, URLs, the Markdown export and both llms files |
 | `src/lib/collection.ts` | The only `astro:content` import outside routes |
 | `src/lib/markdown.ts` | Docs Markdown conventions as Sätteri hast plugins plus one Shiki transformer |
-| `src/lib/og.ts` | The social card layout (page title over the hero deck's poster) and its fonts |
+| `src/lib/og.ts` | The social card layout (the mark and site name, page title over the hero deck's poster) and its fonts |
+| `src/lib/brand.ts` | The Decks mark's geometry and colors (cyan and violet ramp steps from the product theme), its SVG and PNG renders and the ICO packer; `src/pages/favicon.svg.ts`, `favicon.ico.ts`, `apple-touch-icon.png.ts`, `icon-[size].png.ts` and `site.webmanifest.ts` serve them, so no icon is a committed binary. Change the mark there |
 | `src/components/landing/` | Landing sections (static React) and the two islands, `DeckPlayer` and `InstallTabs` |
 | `src/data/` | `examples.json` (the example registry), build-time loaders for the examples, the recorded fixtures and the scaffolded file tree |
 | `src/lib/player/` | The embed contract, caption and counter formatting, and the example types (`stateAt`, `markAt`, `draftLine`) |

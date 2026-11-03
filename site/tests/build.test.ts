@@ -169,6 +169,30 @@ describe("the whole site", () => {
     expect(readFileSync("dist/og/index.png").subarray(1, 4).toString()).toBe("PNG");
   });
 
+  it("links the brand icons every page needs, all built from the mark", () => {
+    for (const file of ["index.html", pagePath(sourceDocs()[0]?.id ?? "")]) {
+      const head = page("dist", file).head;
+      const links = [
+        ...head.querySelectorAll("link[rel=icon], link[rel=apple-touch-icon], link[rel=manifest]"),
+      ].map((link) => link.getAttribute("href"));
+      expect(links, file).toEqual([
+        "/favicon.ico",
+        "/favicon.svg",
+        "/apple-touch-icon.png",
+        "/site.webmanifest",
+      ]);
+      // The header shows the mark beside the name.
+      expect(page("dist", file).querySelector("header a[href='/'] svg path"), file).not.toBeNull();
+    }
+    expect(read("dist", "favicon.svg")).toMatch(/^<svg[^>]+viewBox="0 0 32 32"/);
+    expect(readFileSync("dist/favicon.ico").readUInt16LE(2)).toBe(1);
+    const manifest = JSON.parse(read("dist", "site.webmanifest"));
+    expect(manifest.short_name).toBe(site.name);
+    for (const { src } of [{ src: "/apple-touch-icon.png" }, ...manifest.icons]) {
+      expect(readFileSync(join("dist", src)).subarray(1, 4).toString(), src).toBe("PNG");
+    }
+  });
+
   it("shows only real product output as images (R3)", () => {
     const home = page("dist", "index.html");
     const sources = [

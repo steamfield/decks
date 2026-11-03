@@ -1,0 +1,21 @@
+---
+// The Decks mark, inlined so it needs no request. Decorative: the brand name
+// sits beside it as text.
+import { markColors, markShapes } from "../lib/brand";
+
+interface Props {
+  size?: number;
+}
+const { size = 22 } = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 32 32"
+  width={size}
+  height={size}
+  aria-hidden="true"
+  focusable="false"
+  class="shrink-0"
+  set:html={markShapes(markColors())}
+/>

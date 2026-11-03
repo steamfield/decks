@@ -21,13 +21,16 @@ describe("social cards", () => {
     const svg = await satori(card as never, { width: 1200, height: 630, fonts: await ogFonts() });
     expect(svg).toMatch(/^<svg[^>]+width="1200"[^>]+height="630"/);
     expect(svg).toContain("<path");
-    expect(svg).toContain("<image");
+    // The still is the one PNG; the Decks mark beside the site name is SVG.
+    expect(svg.match(/href="data:image\/png/g)).toHaveLength(1);
+    expect(svg).toContain("data:image/svg+xml");
     expect(svg).toContain(landingTokens().canvas);
   });
 
   it("renders without a still", async () => {
     const card = ogCard({ title: "T", description: "D", siteName: "S" }, null);
     const svg = await satori(card as never, { width: 1200, height: 630, fonts: await ogFonts() });
-    expect(svg).not.toContain("<image");
+    expect(svg).not.toContain("data:image/png");
+    expect(svg).toContain("data:image/svg+xml");
   });
 });
