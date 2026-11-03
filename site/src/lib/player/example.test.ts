@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { draftLine, markAt, posterSrcset, stateAt } from "./example";
+import { draftLine, firstStorySlide, markAt, posterSrcset, stateAt } from "./example";
 
 const states = [
   { slide: 1, beat: 0, beats: 0, lead: "", body: "" },
@@ -49,7 +49,7 @@ describe("the draft line", () => {
     minutes: "8.3",
     cost: "$3.17",
   };
-  const edits = { files: 6, insertions: 49, deletions: 11, pairs: [] };
+  const edits = { by: "hand" as const, files: 6, insertions: 49, deletions: 11, pairs: [] };
 
   it("names the setup the run used and the size of the hand edit", () => {
     expect(draftLine(run, edits)).toBe(
@@ -58,5 +58,18 @@ describe("the draft line", () => {
     expect(draftLine({ ...run, setup: "init" }, null)).toBe(
       "Drafted in 8 minutes from this prompt in a fresh project set up with decks init.",
     );
+  });
+
+  it("says when a second Claude Code session made the edit", () => {
+    expect(draftLine({ ...run, setup: "init" }, { ...edits, by: "claude" })).toBe(
+      "Drafted in 8 minutes from this prompt in a fresh project set up with decks init, then fact-checked and edited in a second Claude Code session (+49/−11 in 6 files).",
+    );
+  });
+});
+
+describe("the first story slide", () => {
+  it("is the first slide with a caption, else the start slide", () => {
+    expect(firstStorySlide({ states, startSlide: 5 })).toBe(2);
+    expect(firstStorySlide({ states: [], startSlide: 5 })).toBe(5);
   });
 });

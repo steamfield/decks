@@ -13,6 +13,8 @@
 //
 // A loop is the deck in the player's frame from its start step: three steps
 // forward, then three back, so it shows the stepped build and the reverse replay
+// (three back, then three forward when the start is fewer than three steps from
+// the end of the deck)
 // and ends where it began. It is written to public/loops/<name>.{webm,mp4}, and
 // fixtures/examples/<name>.loop.json holds the step shown at each time so the
 // caption under the video can follow it. Needs ffmpeg on PATH.
@@ -37,7 +39,8 @@ const { examples: ENTRIES } = JSON.parse(
   readFileSync(join(site, "src/data/examples.json"), "utf8"),
 );
 const NAMES = ENTRIES.map((entry) => entry.name);
-const startBeatOf = (name) => ENTRIES.find((entry) => entry.name === name)?.startBeat ?? 0;
+const entryOf = (name) => ENTRIES.find((entry) => entry.name === name);
+const startBeatOf = (name) => entryOf(name)?.startBeat ?? 0;
 /** The loop's frame size, its dwell on each step, and the steps it takes. */
 const LOOP = {
   width: 960,
@@ -226,7 +229,7 @@ async function record(page, port, name) {
     state = await step({ type: "decks:cmd", cmd: "next" });
   }
   const story = states.find((s) => s.lead);
-  const startSlide = story?.slide ?? 1;
+  const startSlide = entryOf(name)?.startSlide ?? story?.slide ?? 1;
   const startBeat = startBeatOf(name);
   if (!states.some((s) => s.slide === startSlide && s.beat === startBeat))
     throw new Error(`${name}: no step ${startBeat + 1} on start slide ${startSlide}`);
@@ -265,10 +268,14 @@ async function poster(page, port, name, { startSlide, startBeat }) {
 
 /**
  * The hero loop: the deck at the loop's frame size, from its start step through
- * LOOP.steps, filmed by Playwright and re-encoded by ffmpeg to small WebM (VP9)
+ * LOOP.steps (reversed when the start is too near the end), filmed by Playwright and re-encoded by ffmpeg to small WebM (VP9)
  * and MP4 (H.264) files. Each mark is the time a step began, from the trim point.
  */
-async function loopVideo(browser, port, name, { startSlide, startBeat }) {
+async function loopVideo(browser, port, name, { startSlide, startBeat, states }) {
+  const at = states.findIndex((s) => s.slide === startSlide && s.beat === startBeat);
+  const ahead = states.length - 1 - at;
+  const forward = LOOP.steps.filter((cmd) => cmd === "next").length;
+  const steps = ahead >= forward ? LOOP.steps : LOOP.steps.toReversed();
   const raw = join(work, "loops", name);
   rmSync(raw, { recursive: true, force: true });
   const size = { width: LOOP.width, height: LOOP.height };
@@ -301,7 +308,7 @@ async function loopVideo(browser, port, name, { startSlide, startBeat }) {
   const trim = now();
   const marks = [{ t: 0, slide: startSlide, beat: startBeat }];
   await page.waitForTimeout(LOOP.dwellMs);
-  for (const cmd of LOOP.steps) {
+  for (const cmd of steps) {
     const before = await settledCount();
     const t = Number((now() - trim).toFixed(2));
     await page.evaluate((m) => window.send(m), { type: "decks:cmd", cmd });

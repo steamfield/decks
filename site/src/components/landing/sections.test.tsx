@@ -22,6 +22,7 @@ const run: AgentRun = {
   durationMs: 495_917,
   costUsd: 3.1690836,
   toolCalls: 85,
+  shownCalls: 3,
   steps: [
     { calls: ["Skill(building-a-deck)"], note: "Loads the workflow.", output: "Launching skill" },
     { calls: ["Read(a.md)", "Read(b.md)"], note: "", output: "" },

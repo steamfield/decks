@@ -1,0 +1,19 @@
+{
+  "from": "3f8f992",
+  "to": "60dcbfd",
+  "files": 10,
+  "insertions": 30,
+  "deletions": 18,
+  "pairs": [
+    {
+      "file": "components/DecadeStage.vue",
+      "before": "How much carbon dioxide rose each year.",
+      "after": "Each bar is a decade's average yearly rise."
+    },
+    {
+      "file": "components/HalfwayStage.vue",
+      "before": "No year has come in lower.",
+      "after": "Every year beat the one before."
+    }
+  ]
+}

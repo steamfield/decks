@@ -3,30 +3,34 @@
 // files generated from the decks themselves:
 //   fixtures/examples/<name>.json        `make demo`: title, slide titles, every step's caption
 //   fixtures/examples/<name>.loop.json   `make demo`: the step the hero loop shows at each time
-//   fixtures/examples/<name>.edits.json  scripts/edits.mjs: the hand edit after the agent's draft
-//   fixtures/<run>.json                  scripts/excerpt-smoke.mjs: the recorded agent run
+//   fixtures/examples/<name>.edits.json  scripts/edits.mjs: the edit after the agent's draft
+//   fixtures/<run>.json                  scripts/excerpt-run.mjs: the recorded agent run
 //   public/posters/, public/loops/       `make demo`: images and video
 // Swapping the hero is adding an entry at the top of examples.json plus its fixtures.
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type {
-  Edits,
-  Example,
-  ExampleState,
-  Loop,
-  LoopMark,
-  Provenance,
-  ProvenanceKind,
-  RunSummary,
+import {
+  type Editor,
+  type Edits,
+  type Example,
+  type ExampleState,
+  editedBy,
+  editSize,
+  type Loop,
+  type LoopMark,
+  type Provenance,
+  type ProvenanceKind,
+  type RunSummary,
 } from "../lib/player/example";
 import { loadRun, runFigures } from "./fixtures";
 
 export type ExampleEntry = {
   name: string;
+  startSlide?: number;
   startBeat?: number;
   provenance: ProvenanceKind;
   run?: { fixture: string; setup: "repo" | "init" };
-  edits?: { from: string; to: string };
+  edits?: { from: string; to: string; by: Editor };
   loop?: boolean;
 };
 
@@ -60,7 +64,10 @@ export const editsPath = (name: string) => join(site, "fixtures/examples", `${na
 
 export const entryFor = (name: string) => ENTRIES.find((entry) => entry.name === name);
 
-/** The 0-based step the poster, the loop and the live deck start on. */
+/** The 1-based slide the poster, the loop and the live deck start on; the first story slide when unset. */
+export const startSlideOf = (name: string) => entryFor(name)?.startSlide;
+
+/** The 0-based step on the start slide the poster, the loop and the live deck start on. */
 export const startBeatOf = (name: string) => entryFor(name)?.startBeat ?? 0;
 
 /** The deck's headmatter title, used until `make demo` has recorded the deck. */
@@ -69,12 +76,15 @@ function headmatterTitle(name: string): string {
   return /^title:\s*["']?(.+?)["']?\s*$/m.exec(slides)?.[1] ?? name;
 }
 
-export function provenanceOf(entry: ExampleEntry): Provenance {
+/** How the deck was made; an agent deck's label ends with the edit's size from git. */
+export function provenanceOf(entry: ExampleEntry, edits: Edits | null = null): Provenance {
+  const where =
+    entry.run?.setup === "init"
+      ? "in a fresh project with decks init"
+      : "with this repository's agent setup";
+  const size = edits ? ` (${editSize(edits)})` : "";
   const labels: Record<ProvenanceKind, string> = {
-    agent:
-      entry.run?.setup === "init"
-        ? "Drafted by Claude Code in a fresh project with decks init, then edited by hand"
-        : "Drafted by Claude Code with this repository's agent setup, then edited by hand",
+    agent: `Drafted by Claude Code ${where}, then ${editedBy(entry.edits?.by ?? "hand")}${size}`,
     talk: "From the talks Decks was extracted from",
     template: "Template deck",
     hand: "Built by hand",
@@ -104,15 +114,18 @@ function loadRunSummary(entry: ExampleEntry): RunSummary | null {
   return { prompt: run.prompt, setup: entry.run.setup, ...runFigures(run) };
 }
 
-export function loadEdits(name: string): Edits | null {
+/** The edits fixture as scripts/edits.mjs wrote it (without `by`, which the registry holds). */
+export function loadEdits(name: string): Omit<Edits, "by"> | null {
   const path = editsPath(name);
-  return existsSync(path) ? (readJson(path) as Edits) : null;
+  return existsSync(path) ? (readJson(path) as Omit<Edits, "by">) : null;
 }
 
 export function loadExample(entry: ExampleEntry): Example {
   const { name } = entry;
   const recording = loadRecording(name);
   const hasPoster = existsSync(join(site, "public/posters", `${name}-1280.avif`));
+  const fixture = entry.edits ? loadEdits(name) : null;
+  const edits = fixture && entry.edits ? { ...fixture, by: entry.edits.by } : null;
   return {
     name,
     title: recording?.title || headmatterTitle(name),
@@ -122,11 +135,11 @@ export function loadExample(entry: ExampleEntry): Example {
     startSlide: recording?.startSlide ?? 1,
     startBeat: recording?.startBeat ?? 0,
     states: recording?.states ?? [],
-    provenance: provenanceOf(entry),
+    provenance: provenanceOf(entry, edits),
     poster: hasPoster ? { base: `/posters/${name}`, width: 1280, height: 720 } : null,
     loop: entry.loop ? loadLoop(name) : null,
     run: loadRunSummary(entry),
-    edits: entry.edits ? loadEdits(name) : null,
+    edits,
   };
 }
 

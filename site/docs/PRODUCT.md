@@ -10,7 +10,7 @@ A one-page site plus docs for Decks at `site/` in this repo, scaffolded with `st
 
 - **Who:** a developer or technical speaker who gives data-heavy talks, uses Claude Code, and may already use Slidev. Secondary reader: the agent itself, via `llms.txt` and the docs.
 - **What:** agents asked for decks produce generic prose and unsourced numbers, and Slidev's `v-click` makes a chart that builds in steps and rewinds cleanly a hand job every time. Decks gives the agent a setup (`decks init`: an agent, skills, rules, a prose-lint hook) and the components.
-- **Evidence:** the talks Decks was extracted from; the recorded run `smoke-1.jsonl` (87 turns, 8.3 minutes, $3.17) that drafted the tides deck with NOAA, USNO and NASA sources.
+- **Evidence:** the talks Decks was extracted from; the recorded run `keeling-run.jsonl` (47 turns, 16.8 minutes, $2.61) that drafted the Keeling-curve deck from NOAA Mauna Loa data in a fresh `decks init` project; and the earlier run `smoke-1.jsonl` (87 turns, 8.3 minutes, $3.17) that drafted the tides deck with this repository's own setup.
 
 ## Job to be done
 
@@ -32,14 +32,14 @@ The strings live in `src/config.ts`, `src/pages/index.astro`, `sections.tsx` and
 1. **Hero.**
    - Header row: H1 "Slide decks about data, written with Claude Code" and the lede on the left; on the right, the three install lines with one copy button and "Free, Apache-2.0".
    - Player title bar: the run's prompt as a terminal line and "Claude Code · N min · N turns · $N"; for an example with no run, its title and provenance.
-   - Frame: sized by viewport height so the whole player fits (R1). Before interaction it shows a muted loop from the real deck (three steps forward, three back) when motion is allowed, else the poster. The first interaction boots the live deck in an inert iframe at the step the loop was showing.
+   - Frame: sized by viewport height so the whole player fits (R1). Before interaction it shows a muted loop from the real deck (three steps forward and three back, or back first when the start step is near the end) when motion is allowed, else the poster. The first interaction boots the live deck in an inert iframe at the step the loop was showing.
    - Caption bar: the current step's lead and body as page text (R2), controls (slide back, step back, play/pause, step forward, slide forward, full screen), step pips, the `slide · step/steps` counter and "Open the deck". The player takes focus and handles the arrow keys.
    - Phones (under 768px): the same parts stacked, 44px controls, "Open the deck (best in landscape)".
-   - Under the player: "Drafted in N minutes from this prompt …, then edited by hand (+A/−B in C files)." and up to two before/after caption lines from the hand edit, from git.
+   - Under the player: "Drafted in N minutes from this prompt …, then fact-checked and edited in a second Claude Code session (+A/−B in C files)." (or "then edited by hand" for a hand edit) and up to two before/after caption lines from the edit, from git.
 2. **Requirements and limits:** Claude Code, Slidev with `slidev-theme-the-unnamed` and dark slides, Node 20.19+ or 22.12+, PDF export only, OpenChart at its release candidate. The only place the page lists them.
 3. **What you get:** the real file tree after `decks init` and `decks new my-talk --story`, generated at build time by running both in a temp directory, each file annotated in a few words. Then one line on iterating, with `decks dev`.
 4. **How the agent builds a deck:** the recorded run's transcript, static and abbreviated, and the hook panel: a planted line, the hook's real denial from a scratch `decks init` project, and a plain note that it was a test write.
-5. **Example decks:** 16:9 thumbnails with provenance ("Drafted by Claude Code …, then edited by hand", "From the talks Decks was extracted from", "Template deck"). Picking one loads it into the hero player and scrolls there. Then the v-click comparison.
+5. **Example decks:** 16:9 thumbnails with provenance ("Drafted by Claude Code …, then edited by hand (+A/−B in C files)", "From the talks Decks was extracted from", "Template deck"). Picking one loads it into the hero player and scrolls there. Then the v-click comparison.
 6. **Themes:** the same slide under the default theme and under `demo/warm-theme.json`, with that file.
 7. **Install:** bun, npm and pnpm tabs, each with the install line, `-p slidev-addon-decks decks init` and `decks new`; then the cost line from the run.
 8. **Footer.**
@@ -91,13 +91,22 @@ The content-drift test checks every command shown (hero, install tabs, the dev l
 
 ## Open items
 
-- **The hero deck.** Tides is a placeholder. The final hero is the Keeling-curve story deck from the RFC's Phase 2, drafted in a fresh `decks init` project. Swapping it in: add the deck to `examples/`, put its entry first in `examples.json` with `run.setup: "init"`, its run fixture, `edits` commits and `loop: true`, then `make demo` and `node scripts/edits.mjs`. With `setup: "init"` the content-drift test requires every `decks` command in the transcript to be the pinned package form.
 - **R5 user test:** five people who use Claude Code or Cursor; a release gate.
 - **Launch:** the GitHub links 404 and the install lines fail until the repo is public and the package is on npm.
 
+## The hero deck
+
+The hero is `examples/keeling`, the Keeling-curve story deck from the RFC's Phase 2, and tides moved to the gallery.
+
+- **The run.** A scratch project with only `bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed` and `bunx -p slidev-addon-decks decks init`, committed before the run; then `claude -p "make a 5-slide story deck about what the Keeling curve shows about atmospheric CO2" --output-format stream-json`: 47 turns, 16.8 minutes, $2.61. `scripts/excerpt-run.mjs keeling-1` turns the log into `fixtures/keeling-1.json`; the log itself stays outside the repo, as `smoke-1.jsonl` does.
+- **Not a stranger's clean machine.** The project had nothing but `bun add` and `decks init`, but the machine also had the user's global `~/.claude/CLAUDE.md`, which Claude Code loads in every project. That is visible in the run: the agent called `on-port` and `wait-for`, helpers that file names. A visitor's results will differ by whatever their own global setup adds.
+- **Commits.** The raw agent output (6a5b4b1), the plumbing (3f8f992: `decks.json`, `routerMode: hash`, `test:embed`), and the edit (60dcbfd), each on its own so the edit's diff stands alone. `edits` in `examples.json` diffs 3f8f992..60dcbfd.
+- **The edit** was made by a second Claude Code session after a fact-check that re-downloaded the NOAA files and matched all 23 figures. It fixed the six copy issues the fact-check raised, replaced slide 4's "The climb is getting steeper" (the 1990s mean is below the 1980s) with a comparison against the 1960s, added a build-time check that the 2020s mean stays above the 2010s (the "faster still" card rests on six years), and moved the byline from the user's name to Claude Code. The page labels it "fact-checked and edited in a second Claude Code session", never "by hand".
+- **Start frame:** slide 5, step 2 (`startSlide: 5`, `startBeat: 1`): the headline, the halfway rule at 2002, the chip and the card all say the same thing. The loop runs back three steps into slide 4 and forward again, since slide 5 has only one step after the start. From the end of the deck, Play starts over at the first story slide.
+
 ## Measurements
 
-Production build (`astro preview`), 2026-11-02, 1440x900, before interaction, with the tides loop playing: 312 KB (text gzipped). Loop 128 KB (WebM), fonts 69 KB, scripts about 76 KB (React client 66 KB), HTML 17 KB, poster 13 KB, CSS 8 KB. Re-measure after any change to fonts, the poster, the loop or the hero; the e2e weight test fails above 350 KB.
+Production build (`astro preview`), 2026-11-02, 1440x900, before interaction, with the keeling loop playing: 309 KB (text gzipped). Loop 127 KB (WebM), fonts 68 KB, the React client 64 KB, HTML 18 KB, poster 13 KB, CSS 8 KB. Re-measure after any change to fonts, the poster, the loop or the hero; the e2e weight test fails above 350 KB.
 
 ## History
 

@@ -123,9 +123,17 @@ test.describe("without JavaScript", () => {
 });
 
 // The player against a stand-in deck that speaks the embed contract (e2e/fixtures/stub-deck.html),
-// so these tests don't depend on `make demo` having built the real decks. The stub has three
-// slides; slide 2 has three steps, like the hero's start slide.
+// so these tests don't depend on `make demo` having built the real decks. The stub has six
+// slides: a cover, story slides 2 to 5 with three steps each (the hero starts on one of
+// them) and a closing slide without a card.
 const stub = readFileSync("e2e/fixtures/stub-deck.html", "utf8");
+const STUB_SLIDES = 6;
+const STUB_LEADS = ["First beat lead.", "Second beat lead.", "Third beat lead."];
+/** The live announcement for a step on one of the stub's story slides. */
+const stubStep = (slide: number, beat: number) =>
+  `Slide ${slide} of ${STUB_SLIDES}, step ${beat + 1} of 3. ${STUB_LEADS[beat]}`;
+const startSlide = hero?.startSlide ?? 2;
+const startBeat = hero?.startBeat ?? 0;
 
 async function withStubDecks(page: Page) {
   await page.route("**/demo/*/index.html*", (route) =>
@@ -153,12 +161,12 @@ test.describe("the deck player", () => {
     await expect(frame).toHaveAttribute("tabindex", "-1");
     await expect(frame).toHaveAttribute("inert", "");
     await expect(frame).toHaveAttribute("title", /controlled by the player/);
-    // The hero starts on its registry startBeat (step 2); the stub opens on step 1 and the
-    // player steers it there.
-    await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.");
+    // The hero starts on its registry startSlide and startBeat (step 2); the stub opens on
+    // step 1 and the player steers it there.
+    await expect(live(page)).toHaveText(stubStep(startSlide, startBeat));
     await expect(page.locator(".caption-body")).toHaveText("Second beat body.");
     // Play holds each step for its reading time, then advances by itself.
-    await expect(live(page)).toHaveText("Slide 2 of 3, step 3 of 3. Third beat lead.", {
+    await expect(live(page)).toHaveText(stubStep(startSlide, startBeat + 1), {
       timeout: 12_000,
     });
     expect(errors).toEqual([]);
@@ -166,13 +174,18 @@ test.describe("the deck player", () => {
 
   test("steps with the buttons and with arrow keys on the focused player", async ({ page }) => {
     await page.getByRole("button", { name: "Step forward" }).click();
-    await expect(live(page)).toHaveText("Slide 2 of 3, step 3 of 3. Third beat lead.");
+    await expect(live(page)).toHaveText(stubStep(startSlide, startBeat + 1));
     await player(page).focus();
     await page.keyboard.press("ArrowLeft");
-    await expect(live(page)).toHaveText("Slide 2 of 3, step 2 of 3. Second beat lead.");
-    await page.keyboard.press("Shift+ArrowRight");
+    await expect(live(page)).toHaveText(stubStep(startSlide, startBeat));
+    for (let slide = startSlide; slide < STUB_SLIDES; slide++) {
+      await page.keyboard.press("Shift+ArrowRight");
+      await expect(live(page)).toContainText(`Slide ${slide + 1} of ${STUB_SLIDES}, step 1 of`);
+    }
     // A slide without a story card falls back to its title.
-    await expect(live(page)).toHaveText("Slide 3 of 3, step 1 of 2. Stub closing slide");
+    await expect(live(page)).toHaveText(
+      `Slide ${STUB_SLIDES} of ${STUB_SLIDES}, step 1 of 2. Stub closing slide`,
+    );
     await expect(lead(page)).toHaveText("Stub closing slide");
   });
 
@@ -183,7 +196,10 @@ test.describe("the deck player", () => {
     await expect(page.locator("iframe")).toHaveAttribute("src", new RegExp(`/demo/${pick?.name}/`));
     await expect(player(page)).toBeInViewport();
     await expect(player(page)).toBeFocused();
-    await expect(page.locator(".player-titlebar")).toContainText(pick?.provenance.label ?? "");
+    // An agent deck's title bar shows its run's prompt; any other deck, its provenance.
+    await expect(page.locator(".player-titlebar")).toContainText(
+      pick?.run ? pick.run.prompt : (pick?.provenance.label ?? ""),
+    );
     expect(new URL(page.url()).pathname).toBe("/");
   });
 });
@@ -201,7 +217,9 @@ test.describe("the hero loop", () => {
     await page.getByRole("button", { name: "Step forward" }).click();
     await expect(video).toHaveCount(0);
     await expect(page.locator("iframe")).toHaveAttribute("src", /\/demo\/[\w-]+\/index\.html#\//);
-    await expect(live(page)).toHaveText(/^Slide \d of 3, step \d of \d\./);
+    await expect(live(page)).toHaveText(
+      new RegExp(`^Slide \\d of ${STUB_SLIDES}, step \\d of \\d\\.`),
+    );
   });
 
   test("shows the poster under reduced motion", async ({ page }) => {

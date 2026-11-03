@@ -20,6 +20,7 @@ import {
   loadRecording,
   recordingPath,
   startBeatOf,
+  startSlideOf,
 } from "./data/examples";
 import { loadHookDenial, loadRun, runFigures } from "./data/fixtures";
 import { loadProjectFiles } from "./data/project";
@@ -171,7 +172,7 @@ describe("the hero's recorded agent run", () => {
     expect(example.run).toEqual({ prompt: run.prompt, setup, ...runFigures(run) });
     if (!example.run) throw new Error("the hero example loaded without its run");
     const line = draftLine(example.run, example.edits);
-    expect(line).toContain(`Drafted in ${Math.floor(Number(runFigures(run).minutes))} minutes`);
+    expect(line).toContain(`Drafted in ${Math.round(Number(runFigures(run).minutes))} minutes`);
   });
 
   // A run in a decks init project calls the package's CLI; the placeholder hero
@@ -187,6 +188,17 @@ describe("the hero's recorded agent run", () => {
         expect(subcommands).toContain(rest.split(/\s+/)[0]);
       },
     );
+
+    it("is labelled as a decks init run, with who edited it and how much", () => {
+      const { label } = loadExample(hero).provenance;
+      expect(label).toContain("in a fresh project with decks init");
+      if (hero.edits?.by === "claude") expect(label).toContain("in a second Claude Code session");
+      const edits = hero.edits && computeEdits(hero.name, hero.edits.from, hero.edits.to);
+      if (edits)
+        expect(label).toContain(
+          `(+${edits.insertions}/−${edits.deletions} in ${edits.files} files)`,
+        );
+    });
   } else {
     const scripts = (JSON.parse(read("package.json")) as { scripts: Record<string, string> })
       .scripts;
@@ -231,6 +243,8 @@ describe("example decks", () => {
     expect(recording?.startSlide).toBeLessThanOrEqual(recording?.slides ?? 0);
     // The poster was shot at the recorded start step: re-run make demo after changing startBeat.
     expect(recording?.startBeat).toBe(startBeatOf(name));
+    const startSlide = startSlideOf(name);
+    if (startSlide !== undefined) expect(recording?.startSlide).toBe(startSlide);
     expect(
       recording?.states.some(
         (s) => s.slide === recording.startSlide && s.beat === recording.startBeat,

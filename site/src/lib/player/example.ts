@@ -36,8 +36,12 @@ export type RunSummary = {
   cost: string;
 };
 
-/** The hand edit after the agent's draft, from scripts/edits.mjs. */
+/** Who edited the agent's draft: a person, or a second Claude Code session. */
+export type Editor = "hand" | "claude";
+
+/** The edit after the agent's draft, from scripts/edits.mjs, and who made it. */
 export type Edits = {
+  by: Editor;
   files: number;
   insertions: number;
   deletions: number;
@@ -75,6 +79,10 @@ export const posterSrcset = (poster: Poster, ext: "avif" | "webp") =>
 export const stateAt = (example: Pick<Example, "states">, slide: number, beat: number) =>
   example.states.find((state) => state.slide === slide && state.beat === beat);
 
+/** The first slide with a caption: where Play starts over from the end of the deck. */
+export const firstStorySlide = (example: Pick<Example, "states" | "startSlide">) =>
+  example.states.find((state) => state.lead)?.slide ?? example.startSlide;
+
 /** The step the loop shows at `time` seconds: the last mark at or before it. */
 export function markAt(loop: Pick<Loop, "marks">, time: number): LoopMark | null {
   let current: LoopMark | null = null;
@@ -85,6 +93,14 @@ export function markAt(loop: Pick<Loop, "marks">, time: number): LoopMark | null
   return current ?? loop.marks[0] ?? null;
 }
 
+/** "edited by hand" or "fact-checked and edited in a second Claude Code session". */
+export const editedBy = (by: Editor) =>
+  by === "claude" ? "fact-checked and edited in a second Claude Code session" : "edited by hand";
+
+/** "+30/−18 in 10 files": the edit's size, as git counts it. */
+export const editSize = (edits: Pick<Edits, "insertions" | "deletions" | "files">) =>
+  `+${edits.insertions}/−${edits.deletions} in ${edits.files} files`;
+
 /** One sentence under the player: how long the draft took and how much the edit changed. */
 export function draftLine(run: RunSummary, edits: Edits | null): string {
   const where =
@@ -92,8 +108,6 @@ export function draftLine(run: RunSummary, edits: Edits | null): string {
       ? "in a fresh project set up with decks init"
       : "with this repository's agent setup";
   const minutes = Math.round(Number(run.minutes));
-  const edit = edits
-    ? `, then edited by hand (+${edits.insertions}/−${edits.deletions} in ${edits.files} files)`
-    : "";
+  const edit = edits ? `, then ${editedBy(edits.by)} (${editSize(edits)})` : "";
   return `Drafted in ${minutes} minutes from this prompt ${where}${edit}.`;
 }

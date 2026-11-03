@@ -22,7 +22,14 @@ import {
 } from "react";
 import { track } from "../../lib/analytics";
 import { Events } from "../../lib/events";
-import { draftLine, type Example, markAt, posterSrcset, stateAt } from "../../lib/player/example";
+import {
+  draftLine,
+  type Example,
+  firstStorySlide,
+  markAt,
+  posterSrcset,
+  stateAt,
+} from "../../lib/player/example";
 import { announcement, counterText, dwellMs, mirrorCopy, stepsOf } from "../../lib/player/format";
 import {
   atEnd,
@@ -276,7 +283,8 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
     }
     track(Events.playerPlayed, { example: example.name });
     setPlaying(true);
-    if (phase === "ready" && deck && atEnd(deck)) send(command.go(example.startSlide, 0));
+    // From the end, Play starts over at the first story slide, which may come before the start step.
+    if (phase === "ready" && deck && atEnd(deck)) send(command.go(firstStorySlide(example), 0));
     else if (idle) boot(here(), null);
   };
   const step = (message: Command) => {

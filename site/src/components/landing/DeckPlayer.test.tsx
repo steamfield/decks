@@ -28,6 +28,7 @@ const hero = example("tides", "Tides run on the Moon's clock", {
   provenance: { kind: "agent", label: "Drafted by Claude Code, then edited by hand" },
   run: { prompt: "make a deck", setup: "repo", turns: 87, minutes: "8.3", cost: "$3.17" },
   edits: {
+    by: "hand",
     files: 6,
     insertions: 49,
     deletions: 11,

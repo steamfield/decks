@@ -14,6 +14,8 @@ export type AgentRun = {
   durationMs: number;
   costUsd: number;
   toolCalls: number;
+  /** Distinct tool calls in `steps`: one Bash call can show as several commands. */
+  shownCalls: number;
   steps: RunStep[];
 };
 

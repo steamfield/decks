@@ -138,13 +138,12 @@ export function CompareTable({ rows }: { rows: Comparison[] }) {
 /** The recorded run's excerpt, every step at once: no inner scroll, no replay. */
 export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
   const figures = runFigures(run);
-  const shown = run.steps.reduce((sum, step) => sum + step.calls.length, 0);
   return (
     <figure className="panel transcript" data-block>
       <figcaption>
         <span className="text-ink font-medium">The run that drafted {deck}, abbreviated</span>
         <span className="text-muted">
-          {figures.turns} turns, {figures.minutes} minutes, {figures.cost}. {shown} of{" "}
+          {figures.turns} turns, {figures.minutes} minutes, {figures.cost}. {run.shownCalls} of{" "}
           {run.toolCalls} tool calls shown.
         </span>
       </figcaption>
