@@ -9,7 +9,7 @@
  * number (deck styles/index.css holds the name).
  */
 import { reactive, ref } from 'vue'
-import { DUR, ink, stackEndLabels, useStage, xScale, yScale, type LineHandle, type RuleHandle } from 'slidev-addon-decks/story'
+import { DUR, TRACE, ink, stackEndLabels, useStage, xScale, yScale, type LineHandle, type RuleHandle } from 'slidev-addon-decks/story'
 import {
   LAST,
   VITE_FIRST,
@@ -74,16 +74,17 @@ const { clicks, copy, beats } = useStage({
   /** Usage draws once on landing. Seeking skips it and the lines rest fully drawn. */
   enter: (tl) => {
     rule.value?.addDraw(tl, 0)
-    usageLines.value.forEach((line) => line?.addDraw(tl, '>', { duration: DUR.grow }))
+    usageLines.value.forEach((line) => line?.addDraw(tl, DUR.draw, { duration: DUR.gather, ease: TRACE }))
   },
   beats: (tl, beat) => {
     beat(0)
-    keepLines.value.forEach((line) => line?.addDraw(tl, '>', { duration: DUR.grow }))
-    tl.to(s, { keep: 1, duration: DUR.card }, '>')
-    tl.to(s, { ping: 1, duration: DUR.scale }, '<')
+    keepLines.value.forEach((line) => line?.addDraw(tl, 'beat0', { duration: DUR.gather }))
+    // The ping and chip land as the stroke reaches 2025, not after it stops.
+    tl.to(s, { ping: 1, duration: DUR.scale }, `beat0+=${DUR.gather - DUR.card}`)
+    tl.to(s, { keep: 1, duration: DUR.card }, '<')
     beat(1)
-    viteLine.value?.addDraw(tl, '>', { duration: DUR.scale })
-    tl.to(s, { vite: 1, duration: DUR.card }, '>')
+    viteLine.value?.addDraw(tl, 'beat1', { duration: DUR.gather })
+    tl.to(s, { vite: 1, duration: DUR.card }, `beat1+=${DUR.gather - DUR.card}`)
     beat(2)
   },
 })

@@ -9,18 +9,11 @@
  * second figure up.
  */
 import { computed, reactive, ref } from 'vue'
-import { DUR, STAGE, ink, useStage, type GrowHandle } from 'slidev-addon-decks/story'
+import { DUR, STAGE, TRACE, ink, useStage, type GrowHandle } from 'slidev-addon-decks/story'
 import { UNITS, VITE_FIRST_YEAR, VITE_KEEP, VITE_KEEP_MIN, WEBPACK_KEEP, YEAR } from '../data/keep'
 
 /** Grid geometry, stage units: 10 by 10. */
 const GRID = { cols: 10, cellWidth: 44, gapX: 12, gapY: 12, origin: { x: 1080, y: 250 } }
-/**
- * Reveal stagger. UnitGrid's per-cell order runs up to about 1 + cols/count
- * (1.09 here), so a larger stagger leaves the last cells short of full
- * opacity at reveal 1 (0.6 rests them at 0.875). 0.12 is the largest share
- * that still quantises to full opacity.
- */
-const STAGGER = 0.12
 /** Top left of the figure block, stage units. */
 const NUM = { x: 300, y: 300 }
 const numStyle = computed(() => ({ left: `${(NUM.x / STAGE.width) * 100}%`, top: `${(NUM.y / STAGE.height) * 100}%` }))
@@ -45,12 +38,13 @@ const { clicks, copy, beats } = useStage({
   /** The field and the webpack figure settle once on landing; a view transition skips this and they rest in place. */
   enter: (tl) => {
     tl.to(s, { base: 1, duration: DUR.scale }, 0)
-    tl.to(s, { webpack: 1, duration: DUR.scale }, '>')
+    // The lit cells start filling while the field is still arriving.
+    tl.to(s, { webpack: 1, duration: DUR.gather, ease: TRACE }, DUR.card)
     webpackNum.value?.addGrow(tl, '<')
   },
   beats: (tl, beat) => {
     beat(0)
-    tl.to(s, { vite: 1, duration: DUR.scale }, 'beat0')
+    tl.to(s, { vite: 1, duration: DUR.gather, ease: TRACE }, 'beat0')
     viteNum.value?.addGrow(tl, '<')
     beat(1)
   },
@@ -61,16 +55,15 @@ const { clicks, copy, beats } = useStage({
   <StoryStage :beats="beats" :click="clicks">
     <template #stage>
       <g>
-        <UnitGrid :count="UNITS" v-bind="GRID" :color="ink('slate', 1)" :reveal="s.base" :stagger="STAGGER" seed="sojs-keep-all" />
+        <UnitGrid :count="UNITS" v-bind="GRID" :color="ink('slate', 1)" :reveal="s.base" seed="sojs-keep-all" />
         <UnitGrid
           :count="WEBPACK_KEEP"
           v-bind="GRID"
           :color="ink('rose', 3)"
           :reveal="s.webpack * (1 - s.vite)"
-          :stagger="0"
           seed="sojs-keep-webpack"
         />
-        <UnitGrid :count="VITE_KEEP" v-bind="GRID" :color="ink('cyan', 3)" :reveal="s.vite" :stagger="STAGGER" seed="sojs-keep-vite" />
+        <UnitGrid :count="VITE_KEEP" v-bind="GRID" :color="ink('cyan', 3)" :reveal="s.vite" seed="sojs-keep-vite" />
       </g>
     </template>
 

@@ -84,22 +84,22 @@ const { clicks, copy, beats } = useStage({
   /** The axis and the first slope draw once on landing; seeking skips it. */
   enter: (tl) => {
     rule.value?.addDraw(tl, 0)
-    lines.value.ju?.addDraw(tl, '>')
+    lines.value.ju?.addDraw(tl, '>', { duration: DUR.scale })
     tl.to(s, { dju: 1, duration: DUR.card }, '<')
   },
   /** Each beat's first tween is pinned to its own label: a raw `'>'` would follow the last tween added, not the label. */
   beats: (tl, beat) => {
     beat(0)
     tl.to(s, { gju: 1, duration: DUR.color }, 'beat0')
-    lines.value.jr?.addDraw(tl, '<')
+    lines.value.jr?.addDraw(tl, '<', { duration: DUR.scale })
     tl.to(s, { djr: 1, duration: DUR.card }, '<')
     beat(1)
     tl.to(s, { gjr: 1, duration: DUR.color }, 'beat1')
-    lines.value.vu?.addDraw(tl, '<')
+    lines.value.vu?.addDraw(tl, '<', { duration: DUR.scale })
     tl.to(s, { dvu: 1, duration: DUR.card }, '<')
     beat(2)
     tl.to(s, { gvu: 1, gjr: 0, duration: DUR.color }, 'beat2')
-    lines.value.vr?.addDraw(tl, '<')
+    lines.value.vr?.addDraw(tl, '<', { duration: DUR.scale })
     tl.to(s, { dvr: 1, duration: DUR.card }, '<')
     beat(3)
   },

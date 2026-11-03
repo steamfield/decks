@@ -27,10 +27,9 @@ const { clicks, isActive } = useScriptedDemo()
 
 useStageEntrance(
   (tl) => {
-    const [first, ...rest] = webpackLines.value
-    first?.addDraw(tl, 0, { duration: DUR.grow, ease: TRACE })
-    rest.forEach((line) => line?.addDraw(tl, '>', { duration: DUR.trace, ease: TRACE }))
-    viteLine.value?.addDraw(tl, '<', { duration: DUR.trace, ease: TRACE })
+    // Both lines trace together; Vite leaves a beat later so the two cross mid-stroke.
+    webpackLines.value.forEach((line) => line?.addDraw(tl, 0, { duration: DUR.trace, ease: TRACE }))
+    viteLine.value?.addDraw(tl, DUR.morph, { duration: DUR.trace, ease: TRACE })
   },
   { clicks, isActive },
 )

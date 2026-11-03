@@ -7,7 +7,7 @@
  * next-lowest tool's value.
  */
 import { reactive, ref } from 'vue'
-import { DUR, ink, useStage, type BarsHandle } from 'slidev-addon-decks/story'
+import { DRAW, DUR, ink, useStage, type BarsHandle } from 'slidev-addon-decks/story'
 import {
   BY_RETENTION,
   BY_USAGE,
@@ -57,14 +57,14 @@ const { clicks, copy, beats } = useStage({
   copy: COPY,
   /** The bars grow once on landing; seeking skips it and they rest grown. */
   enter: (tl) => {
-    bars.value?.addGrow(tl, 0)
+    bars.value?.addGrow(tl, 0, { spread: DUR.morph })
   },
   beats: (tl, beat) => {
     beat(0)
-    bars.value?.addReorder(tl, BY_RETENTION, DOMAIN, 'beat0')
+    bars.value?.addReorder(tl, BY_RETENTION, DOMAIN, 'beat0', { spread: DUR.morph })
     beat(1)
-    tl.to(s, { gap: 1, duration: DUR.grow }, 'beat1')
-    tl.to(s, { ping: 1, duration: DUR.scale }, '<')
+    tl.to(s, { ping: 1, duration: DUR.scale }, 'beat1')
+    tl.to(s, { gap: 1, duration: DUR.scale, ease: DRAW }, `beat1+=${DUR.opacity}`)
     beat(2)
   },
 })
