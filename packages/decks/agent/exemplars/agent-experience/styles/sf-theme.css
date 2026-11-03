@@ -1,0 +1,74 @@
+/* @steamfield/ui theme for the agent-experience deck: maps the addon's --od-* tokens onto the
+   library's --sf-* variables, then trims the library's terminal layout down to the deck's
+   tool-call card (one bordered header row over a body). The deck stays dark-only. */
+@layer sf;
+@import '@steamfield/ui/agent-demo/styles.css';
+
+.ax-call {
+  --sf-bg: transparent;
+  --sf-surface: var(--od-surface);
+  --sf-fg: var(--od-text);
+  --sf-muted: var(--od-text-dim);
+  --sf-accent: var(--od-cyan);
+  --sf-border: var(--od-border);
+  --sf-ok: var(--od-emerald);
+  --sf-fail: var(--od-rose);
+  --sf-warn: var(--od-amber);
+  --sf-radius: 8px;
+  --sf-font: var(--od-font-sans);
+  --sf-font-size: 13px;
+
+  /* Slidev's reset sets `border: 0 solid` outside any layer, which beats the library's layered
+     border, so the card's frame is restated here. */
+  border: 1px solid var(--od-border);
+  line-height: inherit;
+}
+
+.ax-call [data-part='turns'] {
+  gap: 0;
+  padding: 0;
+}
+
+.ax-call [data-part='tool-call'] {
+  margin: 0;
+}
+
+.ax-call [data-part='tool-header'] {
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--od-border);
+}
+
+.ax-call [data-part='tool-status'] {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--od-emerald);
+  font-size: 0;
+}
+
+.ax-call [data-part='tool-label'] {
+  font-weight: 510;
+  color: var(--od-text-dim);
+}
+
+.ax-call [data-part='tool-name'] {
+  color: var(--od-text);
+}
+
+.ax-call [data-part='tool-args'],
+.ax-call [data-part='tool-meta'] {
+  font-family: var(--od-font-mono);
+  font-size: 12px;
+  color: var(--od-text-dim);
+}
+
+.ax-call [data-part='tool-body'] {
+  display: block;
+  padding: 0;
+}
+
+.ax-call [data-part='tool-body'] > [data-part='glyph'] {
+  display: none;
+}

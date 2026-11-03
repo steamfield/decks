@@ -24,12 +24,12 @@ const part = (html: string, name: string) =>
 describe('ToolCallCard', () => {
   it('renders the call as slide 9 uses it: header text in order, then the body', async () => {
     const html = plain(
-      await render({ server: 'opendata', tool: 'openchart', args: 'ChartSpec', time: '1 call' }, () =>
+      await render({ server: 'data', tool: 'openchart', args: 'ChartSpec', time: '1 call' }, () =>
         h('pre', { class: 'ax-spec' }, 'mark: bar'),
       ),
     )
     expect(html).toContain(
-      '<span data-part="tool-label"><span data-part="tool-server">opendata</span> · <span data-part="tool-name">openchart</span></span>',
+      '<span data-part="tool-label"><span data-part="tool-server">data</span> · <span data-part="tool-name">openchart</span></span>',
     )
     expect(part(html, 'tool-args')).toEqual(['(ChartSpec)'])
     expect(part(html, 'tool-meta')).toEqual(['1 call'])
