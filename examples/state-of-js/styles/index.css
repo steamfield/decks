@@ -1,0 +1,11 @@
+/* state-of-js deck styles. Everything shared comes from the addon (`addons: ["slidev-addon-decks"]`), which loads first. */
+
+/* Cross-slide hand-off: Slide 2's "26%" chip becomes Slide 3's big figure.
+   Named only in the real slide view (`.vt-on`), nulled where the same slide
+   can be on screen twice, exactly as the addon's story-frame.css does. */
+.od-slide.is-story.vt-on .vt-sojs-keep {
+  view-transition-name: sojs-keep;
+}
+:is(.slidev-presenter, #print-container, .slidev-overview) .od-slide.is-story .vt-sojs-keep {
+  view-transition-name: none;
+}

@@ -43,5 +43,10 @@
     "entry": "examples/aisd-showcase/slides.md",
     "name": "aisd-showcase",
     "animated": true
+  },
+  "state-of-js": {
+    "entry": "examples/state-of-js/slides.md",
+    "name": "state-of-js",
+    "animated": true
   }
 }
