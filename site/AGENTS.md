@@ -101,7 +101,7 @@ Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` bloc
 
 ## Analytics
 
-`src/lib/analytics.ts` is the only `posthog-js` import; it does nothing while `PUBLIC_POSTHOG_KEY` is empty (dev, tests, CI). Events live in `src/lib/events.ts`: `install_copied {method}`, `player_played {example}`, `beat_stepped {cmd}`, `example_selected {example}`, `docs_quickstart_viewed`. Names are `object_verb`, past tense, flat scalar properties; track from islands or `src/scripts/site.ts`, never docs. Consent: cookieless (`cookieless_mode: "always"`), no banner. Never send typed text, emails or tokens.
+`src/lib/analytics.ts` is the only `posthog-js` import; it does nothing while `PUBLIC_POSTHOG_KEY` is empty (dev, tests, CI). Events live in `src/lib/events.ts`: `install_copied {method}`, `player_played {example}`, `beat_stepped {cmd}`, `example_selected {example}`, `docs_quickstart_viewed`. Names are `object_verb`, past tense, flat scalar properties; track from islands or `src/scripts/site.ts`, never docs. All five Steamfield sites send to one shared Steamfield PostHog project; every event carries a `site` property (stamped in `before_send`, since opting in resets super properties), `"decks"` here. Consent: PostHog runs cookieless (`cookieless_mode: "on_reject"`, opted out by default) until the visitor accepts, then uses `localStorage+cookie` across subdomains; the decision lives in the `sf-consent` cookie on `.steamfield.io`, and the banner comes from `@steamfield/ui/consent`, wired in a follow-up commit. The consent store is the source of truth: pass it to `initAnalytics` as `consent`, and PostHog follows it (granted opts in; undecided or declined goes back to cookieless and stores nothing). The layout only calls `initAnalytics` when the build has a key, so a keyless build ships no analytics code. Never send typed text, emails or tokens.
 
 ## Deploy
 
@@ -125,7 +125,7 @@ Cloudflare Worker `decks` serving `dist/` as static assets, production at decks.
 ## Pending user actions
 
 - Until the repo is public and the package is on npm, the GitHub links 404 and the install line fails.
-- Create a PostHog project, set `PUBLIC_POSTHOG_KEY` (and host) as build variables on the `decks` Worker, and enable cookieless tracking in its settings.
+- In the shared Steamfield PostHog project, set `PUBLIC_POSTHOG_KEY` (and host) as Workers Builds build variables on the `decks` Worker for production builds only, and enable "Cookieless server hash mode" and "Discard client IP data" in its settings.
 - Optional: allow `make demo`, `make demo-build` and `make deploy-check` in `.claude/settings.json`.
 - The parent repo formats with Prettier (`.prettierrc`); this directory has its own Biome and Prettier config, which take precedence here. If the root ever adopts Biome, exclude `site/` or extend this `biome.json`, and add `.claude/worktrees/` to the root `.gitignore`.
 
