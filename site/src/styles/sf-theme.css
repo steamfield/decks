@@ -3,14 +3,17 @@
  * base, before components and utilities) ahead of this import, so preflight never
  * strips library styles and site classes always win. Every --sf-* reads a --color-*
  * token, so the docs' light and dark sets and the landing page's product palette
- * (BaseLayout, src/lib/tokens.ts) all carry through. The library stylesheets this
- * site uses are imported here.
+ * (BaseLayout, src/lib/tokens.ts) all carry through. A custom property that reads
+ * another resolves where it is declared, so the mapping is repeated on each section
+ * ([data-tone]), whose band tone sets its own --color-panel. The library stylesheets
+ * this site uses are imported here.
  */
 @import "@steamfield/ui/copy/styles.css";
 @import "@steamfield/ui/tabs/styles.css";
 @import "@steamfield/ui/react/install-tabs/styles.css";
 
-:root {
+:root,
+[data-tone] {
   --sf-bg: var(--color-canvas);
   --sf-surface: var(--color-panel);
   --sf-fg: var(--color-ink);
@@ -36,7 +39,11 @@
     border-bottom-color: var(--color-line);
   }
 
+  /* Tabs are links to their panels (so they work without JavaScript), laid out as the
+     old buttons were. */
   .decks-install [data-part="tab"] {
+    display: inline-flex;
+    align-items: center;
     margin-bottom: -1px;
     min-height: 2.75rem;
     padding: 0 1rem;
@@ -46,10 +53,13 @@
     font-weight: 500;
   }
 
+  /* Before hydration no tab carries aria-selected; the first tab is marked while its
+     panel is the one on show, that is unless the URL targets another panel. */
   .decks-install [data-part="tab"][aria-selected="true"],
-  /* Before hydration no tab carries aria-selected; the first one is the panel on show. */
-    .decks-install
-    [data-part="tabs"]:not([data-live])
+  .decks-install
+    [data-part="tabs"]:not([data-live]):not(
+      :has([data-part="tab-panel"]:target:not([data-part="tab-list"] + *))
+    )
     [data-part="tab"]:first-child {
     color: var(--color-ink);
     border-bottom-color: var(--color-ink);
@@ -81,6 +91,12 @@
 
   .decks-install [data-part="copy-button"][data-state="copied"]:not(:hover) {
     color: var(--color-ink-2);
+  }
+
+  /* A failed copy's message is visible text under the command; the panel's padding. */
+  .decks-install [data-part="copy-result"][data-state="failed"] {
+    display: block;
+    padding: 0 1rem 1rem;
   }
 
   .decks-install [data-part="copy-button"]:hover {

@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { site } from "../../config";
 import { InstallTabs } from "./InstallTabs";
 
 const options = [
@@ -36,5 +37,28 @@ describe("InstallTabs", () => {
   it("renders nothing without options", () => {
     const { container } = render(<InstallTabs options={[]} />);
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe("InstallTabs options", () => {
+  it("refuses two labels that reduce to the same tab id", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() =>
+      render(
+        <InstallTabs
+          options={[
+            { label: "npm", command: "a" },
+            { label: "NPM", command: "b" },
+          ]}
+        />,
+      ),
+    ).toThrow(/"npm" and "NPM"/);
+  });
+
+  it("renders every configured install option as a tab", () => {
+    render(<InstallTabs options={site.install} />);
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(
+      site.install.map((option) => option.label),
+    );
   });
 });
