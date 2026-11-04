@@ -1,3 +1,4 @@
+import { spyToc } from "@steamfield/ui/docs";
 import { initReveal } from "@steamfield/ui/reveal";
 import { track } from "../lib/analytics";
 import { type EventName, Events } from "../lib/events";
@@ -134,23 +135,9 @@ function setupReveal() {
   });
 }
 
+/** Marks the "On this page" link being read with aria-current="location" (DocsLayout styles it). */
 function setupTocHighlight() {
-  const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-toc] a[href^='#']")];
-  const byId = new Map(links.map((link) => [decodeURIComponent(link.hash.slice(1)), link]));
-  const headings = [...byId.keys()]
-    .map((id) => document.getElementById(id))
-    .filter((heading) => heading !== null);
-  if (headings.length === 0) return;
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = entries.find((entry) => entry.isIntersecting);
-      if (!visible) return;
-      for (const link of links) link.removeAttribute("aria-current");
-      byId.get(visible.target.id)?.setAttribute("aria-current", "location");
-    },
-    { rootMargin: "0px 0px -70% 0px" },
-  );
-  for (const heading of headings) observer.observe(heading);
+  spyToc(document, { linkSelector: "[data-toc] a[href^='#']" });
 }
 
 setupThemeToggle();
