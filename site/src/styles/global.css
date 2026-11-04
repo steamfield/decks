@@ -146,7 +146,8 @@
   @apply border-line relative flex flex-col overflow-hidden rounded-md border;
 }
 
-/* The plugin puts the caption after the <pre>; it shows above it. */
+/* @steamfield/ui 0.2.0 puts the caption after the <pre>; this shows it above. 0.2.1
+   emits it first, so drop order-first once the site is on 0.2.1. */
 [data-code-block] figcaption {
   @apply border-line bg-panel text-muted order-first border-b px-4 py-2 font-mono text-xs;
 }

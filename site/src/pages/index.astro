@@ -35,14 +35,6 @@ const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-def
 // The theme.json frame uses the docs' code-frame markup (@steamfield/ui/markdown's), so
 // src/scripts/site.ts wires its copy button the same way: the button copies the <pre>.
 const themeCodeId = "theme-json-code";
-const themeCodeTransformers = [
-  {
-    name: "theme-json-id",
-    pre(node: { properties: Record<string, unknown> }) {
-      node.properties.id = themeCodeId;
-    },
-  },
-];
 // The theme stills are shot from this deck (STILL.deck in scripts/demo.mjs), not the hero.
 const STILL_DECK = "tides";
 const stillTitle =
@@ -278,7 +270,7 @@ const stills = (name: string) => ({
             lang="json"
             themes={codeThemes}
             defaultColor={false}
-            transformers={themeCodeTransformers}
+            id={themeCodeId}
           />
         </figure>
         <p class="text-muted text-sm">
