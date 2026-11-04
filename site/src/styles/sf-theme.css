@@ -35,7 +35,7 @@
   --sf-consent-accent: var(--color-accent);
   --sf-consent-accent-foreground: var(--color-canvas);
   --sf-consent-radius: var(--radius-md);
-  --sf-consent-shadow: 0 10px 30px color-mix(in srgb, var(--color-ink) 12%, transparent);
+  --sf-consent-shadow: 0 10px 30px color-mix(in srgb, var(--color-canvas) 80%, transparent);
   --sf-consent-font: var(--font-sans);
   /* Above the sticky header (40), below the focused skip link (50). */
   --sf-consent-z-index: 45;
