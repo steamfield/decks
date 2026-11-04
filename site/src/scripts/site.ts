@@ -1,3 +1,4 @@
+import { enhanceCopyButtons } from "@steamfield/ui/copy";
 import { spyToc } from "@steamfield/ui/docs";
 import { initReveal } from "@steamfield/ui/reveal";
 import { track } from "../lib/analytics";
@@ -45,18 +46,29 @@ async function copyWithFeedback(button: HTMLButtonElement, read: () => Promise<s
   }, 1500);
 }
 
-/** Copy buttons on commands: shown only when the clipboard API is there. */
-function setupCommandCopy() {
+/** How long a copy button says "Copied". */
+const COPIED_MS = 1500;
+
+/**
+ * Copy buttons on commands (CopyBlock.astro) and code frames, wired by
+ * enhanceCopyButtons from @steamfield/ui/copy: each button copies the text of the
+ * element its aria-controls names. They stay hidden unless the clipboard API is
+ * there. A button's data-track names the event sent after every attempt, with
+ * data-track-method as its method.
+ */
+function setupCopyButtons() {
   if (!canCopy()) return;
-  for (const button of document.querySelectorAll<HTMLButtonElement>("button[data-copy]")) {
-    const text = button.dataset.copy ?? "";
-    button.hidden = false;
-    button.addEventListener("click", async () => {
-      await copyWithFeedback(button, () => text);
-      const event = button.dataset.track as EventName | undefined;
-      if (event) track(event, { method: button.dataset.trackMethod ?? null });
-    });
-  }
+  addCodeFrameButtons();
+  enhanceCopyButtons(document, {
+    copiedMs: COPIED_MS,
+    onCopy: ({ id }) => {
+      const button = document.querySelector<HTMLElement>(
+        `[data-copy-command][aria-controls="${id}"]`,
+      );
+      const event = button?.dataset.track as EventName | undefined;
+      if (event) track(event, { method: button?.dataset.trackMethod ?? null });
+    },
+  });
 }
 
 /**
@@ -87,17 +99,33 @@ function trackQuickstart() {
   }
 }
 
-function setupCodeCopy() {
-  if (!canCopy()) return;
+/**
+ * Gives each code frame a copy button in the markup enhanceCopyButtons wires: the
+ * button names its code with aria-controls, and a status region beside it reports
+ * the result.
+ */
+function addCodeFrameButtons() {
+  let count = 0;
   for (const frame of document.querySelectorAll<HTMLElement>(".code-frame")) {
     const code = frame.querySelector("code");
     if (!code) continue;
+    count += 1;
+    code.id ||= `code-frame-${count}`;
     const button = document.createElement("button");
     button.type = "button";
+    button.hidden = true;
     button.className = "code-copy";
-    button.textContent = "Copy";
-    button.addEventListener("click", () => copyWithFeedback(button, () => code.textContent ?? ""));
-    frame.append(button);
+    button.dataset.copyCommand = "";
+    button.setAttribute("aria-controls", code.id);
+    const label = document.createElement("span");
+    label.dataset.copyLabel = "";
+    label.textContent = "Copy";
+    button.append(label);
+    const result = document.createElement("span");
+    result.dataset.copyResult = "";
+    result.setAttribute("role", "status");
+    result.setAttribute("aria-live", "polite");
+    frame.append(button, result);
   }
 }
 
@@ -143,10 +171,9 @@ function setupTocHighlight() {
 setupThemeToggle();
 setupHeaderEdge();
 setupReveal();
-setupCommandCopy();
+setupCopyButtons();
 setupGallery();
 // After the layout script has called initAnalytics, which runs once this module has loaded.
 queueMicrotask(trackQuickstart);
-setupCodeCopy();
 setupCopyPage();
 setupTocHighlight();

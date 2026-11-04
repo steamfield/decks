@@ -158,6 +158,20 @@
   overflow-wrap: anywhere;
 }
 
+/* CopyBlock's prompt: drawn, never copied (the button copies the <code>'s text) and,
+   where content takes alternative text, never announced. */
+.copy-line::before {
+  content: "$ ";
+  color: var(--color-muted);
+  user-select: none;
+}
+
+@supports (content: "x" / "") {
+  .copy-line::before {
+    content: "$ " / "";
+  }
+}
+
 /* Added to each code frame by src/scripts/site.ts. */
 .code-copy {
   @apply border-line-strong bg-canvas text-ink-2 absolute top-2 right-2 rounded-sm border px-2 py-0.5 text-xs;

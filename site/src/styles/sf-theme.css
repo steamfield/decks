@@ -4,8 +4,9 @@
  * strips library styles and site classes always win. Every --sf-* reads a --color-*
  * token, so the docs' light and dark sets and the landing page's product palette
  * (BaseLayout, src/lib/tokens.ts) all carry through. The library stylesheets this
- * site uses are imported below.
+ * site uses are imported here.
  */
+@import "@steamfield/ui/copy/styles.css";
 
 :root {
   --sf-bg: var(--color-canvas);

@@ -178,14 +178,14 @@ function copyBlock({
   const rows = lines
     .map(
       (line) =>
-        `<span class="block"><span aria-hidden="true" class="copy-prompt">$ </span>${line
+        `<span class="copy-line block">${line
           .split(" ")
           .map((word) => `<span class="whitespace-nowrap">${word}</span>`)
           .join(" ")}</span>`,
     )
     .join("\n");
   const tracking = `${track ? ` data-track="${track}"` : ""}${trackMethod ? ` data-track-method="${trackMethod}"` : ""}`;
-  return `<div><pre><code>${rows}</code></pre><button type="button" hidden data-copy="${lines.join("\n")}"${tracking} aria-label="${label}">Copy</button></div>`;
+  return `<div><pre><code id="copy-block">${rows}</code></pre><button type="button" hidden data-copy-command aria-controls="copy-block"${tracking} aria-label="${label}"><span data-copy-label>Copy</span></button><span data-copy-result role="status" aria-live="polite"></span></div>`;
 }
 
 describe("copy blocks (CopyBlock.astro)", () => {

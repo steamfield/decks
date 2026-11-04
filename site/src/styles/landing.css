@@ -1149,7 +1149,7 @@ html[data-page="landing"] :focus-visible {
 .player:fullscreen::before {
   display: none;
 }
-.hero-intro .copy-prompt {
+.hero-intro .copy-line::before {
   color: var(--color-action);
 }
 

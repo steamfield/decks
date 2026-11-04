@@ -125,7 +125,7 @@ test.describe("without JavaScript", () => {
     await expect(page.locator(".player-canvas img")).toBeVisible();
     await expect(page.locator(".player video")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Play" })).toBeHidden();
-    await expect(page.locator("button[data-copy]").first()).toBeHidden();
+    await expect(page.locator("button[data-copy-command]").first()).toBeHidden();
     for (const example of examples) {
       await expect(page.locator(`#examples a[data-example="${example.name}"]`)).toHaveAttribute(
         "href",
@@ -149,7 +149,8 @@ async function withStubDecks(page: Page) {
 }
 const player = (page: Page) => page.locator("[data-player]");
 const lead = (page: Page) => page.locator(".caption-lead");
-const live = (page: Page) => page.locator("[aria-live=polite]");
+// The player's announcer; copy buttons have live regions of their own.
+const live = (page: Page) => page.locator("[data-player] [aria-live=polite]");
 const startSlide = hero?.startSlide ?? 1;
 const startBeat = hero?.startBeat ?? 0;
 async function position(page: Page) {
