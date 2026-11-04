@@ -1,4 +1,8 @@
+/* sf sits after base, so preflight never strips library styles, and before
+   components and utilities, so site classes win (src/styles/sf-theme.css). */
+@layer theme, base, sf, components, utilities;
 @import "tailwindcss";
+@import "./sf-theme.css";
 @import "./landing.css";
 @plugin "@tailwindcss/typography";
 

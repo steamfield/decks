@@ -1,0 +1,22 @@
+/*
+ * @steamfield/ui on the site's tokens. global.css declares the layer order (sf after
+ * base, before components and utilities) ahead of this import, so preflight never
+ * strips library styles and site classes always win. Every --sf-* reads a --color-*
+ * token, so the docs' light and dark sets and the landing page's product palette
+ * (BaseLayout, src/lib/tokens.ts) all carry through. The library stylesheets this
+ * site uses are imported below.
+ */
+
+:root {
+  --sf-bg: var(--color-canvas);
+  --sf-surface: var(--color-panel);
+  --sf-fg: var(--color-ink);
+  /* Idle copy buttons and inactive tabs are ink-2 on this site. */
+  --sf-muted: var(--color-ink-2);
+  --sf-faint: var(--color-muted);
+  --sf-accent: var(--color-accent);
+  --sf-border: var(--color-line-strong);
+  --sf-radius: var(--radius-sm);
+  --sf-font: var(--font-mono);
+  --sf-focus: var(--color-ink);
+}
