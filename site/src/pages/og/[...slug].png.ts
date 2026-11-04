@@ -12,7 +12,11 @@ import { type Card, ogCard, ogFonts, stillDataUrl } from "../../lib/og";
 export const getStaticPaths = (async () => {
   const docs = await getDocs();
   const siteName = `${site.name} · ${site.packageName}`;
-  const landing = { title: site.tagline, description: site.description, siteName };
+  const landing = {
+    title: site.tagline,
+    description: "A Slidev addon for interactive charts and data storytelling.",
+    siteName,
+  };
   return [
     { params: { slug: "index" }, props: landing },
     ...docs.map((doc) => ({

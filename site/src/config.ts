@@ -54,16 +54,15 @@ const price = license ? `Free, ${license}` : "Free";
 
 export const site = {
   name: "Decks",
-  /** The npm package. Titles lead with it, since "Decks" alone is unsearchable. */
   packageName: "slidev-addon-decks",
   /** The home page's <title> and OG title. */
-  title: "Decks: animated slide decks, built with agents (slidev-addon-decks)",
+  title: "Animated presentations with coding agents | Decks",
   /** The H1. */
-  tagline: "Animated slide decks, built with agents.",
+  tagline: "Build animated presentations with coding agents.",
   description:
-    "A slide framework for coding agents, with animation tools, interactive visualizations and a workflow for building presentations.",
+    "Build animated presentations with coding agents using Decks, a Slidev addon. Add interactive charts, scaffold slides and trace figures to their sources.",
   heroDescription:
-    "Give your coding agent a brief. Decks supplies slide components, animation tools and a workflow for presentations with transitions and interactive visualizations.",
+    "Decks is a Slidev addon for data storytelling. Give your coding agent a brief, then review the animated charts and trace the figures to their sources.",
   /** Absolute production URL: canonicals, the sitemap, OG images and llms.txt use it. */
   url: "https://decks.steamfield.io",
   repo,

@@ -72,7 +72,7 @@ const stills = (name: string) => ({
             Install Decks
           </a>
           <a class="button-secondary" href="/docs/getting-started/quickstart/">
-            Read the docs <span aria-hidden="true">→</span>
+            Read the quickstart <span aria-hidden="true">→</span>
           </a>
         </div>
         <p class="hero-fineprint">{site.heroFineprint}</p>
@@ -127,7 +127,7 @@ const stills = (name: string) => ({
   <Section
     id="install"
     title="Install it, then ask your agent for a deck."
-    lede="Decks adds slide components, an agent setup and a story-deck scaffold to your project."
+    lede={`The ${site.packageName} package adds slide components, agent guidance and a story-deck scaffold to your project.`}
   >
     <div class="getting-started-grid">
       <div class="install-block" data-block>
@@ -265,13 +265,15 @@ const stills = (name: string) => ({
             </button>
             <span data-copy-result role="status" aria-live="polite"></span>
           </span>
-          <Code
-            code={warmTheme}
-            lang="json"
-            themes={codeThemes}
-            defaultColor={false}
-            id={themeCodeId}
-          />
+          <div data-nosnippet>
+            <Code
+              code={warmTheme}
+              lang="json"
+              themes={codeThemes}
+              defaultColor={false}
+              id={themeCodeId}
+            />
+          </div>
         </figure>
         <p class="text-muted text-sm">
           This file changes the background colors and the two chart colors the slide uses. The
@@ -318,7 +320,7 @@ const stills = (name: string) => ({
           Install Decks
         </a>
         <a class="button-secondary" href="/docs/getting-started/quickstart/">
-          Read the docs <span aria-hidden="true">→</span>
+          Read the quickstart <span aria-hidden="true">→</span>
         </a>
       </div>
     </div>

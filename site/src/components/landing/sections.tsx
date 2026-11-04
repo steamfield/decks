@@ -149,10 +149,12 @@ export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
       </figcaption>
       <ol>
         <li className="transcript-prompt">
-          <span aria-hidden="true" className="run-glyph select-none">
-            ❯{" "}
+          <span data-nosnippet="">
+            <span aria-hidden="true" className="run-glyph select-none">
+              ❯{" "}
+            </span>
+            claude -p "{run.prompt}"
           </span>
-          claude -p "{run.prompt}"
         </li>
         {run.steps.map((step, index) => (
           <li
@@ -160,7 +162,7 @@ export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
             key={`${index}-${step.calls.join()}`}
             className="transcript-step"
           >
-            <div className="min-w-0">
+            <div className="min-w-0" data-nosnippet="">
               {step.calls.map((call) => (
                 <p key={call} className="text-ink break-words">
                   <span aria-hidden="true" className="run-glyph select-none">
@@ -199,7 +201,7 @@ export function HookPanel({ denial }: { denial: HookDenial }) {
           the captions in a story slide's code.
         </p>
       </figcaption>
-      <div className="flex flex-col gap-3 p-4" data-lint-skip>
+      <div className="flex flex-col gap-3 p-4" data-lint-skip data-nosnippet="">
         <pre className="hook-line">
           <code>{denial.line}</code>
         </pre>
@@ -281,17 +283,19 @@ export function DeckProse({ example }: { example: Example }) {
   return (
     <div className="no-js-only page-column flex flex-col gap-3 pb-10">
       <h2 className="text-ink text-base font-semibold">{example.title}: the deck's text</h2>
-      <ol className="flex max-w-[44rem] flex-col gap-3">
-        {withText.map((state) => (
-          <li key={`${state.slide}-${state.beat}`} className="flex flex-col gap-0.5">
-            <span className="text-muted text-xs">
-              Slide {state.slide}, step {state.beat + 1}
-            </span>
-            <span className="text-ink font-medium">{state.lead}</span>
-            {state.body && <span className="text-ink-2">{state.body}</span>}
-          </li>
-        ))}
-      </ol>
+      <div data-nosnippet="">
+        <ol className="flex max-w-[44rem] flex-col gap-3">
+          {withText.map((state) => (
+            <li key={`${state.slide}-${state.beat}`} className="flex flex-col gap-0.5">
+              <span className="text-muted text-xs">
+                Slide {state.slide}, step {state.beat + 1}
+              </span>
+              <span className="text-ink font-medium">{state.lead}</span>
+              {state.body && <span className="text-ink-2">{state.body}</span>}
+            </li>
+          ))}
+        </ol>
+      </div>
       <p>
         <a href={example.href}>Open the example deck</a>
       </p>

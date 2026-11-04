@@ -1,5 +1,5 @@
 ---
-import { docsGroups, site } from "../../config";
+import { docsGroups } from "../../config";
 import DocsLayout from "../../layouts/DocsLayout.astro";
 import { getDocs } from "../../lib/collection";
 import { docHref, docsNav } from "../../lib/docs";
@@ -8,8 +8,8 @@ const nav = docsNav(await getDocs(), docsGroups);
 ---
 
 <DocsLayout
-  title="Documentation"
-  description={`Install, learn and configure ${site.name}.`}
+  title="Slidev addon documentation"
+  description="Install the Decks Slidev addon, build your first story deck with a coding agent, and learn to animate charts, customize themes, and export slides to PDF."
   path="/docs/"
   nav={nav}
 >

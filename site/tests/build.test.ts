@@ -26,6 +26,41 @@ const page = (root: string, path: string) => parser.parseFromString(read(root, p
 const absolute = (path: string) => new URL(path, site.url).href;
 const pagePath = (id: string) => `docs/${id}/index.html`;
 
+function expectIndexableMetadata(
+  head: ReturnType<typeof page>["head"],
+  href: string,
+  image: string,
+) {
+  const expectTag = (selector: string, value: string, attribute = "content") => {
+    expect(
+      [...head.querySelectorAll(selector)].map((tag) => tag.getAttribute(attribute)),
+      selector,
+    ).toEqual([value]);
+  };
+  const title = head.querySelector("title")?.textContent ?? "";
+  const description = head.querySelector('meta[name="description"]')?.getAttribute("content") ?? "";
+  expect(title).toBeTruthy();
+  expect(description).toBeTruthy();
+  expectTag('meta[name="description"]', description);
+  expectTag('link[rel="canonical"]', absolute(href), "href");
+  expectTag('meta[property="og:title"]', title);
+  expectTag('meta[property="og:description"]', description);
+  expectTag('meta[property="og:url"]', absolute(href));
+  expectTag('meta[property="og:image"]', absolute(image));
+  expectTag('meta[name="twitter:card"]', "summary_large_image");
+  expectTag('meta[name="twitter:title"]', title);
+  expectTag('meta[name="twitter:description"]', description);
+  expectTag('meta[name="twitter:image"]', absolute(image));
+  expectTag('meta[name="robots"]', "max-snippet:-1, max-image-preview:large");
+  expect(head.querySelectorAll("title")).toHaveLength(1);
+}
+
+function websiteData(doc: ReturnType<typeof page>) {
+  return [...doc.querySelectorAll('script[type="application/ld+json"]')]
+    .map((script) => JSON.parse(script.textContent ?? ""))
+    .filter((data) => data?.["@type"] === "WebSite");
+}
+
 function sourceDocs(root = ".") {
   const base = join(root, "src/content/docs");
   return readdirSync(base, { recursive: true, encoding: "utf8" })
@@ -55,11 +90,8 @@ describe("docs pages", () => {
     const doc = page("dist", pagePath(id));
     const href = `/docs/${id}/`;
     expect(doc.querySelector("h1")?.textContent).toBe(title);
-    expect(doc.querySelector('meta[name="description"]')?.getAttribute("content")).toBeTruthy();
-    expect(doc.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(absolute(href));
-    expect(doc.querySelector('meta[property="og:image"]')?.getAttribute("content")).toBe(
-      absolute(`/og/docs/${id}.png`),
-    );
+    expectIndexableMetadata(doc.head, href, `/og/docs/${id}.png`);
+    expect(websiteData(doc)).toEqual([]);
     expect(
       doc.querySelector('link[rel="alternate"][type="text/markdown"]')?.getAttribute("href"),
     ).toBe(`/docs/${id}.md`);
@@ -85,6 +117,9 @@ describe("docs pages", () => {
 
   it("lists every page on the docs home", () => {
     const home = page("dist", "docs/index.html");
+    expect(home.querySelector("h1")?.textContent).toBe("Slidev addon documentation");
+    expectIndexableMetadata(home.head, "/docs/", "/og/index.png");
+    expect(websiteData(home)).toEqual([]);
     for (const { id } of docs) {
       expect(home.querySelector(`main a[href="/docs/${id}/"]`), id).not.toBeNull();
     }
@@ -126,10 +161,29 @@ describe("the whole site", () => {
 
   it("renders the landing page from config, hiding empty sections", () => {
     const home = page("dist", "index.html");
-    expect(home.querySelector("h1")?.textContent).toBe(site.tagline);
-    expect(home.querySelector('meta[property="og:image"]')?.getAttribute("content")).toBe(
-      absolute("/og/index.png"),
-    );
+    expect([...home.querySelectorAll("h1")].map((heading) => heading.textContent)).toEqual([
+      "Build animated presentations with coding agents.",
+    ]);
+    const hero = home.querySelector("h1")?.closest("section");
+    expect(hero?.querySelector("p")?.textContent?.trim()).toBe(site.heroDescription);
+    expect(home.querySelector("#install .section-lede")?.textContent).toContain(site.packageName);
+    const quickstart = [hero, home.querySelector('section[aria-label="Install Decks"]')];
+    for (const section of quickstart) {
+      expect(
+        section?.querySelector('a[href="/docs/getting-started/quickstart/"]')?.textContent,
+      ).toContain("Read the quickstart");
+    }
+    expect(home.title).toBe("Animated presentations with coding agents | Decks");
+    expectIndexableMetadata(home.head, "/", "/og/index.png");
+    expect(websiteData(home)).toEqual([
+      expect.objectContaining({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: site.name,
+        alternateName: site.packageName,
+        url: absolute("/"),
+      }),
+    ]);
     // The landing page is dark only and carries the product's tokens inline.
     const html = home.documentElement;
     expect(html.getAttribute("data-page")).toBe("landing");
@@ -167,6 +221,40 @@ describe("the whole site", () => {
     if (site.version) expect(text).toContain(`v${site.version}`);
     expect(text).toContain(`${site.license} license`);
     expect(readFileSync("dist/og/index.png").subarray(1, 4).toString()).toBe("PNG");
+  });
+
+  it("excludes raw examples from search snippets while keeping their context eligible", () => {
+    const home = page("dist", "index.html");
+    for (const selector of [
+      ".hook-panel pre, .hook-panel [data-lint-skip] p",
+      ".transcript-prompt span:not([aria-hidden]), .transcript-step > div > p",
+      "#themes figure pre",
+      ".no-js-only ol li",
+    ]) {
+      const elements = [...home.querySelectorAll(selector)];
+      expect(elements.length, selector).toBeGreaterThan(0);
+      for (const element of elements) {
+        expect(
+          element.closest("div[data-nosnippet], span[data-nosnippet], section[data-nosnippet]"),
+          element.textContent ?? selector,
+        ).not.toBeNull();
+      }
+    }
+    for (const selector of [
+      ".hook-panel figcaption",
+      ".transcript figcaption, .transcript-note",
+      "#themes .theme-source figcaption, #themes .theme-source p",
+      ".no-js-only h2, .no-js-only a",
+      "main h1, main h2, main a",
+      ".hero pre, #install pre",
+      ".hero-lede, #install .section-lede",
+    ]) {
+      const elements = [...home.querySelectorAll(selector)];
+      expect(elements.length, selector).toBeGreaterThan(0);
+      for (const element of elements) {
+        expect(element.closest("[data-nosnippet]"), element.textContent ?? selector).toBeNull();
+      }
+    }
   });
 
   it("links the brand icons every page needs, all built from the mark", () => {
@@ -254,12 +342,19 @@ describe("the whole site", () => {
   it("serves robots.txt, the sitemap index and an unindexed 404 page", () => {
     expect(read("dist", "robots.txt")).toContain(`Sitemap: ${absolute("/sitemap-index.xml")}`);
     expect(existsSync("dist/sitemap-index.xml")).toBe(true);
-    expect(read("dist", "sitemap-0.xml")).not.toMatch(/404|\.md<|\.png<|\.txt</);
+    const sitemap = read("dist", "sitemap-0.xml");
+    for (const href of ["/", "/docs/"]) {
+      expect(sitemap).toContain(`<loc>${absolute(href)}</loc>`);
+    }
+    expect(sitemap).not.toMatch(/404|\.md<|\.png<|\.txt</);
     const notFound = page("dist", "404.html");
     expect(notFound.querySelector("h1")?.textContent).toBe("Page not found");
-    expect(notFound.querySelector('meta[name="robots"]')?.getAttribute("content")).toBe(
-      "noindex, nofollow",
-    );
+    expect(
+      [...notFound.head.querySelectorAll('meta[name="robots"]')].map((tag) =>
+        tag.getAttribute("content"),
+      ),
+    ).toEqual(["noindex, nofollow"]);
+    expect(websiteData(notFound)).toEqual([]);
   });
 });
 
