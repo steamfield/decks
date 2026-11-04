@@ -235,9 +235,9 @@ describe("copy blocks (CopyBlock.astro)", () => {
   });
 });
 
-/** A code frame as the docs Markdown and the landing theme.json render it. */
+/** A code frame as the docs Markdown plugins (and the landing theme.json frame) render it. */
 const codeFrame = (code: string) =>
-  `<figure class="code-frame"><figcaption>theme.json</figcaption><pre class="astro-code"><code>${code}</code></pre></figure>`;
+  `<figure data-code-block><figcaption data-code-title>theme.json</figcaption><span data-code-copy data-copy-root><button type="button" hidden data-copy-command aria-label="Copy code" aria-controls="code-1"><svg aria-hidden="true"></svg><span data-copy-label>Copy</span></button><span data-copy-result role="status" aria-live="polite"></span></span><pre class="astro-code" id="code-1"><code>${code}</code></pre></figure>`;
 
 describe("code frames", () => {
   it("get a Copy button that copies the code", async () => {

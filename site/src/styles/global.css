@@ -140,15 +140,18 @@
   }
 }
 
-.code-frame {
-  @apply border-line relative overflow-hidden rounded-md border;
+/* Code frames: the figure @steamfield/ui/markdown's code-block plugin emits around each
+   highlighted block (the landing theme.json frame uses the same markup). */
+[data-code-block] {
+  @apply border-line relative flex flex-col overflow-hidden rounded-md border;
 }
 
-.code-frame figcaption {
-  @apply border-line bg-panel text-muted border-b px-4 py-2 font-mono text-xs;
+/* The plugin puts the caption after the <pre>; it shows above it. */
+[data-code-block] figcaption {
+  @apply border-line bg-panel text-muted order-first border-b px-4 py-2 font-mono text-xs;
 }
 
-.code-frame pre {
+[data-code-block] pre {
   @apply m-0 rounded-none;
 }
 
@@ -172,43 +175,63 @@
   }
 }
 
-/* Added to each code frame by src/scripts/site.ts. */
-.code-copy {
+/* The frame's copy button, wired by src/scripts/site.ts. It shows its label only. */
+[data-code-copy] [data-copy-command] {
   @apply border-line-strong bg-canvas text-ink-2 absolute top-2 right-2 rounded-sm border px-2 py-0.5 text-xs;
 }
 
-.callout {
-  @apply border-line bg-panel my-6 rounded-md border border-l-4 px-4 py-1;
+[data-code-copy] [data-copy-command] svg {
+  display: none;
 }
 
-.callout-title {
+/* Callouts: `> [!NOTE]` blockquotes, which the plugin marks data-callout. Prose quote
+   styling (italics, quote marks, weight) doesn't apply to them. */
+[data-callout] {
+  @apply border-line bg-panel my-6 rounded-md border border-l-4 px-4 py-1;
+  color: inherit;
+  font-style: normal;
+  font-weight: inherit;
+  quotes: none;
+}
+
+/* Prose lets code in a quote inherit the quote's color; in a callout it stays code. */
+[data-callout] code {
+  color: var(--tw-prose-code);
+}
+
+[data-callout] p:first-of-type::before,
+[data-callout] p:last-of-type::after {
+  content: none;
+}
+
+[data-callout-title] {
   @apply text-ink font-semibold;
 }
 
-.callout-note,
-.callout-tip,
-.callout-important {
+[data-callout="note"],
+[data-callout="tip"],
+[data-callout="important"] {
   border-left-color: var(--color-ink-2);
 }
 
-.callout-warning,
-.callout-caution {
+[data-callout="warning"],
+[data-callout="caution"] {
   border-left-color: #b45309;
 }
 
-.heading-anchor {
+[data-heading-anchor] {
   @apply text-muted ml-2 no-underline opacity-0 focus:opacity-100;
 }
 
-.heading-anchor::after {
+[data-heading-anchor]::after {
   content: "#";
 }
 
-.prose :where(h2, h3):hover .heading-anchor {
+.prose :where(h2, h3):hover [data-heading-anchor] {
   opacity: 1;
 }
 
-.table-scroll {
+[data-table-scroll] {
   @apply overflow-x-auto;
 }
 

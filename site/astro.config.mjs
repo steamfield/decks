@@ -4,7 +4,7 @@ import sitemap from "@astrojs/sitemap";
 import tailwind from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import { site } from "./src/config.ts";
-import { codeTitle, docsHastPlugins } from "./src/lib/markdown.ts";
+import { docsHastPlugins, docsShikiTransformers } from "./src/lib/markdown.ts";
 
 // Self-hosted at build time from installed packages: no font request leaves the site.
 // Two families: Inter (variable), the face the slides use, and JetBrains Mono for
@@ -51,9 +51,10 @@ export default defineConfig({
     processor: satteri({ hastPlugins: [satteriHeadingIdsPlugin(), ...docsHastPlugins] }),
     shikiConfig: {
       themes: { light: "github-light-high-contrast", dark: "github-dark-default" },
-      // Both themes as CSS variables; global.css picks one per theme.
+      // Both themes as CSS variables; global.css picks one per theme. The library's
+      // code-block plugin keys on Astro's astro-code class, so it works under any theme.
       defaultColor: false,
-      transformers: [codeTitle],
+      transformers: docsShikiTransformers,
     },
   },
   vite: { plugins: [tailwind()] },

@@ -32,6 +32,17 @@ const denial = loadHookDenial();
 const files = loadProjectFiles();
 const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
 const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-default" } as const;
+// The theme.json frame uses the docs' code-frame markup (@steamfield/ui/markdown's), so
+// src/scripts/site.ts wires its copy button the same way: the button copies the <pre>.
+const themeCodeId = "theme-json-code";
+const themeCodeTransformers = [
+  {
+    name: "theme-json-id",
+    pre(node: { properties: Record<string, unknown> }) {
+      node.properties.id = themeCodeId;
+    },
+  },
+];
 // The theme stills are shot from this deck (STILL.deck in scripts/demo.mjs), not the hero.
 const STILL_DECK = "tides";
 const stillTitle =
@@ -247,9 +258,27 @@ const stills = (name: string) => ({
         </div>
       </fieldset>
       <div class="theme-source">
-        <figure class="code-frame code-wrap" data-block>
-          <figcaption>theme.json</figcaption>
-          <Code code={warmTheme} lang="json" themes={codeThemes} defaultColor={false} />
+        <figure class="code-wrap" data-code-block data-block>
+          <figcaption data-code-title>theme.json</figcaption>
+          <span data-code-copy data-copy-root>
+            <button
+              type="button"
+              hidden
+              data-copy-command
+              aria-label="Copy code"
+              aria-controls={themeCodeId}
+            >
+              <span data-copy-label>Copy</span>
+            </button>
+            <span data-copy-result role="status" aria-live="polite"></span>
+          </span>
+          <Code
+            code={warmTheme}
+            lang="json"
+            themes={codeThemes}
+            defaultColor={false}
+            transformers={themeCodeTransformers}
+          />
         </figure>
         <p class="text-muted text-sm">
           This file changes the background colors and the two chart colors the slide uses. The

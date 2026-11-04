@@ -76,10 +76,10 @@ describe("docs pages", () => {
 
   it("renders the Markdown conventions", () => {
     const html = docs.map(({ id }) => read("dist", pagePath(id))).join("\n");
-    expect(html).toMatch(/<aside class="callout callout-note">/);
-    expect(html).toMatch(/<figcaption>Terminal<\/figcaption>/);
-    expect(html).toMatch(/<div class="table-scroll" tabindex="0" role="region"/);
-    expect(html).toMatch(/<a class="heading-anchor" href="#[\w-]+"/);
+    expect(html).toMatch(/<blockquote role="note" data-callout="note">/);
+    expect(html).toMatch(/<figcaption data-code-title="">Terminal<\/figcaption>/);
+    expect(html).toMatch(/<div data-table-scroll="" tabindex="0" role="region"/);
+    expect(html).toMatch(/<a href="#[\w-]+" data-heading-anchor/);
     expect(html).toMatch(/--shiki-dark:/);
   });
 

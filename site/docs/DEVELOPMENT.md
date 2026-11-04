@@ -8,7 +8,7 @@
 | `src/content/docs/` | Docs pages, one Markdown file each, validated by `src/content/schema.ts` |
 | `src/lib/docs.ts` | Pure docs rules: sidebar order, pager, URLs, the Markdown export and both llms files |
 | `src/lib/collection.ts` | The only `astro:content` import outside routes |
-| `src/lib/markdown.ts` | Docs Markdown conventions as Sätteri hast plugins plus one Shiki transformer |
+| `src/lib/markdown.ts` | Docs Markdown conventions: `@steamfield/ui/markdown`'s Sätteri hast plugins plus its fence-meta Shiki transformer |
 | `src/lib/og.ts` | The social card layout (the mark and site name, page title over the hero deck's poster) and its fonts |
 | `src/lib/brand.ts` | The Decks mark's geometry and colors (cyan and violet ramp steps from the product theme), its SVG and PNG renders and the ICO packer; `src/pages/favicon.svg.ts`, `favicon.ico.ts`, `apple-touch-icon.png.ts`, `icon-[size].png.ts` and `site.webmanifest.ts` serve them, so no icon is a committed binary. Change the mark there |
 | `src/components/landing/` | Landing sections (static React) and the two islands, `DeckPlayer` and `InstallTabs` |
@@ -33,7 +33,7 @@ Link between pages with the full route and its trailing slash (`/docs/concepts/i
 
 ## Markdown processing
 
-Astro's default processor is Sätteri, which doesn't run remark or rehype plugins. The plugins in `src/lib/markdown.ts` use Sätteri's own API (`@astrojs/markdown-satteri`): objects with a tag `filter` and a `visit(node, ctx)` function. Shiki highlights code before hast plugins run and drops the fence's info string, so `codeTitle` (a Shiki transformer) copies `title="..."` onto the `<pre>` as `data-title`, and `codeFrames` turns it into a caption. `markdown.test.ts` renders through the same processor.
+Astro's default processor is Sätteri, which doesn't run remark or rehype plugins. `src/lib/markdown.ts` takes its plugins from `@steamfield/ui/markdown` (`createHastPlugins`): callouts become `<blockquote data-callout="note">` with a `data-callout-title` paragraph, `h2`/`h3` get a `data-heading-anchor` link, tables sit in a focusable `data-table-scroll` region, and each highlighted block becomes a `data-code-block` figure with its caption and a copy button that `src/scripts/site.ts` wires. Shiki highlights code before hast plugins run and drops the fence's info string, so `codeMeta()` (a Shiki transformer) copies `title="..."` onto the `<pre>`. The site keeps its own dual Shiki themes in `astro.config.mjs` rather than the library's `createShikiConfig`, since the plugins key on the `astro-code` class Astro adds under any theme. `global.css` styles those `data-*` hooks; the landing theme.json frame in `index.astro` uses the same markup. `markdown.test.ts` renders through the same processor.
 
 ## Islands and scripts
 
