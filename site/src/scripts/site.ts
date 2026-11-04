@@ -1,3 +1,4 @@
+import { initReveal } from "@steamfield/ui/reveal";
 import { track } from "../lib/analytics";
 import { type EventName, Events } from "../lib/events";
 import { PICK_EVENT } from "../lib/player/pick";
@@ -120,32 +121,17 @@ function setupHeaderEdge() {
 }
 
 /**
- * Landing sections rise in as they scroll into view. Only blocks still below
- * the fold are hidden first, so nothing already on screen flashes; without
- * JavaScript or with reduced motion everything is simply there.
+ * Landing sections rise in as they scroll into view (initReveal from
+ * @steamfield/ui/reveal, which sets data-revealed once). A block already on
+ * screen, or above it, is revealed at once, so only blocks still below the fold
+ * wait; keyboard focus reveals a block early. Without JavaScript or
+ * IntersectionObserver, or with reduced motion, everything is simply there.
  */
 function setupReveal() {
-  if (typeof IntersectionObserver === "undefined") return;
-  if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
-  const pending = [...document.querySelectorAll<HTMLElement>("[data-reveal]")].filter(
-    (element) => element.getBoundingClientRect().top > window.innerHeight,
-  );
-  const reveal = (element: Element) => {
-    element.removeAttribute("data-pending");
-    observer.unobserve(element);
-  };
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) if (entry.isIntersecting) reveal(entry.target);
-    },
-    { rootMargin: "0px 0px -15% 0px" },
-  );
-  for (const element of pending) {
-    element.setAttribute("data-pending", "");
-    observer.observe(element);
-    // Keyboard focus can land in a block before it crosses the threshold.
-    element.addEventListener("focusin", () => reveal(element), { once: true });
-  }
+  initReveal({
+    rootMargin: "0px 0px -15% 0px",
+    immediate: (element) => element.getBoundingClientRect().top <= window.innerHeight,
+  });
 }
 
 function setupTocHighlight() {

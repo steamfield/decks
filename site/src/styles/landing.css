@@ -1424,7 +1424,10 @@ html[data-page="landing"] :focus-visible {
 
 /*
  * Motion, only when allowed and only on screen (print shows every block).
- * Scroll reveal: src/scripts/site.ts marks rows still below the fold pending.
+ * Scroll reveal: a block hides only under the motion gate (html[data-motion-ready],
+ * set by revealGateScript in BaseLayout's head and by initReveal in
+ * src/scripts/site.ts) until it is marked data-revealed. site.ts reveals blocks
+ * already on screen at once, so only rows below the fold wait.
  */
 @media screen and (prefers-reduced-motion: no-preference) {
   .rail-progress {
@@ -1439,7 +1442,7 @@ html[data-page="landing"] :focus-visible {
       transform 640ms var(--ease-out);
     transition-delay: var(--delay, 0ms);
   }
-  [data-reveal][data-pending] {
+  html[data-motion-ready] [data-reveal]:not([data-revealed]) {
     opacity: 0;
     transform: translateY(14px);
   }

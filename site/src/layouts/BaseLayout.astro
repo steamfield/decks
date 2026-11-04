@@ -1,4 +1,5 @@
 ---
+import { revealGateScript } from "@steamfield/ui/reveal";
 import { Font } from "astro:assets";
 import Logo from "../components/Logo.astro";
 import { site } from "../config";
@@ -62,6 +63,8 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
     <Font cssVariable="--ff-inter" preload />
     <Font cssVariable="--ff-mono" />
     {landing && <style is:inline set:html={landingCss()} />}
+    <!-- Before paint: the motion gate for scroll reveals (initReveal in src/scripts/site.ts takes it over). -->
+    <script is:inline set:html={revealGateScript} />
     <script is:inline>
       // Before paint: mark JavaScript on, then the stored theme, else the system
       // preference. The landing page is dark only and arrives with .dark set.
