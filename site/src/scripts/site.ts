@@ -127,9 +127,16 @@ function setupHeaderEdge() {
  * IntersectionObserver, or with reduced motion, everything is simply there.
  */
 function setupReveal() {
+  // Measured before initReveal sets the motion gate: measuring under it would flush the
+  // hidden start state, so an on-screen block would play its entrance from there.
+  const onScreen = new Set(
+    [...document.querySelectorAll("[data-reveal]")].filter(
+      (element) => element.getBoundingClientRect().top <= window.innerHeight,
+    ),
+  );
   initReveal({
     rootMargin: "0px 0px -15% 0px",
-    immediate: (element) => element.getBoundingClientRect().top <= window.innerHeight,
+    immediate: (element) => onScreen.has(element),
   });
 }
 

@@ -95,6 +95,31 @@ test("the theme switch swaps the default and warm slides", async ({ page }) => {
   await expect(page.getByRole("radio", { name: "With this theme.json" })).toBeChecked();
 });
 
+test("reveal blocks already on screen at load never hide or animate", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 2000 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  // After the module script has run (it is deferred, so it runs before DOMContentLoaded).
+  const onScreen = await page.evaluate(
+    () =>
+      new Promise<{ top: number; animations: number; opacity: string }[]>((resolve) =>
+        requestAnimationFrame(() =>
+          resolve(
+            [...document.querySelectorAll<HTMLElement>("[data-reveal]")]
+              .filter((el) => el.getBoundingClientRect().top < window.innerHeight)
+              .map((el) => ({
+                top: Math.round(el.getBoundingClientRect().top),
+                animations: el.getAnimations().length,
+                opacity: getComputedStyle(el).opacity,
+              })),
+          ),
+        ),
+      ),
+  );
+  expect(onScreen.length).toBeGreaterThan(0);
+  for (const block of onScreen) expect(block).toEqual({ ...block, animations: 0, opacity: "1" });
+});
+
 test("copy buttons appear once the clipboard API is there", async ({ page }) => {
   await page.goto("/");
   // The install tabs' button; the theme.json frame gets its own Copy too.

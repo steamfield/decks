@@ -1425,9 +1425,10 @@ html[data-page="landing"] :focus-visible {
 /*
  * Motion, only when allowed and only on screen (print shows every block).
  * Scroll reveal: a block hides only under the motion gate (html[data-motion-ready],
- * set by revealGateScript in BaseLayout's head and by initReveal in
- * src/scripts/site.ts) until it is marked data-revealed. site.ts reveals blocks
- * already on screen at once, so only rows below the fold wait.
+ * which initReveal in src/scripts/site.ts sets) until it is marked data-revealed.
+ * initReveal reveals blocks already on screen in the same task it sets the gate, so
+ * they never hide and only rows below the fold wait. There is deliberately no
+ * before-paint gate script: it would hide on-screen blocks and replay their entrance.
  */
 @media screen and (prefers-reduced-motion: no-preference) {
   .rail-progress {
