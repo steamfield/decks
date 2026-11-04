@@ -1,5 +1,9 @@
 // Pure docs rules: ordering, URLs, the pager and the agent-readable exports.
 // Pages pass in the collection from collection.ts, so tests need no Astro runtime.
+// Each page's Markdown export is @steamfield/ui/docs' pageMarkdown with links left as
+// written; the sidebar, pager, llms.txt and llms-full.txt keep this site's own shapes
+// (the library's differ: labelled groups here, ties by title, a shorter llms.txt).
+import { type DocsConfig, pageMarkdown } from "@steamfield/ui/docs";
 import type { DocData } from "../content/schema";
 
 export type DocEntry = { id: string; data: DocData; body: string };
@@ -42,9 +46,19 @@ export function pageLinks(nav: readonly NavGroup[], id: string) {
   return { prev: flat[index - 1], next: flat[index + 1] };
 }
 
-/** The Markdown served beside each page at /docs/<id>.md. */
+/** What pageMarkdown reads from the config: only the link rewriting, which keeps every link. */
+const exportConfig: DocsConfig = {
+  name: "",
+  summary: "",
+  groups: [],
+  trailingSlash: "always",
+  optionalLinks: [],
+  rewriteLink: (href) => href,
+};
+
+/** The Markdown served beside each page at /docs/<id>.md: title, description, then the body. */
 export function toMarkdownExport(entry: DocEntry): string {
-  return `# ${entry.data.title}\n\n> ${entry.data.description}\n\n${entry.body.trim()}\n`;
+  return pageMarkdown(exportConfig, entry, [], "");
 }
 
 /** llms.txt: the product summary, then every page by group with its description. */

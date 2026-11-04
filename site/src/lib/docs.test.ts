@@ -55,6 +55,22 @@ describe("agent-readable exports", () => {
     );
   });
 
+  it("keeps the body's links as written and trims it", () => {
+    const body = [
+      "",
+      "See [Quickstart](/docs/getting-started/quickstart/) and [CLI](../reference/cli/).",
+      "",
+      "```md",
+      "[a](/docs/x/)",
+      "```",
+      "",
+    ].join("\n");
+    const entry = { ...(entries[2] as DocEntry), body };
+    expect(toMarkdownExport(entry)).toBe(
+      `# Installation\n\n> About getting-started/install\n\n${body.trim()}\n`,
+    );
+  });
+
   it("lists every page in llms.txt by group with absolute Markdown URLs", () => {
     const text = llmsIndex(site, nav);
     expect(text).toContain("# Acme\n\n> Notes search.");
