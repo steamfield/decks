@@ -15,7 +15,7 @@
 | `src/data/` | `examples.json` (the example registry), build-time loaders for the examples, the recorded fixtures and the scaffolded file tree |
 | `src/lib/player/` | The embed contract, caption and counter formatting, and the example types (`stateAt`, `markAt`, `draftLine`) |
 | `src/lib/tokens.ts` | The landing page's tokens, derived from the product theme |
-| `src/scripts/site.ts` | Theme toggle (docs), command and code copy buttons (shown only when the clipboard API is there), gallery picks, copy page, the TOC highlight, and on the landing page the header's scroll edge and the section scroll reveal |
+| `src/scripts/site.ts` | Theme toggle (docs), command and code copy buttons (`enhanceCopyButtons`, with an execCommand fallback), gallery picks, copy page, the TOC highlight, and on the landing page the header's scroll edge and the section scroll reveal |
 | `src/layouts/` | `BaseLayout` (head, header, footer) and `DocsLayout` (sidebar, TOC, pager) |
 
 ## Docs pages

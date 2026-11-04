@@ -16,6 +16,16 @@ const [firstDoc, secondDoc] = readdirSync("src/content/docs", {
 const DOC = firstDoc ?? "/docs/";
 const [firstInstall, secondInstall] = site.install;
 const examples = loadExamples();
+// A docs page with code blocks, each with a copy button.
+const FENCED_DOC = "/docs/getting-started/quickstart/";
+const warmTheme = readFileSync("demo/warm-theme.json", "utf8");
+
+/** Copy controls exist in the HTML but none is visible: without JavaScript they would be dead. */
+async function expectNoCopyControl(page: Page) {
+  const controls = page.locator("[data-copy-command], [data-part='copy-button']");
+  expect(await controls.count()).toBeGreaterThan(0);
+  await expect(controls.filter({ visible: true })).toHaveCount(0);
+}
 const hero = examples[0];
 
 // Headless Chromium denies the decks' screen wake lock; the deck logs that and carries on.
@@ -120,9 +130,28 @@ test("reveal blocks already on screen at load never hide or animate", async ({ p
   for (const block of onScreen) expect(block).toEqual({ ...block, animations: 0, opacity: "1" });
 });
 
-test("copy buttons appear once the clipboard API is there", async ({ page }) => {
+test("the landing copy buttons appear and copy", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/");
-  // The install tabs' button; the theme.json frame gets its own Copy too.
+  const clipboard = () => page.evaluate(() => navigator.clipboard.readText());
+
+  // The hero CopyBlock copies every install line.
+  const hero = page.getByRole("button", { name: "Copy the install commands" });
+  await expect(hero).toBeVisible();
+  await hero.click();
+  await expect(hero).toHaveText("Copied");
+  expect(await clipboard()).toBe(site.quickstart.join("\n"));
+
+  // The theme.json frame copies the file.
+  const frame = page.locator("#themes figure[data-code-block]");
+  const code = frame.getByRole("button", { name: "Copy code" });
+  await code.scrollIntoViewIfNeeded();
+  await expect(code).toBeVisible();
+  await code.click();
+  await expect(code).toHaveText("Copied");
+  expect((await clipboard()).trim()).toBe(warmTheme.trim());
+
+  // The install tabs' own button.
   await expect(page.getByRole("button", { name: "Copy", exact: true }).first()).toBeVisible();
 });
 
@@ -143,6 +172,12 @@ test.describe("without JavaScript", () => {
     );
   });
 
+  test("a docs page with code shows no copy control", async ({ page }) => {
+    await page.goto(FENCED_DOC);
+    await expect(page.locator("figure[data-code-block] pre").first()).toBeVisible();
+    await expectNoCopyControl(page);
+  });
+
   test("the landing page shows the poster, the deck's text and links to every deck", async ({
     page,
   }) => {
@@ -150,7 +185,7 @@ test.describe("without JavaScript", () => {
     await expect(page.locator(".player-canvas img")).toBeVisible();
     await expect(page.locator(".player video")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Play" })).toBeHidden();
-    await expect(page.locator("button[data-copy-command]").first()).toBeHidden();
+    await expectNoCopyControl(page);
     for (const example of examples) {
       await expect(page.locator(`#examples a[data-example="${example.name}"]`)).toHaveAttribute(
         "href",

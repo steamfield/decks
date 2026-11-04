@@ -1,27 +1,24 @@
 ---
 // One or more command lines with a single copy button that copies them all.
-// The button stays hidden until src/scripts/site.ts confirms the clipboard API and
-// wires it (enhanceCopyButtons from @steamfield/ui/copy, which copies the <code>'s
-// text); without it the commands are plain selectable text. The "$ " prompts are
-// drawn by CSS (.copy-line::before), so they are never copied.
+// The button stays hidden until src/scripts/site.ts wires it (enhanceCopyButtons
+// from @steamfield/ui/copy, which copies the <code>'s text); without JavaScript the
+// commands are plain selectable text. The "$ " prompts are drawn by CSS
+// (.copy-line::before), so they are never copied.
 import type { EventName } from "../lib/events";
 
 interface Props {
+  /** The <code>'s id, which the button names; unique on the page. */
+  id: string;
   lines: string[];
   /** Accessible name for the button, e.g. "Copy both install commands". */
   label: string;
   track?: EventName;
   trackMethod?: string;
 }
-const { lines, label, track, trackMethod } = Astro.props;
-// The button copies this element's text; labels are unique on a page.
-const id = `copy-${label
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, "-")
-  .replace(/^-|-$/g, "")}`;
+const { id, lines, label, track, trackMethod } = Astro.props;
 ---
 
-<div class="border-line-strong bg-panel flex items-start gap-3 rounded-md border p-3">
+<div class="border-line-strong bg-panel flex flex-wrap items-start gap-3 rounded-md border p-3">
   <pre class="text-ink min-w-0 flex-1 font-mono text-[13px] leading-6 whitespace-pre-wrap"><code id={id}>{
     lines.map((line, index) => (
       <span class="copy-line block pl-[2ch] -indent-[2ch]">{
@@ -45,5 +42,6 @@ const id = `copy-${label
   >
     <span data-copy-label>Copy</span>
   </button>
-  <span data-copy-result role="status" aria-live="polite"></span>
+  {/* A failure message takes its own row under the commands. */}
+  <span data-copy-result role="status" aria-live="polite" class="basis-full"></span>
 </div>

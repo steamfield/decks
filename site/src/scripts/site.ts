@@ -1,4 +1,4 @@
-import { enhanceCopyButtons } from "@steamfield/ui/copy";
+import { type CopyEventDetail, enhanceCopyButtons } from "@steamfield/ui/copy";
 import { spyToc } from "@steamfield/ui/docs";
 import { initReveal } from "@steamfield/ui/reveal";
 import { track } from "../lib/analytics";
@@ -33,6 +33,9 @@ function setupThemeToggle() {
 
 const canCopy = () => typeof navigator.clipboard?.writeText === "function";
 
+/** How long a copy button says "Copied". */
+const COPIED_MS = 1500;
+
 async function copyWithFeedback(button: HTMLButtonElement, read: () => Promise<string> | string) {
   const label = button.textContent;
   try {
@@ -43,31 +46,29 @@ async function copyWithFeedback(button: HTMLButtonElement, read: () => Promise<s
   }
   setTimeout(() => {
     button.textContent = label;
-  }, 1500);
+  }, COPIED_MS);
 }
-
-/** How long a copy button says "Copied". */
-const COPIED_MS = 1500;
 
 /**
  * Copy buttons on commands (CopyBlock.astro) and code frames (the docs Markdown
  * plugins and the landing theme.json frame), wired by enhanceCopyButtons from
  * @steamfield/ui/copy: each button copies the text of the element its aria-controls
- * names. They stay hidden unless the clipboard API is
- * there. A button's data-track names the event sent after every attempt, with
- * data-track-method as its method.
+ * names, falling back to execCommand without the Clipboard API. A button's
+ * data-track names the event sent after a successful copy, with data-track-method
+ * as its method.
  */
 function setupCopyButtons() {
-  if (!canCopy()) return;
   enhanceCopyButtons(document, {
     copiedMs: COPIED_MS,
-    onCopy: ({ id }) => {
-      const button = document.querySelector<HTMLElement>(
-        `[data-copy-command][aria-controls="${id}"]`,
-      );
-      const event = button?.dataset.track as EventName | undefined;
-      if (event) track(event, { method: button?.dataset.trackMethod ?? null });
-    },
+    // The noun in a failure message: "The command list is selected; press Cmd+C ...".
+    subjects: { "Copy the install commands": "command list" },
+  });
+  document.addEventListener("sf:copy", (event) => {
+    const { ok } = (event as CustomEvent<CopyEventDetail>).detail;
+    const button = event.target;
+    if (!ok || !(button instanceof HTMLElement)) return;
+    const name = button.dataset.track as EventName | undefined;
+    if (name) track(name, { method: button.dataset.trackMethod ?? null });
   });
 }
 

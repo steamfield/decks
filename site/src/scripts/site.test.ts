@@ -1,9 +1,13 @@
 // Characterization of the page script: reveals, the TOC highlight, copy buttons, copy page
 // and the theme toggle. site.ts sets everything up when it is imported, so each test builds
 // the DOM first and then imports a fresh copy of the module.
+
+import { createSatteriMarkdownProcessor, satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import { act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
+import { type CopyBlockProps, copyBlockHtml } from "../components/CopyBlock.fixture";
+import { docsHastPlugins, docsShikiTransformers } from "../lib/markdown";
 
 const track = vi.fn();
 vi.mock("../lib/analytics", () => ({ track: (...args: unknown[]) => track(...args) }));
@@ -84,7 +88,16 @@ async function load(html: string, before?: () => void) {
   await import("./site");
 }
 
+/** Listeners site.ts adds to document; each test imports a fresh copy of it. */
+let documentListeners: Parameters<typeof document.addEventListener>[] = [];
+
 beforeEach(() => {
+  documentListeners = [];
+  const add = document.addEventListener.bind(document);
+  vi.spyOn(document, "addEventListener").mockImplementation((...args) => {
+    documentListeners.push(args);
+    add(...args);
+  });
   observers = [];
   track.mockClear();
   vi.stubGlobal("IntersectionObserver", FakeObserver);
@@ -92,6 +105,10 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
+  for (const [type, listener, options] of documentListeners) {
+    document.removeEventListener(type, listener, options);
+  }
   vi.useRealTimers();
   vi.unstubAllGlobals();
   document.body.innerHTML = "";
@@ -160,38 +177,35 @@ describe("table of contents", () => {
   });
 });
 
-/**
- * CopyBlock.astro's server output (CopyBlock.test.ts pins it). Astro components don't render
- * under happy-dom, so the markup is written out here.
- */
-function copyBlock({
-  lines,
-  label,
-  track,
-  trackMethod,
-}: {
-  lines: string[];
-  label: string;
-  track?: string;
-  trackMethod?: string;
-}) {
-  const rows = lines
-    .map(
-      (line) =>
-        `<span class="copy-line block">${line
-          .split(" ")
-          .map((word) => `<span class="whitespace-nowrap">${word}</span>`)
-          .join(" ")}</span>`,
-    )
-    .join("\n");
-  const tracking = `${track ? ` data-track="${track}"` : ""}${trackMethod ? ` data-track-method="${trackMethod}"` : ""}`;
-  return `<div><pre><code id="copy-block">${rows}</code></pre><button type="button" hidden data-copy-command aria-controls="copy-block"${tracking} aria-label="${label}"><span data-copy-label>Copy</span></button><span data-copy-result role="status" aria-live="polite"></span></div>`;
+const copyBlock = (props: Omit<CopyBlockProps, "id">) =>
+  copyBlockHtml({ id: "install-commands", ...props });
+
+/** Replaces navigator.clipboard (after userEvent.setup, which installs its own) for one test. */
+function setClipboard(value: unknown) {
+  const real = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value });
+  onTestFinished(() => {
+    if (real) Object.defineProperty(navigator, "clipboard", real);
+    else Reflect.deleteProperty(navigator, "clipboard");
+  });
 }
+
+/** Stubs document.execCommand, the library's fallback when the Clipboard API fails. */
+function stubExecCommand(result: boolean) {
+  const exec = vi.fn(() => result);
+  Object.defineProperty(document, "execCommand", { configurable: true, value: exec });
+  onTestFinished(() => {
+    Reflect.deleteProperty(document, "execCommand");
+  });
+  return exec;
+}
+
+const result = () => document.querySelector("[data-copy-result]") as HTMLElement;
 
 describe("copy blocks (CopyBlock.astro)", () => {
   const lines = ["bun add -d slidev-addon-decks", "bunx -p slidev-addon-decks decks init talk"];
 
-  it("copy every line, say Copied for 1.5s and track the method", async () => {
+  it("copy every line, say Copied for 1.5s, announce it and track the method", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     await load(
@@ -208,11 +222,13 @@ describe("copy blocks (CopyBlock.astro)", () => {
     await user.click(button);
     expect(await navigator.clipboard.readText()).toBe(lines.join("\n"));
     expect(button).toHaveTextContent(/^\s*Copied\s*$/);
-    expect(track).toHaveBeenCalledWith("install_copied", { method: "hero" });
+    expect(result()).toHaveTextContent("Copied to clipboard.");
+    expect(track.mock.calls).toEqual([["install_copied", { method: "hero" }]]);
     await act(() => vi.advanceTimersByTimeAsync(1400));
     expect(button).toHaveTextContent(/^\s*Copied\s*$/);
     await act(() => vi.advanceTimersByTimeAsync(200));
     expect(button).toHaveTextContent(/^\s*Copy\s*$/);
+    expect(result()).toHaveTextContent("");
   });
 
   it("send no event without data-track", async () => {
@@ -223,26 +239,65 @@ describe("copy blocks (CopyBlock.astro)", () => {
     expect(track).not.toHaveBeenCalled();
   });
 
-  it("stay hidden without the clipboard API", async () => {
-    const real = Object.getOwnPropertyDescriptor(navigator, "clipboard");
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
-    onTestFinished(() => {
-      if (real) Object.defineProperty(navigator, "clipboard", real);
-      else Reflect.deleteProperty(navigator, "clipboard");
-    });
+  it("show without the Clipboard API and copy through execCommand", async () => {
+    const user = userEvent.setup();
+    setClipboard(undefined);
+    const exec = stubExecCommand(true);
     await load(copyBlock({ lines, label: "Copy" }));
-    expect((document.querySelector("button") as HTMLButtonElement).hidden).toBe(true);
+    const button = document.querySelector("button") as HTMLButtonElement;
+    expect(button.hidden).toBe(false);
+    await user.click(button);
+    expect(exec).toHaveBeenCalledWith("copy");
+    expect(button).toHaveTextContent(/^\s*Copied\s*$/);
+  });
+
+  it("on a failed copy keep the label, select the commands, say so and track nothing", async () => {
+    const user = userEvent.setup();
+    setClipboard({ writeText: () => Promise.reject(new Error("denied")) });
+    stubExecCommand(false);
+    await load(
+      copyBlock({
+        lines,
+        label: "Copy the install commands",
+        track: "install_copied",
+        trackMethod: "hero",
+      }),
+    );
+    const button = document.querySelector("button") as HTMLButtonElement;
+    await user.click(button);
+    await vi.waitFor(() => expect(result()).toHaveAttribute("data-state", "failed"));
+    expect(button).toHaveTextContent(/^\s*Copy\s*$/);
+    expect(result()).toHaveTextContent(
+      "Copy failed. The command list is selected; press Cmd+C or Ctrl+C.",
+    );
+    expect(document.getSelection()?.toString()).toBe(lines.join("\n"));
+    expect(track).not.toHaveBeenCalled();
   });
 });
 
-/** A code frame as the docs Markdown plugins (and the landing theme.json frame) render it. */
-const codeFrame = (code: string) =>
-  `<figure data-code-block><figcaption data-code-title>theme.json</figcaption><span data-code-copy data-copy-root><button type="button" hidden data-copy-command aria-label="Copy code" aria-controls="code-1"><svg aria-hidden="true"></svg><span data-copy-label>Copy</span></button><span data-copy-result role="status" aria-live="polite"></span></span><pre class="astro-code" id="code-1"><code>${code}</code></pre></figure>`;
+/** Renders Markdown through the docs plugins, as the docs pages and the landing frame do. */
+async function renderMarkdown(markdown: string) {
+  // Shiki loads its wasm with Response.bytes(), which happy-dom's Response lacks.
+  const proto = Response.prototype as Response & { bytes?: () => Promise<Uint8Array> };
+  proto.bytes ??= async function (this: Response) {
+    return new Uint8Array(await this.arrayBuffer());
+  };
+  const processor = await createSatteriMarkdownProcessor({
+    hastPlugins: [satteriHeadingIdsPlugin(), ...docsHastPlugins],
+    syntaxHighlight: "shiki",
+    shikiConfig: {
+      themes: { light: "github-light", dark: "github-dark" },
+      defaultColor: false,
+      transformers: docsShikiTransformers,
+    },
+  });
+  return (await processor.render(markdown)).code;
+}
 
 describe("code frames", () => {
   it("get a Copy button that copies the code", async () => {
     const user = userEvent.setup();
-    await load(codeFrame('{"a": 1}'));
+    await load(await renderMarkdown('```json title="theme.json"\n{"a": 1}\n```\n'));
     const button = document.querySelector("figure button") as HTMLButtonElement;
     expect(button.hidden).toBe(false);
     expect(button).toHaveTextContent(/^\s*Copy\s*$/);
