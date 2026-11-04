@@ -81,17 +81,22 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
       })();
     </script>
     <script>
+      import { createConsentStore, mountConsentBanner } from "@steamfield/ui/consent";
       import { initAnalytics } from "../lib/analytics";
       import "../scripts/site";
 
-      // A build without a key ships no analytics code: this branch is dropped.
+      // A build without a key ships no analytics or consent code: this branch is
+      // dropped. One sf-consent cookie on .steamfield.io covers every Steamfield site.
       const key = import.meta.env.PUBLIC_POSTHOG_KEY;
       if (key) {
+        const consent = createConsentStore({ domain: "steamfield.io" });
         initAnalytics({
           key,
           host: import.meta.env.PUBLIC_POSTHOG_HOST,
           site: "decks",
+          consent,
         });
+        mountConsentBanner(consent, { privacyHref: "https://steamfield.io/privacy" });
       }
     </script>
   </head>
@@ -174,6 +179,12 @@ const pageTitle = path === "/" ? site.title : `${title} | ${brand}`;
           <span class="text-ink font-semibold">{site.name}</span>
           <span>A Steamfield project.</span>
           <span>Released under the {site.license} license.</span>
+          <a
+            href="https://steamfield.io/privacy"
+            class="text-muted hover:text-ink w-fit no-underline hover:underline"
+          >
+            Privacy
+          </a>
           {site.version && <span class="font-mono text-xs">v{site.version}</span>}
         </div>
         {site.footer.map((column) => (

@@ -11,6 +11,7 @@
 @import "@steamfield/ui/copy/styles.css";
 @import "@steamfield/ui/tabs/styles.css";
 @import "@steamfield/ui/react/install-tabs/styles.css";
+@import "@steamfield/ui/consent/styles.css";
 
 :root,
 [data-tone] {
@@ -25,6 +26,19 @@
   --sf-radius: var(--radius-sm);
   --sf-font: var(--font-mono);
   --sf-focus: var(--color-ink);
+
+  /* The consent banner (BaseLayout.astro, only in builds with a PostHog key). */
+  --sf-consent-background: var(--color-panel);
+  --sf-consent-foreground: var(--color-ink);
+  --sf-consent-muted: var(--color-muted);
+  --sf-consent-border: var(--color-line-strong);
+  --sf-consent-accent: var(--color-accent);
+  --sf-consent-accent-foreground: var(--color-canvas);
+  --sf-consent-radius: var(--radius-md);
+  --sf-consent-shadow: 0 10px 30px color-mix(in srgb, var(--color-ink) 12%, transparent);
+  --sf-consent-font: var(--font-sans);
+  /* Above the sticky header (40), below the focused skip link (50). */
+  --sf-consent-z-index: 45;
 }
 
 /* InstallTabs (src/components/landing/InstallTabs.tsx), sized as the site's utilities were. */
