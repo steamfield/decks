@@ -7,6 +7,8 @@
  * site uses are imported here.
  */
 @import "@steamfield/ui/copy/styles.css";
+@import "@steamfield/ui/tabs/styles.css";
+@import "@steamfield/ui/react/install-tabs/styles.css";
 
 :root {
   --sf-bg: var(--color-canvas);
@@ -20,4 +22,68 @@
   --sf-radius: var(--radius-sm);
   --sf-font: var(--font-mono);
   --sf-focus: var(--color-ink);
+}
+
+/* InstallTabs (src/components/landing/InstallTabs.tsx), sized as the site's utilities were. */
+@layer components {
+  .decks-install[data-part="install-tabs"] {
+    border-color: var(--color-line);
+    border-radius: var(--radius-md);
+  }
+
+  .decks-install [data-part="tab-list"] {
+    gap: 0;
+    border-bottom-color: var(--color-line);
+  }
+
+  .decks-install [data-part="tab"] {
+    margin-bottom: -1px;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+  }
+
+  .decks-install [data-part="tab"][aria-selected="true"],
+  /* Before hydration no tab carries aria-selected; the first one is the panel on show. */
+    .decks-install
+    [data-part="tabs"]:not([data-live])
+    [data-part="tab"]:first-child {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-ink);
+  }
+
+  .decks-install [data-part="tab-panel"] {
+    padding: 1rem;
+  }
+
+  .decks-install [data-part="install-command"] {
+    align-items: flex-start;
+  }
+
+  .decks-install [data-part="command"] {
+    color: var(--color-ink);
+    font-size: 13px;
+    line-height: 1.5rem;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+
+  .decks-install [data-part="copy-button"] {
+    flex-shrink: 0;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .decks-install [data-part="copy-button"][data-state="copied"]:not(:hover) {
+    color: var(--color-ink-2);
+  }
+
+  .decks-install [data-part="copy-button"]:hover {
+    color: var(--color-ink);
+  }
 }
