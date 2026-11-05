@@ -1,0 +1,188 @@
+---
+title: "How to add charts to Slidev slides"
+description: "Add charts to Slidev with a Vue component wrapping Chart.js, then use Decks for shared chart themes and charts that change with each presentation step."
+published: 2026-11-05
+keyword: "how to add charts to slidev"
+feature: charts
+relatedDocs:
+  - reference/components
+  - concepts/ink-marks
+  - concepts/beats-and-the-story-timeline
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+To add charts to Slidev, put a Vue component that wraps your chart library in the deck's `components/` directory, then use its tag in your Markdown. Slidev discovers it automatically.
+
+Slidev's [built-in component list](https://sli.dev/builtin/components) has no general chart component. A local wrapper gives you a chart in an existing deck without changing presentation tools. Showing it on a click is straightforward; changing its data with each click requires a connection between the slide's state and the chart's update API.
+
+## How do you add a chart to a Slidev slide?
+
+Save a component as `components/SurveyChart.vue`, beside your deck's `slides.md`. After implementing the wrapper below, place it on a slide:
+
+```md title="slides.md"
+<script setup>
+import { labels, values } from './data/chart'
+</script>
+
+<div style="height: 360px">
+  <SurveyChart :labels="labels" :values="values" />
+</div>
+```
+
+Here, `data/chart.ts` is your own data module. Export a `labels` array of category names and a `values` array of numbers in the same order, with one value per label. Use figures from your source dataset. The wrapper accepts these arrays as props, so you can reuse it for another slide without copying its chart setup.
+
+The [Slidev component guide](https://sli.dev/guide/component) documents the directory convention and automatic imports. You don't need to import `SurveyChart` in the slide itself. Give the component a distinct name so its purpose is apparent when you read the Markdown later.
+
+For a process diagram, Slidev also supports [Mermaid code blocks](https://sli.dev/features/mermaid). That is a shorter route when your subject is a sequence or relationship. For numerical data that needs axes and a scale, a chart library gives you control over how values are plotted.
+
+## How do you wrap a chart library in a Vue component?
+
+Install Chart.js in the existing Slidev project with the [documented npm command](https://www.chartjs.org/docs/latest/getting-started/installation.html):
+
+```bash title="Terminal"
+npm install chart.js
+```
+
+Create the wrapper below. The [`chart.js/auto` entry point](https://www.chartjs.org/docs/latest/getting-started/integration.html) registers the chart features for you. This keeps the example short; selective registration is available if you need to reduce the bundle.
+
+```vue title="components/SurveyChart.vue"
+<script setup lang="ts">
+import { onMounted, onBeforeUnmount, ref } from 'vue'
+import Chart from 'chart.js/auto'
+
+const props = defineProps<{
+  labels: string[]
+  values: number[]
+}>()
+const canvas = ref<HTMLCanvasElement | null>(null)
+let chart: Chart<'bar'> | undefined
+
+onMounted(() => {
+  if (!canvas.value) return
+  chart = new Chart(canvas.value, {
+    type: 'bar',
+    data: {
+      labels: [...props.labels],
+      datasets: [{ label: 'Value', data: [...props.values] }],
+    },
+    options: { responsive: true, maintainAspectRatio: false },
+  })
+})
+
+onBeforeUnmount(() => chart?.destroy())
+</script>
+
+<template>
+  <div style="position: relative; height: 100%; width: 100%">
+    <canvas ref="canvas" />
+  </div>
+</template>
+```
+
+The slide's container gives the component an explicit height. Chart.js [resizes against a dedicated parent container](https://www.chartjs.org/docs/latest/configuration/responsive.html), and `maintainAspectRatio: false` lets it use that height. Adjust the container height to leave room for your slide's title and source line.
+
+The chart is created in `onMounted` because it needs the rendered canvas. Vue's [lifecycle hooks](https://vuejs.org/api/composition-api-lifecycle.html) provide the mounting and cleanup callbacks; Chart.js documents [`destroy()`](https://www.chartjs.org/docs/latest/developers/api.html) for releasing a chart instance. Replace the dataset label with the quantity and unit your audience needs. Check the labels against the slide background before presenting.
+
+This Vue component reads its props when it mounts. It has no watcher for later changes, so it continues to show the initial dataset.
+
+## Why doesn't the chart animate with your clicks?
+
+Slidev's [`v-click` directive](https://sli.dev/guide/animations) shows or hides an element at a presentation click. Applying it to a chart controls the chart's visibility. It does not tell the chart library which values to plot next.
+
+Chart.js can animate data updates through [`update()`](https://www.chartjs.org/docs/latest/developers/api.html). To connect that behavior to Slidev, derive the desired dataset from the current click count, watch for changes, and update the chart instance. Slidev exposes the current slide's [`$clicks` value](https://sli.dev/guide/global-context#clicks) for this purpose. You also need to reserve the slide's clicks so navigation visits the states you defined.
+
+An animated chart in Slidev therefore needs an explicit definition of each state. Decide what happens when the presenter goes backward as well as forward. Replacing the current data with an earlier dataset can animate an update, but reversing an authored sequence of highlights and bar movements needs timeline control. A chart's entrance animation alone doesn't define that sequence.
+
+The wrapper is enough when you want to discuss one fixed comparison. Use a step-driven stage when the talk depends on a changing comparison, such as sorting the same tools by usage and then by retention.
+
+## How do you use OpenChart in Slidev?
+
+Decks is a free, Apache-2.0-licensed Slidev addon and deck runner for data-storytelling presentations. It supplies an auto-imported `OpenChart` component and a shared chart theme sized for a 1920x1080 slide canvas. You can pass a spec to it instead of maintaining a canvas wrapper.
+
+In an existing project, install the addon and its base theme:
+
+```bash title="Terminal"
+npm install slidev-addon-decks slidev-theme-the-unnamed
+```
+
+Merge these settings into the headmatter at the beginning of `slides.md`:
+
+```yaml title="slides.md headmatter"
+theme: the-unnamed
+addons: ["slidev-addon-decks"]
+canvasWidth: 1920
+aspectRatio: 16/9
+defaults:
+  layout: full
+```
+
+The [component reference](/docs/reference/components/) lists the auto-imported components. JavaScript helpers still need imports. For a line chart, export your dated observations as `points` and a numeric axis range as `yDomain` from `data/chart.ts`, then use:
+
+```md title="Chart slide"
+<script setup lang="ts">
+import type { ChartSpec } from '@opendata-ai/openchart-core'
+import { slideChartTheme, slideChartAnimation } from 'slidev-addon-decks/chart-theme'
+import { ink } from 'slidev-addon-decks/story'
+import { points, yDomain } from './data/chart'
+
+const spec: ChartSpec = {
+  data: points,
+  mark: { type: 'line', stroke: ink('cyan', 3), strokeWidth: 2.5, point: true },
+  encoding: {
+    x: { field: 'date', type: 'temporal' },
+    y: { field: 'value', type: 'quantitative', scale: { domain: yDomain } },
+  },
+  theme: slideChartTheme,
+  animation: slideChartAnimation,
+}
+</script>
+
+<div class="od-slide is-chart">
+  <div class="od-chart-host od-chart-host--full">
+    <OpenChart :spec="spec" />
+  </div>
+</div>
+```
+
+Each observation needs a `date` and a numeric `value`; `yDomain` is a pair of axis bounds appropriate to those values. The shared theme supplies slide-sized text and axis colors. The wrapper handles entrance animation. Its presence alone doesn't turn this fixed spec into a sequence of presentation steps.
+
+Decks requires Node 20.19+ or 22.12+, and its slides are dark only. It pins OpenChart 9.0.0. For registered decks using OpenChart, set `"animated": true` in `decks.json`; the [PDF export guide](/docs/guides/exporting-to-pdf/) explains the export settings.
+
+<DeckDemo example="state-of-js" caption="A story deck whose chart redraws at each step. Press the right arrow to advance and the left arrow to play the transition back." />
+
+## How do you build a chart that changes at each step?
+
+A Decks story stage pins a visualization in place while its caption changes with the presentation step. The State of JavaScript deck uses bars to compare build tools by usage, then reorders those bars by retention. The tools keep their identities while their values and positions change.
+
+Use `useStage` from `slidev-addon-decks/story` to connect the transition timeline to Slidev's click count. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls a step a "beat". Its `copy` array defines the caption for each step, and the array length determines the step count. The slide's `clicks:` setting is that count minus one, because the initial state needs no click.
+
+This excerpt comes from `BuildToolsStage.vue` in the State of JavaScript example:
+
+```ts title="BuildToolsStage.vue excerpt"
+enter: (tl) => {
+  bars.value?.addGrow(tl, 0, { spread: DUR.morph })
+},
+beats: (tl, beat) => {
+  beat(0)
+  bars.value?.addReorder(tl, BY_RETENTION, DOMAIN, 'beat0', { spread: DUR.morph })
+  beat(1)
+  tl.to(s, { ping: 1, duration: DUR.scale }, 'beat1')
+  tl.to(s, { gap: 1, duration: DUR.scale, ease: DRAW }, `beat1+=${DUR.opacity}`)
+  beat(2)
+},
+```
+
+The excerpt is the `enter` and `beats` portion of the options passed to `useStage`. `bars` is a template ref to `InkBars`, which starts with `BY_USAGE`. `BY_RETENTION` supplies the new ordering and values. The stage imports both arrays from its data module. `DUR` supplies the shared durations; `s` holds the annotation state.
+
+The timeline plays between neighboring steps and reverses when you step backward. It seeks directly to the target on first render, with reduced motion, or when jumping across multiple steps. Interrupted transitions retarget from their current position so rapid navigation doesn't queue up animations.
+
+The [ink marks guide](/docs/concepts/ink-marks/) describes `InkBars` and `InkLine`, which expose handles for stage timelines. These marks are useful when you need to control a particular movement or annotation. `OpenChart` remains the shorter choice for a chart with axes and an entrance animation.
+
+## How do the chart colors follow your theme?
+
+Decks resolves a deck's `theme.json` over its defaults. Read that resolved palette in JavaScript with `import { theme } from 'slidev-addon-decks/theme'`, or select a named ramp color with `ink(hue, step)`. The line chart above uses `ink('cyan', 3)` for its stroke.
+
+Import `slideChartTheme` from `slidev-addon-decks/chart-theme` into each spec that needs the shared chart styling. The `OpenChart` wrapper does not insert that theme into your spec automatically. The theme covers chart text and axes; explicit series colors should also come from the resolved palette. A hex literal inside a spec keeps that color when the deck theme changes.
+
+The [theming guide](/docs/guides/theming-with-theme-json/) explains partial overrides and color ramps. Keep a tool's color consistent across steps so its identity survives a reorder. Changing the comparison already asks the audience to read a new scale; keeping the color stable gives them a familiar mark to follow.
