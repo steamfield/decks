@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getBlog } from "../../lib/collection";
+import { blogCollection, blogHref, readingMinutes } from "../../lib/blog";
+const posts = await getBlog();
+const title = "Slidev and coding-agent presentation guides";
+---
+
+<BaseLayout
+  title={title}
+  description="Guides to building Slidev presentations with coding agents, interactive charts, story steps and sourced figures using the Decks addon."
+  path="/blog/"
+  jsonLd={[blogCollection(posts)]}
+>
+  <div class="mx-auto max-w-3xl px-4 py-12 sm:px-8">
+    <nav aria-label="Breadcrumb" class="text-muted mb-6 text-sm">
+      <a href="/">Home</a> / Blog
+    </nav>
+    <h1 class="text-3xl font-semibold tracking-tight">{title}</h1>
+    <ol class="mt-10 space-y-8">
+      {posts.map((post) => (
+        <li class="border-line border-t pt-6">
+          <h2 class="text-xl font-semibold">
+            <a href={blogHref(post.id)}>{post.data.title}</a>
+          </h2>
+          <p class="text-muted mt-2 text-sm">
+            <time datetime={post.data.published.toISOString()}>
+              {post.data.published.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+                timeZone: "UTC",
+              })}
+            </time>{" "}
+            · {readingMinutes(post.body)} min read
+          </p>
+          <p class="text-ink-2 mt-3">{post.data.description}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</BaseLayout>

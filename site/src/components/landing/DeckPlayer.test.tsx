@@ -115,7 +115,7 @@ afterEach(() => {
 
 describe("DeckPlayer", () => {
   it("keeps a sharp poster and the start caption while the live deck loads", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     expect(document.querySelector("iframe")).toHaveStyle({ visibility: "hidden" });
     expect(document.querySelector("video")).toBeNull();
     expect(
@@ -128,7 +128,7 @@ describe("DeckPlayer", () => {
   });
 
   it("keeps agent provenance in the supporting note", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     expect(
       screen.getByText(
         "Drafted in 8 minutes from this prompt with this repository's agent setup, then edited by hand (+49/−11 in 6 files).",
@@ -141,7 +141,7 @@ describe("DeckPlayer", () => {
   });
 
   it("automatically opens a titled interactive deck and stays paused under reduced motion", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const frame = document.querySelector("iframe");
     expect(frame?.getAttribute("src")).toBe("/demo/tides/index.html?decks-bridge=1#/2");
     expect(frame?.hasAttribute("inert")).toBe(false);
@@ -155,7 +155,7 @@ describe("DeckPlayer", () => {
   });
 
   it("steers a deck that opened elsewhere to the start step, then sends the queued step", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
     const d = deck();
     d.say({ type: "decks:ready" });
@@ -177,7 +177,7 @@ describe("DeckPlayer", () => {
   });
 
   it("lists every slide in the rail, fills progress by step and jumps to a picked slide", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const rail = screen.getByRole("navigation", { name: "Slides" });
     const slides = rail.querySelectorAll("button");
     expect([...slides].map((slide) => slide.textContent)).toEqual([
@@ -212,7 +212,7 @@ describe("DeckPlayer", () => {
   });
 
   it("falls back to the slide title when a slide has no story card", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
     d.say({ type: "decks:meta", title: "Tides", slides: 3, slideTitles: ["Cover", "", "Close"] });
@@ -222,7 +222,7 @@ describe("DeckPlayer", () => {
   });
 
   it("plays step by step after a reading pause and stops at the end", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
     d.state({});
@@ -246,7 +246,7 @@ describe("DeckPlayer", () => {
   });
 
   it("pauses", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
     d.state({});
@@ -256,7 +256,7 @@ describe("DeckPlayer", () => {
   });
 
   it("steps with the arrow keys only from inside the player", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
     d.state({});
@@ -278,7 +278,7 @@ describe("DeckPlayer", () => {
   });
 
   it("ignores messages from anything but its own iframe", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     act(() => {
       window.dispatchEvent(
@@ -293,7 +293,7 @@ describe("DeckPlayer", () => {
   });
 
   it("gives up on a deck that never answers, links to it, and boots again on a press", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const player = screen.getByRole("group", { name: /^Deck player/ });
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
@@ -315,7 +315,7 @@ describe("DeckPlayer", () => {
   });
 
   it("keeps the last step pressed while the deck boots and sends it once it is there", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
     fireEvent.keyDown(screen.getByRole("group", { name: /^Deck player/ }), {
@@ -328,7 +328,7 @@ describe("DeckPlayer", () => {
   });
 
   it("leaves Alt, Cmd and Ctrl arrows to the browser", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
     d.state({});
@@ -352,7 +352,7 @@ describe("DeckPlayer", () => {
       configurable: true,
     });
     try {
-      render(<DeckPlayer examples={examples} />);
+      render(<DeckPlayer examples={examples} priority gallery />);
       const button = screen.getByRole("button", { name: "Full screen" });
       expect(button).toHaveAttribute("aria-pressed", "false");
       await act(async () => {
@@ -367,7 +367,7 @@ describe("DeckPlayer", () => {
   });
 
   it("automatically opens the selected gallery deck paused at its start", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     act(() => {
       window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: "other" }));
     });
@@ -386,7 +386,7 @@ describe("DeckPlayer", () => {
 
   it("takes a pick made before it hydrated", () => {
     window.__decksPick = "other";
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     expect(document.querySelector("iframe")).toHaveAttribute(
       "src",
       "/demo/other/index.html?decks-bridge=1#/2",
@@ -399,7 +399,7 @@ describe("DeckPlayer", () => {
   });
 
   it("keeps the loading poster until the first queued Next has actually settled", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const iframe = document.querySelector("iframe");
     const d = deck();
     fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
@@ -418,7 +418,7 @@ describe("DeckPlayer", () => {
 
   it("waits for the live story card before revealing the deck or starting the opening hold", () => {
     motion(true);
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const iframe = document.querySelector("iframe");
     const d = deck();
     d.state({ lead: "", body: "" });
@@ -450,7 +450,7 @@ describe("DeckPlayer", () => {
 
   it("autoplays the actual deck after the opening hold and waits for each settled state", () => {
     motion(true);
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const d = deck();
     d.state({});
     expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
@@ -475,7 +475,7 @@ describe("DeckPlayer", () => {
 
   it("pauses live playback when reduced motion is enabled without replacing the deck", () => {
     const change = motion(true);
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const d = deck();
     d.state({});
     const iframe = document.querySelector("iframe");
@@ -487,7 +487,7 @@ describe("DeckPlayer", () => {
   });
 
   it("coalesces rapid alternating intent and ignores stale settled acknowledgements", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const d = deck();
     d.state({});
     fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
@@ -512,7 +512,7 @@ describe("DeckPlayer", () => {
   });
 
   it("sends the latest accumulated target once the first request settles", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const d = deck();
     d.state({});
     fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
@@ -530,7 +530,7 @@ describe("DeckPlayer", () => {
   });
 
   it("drops an old deck session's state after another example is selected", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const old = deck();
     old.state({});
     fireEvent.click(screen.getByRole("button", { name: "Another deck" }));
@@ -562,7 +562,7 @@ describe("DeckPlayer", () => {
       },
     );
     motion(true);
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const d = deck();
     d.state({});
     act(() => visibility(false));
@@ -578,7 +578,7 @@ describe("DeckPlayer", () => {
   });
 
   it("leaves editable controls' arrow keys alone", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const d = deck();
     d.state({});
     const player = screen.getByRole("group", { name: /^Deck player/ });
@@ -591,7 +591,7 @@ describe("DeckPlayer", () => {
   });
 
   it("pauses live playback on iframe interaction and document hiding", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     const d = deck();
     d.state({});
@@ -609,7 +609,7 @@ describe("DeckPlayer", () => {
   it.each(["error", "timeout"] as const)(
     "remounts after navigation %s and retries the latest desired step",
     (failure) => {
-      render(<DeckPlayer examples={examples} />);
+      render(<DeckPlayer examples={examples} priority gallery />);
       const old = deck();
       old.state({});
       const frame = document.querySelector("iframe");
@@ -640,7 +640,7 @@ describe("DeckPlayer", () => {
   );
 
   it("keeps the latest live target when an arrow restarts a timed-out navigation", () => {
-    render(<DeckPlayer examples={examples} />);
+    render(<DeckPlayer examples={examples} priority gallery />);
     const old = deck();
     old.state({});
     fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
@@ -674,10 +674,52 @@ describe("DeckPlayer", () => {
 
   it("server-renders the poster, the caption and a link to the deck, no controls needed", async () => {
     const { renderToString } = await import("react-dom/server");
-    const html = renderToString(<DeckPlayer examples={examples} />);
+    const html = renderToString(<DeckPlayer examples={examples} priority gallery />);
     expect(html).toContain('href="/demo/tides/#/2"');
     expect(html).toContain("Recorded lead.");
     expect(html).not.toContain("<iframe");
     expect(html).not.toContain("<video");
+  });
+});
+
+describe("blog players", () => {
+  it("stays on the start step with autoplay false even when motion is allowed, until Play", () => {
+    motion(true);
+    render(<DeckPlayer examples={[hero]} autoplay={false} />);
+    const d = deck();
+    d.state({});
+    act(() => vi.advanceTimersByTime(9000));
+    expect(d.sent).toEqual([]);
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Play" }));
+    act(() => vi.advanceTimersByTime(9000));
+    expect(d.sent).toContainEqual(expect.objectContaining({ cmd: "go", slide: 2, beat: 1 }));
+  });
+  it("omits the examples switcher for a single example", () => {
+    render(<DeckPlayer examples={[hero]} autoplay={false} />);
+    expect(screen.queryByRole("navigation", { name: "Example decks" })).not.toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Slides" })).toBeInTheDocument();
+  });
+  it("gives only the designated player a high priority poster", () => {
+    render(
+      <>
+        <DeckPlayer examples={[hero]} priority />
+        <DeckPlayer examples={[hero]} />
+      </>,
+    );
+    const posters = screen.getAllByRole("img");
+    expect(posters[0]).toHaveAttribute("fetchpriority", "high");
+    expect(posters[1]).toHaveAttribute("fetchpriority", "auto");
+  });
+  it("does not consume a pending landing gallery pick or react to its events", () => {
+    window.__decksPick = "other";
+    render(<DeckPlayer examples={examples} autoplay={false} />);
+    expect(window.__decksPick).toBe("other");
+    act(() => window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: "other" })));
+    expect(document.querySelector("iframe")).toHaveAttribute(
+      "src",
+      "/demo/tides/index.html?decks-bridge=1#/2",
+    );
+    window.__decksPick = undefined;
   });
 });

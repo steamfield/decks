@@ -1,0 +1,113 @@
+---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Code } from "astro:components";
+import { loadExamples } from "../../data/examples";
+import "../../styles/theme-compare.css";
+const examples = loadExamples();
+const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
+const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-default" } as const;
+// The theme.json frame uses the docs' code-frame markup (@steamfield/ui/markdown's), so
+// src/scripts/site.ts wires its copy button the same way: the button copies the <pre>.
+const suffix = (Astro.locals.themeCompareCount = (Astro.locals.themeCompareCount ?? 0) + 1);
+const themeCodeId = suffix === 1 ? "theme-json-code" : `theme-json-code-${suffix}`;
+const defaultId = suffix === 1 ? "still-default" : `still-default-${suffix}`;
+const warmId = suffix === 1 ? "still-warm" : `still-warm-${suffix}`;
+const radioName = suffix === 1 ? "theme-still" : `theme-still-${suffix}`;
+// The theme stills are shot from this deck (STILL.deck in scripts/demo.mjs), not the hero.
+const STILL_DECK = "tides";
+const stillTitle =
+  examples.find((example) => example.name === STILL_DECK)?.title ?? "A story slide";
+const stills = (name: string) => ({
+  avif: `/stills/${STILL_DECK}-${name}-640.avif 640w, /stills/${STILL_DECK}-${name}-1280.avif 1280w`,
+  webp: `/stills/${STILL_DECK}-${name}-640.webp 640w, /stills/${STILL_DECK}-${name}-1280.webp 1280w`,
+  src: `/stills/${STILL_DECK}-${name}-1280.webp`,
+});
+---
+
+<div data-demo class="not-prose themes-grid">
+  <fieldset class="theme-switch">
+    <legend class="sr-only">Show the slide with</legend>
+    <input type="radio" name={radioName} id={defaultId} class="sr-only" checked />
+    <input type="radio" name={radioName} id={warmId} class="sr-only" />
+    <div class="theme-tabs">
+      <label for={defaultId}>Default theme</label>
+      <label for={warmId}>With this theme.json</label>
+    </div>
+    <div class="theme-stills">
+      <figure class="still" data-still="default">
+        <picture>
+          <source
+            type="image/avif"
+            srcset={stills("normal").avif}
+            sizes="(min-width: 1024px) 720px, 100vw"
+          />
+          <source
+            type="image/webp"
+            srcset={stills("normal").webp}
+            sizes="(min-width: 1024px) 720px, 100vw"
+          />
+          <img
+            src={stills("normal").src}
+            width="1280"
+            height="720"
+            loading="lazy"
+            alt={`A slide from the ${STILL_DECK} deck, "${stillTitle}", with the default theme`}
+          />
+        </picture>
+      </figure>
+      <figure class="still" data-still="warm">
+        <picture>
+          <source
+            type="image/avif"
+            srcset={stills("warm").avif}
+            sizes="(min-width: 1024px) 720px, 100vw"
+          />
+          <source
+            type="image/webp"
+            srcset={stills("warm").webp}
+            sizes="(min-width: 1024px) 720px, 100vw"
+          />
+          <img
+            src={stills("warm").src}
+            width="1280"
+            height="720"
+            loading="lazy"
+            alt="The same slide with the theme.json beside it"
+          />
+        </picture>
+      </figure>
+    </div>
+  </fieldset>
+  <div class="theme-source">
+    <figure class="code-wrap" data-code-block data-block>
+      <figcaption data-code-title>theme.json</figcaption>
+      <span data-code-copy data-copy-root>
+        <button
+          type="button"
+          hidden
+          data-copy-command
+          aria-label="Copy code"
+          aria-controls={themeCodeId}
+        >
+          <span data-copy-label>Copy</span>
+        </button>
+        <span data-copy-result role="status" aria-live="polite"></span>
+      </span>
+      <div data-nosnippet>
+        <Code
+          code={warmTheme}
+          lang="json"
+          themes={codeThemes}
+          defaultColor={false}
+          id={themeCodeId}
+        />
+      </div>
+    </figure>
+    <p class="text-muted text-sm">
+      This file changes the background colors and the two chart colors the slide uses. The values
+      come from the warm palette in the template deck.{" "}
+      <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
+    </p>
+  </div>
+</div>

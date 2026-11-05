@@ -1,0 +1,74 @@
+.blog-page {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 48px 32px 64px;
+}
+.blog-article {
+  container-type: inline-size;
+}
+.blog-column {
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+}
+.blog-body {
+  font-size: 18px;
+  line-height: 28px;
+}
+.blog-article [data-demo] {
+  width: 100cqw;
+  margin-inline: calc((44rem - 100cqw) / 2);
+  margin-block: 40px;
+  border-radius: 8px;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 24px;
+  --radius-lg: 8px;
+  --header-height: 0px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --brand-rule: linear-gradient(
+    90deg,
+    var(--color-rule-1),
+    var(--color-rule-2) 35%,
+    var(--color-rule-3) 70%,
+    var(--color-rule-4)
+  );
+}
+.blog-article [data-demo] :focus-visible {
+  outline-color: var(--color-accent);
+}
+.blog-article .themes-grid {
+  padding: 24px;
+}
+.blog-article figcaption {
+  padding-block: 12px;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+.blog-demo > figcaption {
+  padding-inline: 16px;
+}
+.blog-figure img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+@container (max-width: 704px) {
+  .blog-article [data-demo] {
+    margin-inline: 0;
+  }
+}
+@media (max-width: 767px) {
+  .blog-page {
+    padding: 32px 16px 48px;
+  }
+}
+
+/* Demo code uses the same dark syntax theme as the landing, in either page theme. */
+.blog-article [data-demo] .astro-code,
+.blog-article [data-demo] .astro-code span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}

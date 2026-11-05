@@ -108,3 +108,13 @@ describe("landing page tokens", () => {
     for (const name of Object.keys(tokens)) expect(css).toContain(`--color-${name}:`);
   });
 });
+
+it("emits the same player tokens for a demo selector without changing the page root", () => {
+  const tokens = landingTokens();
+  const css = landingCss(tokens, "[data-demo]");
+  expect(css.startsWith("[data-demo]{")).toBe(true);
+  expect(css).not.toContain('html[data-page="landing"]');
+  for (const [name, value] of Object.entries(tokens))
+    expect(css).toContain(`--color-${name}:${value};`);
+  expect(css).toContain("color-scheme:dark");
+});

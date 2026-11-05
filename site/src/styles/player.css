@@ -1,0 +1,568 @@
+/*
+ * The player: a presenter's console. One title bar (examples, position,
+ * transport), the slide, a rail of slides with progress, then the caption.
+ */
+.player-stack {
+  container: deck-player / inline-size;
+  width: 100%;
+}
+.player {
+  position: relative;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-panel);
+}
+.player:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.player::before {
+  content: "";
+  background: var(--brand-rule);
+  position: absolute;
+  z-index: 11;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 2px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  pointer-events: none;
+}
+.player:fullscreen::before {
+  display: none;
+}
+
+.player-toolbar {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 52px;
+  border-bottom: 1px solid var(--color-line);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 8px;
+  background: var(--color-panel);
+}
+
+.player-toolbar[data-single-example] {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* Example switcher: a segmented control, with the rest behind "More". */
+.player-examples {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  gap: 2px;
+  min-width: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+.example-selector,
+.more-examples > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  padding-inline: 12px;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 150ms,
+    background-color 150ms;
+}
+.example-selector:hover,
+.more-examples > summary:hover {
+  color: var(--color-ink);
+}
+.example-selector[aria-pressed="true"] {
+  outline: 1px solid var(--color-line-strong);
+  outline-offset: -1px;
+  background: var(--color-raised);
+  color: var(--color-ink);
+}
+.more-examples {
+  position: relative;
+}
+.more-examples > summary {
+  list-style: none;
+}
+.more-examples > summary::-webkit-details-marker {
+  display: none;
+}
+.more-examples > summary::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+.more-examples-list {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: -2px;
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  background: var(--color-raised);
+  box-shadow: 0 4px 16px #0006;
+}
+.more-examples-list .example-selector {
+  justify-content: start;
+  width: 100%;
+  height: 36px;
+  color: var(--color-ink-2);
+}
+.more-examples-list .example-selector:hover,
+.more-examples-list .example-selector[aria-pressed="true"] {
+  background: var(--color-line);
+  color: var(--color-ink);
+}
+
+/* Position: state and slide/step, in mono, centered. */
+.player-position {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.player-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.player-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--color-line-strong);
+}
+.player[data-phase="ready"] .player-status::before {
+  background: var(--color-data);
+}
+.counter {
+  color: var(--color-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 4px;
+}
+.player-transport,
+.player-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.player-actions {
+  margin-left: 8px;
+}
+.control {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-ink-2);
+  transition:
+    color 150ms,
+    background-color 150ms;
+}
+.control svg {
+  width: 16px;
+  height: 16px;
+}
+.control:hover:not(:disabled) {
+  background: var(--color-raised);
+  color: var(--color-ink);
+}
+.control:disabled {
+  color: var(--color-line-strong);
+}
+.control[data-primary] {
+  background: var(--color-action);
+  color: var(--color-action-ink);
+}
+.control[data-primary]:hover {
+  background: var(--color-action);
+  color: var(--color-action-ink);
+  opacity: 0.9;
+}
+.control[aria-pressed="true"] {
+  color: var(--color-data);
+}
+.open-deck {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin-left: 4px;
+  border-radius: var(--radius-md);
+  padding-inline: 10px;
+  color: var(--color-ink-2);
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 150ms,
+    background-color 150ms;
+}
+.open-deck:hover {
+  background: var(--color-raised);
+  color: var(--color-ink);
+}
+
+/* Touch screens get 44px targets at every width. */
+@media (pointer: coarse) {
+  .control,
+  .open-deck {
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+  .example-selector,
+  .more-examples > summary {
+    min-height: 44px;
+  }
+}
+
+/* The slide: the page's own canvas, so no inner frame. */
+.player-canvas {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-frame);
+}
+.player-canvas :is(img, iframe) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: contain;
+}
+.player-message {
+  position: absolute;
+  inset: auto 1rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+  padding: 0.5rem 0.75rem;
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
+/* The rail: one column per slide, its progress filling step by step. */
+.player-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(11rem, 1fr);
+  overflow-x: auto;
+  border-top: 1px solid var(--color-line);
+  /* A thin scrollbar says the rail scrolls when a deck has more slides than fit. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+.rail-slide {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 14px 16px 12px;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+  transition: color 150ms;
+}
+.rail-slide + .rail-slide {
+  border-left: 1px solid var(--color-line);
+}
+.rail-slide:hover,
+.rail-slide[aria-current] {
+  color: var(--color-ink);
+}
+.rail-progress {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+.rail-progress {
+  background: var(--color-data);
+  transform-origin: left;
+  transform: scaleX(var(--progress, 0));
+}
+.rail-number {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.rail-slide[aria-current] .rail-number {
+  color: var(--color-data);
+}
+.rail-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Caption: the current step's words, at a height that never changes. */
+.player-caption {
+  border-top: 1px solid var(--color-line);
+  padding: 20px 24px;
+}
+.caption-copy-stack {
+  display: grid;
+}
+.caption-copy-stack > * {
+  grid-area: 1 / 1;
+}
+.caption-measure {
+  visibility: hidden;
+  pointer-events: none;
+}
+.caption-lead,
+.measure-lead {
+  color: var(--color-ink);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.caption-body,
+.measure-body {
+  margin-top: 2px;
+  color: var(--color-ink-2);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.player-interaction-hint {
+  min-height: 20px;
+  margin-top: 12px;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+.player-interaction-hint[data-visible="false"] {
+  visibility: hidden;
+}
+.player-notes {
+  margin-top: 12px;
+  padding-inline: 24px;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* A small status label leaves the full poster visible during live-deck loading. */
+.player-loading,
+.player-failure {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  background: var(--color-panel);
+  color: var(--color-ink);
+  font-size: 13px;
+  line-height: 20px;
+}
+.player-loading-indicator {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--color-data);
+}
+.player-failure {
+  z-index: 2;
+  gap: 16px;
+}
+.player-failure p {
+  margin: 0;
+}
+.player-retry {
+  flex-shrink: 0;
+  min-height: 36px;
+  border-radius: var(--radius-md);
+  padding-inline: 16px;
+  background: var(--color-action);
+  color: var(--color-action-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Fullscreen assigns the remaining space to a contained 16:9 canvas. */
+.player:fullscreen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100svh;
+  border: 0;
+  border-radius: 0;
+}
+.player:fullscreen .player-toolbar {
+  position: static;
+  flex: 0 0 auto;
+  border-radius: 0;
+}
+.player:fullscreen .player-frame {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  container-type: size;
+}
+.player:fullscreen .player-canvas {
+  width: min(100cqw, calc(100cqh * 16 / 9));
+  max-height: 100%;
+}
+.player:fullscreen .player-caption {
+  flex: 0 0 auto;
+  max-height: 30svh;
+  overflow-y: auto;
+}
+
+/*
+ * Narrow players: two toolbar rows, touch-sized controls, a scrolling rail.
+ * The one-row toolbar needs about 900px before its three groups collide.
+ */
+@container deck-player (max-width: 899px) {
+  .player-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .player-examples {
+    grid-row: 1;
+    grid-column: 1;
+    max-width: 100%;
+  }
+  .player-controls {
+    display: contents;
+  }
+  .player-actions {
+    grid-row: 1;
+    grid-column: 2;
+    margin-left: 0;
+  }
+  /* Row two spans the toolbar, so the transport's width never squeezes row one. */
+  .player-position {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding-left: 4px;
+  }
+  .player-transport {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+  /* The dot and word go; the status element stays for screen readers. */
+  .player-status::before,
+  .player-status > [aria-hidden] {
+    display: none;
+  }
+  .control {
+    width: 44px;
+    height: 44px;
+  }
+  .player-examples {
+    padding: 1px;
+  }
+  .example-selector,
+  .more-examples > summary {
+    height: 40px;
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+  .player-actions {
+    gap: 0;
+  }
+  /* Open deck becomes an icon; its words stay for screen readers. */
+  .open-deck {
+    justify-content: center;
+    width: 44px;
+    min-height: 44px;
+    margin-left: 0;
+    padding: 0;
+  }
+  .open-deck-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .player-rail {
+    grid-auto-columns: minmax(70%, 1fr);
+    scroll-snap-type: x mandatory;
+  }
+  .rail-slide {
+    scroll-snap-align: start;
+  }
+  .player-caption {
+    padding: 16px;
+  }
+  .caption-lead,
+  .measure-lead {
+    font-size: 17px;
+  }
+  .player-notes {
+    padding-inline: 4px;
+  }
+  .player-loading,
+  .player-failure {
+    left: 12px;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+}
+/* The narrowest phones keep the two featured decks; the gallery lists the rest. */
+@container deck-player (max-width: 379px) {
+  .more-examples {
+    display: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .rail-progress {
+    transition: transform 600ms var(--ease-out);
+  }
+}

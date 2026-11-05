@@ -1,0 +1,30 @@
+---
+import { DeckPlayer } from "../landing/DeckPlayer";
+import { loadExamples } from "../../data/examples";
+
+export const DECK_DEMO_PARAMS = ["example", "caption"] as const;
+interface Props {
+  example: string;
+  caption: string;
+}
+const extra = Object.keys(Astro.props).filter(
+  (key) => !DECK_DEMO_PARAMS.some((param) => param === key),
+);
+if (extra.length)
+  throw new Error(
+    `DeckDemo: unsupported props ${extra.join(", ")}. Use ${DECK_DEMO_PARAMS.join(", ")}.`,
+  );
+const { example: name, caption } = Astro.props;
+const examples = loadExamples();
+const example = examples.find((entry) => entry.name === name);
+if (!example)
+  throw new Error(
+    `DeckDemo: unknown example "${name}". Valid names: ${examples.map((entry) => entry.name).join(", ")}`,
+  );
+const count = (Astro.locals.deckDemoCount = (Astro.locals.deckDemoCount ?? 0) + 1);
+---
+
+<figure data-demo class="not-prose blog-demo">
+  <DeckPlayer client:visible examples={[example]} autoplay={false} priority={count === 1} />
+  <figcaption>{caption}</figcaption>
+</figure>

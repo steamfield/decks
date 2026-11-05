@@ -1,0 +1,100 @@
+/* Themes: one slide with a Default/Warm switch, the file that makes the difference beside it. */
+.themes-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  align-items: start;
+  gap: 48px;
+}
+.theme-switch {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.theme-tabs {
+  display: inline-flex;
+  align-self: start;
+  gap: 2px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+.theme-tabs label {
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  color: var(--color-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    color 150ms,
+    background-color 150ms;
+}
+.theme-switch:has(input[id^="still-default"]:checked) .theme-tabs label[for^="still-default"],
+.theme-switch:has(input[id^="still-warm"]:checked) .theme-tabs label[for^="still-warm"] {
+  outline: 1px solid var(--color-line-strong);
+  outline-offset: -1px;
+  background: var(--color-raised);
+  color: var(--color-ink);
+}
+.theme-switch:has(input[id^="still-default"]:focus-visible) .theme-tabs label[for^="still-default"],
+.theme-switch:has(input[id^="still-warm"]:focus-visible) .theme-tabs label[for^="still-warm"] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.theme-stills {
+  display: grid;
+}
+.theme-stills > .still {
+  grid-area: 1 / 1;
+}
+.theme-switch:has(input[id^="still-default"]:checked) .theme-stills [data-still="warm"],
+.theme-switch:has(input[id^="still-warm"]:checked) .theme-stills [data-still="default"] {
+  opacity: 0;
+  visibility: hidden;
+}
+.theme-stills .still img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-frame-edge);
+  border-radius: var(--radius-lg);
+}
+.theme-source {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 50px;
+}
+
+@container (max-width: 899px) {
+  .themes-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .theme-source {
+    padding-top: 0;
+  }
+}
+@media (max-width: 1023px) {
+  .themes-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .theme-source {
+    padding-top: 0;
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .theme-stills > .still {
+    transition: opacity 300ms var(--ease-out);
+  }
+}
+
+@media (pointer: coarse) {
+  .theme-tabs label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
