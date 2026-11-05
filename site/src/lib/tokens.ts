@@ -6,8 +6,8 @@
 // sits one step above the section it is in (landing.css moves --color-panel up
 // to raised inside a band). The theme's hues mark meaning: provenance, run
 // output, the hook's verdict, and the brand rule. BaseLayout
-// writes these as CSS variables on the landing page only; docs keep the light
-// and dark tokens in global.css.
+// writes these as CSS variables on the landing root and blog demos; docs and
+// blog prose keep the light and dark tokens in global.css.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -80,10 +80,13 @@ export function landingTokens(theme = productTheme()): Record<string, string> {
   };
 }
 
-/** The tokens as a CSS rule for the landing page's <html>. */
-export function landingCss(tokens = landingTokens()): string {
+/** The player palette on the landing root, or on an isolated demo selector. */
+export function landingCss(
+  tokens = landingTokens(),
+  selector = 'html[data-page="landing"]',
+): string {
   const vars = Object.entries(tokens)
     .map(([name, value]) => `--color-${name}:${value};`)
     .join("");
-  return `html[data-page="landing"]{${vars}color-scheme:dark}`;
+  return `${selector}{${vars}color-scheme:dark}`;
 }

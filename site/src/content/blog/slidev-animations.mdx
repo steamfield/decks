@@ -1,0 +1,135 @@
+---
+title: "Slidev animations: v-click and stepped charts"
+description: "Use Slidev's v-click to reveal content on each click, then drive chart state and captions from the click count for reversible chart animations."
+published: 2026-11-05
+keyword: "slidev animations"
+feature: story-steps
+relatedDocs:
+  - concepts/beats-and-the-story-timeline
+  - reference/components
+  - getting-started/your-first-story-deck
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+Slidev animations start with `v-click`: reveal an element when you advance, or hide it with `v-click.hide`. Use `<v-clicks>` for a list and `v-after` for content that appears alongside the preceding reveal.
+
+For bullets, those built-ins are usually enough. A chart can reveal a finished picture or change the picture already on screen. To animate a chart step by step in Slidev, connect its state to the current click count and define the transitions between states. Decks, a Slidev addon for data storytelling, provides a story stage for that second approach.
+
+## How do Slidev animations work?
+
+Each slide has a click sequence. An advance can reveal content within the slide before navigation moves on. Slidev click animations attach visibility rules to elements; slide transitions control the change between slides. Slidev also supports `v-motion` for element movement. The [official animation guide](https://sli.dev/guide/animations) documents these options.
+
+Start by deciding what the audience needs to see at each pause in your explanation. For a list, reveal each point as you discuss it. For a comparison chart, consider keeping the axes visible while the marks change. That gives the audience a stable reference when you introduce another series or highlight a difference.
+
+Write down the resting states before choosing an animation. A useful plan might be an initial chart, a highlighted region, then an annotation explaining that region. The animation connects those states; the talk still needs to make sense when you pause on any of them.
+
+## How do you use v-click?
+
+Put these examples inside a Slidev Markdown slide. The `v-click` directive goes on an element, while `<v-clicks>` wraps list content:
+
+```md title="Reveal list items"
+<v-clicks>
+
+- Show the baseline.
+- Add the comparison.
+
+</v-clicks>
+```
+
+Each advance reveals another item. For a single reveal with an accompanying note, use:
+
+```html title="Reveal an element and its note together"
+<div v-click>The comparison is visible.</div>
+<div v-after>Both series use the same axis.</div>
+```
+
+To hide existing content, add `.hide`. An explicit index makes the timing easy to inspect:
+
+```html title="Hide at the first click"
+<div v-click.hide="1">Discuss the baseline first.</div>
+<div v-click="1">Now compare the series.</div>
+```
+
+For a temporary annotation, give `v-click` an interval:
+
+```html title="Show an annotation for one step"
+<div v-click="[1, 2]">Look at the highlighted region.</div>
+```
+
+The end index is exclusive: this annotation appears at click 1 and disappears at click 2. Slidev's [click positioning reference](https://sli.dev/guide/animations#positioning) explains explicit and relative indices.
+
+Use explicit positions when several elements must agree. Keep a short state plan beside your source so an inserted reveal does not leave you guessing which annotation belongs to which chart. Reserve a separate click for a change you intend to explain aloud; making every label arrive separately can interrupt the comparison.
+
+## What happens when you go back a click?
+
+Visibility rules restore the earlier set of visible elements. If your chart is a stack of finished images, going back swaps the visible image. That setup cannot infer how a bar should shrink or how a line should retract between the pictures. A fade between pictures can soften the change, but it still leaves you authoring each picture separately.
+
+For a chart component, Slidev exposes `$clicks`, the local click count for the current slide. If your slide only reads that value, declare its length with `clicks: 2` in the slide's frontmatter for an initial state and two advances. Pass the count into your component:
+
+```html title="Pass navigation state to your own chart"
+<MyChart :step="$clicks" />
+```
+
+`MyChart` here means a component you write. Its `step` prop must select the chart state and its animation code must handle changes in either direction. The [global context reference](https://sli.dev/guide/global-context#clicks) documents `$clicks`; passing that value supplies the navigation input, while your component supplies the drawing behavior.
+
+Test backward navigation as soon as you have a changing chart. After an annotation appears, go back and check that the annotation leaves and the chart restores the matching state. Then advance before the previous animation finishes. This catches designs that assume every animation always runs to completion before the next click.
+
+## How do you animate a chart step by step?
+
+A custom chart can derive its target state from `$clicks` and animate toward that target. Keep the axes and marks in the same component so you can choose which parts stay fixed. A visibility-only wrapper around the entire chart gives you control over its appearance, but the chart's internal transitions still need their own implementation.
+
+Decks provides that timeline structure through `useStage`. A story stage pins a visualization to the slide and derives its timeline position from Slidev's click count. An adjacent step change animates toward the new position, including backward changes. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls these steps "beats" and describes the API.
+
+In a project with Decks and its Slidev dependencies installed, create the starter with:
+
+```bash title="Create a story deck"
+bunx -p slidev-addon-decks decks new my-talk --story
+```
+
+The [first story deck guide](/docs/getting-started/your-first-story-deck/) explains the generated files. `components/FirstStage.vue` contains one series and one chip across three steps. The page places that stage; its stanza in `slides.md` declares:
+
+```yaml title="Story slide manifest stanza"
+---
+src: ./pages/02-first.md
+clicks: 2
+---
+```
+
+The initial state consumes no click, so three states require `clicks: 2`. When you add a step, update both the stage's copy array and the manifest. The `beats.test.ts` guard checks that the declared click count equals the step count minus one.
+
+The timeline deliberately skips animation in some situations. It seeks directly to the requested state on first run, on inactive slides, with reduced motion, or when navigation jumps more than one step. Otherwise it tweens. If another click interrupts a tween, the timeline retargets from its current position and catches up within one step's duration, so fast navigation does not queue a backlog.
+
+Use the generated stage as the starting point for your chart. Replace its series with your figures, then change what each step draws or emphasizes. Put the figures in a `data/` module and record their sources in `data-sources.md`, as the starter guide describes. Keeping the values separate from the transition script makes it easier to review whether a change is in the data or in its presentation. For the chart itself, see [how to add charts to Slidev](/blog/slidev-charts/).
+
+<DeckDemo example="od-story-templates" caption="Story stage patterns from the Decks templates: a minimal stage, bars, labelled cards and a hand-off between slides. Step forward and back to compare." />
+
+## How do you keep the caption in sync with the chart?
+
+With plain Slidev, a caption can read the same `$clicks` value as your chart. For a short sequence, conditional text is enough:
+
+```html title="Choose caption text from the click count"
+<p v-if="$clicks === 0">Start with the baseline.</p>
+<p v-else-if="$clicks === 1">Compare the highlighted region.</p>
+<p v-else>Read the annotation alongside the chart.</p>
+```
+
+Keep those conditions aligned with the chart's state selection. If you insert a chart state, review the caption conditions too. Using separate `v-click` elements for captions has the same authoring requirement: you maintain the relationship between their positions and the chart's positions.
+
+A Decks stage keeps the copy array beside the chart timeline. `useStage` derives the step count from that array and returns the current copy. The stage passes its lead and body into `StoryCard`:
+
+```vue title="Card binding inside a story stage"
+<StoryCard :lead="copy.lead" :body="copy.body" />
+```
+
+The card changes its text as you navigate, including when you go back. You still write a caption that explains the visible state, but selecting the caption follows the same step index as the visualization. Review the words and marks together at each stop, especially after reordering the explanation.
+
+Presenter, overview and print contexts seek to the requested timeline state; their entrances jump to the end state. That lets you inspect a settled chart in those contexts. In the audience slide view, an entrance can play when you land on the initial step with motion enabled. These rules are documented in the timeline guide, so a preview that skips an entrance is expected behavior. The [Slidev PDF export guide](/blog/slidev-export-pdf/) covers how those settled states print.
+
+## Can a chart carry over to the next slide?
+
+A chart repeated on separate slides normally has separate component instances. To preserve visual continuity, plan which marks the slides share and what changes around them. Slidev's [view transition documentation](https://sli.dev/guide/animations#view-transition-api) describes naming elements to connect their appearance across slide changes. It also notes browser support limits.
+
+Decks supports a visual hand-off between story slides. The templates demo includes a hand-off pair alongside its minimal stage, bars and labelled cards. Use that pair as a reference when an explanation needs another slide while keeping a visual reference on screen.
+
+The [component reference](/docs/reference/components/) distinguishes the pieces: `StoryStage` holds the pinned visualization and card slots, `StoryCard` holds the prose, and `StoryLayer` supplies another SVG layer for marks that need a `view-transition-name`. Keep the shared visual reference consistent across the pair so the audience can follow the change around it. A carried baseline is useful only if it continues to mean the same thing on the receiving slide.

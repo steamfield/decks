@@ -1,14 +1,12 @@
 ---
 import type { GetStaticPaths } from "astro";
-import { render } from "astro:content";
-import { getCollection } from "astro:content";
 import { docsGroups } from "../../config";
 import DocsLayout from "../../layouts/DocsLayout.astro";
-import { getDocs } from "../../lib/collection";
+import { getDocs, getDocEntries, render } from "../../lib/collection";
 import { docHref, docsNav, markdownHref, ogImageHref, pageLinks } from "../../lib/docs";
 
 export const getStaticPaths = (async () => {
-  const entries = await getCollection("docs");
+  const entries = await getDocEntries();
   return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }) satisfies GetStaticPaths;
 

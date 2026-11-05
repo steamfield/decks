@@ -1,0 +1,113 @@
+---
+title: "How to build a data storytelling presentation"
+description: "Build a data storytelling presentation with one claim per slide, a chart revealed in speaking order, short captions and a source for every number."
+published: 2026-11-05
+keyword: "data storytelling presentation"
+feature: storytelling
+relatedDocs:
+  - concepts/story-vs-conventional-decks
+  - getting-started/your-first-story-deck
+  - concepts/beats-and-the-story-timeline
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+A data storytelling presentation gives each slide a claim, shows the chart that supports it, and reveals the evidence in the order you explain it. Every number needs a source.
+
+Start with the question your audience needs answered. Choose the finding that answers it, then build a sequence that lets people follow the comparison. A caption should state what the chart shows. Your spoken explanation can supply the reasoning and consequences.
+
+You can do this in your existing presentation tool. A sequence of duplicated slides is enough to reveal a chart gradually; animations let you keep the sequence on one slide. The work starts with choosing what each view needs to prove.
+
+## What makes a good data storytelling presentation?
+
+A good presentation lets the audience connect a finding to the evidence behind it. Someone should be able to read the headline, inspect the chart, and identify the comparison that supports the sentence. Axes and units must remain legible without your narration.
+
+When presenting data to stakeholders, define the decision before choosing the visual. A team deciding where to assign support staff needs to know where unresolved work is accumulating. A chart of total requests may describe demand while leaving that staffing question unanswered.
+
+The slide also needs a fair comparison. Use consistent periods and make changes in the population visible. A percentage without its denominator can suggest a different story from a count. Put any qualification that changes the interpretation beside the chart, even when it makes the headline less decisive.
+
+Motion is optional. Use it when controlling the order of attention helps explain a comparison. A static chart with a precise headline can do the job when the audience already knows how to read it.
+
+## How do you turn an analysis into a story?
+
+Organize the talk around the audience's question. Your analysis may have followed false starts and useful detours. The presentation needs only the evidence required to understand the answer and judge its limits.
+
+### Start with the decision.
+
+Write down what the audience should be able to decide after the talk. For a hypothetical support review, that might be whether an aging backlog needs a dedicated owner. Name the audience's existing knowledge too: a manager familiar with the queues needs less orientation than a new stakeholder.
+
+### Choose the finding you can defend.
+
+Separate observation from explanation. A queue containing older unresolved requests is an observation. A claim that its staffing caused the delay needs additional evidence. Write the narrower headline when the data supports only the observation.
+
+### Order the evidence.
+
+Show the overall backlog before splitting it by queue. Then expose the age of unresolved requests within the queue under discussion. Each view answers a question raised by the previous one, and the audience can follow the narrowing comparison.
+
+### Put the proposal after its evidence.
+
+Explain what action the finding supports and what remains uncertain. Assigning an owner might be a proposal to test; the chart alone cannot establish that it will solve the delay. Keep supporting breakdowns available for questions without inserting every analysis into the main sequence.
+
+## Why should each slide make one claim?
+
+A single claim gives the slide an explicit job. A topic heading such as "Support backlog" leaves the audience to infer your conclusion. In the hypothetical review, "Older requests are concentrated in the billing queue." tells them which relationship to examine, provided the data supports it.
+
+Write that headline as a sentence ending in a period. Then check whether the visual actually proves it. A total-backlog line cannot establish a claim about the billing queue unless the view also identifies that queue's contribution.
+
+One chart per slide is a useful default because it keeps the comparison in one place. That chart can contain multiple series when their relationship is the evidence. Split the slide when you need to explain an unrelated metric or give the audience a different reading task.
+
+A claim can take several steps to demonstrate. Keep the overall chart in place while introducing its groups, then direct attention to the relevant group. Start another slide when the question changes enough to require a new headline.
+
+## How do you reveal a chart step by step?
+
+Plan each visible state before adding transitions. To present data step by step, first establish the axes and population. Add the comparison, then emphasize the finding. Keep scale, position and color meanings stable so the audience can track the same marks throughout.
+
+In PowerPoint, select the object you want to reveal, open **Animations**, and choose an entrance effect. Set its start to **On Click**. Use the Animation Pane to review the order, then preview the sequence. Microsoft's [guide to animating text and objects](https://support.microsoft.com/en-us/powerpoint/training/animate-text-or-objects) describes the controls. Separately selectable annotations or shapes let you reveal those explanations without changing the underlying chart.
+
+Duplicated slides are another way to prepare the states. In PowerPoint's thumbnail pane, right-click a slide and choose **Duplicate Slide**, as described in Microsoft's [slide duplication instructions](https://support.microsoft.com/en-us/powerpoint/training/add-rearrange-duplicate-and-delete-slides-in-powerpoint). Edit each copy to show the next state. Keep shared chart geometry aligned and update every copy when the source changes.
+
+Decks encodes this sequence in a story slide. It is an addon and deck runner for [Slidev, which combines Markdown with Vue components](https://sli.dev/guide/syntax). Each story slide pins one visualization in place. A stage component contains the visual and a caption card whose copy changes at each step.
+
+The timeline follows Slidev's click count. Moving back one step plays the transition in reverse during ordinary navigation; reduced motion and larger jumps seek to the requested state. A visual can also carry over to the next slide. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls these steps "beats" and explains that behavior. This gives a developer an explicit sequence to edit and review alongside the chart code. [Slidev animations and v-click](/blog/slidev-animations/) compares the two approaches in code.
+
+## How much text belongs on a data slide?
+
+Keep the finding on the slide and put the longer explanation in your speaker notes. A caption such as "Older requests cluster in billing." identifies the pattern. A caption that describes the act of filtering the chart uses space without telling the audience what they learned.
+
+Decks' conventional-slide guidance targets roughly 70 visible words, with no paragraphs and at most three single-sentence bullets as the normal rule. Leave unused space when a chart needs only its headline and labels.
+
+A story card has a tighter budget: eight words for its lead and twenty for its body. The repository's `beats.test.ts` checks those limits. The [story and conventional deck comparison](/docs/concepts/story-vs-conventional-decks/) describes both formats and their prose budgets.
+
+Keep caveats that affect interpretation visible. If a long qualification cannot fit beside the finding, narrow the claim or give the qualification its own step. Cutting words should leave the audience with an accurate reading of the data.
+
+## How do you make sure every number is right?
+
+Keep a source record while you analyze. For each figure, record the query or source document and the transformation that produced the value. Include the period covered and any excluded records. A link to a dataset alone leaves the reviewer guessing which calculation you used.
+
+Check the displayed wording against the calculation. A count of open requests cannot support a sentence about all requests received. A rounded label may be appropriate, but the underlying value should remain available. Recheck derived percentages after filters change.
+
+Decks keeps figures in `data/*.ts` constants with provenance comments. A deck's `data-sources.md` maps its slides to sources. The installed `fact-checking-a-deck` skill uses that record to rerun the sources behind the numbers and compare the results with data arrays, card copy and slide text.
+
+In a project with a registered `my-talk` deck, list the figures for review with:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks fact-extract my-talk
+```
+
+Extraction produces the review input. The fact-check still needs access to the recorded sources, and a personal claim that cannot be queried needs an explicit `FLAG: author-reported` row. Rehearse the steps after the data check too: a correct value can still appear under the wrong caption or acquire an unsupported interpretation in your narration.
+
+## What does a data story deck look like?
+
+This excerpt from Riley Hilliard's October 2026 AISD takeover talk uses Austin schools as its subject. Campus details are available by hovering, focusing or tapping. The player gives you a working data storytelling presentation example to inspect alongside its changing captions.
+
+<DeckDemo example="aisd-showcase" caption="An excerpt from a talk about Austin schools. Hover, focus or tap a campus for details, and step through with the arrow keys." />
+
+The example is useful to inspect for continuity: which marks remain in place as the explanation changes, and which details belong to an individual campus. Those choices let the speaker explain the overall view while leaving specific records available for inspection.
+
+For an existing project with Decks installed, the story scaffold command is:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks new my-talk --story
+```
+
+The [first story deck guide](/docs/getting-started/your-first-story-deck/) explains the generated files. The page places the stage component; the stage holds the visualization and per-step copy. Its figures live in the data module, with their sources recorded separately. The repository's `examples/opendata-pitch` is the reference story deck for inspecting that structure in a complete talk. More decks to study are in [Slidev examples](/blog/slidev-examples/).

@@ -1,1 +1,23 @@
 /* keeling deck styles. Everything shared comes from the addon (`addons: ["slidev-addon-decks"]`), which loads first. */
+
+/* Cover and close titles at display size. The theme's `.slidev-layout h1`
+   beats `.od-title`, so the element is qualified (see deck-patterns.md). The
+   curve runs below and right of the title block, so the larger title clears it. */
+.od-slide.is-story.is-story-cover h1.od-title {
+  margin: 0;
+  font-size: calc(4.2 * var(--sw));
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+/* Cross-slide hand-off: the monthly record on the cover, Slide 2 and Slide 3
+   is drawn at one geometry (data/frame.ts), so the view transition holds the
+   line still while the chart chrome changes around it. Named only in the real
+   slide view (`.vt-on`), nulled where the same slide can be on screen twice,
+   exactly as the addon's story-frame.css does for its own names. */
+.od-slide.is-story.vt-on .vt-keeling-line {
+  view-transition-name: keeling-line;
+}
+:is(.slidev-presenter, #print-container, .slidev-overview) .od-slide.is-story .vt-keeling-line {
+  view-transition-name: none;
+}

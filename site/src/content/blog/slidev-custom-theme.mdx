@@ -1,0 +1,192 @@
+---
+title: "How to make a custom Slidev theme"
+description: "Make a custom Slidev theme with the official starter, override one deck with CSS, or use Decks theme.json to share colors across slides and charts."
+published: 2026-11-05
+keyword: "how to make a custom slidev theme"
+feature: theming
+relatedDocs:
+  - guides/theming-with-theme-json
+  - reference/theme-json-tokens
+---
+
+import ThemeCompare from "../../components/blog/ThemeCompare.astro";
+
+To make a custom Slidev theme, use the official theme starter for a reusable package. For one deck, start with CSS overrides or the theme's configuration options.
+
+Choose the scope before creating files. A shared company design belongs in a theme package; a different heading color for one talk can live beside that talk's `slides.md`. Charts need attention too: a color written directly into a JavaScript chart specification won't change when you update a stylesheet.
+
+## How do you make a custom Slidev theme?
+
+Slidev themes can supply styles and layouts. Start a reusable theme with the [official theme generator](https://sli.dev/guide/write-theme):
+
+```bash title="Terminal"
+npm init slidev-theme@latest
+```
+
+Give the package a name such as `slidev-theme-acme`. In its directory, add your shared CSS in `styles/index.css`. A theme can also provide Vue components and layouts; keep the first version to the appearance you need.
+
+Preview it with a `slides.md` in the theme directory whose headmatter selects the current folder:
+
+```md title="slides.md"
+---
+theme: ./
+---
+
+# Quarterly research
+```
+
+Headmatter is the YAML block at the start of the deck. The relative path lets you test the theme before publishing it. The [theme-writing guide](https://sli.dev/guide/write-theme) documents this preview setup and the `slidev-theme-` package naming convention.
+
+With dependencies installed, start the preview through the Slidev CLI:
+
+```bash title="Terminal"
+npx -p @slidev/cli slidev slides.md
+```
+
+The [CLI reference](https://sli.dev/builtin/cli) identifies `slidev` as the binary supplied by `@slidev/cli` and accepts a Markdown entry file.
+
+Another deck can select your local theme directory by path. Once the theme is published and installed, it can select the package name instead:
+
+```yaml title="Another deck's headmatter"
+theme: slidev-theme-acme
+```
+
+Slidev accepts both paths and full package names, as described in [using a theme](https://sli.dev/guide/theme-addon). Publishing is optional for a personal theme.
+
+## How do you override a theme for one deck?
+
+For a single talk, put overrides in `style.css` beside `slides.md`, or use `styles/index.css`. Slidev automatically loads these entries. Scope selectors under `.slidev-layout` so the rules apply to slides without leaking into the presenter UI, as the [directory-structure reference](https://sli.dev/custom/directory-structure) recommends.
+
+```css title="styles/index.css"
+.slidev-layout {
+  --talk-accent: #2f8f83;
+}
+
+.slidev-layout h1 {
+  color: var(--talk-accent);
+}
+```
+
+This example gives slide headings a shared color. The variable is one you define yourself; choosing a name doesn't connect it to an existing theme's other rules. Inspect the element you want to change and match its selector if the theme has a more specific rule.
+
+For Slidev theme colors exposed through configuration, add `themeConfig` to the deck's headmatter:
+
+```yaml title="slides.md headmatter"
+theme: default
+themeConfig:
+  primary: '#2f8f83'
+```
+
+Slidev turns these fields into root CSS variables: `primary` becomes `--slidev-theme-primary`. The [configuration reference](https://sli.dev/custom/#headmatter) documents that mapping. The visible effect depends on which variables the selected theme uses. You can consume the same variable in your own rule:
+
+```css title="styles/index.css"
+.slidev-layout h1 {
+  color: var(--slidev-theme-primary);
+}
+```
+
+Use this version instead of the earlier heading rule if you want headmatter to control that color. Keep one definition for each design choice. Maintaining both a headmatter value and a separate CSS value for the same accent creates another place to update when the brand changes.
+
+## Why don't your charts pick up the theme colors?
+
+A chart with a literal color in its JavaScript configuration keeps that color. Changing a heading's CSS variable doesn't rewrite the chart specification. Charts that already read shared tokens can follow those tokens; a hard-coded `color` value has no such connection.
+
+You can build that connection in your own theme. Define a shared palette, then have your chart components read it. That approach also means maintaining the mapping between your stylesheet and the values your chart code expects.
+
+Decks, a Slidev addon for data-storytelling presentations, provides a shared theme file for this purpose. Its defaults live in `packages/decks/theme/default.json`. A deck's `theme.json` changes those values for both CSS and JavaScript, as the [theming guide](/docs/guides/theming-with-theme-json/) explains.
+
+Use named CSS variables for slide styling:
+
+```css title="A deck-local style rule"
+.slidev-layout .finding {
+  color: var(--od-cyan);
+  background: var(--od-surface);
+  font-family: var(--od-font-sans);
+}
+```
+
+For colors inside JavaScript, read the resolved theme or choose a ramp step with `ink()`:
+
+```ts title="Colors for chart code"
+import { theme } from 'slidev-addon-decks/theme'
+import { ink } from 'slidev-addon-decks/story'
+
+const seriesColor = ink('cyan', 2)
+const labelColor = theme.chart.text
+```
+
+These are color values to use in your chart's configuration. Ramps and the categorical palette are available through JavaScript; they aren't emitted as CSS variables. The [token reference](/docs/reference/theme-json-tokens/) lists which groups reach each interface, and the [Slidev charts guide](/blog/slidev-charts/) shows a complete chart spec.
+
+## How does a theme.json override work?
+
+Put `theme.json` beside the deck's `slides.md`. Include only the keys you want to change. This example changes the canvas and one color ramp:
+
+```json title="theme.json"
+{
+  "surfaces": {
+    "canvas": "#15110e"
+  },
+  "ramps": {
+    "cyan": ["#2f8f83", "#3fae9f", "#62c7b8", "#9be0d4"]
+  }
+}
+```
+
+Objects merge key by key. The new `surfaces.canvas` value leaves the other surfaces at their defaults. Text colors and fonts also keep their defaults because this file doesn't mention them. A small override makes the choices specific to this talk visible when you review the file.
+
+Arrays are replaced whole. Changing `ramps.cyan` requires the complete four-color ramp, and changing `categorical` replaces the entire categorical palette. An array containing only your replacement first color would discard the remaining entries.
+
+Aliases resolve after the merge. For example, the default `accents.cyan` points to `{ramps.cyan.2}`, so changing the cyan ramp also changes that accent. CSS using `--od-cyan` and JavaScript using `ink('cyan', 2)` then receive the same color. You can write your own aliases using `{group.token}` or `{ramps.hue.step}`:
+
+```json title="An additional theme.json field"
+{
+  "glows": {
+    "secondary": "{ramps.amber.2}"
+  }
+}
+```
+
+Add this field to the same file if you want the secondary glow to follow the amber ramp. It stays connected when you recolor that ramp later. The [merge rules](/docs/guides/theming-with-theme-json/) cover aliases and array replacement.
+
+Edits reload live during development and apply at build time. The repository includes a complete alternate palette in `examples/od-templates/theme.json`; `examples/opendata-pitch/theme.json` shows a brand-only override. Copying an entire palette is useful when you want a coordinated starting point, while a small file is easier to review for a limited change.
+
+The toggle below shows the same tides slide with the default theme and with the `theme.json` beside it. The comparison uses still images of the deck, so you can inspect the background and chart colors without playing a presentation.
+
+<ThemeCompare />
+
+## How do you change the brand on the cover?
+
+Set the `brand` object in the same `theme.json`. It holds the displayed name and URL, plus a wordmark gradient and an optional logo:
+
+```json title="theme.json"
+{
+  "brand": {
+    "name": "Acme Research",
+    "url": "acme.example",
+    "wordmark-gradient": "linear-gradient(95deg, #f8cf8f 0%, #e8913a 100%)",
+    "logo": null
+  }
+}
+```
+
+Here, `logo: null` means no mark. Set `url: null` to hide the cover URL. If you supply a logo, its object has a `view-box` string and an `svg` string containing the inner SVG markup. The surrounding SVG element is supplied by Decks. The [brand settings](/docs/guides/theming-with-theme-json/) describe the accepted fields.
+
+When scaffolding a deck, the runner can write the brand block for you:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks new research --brand "Acme Research" --url acme.example
+```
+
+Keep the package name in that command: the addon is `slidev-addon-decks`. After scaffolding, edit `theme.json` for palette changes or logo markup. Setting only `brand` leaves the slide colors at their defaults, which is enough for a talk that needs your organization's name on the cover without a new palette.
+
+## What can't you change?
+
+Decks themes stay dark. The underlying `the-unnamed` theme forces a dark color schema, so a white canvas isn't a supported light-theme conversion. Choose a Slidev theme that supports light slides if that is a requirement.
+
+The ramp names are fixed: `cyan`, `amber`, `rose`, `emerald`, `violet`, and `slate`. Recolor these slots instead of renaming them or adding another hue. A slot named `cyan` can contain the teal values shown above. Existing components keep referring to the slot by its established name.
+
+Each ramp needs four `#rrggbb` values that get lighter. Step 1 must have at least 3:1 contrast against `surfaces.canvas`; changing the canvas means checking that relationship again. This rule concerns ramp visibility against the canvas. It doesn't replace reviewing text readability or whether adjacent chart series are distinguishable.
+
+Glow values must resolve to six-digit hex colors because Decks converts them to RGB triplets. A hex-valued alias works; an `rgba()` glow value doesn't. Fonts have `sans` and `mono` fields, while colors have separate groups for text and chart labels, all listed in the [theme token reference](/docs/reference/theme-json-tokens/).
+
+Hard-coded colors in your own components still bypass the theme. If a mark stays unchanged after a palette edit, check its CSS and chart specification for literal values, then replace those values with the appropriate variable or theme lookup.

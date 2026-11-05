@@ -3,7 +3,7 @@
 @layer theme, base, sf, components, utilities;
 @import "tailwindcss";
 @import "./sf-theme.css";
-@import "./landing.css";
+
 @plugin "@tailwindcss/typography";
 
 /*

@@ -1,3 +1,4 @@
+import "../../styles/player.css";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -136,7 +137,19 @@ function moved(example: Example, from: Position, message: Command): Position {
 }
 const equal = (a: Position, b: Position) => a.slide === b.slide && a.beat === b.beat;
 
-export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; initial?: number }) {
+export function DeckPlayer({
+  examples,
+  initial = 0,
+  autoplay = true,
+  priority = false,
+  gallery = false,
+}: {
+  examples: Example[];
+  initial?: number;
+  autoplay?: boolean;
+  priority?: boolean;
+  gallery?: boolean;
+}) {
   const [index, setIndex] = useState(initial);
   const example = examples[index] ?? examples[0];
   const [phase, setPhase] = useState<Phase>("poster");
@@ -221,10 +234,11 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
   useEffect(() => {
     const first = examples[initial] ?? examples[0];
     if (!first) return;
-    openingHold.current = Boolean(window.matchMedia?.(MOTION).matches) && !document.hidden;
+    openingHold.current =
+      autoplay && Boolean(window.matchMedia?.(MOTION).matches) && !document.hidden;
     setPlaying(openingHold.current);
     boot(startOf(first));
-  }, [examples, initial, boot]);
+  }, [examples, initial, boot, autoplay]);
 
   useEffect(() => {
     setCanFullscreen(document.fullscreenEnabled === true);
@@ -410,6 +424,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
     [examples, example, boot],
   );
   useEffect(() => {
+    if (!gallery) return;
     const onPick = (event: Event) => {
       const name = (event as CustomEvent<string>).detail;
       window.__decksPick = undefined;
@@ -421,7 +436,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
       window.__decksPick = undefined;
     }
     return () => window.removeEventListener(PICK_EVENT, onPick);
-  }, [pick]);
+  }, [pick, gallery]);
 
   if (!example) return null;
   const liveFailure = phase === "failed" && positioned.current;
@@ -519,16 +534,18 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
         data-phase={phase}
         data-fullscreen={fullscreen || undefined}
       >
-        <div className="player-toolbar">
-          <nav className="player-examples" aria-label="Example decks">
-            {prominent.map(choose)}
-            {rest.length > 0 && (
-              <details className="more-examples">
-                <summary>More</summary>
-                <div className="more-examples-list">{rest.map(choose)}</div>
-              </details>
-            )}
-          </nav>
+        <div className="player-toolbar" data-single-example={examples.length === 1 || undefined}>
+          {examples.length > 1 && (
+            <nav className="player-examples" aria-label="Example decks">
+              {prominent.map(choose)}
+              {rest.length > 0 && (
+                <details className="more-examples">
+                  <summary>More</summary>
+                  <div className="more-examples-list">{rest.map(choose)}</div>
+                </details>
+              )}
+            </nav>
+          )}
           <div className="player-position">
             <span className="player-status" role="status">
               <span aria-hidden="true">
@@ -611,7 +628,7 @@ export function DeckPlayer({ examples, initial = 0 }: { examples: Example[]; ini
                     width={example.poster.width}
                     height={example.poster.height}
                     alt={`${example.title}, slide ${example.startSlide} of ${example.slides}`}
-                    fetchPriority={index === initial ? "high" : "auto"}
+                    fetchPriority={priority && index === initial ? "high" : "auto"}
                   />
                 </picture>
               ) : (

@@ -1,0 +1,149 @@
+---
+title: "Claude Code presentation skill: setup and checks"
+headline: "How to write a Claude Code presentation skill."
+description: "Create a Claude Code presentation skill with a reusable SKILL.md, then add Decks skills and hooks to check slide sources and block matching prose."
+published: 2026-11-05
+keyword: "claude code presentation skill"
+feature: skills
+relatedDocs:
+  - guides/writing-decks-with-an-agent
+  - guides/checking-a-deck
+  - concepts/story-vs-conventional-decks
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+A Claude Code presentation skill is a reusable `SKILL.md` file that tells Claude how to build your slides. Put your format and writing rules there, with a description of when to use them.
+
+Start with a project skill if you keep repeating the same instructions for each talk. It can record your palette, slide structure and review procedure. The file supplies guidance; checking whether a number has a source needs a separate verification step.
+
+For talks with data, Decks supplies that workflow alongside its Slidev addon and deck runner. Its skills cover building and fact-checking a deck, and its Claude Code hooks can refuse writes containing specified prose patterns. A hand-written skill is enough to record your preferences. The extra machinery becomes useful when you want repeatable checks around the draft.
+
+## What is a Claude Code presentation skill?
+
+Claude Code's built-in skill mechanism lets you save a presentation procedure in a Markdown file. According to [Anthropic's skill documentation](https://code.claude.com/docs/en/skills), Claude can load a skill when a task matches its description, or you can invoke it explicitly with `/skill-name`.
+
+A project skill lives at `.claude/skills/<skill-name>/SKILL.md`. A personal skill under `~/.claude/skills/` is available across your local projects. Use the project location when the instructions belong with the deck, especially when colleagues need the same conventions.
+
+Treat the skill as the procedure you would otherwise paste into chat before every presentation. It should tell the agent what a finished deck looks like and which evidence you expect before accepting it. Keep talk-specific material, such as the audience and research question, in the prompt for that talk. [How to make slides with Claude Code](/blog/make-slides-with-claude-code/) walks through a full prompt-to-PDF session.
+
+## How do you write your own slides skill?
+
+Start with the presentation format you already use. A useful Claude Code slides skill names the files the agent should read and the checks it should run. An instruction such as "make professional slides" leaves those decisions unresolved.
+
+### Create the skill file.
+
+Create the directory in your project:
+
+```bash title="Terminal"
+mkdir -p .claude/skills/presentation
+```
+
+Save this starting point as `.claude/skills/presentation/SKILL.md`. Replace the bracketed instructions with paths and commands that exist in your project before using it.
+
+```markdown title=".claude/skills/presentation/SKILL.md"
+---
+name: presentation
+description: >-
+  Build or revise slides for this project. Use when asked to
+  create a presentation, outline a talk, or edit a deck.
+---
+
+Read [path to our slide template] before writing slides.
+Use [our presentation format] and the template's palette.
+Outline the talk before creating the slide files.
+Give each slide a headline that states its claim.
+Record a source for every numeric claim beside its data.
+Ask for missing evidence before using an unsupported figure.
+Run [our build command] and inspect the rendered slides.
+Report unresolved sources and any checks that failed.
+```
+
+The frontmatter names the skill and describes when it applies. The body is your procedure. Anthropic documents both parts in its [guide to creating a skill](https://code.claude.com/docs/en/skills#getting-started).
+
+### Try it on a small deck.
+
+Invoke `/presentation` in Claude Code and ask for an outline before slide files. Give it the audience, the claim you want to explain and the sources it may use. Check whether the outline follows the procedure you wrote.
+
+Revise instructions that leave room for guesses. If the agent chooses colors you never use, point to the palette file. If the draft buries the finding under background, include a representative slide that opens with its claim. Concrete references give you something to compare against during review.
+
+Keep the skill in version control when it belongs to the project. If you find a presentation skill on GitHub, read its instructions and any scripts before adopting it. Check whether it assumes a file format or export process that your project supports.
+
+## What does a skill not enforce?
+
+Instructions alone cannot establish that a figure is correct. An agent can write a source URL beside a number without opening it, or copy a value correctly and describe it with the wrong unit. Your skill can require verification, but you still need evidence that verification happened.
+
+The same limit applies to prose. A rule asking for plain language leaves room for canned phrasing. A successful build establishes that the deck compiles; it says nothing about whether a chart's conclusion follows from its data.
+
+Separate the checks you can automate. A prose scanner can catch a known phrase before it reaches a file. A fact-check procedure needs to open the source and compare the result with the claim. Visual review still needs someone to inspect the rendered slides for problems such as a caption covering the chart.
+
+## What does the Decks skill set install?
+
+Decks is a free, Apache-2.0-licensed Slidev addon and deck runner for data-storytelling talks. It gives an agent a shared authoring procedure, with source records that a later fact-check can use. It needs Node 20.19+ or 22.12+; Bun is optional.
+
+In a project where you want to use Decks, install the package with Slidev and its base theme, then initialize the guidance:
+
+```bash title="Terminal"
+bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed
+bunx -p slidev-addon-decks decks init
+bunx -p slidev-addon-decks decks new my-talk --story
+```
+
+Every runner command names `slidev-addon-decks` explicitly because the unscoped npm package named `decks` is unrelated.
+
+The `building-a-deck` skill covers scaffolding, sourcing data and the verification chain through the build. It defines when a deck counts as done. The `fact-checking-a-deck` skill reruns the source behind each figure and compares it with the deck's data and visible copy.
+
+The installation also includes a `deck-author` agent and rules that attach by path in Claude Code when editing files under the configured decks directory. Those rules cover layout and writing, with separate guidance for story stages and data provenance. Two Claude Code hooks add a writing reminder and check prose before writes. The [agent authoring guide](/docs/guides/writing-decks-with-an-agent/) describes the installed files.
+
+A story slide holds one pinned visualization. Each step redraws it from Slidev's click count and changes the caption card; stepping backward reverses the transition. Decks uses dark slides, and its file export is PDF through Chromium. It does not produce PowerPoint or Keynote files.
+
+The tides example began with the prompt `make a 5-slide story deck about how ocean tides work`, run through `claude -p` in the Decks repository with the same setup as initialization installs. That run loaded the building skill, fetched NOAA, US Naval Observatory and NASA sources, and passed check, test, lint and build. It was then fact-checked and edited by hand. The player shows the resulting explanation of ocean tides.
+
+<DeckDemo example="tides" caption="The tides story deck, which started as one prompt run in a project with these skills installed. Step through it with the arrow keys." />
+
+## How does the fact-check skill work?
+
+For a Claude Code fact-check of slides, the Decks skill starts with the deck's own source map. Each figure belongs in a `data/*.ts` constant with a source comment, and `data-sources.md` maps slides to the queries or documents behind their claims.
+
+The extractor supplies a working checklist:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks fact-extract my-talk
+```
+
+The skill asks the agent to run each recorded query or open its source, then compare the result with the data arrays and the text on the slide. Story-card copy gets checked too. Derived claims, such as a ratio, need the computation shown. The extractor lists arrays, so the agent must also read scalar constants in the data modules.
+
+A figure gets a verified status only after the source has been opened or the query run in that session. An unreachable source stays unverifiable with its error recorded. Author-reported claims remain flagged. The skill writes a report that distinguishes these cases, so a failed request cannot silently become a guessed value.
+
+This procedure depends on usable source records. A deck with missing queries needs those gaps resolved before the comparison can happen. The [deck checking guide](/docs/guides/checking-a-deck/) explains the extractor and the separate manifest and prose checks.
+
+## How do the hooks block AI-sounding prose?
+
+The write hook runs before Claude Code's Edit, Write and MultiEdit tools. It scans deck prose for error-level patterns and denies a matching write. It includes the `COPY` arrays that hold story-stage text. If the scanner cannot run, it refuses the write.
+
+The pattern list includes em dashes, specified marketing vocabulary and phrases that announce a dramatic reveal. Other patterns produce warnings for a reviewer. These are lexical checks: an empty sentence or a misleading chart explanation can pass them. A clean lint result still needs prose review.
+
+Both hooks are Node scripts behind `.claude/hooks/decks.sh`, a POSIX `sh` wrapper. They require neither `jq` nor bash. The prompt hook adds a writing-rules reminder when the request asks for deck work.
+
+Only Claude Code runs the installed hooks automatically. Other supported agents follow the shared guidance and run the checks during editing:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks check
+bunx -p slidev-addon-decks decks lint
+```
+
+Installation tests cover the supported agent setups; live authoring has not been tested in every listed agent.
+
+## How do you update or remove it?
+
+After upgrading the installed package, rerun initialization:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks init
+```
+
+The `.claude/decks.json` manifest records each generated file and its hash. Unedited files update; edited files are skipped and reported. Adding `--force` overwrites edited generated files. A file at a destination that initialization never wrote is a collision and stays untouched even with that flag.
+
+Settings merge without duplicate entries. Previously generated files that the package no longer ships are removed if unchanged, or kept and reported if edited. To take ownership of an installed file, delete its entry from `.claude/decks.json`.
+
+When you stop using Decks, remove the two `decks.sh` hook entries from `.claude/settings.json`. Uninstalling the package alone leaves the write hook unable to scan, so it will refuse writes to deck prose under the configured decks directory until those entries are removed.

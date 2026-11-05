@@ -1,0 +1,118 @@
+---
+title: "Slidev examples: story decks you can open"
+headline: "Slidev examples: find a reference for your own talk"
+description: "Find Slidev examples in the official showcase and theme gallery, then compare nine Decks examples and read the packaged story and conventional deck sources."
+published: 2026-11-05
+keyword: "slidev examples"
+feature: examples
+relatedDocs:
+  - getting-started/your-first-story-deck
+  - getting-started/quickstart
+  - concepts/story-vs-conventional-decks
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+import Figure from "../../components/blog/Figure.astro";
+
+Start with the [official Slidev showcase](https://sli.dev/resources/showcases) for Slidev examples of real talks. Use the [theme gallery](https://sli.dev/resources/theme-gallery) to compare visual styles. Slidev's starter project also includes feature demonstrations in its `slides.md` file.
+
+A finished talk helps you judge pacing; its source helps you reproduce a particular slide. For talks built around data, Decks adds a collection of nine examples, including story decks and conventional layouts. Two complete reference decks ship inside its npm package, so you can read their source locally.
+
+## Where can you find Slidev examples?
+
+The Slidev showcase lists talks with their authors and presentation context. It is a useful first stop for Slidev presentation examples because you can look for a subject or audience close to yours. A conference talk about a developer tool may offer a better model for your technical demo than a visually similar presentation on an unrelated subject.
+
+The theme gallery answers a separate question: how could the slides look? It lists official and community themes and links to the theme documentation. Start there when you already have an outline and want to compare presentation styles. Start with a finished talk when you need help deciding how much material belongs on a slide.
+
+Slidev's own starter is the shortest route to editable feature examples. The [official getting-started guide](https://sli.dev/guide/) documents creating a project with Bun:
+
+```bash title="Terminal"
+bun create slidev
+```
+
+Follow its prompts, then open `slides.md` in the generated project. The starter contains demonstrations of Slidev features. Changing one example at a time makes it easier to connect the Markdown or Vue markup to what appears in the presentation. You can investigate a layout without first adapting somebody else's entire talk.
+
+For open source Slidev decks, inspect the source access and license of each project you plan to reuse. A public presentation gives you something to watch; permission to copy its code, images or content needs its own check. Keep an example's attribution with any material you reuse.
+
+Evaluate a talk by stepping through it as an audience member before reading its implementation. Notice where an explanation pauses and where a chart changes. A still image can show the final arrangement, but it leaves out the order in which the presenter introduces the evidence. That order is especially useful when your own talk has a chart that needs several sentences of explanation.
+
+## What do the Decks example decks show?
+
+Decks is a Slidev addon and deck runner for data-storytelling talks. Its examples include excerpts from talks, agent drafts that were edited, and templates intended for reuse. Those labels describe how each example was made; they help you choose a reference without assuming every polished slide came directly from a prompt.
+
+The repository's `examples/` directory contains the nine decks below. The [first-story-deck guide](/docs/getting-started/your-first-story-deck/) describes the authoring references and their file structure.
+
+| Example | What to inspect | How it was made |
+| --- | --- | --- |
+| `opendata-showcase` | Files becoming a dataset, then joining a graph | Excerpt from Riley Hilliard's OpenData pitch |
+| `aisd-showcase` | A campus view with details on hover, focus or tap | Excerpt from Riley Hilliard's AISD takeover talk |
+| `keeling` | An agent example made in a fresh project set up with shared guidance | Drafted by Claude Code, then edited in later Claude Code sessions |
+| `state-of-js` | An agent example using the repository's authoring setup | Drafted by a Claude Code subagent, then fact-checked and edited in the dispatching session |
+| `tides` | A story explanation of how ocean tides work | Drafted from one prompt, then fact-checked and edited by hand |
+| `opendata-pitch` | The story reference: one stage per slide, with data modules and source records | Talk |
+| `agent-experience` | Conventional slide prose and word counts | Talk |
+| `od-story-templates` | Minimal stages, bars, labelled cards and a hand-off between slides | Template |
+| `od-templates` | Conventional layouts in the warm palette, including a story slide | Template |
+
+A story slide keeps one visualization in place while each step advances its explanation. The stage component contains the visualization and the caption card's text for each step. A conventional slide holds material such as bullets, tables or charts. The [story and conventional deck comparison](/docs/concepts/story-vs-conventional-decks/) calls story steps "beats" and explains where the prose lives in each format.
+
+The tides player below gives you a Slidev story deck example to inspect before opening the files. Step through the explanation and compare the visualization with the changing caption. Go back a step to see how the preceding view supports the next part of the explanation. [How to build a data storytelling presentation](/blog/data-storytelling-presentation/) covers the structure these decks follow.
+
+<DeckDemo example="tides" caption="The tides story deck, drafted from one prompt by Claude Code, then fact-checked and edited by hand. Step through it with the arrow keys." />
+
+## Which examples were made by an agent?
+
+The registry labels `keeling`, `state-of-js` and `tides` as agent drafts. It defines that label as drafted by Claude Code, then edited. The editing history differs between examples: keeling records later Claude Code edits, while tides records a hand edit. State of JS records fact-checking and editing in the session that dispatched its subagent. [How to make slides with Claude Code](/blog/make-slides-with-claude-code/) walks through that workflow.
+
+Tides began with one `claude -p` prompt: `make a 5-slide story deck about how ocean tides work`. The run used the repository's shared deck-writing setup, loaded the building skill and fetched sources from NOAA, the US Naval Observatory and NASA. It finished with the recorded checks passing. Fact-checking and hand editing followed, so the player shows the reviewed deck.
+
+The package includes the guidance behind that workflow. Initialization installs a deck-author role and skills for building and fact-checking decks. The fact-checking skill uses the sources recorded in `data-sources.md` to check figures against the data arrays and slide copy. When reading an example, compare a figure in its data module with its source entry and the claim made on the slide.
+
+Automatic writing hooks run only in Claude Code. Other agents follow the shared guidance and run the checks themselves; live authoring has not been tested in every supported agent. An example's provenance tells you about the recorded run, so avoid treating it as evidence that your preferred agent will produce the same result from the same prompt.
+
+## How do you open an example deck locally?
+
+The npm package includes two source exemplars: tides for story slides and agent-experience for conventional slides. These are the local reading references. The other examples belong to the repository collection. Only those two exemplars are bundled in the package.
+
+### Install the authoring dependencies.
+
+Use a new project directory with Node 20.19+ or 22.12+ installed. The [quickstart](/docs/getting-started/quickstart/) installs Decks alongside Slidev and its base theme:
+
+```bash title="Terminal"
+bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed
+bunx -p slidev-addon-decks decks init
+```
+
+Every Decks command here names `slidev-addon-decks` explicitly because the unscoped npm package named `decks` is unrelated. The quickstart also gives the npm equivalents if you use npm instead of Bun.
+
+### Read the packaged source.
+
+Open these directories in your editor after installation:
+
+```text title="Packaged reference decks"
+node_modules/slidev-addon-decks/agent/exemplars/tides/
+node_modules/slidev-addon-decks/agent/exemplars/agent-experience/
+```
+
+Start at `slides.md`. In tides, follow a page's stage component into `components/`, then compare the figures in `data/` with `data-sources.md`. Treat the installed exemplars as reading references and keep your edits in your own deck.
+
+### Scaffold an editable story deck.
+
+These commands create a fresh scaffold and run its registered alias:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks new my-talk --story
+bunx -p slidev-addon-decks decks dev my-talk
+```
+
+The scaffold goes in `decks/my-talk/`, and `my-talk` is added to `decks.json`. It includes a cover and a minimal story stage. It does not copy the tides presentation. The first-story-deck guide maps the generated files so you can adapt a pattern from the exemplar while supplying your own subject and data sources.
+
+## Which example should you copy for your own talk?
+
+Use agent-experience as the prose reference for a conventional talk. Its purpose is to show slide writing and word counts. It is also one of the packaged exemplars, so you can compare the rendered material with the files while drafting your own slides.
+
+<Figure src="/posters/agent-experience-1280.webp" alt="A conventional slide from the agent-experience example deck" caption="Agent-experience is the conventional reference for slide prose and word counts." width={1280} height={720} />
+
+Use tides when you need a source example of a story explanation. Use opendata-pitch as the repository's story architecture reference, and od-story-templates when you need to compare specific stage patterns. The conventional od-templates deck includes a story slide, so a talk can combine the two formats.
+
+Choose the format for the explanation you need to give. A table of independent findings can stay on a conventional slide. A chart whose meaning changes as you introduce a comparison may suit a story stage. Copy the relevant structure, replace the example's figures with your own sourced constants, and write each caption around the evidence visible at that step.

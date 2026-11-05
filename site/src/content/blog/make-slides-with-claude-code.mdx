@@ -1,0 +1,135 @@
+---
+title: "How to make slides with Claude Code"
+description: "Make slides with Claude Code by choosing a Markdown format, prompting for a draft, previewing it, and checking sources before presenting or exporting."
+published: 2026-11-05
+keyword: "how to make slides with claude code"
+feature: agents
+relatedDocs:
+  - getting-started/quickstart
+  - guides/writing-decks-with-an-agent
+  - guides/checking-a-deck
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+To make slides with Claude Code, ask it to write a Markdown presentation for Slidev or Marp, run the preview, and revise the rendered slides before exporting. Specify the output format in your first prompt.
+
+For a short talk built around text and images, that workflow may cover everything you need. For a talk whose argument depends on changing charts, you also need instructions for how the chart advances and a record of where its numbers came from. Decks adds that workflow to Slidev, with installed agent guidance and a fact-checking skill.
+
+## How do you make slides with Claude Code?
+
+Start Claude Code in the directory where you want the presentation files. Give it your source material and ask for a named format. A request to "make a presentation" leaves the file type and rendering tools undecided.
+
+```text title="Prompt for a Markdown deck"
+Create a Slidev presentation about our database migration for the
+engineering team. Use migration-notes.md as the source. Propose the
+outline before writing slides, and flag claims the notes don't support.
+Keep detailed explanations in speaker notes. Start the local preview
+and tell me how to open it.
+```
+
+Approve the outline after checking that it answers the audience's question. Then review the presentation in its renderer. Readability depends on the space a chart and its labels occupy; reading the Markdown alone won't reveal a label hidden behind a caption.
+
+Give revision requests with a visible target: "The migration comparison has too much text. Keep the measured result on the slide and move the procedure into notes." Check the revised slide before asking for the next change. Once the deck reads well, check its figures and export the format your venue accepts.
+
+## What does Claude Code produce on its own?
+
+[Claude Code can edit files and run commands](https://code.claude.com/docs/en/overview), so it can write presentation source and invoke an installed renderer. You can ask for an HTML presentation, or choose an existing Markdown slide format to avoid specifying the presentation machinery yourself.
+
+| Format | What you ask Claude Code to write |
+| --- | --- |
+| Marp | A Markdown deck rendered by Marp. |
+| Slidev | A Markdown deck that can include Vue components. |
+| HTML | A web presentation with the styles and navigation you specify. |
+
+[Marp's documentation](https://marp.app/) describes its Markdown workflow and HTML, PDF and PowerPoint output. [Slidev's getting-started guide](https://sli.dev/guide/) covers Markdown authoring with Vue for interactive content. Both give you a format the agent can work in.
+
+For a Claude Code PowerPoint workflow, install a PPTX authoring skill and the tools it requires, then request a `.pptx` explicitly. Skills supply task instructions; [the Claude Code skills guide](https://code.claude.com/docs/en/skills) explains how local skills load. Anthropic's [skills availability documentation](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview#claude-code) distinguishes Claude Code's custom skills from the pre-built document skills available in other Claude products. Check what your environment has installed before requesting the file.
+
+A renderer gives you somewhere to put a chart. You still have to specify its data and the sequence the audience should see. Decks supplies a story-deck scaffold for that work and rules for recording sources while the agent writes.
+
+## How do you set up a Slidev project for Claude Code?
+
+Decks is a free, Apache-2.0-licensed Slidev addon and deck runner. This setup uses Bun; you also need Node 20.19+ or 22.12+. In a new project directory, install the addon alongside Slidev and its base theme:
+
+```bash title="Terminal"
+bun add slidev-addon-decks @slidev/cli slidev-theme-the-unnamed
+bunx -p slidev-addon-decks decks init
+bunx -p slidev-addon-decks decks new my-talk --story
+```
+
+Keep `-p slidev-addon-decks` in each command. The bare `decks` package name on npm belongs to an unrelated package. If you use npm, the [quickstart](/docs/getting-started/quickstart/) gives the equivalent install commands.
+
+The init command installs the `deck-author` agent, registered natively in Claude Code to build or revise one deck per session. It also installs the `building-a-deck` and `fact-checking-a-deck` skills. Rules under `.claude/rules/` cover slide prose, layout and charts, story stages, source records, writing patterns and a project glossary. An `AGENTS.md` block gives the reading order; `.claude/decks.json` records installed files with hashes.
+
+The story scaffold creates a deck under `decks/my-talk/`, including a stage component and data files. A story slide pins one visualization and redraws it from Slidev's click count. Each step changes the caption card; stepping backward plays the transition in reverse.
+
+Open Claude Code in the project and ask it to use the installed deck-author guidance to develop the scaffold. Start the preview with:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks dev my-talk
+```
+
+The Keeling curve example shows the chart and its changing captions. Claude Code drafted it from one prompt in a fresh project prepared with init; a second Claude Code session revised it.
+
+<DeckDemo example="keeling" caption="A story deck about the Keeling curve, drafted by Claude Code and revised in a second Claude Code session. Use the arrow keys to step through it." />
+
+## What should you ask Claude Code for?
+
+To build a presentation with Claude, describe the audience's starting knowledge and the claim you want them to leave with. For a story deck, describe how the explanation should unfold as you advance. A chart can reveal a comparison before adding the context needed to explain it.
+
+```text title="Prompt for the story scaffold"
+Use the installed deck-author guidance to revise my-talk into a story
+deck about our database migration for the engineering team.
+Use migration-notes.md and the attached measurements as sources.
+Show the before-and-after comparison first, then explain the rollout.
+Record the source of every figure. Flag missing evidence before
+writing a numerical claim. Keep implementation detail in speaker notes.
+```
+
+Give the agent permission to leave a gap when evidence is missing. "Find a convincing statistic" invites a different task from "Use these measurements and flag anything they cannot establish." For internal results, include the measurement period and what each field means.
+
+Review the sequence with the arrow keys in both directions. Check whether the caption still describes the visible data after going backward. Ask for a specific change when the explanation arrives too early or a label competes with the part you're discussing. The [agent authoring guide](/docs/guides/writing-decks-with-an-agent/) explains the installed workflow in more detail.
+
+## How do you check the numbers on the slides?
+
+Record a figure's source while drafting it. Decks' data rules put figures in `data/*.ts` constants with source comments, and map slides to queries or source documents in `data-sources.md`. A personal or otherwise unverifiable claim gets a `FLAG: author-reported` row and a matching flag in its data module.
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks fact-extract my-talk
+```
+
+The extractor lists figures for review. It does not establish that they are correct. Ask Claude Code to run the installed `fact-checking-a-deck` skill, which reruns the source behind each figure and compares the results with data arrays, caption copy and slide text.
+
+Read the source record alongside the claim. A measured change needs a baseline and units; a headline can overstate the result even when the plotted values match the source. If you change a calculation during revision, ask for the source record and affected captions to be checked again.
+
+Run the structural and prose checks as well:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks check
+bunx -p slidev-addon-decks decks lint my-talk
+```
+
+The [deck checking guide](/docs/guides/checking-a-deck/) explains these checks and the screenshot tools. The manifest check finds missing or orphaned pages. Neither that check nor prose lint replaces source review.
+
+## How do you stop slides from sounding like AI wrote them?
+
+Give each slide a claim the audience can read while you speak. Decks' writing rules target about 70 visible words on a conventional slide. A story card allows eight words in its lead and twenty in its body. Headlines state a finding in a full sentence ending in a period.
+
+The init command adds two hooks to `.claude/settings.json`. The writing hook runs before Edit, Write and MultiEdit, and denies deck prose matching an error-level rhetoric pattern, including story-card copy. It also refuses the write if the scanner cannot run. The prompt hook adds a writing-rules reminder when you ask for deck work.
+
+A hook can catch a known phrase; it cannot decide whether your headline explains the evidence. Read captions aloud during rehearsal. Replace praise for the result with the result itself, and move explanations you plan to say into notes. Run prose lint after revisions, since warnings do not block the writing hook.
+
+## What are the limits?
+
+Decks makes dark slides only. Its export workflow produces PDF through Chromium, with no Keynote or PowerPoint files. If the required deliverable is an editable PowerPoint presentation, choose that authoring workflow at the start.
+
+Rehearse the charts you will present in the browser you'll present from. Only Claude Code runs the installed hooks automatically; other supported agents must run the checks themselves, and live authoring has not been tested in every listed agent. The [Codex version of this guide](/blog/make-presentations-with-codex/) shows that manual check loop.
+
+For a PDF handout, export the reviewed deck. The [Slidev PDF export guide](/blog/slidev-export-pdf/) covers click steps and timeouts.
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks export my-talk
+```
+
+The exporter needs Playwright's Chromium installed. Each click step becomes its own PDF page, so review the PDF's sequence as well as the browser presentation. A PDF preserves rendered states; interactive behavior requires the live deck.

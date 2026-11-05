@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
 import { ENTRIES, loadExamples } from "../src/data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../src/data/fixtures";
+import { deckDemoCount } from "./mdx";
 
 const parser = new new Window().DOMParser();
 const read = (root: string, path: string) => readFileSync(join(root, path), "utf8");
@@ -133,9 +134,10 @@ describe("the whole site", () => {
       const self = `/${file.replace(/index\.html$/, "")}`;
       for (const link of page("dist", file).querySelectorAll("a[href]")) {
         const href = link.getAttribute("href") ?? "";
-        if (!href.startsWith("/") && !href.startsWith("#")) continue;
-        if (href.startsWith("//")) continue;
-        const [path = "", hash] = (href.startsWith("#") ? `${self}${href}` : href).split("#");
+        const url = new URL(href, absolute(self));
+        if (url.origin !== new URL(site.url).origin) continue;
+        const path = decodeURIComponent(url.pathname);
+        const hash = url.hash.slice(1);
         const target = path.endsWith("/") ? `${path}index.html` : path;
         if (!existsSync(join("dist", target))) {
           broken.push(`${file}: ${href}`);
@@ -154,6 +156,17 @@ describe("the whole site", () => {
     expect([...new Set(islandNames("dist", "index.html"))].sort()).toEqual(
       [...site.islands].sort(),
     );
+    expect(islandNames("dist", "blog/index.html")).toEqual([]);
+    for (const file of readdirSync("src/content/blog", {
+      recursive: true,
+      encoding: "utf8",
+    }).filter((file) => file.endsWith(".mdx"))) {
+      const source = readFileSync(join("src/content/blog", file), "utf8");
+      const count = deckDemoCount(source);
+      expect(islandNames("dist", `blog/${file.replace(/\.mdx$/, "")}/index.html`), file).toEqual(
+        Array(count).fill("DeckPlayer"),
+      );
+    }
     for (const file of htmlFiles("dist").filter((file) => file.startsWith("docs"))) {
       expect(islandNames("dist", file), file).toEqual([]);
     }
@@ -311,8 +324,19 @@ describe("the whole site", () => {
     expect(new URL(og).pathname).toMatch(/^\/og\//);
   });
 
-  it("passes the package's prose lint over the landing text (R6)", () => {
-    const home = page("dist", "index.html");
+  const lintPages = [
+    "index.html",
+    ...readdirSync("src/content/blog", { recursive: true, encoding: "utf8" })
+      .filter((file) => file.endsWith(".mdx"))
+      .map((file) => `blog/${file.replace(/\.mdx$/, "")}/index.html`),
+  ];
+  it.each(lintPages)("passes the package's prose lint over %s text (R6)", (file) => {
+    const home = page("dist", file);
+    if (file !== "index.html") {
+      const article = home.querySelector("article");
+      if (!article) throw new Error(`No article in ${file}`);
+      home.body.replaceChildren(article);
+    }
     // The hook panel quotes a planted bad line on purpose; it carries data-lint-skip.
     for (const skip of home.querySelectorAll("[data-lint-skip], script, style, pre")) skip.remove();
     // One line per block, so a match reports the block it came from.

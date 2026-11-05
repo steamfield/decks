@@ -98,7 +98,7 @@ test("pages carry the security headers and a revalidating cache", async () => {
   assert.match(response.headers.get("cache-control") ?? "", /max-age=0/);
 });
 
-test("each docs page has one trailing-slash URL without redirect rules", async () => {
+test("each docs page has one trailing-slash URL through Worker assets", async () => {
   for (const path of ["/docs", "/docs/index.html"]) {
     const response = await get(path);
     // Workers static assets redirect with 307; every page also sets rel=canonical.
@@ -120,4 +120,22 @@ test("unknown paths get the built 404 page", async () => {
   const response = await get("/no-such-page/");
   assert.equal(response.status, 404);
   assert.match(await response.text(), /Page not found/);
+});
+
+test("the sitemap alias redirects through Worker assets", async () => {
+  const response = await get("/sitemap.xml");
+  assert.equal(response.status, 301);
+  assert.equal(response.headers.get("location"), "/sitemap-index.xml");
+  assert.equal((await get("/sitemap-index.xml")).status, 200);
+});
+
+test("embedded decks are noindex while pages remain indexable", async () => {
+  const deck = readdirSync("dist/demo").find((name) => name !== ".DS_Store");
+  assert.ok(deck);
+  const response = await get(`/demo/${deck}/`);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("x-robots-tag"), "noindex");
+  for (const path of ["/", "/docs/", "/blog/", "/blog/make-slides-with-claude-code/"]) {
+    assert.equal((await get(path)).headers.get("x-robots-tag"), null, path);
+  }
 });

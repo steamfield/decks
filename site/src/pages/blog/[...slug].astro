@@ -1,0 +1,25 @@
+---
+import type { GetStaticPaths } from "astro";
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import { getBlog, getDocs, render } from "../../lib/collection";
+import { relatedPosts } from "../../lib/blog";
+
+export const getStaticPaths = (async () =>
+  (await getBlog()).map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }))) satisfies GetStaticPaths;
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const entries = await getDocs();
+const docs = post.data.relatedDocs.map((ref) => {
+  const doc = entries.find((entry) => entry.id === ref.id);
+  if (!doc) throw new Error(`Unknown relatedDocs id: ${ref.id}`);
+  return doc;
+});
+const related = relatedPosts(await getBlog(), post);
+---
+
+<BlogLayout post={post} headings={headings} docs={docs} related={related}>
+  <Content />
+</BlogLayout>

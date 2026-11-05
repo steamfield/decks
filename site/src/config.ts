@@ -66,6 +66,8 @@ export const site = {
   /** Absolute production URL: canonicals, the sitemap, OG images and llms.txt use it. */
   url: "https://decks.steamfield.io",
   repo,
+  author: { "@type": "Person", name: "Riley Hilliard" },
+  publisher: { "@type": "Organization", name: "Steamfield", url: "https://steamfield.io" },
   /** Current release, shown in the header. Empty hides it. */
   version: pkg.version ?? "",
   announcement: null as Link | null,
@@ -115,7 +117,7 @@ export const site = {
     },
     {
       label: "Charts",
-      text: "OpenChart 9.0.0-rc.2, a release candidate.",
+      text: "OpenChart 9.0.0 (@opendata-ai/openchart-vue).",
     },
   ] as Requirement[],
   /** Section 3: a few words per file `decks init` and `decks new my-talk --story` write. */
@@ -169,6 +171,7 @@ export const site = {
       title: "Product",
       links: [
         { label: "Install", href: "/#install" },
+        { label: "Blog", href: "/blog/" },
         { label: "Changelog", href: `${repo}/blob/main/CHANGELOG.md` },
         { label: "npm", href: "https://www.npmjs.com/package/slidev-addon-decks" },
       ],

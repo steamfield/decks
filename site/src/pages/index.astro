@@ -1,7 +1,5 @@
 ---
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { Code } from "astro:components";
+import ThemeCompare from "../components/blog/ThemeCompare.astro";
 import CopyBlock from "../components/CopyBlock.astro";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
@@ -20,6 +18,7 @@ import { agents, countWord, site } from "../config";
 import { ENTRIES, loadExamples } from "../data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../data/fixtures";
 import { loadProjectFiles, setupCommands } from "../data/project";
+import "../styles/landing.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const examples = loadExamples();
@@ -30,20 +29,6 @@ const agentRun = agentEntry?.run ? loadRun(agentEntry.run.fixture) : null;
 const agentFigures = agentRun ? runFigures(agentRun) : null;
 const denial = loadHookDenial();
 const files = loadProjectFiles();
-const warmTheme = readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8");
-const codeThemes = { light: "github-light-high-contrast", dark: "github-dark-default" } as const;
-// The theme.json frame uses the docs' code-frame markup (@steamfield/ui/markdown's), so
-// src/scripts/site.ts wires its copy button the same way: the button copies the <pre>.
-const themeCodeId = "theme-json-code";
-// The theme stills are shot from this deck (STILL.deck in scripts/demo.mjs), not the hero.
-const STILL_DECK = "tides";
-const stillTitle =
-  examples.find((example) => example.name === STILL_DECK)?.title ?? "A story slide";
-const stills = (name: string) => ({
-  avif: `/stills/${STILL_DECK}-${name}-640.avif 640w, /stills/${STILL_DECK}-${name}-1280.avif 1280w`,
-  webp: `/stills/${STILL_DECK}-${name}-640.webp 640w, /stills/${STILL_DECK}-${name}-1280.webp 1280w`,
-  src: `/stills/${STILL_DECK}-${name}-1280.webp`,
-});
 ---
 
 <BaseLayout title={site.tagline} path="/" landing>
@@ -79,7 +64,7 @@ const stills = (name: string) => ({
       </div>
     </div>
     <div class="page-column hero-in-media" style="--delay: 360ms">
-      <DeckPlayer client:visible examples={examples} />
+      <DeckPlayer client:visible examples={examples} priority gallery />
     </div>
     {hero && <DeckProse example={hero} />}
   </section>
@@ -196,92 +181,7 @@ const stills = (name: string) => ({
     title="One theme.json restyles every slide."
     lede="Colors, fonts and cover branding come from one theme file. A deck's theme.json sets only the keys it lists, and the rest keep their defaults."
   >
-    <div class="themes-grid">
-      <fieldset class="theme-switch">
-        <legend class="sr-only">Show the slide with</legend>
-        <input type="radio" name="theme-still" id="still-default" class="sr-only" checked />
-        <input type="radio" name="theme-still" id="still-warm" class="sr-only" />
-        <div class="theme-tabs">
-          <label for="still-default">Default theme</label>
-          <label for="still-warm">With this theme.json</label>
-        </div>
-        <div class="theme-stills">
-          <figure class="still" data-still="default">
-            <picture>
-              <source
-                type="image/avif"
-                srcset={stills("normal").avif}
-                sizes="(min-width: 1024px) 720px, 100vw"
-              />
-              <source
-                type="image/webp"
-                srcset={stills("normal").webp}
-                sizes="(min-width: 1024px) 720px, 100vw"
-              />
-              <img
-                src={stills("normal").src}
-                width="1280"
-                height="720"
-                loading="lazy"
-                alt={`A slide from the ${STILL_DECK} deck, "${stillTitle}", with the default theme`}
-              />
-            </picture>
-          </figure>
-          <figure class="still" data-still="warm">
-            <picture>
-              <source
-                type="image/avif"
-                srcset={stills("warm").avif}
-                sizes="(min-width: 1024px) 720px, 100vw"
-              />
-              <source
-                type="image/webp"
-                srcset={stills("warm").webp}
-                sizes="(min-width: 1024px) 720px, 100vw"
-              />
-              <img
-                src={stills("warm").src}
-                width="1280"
-                height="720"
-                loading="lazy"
-                alt="The same slide with the theme.json beside it"
-              />
-            </picture>
-          </figure>
-        </div>
-      </fieldset>
-      <div class="theme-source">
-        <figure class="code-wrap" data-code-block data-block>
-          <figcaption data-code-title>theme.json</figcaption>
-          <span data-code-copy data-copy-root>
-            <button
-              type="button"
-              hidden
-              data-copy-command
-              aria-label="Copy code"
-              aria-controls={themeCodeId}
-            >
-              <span data-copy-label>Copy</span>
-            </button>
-            <span data-copy-result role="status" aria-live="polite"></span>
-          </span>
-          <div data-nosnippet>
-            <Code
-              code={warmTheme}
-              lang="json"
-              themes={codeThemes}
-              defaultColor={false}
-              id={themeCodeId}
-            />
-          </div>
-        </figure>
-        <p class="text-muted text-sm">
-          This file changes the background colors and the two chart colors the slide uses. The
-          values come from the warm palette in the template deck.{" "}
-          <a href="/docs/guides/theming-with-theme-json/">Theming with theme.json</a>
-        </p>
-      </div>
-    </div>
+    <ThemeCompare />
   </Section>
 
   <Section
