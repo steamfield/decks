@@ -1,0 +1,149 @@
+---
+title: "How to export Slidev to PDF with clicks"
+description: "Export Slidev to PDF with Playwright's Chromium, include click steps with --with-clicks, and use --wait to capture animated charts after they finish."
+published: 2026-11-05
+keyword: "how to export slidev to pdf"
+feature: export
+relatedDocs:
+  - guides/exporting-to-pdf
+  - reference/decks-json
+  - reference/cli
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+To export Slidev to PDF, install `playwright-chromium` in your presentation project, then run `slidev export`. Add `--with-clicks` when the PDF needs a separate page for each click step.
+
+```bash title="Terminal"
+npm install -D playwright-chromium
+npx -p @slidev/cli slidev export --with-clicks
+```
+
+The default PDF contains one page per slide in its final click state. That can work for a handout, but it removes the intermediate reveals you use while speaking. Animated charts may also need `--wait` so the exporter captures a finished drawing. These are separate settings: one chooses the pages; the other gives their contents time to render. [Slidev's export guide](https://sli.dev/guide/exporting) documents both.
+
+## How do you export Slidev to PDF?
+
+Run the commands above from the directory containing your presentation's `slides.md`. If your entry file has another name, pass it explicitly:
+
+```bash title="Terminal"
+npx -p @slidev/cli slidev export talk.md
+```
+
+The examples use the `slidev` binary from `@slidev/cli`. That package name matters when invoking it through a package runner; the [Slidev CLI reference](https://sli.dev/builtin/cli) identifies the binary and its entry-file argument. If your project already exposes Slidev through a package script, you can use that script instead.
+
+The CLI renders through Playwright's Chromium. Having a browser installed for everyday browsing does not establish that Playwright has the browser binary it needs. Playwright versions require matching browser binaries; after an update, you may need to run its browser installer again. See [Playwright's browser installation instructions](https://playwright.dev/docs/browsers) if the export reports a missing executable.
+
+Slidev also has a browser exporter under **More options**, then **Export**, or at `/export` on your running Slidev server. The CLI is useful when you want the exact export settings recorded in a command you can run again.
+
+Open the resulting PDF before sending it. For a backup copy of a talk, inspect a slide with several reveals and a slide with a chart. Compare the exported content with what you expect the audience to see at those points.
+
+## Why are click steps missing from the PDF?
+
+Use `--with-clicks` for a Slidev PDF export with clicks:
+
+```bash title="Terminal"
+npx -p @slidev/cli slidev export slides.md --with-clicks
+```
+
+A step is one state in a slide's click sequence. A slide might begin with an empty comparison, reveal one series, then reveal another. Exporting those states as separate pages preserves the order of the explanation. A single final-state page puts all the revealed material together.
+
+Choose the version that fits the reader. A colleague reviewing the reasoning behind a chart may need the intermediate states. Someone printing reference material may prefer the shorter final-state export. You can keep separate output names for those uses so you do not accidentally send the wrong version.
+
+Click steps become separate static pages in the PDF. The PDF does not replay the movement between them. If the expected pages are present but a line stops halfway across its chart, investigate rendering time before changing the click settings again.
+
+## Why do animated charts export half-drawn?
+
+Add a rendering delay with `--wait` when an animation has not finished at capture time. Slidev's troubleshooting guide recommends this for missing content or unfinished animations:
+
+```bash title="Terminal"
+npx -p @slidev/cli slidev export slides.md --with-clicks --wait 1000
+```
+
+The wait value is in milliseconds. Treat the documented value above as a starting point, then inspect the chart that failed. A delay does not prove that an external dataset loaded or that a custom animation reached the intended state. A chart can look complete while displaying the wrong step's annotation.
+
+Check each exported chart against the statement beside it. If the caption describes a comparison that the picture has not reached, the page is unsuitable as a handout even if every axis is visible. This is especially easy to miss when the final page of the slide looks correct and the intermediate pages receive less attention.
+
+For a repeatable check, export only the affected slide with `--range`, then return to the full deck after choosing a suitable delay. Keep `--with-clicks` on during that check if the problem occurs between reveals; testing only the final state leaves those pages unexamined.
+
+The Keeling curve example below lets you inspect a story deck's chart and changing captions. Its live transitions help show which states a PDF needs to preserve; the PDF itself contains still pages.
+
+<DeckDemo example="keeling" caption="An animated story deck. Each step you click through becomes its own PDF page when exported with clicks." />
+
+## How do you fix export timeouts?
+
+Increase `--timeout` when Playwright cannot finish rendering the print page within the allowed time:
+
+```bash title="Terminal"
+npx -p @slidev/cli slidev export slides.md --with-clicks --timeout 60000
+```
+
+The [Slidev CLI export options](https://sli.dev/builtin/cli#slidev-export-entry) define `--timeout` as the rendering timeout. `--wait` adds a deliberate delay before capture. A failed command and a successfully written PDF with unfinished charts call for different checks, even when both involve time.
+
+Use the error message to choose your next attempt. A missing Chromium executable calls for browser installation. A rendering timeout calls for checking what the page is waiting on. An incomplete chart in an otherwise successful PDF calls for reviewing the captured state and the delay.
+
+Slidev's export guide also documents `--wait-until none` for persistent timeout problems. It skips the load-state wait, so inspect the exported content carefully if you use it. Skipping that wait can leave content missing; an added `--wait` may still be necessary.
+
+Narrow the investigation with `--range` when the same part of the deck repeatedly fails. Export a known working slide separately from the suspect slide and compare the result. Keep the failing command alongside the error while you investigate so changes to click handling do not get mixed into changes to timing.
+
+## How does decks export pick the flags?
+
+Decks is a Slidev addon and deck runner for data-storytelling presentations. Its export command looks up a deck alias in `decks.json`, takes that entry's `entry` path, and runs Slidev's PDF exporter on it:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks export my-talk
+```
+
+Run that command from the directory containing the registry. Here is an animated deck entry:
+
+```json title="decks.json"
+{
+  "my-talk": {
+    "entry": "decks/my-talk/slides.md",
+    "name": "my-talk",
+    "animated": true
+  }
+}
+```
+
+The alias is `my-talk`; `entry` identifies the Markdown file. The `name` field is the slug used by build output settings. The [registry reference](/docs/reference/decks-json/) explains those fields and the optional `_config` defaults.
+
+Decks selects these export flags:
+
+| `animated` in the deck entry | Flags passed to Slidev |
+| --- | --- |
+| Absent or `false` | `--dark --with-clicks --with-toc` |
+| `true` | `--dark --with-clicks --wait 1500` |
+
+Both paths include click steps and use the dark theme. Animated decks wait 1500 ms per page and omit `--with-toc`, which errors on HTML-only slides. The other path includes the PDF outline. These defaults and the Chromium requirement are documented in the [PDF export guide](/docs/guides/exporting-to-pdf/).
+
+Set `animated` to `true` for decks using OpenChart or scripted demos. A story scaffold sets it automatically:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks new my-talk --story
+```
+
+Use that scaffold command when creating a new deck. For an existing deck, update its registry entry. The [CLI reference](/docs/reference/cli/) describes the scaffold and export commands.
+
+Story stages also handle capture in their timeline: in print and export, the entrance jumps to its end state and the step timeline seeks to the requested state. That removes the need to capture a stage halfway through its entrance. Custom animation code still needs inspection; the export defaults do not establish that every component has finished loading.
+
+Decks' export wrapper selects the flags shown above; it does not forward additional timeout or wait flags after the alias. For a custom rendering delay, invoke Slidev directly with the registry's entry path and the settings you need. Decks' runner exports PDF through Chromium and does not produce Keynote or PowerPoint files.
+
+## Where does the PDF file name come from?
+
+Set `exportFilename` in the headmatter, the YAML block at the start of the deck's entry file:
+
+```yaml title="slides.md headmatter"
+---
+exportFilename: my-talk-handout
+---
+```
+
+Decks uses that headmatter value for the PDF file name. Keep it beside the presentation settings when you want repeated exports to use the same name. The alias in `decks.json` selects the deck; it does not replace `exportFilename`.
+
+For a one-off name when invoking Slidev directly, use `--output`:
+
+```bash title="Terminal"
+npx -p @slidev/cli slidev export slides.md --with-clicks --output my-talk-review
+```
+
+Slidev uses `exportFilename` when configured and otherwise derives the default name from the entry file. With the usual `slides.md` entry, the default PDF is `slides-export.pdf`. Check the output path printed by the command before attaching the file, especially if you keep both a review copy with steps and a shorter handout.
