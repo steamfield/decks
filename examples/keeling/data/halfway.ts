@@ -17,7 +17,18 @@ export const RISE = LAST.y - FIRST.y
 export const RISE_LABEL = `${Math.round(RISE)} ppm`
 
 export const HALF = (FIRST.y + LAST.y) / 2
-export const HALF_YEAR = ANNUAL.find((r) => r.y >= HALF)!.x
+/** The halfway level as the card prints it. */
+export const HALF_LABEL = HALF.toFixed(1)
+/** The first annual mean at or above the halfway level. */
+export const HALF_POINT = ANNUAL.find((r) => r.y >= HALF)!
+export const HALF_YEAR = HALF_POINT.x
+
+/** Where the line between annual points crosses the halfway level: geometry for the rule's end, not a figure. */
+const below = ANNUAL[ANNUAL.indexOf(HALF_POINT) - 1]
+export const CROSS_X = below.x + (HALF - below.y) / (HALF_POINT.y - below.y)
+
+/** The record from the halfway year on, which Beat 2 redraws in amber. */
+export const AFTER = SERIES.filter((p) => p.x >= HALF_YEAR)
 
 /** Years from the halfway year to the last full year, and before it. */
 export const YEARS_AFTER = LAST.x - HALF_YEAR
