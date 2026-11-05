@@ -111,7 +111,11 @@ const websiteJsonLd = isHome
           site: "decks",
           consent,
         });
-        mountConsentBanner(consent, { privacyHref: "https://steamfield.io/privacy" });
+        mountConsentBanner(consent, {
+          message:
+            "The Decks site counts visits and clicks with PostHog. Accept lets it set cookies so repeat visits count once, and turns on session recordings and heatmaps.",
+          privacyHref: "https://steamfield.io/privacy",
+        });
       }
     </script>
   </head>
