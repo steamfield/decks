@@ -1,0 +1,160 @@
+---
+title: "Slidev vs Marp vs reveal.js: which to use"
+headline: "Slidev vs Marp: which presentation tool fits?"
+description: "Choose Marp for simple Markdown decks, Slidev for Vue components, reveal.js for HTML control, and Quarto for slides with computed output."
+published: 2026-11-05
+keyword: "slidev vs marp"
+feature: comparison
+relatedDocs:
+  - concepts/story-vs-conventional-decks
+  - getting-started/add-decks-to-an-existing-deck
+  - getting-started/quickstart
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+Choose Marp for a straightforward Markdown deck you can export to PDF or PowerPoint. Choose Slidev when your talk needs Vue components or interactive demonstrations.
+
+The Slidev vs Marp decision changes when your starting point is an analysis notebook or an existing web application. Quarto fits slides generated alongside code output. reveal.js gives you direct control over HTML and presentation behavior. All belong in a comparison of Markdown presentation tools, but they ask you to maintain different kinds of source files.
+
+## Slidev vs Marp: which should you use?
+
+Marp is my default recommendation for slides made mostly of text and images. Slidev earns the extra component code when the audience needs to see an interface respond or a chart change while you explain it.
+
+| Your main requirement | Start with | Why |
+| --- | --- | --- |
+| Markdown slides with PDF or PPTX delivery | Marp | Markdown conversion and file export are part of its usual workflow. |
+| Vue components inside a technical talk | Slidev | Components can live directly in slide Markdown. |
+| Control over the HTML presentation | reveal.js | You author the markup and can control navigation through JavaScript. |
+| Slides containing computed analysis | Quarto | Executable code and notebook output fit its authoring workflow. |
+
+These recommendations follow the tools' documented [Marp workflow](https://marp.app/), [Slidev components](https://sli.dev/guide/component), [reveal.js API](https://revealjs.com/api/) and [Quarto computations](https://quarto.org/docs/computations/python.html). They are choices about what you want to author and maintain.
+
+Delivery requirements can decide the choice before animation does. A browser presentation preserves interaction; a PDF captures fixed states. For a PowerPoint handoff, test a representative exported deck with the recipient before committing to a tool. A supported file extension alone says little about the editing workflow your colleague expects.
+
+## How does Marp work and when is it enough?
+
+Marp converts Markdown into slides, with `---` between pages. Its [official introduction](https://marp.app/) covers CSS themes and export to HTML, PDF and PowerPoint. The VS Code extension adds slide previews beside your source.
+
+A small deck can look like this:
+
+```markdown title="talk.md"
+---
+marp: true
+theme: default
+---
+
+# Quarterly review
+
+The chart below shows the reporting period.
+
+---
+
+# Revenue by region
+
+![Revenue chart](revenue.png)
+```
+
+This suits a talk whose charts already exist as images. Update the image when the analysis changes, preview the slides and export the file your organizer needs. You can keep the presentation source in Git without writing a component for each visual.
+
+Marp is enough when the explanation comes from your narration and the order of the slides. I would use it for a status report with static charts. If the planned talk requires a chart to regroup data during a slide, that requirement deserves a prototype before you choose the authoring format.
+
+## When is reveal.js the better choice?
+
+Choose reveal.js when you want to own the HTML and JavaScript around the presentation. Its [Markdown plugin](https://revealjs.com/markdown/) supports Markdown inside slide sections or in an external file, so choosing it does not require writing every sentence as HTML.
+
+For Marp vs reveal.js, the practical distinction is how much presentation behavior you want to implement. reveal.js exposes [navigation and state through its JavaScript API](https://revealjs.com/api/). That is useful when a custom interface needs to move the talk to a particular slide or fragment, an element revealed within a slide.
+
+Animation alone does not settle Slidev vs reveal.js. reveal.js already has [Auto-Animate](https://revealjs.com/auto-animate/), which transitions matching elements between adjacent slides. It can match elements automatically or use explicit identifiers. A diagram that moves between layouts may need nothing more.
+
+I would choose reveal.js for a presentation embedded in a custom web experience where controlling the markup is part of the job. That choice also means owning the custom code and checking its behavior as the deck changes.
+
+## Where does Quarto fit?
+
+Quarto fits talks whose slides need to include the output of an analysis. Its [Python workflow](https://quarto.org/docs/computations/python.html) supports executable code in `.qmd` documents and rendering Jupyter notebooks. Notebook cells are not re-executed by default during rendering; use the documented `--execute` option when you need a fresh run.
+
+Quarto can also produce reveal.js presentations. Its [presentation formats](https://quarto.org/docs/presentations/) include reveal.js HTML, PowerPoint and Beamer PDF. Choosing Quarto and choosing reveal.js can therefore be parts of the same workflow.
+
+For Slidev vs Quarto, I would start with Quarto if the main task is keeping the displayed results attached to the code that computes them. I would start with Slidev if the main task is building an interactive Vue demonstration. Quarto's [reveal.js guide](https://quarto.org/docs/presentations/revealjs/) shows how headings divide the document into slides and how executable code fits into them.
+
+## What does Slidev do that the others don't?
+
+Slidev combines Markdown authoring with Vue components inside the slides. Animation and presenter tools also exist elsewhere in this comparison. A local `.vue` file in `components/` becomes available in slide Markdown without a manual import, as the [component guide](https://sli.dev/guide/component) explains.
+
+Slidev also provides a [presenter view](https://sli.dev/guide/ui) separate from the audience window. You can begin with ordinary Markdown slides and add components only where the explanation benefits from them.
+
+For simple reveals, use Slidev's built-in [`v-click` animation](https://sli.dev/guide/animations):
+
+```html title="Inside a Slidev slide"
+<div v-click>The highlighted region enters the comparison.</div>
+```
+
+That reveals an element when you advance. A custom chart component can handle more involved changes, but you must define its states and coordinate the explanatory text yourself.
+
+Decks is a free, Apache-2.0-licensed Slidev addon and runner for data talks. It adds a story-slide pattern with one pinned visualization and a caption that changes at each step. This excerpt comes from Riley Hilliard's OpenData pitch, September 2026:
+
+<DeckDemo example="opendata-showcase" caption="An excerpt from a Slidev talk built with Decks: files become a dataset, then join a graph. Step through it with the arrow keys." />
+
+Slidev's own [export guide](https://sli.dev/guide/exporting) includes PDF and PPTX options. Decks' runner supports PDF export through Chromium only, with no PowerPoint or Keynote files. That narrower export support belongs in the decision if you adopt the addon.
+
+## Which works best with a coding agent?
+
+Choose the source format you can review yourself. For a text-and-image deck, Marp gives you little component code to inspect. For a computed analysis, reviewing the calculation is part of reviewing a Quarto presentation. An agent-generated interactive component still needs a browser check, including backward navigation.
+
+Slidev already offers [official agent skills and an MCP server](https://sli.dev/guide/work-with-ai). The server exposes tools to inspect and edit slides, and to navigate the presentation. You can start there for ordinary Slidev authoring.
+
+Decks adds project guidance for a particular data-talk workflow. Its initialization installs a `deck-author` agent, the `building-a-deck` and `fact-checking-a-deck` skills, and writing rules. Figures live in `data/*.ts` constants with source comments; `data-sources.md` maps the slides to their sources so the fact-check skill can re-run them.
+
+The [Decks quickstart](/docs/getting-started/quickstart/) lists shared guidance for Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Windsurf and OpenCode. Only Claude Code runs the installed writing hooks automatically. Other agents need to run the checks during editing:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks check
+bunx -p slidev-addon-decks decks lint
+```
+
+Shared guidance does not establish equal authoring results across agents. Live authoring has not been tested in every listed agent, and you still need to review the rendered slides and the source behind each figure.
+
+## How do you add stepped charts to Slidev?
+
+Use built-in reveals for a chart image and its annotations when that explains the subject. For a chart that changes at each step, a Vue component can read Slidev's click state. Decks supplies a story engine for this pattern: the visualization is drawn from the click count, so stepping backward plays the transition in reverse. Its caption card changes with the step, and a chart can persist into the next slide.
+
+The [story versus conventional deck guide](/docs/concepts/story-vs-conventional-decks/) calls these steps "beats." Conventional slides hold bullets, tables or charts; story slides keep prose inside the stage component as text for each step. A conventional deck can include a story slide.
+
+### Enable the addon in an existing deck
+
+In a Slidev project that already has `@slidev/cli`, install the addon and its required base theme:
+
+```bash title="Terminal"
+bun add slidev-addon-decks slidev-theme-the-unnamed
+```
+
+Set the deck's opening YAML headmatter to include:
+
+```yaml title="slides.md headmatter"
+theme: the-unnamed
+addons: ["slidev-addon-decks"]
+```
+
+Story slides need additional headmatter. The [existing-deck guide](/docs/getting-started/add-decks-to-an-existing-deck/) explains how to copy it from a temporary story scaffold:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks new scratch --story
+```
+
+Copy that scaffold's complete headmatter, following its comments. To use the runner with your original deck, register its entry file:
+
+```json title="decks.json"
+{
+  "talk": { "entry": "slides.md", "name": "talk" }
+}
+```
+
+If scaffolding already created a registry, add `talk` alongside its existing entry. You can then preview the original deck with:
+
+```bash title="Terminal"
+bunx -p slidev-addon-decks decks dev talk
+```
+
+Decks needs Node 20.19+ or 22.12+ and requires the `slidev-theme-the-unnamed` base theme, and every slide is dark. Its charts use OpenChart 9.0.0. The dark-only slides matter if your organization requires light slides.
+
+Rehearse a completed story slide by advancing and then stepping backward. The chart and caption should return together. Check the exported PDF separately: the captured chart states must explain the comparison without the motion available in the live talk.
