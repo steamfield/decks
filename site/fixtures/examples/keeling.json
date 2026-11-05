@@ -1,15 +1,16 @@
 {
   "title": "Carbon dioxide is rising, and rising faster",
-  "slides": 5,
+  "slides": 6,
   "slideTitles": [
     "Carbon dioxide is rising, and rising faster",
     "Carbon dioxide in the air keeps climbing.",
     "The curve breathes once a year.",
     "The climb is steeper now than in the 1960s.",
-    "Half the rise came in the last 23 years."
+    "Half the rise came in the last 23 years.",
+    "Anyone can download the whole record."
   ],
-  "startSlide": 5,
-  "startBeat": 1,
+  "startSlide": 2,
+  "startBeat": 2,
   "states": [
     {
       "slide": 1,
@@ -23,7 +24,7 @@
       "beat": 0,
       "beats": 2,
       "lead": "Carbon dioxide above Mauna Loa, every month.",
-      "body": "Monthly means in parts per million, from March 1958. Scripps data to April 1974, NOAA after."
+      "body": "Monthly means in parts per million since March 1958. Scripps data to April 1974, NOAA after."
     },
     {
       "slide": 2,
@@ -42,21 +43,28 @@
     {
       "slide": 3,
       "beat": 0,
-      "beats": 2,
-      "lead": "Up close, the line is a sawtooth.",
+      "beats": 3,
+      "lead": "The box holds the last five years.",
       "body": "The same monthly means, 2021 through 2025."
     },
     {
       "slide": 3,
       "beat": 1,
-      "beats": 2,
+      "beats": 3,
+      "lead": "Up close, the line is a sawtooth.",
+      "body": "NOAA calls it the seasonal cycle. It rides on top of the climb."
+    },
+    {
+      "slide": 3,
+      "beat": 2,
+      "beats": 3,
       "lead": "Highs in late spring, lows in early fall.",
       "body": "Every year peaked in May or June and bottomed out in September or October."
     },
     {
       "slide": 3,
-      "beat": 2,
-      "beats": 2,
+      "beat": 3,
+      "beats": 3,
       "lead": "Growing plants pull carbon dioxide down.",
       "body": "Respiration and decay release it again. Each yearly swing ran 4.9 to 6.1 ppm."
     },
@@ -64,7 +72,7 @@
       "slide": 4,
       "beat": 0,
       "beats": 2,
-      "lead": "Each bar is a decade's average yearly rise.",
+      "lead": "Each column is a decade's average yearly rise.",
       "body": "NOAA annual growth at Mauna Loa, averaged across each decade, in ppm per year."
     },
     {
@@ -79,28 +87,42 @@
       "beat": 2,
       "beats": 2,
       "lead": "This decade is running faster still.",
-      "body": "6 years in, the average rise is 2.56 ppm a year."
+      "body": "Its first 6 years averaged 2.56 ppm a year."
     },
     {
       "slide": 5,
       "beat": 0,
-      "beats": 2,
+      "beats": 3,
       "lead": "Carbon dioxide rose 111 ppm since 1959.",
       "body": "Yearly averages, from 315.98 ppm in 1959 to 427.35 in 2025."
     },
     {
       "slide": 5,
       "beat": 1,
-      "beats": 2,
+      "beats": 3,
       "lead": "The halfway mark fell in 2002.",
-      "body": "The first half of the rise took 43 years. The second half took 23."
+      "body": "Halfway between 315.98 and 427.35 is 371.7 ppm."
     },
     {
       "slide": 5,
       "beat": 2,
-      "beats": 2,
+      "beats": 3,
+      "lead": "The first half took 43 years.",
+      "body": "The second half took 23, from 2002 to 2025."
+    },
+    {
+      "slide": 5,
+      "beat": 3,
+      "beats": 3,
       "lead": "Every year beat the one before.",
       "body": "No annual average since 1959 has fallen below the previous year's."
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
     }
   ]
 }
