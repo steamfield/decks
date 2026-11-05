@@ -1,0 +1,149 @@
+---
+title: "How to make presentations with Codex"
+description: "Make presentations with Codex by asking it to write a Slidev deck, previewing the slides, then checking the layout, prose and sources before export."
+published: 2026-11-05
+keyword: "how to make presentations with codex"
+feature: agents
+relatedDocs:
+  - guides/writing-decks-with-an-agent
+  - getting-started/quickstart
+  - reference/cli
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+To make presentations with Codex, ask it to write a Markdown slide deck in your project, run the preview, and revise the rendered slides. Slidev is one format you can use for this workflow.
+
+Give Codex your audience and source material, plus the output you need. For a short talk, a plain Slidev project is enough to start. A talk with charts also needs a way to trace the numbers and review each animation step before presenting.
+
+## How do you make a presentation with Codex?
+
+Start with a project whose files Codex can edit. The [official Codex CLI guide](https://learn.chatgpt.com/docs/codex/cli) describes its ability to read files, change code and run local tools. A slide deck written as source files fits that working model.
+
+[Slidev uses Markdown and supports Vue components](https://sli.dev/guide/why), so Codex can write the slide text and add a component when a chart needs one. With Node 22.12+ installed, create a plain project using the command in [Slidev's getting started guide](https://sli.dev/guide/):
+
+```bash title="Terminal"
+npm init slidev@latest
+```
+
+Follow the setup prompts, then open the generated project in Codex. In the CLI, change into that folder and run `codex`. Ask for a small first draft:
+
+```text title="Prompt for a plain Slidev project"
+Make a five-slide presentation in slides.md about the migration
+described in notes.md. The audience is the developers maintaining
+the service. Use Slidev syntax and one claim per slide.
+Use only the facts in my notes. Flag missing evidence.
+Start the preview and inspect the rendered slides before finishing.
+```
+
+Run `npm run dev` in the generated project to preview it in the browser. Check the actual slide area for clipped titles and crowded content. Give Codex specific feedback such as "split the migration timeline across two slides" or "keep the comparison chart visible while explaining the next point."
+
+The source files let you review the wording and data changes in a diff. The browser shows whether those changes fit on a slide. Keep both views in the revision loop.
+
+## How does Codex know how to build your slides?
+
+Codex reads project instructions in `AGENTS.md` before working, as described in [OpenAI's guide to project instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md). An AGENTS.md for slides can name the deck format and tell Codex which checks to run. Put recurring requirements there so a new session can find them without another long prompt.
+
+A Codex presentation skill can hold the longer workflow. [OpenAI's skills documentation](https://learn.chatgpt.com/docs/build-skills) defines a skill as a directory with a `SKILL.md` file and optional supporting resources. For a deck project, that workflow might cover sourcing figures and reviewing the finished slides.
+
+You can maintain those instructions yourself. Start with the rules you repeatedly have to explain: where slide files belong, how much text fits, and which sources support the claims. Include an example deck so Codex has a concrete reference.
+
+Decks supplies that guidance for data-storytelling presentations. It is a free, Apache-2.0-licensed Slidev addon and deck runner, published as `slidev-addon-decks`. Its initialization command writes a marked section in `AGENTS.md` with commands and a required reading order. Existing text outside the marked blocks is preserved.
+
+The shared rules and skills live under `.claude/` for compatibility. Codex follows their paths from `AGENTS.md` and reads them as Markdown. Initialization registers the `deck-author` agent natively in Claude Code; in Codex, you follow the shared role and workflow directly. The [agent-writing guide](/docs/guides/writing-decks-with-an-agent/) explains these entry points.
+
+## How do you set up the project?
+
+For the Decks workflow, use a new folder with npm and Node 20.19+ or 22.12+ available. Keep your notes and source data in that project so Codex can inspect them alongside the slides.
+
+### Install the packages and guidance
+
+```bash title="Terminal"
+mkdir my-presentation
+cd my-presentation
+npm init -y
+npm i slidev-addon-decks @slidev/cli slidev-theme-the-unnamed
+npx -p slidev-addon-decks decks init
+```
+
+The installation includes Slidev and the base theme. Initialization adds the authoring rules and the building and fact-checking skills. Open `AGENTS.md` and check that the Decks section names the reading order before starting a new Codex session in this folder.
+
+Every Decks command here names the package with `-p slidev-addon-decks`. The bare `decks` package on npm belongs to an unrelated project.
+
+### Scaffold and preview a story deck
+
+```bash title="Terminal"
+npx -p slidev-addon-decks decks new my-talk --story
+npx -p slidev-addon-decks decks dev my-talk
+```
+
+The alias `my-talk` identifies the deck in `decks.json`. The scaffold lives under `decks/my-talk/`: `slides.md` lists the slide pages, `components/` holds the visualization code, and `data/` holds the figures. `data-sources.md` records where those figures came from. The [quickstart](/docs/getting-started/quickstart/) explains the scaffold options.
+
+A story slide keeps one visualization on screen while the caption card changes at each step. Its animation follows Slidev's click count, so stepping backward plays the transition in reverse. Ask Codex to use this when your explanation needs to draw attention to successive parts of the same chart. Omit `--story` when scaffolding a conventional deck.
+
+The JavaScript tooling deck below shows the story format. A Claude Code subagent drafted it with the repository's agent guidance; it was then fact-checked and edited.
+
+<DeckDemo example="state-of-js" caption="A story deck about JavaScript tooling, drafted by a coding agent with the Decks guidance and then fact-checked. Step through it with the arrow keys." />
+
+## What do you ask Codex for?
+
+Ask for a talk with a defined audience and an evidence boundary. When you make slides with Codex from internal data, name the files it should use:
+
+```text title="Prompt for the Decks project"
+Read AGENTS.md and follow its required reading order.
+Build my-talk as a story deck about our service migration.
+The audience is the engineering team deciding the rollout order.
+Use notes.md and the CSV files under sources/ as evidence.
+
+Propose the slide claims before implementing the stages.
+Keep a chart visible across steps when it supports the explanation.
+Store figures in data/*.ts with source comments, and record the
+source or query for each figure in data-sources.md.
+Flag unsupported claims and ask about missing source material.
+
+Run the required checks during edits. Before handoff, review every
+slide and step, follow the fact-checking skill, and build the deck.
+Report unresolved issues and the commands you ran.
+```
+
+The proposed claims let you correct the argument before Codex spends time on animation code. If your talk is about rollout order, a chart of total traffic might need a breakdown by service to support that decision. Resolve the claim and its evidence before polishing the chart.
+
+Decks' data rules require source comments in `data/*.ts` and a source map in `data-sources.md`. The fact-checking skill uses that record to rerun the source behind each figure and compare it with the slide copy. A comment naming a CSV is only useful if the value can be reproduced from that CSV.
+
+For examples, point Codex at `node_modules/slidev-addon-decks/agent/exemplars/tides` for a story deck or `node_modules/slidev-addon-decks/agent/exemplars/agent-experience` for a conventional deck. These are references to read while writing your own deck.
+
+## How do you check the deck when Codex has no hooks?
+
+Only Claude Code runs Decks' installed writing hooks automatically. In Codex, run the manifest and prose checks during each edit cycle:
+
+```bash title="Terminal"
+npx -p slidev-addon-decks decks check
+npx -p slidev-addon-decks decks lint my-talk --strict
+```
+
+The manifest check compares page files against the `src:` entries in `slides.md` and fails on error-level prose hits. The prose lint scans slide text and story-card copy for its listed writing patterns. It normally exits successfully on warnings alone; `--strict` makes any hit fail. Neither command verifies the arithmetic or judges whether a chart supports its headline.
+
+Review the rendered states too. Install the optional screenshot dependency, then capture the deck:
+
+```bash title="Terminal"
+npm i -D playwright-chromium
+npx -p slidev-addon-decks decks snap my-talk
+npx -p slidev-addon-decks decks fact-extract my-talk
+```
+
+The screenshot walk captures every slide and click state. Open the images and inspect labels, card placement and chart visibility. The figure extractor lists numbers for the fact-checking workflow; ask Codex to follow the installed fact-checking skill and resolve differences against the recorded sources. See the [deck-checking guide](/docs/guides/checking-a-deck/) for individual-slide screenshots and diagnostics.
+
+Finish with the build and PDF export:
+
+```bash title="Terminal"
+npx -p slidev-addon-decks decks build my-talk
+npx -p slidev-addon-decks decks export my-talk
+```
+
+Export uses Chromium and includes click states. Review the resulting PDF as well as the browser deck, since the PDF presents static states. The [CLI reference](/docs/reference/cli/) lists the available commands and arguments.
+
+## What can't it do yet?
+
+Decks produces dark slides and exports PDF through Chromium. It does not produce Keynote or PowerPoint files. Choose the output format before authoring if someone else needs an editable office presentation.
+
+The shared guidance supports Codex, but live authoring has not been tested in every listed agent. Installation support does not establish that a complete talk has been authored and checked in each one. In a Codex session, require the check results and source review in the handoff, and leave unsupported figures unresolved until you have evidence for them.
