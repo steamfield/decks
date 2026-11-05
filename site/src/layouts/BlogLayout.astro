@@ -1,0 +1,145 @@
+---
+import type { MarkdownHeading } from "astro";
+import CopyBlock from "../components/CopyBlock.astro";
+import { site } from "../config";
+import {
+  type BlogEntry,
+  blogHref,
+  blogPosting,
+  blogBreadcrumbs,
+  readingMinutes,
+} from "../lib/blog";
+import { type DocEntry, docHref } from "../lib/docs";
+import { landingCss } from "../lib/tokens";
+import "../styles/blog.css";
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  post: BlogEntry;
+  headings: MarkdownHeading[];
+  docs: DocEntry[];
+  related: BlogEntry[];
+}
+const { post, headings, docs, related } = Astro.props;
+const { data } = post;
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const date = (value: Date) =>
+  value.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  path={blogHref(post.id)}
+  image={`/og/blog/${post.id}.png`}
+  ogType="article"
+  publishedTime={data.published.toISOString()}
+  modifiedTime={data.updated.toISOString()}
+  jsonLd={[blogPosting(post), blogBreadcrumbs(post)]}
+>
+  <style is:inline set:html={landingCss(undefined, "[data-demo]")} />
+  <div class="blog-page">
+    <article class="blog-article">
+      <header class="blog-column mb-10">
+        <nav aria-label="Breadcrumb" class="text-muted mb-6 text-sm">
+          <ol class="flex flex-wrap gap-2">
+            <li>
+              <a href="/">Home</a>
+              <span aria-hidden="true"> /</span>
+            </li>
+            <li>
+              <a href="/blog/">Blog</a>
+              <span aria-hidden="true"> /</span>
+            </li>
+            <li aria-current="page">{data.title}</li>
+          </ol>
+        </nav>
+        <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+          {data.headline ?? data.title}
+        </h1>
+        <p class="text-muted mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <span>
+            Published <time datetime={data.published.toISOString()}>{date(data.published)}</time>
+          </span>
+          {data.updated.getTime() !== data.published.getTime() && (
+            <span>
+              Updated <time datetime={data.updated.toISOString()}>{date(data.updated)}</time>
+            </span>
+          )}
+          <span>{readingMinutes(post.body)} min read</span>
+        </p>
+      </header>
+      {toc.length > 0 && (
+        <nav
+          aria-label="On this page"
+          data-toc
+          class="blog-column border-line mb-10 border-y py-4 text-sm"
+        >
+          <p class="text-muted mb-2 font-semibold">On this page</p>
+          <ul class="space-y-1">
+            {toc.map((heading) => (
+              <li class={heading.depth === 3 ? "pl-3" : ""}>
+                <a href={`#${heading.slug}`} class="aria-[current=location]:text-accent">
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+      <div class="prose blog-column blog-body" data-blog-body>
+        <slot />
+      </div>
+    </article>
+    <div class="blog-column mt-12 space-y-10">
+      <section aria-labelledby="blog-install" class="border-line border-t pt-8">
+        <h2 id="blog-install" class="mb-4 text-xl font-semibold">
+          Start a story deck.
+        </h2>
+        <CopyBlock
+          id="blog-install-commands"
+          lines={site.quickstart}
+          label="Copy the install commands"
+        />
+        <p class="mt-4">
+          <a href="/docs/getting-started/quickstart/">Read the quickstart</a> for the full setup.
+        </p>
+      </section>
+      {docs.length > 0 && (
+        <section aria-labelledby="related-docs">
+          <h2 id="related-docs" class="mb-4 text-xl font-semibold">
+            Related documentation
+          </h2>
+          <ul class="space-y-4">
+            {docs.map((doc) => (
+              <li>
+                <a href={docHref(doc.id)}>{doc.data.title}</a>
+                <p class="text-muted mt-1 text-sm">{doc.data.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {related.length > 0 && (
+        <section aria-labelledby="related-posts">
+          <h2 id="related-posts" class="mb-4 text-xl font-semibold">
+            Related posts
+          </h2>
+          <ul class="space-y-4">
+            {related.map((entry) => (
+              <li>
+                <a href={blogHref(entry.id)}>{entry.data.title}</a>
+                <p class="text-muted mt-1 text-sm">{entry.data.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </div>
+</BaseLayout>

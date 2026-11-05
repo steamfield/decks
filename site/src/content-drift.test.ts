@@ -47,16 +47,19 @@ const splitCommands = (text: string) =>
     .map((line) => line.trim())
     .filter(Boolean);
 
-const docsDir = join(process.cwd(), "src/content/docs");
+const contentFiles = ["docs", "blog"].flatMap((collection) => {
+  const base = join(process.cwd(), "src/content", collection);
+  return readdirSync(base, { recursive: true, encoding: "utf8" })
+    .filter((file) => /\.mdx?$/.test(file))
+    .map((file) => ({ file, path: join(base, file) }));
+});
 /** Command lines in the docs that call the decks bin, from fenced bash blocks. */
-const docsCommands = readdirSync(docsDir, { recursive: true, encoding: "utf8" })
-  .filter((file) => file.endsWith(".md"))
-  .flatMap((file) => {
-    const text = readFileSync(join(docsDir, file), "utf8");
-    return [...text.matchAll(/```bash[^\n]*\n([\s\S]*?)```/g)].flatMap((match) =>
-      splitCommands(match[1] ?? "").map((line) => ({ file, line: line.replace(/\s+#.*$/, "") })),
-    );
-  });
+const docsCommands = contentFiles.flatMap(({ file, path }) => {
+  const text = readFileSync(path, "utf8");
+  return [...text.matchAll(/```bash[^\n]*\n([\s\S]*?)```/g)].flatMap((match) =>
+    splitCommands(match[1] ?? "").map((line) => ({ file, line: line.replace(/\s+#.*$/, "") })),
+  );
+});
 /** `bunx -p slidev-addon-decks decks new ...`; the `-p` group is empty for the bare form. */
 const deckInvocation = /^(bunx|npx|pnpm exec)( -p \S+)? (\S+)\s*(.*)$/;
 /** The bare `decks` name on npm is an unrelated package: docs must pin the package with -p. */
@@ -115,10 +118,9 @@ describe("every shown command matches the CLI", () => {
     },
   );
 
-  it("pins the package in every docs page's inline decks commands", () => {
-    for (const file of readdirSync(docsDir, { recursive: true, encoding: "utf8" })) {
-      if (!file.endsWith(".md")) continue;
-      const text = readFileSync(join(docsDir, file), "utf8");
+  it("pins the package in every docs and blog page's inline decks commands", () => {
+    for (const { file, path } of contentFiles) {
+      const text = readFileSync(path, "utf8");
       expect(text, file).not.toMatch(/\b(bunx|npx) decks\b/);
     }
   });

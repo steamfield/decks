@@ -5,7 +5,7 @@ import satori from "satori";
 import sharp from "sharp";
 import { site } from "../../config";
 import { EXAMPLE_NAMES } from "../../data/examples";
-import { getDocs } from "../../lib/collection";
+import { getBlog, getDocs } from "../../lib/collection";
 import { type Card, ogCard, ogFonts, stillDataUrl } from "../../lib/og";
 
 // One card per page: /og/index.png for the landing page, /og/docs/<id>.png per doc.
@@ -19,6 +19,10 @@ export const getStaticPaths = (async () => {
   };
   return [
     { params: { slug: "index" }, props: landing },
+    ...(await getBlog()).map((post) => ({
+      params: { slug: `blog/${post.id}` },
+      props: { title: post.data.title, description: post.data.description, siteName },
+    })),
     ...docs.map((doc) => ({
       params: { slug: `docs/${doc.id}` },
       props: { title: doc.data.title, description: doc.data.description, siteName },

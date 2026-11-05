@@ -78,6 +78,7 @@ function setupCopyButtons() {
  * to it. A pick made before the player hydrates waits on window.__decksPick.
  */
 function setupGallery() {
+  if (document.documentElement.dataset.page !== "landing") return;
   const player = () => document.querySelector<HTMLElement>("[data-player]");
   for (const link of document.querySelectorAll<HTMLAnchorElement>("a[data-example]")) {
     link.addEventListener("click", (event) => {

@@ -1,0 +1,17 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  caption: string;
+  width: number;
+  height: number;
+}
+const { src, alt, caption, width, height } = Astro.props;
+if (!/^\/(posters|stills|loops|og)\//.test(src))
+  throw new Error(`Figure: src must start with /posters/, /stills/, /loops/ or /og/: ${src}`);
+---
+
+<figure class="not-prose blog-figure">
+  <img src={src} alt={alt} width={width} height={height} loading="lazy" />
+  <figcaption>{caption}</figcaption>
+</figure>

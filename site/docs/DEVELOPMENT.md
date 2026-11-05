@@ -4,10 +4,13 @@
 
 | Path | Owns |
 | --- | --- |
+| `src/content/blog/`, `src/content/schema.ts` | MDX posts with validated metadata and docs references |
+| `src/lib/blog.ts`, `src/layouts/BlogLayout.astro`, `src/pages/blog/` | Blog URLs, reading time, structured data, reading layout and routes |
+| `src/components/blog/` | DeckDemo (paused live player), Figure (product media), ThemeCompare (also used on the landing) |
 | `src/config.ts` | Product name, tagline, URL, install commands, requirements, notes for the file tree, comparison, footer, license, the docs groups and the `islands` list |
 | `src/content/docs/` | Docs pages, one Markdown file each, validated by `src/content/schema.ts` |
 | `src/lib/docs.ts` | Pure docs rules: sidebar order, pager, URLs, the Markdown export and both llms files |
-| `src/lib/collection.ts` | The only `astro:content` import outside routes |
+| `src/lib/collection.ts` | The collection and render boundary for routes (the schema also uses Astro references) |
 | `src/lib/markdown.ts` | Docs Markdown conventions: `@steamfield/ui/markdown`'s Sätteri hast plugins plus its fence-meta Shiki transformer |
 | `src/lib/og.ts` | The social card layout (the mark and site name, page title over the hero deck's poster) and its fonts |
 | `src/lib/brand.ts` | The Decks mark's geometry and colors (cyan and violet ramp steps from the product theme), its SVG and PNG renders and the ICO packer; `src/pages/favicon.svg.ts`, `favicon.ico.ts`, `apple-touch-icon.png.ts`, `icon-[size].png.ts` and `site.webmanifest.ts` serve them, so no icon is a committed binary. Change the mark there |
@@ -15,8 +18,8 @@
 | `src/data/` | `examples.json` (the example registry), build-time loaders for the examples, the recorded fixtures and the scaffolded file tree |
 | `src/lib/player/` | The embed contract, caption and counter formatting, and the example types (`stateAt`, `markAt`, `draftLine`) |
 | `src/lib/tokens.ts` | The landing page's tokens, derived from the product theme |
-| `src/scripts/site.ts` | Theme toggle (docs), command and code copy buttons (`enhanceCopyButtons`, with an execCommand fallback), gallery picks, copy page, the TOC highlight, and on the landing page the header's scroll edge and the section scroll reveal |
-| `src/layouts/` | `BaseLayout` (head, header, footer) and `DocsLayout` (sidebar, TOC, pager) |
+| `src/scripts/site.ts` | Theme toggle (docs and blog), command and code copy buttons (`enhanceCopyButtons`, with an execCommand fallback), gallery picks, copy page, the TOC highlight, and on the landing page the header's scroll edge and the section scroll reveal |
+| `src/layouts/` | `BaseLayout` (head, header, footer), `DocsLayout` (sidebar, TOC, pager) and `BlogLayout` (article, TOC, install CTA, related links) |
 
 ## Docs pages
 
@@ -37,7 +40,7 @@ Astro's default processor is Sätteri, which doesn't run remark or rehype plugin
 
 ## Islands and scripts
 
-Landing sections are React components rendered to HTML at build time. Only components named in `site.islands` may take a `client:` directive, and only on the landing page; the build test compares the hydrated islands with that list and fails on any island in `/docs/`. `DeckPlayer` uses `client:visible`; `InstallTabs` sits in the getting-started section and uses `client:idle` so it is ready before anyone scrolls to it. Interactive behaviour shared by every page (theme, copy buttons, TOC, gallery picks) goes in `src/scripts/site.ts` as plain DOM code that does nothing when its markup is absent. Two pieces are landing-only: the sticky header shows its bottom edge once a sentinel scrolls away, and `[data-reveal]` blocks below the fold rise in on intersection or keyboard focus. That is `initReveal` from `@steamfield/ui/reveal`: it sets the gate (`html[data-motion-ready]`) from `src/scripts/site.ts` and, in the same task, reveals the blocks already on screen, so they never hide; `landing.css` hides a block only under the gate until it carries `data-revealed`. The library's `revealGateScript` is deliberately not inlined: setting the gate before paint would hide on-screen blocks and replay their entrance (an e2e test checks this on a tall viewport). The reveal does nothing under reduced motion or without IntersectionObserver, and print shows every block.
+Landing sections are React components rendered to HTML at build time. Only components named in `site.islands` may take a `client:` directive on the landing page. Blog posts may hydrate `DeckPlayer` through `DeckDemo`; the blog index ships no islands; the build test compares the hydrated islands with that list and fails on any island in `/docs/`. `DeckPlayer` uses `client:visible`; `InstallTabs` sits in the getting-started section and uses `client:idle` so it is ready before anyone scrolls to it. Interactive behaviour shared by every page (theme, copy buttons, TOC, gallery picks) goes in `src/scripts/site.ts` as plain DOM code that does nothing when its markup is absent. Two pieces are landing-only: the sticky header shows its bottom edge once a sentinel scrolls away, and `[data-reveal]` blocks below the fold rise in on intersection or keyboard focus. That is `initReveal` from `@steamfield/ui/reveal`: it sets the gate (`html[data-motion-ready]`) from `src/scripts/site.ts` and, in the same task, reveals the blocks already on screen, so they never hide; `landing.css` hides a block only under the gate until it carries `data-revealed`. The library's `revealGateScript` is deliberately not inlined: setting the gate before paint would hide on-screen blocks and replay their entrance (an e2e test checks this on a tall viewport). The reveal does nothing under reduced motion or without IntersectionObserver, and print shows every block.
 
 The header, hero and showcase share one column (`.page-column`): 1360px with 32px gutters, or 16px below 768px. The player keeps its 16:9 composition; viewport height does not cap its width.
 
@@ -45,7 +48,7 @@ The header, hero and showcase share one column (`.page-column`): 1360px with 32p
 
 The landing page is dark only. `BaseLayout` sets `class="dark"` and `data-page="landing"` on `<html>` and inlines the tokens from `src/lib/tokens.ts`, which reads them from the product theme: canvas (the page, the hero and the slide, untinted), band (alternate sections, with hairline edges) and raised (controls, and panels inside a band, where landing.css moves `--color-panel` up a step), both tinted toward the theme's blue-violet with `mix()`. Semantic hue tokens (`agent`, `talk`, `template`, `hand`, `pass`, `block`) and the brand rule stops (`rule-1` to `rule-4`) come from the theme's ramps. Cyan is the action color; its lighter steps mark links, focus and live state. Token tests check text and control contrast on every surface and that the bands stay distinguishable. The landing has no theme toggle.
 
-Docs pages keep both themes. The inline head script adds `dark` or `light` to `<html>` before paint, from `localStorage.theme` or the system preference. Without JavaScript neither class is set and a `prefers-color-scheme` media query supplies the dark tokens. Components use the token utilities (`bg-canvas`, `text-ink`, `text-muted`, `border-line`, `bg-panel`, `text-accent`), so both paths style the same markup. New colors become tokens in both theme blocks of `global.css`; the browser step runs axe against both themes.
+Docs and blog pages keep both themes. Blog demos keep the landing player palette inside either page theme. The inline head script adds `dark` or `light` to `<html>` before paint, from `localStorage.theme` or the system preference. Without JavaScript neither class is set and a `prefers-color-scheme` media query supplies the dark tokens. Components use the token utilities (`bg-canvas`, `text-ink`, `text-muted`, `border-line`, `bg-panel`, `text-accent`), so both paths style the same markup. New colors become tokens in both theme blocks of `global.css`; the browser step runs axe against both themes.
 
 ## Social cards
 
@@ -74,3 +77,11 @@ The player starts loading its selected interactive iframe when it hydrates in vi
 Fast browser tests route `/demo/*/index.html` to `e2e/fixtures/stub-deck.html`. Integration tests also exercise the real built excerpts: stubs cannot validate slide animations, chart interaction, or canvas geometry.
 
 The optional `decks-bridge` query flag delegates embedded navigation keys to the parent player. Commands can include a `requestId`; a settled state with that identifier completes the request, including commands that leave the position unchanged. Only the current iframe and same origin are accepted. Standalone decks retain their own navigation.
+
+## Blog posts
+
+Add one `.mdx` file in `src/content/blog/`. Copy `placeholder.mdx` for frontmatter and default component imports. Titles are 1–48 characters; descriptions are 120–160. Dates coerce to dates, `updated` defaults to `published` and cannot precede it. `feature` is a schema enum and `relatedDocs` contains existing docs ids. Routes, cards, RSS, sitemap, OG cards and llms.txt derive from the collection.
+
+Use `DeckDemo` with only `example` and `caption`. Example names come from `src/data/examples.json`; the recording supplies the poster and start step. Playback starts only on reader input. `Figure` accepts product output under `/posters/`, `/stills/`, `/loops/` or `/og/`. `ThemeCompare` shares the landing's still toggle and code frame. Demo roots carry `not-prose` and `data-demo`. The article is an inline-size container: 44rem text at 18px/28px, with demos breaking out to its page container using `100cqw`. Player and comparison CSS are shared separately from the landing layout. `landingCss` emits the dark demo tokens under `[data-demo]` without changing the page theme.
+
+The layout owns the H1, breadcrumb, dates, TOC, install CTA and related links. Post bodies start at H2, may use search questions as H2s and contain no install CTA. The build checks metadata, links and anchors, structured data, discovery, MDX demo props and prose lint (including warnings). Docs and MDX share Sätteri heading anchors and code frames; do not pass the HAST plugins to `mdx()` again.
