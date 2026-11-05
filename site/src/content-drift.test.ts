@@ -72,9 +72,15 @@ const shown = [
   ),
   { file: "config: what you get", line: site.devCommand },
   ...setupCommands.map((line) => ({ file: "page: what you get", line })),
-  ...docsCommands.filter(
-    ({ line }) => deckInvocation.test(line) || /^(bun add|npm i|pnpm add) /.test(line),
-  ),
+  // Docs pages show only Decks commands. Blog posts also show other tools' commands (Slidev's
+  // exporter, Playwright's installer), so there only lines that run the decks bin or install
+  // the package are checked.
+  ...docsCommands.filter(({ file, line }) => {
+    const blog = file.endsWith(".mdx");
+    if (deckInvocation.test(line)) return !blog || deckInvocation.exec(line)?.[3] === "decks";
+    if (/^(bun add|npm i|pnpm add) /.test(line)) return !blog || line.includes(pkg.name);
+    return false;
+  }),
 ];
 
 describe("every shown command matches the CLI", () => {

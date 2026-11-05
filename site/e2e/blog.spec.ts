@@ -5,7 +5,12 @@ import { loadExamples } from "../src/data/examples";
 
 const example = loadExamples().find((entry) => entry.name === "keeling");
 if (!example) throw new Error("Missing reference post example");
-const stub = readFileSync("e2e/fixtures/stub-deck.html", "utf8");
+// Every step shows a card, so the start step of the post's example (whichever it is) has the text
+// the player waits for before it reports ready.
+const stub = readFileSync("e2e/fixtures/stub-deck.html", "utf8").replace(
+  "const SETTLE_MS =",
+  'window.STUB_CARD = { lead: "Stub lead.", body: "Stub body." };\nconst SETTLE_MS =',
+);
 
 for (const scheme of ["light", "dark"] as const) {
   test(`a blog post in ${scheme} passes axe`, async ({ page }) => {
