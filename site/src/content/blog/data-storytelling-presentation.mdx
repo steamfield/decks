@@ -68,7 +68,7 @@ Duplicated slides are another way to prepare the states. In PowerPoint's thumbna
 
 Decks encodes this sequence in a story slide. It is an addon and deck runner for [Slidev, which combines Markdown with Vue components](https://sli.dev/guide/syntax). Each story slide pins one visualization in place. A stage component contains the visual and a caption card whose copy changes at each step.
 
-The timeline follows Slidev's click count. Moving back one step plays the transition in reverse during ordinary navigation; reduced motion and larger jumps seek to the requested state. A visual can also carry over to the next slide. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls these steps "beats" and explains that behavior. This gives a developer an explicit sequence to edit and review alongside the chart code.
+The timeline follows Slidev's click count. Moving back one step plays the transition in reverse during ordinary navigation; reduced motion and larger jumps seek to the requested state. A visual can also carry over to the next slide. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls these steps "beats" and explains that behavior. This gives a developer an explicit sequence to edit and review alongside the chart code. [Slidev animations and v-click](/blog/slidev-animations/) compares the two approaches in code.
 
 ## How much text belongs on a data slide?
 
@@ -110,4 +110,4 @@ For an existing project with Decks installed, the story scaffold command is:
 bunx -p slidev-addon-decks decks new my-talk --story
 ```
 
-The [first story deck guide](/docs/getting-started/your-first-story-deck/) explains the generated files. The page places the stage component; the stage holds the visualization and per-step copy. Its figures live in the data module, with their sources recorded separately. The repository's `examples/opendata-pitch` is the reference story deck for inspecting that structure in a complete talk.
+The [first story deck guide](/docs/getting-started/your-first-story-deck/) explains the generated files. The page places the stage component; the stage holds the visualization and per-step copy. Its figures live in the data module, with their sources recorded separately. The repository's `examples/opendata-pitch` is the reference story deck for inspecting that structure in a complete talk. More decks to study are in [Slidev examples](/blog/slidev-examples/).

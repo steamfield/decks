@@ -126,7 +126,7 @@ describe("built blog posts", () => {
       );
       expect(doc.querySelector(`nav[data-toc] a[href="#${heading.id}"]`)).not.toBeNull();
     }
-    if (id === "placeholder") {
+    if (id === "slidev-export-pdf") {
       expect(inspectMdx(source).fences.some((fence) => /\btitle=/.test(fence.meta ?? ""))).toBe(
         true,
       );

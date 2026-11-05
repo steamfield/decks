@@ -135,7 +135,7 @@ test("embedded decks are noindex while pages remain indexable", async () => {
   const response = await get(`/demo/${deck}/`);
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("x-robots-tag"), "noindex");
-  for (const path of ["/", "/docs/", "/blog/", "/blog/placeholder/"]) {
+  for (const path of ["/", "/docs/", "/blog/", "/blog/make-slides-with-claude-code/"]) {
     assert.equal((await get(path)).headers.get("x-robots-tag"), null, path);
   }
 });

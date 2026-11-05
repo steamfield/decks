@@ -56,13 +56,13 @@ The repository's `examples/` directory contains the nine decks below. The [first
 
 A story slide keeps one visualization in place while each step advances its explanation. The stage component contains the visualization and the caption card's text for each step. A conventional slide holds material such as bullets, tables or charts. The [story and conventional deck comparison](/docs/concepts/story-vs-conventional-decks/) calls story steps "beats" and explains where the prose lives in each format.
 
-The tides player below gives you a Slidev story deck example to inspect before opening the files. Step through the explanation and compare the visualization with the changing caption. Go back a step to see how the preceding view supports the next part of the explanation.
+The tides player below gives you a Slidev story deck example to inspect before opening the files. Step through the explanation and compare the visualization with the changing caption. Go back a step to see how the preceding view supports the next part of the explanation. [How to build a data storytelling presentation](/blog/data-storytelling-presentation/) covers the structure these decks follow.
 
 <DeckDemo example="tides" caption="The tides story deck, drafted from one prompt by Claude Code, then fact-checked and edited by hand. Step through it with the arrow keys." />
 
 ## Which examples were made by an agent?
 
-The registry labels `keeling`, `state-of-js` and `tides` as agent drafts. It defines that label as drafted by Claude Code, then edited. The editing history differs between examples: keeling records later Claude Code edits, while tides records a hand edit. State of JS records fact-checking and editing in the session that dispatched its subagent.
+The registry labels `keeling`, `state-of-js` and `tides` as agent drafts. It defines that label as drafted by Claude Code, then edited. The editing history differs between examples: keeling records later Claude Code edits, while tides records a hand edit. State of JS records fact-checking and editing in the session that dispatched its subagent. [How to make slides with Claude Code](/blog/make-slides-with-claude-code/) walks through that workflow.
 
 Tides began with one `claude -p` prompt: `make a 5-slide story deck about how ocean tides work`. The run used the repository's shared deck-writing setup, loaded the building skill and fetched sources from NOAA, the US Naval Observatory and NASA. It finished with the recorded checks passing. Fact-checking and hand editing followed, so the player shows the reviewed deck.
 

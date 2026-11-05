@@ -80,7 +80,7 @@ The optional `decks-bridge` query flag delegates embedded navigation keys to the
 
 ## Blog posts
 
-Add one `.mdx` file in `src/content/blog/`. Copy `placeholder.mdx` for frontmatter and default component imports. Titles are 1–48 characters; descriptions are 120–160. Dates coerce to dates, `updated` defaults to `published` and cannot precede it. `feature` is a schema enum and `relatedDocs` contains existing docs ids. Routes, cards, RSS, sitemap, OG cards and llms.txt derive from the collection.
+Add one `.mdx` file in `src/content/blog/`. Copy an existing post for frontmatter and component imports (`slidev-examples.mdx` uses `DeckDemo` and `Figure`, `slidev-custom-theme.mdx` uses `ThemeCompare`). Titles are 1–48 characters; descriptions are 120–160. Dates coerce to dates, `updated` defaults to `published` and cannot precede it. `feature` is a schema enum and `relatedDocs` contains existing docs ids. Routes, cards, RSS, sitemap, OG cards and llms.txt derive from the collection.
 
 Use `DeckDemo` with only `example` and `caption`. Example names come from `src/data/examples.json`; the recording supplies the poster and start step. Playback starts only on reader input. `Figure` accepts product output under `/posters/`, `/stills/`, `/loops/` or `/og/`. `ThemeCompare` shares the landing's still toggle and code frame. Demo roots carry `not-prose` and `data-demo`. The article is an inline-size container: 44rem text at 18px/28px, with demos breaking out to its page container using `100cqw`. Player and comparison CSS are shared separately from the landing layout. `landingCss` emits the dark demo tokens under `[data-demo]` without changing the page theme.
 

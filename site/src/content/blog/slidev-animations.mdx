@@ -100,7 +100,7 @@ The initial state consumes no click, so three states require `clicks: 2`. When y
 
 The timeline deliberately skips animation in some situations. It seeks directly to the requested state on first run, on inactive slides, with reduced motion, or when navigation jumps more than one step. Otherwise it tweens. If another click interrupts a tween, the timeline retargets from its current position and catches up within one step's duration, so fast navigation does not queue a backlog.
 
-Use the generated stage as the starting point for your chart. Replace its series with your figures, then change what each step draws or emphasizes. Put the figures in a `data/` module and record their sources in `data-sources.md`, as the starter guide describes. Keeping the values separate from the transition script makes it easier to review whether a change is in the data or in its presentation.
+Use the generated stage as the starting point for your chart. Replace its series with your figures, then change what each step draws or emphasizes. Put the figures in a `data/` module and record their sources in `data-sources.md`, as the starter guide describes. Keeping the values separate from the transition script makes it easier to review whether a change is in the data or in its presentation. For the chart itself, see [how to add charts to Slidev](/blog/slidev-charts/).
 
 <DeckDemo example="od-story-templates" caption="Story stage patterns from the Decks templates: a minimal stage, bars, labelled cards and a hand-off between slides. Step forward and back to compare." />
 
@@ -124,7 +124,7 @@ A Decks stage keeps the copy array beside the chart timeline. `useStage` derives
 
 The card changes its text as you navigate, including when you go back. You still write a caption that explains the visible state, but selecting the caption follows the same step index as the visualization. Review the words and marks together at each stop, especially after reordering the explanation.
 
-Presenter, overview and print contexts seek to the requested timeline state; their entrances jump to the end state. That lets you inspect a settled chart in those contexts. In the audience slide view, an entrance can play when you land on the initial step with motion enabled. These rules are documented in the timeline guide, so a preview that skips an entrance is expected behavior.
+Presenter, overview and print contexts seek to the requested timeline state; their entrances jump to the end state. That lets you inspect a settled chart in those contexts. In the audience slide view, an entrance can play when you land on the initial step with motion enabled. These rules are documented in the timeline guide, so a preview that skips an entrance is expected behavior. The [Slidev PDF export guide](/blog/slidev-export-pdf/) covers how those settled states print.
 
 ## Can a chart carry over to the next slide?
 

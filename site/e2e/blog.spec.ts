@@ -13,7 +13,7 @@ for (const scheme of ["light", "dark"] as const) {
       route.fulfill({ contentType: "text/html", body: stub }),
     );
     await page.emulateMedia({ colorScheme: scheme });
-    await page.goto("/blog/placeholder/");
+    await page.goto("/blog/make-slides-with-claude-code/");
     await page.locator("[data-player]").scrollIntoViewIfNeeded();
     await expect(page.locator("[data-player]")).toHaveAttribute("data-phase", "ready");
     await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${scheme}\\b`));
@@ -43,7 +43,7 @@ test("the blog player shows its poster and stays at the registered start step wi
     await route.fulfill({ contentType: "text/html", body: stub });
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/blog/placeholder/", { waitUntil: "domcontentloaded" });
+  await page.goto("/blog/make-slides-with-claude-code/", { waitUntil: "domcontentloaded" });
   const player = page.locator("[data-player]");
   await player.scrollIntoViewIfNeeded();
   await expect(player.locator("picture img")).toBeVisible();
@@ -65,7 +65,7 @@ test("the blog fits a narrow viewport and its toolbar follows its own container"
     route.fulfill({ contentType: "text/html", body: stub }),
   );
   await page.setViewportSize({ width: 360, height: 800 });
-  await page.goto("/blog/placeholder/");
+  await page.goto("/blog/make-slides-with-claude-code/");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.locator("[data-player]").scrollIntoViewIfNeeded();
@@ -86,7 +86,7 @@ test("a single-example player aligns its desktop controls and retains its brand 
     route.fulfill({ contentType: "text/html", body: stub }),
   );
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/blog/placeholder/");
+  await page.goto("/blog/make-slides-with-claude-code/");
   await page.locator("[data-player]").scrollIntoViewIfNeeded();
   await expect(page.locator("[data-player]")).toHaveAttribute("data-phase", "ready");
   const geometry = await page.locator(".player-toolbar").evaluate((bar) => ({
@@ -97,7 +97,7 @@ test("a single-example player aligns its desktop controls and retains its brand 
 });
 
 test("a blog player carries the landing's colored top rule", async ({ page }) => {
-  await page.goto("/blog/placeholder/");
+  await page.goto("/blog/make-slides-with-claude-code/");
   const rule = await page.locator("[data-player]").evaluate((el) => ({
     image: getComputedStyle(el, "::before").backgroundImage,
     height: getComputedStyle(el, "::before").height,
@@ -109,7 +109,7 @@ test("a blog player carries the landing's colored top rule", async ({ page }) =>
 test.describe("ThemeCompare without a player", () => {
   test.use({ hasTouch: true });
   test("keeps touch targets using only its own stylesheet", async ({ page }) => {
-    await page.goto("/blog/placeholder/");
+    await page.goto("/blog/slidev-custom-theme/");
     const comparison = await page.locator(".themes-grid").evaluate((el) => el.outerHTML);
     const css = readFileSync("src/styles/theme-compare.css", "utf8");
     await page.setContent(`<style>${css}</style>${comparison}`);

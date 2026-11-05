@@ -89,7 +89,7 @@ For simple reveals, use Slidev's built-in [`v-click` animation](https://sli.dev/
 <div v-click>The highlighted region enters the comparison.</div>
 ```
 
-That reveals an element when you advance. A custom chart component can handle more involved changes, but you must define its states and coordinate the explanatory text yourself.
+That reveals an element when you advance. A custom chart component can handle more involved changes, but you must define its states and coordinate the explanatory text yourself. [Slidev animations and v-click](/blog/slidev-animations/) compares both approaches in code.
 
 Decks is a free, Apache-2.0-licensed Slidev addon and runner for data talks. It adds a story-slide pattern with one pinned visualization and a caption that changes at each step. This excerpt comes from Riley Hilliard's OpenData pitch, September 2026:
 
@@ -116,7 +116,7 @@ Shared guidance does not establish equal authoring results across agents. Live a
 
 ## How do you add stepped charts to Slidev?
 
-Use built-in reveals for a chart image and its annotations when that explains the subject. For a chart that changes at each step, a Vue component can read Slidev's click state. Decks supplies a story engine for this pattern: the visualization is drawn from the click count, so stepping backward plays the transition in reverse. Its caption card changes with the step, and a chart can persist into the next slide.
+Use built-in reveals for a chart image and its annotations when that explains the subject. For a chart that changes at each step, a Vue component can read Slidev's click state. Decks supplies a story engine for this pattern: the visualization is drawn from the click count, so stepping backward plays the transition in reverse. Its caption card changes with the step, and a chart can persist into the next slide. The [Slidev charts guide](/blog/slidev-charts/) covers chart components in detail.
 
 The [story versus conventional deck guide](/docs/concepts/story-vs-conventional-decks/) calls these steps "beats." Conventional slides hold bullets, tables or charts; story slides keep prose inside the stage component as text for each step. A conventional deck can include a story slide.
 

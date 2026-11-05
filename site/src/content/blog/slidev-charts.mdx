@@ -175,7 +175,7 @@ beats: (tl, beat) => {
 
 The excerpt is the `enter` and `beats` portion of the options passed to `useStage`. `bars` is a template ref to `InkBars`, which starts with `BY_USAGE`. `BY_RETENTION` supplies the new ordering and values. The stage imports both arrays from its data module. `DUR` supplies the shared durations; `s` holds the annotation state.
 
-The timeline plays between neighboring steps and reverses when you step backward. It seeks directly to the target on first render, with reduced motion, or when jumping across multiple steps. Interrupted transitions retarget from their current position so rapid navigation doesn't queue up animations.
+The timeline plays between neighboring steps and reverses when you step backward. It seeks directly to the target on first render, with reduced motion, or when jumping across multiple steps. Interrupted transitions retarget from their current position so rapid navigation doesn't queue up animations. [Slidev animations and v-click](/blog/slidev-animations/) compares this with Slidev's built-in reveals.
 
 The [ink marks guide](/docs/concepts/ink-marks/) describes `InkBars` and `InkLine`, which expose handles for stage timelines. These marks are useful when you need to control a particular movement or annotation. `OpenChart` remains the shorter choice for a chart with axes and an entrance animation.
 
@@ -183,6 +183,6 @@ The [ink marks guide](/docs/concepts/ink-marks/) describes `InkBars` and `InkLin
 
 Decks resolves a deck's `theme.json` over its defaults. Read that resolved palette in JavaScript with `import { theme } from 'slidev-addon-decks/theme'`, or select a named ramp color with `ink(hue, step)`. The line chart above uses `ink('cyan', 3)` for its stroke.
 
-Import `slideChartTheme` from `slidev-addon-decks/chart-theme` into each spec that needs the shared chart styling. The `OpenChart` wrapper does not insert that theme into your spec automatically. The theme covers chart text and axes; explicit series colors should also come from the resolved palette. A hex literal inside a spec keeps that color when the deck theme changes.
+Import `slideChartTheme` from `slidev-addon-decks/chart-theme` into each spec that needs the shared chart styling. The `OpenChart` wrapper does not insert that theme into your spec automatically. The theme covers chart text and axes; explicit series colors should also come from the resolved palette. A hex literal inside a spec keeps that color when the deck theme changes. The [custom theme guide](/blog/slidev-custom-theme/) covers the palette itself.
 
 The [theming guide](/docs/guides/theming-with-theme-json/) explains partial overrides and color ramps. Keep a tool's color consistent across steps so its identity survives a reorder. Changing the comparison already asks the audience to read a new scale; keeping the color stable gives them a familiar mark to follow.
