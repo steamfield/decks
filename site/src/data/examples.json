@@ -27,15 +27,15 @@
     },
     {
       "name": "keeling",
-      "startSlide": 5,
-      "startBeat": 1,
+      "startSlide": 2,
+      "startBeat": 2,
       "provenance": "agent",
       "run": {
         "fixture": "keeling-1.json",
         "setup": "init"
       },
       "edits": {
-        "commits": ["60dcbfd", "e8dd230"],
+        "commits": ["60dcbfd", "e8dd230", "9865999"],
         "by": "claude"
       },
       "loop": true

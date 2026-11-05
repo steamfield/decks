@@ -1,5 +1,6 @@
 /**
- * Slide 2: the full Mauna Loa monthly record.
+ * Slide 2: the full Mauna Loa monthly record. The cover draws the same series
+ * at the same geometry, and Slide 3 opens on it before zooming in.
  *
  * NOAA GML `co2_mm_mlo.csv`, column `average` (monthly mean CO2, ppm), March
  * 1958 to the last month in the file. Scripps (C. D. Keeling) data through
@@ -24,11 +25,17 @@ export const PEAK_LABEL = monthLabel(PEAK)
 /** Last month in the file: the record's end year for the axis. */
 export const LAST = MONTHLY[MONTHLY.length - 1]
 
+/** The x range the stage draws: whole years around the first and last month. */
+export const X_DOMAIN: [number, number] = [Math.floor(FIRST.x), Math.ceil(LAST.x)]
+
 /** The y range the stage draws: 300 ppm up to the peak rounded up to the next 40. */
 export const Y_DOMAIN: [number, number] = [300, Math.ceil(PEAK.y / 40) * 40]
 
 /** Gridline values, every 40 ppm from 320 to the top of the range. */
 export const GRID_PPM = Array.from({ length: (Y_DOMAIN[1] - 320) / 40 + 1 }, (_, i) => 320 + i * 40)
+
+/** Year labels under the axis: the first year, then every twenty from 1980. Geometry, not figures. */
+export const TICK_YEARS = [FIRST.year, 1980, 2000, 2020]
 
 /** The lowest month has to sit inside the range. `bun run test` loads this module (data-guards.test.ts). */
 const LOW = MONTHLY.reduce((a, b) => (b.y < a.y ? b : a))

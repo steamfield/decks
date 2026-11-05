@@ -1,7 +1,7 @@
 ---
 theme: the-unnamed
 title: "Carbon dioxide is rising, and rising faster"
-info: "A five-slide story deck on what the Keeling curve shows about atmospheric CO2, drawn from NOAA Mauna Loa data."
+info: "A six-slide story deck on what the Keeling curve shows about atmospheric CO2, drawn from NOAA Mauna Loa data."
 author: Claude Code (draft and fact-check edit)
 # Cross slide view transitions are run by the addon's setup/main.ts, not by
 # Slidev: its own view-transition mode remounts every slide on every click.
@@ -42,7 +42,7 @@ clicks: 2
 ---
 src: ./pages/03-seasons.md
 title: The curve breathes once a year.
-clicks: 2
+clicks: 3
 ---
 ---
 src: ./pages/04-decades.md
@@ -52,5 +52,9 @@ clicks: 2
 ---
 src: ./pages/05-halfway.md
 title: Half the rise came in the last 23 years.
-clicks: 2
+clicks: 3
+---
+---
+src: ./pages/06-close.md
+title: Anyone can download the whole record.
 ---
