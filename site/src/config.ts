@@ -117,7 +117,7 @@ export const site = {
     },
     {
       label: "Charts",
-      text: "OpenChart 9.0.0-rc.2, a release candidate.",
+      text: "OpenChart 9.0.0 (@opendata-ai/openchart-vue).",
     },
   ] as Requirement[],
   /** Section 3: a few words per file `decks init` and `decks new my-talk --story` write. */
