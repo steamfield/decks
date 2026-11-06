@@ -39,6 +39,8 @@ export const decisionsToWatch = [
 export const watchCount = decisionsToWatch.length
 export const watchSelectionStatus = { status: 'flag', basis: 'author-reported editorial selection' } as const
 // Author-chosen QR destination (2026-11-06): the Decks homepage.
+// Author, 2026-11-06: hide the closing QR for now; set true to bring it back.
+export const showQr = false
 export const sourcesPage = { url: 'https://decks.steamfield.io', status: 'confirmed', needed: 'QR code linking to decks.steamfield.io' } as const
 
 // Display labels for the sourced watch topics, calendar and author-supplied close.

@@ -2,7 +2,7 @@
 import { computed, reactive } from 'vue'
 import { DUR, SETTLE, useStage } from 'slidev-addon-decks/story'
 import { OFF, ON } from './design'
-import { boardMeetings, collisionTimeline, decisionsToWatch, sourcesPage, watchCount, watchDisplay, watchLabels } from '../data/14-watch'
+import { boardMeetings, collisionTimeline, decisionsToWatch, showQr, sourcesPage, watchCount, watchDisplay, watchLabels } from '../data/14-watch'
 
 // Three beats: the decisions and who makes them, the December dates, the close.
 const COPY = [
@@ -54,7 +54,7 @@ const sources = computed(() => clicks.value === 1
         <div class="deadline"><strong>{{ date(meeting.date) }}</strong><span>{{ watchDisplay.meeting }}</span><span class="timing">{{ watchDisplay.timing }}</span></div>
       </div>
       <div class="closing" :style="{ opacity: s.closing }" :aria-hidden="clicks !== 2">{{ watchDisplay.closing }}</div>
-      <div class="sources" :style="{ opacity: s.qr }" :aria-hidden="s.qr === OFF">
+      <div v-if="showQr" class="sources" :style="{ opacity: s.qr }" :aria-hidden="s.qr === OFF">
         <OdQrCard :url="sourcesPage.url ?? undefined" :label="watchDisplay.sources" :sublabel="watchDisplay.placeholder" :aria-label="sourcesPage.needed" />
         <span v-if="!sourcesPage.url" class="qr-placeholder">{{ watchDisplay.flag }}</span>
       </div>
