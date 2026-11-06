@@ -73,10 +73,6 @@ src: ./pages/11-hb2.md
 clicks: 2
 ---
 ---
-src: ./pages/12-houston.md
-clicks: 1
----
----
 src: ./pages/13-futures.md
 clicks: 2
 ---

@@ -71,6 +71,8 @@ The full token map is `DESIGN.md`, which the design run writes. The essentials:
 
 ## The arc
 
+The author cut the Houston slide (row 12 below) on 2026-11-06; the deck runs 13 slides, and later slide numbers shift down by one.
+
 | # | Page / stage | Headline (draft) | Beats | Min |
 |---|---|---|---|---|
 | 1 | `01-cover` / `StoryCover` + `BallotField` | Texas elected new leaders. What can they change for Austin's schools? | 1 | 0.5 |

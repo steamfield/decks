@@ -397,7 +397,9 @@ Module: `data/11-hb2.ts`. All raw monetary constants are dollars.
 
 Keep $8.5B and unanimity. Replace “$715M a year” with the year-specific $715.5M adopted estimate. Keep $181M only with “before reductions.” Those qualifications already appear in parts of the source outline but are lost in the later slide draft.
 
-## Slide 12: Houston
+## Removed: Houston (was slide 12)
+
+The author cut this slide on 2026-11-06. The rows below stay as the record of what was checked; nothing on a slide uses them now.
 
 Module: `data/12-houston.ts`.
 
@@ -464,7 +466,7 @@ Not Rated categories are consolidated only for this table: 2020 disaster 280; 20
 
 The outline's “21,000” is a supported rounded value, not a rejected figure. Its baseline and endpoint must be shown. The UH figure has an earlier endpoint. Neither report nor the query justifies attributing every lost student to the takeover.
 
-## Slide 13: Futures
+## Slide 12: Futures
 
 Module: `data/13-futures.ts`. No numerical probability or forecast is supplied.
 
@@ -475,7 +477,7 @@ Module: `data/13-futures.ts`. No numerical probability or forecast is supplied.
 | Conditions used in scenarios | Confirmation, legal intervention, finances and community response remain unresolved | Pending | Slides 6–11 establish the constraints. Do not label a hypothetical development Confirmed. | 2026-11-06 |
 | “Most likely” | Editorial label only | FLAG: author-reported | No model or named expert probability supports a modal forecast. Keep Scenario visible. | 2026-11-06 |
 
-## Slide 14: Watch and close
+## Slide 13: Watch and close
 
 Module: `data/14-watch.ts`, reusing Slide 7 dates.
 
