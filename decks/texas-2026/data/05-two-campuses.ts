@@ -93,3 +93,11 @@ export const triggeringCampuses = [
   { campusNumber: '227901053', name: 'Webb Middle School', rating: 'F', score: 58, countedRatings: ['F', 'F', 'F', 'F', 'F'], countedYears: [2019, 2023, 2024, 2025, 2026], scores: [52, 59, 54, 59, 58], status: 'confirmed', appeal: 'pending', finalCount: 'pending' },
 ] as const
 export const campusLabels = { district: 'Austin ISD', board: 'Elected school board', ratingQualification: 'Five counted F ratings; intervening Not Rated years pause the count' } as const
+
+// Display labels for the scoped waffle; no additional legal count is inferred.
+export const campusDisplay = {
+  countWord: 'Two', pending: 'Pending', appeals: 'Appeals pending',
+  source: 'Source: TEA campus ratings',
+  schoolYear: '2025–26', grade: 'Preliminary grade', score: 'Score',
+  universe: 'Open campuses with an A–F rating',
+} as const

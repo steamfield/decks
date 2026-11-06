@@ -23,3 +23,12 @@ export const petition = {
 export const trusteeRequest = { label: 'Trustee request', decisionMaker: 'AISD trustees; commissioner may grant request', status: 'pending', ruleStatus: 'confirmed' } as const
 // TAC §97.1065(c) permits supplementary oversight; §39A.111 still requires one of its two remedies.
 export const supplementaryOversight = { label: 'Monitor or conservator alone does not satisfy the rule', status: 'confirmed' } as const
+
+// Plain-language labels for the same sourced rule and conditional outcomes.
+export const triggerDisplay = {
+  countWord: 'five', remedyCountWord: 'two', gate: 'If the appeals fail', pending: 'Pending',
+  board: 'State-appointed board', boardEffect: 'Replaces elected trustees', closure: 'Close the campus',
+  supplement: 'Monitor or conservator', supplementLimit: 'Can be added to the required action',
+  source: 'Source: Texas school intervention law',
+  sourceUrl: 'https://tcss.legis.texas.gov/resources/ED/htm/ED.39A.htm',
+} as const
