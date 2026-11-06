@@ -5,11 +5,19 @@ SLIDE 6 · TRIGGER TREE
 <TriggerTreeStage />
 
 <!--
-The appeals challenge the ratings that would complete the count. The commissioner must first resolve those challenges. Years without ratings can pause the count, so the counted sequence differs from the calendar. The district's final ratings and official year counts remain pending.
+ABOUT THIS SLIDE
+The legal decision tree, top to bottom. The two schools from the last slide move up to the top. First gate: the ratings have to survive appeal. If they do, the law gives the commissioner exactly two choices: a state-appointed board or closing the campus. The dashed boxes on the sides are the two ways people in Austin can steer that choice.
+Source: Texas Education Code sections 39A.111 and 39A.112.
 
-[click] Once the trigger is established, the law requires the commissioner to appoint a district board or close the campus, subject to the petition procedures. A replacement board takes over the elected trustees' authority throughout the district.
+SAY (opening)
+Everything starts with the appeals. If the ratings are overturned, none of this applies.
 
-[click] At Burnet and Webb, parents petitioned for closure, the route Mayor Watson proposed as an alternative to a district takeover. The superintendent reported in October that initial counts at both schools topped the required majority; TEA is reviewing a complaint about signatures at Webb. A timely, valid petition from parents representing a majority of enrolled students generally determines the authorized action. The superintendent validates it. The elected trustees may ask for another authorized action with a written explanation, and the commissioner may grant that request. Complaints about petition gathering remain allegations under review.
+[click] If the ratings stand, the law is mandatory. The commissioner must either appoint a state board to replace the elected trustees, or close the campus. A state board would govern every campus in the district.
 
-[click] A monitor observes and reports; a conservator can oversee designated district functions. The commissioner can add that supervision to the required action. Supervision alone does not meet this campus-trigger rule. The petition procedures also apply to a successor.
+[click] Parents can decide which one. A valid petition signed by parents of a majority of enrolled students generally sets the remedy. At Burnet and Webb, parents petitioned for closure, and the superintendent reported in October that initial counts at both schools topped the majority. The school board can ask the commissioner for the other remedy instead.
+
+[click] A lighter option, like a monitor or conservator watching over the district, does not satisfy this rule on its own. It can only be added on top of one of the two required actions.
+
+IF ASKED
+Is there a dispute over the petitions? TEA is reviewing a complaint from the Webb PTA about how signatures were gathered. No findings have been announced. Present it as an open review, not misconduct.
 -->

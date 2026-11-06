@@ -5,19 +5,17 @@ SLIDE 4 · RULEBOOK
 <RulebookStage />
 
 <!--
-The Legislature includes the House and Senate. A bill must pass both chambers
-before reaching the governor. The Texas Education Agency administers school
-law, and local trustees govern their district within it. The commissioner
-leads the agency and makes intervention decisions. District voters elect the trustees.
+ABOUT THIS SLIDE
+A map of who controls Texas schools, so the rest of the talk makes sense. Read it top to bottom: lawmakers write school law, the governor appoints the education commissioner, the Senate confirms that appointment, the Texas Education Agency (TEA) enforces the law, and the local elected school board runs the district.
+The key point for the audience: the commissioner is appointed, not elected, and is the person who makes intervention decisions.
 
-[click] The governor appoints the commissioner with Senate consent under
-Education Code section 7.051.
-The incumbent's tenure continues under the holdover rule until a successor
-qualifies.
+SAY (opening)
+School law starts with the Legislature. The House and Senate write it and decide how much money schools get.
 
-[click] Mike Morath leads the agency and makes intervention decisions under
-state law. The Education Code defines the conditions for intervention and
-the actions available or required. A board of managers means a state-appointed
-board that replaces elected trustees. If appointed, it exercises district
-governance while the elected trustees' powers are suspended.
+[click] The governor picks the education commissioner, and the Senate has to confirm that pick.
+
+[click] Today that commissioner is Mike Morath. He runs the Texas Education Agency and decides how the state intervenes in a struggling district, within the conditions the law sets.
+
+IF ASKED
+Can the governor fire the commissioner? The removal rules are written for the governor who made the appointment, and how they apply to a new governor is unresolved. Slide 8 covers this.
 -->

@@ -5,10 +5,16 @@ SLIDE 13 · WATCH AND CLOSE
 <WatchStage />
 
 <!--
-Five decisions settle what the election changes for Austin, and each one has an owner. The commissioner decides appeals; the superintendent validates petitions submitted by parents. Trustees can ask for a different intervention. The governor nominates a commissioner and the Senate considers confirmation. Senators set their rules, which determine the lieutenant governor's role in assigning senators to committees. School bills must pass the House and Senate. I picked these five; the legal deadlines and the governor's post-session bill deadline are in the sources.
+ABOUT THIS SLIDE
+The close. Five decisions, each with who makes it, then the December dates the audience can act on, then the closing line and a QR code to decks.steamfield.io.
 
-[click] Parent petition collection has already closed. The submission date shown is for validated petitions going to the state agency. Any vote to request a different intervention needs an earlier public meeting announced with the required legal notice. The published voting meeting shown is after the request deadline. Check current notices and the agenda before attending.
+SAY (opening)
+Five decisions will settle what the election changes for Austin: the appeals and petitions, the intervention order, a new commissioner, the Senate's rules, and school laws and funding. Each one has an owner, and some have hard deadlines.
 
-[click] The election chose who will hold power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.
-The QR card links to the Decks homepage. The claim sources are linked on the preceding beats; this card does not link to a published source ledger.
+[click] The dates to know: December 1, validated petitions are due to the state. December 15, the deadline for the school board to request a different remedy. The board's next regular voting meeting is December 17, after that deadline, so any request would need a specially noticed earlier meeting. Check the district's notices.
+
+[click] The election changed who holds power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.
+
+IF ASKED
+Where can people read the sources? Every slide's bottom-right link goes to its source. The QR code goes to the Decks site, not to a source list.
 -->

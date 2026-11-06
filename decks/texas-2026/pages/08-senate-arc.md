@@ -5,13 +5,20 @@ SLIDE 8 · SENATE ARC
 <SenateArcStage />
 
 <!--
-Mike Morath may still be commissioner when a district intervention order is signed. The election result alone does not establish when a successor can begin serving.
+ABOUT THIS SLIDE
+Answers the question from the last slide: who signs the February order. Each dot is one of the 31 Texas senators, blue for Democrats and red for Republicans. The two ticks above the arc mark a simple majority (16) and the two-thirds needed to confirm an appointee (21). The white rings mark the nine Republican votes a confirmation would need.
+Source: Texas Constitution article IV, section 12 (two-thirds of senators present) and article XVI, section 17 (officials serve until a successor qualifies).
 
-Republicans are expected to retain a Senate majority in the next session. Certification is pending. Senators moving into statewide offices may leave vacancies. The required vote count is two-thirds of senators present.
+SAY (opening)
+Republicans will keep their Senate majority, 19 to 12.
 
-[click] Article IV, section 12 governs confirmation. The vote count here assumes full attendance and support from every Democratic senator. Under those assumptions, confirmation also requires Republican votes.
+[click] Confirming a new commissioner takes two-thirds of the senators present. With all 31 there, that is 21 votes. Democrats have 12, so a nominee needs at least nine Republicans.
 
-[click] Article XVI, section 17 generally requires an officer to keep serving until a successor meets the requirements to take office. Resignation alone does not establish an end to holdover service. Lawful removal or another applicable vacancy rule could alter his tenure. Article XV, section 9 and Education Code section 7.053 refer to removal by the appointing governor; applying that authority to an incoming governor remains unresolved.
+[click] Until someone is confirmed and qualifies, Mike Morath stays in the job. So he may well still be commissioner on February 15.
 
-[click] Senators can revise committee assignments and agenda rules. The lieutenant governor retains the constitutional Senate presidency. KPRC reports a Republican request for a special session to limit gubernatorial emergency powers. The sitting governor decides whether to call it. Adoption of the proposed rules or emergency-power limits has not been verified.
+[click] One more thing to watch: the lieutenant governor normally controls Senate committees and the agenda, but that power comes from rules the senators adopt themselves, and they can change those rules in January.
+
+IF ASKED
+Can the governor just fire Morath? The removal provision is written for the governor who appointed him. Whether a new governor can use it is unresolved, so do not promise it.
+Is there a special session? A Republican legislator has asked for one to limit the governor's emergency powers. Only the sitting governor can call it, and none has been called as of this deck's research.
 -->

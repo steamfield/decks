@@ -5,27 +5,19 @@ SLIDE 2 · POWER BOARD
 <PowerBoardStage />
 
 <!--
-The incoming officials have yet to take office, and certification is pending.
-The governor can nominate officials and veto bills. The lieutenant governor
-presides over the Senate. The attorney general represents the state in court,
-and the comptroller administers the voucher program.
+ABOUT THIS SLIDE
+A scoreboard of who won. Each tile is one office or chamber, with the winner and party written out. A filled yellow oval means the office changed hands; the gray oval is the Senate, which did not. A dashed border and a "Pending" tag mean the result is not final.
+Terms: the lieutenant governor presides over the Senate. The attorney general represents the state in court. The comptroller runs the state's books and, under a 2025 law, the new voucher program. The State Board of Education sets curriculum standards.
 
-[click] The Texas Tribune reports enough Democratic wins and concessions for
-a House majority. The projected House seat count includes candidates who are
-still leading, so the final count is pending. The District 93 eligibility dispute remains
-unresolved. A school bill that passes the House still needs Senate
-approval before it can go to the governor.
+SAY (opening)
+Democrats won four statewide offices: Gina Hinojosa for governor, Vikki Goodwin for lieutenant governor, Nathan Johnson for attorney general and Sarah Eckhardt for comptroller. None of them takes office until January.
 
-[click] Republicans are expected to retain their Senate majority next session.
-Nathan Johnson's and Sarah Eckhardt's moves to statewide office may leave
-Senate vacancies. Senate confirmation of a new education commissioner depends
-on which senators hold office and attend.
-The lieutenant governor's usual control over scheduling and committees also
-depends on rules that senators can change.
+[click] The House flips. The Texas Tribune projects 83 Democrats to 67 Republicans, but some races are still being counted and one, District 93, has an eligibility dispute. Treat the exact number as pending.
 
-[click] The State Board of Education sets curriculum standards. Its projected
-Democratic majority depends on the District 8 result. The Texas
-Tribune reports a possible District 8 recount. A recount filing has not been verified.
-The commissioner decides under state law whether a state-appointed board
-replaces Austin's elected trustees.
+[click] The Senate does not flip. Republicans keep it 19 to 12. Remember that number; it comes back on slide 8.
+
+[click] The State Board of Education may tip to an 8 to 7 Democratic majority, but that depends on District 8, where a recount is possible.
+
+IF ASKED
+Do Senate seats change because Johnson and Eckhardt were senators? Their moves to statewide office could leave Senate vacancies, which matters for confirmation votes later. Refresh this before the talk.
 -->

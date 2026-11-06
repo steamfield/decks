@@ -5,15 +5,23 @@ SLIDE 7 · COLLISION TIMELINE
 <CollisionTimelineStage />
 
 <!--
-The incumbent remains in office until inauguration. Certification is pending. AISD validates the petitions, and TEA resolves the appeals. The commissioner who serves during this period retains responsibility for the state decisions on the district's ratings and any intervention order.
+ABOUT THIS SLIDE
+The hero slide. Three rows share one calendar from November to February: the district and TEA on top, the governor in the middle, the commissioner on the bottom. The cursor moves one date per click. Watch the governor row turn yellow at inauguration while the commissioner row stays gray; that gray line is the point of the slide.
+Dates: December 1, December 15 and February 15 come from state rule. "About December 10" is a reported estimate; TEA publishes final ratings on December 11.
 
-[click] Both petitions ask the commissioner to close the schools. This is the superintendent's deadline to submit validated petitions to the commissioner. Families' collection deadline has already passed. The superintendent must check whether a petition qualifies, including whether it represents a majority of enrolled students. The public complaints about how signatures were gathered remain under review.
+SAY (opening)
+Election day was November 3. The current governor stays in office until January.
 
-[click] Austin Politics reported AISD's estimated appeal-response date. The state agency's published schedule separately provides for appeal decisions before its final ratings publication. TEA's final publication includes the ratings and revised year counts used for intervention.
+[click] December 1: the superintendent must validate the parent petitions and send them to the state. Both petitions ask the commissioner to close the schools. Families' window to sign closed in October.
 
-[click] Trustees may request another authorized action after a valid petition. Trustees must approve the request at a publicly noticed meeting before submission, and it must include a written explanation. The commissioner may accept the request after considering the board's explanation.
+[click] Around December 10, the district expects an answer on its appeals. Final ratings come out December 11.
 
-[click] At the research cutoff, a successor to Morath had not been verified. Refresh his status before the talk. The incoming governor can nominate a successor, with Senate confirmation required. The constitutional inauguration schedule also allows the governor to take office as soon afterward as practicable.
+[click] December 15: the deadline for the school board to ask for a different remedy. It needs a public vote to do that.
 
-[click] This deadline applies only to the valid-petition process, including any trustee request. The rule permits implementation during the current school year or, if necessary, the next one. Who will hold the commissioner's office when the order is issued remains unresolved.
+[click] January 19: the new governor takes office and can nominate a new commissioner. Notice the commissioner row is still gray.
+
+[click] February 15: the order is due. So who signs it? With valid petitions, that order would close the two schools rather than replace the board.
+
+IF ASKED
+Could the new governor act before February 15? She can nominate a commissioner in January, but confirmation needs Senate votes, which is the next slide.
 -->

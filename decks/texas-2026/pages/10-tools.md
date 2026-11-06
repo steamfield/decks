@@ -5,11 +5,16 @@ SLIDE 10 · TOOLS
 <ToolsStage />
 
 <!--
-A governor's budget proposal recommends how the state should spend money. Lawmakers decide the appropriations.
+ABOUT THIS SLIDE
+What the new governor can do on her own versus what needs the Legislature. Left column: her own tools. Right column: changes that require a new law. The point: most of the things people want changed, including the takeover rule itself, need a bill through both chambers, and the Senate is still Republican.
 
-The governor can nominate a commissioner, veto legislation, propose a budget and call a special session with specified subjects. A commissioner nominee needs Senate confirmation. Recess appointments have vacancy conditions and later confirmation requirements. A veto can be overridden. None of these actions independently rewrites an existing statute.
+SAY (opening)
+The governor can nominate a commissioner, though the Senate has to confirm. She can veto bills or budget items, propose a budget, and choose the subjects of a special session.
 
-[click] Changing the takeover requirement needs legislation. The same applies to statutory testing requirements, school-funding formulas and repeal of the voucher program.
+[click] Changing the takeover rule, testing requirements, school funding formulas or the voucher program all need a new law.
 
-[click] Bills generally may begin in either chamber; bills raising revenue must originate in the House. Both chambers must pass identical bill text before sending it to the governor. The governor can sign it, allow it to become law without a signature, or veto it. The Legislature can override a veto under the Constitution.
+[click] A new law has to pass the House and the Senate in identical form before it reaches her desk.
+
+IF ASKED
+Can she use a recess appointment? Recess appointments have their own conditions and still need later Senate confirmation, so they do not get around the Senate.
 -->

@@ -5,34 +5,22 @@ SLIDE 3 · OUTCOME LADDER
 <OutcomeLadderStage />
 
 <!--
-This ladder shows what else the election could have produced, from no change
-at the bottom to a Senate majority at the top. Each step keeps the offices
-below it. The ordering is my judgment, measured against the public-school
-platform Hinojosa ran on.
-The projected education-board majority remains pending.
+ABOUT THIS SLIDE
+This slide makes the talk's first argument: the 2026 result was close to the best outcome actually available. The ladder runs from no change at the top to a Senate majority at the bottom, and each step adds one more office. The arrow marks where this election landed: step 5, which is still tagged Pending because of the education board.
+The ordering is a judgment call measured against the public-school platform Hinojosa ran on, so present it that way. The evidence for "close to the best" is the Senate math in beats 4 and 5.
 
-[click] The governor can veto legislation and nominate an education
-commissioner. School bills must pass the House.
-A bill still needs Senate approval before it reaches the governor. A governor
-with a Republican House would need Republican votes in both chambers.
+SAY (opening)
+Here is what else this election could have produced. Each step adds one more office to the one above it.
 
-[click] The lieutenant governor presides over the Senate under rules that
-senators can revise. The attorney general handles state lawsuits, and the
-comptroller administers vouchers. Those offices also went to Democrats.
-The State Board of Education sets curriculum standards. Its projected
-Democratic majority depends on District 8, where a recount remains possible.
+[click] Democrats won the governor and the House. The governor can veto bills and nominate officials. The House votes on every school bill, but a bill still needs the Senate before it reaches the governor.
 
-[click] The seat math assumes Democrats kept every seat they already held.
-They won none of the Republican-held contests. The fourth-closest margin shown here is the
-Republican share minus the Democratic share of valid votes in that race.
-The calculation uses each district's valid candidate votes and excludes undervotes.
+[click] They also won lieutenant governor, attorney general and comptroller. The education board majority is still pending on District 8.
 
-[click] Compare that with 2022. In the same Republican-held districts, the
-fourth-closest race then was a 40-point blowout, and several seats had no
-Democrat on the ballot at all. This year the fourth-closest was under 9 points.
-That is why I call this close to the best result available: the only better
-outcome needed four Senate seats that were competitive, but not won. Candidates
-and turnout differed between the two years, so treat it as a comparison, not
-a forecast.
-No flip probability was calculated.
+[click] The only step above this one is a Senate majority. Sixteen Senate seats were on the ballot, eleven held by Republicans. Democrats needed to keep their own seats and flip four. They flipped none. Their four closest losses were by about 3, 3, 7 and 9 points.
+
+[click] For comparison, in 2022 the fourth-closest of those same Republican districts was a 40-point race, and several had no Democrat on the ballot at all. So the one better outcome needed four competitive seats that Democrats did not win.
+
+IF ASKED
+Was a Senate majority impossible? No. It was possible on paper and the closest races were within single digits. The slide says Democrats fell four seats short, not that it was out of reach.
+How are margins measured? Republican share minus Democratic share of the votes cast for candidates in that race, from unofficial Secretary of State returns.
 -->
