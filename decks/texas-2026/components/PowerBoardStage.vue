@@ -1,81 +1,34 @@
 <script setup lang="ts">
-/**
- * PLACEHOLDER for slide 2, so the story guards have a stage to scan until the
- * s01-04 run replaces this file. Copied from the minimal template.
- *
- * Copy this file, rename it, swap the data and the copy. Everything a stage
- * needs is here once and nothing else is: the deck's real stages add marks,
- * not structure. `decks new <alias> <dir> --story` writes this same file as
- * the deck's first stage.
- *
- * The stage lives in the deck's `components/` directory because Slidev
- * auto-imports from there. A component in the addon's `components/` would be
- * auto-imported into every deck, which is not what a template is for.
- */
-import { reactive, ref } from 'vue'
-import {
-  DUR,
-  useStage,
-  xScale,
-  yScale,
-  type LineHandle,
-  type RuleHandle,
-} from 'slidev-addon-decks/story'
+/** Design sample for author approval. The slide 2 run will replace this stage. */
+import { reactive } from 'vue'
+import { DUR, useStage } from 'slidev-addon-decks/story'
+import { BOARD, DIM, OFF, ON, OVAL, PING, neutral } from './design'
+import BallotOval from './BallotOval.vue'
 
-/** Illustrative series, in data units. A real stage imports from `data/*.ts`. */
-const SERIES = [
-  { x: 2021, y: 0.1 },
-  { x: 2022, y: 0.3 },
-  { x: 2023, y: 0.6 },
-  { x: 2024, y: 1.0 },
-  { x: 2025, y: 1.4 },
-  { x: 2026, y: 1.9 },
-]
-
-const X_DOMAIN: [number, number] = [2021, 2026]
-const Y_DOMAIN: [number, number] = [0, 2]
-/** Pixel ranges in viewBox units of the 1920x1080 stage. y runs bottom first. */
-const X_RANGE: [number, number] = [300, 1700]
-const Y_RANGE: [number, number] = [620, 240]
-
-/** The chip is placed by the same scales the line is drawn with. */
-const CHIP_X = xScale(X_DOMAIN, X_RANGE)(2026)
-const CHIP_Y = yScale(Y_DOMAIN, Y_RANGE)(1.9)
-
-/**
- * One card per beat, in beat order. Its length is the beat count, so this
- * array and the `clicks:` in the manifest are the only two numbers that have
- * to agree. The eight/twenty word budget per card is in
- * `.claude/rules/story-stage.md`; `decks lint` scans this COPY for AI-prose patterns.
- */
+// FLAG: replace office results with data/02-power-board.ts when research lands.
+// Filled, empty and hatched marks are provisional specimens, not verified outcomes.
+const TILES = [
+  { office: 'Governor', note: 'FLAG: winner and party', status: 'Won', state: 'filled', meaning: 'changed' },
+  { office: 'Texas Senate', note: 'FLAG: chamber split', status: 'Not won', state: 'empty', meaning: 'neutral' },
+  { office: 'State board', note: 'FLAG: District 8 result', status: 'Scenario', state: 'hatched', meaning: 'neutral' },
+] as const
 const COPY = [
-  { lead: 'A thousand datasets, hand curated.', body: 'Small enough to read end to end.' },
-  { lead: 'Connectors made coverage compound.', body: 'One config ingests a whole portal.' },
-  { lead: 'The index is the product now.', body: 'Every dataset joins the ones already there.' },
-  { lead: 'Placeholder fourth beat.', body: 'Replaced by the slide 2 run.' },
+  { lead: 'FLAG: Governor result.', body: 'Winner and party awaiting research.' },
+  { lead: 'FLAG: Austin ISD decision.', body: 'Decision and responsible office awaiting research.' },
+  { lead: 'FLAG: Texas House result.', body: 'Chamber split awaiting research.' },
+  { lead: 'FLAG: Texas Senate result.', body: 'Chamber split awaiting research.' },
 ]
-
-/** Child handles the beat script drives. They exist from mount, not setup. */
-const line = ref<LineHandle | null>(null)
-const rule = ref<RuleHandle | null>(null)
-
-/** Beat state, every field 0 to 1. Marks read it; nothing else writes it. */
-const s = reactive({ chip: 0, ghost: 0 })
-
+const s = reactive({ pending: OFF, earlier: ON, ping: OFF })
+const tileX = (i: number) => BOARD.x + i * (BOARD.width + BOARD.gap)
 const { clicks, copy, beats } = useStage({
   copy: COPY,
-  /** One shot settle on landing: the baseline is there before the first beat. */
-  enter: (tl) => rule.value?.addDraw(tl, 0),
-  /** The beat script. Every tween reads a DUR constant; no bare numbers. */
   beats: (tl, beat) => {
     beat(0)
-    line.value?.addDraw(tl)
-    tl.to(s, { chip: 1, duration: DUR.card })
+    tl.to(s, { pending: ON, duration: DUR.color })
     beat(1)
-    tl.to(s, { chip: 0, duration: DUR.opacity })
-    tl.to(s, { ghost: 1, duration: DUR.color })
+    tl.to(s, { earlier: DIM, duration: DUR.opacity })
     beat(2)
-    tl.to(s, { ghost: 0, duration: DUR.color })
+    tl.to(s, { ping: ON, duration: DUR.grow })
     beat(3)
   },
 })
@@ -83,47 +36,33 @@ const { clicks, copy, beats } = useStage({
 
 <template>
   <StoryStage :beats="beats" :click="clicks">
-    <!-- Ink goes in the stage svg. Nothing here is keyed on `playCount`: a
-         mark the beat script drives through a ref must stay outside that key,
-         because the remount it forces would leave both timelines animating a
-         child that is no longer mounted, and the line would never sweep. Both
-         timelines re-arm on re-entry on their own (`addDraw` is a `fromTo`,
-         and the beat timeline is a pure function of the click index), so the
-         key buys nothing here. Reach for it only for state no timeline owns:
-         a CSS keyframe, a canvas, a child with its own playhead. -->
     <template #stage>
-      <g>
-        <InkLine
-          ref="line"
-          :series="SERIES"
-          :x-domain="X_DOMAIN"
-          :y-domain="Y_DOMAIN"
-          :x-range="X_RANGE"
-          :y-range="Y_RANGE"
-          hue="cyan"
-          seed="minimal-growth"
-          :ghost="s.ghost > 0.5"
-        />
-        <text class="od-stage-label" :x="X_RANGE[0]" :y="Y_RANGE[0] + 48">2021</text>
-        <text class="od-stage-label" :x="X_RANGE[1]" :y="Y_RANGE[0] + 48" text-anchor="end">
-          2026
-        </text>
+      <g v-for="(tile, i) in TILES" :key="tile.office" class="tx-office"
+        :style="{ opacity: i === 0 ? s.earlier : ON }">
+        <rect class="tx-office-box" :x="tileX(i)" :y="BOARD.y" :width="BOARD.width" :height="BOARD.height" />
+        <text class="od-stage-name" :x="tileX(i) + BOARD.pad" :y="BOARD.y + BOARD.nameY">{{ tile.office }}</text>
+        <text class="od-stage-note" :x="tileX(i) + BOARD.pad" :y="BOARD.y + BOARD.noteY">{{ tile.note }}</text>
+        <BallotOval :cx="tileX(i) + BOARD.ovalX" :cy="BOARD.y + BOARD.ovalY" :state="tile.state" :meaning="tile.meaning" />
+        <text class="tx-office-status" :x="tileX(i) + BOARD.statusX" :y="BOARD.y + BOARD.statusY">{{ tile.status }}</text>
       </g>
+      <g class="tx-pending-item" :style="{ opacity: s.pending }">
+        <rect class="tx-pending-box" :x="BOARD.riskX" :y="BOARD.riskY" :width="BOARD.riskWidth" :height="BOARD.riskHeight" />
+        <text class="tx-risk-label" :x="BOARD.riskTextX" :y="BOARD.riskTextY">AISD decision · Pending</text>
+      </g>
+      <ellipse class="tx-ping" :cx="tileX(1) + BOARD.ovalX" :cy="BOARD.y + BOARD.ovalY"
+        :rx="OVAL.rx * (ON + PING.growth * s.ping)" :ry="OVAL.ry * (ON + PING.growth * s.ping)"
+        :style="{ opacity: PING.peak * Math.sin(Math.PI * s.ping), stroke: neutral(3) }" />
     </template>
-
-    <!-- The overlay is HTML over the stage, in the same coordinate space. -->
     <template #overlay>
-      <!-- A StoryLayer is a second svg on a div, which is the only element a
-           `vt-*` hand-off class can sit on. Without a class it is just ink. -->
-      <StoryLayer>
-        <InkRule ref="rule" :x1="X_RANGE[0]" :x2="X_RANGE[1]" :y="Y_RANGE[0]" seed="minimal-base" />
-      </StoryLayer>
-
-      <h2 class="od-story-head">The catalog doubled twice in five years.</h2>
-      <InkChip :x="CHIP_X" :y="CHIP_Y" text="1.9M datasets" :progress="s.chip" />
+      <h2 class="od-story-head">FLAG: Governor, House and Senate results.</h2>
+      <div class="tx-baseline" />
+      <div class="tx-sample-caption">
+        <span>Design sample</span>
+        <span class="tx-tag is-reported">Reported date</span>
+        <span class="tx-tag is-pending">Pending</span>
+        <span class="tx-tag is-scenario">Scenario</span>
+      </div>
     </template>
-
-    <!-- The prose card cross-fades whenever its lead or body changes. -->
     <template #card>
       <StoryCard anchor="left" :lead="copy.lead" :body="copy.body" />
     </template>

@@ -16,6 +16,7 @@ const alternate = JSON.parse(readFileSync(here('../../../examples/od-templates/t
 const THEMES = {
   default: resolveTheme(defaults),
   'od-templates': resolveTheme(defaults, alternate),
+  'texas-2026': resolveTheme(defaults, JSON.parse(readFileSync(here('../../../decks/texas-2026/theme.json'), 'utf8'))),
 }
 
 describe.each(Object.entries(THEMES))('%s theme', (_, theme) => {

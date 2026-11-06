@@ -1,6 +1,7 @@
 <!--
 SLIDE 2 · POWER BOARD
-Placeholder stage: replaced by the s01-04 run. Spec: OUTLINE.md, slide 2.
+Design sample for author approval; the slide 2 run replaces it with the power board.
+The office tiles are style specimens, not a complete result board.
 -->
 
 <PowerBoardStage />

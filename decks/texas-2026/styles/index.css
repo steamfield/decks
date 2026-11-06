@@ -1,1 +1,229 @@
-/* texas-2026 deck styles. Everything shared comes from the addon (`addons: ["slidev-addon-decks"]`), which loads first. */
+@import './tokens.css';
+
+.od-slide.is-story {
+  font-family: var(--od-font-sans);
+  background: var(--od-canvas);
+  color: var(--od-text);
+}
+.od-slide.is-story.is-story-cover { background: var(--od-canvas-cover); }
+.od-slide.is-story h2.od-story-head,
+.od-slide.is-story h1.od-title {
+  font-family: var(--od-font-serif) !important;
+  font-size: var(--tx-head-size);
+  font-weight: var(--tx-head-weight) !important;
+  line-height: var(--tx-head-leading) !important;
+  letter-spacing: var(--tx-head-tracking);
+  margin: var(--tx-zero);
+}
+.od-slide.is-story h2.od-story-head {
+  top: var(--tx-head-top);
+  left: var(--tx-margin-x);
+  width: var(--tx-head-width);
+}
+.od-slide.is-story h1.od-title { font-size: var(--tx-cover-size); }
+.od-slide.is-story .od-cover-frame { padding: var(--tx-margin-y) var(--tx-margin-x); }
+.od-slide.is-story .od-cover-body { max-width: var(--tx-cover-width); }
+.od-slide.is-story .od-cover-lede {
+  max-width: var(--tx-lede-width);
+  margin: var(--tx-lede-gap) var(--tx-zero) var(--tx-zero);
+  font-size: var(--tx-body-size);
+  font-weight: var(--tx-body-weight);
+  line-height: var(--tx-body-leading) !important;
+  letter-spacing: var(--tx-body-tracking);
+  color: var(--od-text-muted);
+}
+.od-slide.is-story .od-brand-name {
+  font-size: var(--tx-small-size);
+  font-weight: var(--tx-label-weight);
+  letter-spacing: var(--tx-body-tracking);
+}
+.od-slide.is-story .od-byline {
+  gap: var(--tx-byline-gap);
+  font-size: var(--tx-small-size);
+  color: var(--od-text-muted);
+}
+.od-slide.is-story .od-dim { color: var(--od-text-faint); }
+
+/* Shared card surface: a flat board with a chalk hairline. */
+.od-slide.is-story :is(.od-story-card, .od-inkchip, .od-rowstrip, .od-dataset-card) {
+  border: var(--tx-hairline) solid var(--od-border);
+  border-radius: var(--tx-radius-card);
+  background: var(--od-surface);
+  box-shadow: none;
+}
+.od-slide.is-story .od-story-card {
+  width: var(--tx-card-width);
+  padding: var(--tx-card-pad);
+  bottom: var(--tx-card-bottom);
+}
+.od-slide.is-story .od-story-card.anchor-left { left: var(--tx-margin-x); }
+.od-slide.is-story .od-story-card.anchor-right { right: var(--tx-margin-x); }
+.od-slide.is-story :is(.od-story-lead, .od-story-copy) {
+  font-size: var(--tx-body-size);
+  line-height: var(--tx-body-leading);
+  letter-spacing: var(--tx-body-tracking);
+}
+.od-slide.is-story .od-story-lead { font-weight: var(--tx-lead-weight); }
+.od-slide.is-story .od-story-copy {
+  margin-top: var(--tx-copy-gap);
+  font-weight: var(--tx-body-weight);
+  color: var(--od-text-secondary);
+}
+.od-slide.is-story :is(.od-inkchip, .od-stage-value, .od-bignum, .tx-office-status, .tx-tag) {
+  font-variant-numeric: tabular-nums;
+}
+.od-slide.is-story .od-inkchip {
+  padding: var(--tx-chip-pad-y) var(--tx-chip-pad-x);
+  font-size: var(--tx-small-size);
+  font-weight: var(--tx-label-weight);
+  line-height: var(--tx-label-leading);
+  letter-spacing: var(--tx-body-tracking);
+  max-width: var(--tx-chip-max);
+}
+.od-slide.is-story .od-bignum-figure {
+  /* InkNumber supplies an inline size; this deck's token owns that choice. */
+  font-size: var(--tx-figure-size) !important;
+  font-weight: var(--tx-lead-weight);
+  line-height: var(--tx-figure-leading);
+  letter-spacing: var(--tx-head-tracking);
+}
+.od-slide.is-story .od-bignum-label {
+  font-size: var(--tx-small-size);
+  margin-top: var(--tx-copy-gap);
+  letter-spacing: var(--tx-body-tracking);
+}
+
+/* SVG type uses the same hierarchy without inheriting a frame-scaled size. */
+.od-slide.is-story :is(.od-stage-name, .od-stage-note, .od-stage-tag, .od-stage-value, .tx-field-label, .tx-office-status, .tx-risk-label) {
+  font-family: var(--od-font-sans);
+  font-weight: var(--tx-body-weight);
+  letter-spacing: var(--tx-body-tracking);
+}
+.od-slide.is-story .od-stage-name {
+  font-size: var(--tx-svg-name);
+  font-weight: var(--tx-label-weight);
+  fill: var(--od-text);
+}
+.od-slide.is-story :is(.od-stage-note, .tx-office-status, .tx-risk-label) { font-size: var(--tx-svg-note); }
+.od-slide.is-story :is(.od-stage-note, .tx-office-status) { fill: var(--od-text-muted); }
+.od-slide.is-story .od-stage-tag { font-size: var(--tx-svg-tag); }
+.od-slide.is-story .od-stage-value { font-size: var(--tx-svg-value); }
+.od-slide.is-story .tx-office-box {
+  fill: var(--od-surface);
+  stroke: var(--od-border);
+  stroke-width: var(--tx-hairline);
+  rx: var(--tx-radius-card);
+}
+.od-slide.is-story .tx-oval-outline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--tx-oval-stroke);
+}
+.od-slide.is-story .tx-hatch {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--tx-hatch-stroke);
+}
+.od-slide.is-story .tx-ping {
+  fill: none;
+  stroke-width: var(--tx-hairline);
+}
+.od-slide.is-story :is(.tx-pending-box, .tx-risk-label) { color: var(--od-amber); }
+.od-slide.is-story .tx-risk-label { fill: currentColor; }
+.od-slide.is-story .tx-pending-box {
+  fill: var(--od-surface);
+  stroke: currentColor;
+  stroke-width: var(--tx-hairline);
+  stroke-dasharray: var(--tx-pending-dash);
+  rx: var(--tx-radius-mark);
+}
+.od-slide.is-story .tx-baseline {
+  position: absolute;
+  top: var(--tx-baseline-y);
+  left: var(--tx-margin-x);
+  width: var(--tx-baseline-width);
+  border-top: var(--tx-hairline) solid var(--od-text-faint);
+  opacity: var(--tx-hairline-opacity);
+}
+.od-slide.is-story .tx-ballot-field {
+  position: absolute;
+  inset: var(--tx-zero);
+  width: var(--tx-full);
+  height: var(--tx-full);
+}
+.od-slide.is-story .tx-field-label {
+  font-size: var(--tx-svg-name);
+  fill: var(--od-text-muted);
+}
+.od-slide.is-story .tx-field-rule {
+  stroke: var(--od-border);
+  stroke-width: var(--tx-hairline);
+  opacity: var(--tx-hairline-opacity);
+}
+
+/* Evidence words stay on the object; line style is a second signal. */
+.od-slide.is-story .tx-tag {
+  display: inline-block;
+  padding: var(--tx-tag-pad-y) var(--tx-tag-pad-x);
+  border: var(--tx-hairline) solid currentColor;
+  border-radius: var(--tx-radius-mark);
+  font-size: var(--tx-tag-size);
+  line-height: var(--tx-label-leading);
+  color: var(--od-text-muted);
+}
+.od-slide.is-story .tx-tag.is-pending { color: var(--od-amber); border-style: dashed; }
+.od-slide.is-story .tx-tag.is-reported { color: var(--od-text-secondary); }
+.od-slide.is-story .tx-tag.is-scenario { border-style: dotted; }
+.od-slide.is-story .tx-sample-caption {
+  position: absolute;
+  bottom: var(--tx-rail-bottom);
+  right: var(--tx-sample-right);
+  display: flex;
+  align-items: center;
+  gap: var(--tx-byline-gap);
+  font-size: var(--tx-tag-size);
+  color: var(--od-text-muted);
+}
+.od-slide.is-story .od-story-foot {
+  left: var(--tx-margin-x);
+  bottom: var(--tx-rail-bottom);
+  gap: var(--tx-rail-gap);
+}
+.od-slide.is-story .od-beat {
+  width: var(--tx-rail-width);
+  height: var(--tx-rail-height);
+  border-radius: var(--tx-radius-mark);
+  background: var(--od-text-faint);
+  opacity: var(--tx-dim);
+}
+.od-slide.is-story .od-beat.is-done { background: var(--od-text-muted); opacity: var(--tx-on); }
+.od-slide.is-story .od-beat.is-current { width: var(--tx-rail-current); background: var(--od-cyan); }
+
+/* Suppress the addon's clean-ink filters, including pings on later slides. */
+.od-slide.is-story .od-card-glow { display: none; }
+.od-slide.is-story g:has(> .od-card-stroke) > rect { rx: var(--tx-radius-card); }
+.od-slide.is-story .od-card-stroke {
+  stroke-width: var(--tx-hairline);
+  stroke-opacity: var(--tx-hairline-opacity);
+}
+.od-slide.is-story :is([filter], .od-ink-ping *) { filter: none !important; }
+.od-slide.is-story :is(.od-ink-ping circle, .od-ink-ping rect) { stroke-width: var(--tx-hairline); }
+
+/* This stylesheet is loaded only by texas-2026. VT pseudo-elements belong
+   to html, so a slide ancestor cannot scope them. No custom VT names. */
+html[data-od-story]::view-transition-group(*),
+html[data-od-story]::view-transition-old(*),
+html[data-od-story]::view-transition-new(*) { animation-duration: var(--tx-vt-fade); }
+html[data-od-story][data-od-nav]::view-transition-new(root),
+html[data-od-story][data-od-nav]::view-transition-new(od-story-head):only-child,
+html[data-od-story][data-od-nav]::view-transition-new(od-story-card-left):only-child,
+html[data-od-story][data-od-nav]::view-transition-new(od-story-card-right):only-child {
+  animation-name: od-vt-fade;
+  animation-duration: var(--tx-vt-fade);
+  animation-delay: var(--tx-vt-delay);
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-od-story]::view-transition-group(*),
+  html[data-od-story]::view-transition-old(*),
+  html[data-od-story]::view-transition-new(*) { animation-duration: var(--tx-vt-reduced) !important; }
+}
