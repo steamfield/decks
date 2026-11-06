@@ -3,16 +3,15 @@ import { computed, reactive, ref } from 'vue'
 import { DRAW, DUR, SETTLE, useStage, type GrowHandle } from 'slidev-addon-decks/story'
 import { DIM, OFF, ON } from './design'
 import SeatArc from './SeatArc.vue'
-import { hb2, hb2SenateVote, aisdBudget, recapture, hb2Labels } from '../data/11-hb2'
+import { hb2, hb2SenateVote, aisdBudget, recapture, hb2Labels, sameSession } from '../data/11-hb2'
 
 const billions = (hb2.additionalFunding / 1e9).toFixed(1)
 const gap = `$${aisdBudget.preReductionGap / 1e6}M`
 const returned = `$${recapture.displayMillions}M`
 const shortYear = (year: string) => year.slice(0, 4) + '–' + year.slice(-2)
-const voteDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(hb2SenateVote.date))
 const COPY = [
-  { lead: 'Schools receive the money through funding formulas.', body: `About $${billions}B statewide for the ${hb2.period.replace('state fiscal biennium', 'state budget')}.` },
-  { lead: 'Both parties supported the funding bill.', body: `The Senate passed it on ${voteDate}.` },
+  { lead: `${hb2.bill} added $${billions}B for public schools.`, body: `It pays for teacher pay and special education in the ${hb2.period.replace('state fiscal biennium', 'state budget')}.` },
+  { lead: `Every senator voted yes, ${hb2SenateVote.yes} to ${hb2SenateVote.no}.`, body: `That session also passed vouchers. ${sameSession.governor2025} and ${sameSession.ltGovernor2025}, who set its agenda, have now lost.` },
   { lead: `${hb2Labels.district} still had to cut its budget.`, body: `It faced a ${gap} gap before ${shortYear(aisdBudget.schoolYear)} cuts and budgeted ${returned} in property taxes for the state in ${shortYear(recapture.schoolYear)}.` },
 ]
 const amount = ref<GrowHandle | null>(null)
@@ -52,7 +51,7 @@ const source = computed(() => [
       </g>
     </template>
     <template #overlay>
-      <h2 class="od-story-head">The Senate voted {{ hb2SenateVote.yes }} to {{ hb2SenateVote.no }} for ${{ billions }}B more for schools.</h2>
+      <h2 class="od-story-head">Both parties already vote for school funding.</h2>
       <div class="funding" :style="{ opacity: s.funding }">
         <InkNumber ref="amount" :value="billions" prefix="$" suffix="B" hue="slate" :label="`${hb2Labels.state} school funding added`" />
         <div class="period">{{ hb2.period.replace('state fiscal biennium', 'state budget') }}</div>

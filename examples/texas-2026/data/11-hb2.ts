@@ -16,6 +16,11 @@ export const recapture = {
   definition: 'Local property-tax revenue above the state formula entitlement sent back into the statewide school-funding system',
 } as const
 
+// SB 2 (2025, 89th Legislature) created the voucher program in the same session as HB 2.
+// Abbott and Patrick held the governor's and lieutenant governor's offices then and lost
+// on November 3, 2026 (SOS returns; see data-sources.md, Slides 2 and 11).
+export const sameSession = { vouchersBill: 'SB 2', governor2025: 'Abbott', ltGovernor2025: 'Patrick', bothLost: true, status: 'confirmed' } as const
+
 // Display names and source labels for the records above.
 export const hb2Labels = {
   state: 'Texas', district: 'Austin ISD', senate: 'Texas Senate',

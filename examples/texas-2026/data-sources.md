@@ -391,6 +391,8 @@ Module: `data/11-hb2.ts`. All raw monetary constants are dollars.
 | Adopted operating budget / identified reductions | $887,000,000 / $205,000,000 | Confirmed reported totals | Same [AISD update][aisd-budget-update]. Do not subtract these headline aggregates to invent an ending surplus. | 2026-11-06 |
 | Recapture estimate | $715,523,373, rounded $715.5 million, adopted FY 2026 / 2025–26 school year | Confirmed budget estimate; actual payment Pending | [AISD budget process][aisd-process], Recapture row, FY 2026 adopted column. | 2026-11-06 |
 | Meaning of recapture | Local property-tax revenue above state-formula entitlement returned to the statewide funding system | Confirmed | [AISD budget explanation][aisd-budget] and [TEC ch. 48][ed48]. | 2026-11-06 |
+| Same-session vouchers | SB 2 (2025, 89th Legislature) created the voucher program the same session HB 2 passed | Confirmed | [SB 2 summary][sb2] | 2026-11-06 |
+| 2025 agenda-setters lost | Gov. Abbott and Lt. Gov. Patrick, in office for the 2025 session, lost on November 3, 2026 | Confirmed; certification Pending | [SOS][sos], Governor and Lieutenant Governor rows (Slide 2) | 2026-11-06 |
 | Current finance forecast | Refresh required | Pending | Historical adopted estimates do not establish the November forecast or 2026–27 recapture actuals. | 2026-11-06 |
 
 ### Conflicts
