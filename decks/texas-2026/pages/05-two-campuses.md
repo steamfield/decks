@@ -9,5 +9,5 @@ The state rates individual campuses. The count includes operating campuses with 
 
 [click] Burnet and Webb have preliminary failing-rating sequences that could require board replacement or campus closure. Years without ratings pause the count. Both schools appealed. The commissioner must resolve those appeals before the district's final ratings and official year counts establish whether the rule applies.
 
-[click] A board of managers is a state-appointed board that replaces elected trustees. It would govern the district, including campuses whose ratings did not trigger the intervention. Board replacement remains conditional on the final ratings and counted years after appeal.
+[click] A board of managers is a state-appointed board that replaces elected trustees. It would govern the district, including campuses whose ratings did not trigger the intervention. Board replacement remains conditional on the final ratings and counted years after appeal. Parents at both schools have since petitioned the commissioner to close the two campuses instead, which would leave the elected board in charge of the district.
 -->

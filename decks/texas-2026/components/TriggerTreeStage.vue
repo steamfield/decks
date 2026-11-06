@@ -10,7 +10,7 @@ const s = reactive({ branches: OFF, inputs: OFF, rootDim: ON, branchDim: ON, inp
 const COPY = [
   { lead: 'The appeals could prevent mandatory intervention.', body: `The rule counts ${triggerDisplay.countWord} failing ratings, with unrated years pausing the count.` },
   { lead: 'A replacement board governs every campus.', body: 'Closure applies to the campus whose ratings triggered intervention.' },
-  { lead: 'Parents can determine which action is ordered.', body: "The commissioner may grant trustees' request for closure or board replacement instead of the action requested by parents." },
+  { lead: 'Parents petitioned to close both schools.', body: 'A valid petition generally sets the remedy. Trustees can ask the commissioner for the other one.' },
   { lead: 'A monitor alone does not satisfy the rule.', body: 'A monitor or conservator can accompany board replacement or campus closure.' },
 ]
 const { clicks, copy, beats } = useStage({
@@ -49,8 +49,9 @@ const { clicks, copy, beats } = useStage({
         <path d="M412 500 H650 M1508 500 H1270" class="wire is-pending" />
         <rect x="112" y="444" width="300" height="108" class="tx-pending-box" />
         <rect x="1508" y="444" width="300" height="108" class="tx-pending-box" />
-        <text class="od-stage-name" x="262" y="484" text-anchor="middle">{{ petition.label }}</text>
-        <text class="od-stage-name" x="1658" y="484" text-anchor="middle">{{ trusteeRequest.label }}</text>
+        <!-- The petitions ask for closure, so the petition feeds the closure branch. -->
+        <text class="od-stage-name" x="262" y="484" text-anchor="middle">{{ trusteeRequest.label }}</text>
+        <text class="od-stage-name" x="1658" y="484" text-anchor="middle">{{ petition.label }}</text>
       </g>
     </template>
     <template #overlay>
@@ -60,8 +61,8 @@ const { clicks, copy, beats } = useStage({
       </div>
       <span class="tx-tag is-pending gate-tag" :style="{ opacity: s.rootDim }">{{ triggerDisplay.appealsPending }}</span>
       <div class="input-tags" :style="{ opacity: s.inputs * s.inputDim }">
-        <span class="tx-tag is-pending">{{ triggerDisplay.validationPending }}</span>
         <span class="tx-tag is-pending">{{ triggerDisplay.pending }}</span>
+        <span class="tx-tag is-pending">{{ triggerDisplay.validationPending }}</span>
       </div>
       <StoryLink :href="triggerDisplay.sourceUrl" :label="triggerDisplay.source" />
     </template>
@@ -78,7 +79,7 @@ const { clicks, copy, beats } = useStage({
 .node { fill: var(--od-surface); stroke: var(--od-amber); stroke-width: var(--tx-hairline); rx: var(--tx-radius-card); }
 .gate-tag { position: absolute; left: calc(50 * var(--sw)); top: calc(36.296296 * var(--sh)); transform: translateX(-50%); will-change: opacity; }
 .input-tags { position: absolute; top: calc(46.296296 * var(--sh)); left: calc(13.645833 * var(--sw)); width: calc(72.708333 * var(--sw)); }
-.input-tags > span { position: absolute; transform: translateX(-50%); }
+.input-tags > span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
 .input-tags > span:first-child { left: var(--tx-zero); }
 .input-tags > span:last-child { left: var(--tx-full); }
 </style>

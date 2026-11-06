@@ -7,7 +7,7 @@ SLIDE 7 · COLLISION TIMELINE
 <!--
 The incumbent remains in office until inauguration. Certification is pending. AISD validates the petitions, and TEA resolves the appeals. The commissioner who serves during this period retains responsibility for the state decisions on the district's ratings and any intervention order.
 
-[click] This is the superintendent's deadline to submit validated petitions to the commissioner. Families' collection deadline has already passed. The superintendent must check whether a petition qualifies, including whether it represents a majority of enrolled students. The public complaints about how signatures were gathered remain under review.
+[click] Both petitions ask the commissioner to close the schools. This is the superintendent's deadline to submit validated petitions to the commissioner. Families' collection deadline has already passed. The superintendent must check whether a petition qualifies, including whether it represents a majority of enrolled students. The public complaints about how signatures were gathered remain under review.
 
 [click] Austin Politics reported AISD's estimated appeal-response date. The state agency's published schedule separately provides for appeal decisions before its final ratings publication. TEA's final publication includes the ratings and revised year counts used for intervention.
 

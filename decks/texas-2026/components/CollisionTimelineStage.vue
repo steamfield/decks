@@ -14,11 +14,11 @@ const ratings = collisionTimeline.find(event => event.id === 'ratings')!
 const dateLabel = (date: string) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 const COPY = [
   { lead: 'The incumbent can still nominate a commissioner.', body: 'The governor-elect takes office at inauguration.' },
-  { lead: "Petitions are due before the governor's inauguration.", body: 'The superintendent must validate signatures before submitting the petitions.' },
+  { lead: "Petitions are due before the governor's inauguration.", body: 'They ask the state to close both schools. The superintendent validates them first.' },
   { lead: 'Successful appeals could prevent board replacement.', body: `Final ratings are scheduled for ${dateLabel(ratings.date)}.` },
   { lead: 'Trustees can request closure or appointed managers.', body: 'The request needs approval at a public board meeting.' },
   { lead: 'The new governor can nominate a commissioner.', body: 'The nominee needs Senate confirmation.' },
-  { lead: `${timelineDisplay.question}`, body: 'After a valid petition, the commissioner must order board replacement or campus closure.' },
+  { lead: `${timelineDisplay.question}`, body: 'With valid petitions, that order would close both schools rather than replace the board.' },
 ]
 const state = reactive<TickState[]>(events.map((_, i) => ({ ink: i === 0 ? ON : OFF, lift: OFF })))
 const s = reactive({ position: Date.parse(events[0].date), governor: OFF })

@@ -21,7 +21,7 @@ const s = reactive({ reveal: OFF, pair: OFF, ping: OFF, board: OFF, dim: ON })
 const COPY = [
   { lead: `${waffleUniverse.visible} open campuses have a rating.`, body: 'The count excludes closed campuses and programs without a letter grade.' },
   { lead: 'The appeals could prevent board replacement.', body: 'Their final ratings and counted years remain pending.' },
-  { lead: 'The elected board could be replaced.', body: 'A state-appointed board would govern the whole district.' },
+  { lead: 'The elected board could be replaced.', body: 'Parents at both schools petitioned to close them instead.' },
 ]
 const { clicks, copy, beats, isActive } = useStage({
   copy: COPY,

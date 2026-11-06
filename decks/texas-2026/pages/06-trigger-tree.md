@@ -9,7 +9,7 @@ The appeals challenge the ratings that would complete the count. The commissione
 
 [click] Once the trigger is established, the law requires the commissioner to appoint a district board or close the campus, subject to the petition procedures. A replacement board takes over the elected trustees' authority throughout the district.
 
-[click] A timely, valid petition from parents representing a majority of enrolled students generally determines the authorized action. The superintendent validates it. The elected trustees may ask for another authorized action with a written explanation, and the commissioner may grant that request. Complaints about petition gathering remain allegations under review.
+[click] At Burnet and Webb, parents petitioned for closure, the route Mayor Watson proposed as an alternative to a district takeover. The superintendent reported in October that initial counts at both schools topped the required majority; TEA is reviewing a complaint about signatures at Webb. A timely, valid petition from parents representing a majority of enrolled students generally determines the authorized action. The superintendent validates it. The elected trustees may ask for another authorized action with a written explanation, and the commissioner may grant that request. Complaints about petition gathering remain allegations under review.
 
 [click] A monitor observes and reports; a conservator can oversee designated district functions. The commissioner can add that supervision to the required action. Supervision alone does not meet this campus-trigger rule. The petition procedures also apply to a successor.
 -->
