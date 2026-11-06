@@ -1,0 +1,60 @@
+{
+  "surfaces": {
+    "canvas": "#0e1311",
+    "canvas-cover": "{surfaces.canvas}",
+    "surface": "#141a17",
+    "surface-raised": "#1b2320",
+    "muted": "#303a33"
+  },
+  "text": {
+    "primary": "#f1eee6",
+    "secondary": "#d2cfc3",
+    "muted": "#a7a497",
+    "faint": "#7a786e",
+    "dim": "#62665d",
+    "highlight": "{text.primary}"
+  },
+  "borders": {
+    "default": "#464b42",
+    "subtle": "#2b332d",
+    "rule": "#606358",
+    "axis": "#7a786e"
+  },
+  "ramps": {
+    "cyan": ["#d4a20f", "#e8b923", "#f2cc4d", "#f7dd85"],
+    "amber": ["#a78068", "#bd967e", "#d2b29b", "#e4cdb7"],
+    "slate": ["#7a786e", "#a7a497", "#d2cfc3", "#f1eee6"],
+    "emerald": ["#768871", "#98aa91", "#bbc9b2", "#d9e0ce"],
+    "violet": ["#827b85", "#a49ba6", "#c1b8c1", "#d8d1d7"],
+    "rose": ["#927885", "#b096a3", "#cbb6c0", "#e0d0d7"]
+  },
+  "accents": {
+    "blue": "{ramps.slate.2}",
+    "blue-soft": "{ramps.slate.3}",
+    "pink": "{ramps.rose.2}"
+  },
+  "glows": {
+    "primary": "{surfaces.surface-raised}",
+    "secondary": "{surfaces.surface-raised}",
+    "amber": "{surfaces.surface-raised}",
+    "violet": "{surfaces.surface-raised}",
+    "emerald": "{surfaces.surface-raised}",
+    "rose": "{surfaces.surface-raised}"
+  },
+  "categorical": ["{ramps.cyan.2}", "{ramps.slate.3}", "{ramps.amber.2}", "{ramps.emerald.2}", "{ramps.violet.2}", "{ramps.rose.2}"],
+  "fonts": {
+    "sans": "'Public Sans Variable', sans-serif",
+    "serif": "'Source Serif 4 Variable', serif",
+    "mono": "{fonts.sans}"
+  },
+  "chart": {
+    "text": "{text.muted}", "gridline": "{borders.subtle}", "axis": "{borders.axis}",
+    "eyebrow": "{ramps.cyan.2}", "title": "{text.primary}", "subtitle": "{text.secondary}",
+    "source": "{text.muted}", "graph-label": "{text.secondary}"
+  },
+  "qr-white": "{text.primary}",
+  "brand": {
+    "name": "Texas schools after the election", "url": null, "logo": null,
+    "wordmark-gradient": "linear-gradient(95deg, {ramps.slate.4}, {ramps.cyan.4})"
+  }
+}

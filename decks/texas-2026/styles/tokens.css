@@ -1,0 +1,84 @@
+@import '@fontsource-variable/source-serif-4';
+@import '@fontsource-variable/public-sans';
+
+/* Document timing: mirrors of DUR.color and DUR.opacity. css-mirror.test.ts
+   guards the addon's CSS only. Root scope is required for VT pseudo-elements. */
+:root {
+  --tx-vt-fade: 340ms;
+  --tx-vt-reduced: 140ms;
+  --tx-vt-delay: 0ms;
+}
+
+.od-slide.is-story {
+  /* Common endpoints and line treatment. SVG numbers use viewBox units. */
+  --tx-zero: 0;
+  --tx-full: 100%;
+  --tx-on: 1;
+  --tx-off: 0;
+  --tx-dim: 0.55; /* Mirror of DIM in design.ts. */
+  --tx-radius-mark: 1px;
+  --tx-radius-card: 4px;
+  --tx-hairline: 1px;
+  --tx-hairline-opacity: 0.6;
+  --tx-oval-stroke: 2;
+  --tx-hatch-stroke: 1.4;
+  --tx-hatch-spacing: 8px; /* Mirror of HATCH.spacing in design.ts. */
+  --tx-pending-dash: 8 6; /* Mirror of DASH in design.ts. */
+
+  /* Frame grid: 112-unit left margin and a lower-third chalk baseline. */
+  --tx-margin-x: calc(5.833333 * var(--sw));
+  --tx-margin-y: calc(7.407407 * var(--sh));
+  --tx-baseline-y: calc(66.666667 * var(--sh)); /* BASELINE_Y = 720. */
+  --tx-baseline-width: calc(88.333333 * var(--sw));
+  --tx-head-top: calc(7.407407 * var(--sh));
+  --tx-head-width: calc(78 * var(--sw));
+
+  /* Source Serif headings. Cover is 72px, claims 60px at 1920 wide. */
+  --tx-head-size: calc(3.125 * var(--sw));
+  --tx-cover-size: calc(3.75 * var(--sw));
+  --tx-head-weight: 520;
+  --tx-head-leading: 1.12;
+  --tx-head-tracking: -0.025em;
+  --tx-cover-width: calc(54 * var(--sw));
+
+  /* Public Sans: projector-size prose, quiet labels, tabular figures. */
+  --tx-body-size: calc(1.458333 * var(--sw));
+  --tx-small-size: calc(1.145833 * var(--sw));
+  --tx-tag-size: calc(1.041667 * var(--sw));
+  --tx-body-weight: 400;
+  --tx-label-weight: 520;
+  --tx-lead-weight: 600;
+  --tx-body-leading: 1.5;
+  --tx-label-leading: 1.25;
+  --tx-body-tracking: 0em;
+  --tx-lede-width: calc(48 * var(--sw));
+  --tx-lede-gap: calc(2.222222 * var(--sh));
+  --tx-byline-gap: calc(0.833333 * var(--sw));
+
+  /* Card and chip boxes. All corners follow the same two-radius system. */
+  --tx-card-width: calc(34 * var(--sw));
+  --tx-card-pad: calc(1.666667 * var(--sw));
+  --tx-card-bottom: calc(11.111111 * var(--sh));
+  --tx-copy-gap: calc(0.740741 * var(--sh));
+  --tx-chip-pad-y: calc(0.416667 * var(--sw));
+  --tx-chip-pad-x: calc(0.625 * var(--sw));
+  --tx-chip-max: calc(20 * var(--sw));
+  --tx-tag-pad-y: calc(0.208333 * var(--sw));
+  --tx-tag-pad-x: calc(0.416667 * var(--sw));
+
+  /* SVG typography stays in viewBox units, avoiding double scaling. */
+  --tx-svg-name: 28px;
+  --tx-svg-note: 22px;
+  --tx-svg-tag: 22px;
+  --tx-svg-value: 28px;
+  --tx-figure-size: calc(6.25 * var(--sw));
+  --tx-figure-leading: 1;
+
+  /* Beat rail and the persistent sample caption. */
+  --tx-rail-bottom: calc(4.444444 * var(--sh));
+  --tx-rail-gap: calc(0.625 * var(--sw));
+  --tx-rail-width: calc(2.083333 * var(--sw));
+  --tx-rail-current: calc(3.333333 * var(--sw));
+  --tx-rail-height: 2px;
+  --tx-sample-right: calc(5.833333 * var(--sw));
+}
