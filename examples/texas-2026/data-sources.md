@@ -12,7 +12,7 @@ Module: `data/01-cover.ts`, importing election facts from Slide 2.
 |---|---|---|---|---|
 | Offices changing party control | Governor, Lt. Governor, Attorney General, Comptroller and Texas House | Confirmed; certification Pending | [SOS returns][sos] and [House reporting][house]: Democratic statewide winners and House majority. These are election outcomes, not officers already inaugurated. | 2026-11-06 |
 | Senate control | Republican | Confirmed; certification Pending | [Senate reporting][senate-news]: Republicans retain the chamber. | 2026-11-06 |
-| Byline | Riley Hilliard; Austin; November 2026 | FLAG: author-reported | `OUTLINE.md`, Cover specification. Author must confirm public byline and talk month; no exact talk date was supplied. | 2026-11-06 |
+| Byline | Austin; November 2026 (no presenter name, so anyone can give the talk) | FLAG: author-reported | `OUTLINE.md`, Cover specification. Author must confirm public byline and talk month; no exact talk date was supplied. | 2026-11-06 |
 
 ## Slide 2: Power board
 
@@ -719,7 +719,7 @@ Each row covers the listed claim family; multiple dates, amounts or names are gr
 | Slide | Claim / location | Source opened or query run | Status | Evidence quote, returned row or computation |
 |---|---|---|---|---|
 | 1 | Cover election context; `01-cover.ts`, page | [SOS][sos], [House][house], [Senate][senate-news] | VERIFIED | SOS statewide rows reproduced below; House wins/concessions establish a reported majority; Senate report gives expected 19 R / 12 D. Winners are not yet inaugurated. |
-| 1 | Byline and presentation month; page | `OUTLINE.md`, Cover specification; `01-cover.ts` | FLAGGED | Author-supplied record: `Riley Hilliard; Austin; 2026-11`. Page now reads the record, including its formatted month. Public identity/date still require author confirmation. |
+| 1 | Byline and presentation month; page | `OUTLINE.md`, Cover specification; `01-cover.ts` | FLAGGED | Author-supplied record: `Austin; 2026-11` (presenter name removed 2026-11-06). Page now reads the record, including its formatted month. Public identity/date still require author confirmation. |
 | 2 | Statewide winners and vote counts; `02-power-board.ts`, PowerBoardStage | [SOS][sos] | VERIFIED | `Governor: Hinojosa 5230789, Abbott 4524527; Lt. Governor: Goodwin 5083581, Patrick 4484652; AG: Johnson 5133629, Middleton 4502442; Comptroller: Eckhardt 5014496, Huffines 4511185`. Updated `11/04/2026 04:59 PM`. |
 | 2 | House majority versus projected roster; module/card/notes | [House][house], [art. III §2][cn3] | MISMATCH-FIXED | Reported arithmetic: `62 + 11 called flips + 3 concessions = 76`; seven further leads yield `83 D / 67 R`. Constitution: `150 members`. Changed present-tense “has” to election-result “won”; HD 93 and final totals stay pending. |
 | 2 | Senate and SBOE projections; module/cards/notes | [Senate][senate-news], [SBOE][sboe-news], [SOS][sos] | VERIFIED | Senate expected `19 R / 12 D`; SBOE seven each outside District 8. SOS: `Walker 300108; Young 299544`; `300108 - 299544 = 564`. Young had not conceded; a possible recount is not a verified filing. |

@@ -1,8 +1,18 @@
 ---
 theme: the-unnamed
 title: "Texas schools after the 2026 election"
-info: "What the 2026 Texas election can and cannot change for Austin ISD, and how fast."
-author: Riley Hilliard
+info: What the 2026 Texas election can and cannot change for Austin ISD, and how fast.
+# Link previews (iMessage, Slack, social). Unfurlers need absolute URLs, and
+# public/og-image.png is the cover cropped to 1200x630.
+seoMeta:
+  ogTitle: "Texas schools after the 2026 election"
+  ogDescription: "What the 2026 Texas election can and cannot change for Austin ISD, and how fast."
+  ogImage: https://decks.steamfield.io/demo/texas-2026/og-image.png
+  ogUrl: https://decks.steamfield.io/demo/texas-2026/
+  twitterCard: summary_large_image
+  twitterTitle: "Texas schools after the 2026 election"
+  twitterDescription: "What the 2026 Texas election can and cannot change for Austin ISD, and how fast."
+  twitterImage: https://decks.steamfield.io/demo/texas-2026/og-image.png
 # Cross slide view transitions are run by the addon's setup/main.ts, not by
 # Slidev: its own view-transition mode remounts every slide on every click.
 # Slidev's container stays on a no-op TransitionGroup (a cut with no CSS),

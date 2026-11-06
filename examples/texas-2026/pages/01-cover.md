@@ -10,8 +10,6 @@ import { byline } from '../data/01-cover'
   <template #field><BallotField /></template>
   <template #title>Texas elected new leaders.<br/>What can they change<br/>for Austin's schools?</template>
   <template #byline>
-    <span>{{ byline.name }}</span>
-    <span class="od-dim">·</span>
     <span>{{ byline.location }}</span>
     <span class="od-dim">·</span>
     <span>{{ new Date(`${byline.month}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) }}</span>

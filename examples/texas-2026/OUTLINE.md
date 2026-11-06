@@ -105,7 +105,7 @@ Between other slides, the deck's 340 ms fade override handles the transition. Th
 
 ## Per-slide spec
 
-1. **Cover.** A `StoryCover` with a deck-local `BallotField`: a column of faint office names (Governor, Lt. Governor, Attorney General, Comptroller, Texas House, Texas Senate), each with an empty oval. On the cover's settle, the four statewide ovals and the House oval fill in yellow one at a time. The Senate oval stays empty. The byline reads "Riley Hilliard · Austin · November 2026".
+1. **Cover.** A `StoryCover` with a deck-local `BallotField`: a column of faint office names (Governor, Lt. Governor, Attorney General, Comptroller, Texas House, Texas Senate), each with an empty oval. On the cover's settle, the four statewide ovals and the House oval fill in yellow one at a time. The Senate oval stays empty. The byline reads "Austin · November 2026"; it names no presenter, so anyone can give the talk.
 
 2. **Power board.**
    - Setup: seven office tiles (the six above plus the State Board of Education). Each shows the office, the holder's name or chamber split, and the party as text. All start grey.
