@@ -28,6 +28,8 @@ defaults:
   layout: full
 addons: ["slidev-addon-decks"]
 exportFilename: texas-2026
+# The Decks mark (public/favicon.svg) instead of Slidev's default favicon.
+favicon: /favicon.svg
 src: ./pages/01-cover.md
 ---
 ---

@@ -12,6 +12,8 @@ The story engine has strong primitives for data series (`InkLine`, `InkBars`, `U
 2. Multi-track timelines. Slide 7 needs one date axis with several labelled rows (AISD and TEA, Governor, Commissioner), each lighting up separately, and slide 14 reuses the axis extended. `InkTimeline` is one row. The talks deck's `InkTimelineCursor` was ported into the addon for this deck (`2d0ca83`).
 3. Evidence status. The deck prints "Pending", "Reported date" and "Scenario" on objects, with a matching line style (dashed, dotted, hatched). Any deck about live events needs this. Today it's deck-local CSS (`tx-tag`).
 
+4. Product credit and favicon. The author asked for a "Created with Decks" credit, linked to decks.steamfield.io, on every slide, and the Decks mark as the favicon in place of Slidev's. `DecksCredit` landed in the addon, but each deck still opts in by hand (a `global-bottom.vue` plus a copied `public/favicon.svg` and a `favicon:` headmatter key). The mark's geometry is now duplicated between `site/src/lib/brand.ts` and `DecksCredit.vue`.
+
 ## Proposal
 
 After texas-2026 lands, review its components and promote the ones whose APIs held up:
@@ -19,6 +21,7 @@ After texas-2026 lands, review its components and promote the ones whose APIs he
 - `UnitArc` (from the deck's `SeatArc`): `total`, `groups: [{ count, label, hue|step }]`, `thresholds: [{ at, label, progress }]`, `highlight: { from, to, progress }`. The parliament layout math goes in `packages/decks/story/` with a unit test: equal spacing, contiguous wedges, and a threshold that never bisects a seat.
 - `InkTimelineTracks`: `InkTimeline`'s axis plus N labelled rows, each with its own tick set and a per-row `lit` progress, with the domain end as a prop so a later slide can extend it.
 - `StoryTag`: a small printed status word with `status: 'pending' | 'reported' | 'scenario' | 'confirmed'`, styled from theme tokens, plus matching SVG stroke presets for marks.
+- Have `decks new` write the credit's `global-bottom.vue`, the favicon and the headmatter key, with a flag to leave them out. Ship the favicon from the addon, and move the mark geometry to one module that both the site and the addon import.
 - Add each one to `examples/od-story-templates` as a gallery stage, and to the README's component list.
 
 ## Scope
