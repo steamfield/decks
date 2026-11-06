@@ -13,7 +13,7 @@ The UX reference is `../opendata/talks/aisd-takeover`, for its beat pacing, dimm
 - Each slide has one claim headline, ending in a period.
 - No em dashes.
 - `clicks:` in `slides.md` equals the COPY length minus 1. The orchestrator owns `slides.md`. If your beat count differs from the table below, say so in your hand-off; don't edit `slides.md`.
-- Nothing reads as a celebration or as partisan. Party names are always text labels, never color alone. The palette has no red and no blue.
+- Nothing reads as a celebration or as partisan. Party names are always text labels as well as color. Red and blue mean party and nothing else: the `rose` slot is Republican red and the `violet` slot is Democratic blue, used only on marks that show which party holds a seat or office (the Senate chart on slides 8 and 11 first). Never use red or blue for risk, emphasis or decoration.
 - No statute numbers or legal jargon on screen. Section numbers go in the presenter notes.
 - Gloss "board of managers" once, as "a state-appointed board that replaces elected trustees".
 - Write "most likely", not "working case".
@@ -57,7 +57,7 @@ The full token map is `DESIGN.md`, which the design run writes. The essentials:
   - The `cyan` slot is school-bus yellow and means an office changed hands or new leadership.
   - The `amber` slot is a Capitol-granite clay and means AISD risk, a pending decision or a gap.
   - The `slate` slot is chalk grey and means the status quo or neutral structure.
-  - Republican and Democratic seats or offices that did not change are both drawn neutral.
+  - The `rose` slot is Republican red and the `violet` slot is Democratic blue, both muted to sit in the chalk palette. They are used for party only.
 - The canvas is a near-black chalkboard tint and text is chalk off-white.
 - Headlines are set in the serif, `--od-font-serif`. Everything else uses the sans (Public Sans). Figures use tabular numerals.
 - Marks are ballot ovals: filled means won or holds, empty means not won, hatched means scenario. Data marks are sharp, with 0–2 px radius. Cards and chips use `--tx-radius-card`. There are no shadows and no glows. Pings are a single thin ring.

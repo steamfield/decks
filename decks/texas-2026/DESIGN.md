@@ -11,8 +11,8 @@ placeholders until the research module arrives; its author replaces them.
 | `amber` | Desaturated granite clay | AISD risk; pending decisions; gaps |
 | `slate` | Warm chalk grey | Neutral structure; unchanged offices of either party |
 | `emerald` | Sage | Chart support only |
-| `violet` | Dusk | Chart support only |
-| `rose` | Plum | Chart support only |
+| `violet` | Democratic blue | Party only: seats and offices held by Democrats |
+| `rose` | Republican red | Party only: seats and offices held by Republicans |
 
 Party names are text labels. Neither party owns a color. In beat scripts use
 `changed()`, `risk()` and `neutral(step)` from `components/design.ts`.
@@ -49,7 +49,7 @@ deck-local values. View-transition selectors must live on `html`; this
 deck's stylesheet supplies them without changing the shared addon.
 
 Do not put hex colors, radius or opacity literals in components. Put new
-visual values in the three token files. No raw viewport units, red or blue,
+visual values in the three token files. No raw viewport units, red or blue outside party marks,
 glows or shadows. Every ramp must get lighter and clear 3:1 at its first step;
 `packages/decks/theme/theme.test.ts` includes this deck.
 
