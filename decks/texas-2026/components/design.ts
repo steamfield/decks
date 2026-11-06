@@ -15,6 +15,17 @@ export const DASH = '8 6'
 export const RUNG_GAP = 92
 /** Radius of the later Senate hemicycle. */
 export const SEAT_ARC_RADIUS = 360
+/** Parliament rows: even spacing within each arc, with phases that leave the
+ * majority and confirmation boundaries clear of the circular seat outlines. */
+export const PARLIAMENT = {
+  rows: [
+    { radius: 180, seats: 5, phase: 0.75 },
+    { radius: 240, seats: 7, phase: 0.25 },
+    { radius: 300, seats: 9, phase: 0.25 },
+    { radius: SEAT_ARC_RADIUS, seats: 10, phase: 0.25 },
+  ],
+  seatRadius: 18, ringRadius: 22, ruleEnd: 1.12, labelRadius: 1.25,
+} as const
 /** 720 / 1080 = two-thirds down the frame; CSS uses --tx-baseline-y. */
 export const BASELINE_Y = 720
 /** Shared viewBox and the line's horizontal endpoints. */

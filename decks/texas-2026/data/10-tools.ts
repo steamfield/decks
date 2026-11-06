@@ -22,3 +22,14 @@ export const legislativeTools = [
 export const billPath = { chambers: ['Texas House', 'Texas Senate'], identicalTextRequired: true, governorAction: 'Signature, no signature, or veto subject to override', status: 'confirmed' } as const
 // Art. IV §12(c)-(f): recess appointments have later confirmation requirements and vacancy constraints.
 export const recessAppointment = { label: 'Recess appointment', status: 'confirmed', qualification: 'Conditional vacancy route; no blanket exemption from Senate confirmation' } as const
+
+// Compact labels for the same tools above, in matching order.
+export const toolLabels = {
+  executive: ['Nominate a commissioner', 'Veto bills or budget items', 'Propose a budget', 'Set special-session subjects'],
+  legislative: ['Takeover rule', 'Testing requirements', 'School-funding formulas', 'Voucher repeal'],
+  initiate: 'The governor can', legislation: 'Needs a bill',
+  confirmation: 'Senate confirmation required', sameText: 'Same bill text',
+  governor: 'Governor receives the bill',
+  source: 'https://www.house.texas.gov/about',
+  executiveSource: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.4.htm',
+} as const
