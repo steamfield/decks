@@ -3,6 +3,8 @@
  * and Constitution art. IV §4. Fetched 2026-11-06; data-sources.md, Slide 7.
  * A confirmed deadline does not imply that the associated decision has occurred.
  */
+import { commissioner } from './04-rulebook'
+
 export interface TimelineEvent {
   readonly id: string
   readonly date: string
@@ -36,9 +38,11 @@ export const petitionProcessDates = [
 // Display strings for the dated events above, shared with the closing timeline.
 export const timelineDisplay = {
   district: 'AISD / TEA', governor: 'Governor', commissioner: 'Commissioner',
+  commissionerName: commissioner.name,
   pending: 'Pending', reported: 'Reported date', electionStatus: 'Certification pending',
   unchanged: 'Appointment unresolved', governorChange: 'New governor takes office',
   appeal: 'Appeal response expected', order: 'Order due after a valid petition',
+  orderTick: 'Order due',
   question: 'Who signs the February order?',
   deadlineMonth: 'December',
   source: 'Sources: TEA deadlines and appeal schedule',
@@ -46,9 +50,16 @@ export const timelineDisplay = {
   inaugurationSource: 'Source: Governor’s constitutional term',
   deadlineSource: 'Source: school intervention deadlines',
   estimateSource: 'Source: district appeal estimate',
+  appealsSource: 'TEA appeal schedule', constitutionSource: 'Source: Texas Constitution',
   electionUrl: 'https://electionresults.sos.state.tx.us/results.html',
   inaugurationUrl: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.4.htm',
   ruleUrl: 'https://tea.texas.gov/laws-and-rules/commissioner-rules-tac/coe-tac-currently-effect/ch097ee.pdf',
   appealsUrl: 'https://tea.texas.gov/school-and-district-leaders/accountability/academic-accountability/performance-reporting/2026-appeals-timeline_0.pdf',
   reportUrl: 'https://www.austinpolitics.org/on-my-block/webb-burnet-petition-review-aisd-outside-operators-dobie-linder-pecan-springs',
 } as const
+
+// These words describe the pending action, not the established deadline.
+export const timelineStatus: Readonly<Record<string, string>> = {
+  election: timelineDisplay.electionStatus, petitions: 'Submission pending',
+  trustees: 'Request pending', order: 'Order pending',
+}

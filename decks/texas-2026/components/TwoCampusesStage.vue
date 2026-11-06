@@ -3,7 +3,7 @@ import { computed, reactive, ref, useId, watch } from 'vue'
 import { useNav } from '@slidev/client'
 import { routeEmbedNavigation } from 'slidev-addon-decks/composables/embed-navigation'
 import { DUR, DRAW, SETTLE, useStage, unitCellCenter, type UnitGridItem } from 'slidev-addon-decks/story'
-import { DIM, OFF, ON, BASELINE_Y, neutral, risk } from './design'
+import { DIM, OFF, ON, neutral, risk } from './design'
 import { accountabilitySource, campusDisplay, campusLabels, triggeringCampuses, waffleCampuses, waffleUniverse } from '../data/05-two-campuses'
 import CampusHoverCard from './CampusHoverCard.vue'
 
@@ -12,14 +12,15 @@ const pairIds = new Set<string>(triggeringCampuses.map(campus => campus.campusNu
 const campuses = [...waffleCampuses].sort((a, b) => Number(pairIds.has(b.campusNumber)) - Number(pairIds.has(a.campusNumber)))
 const items: UnitGridItem[] = campuses.map(campus => ({ id: campus.campusNumber }))
 // Local geometry: the approved system has no waffle spacing tokens.
-const GRID = { origin: { x: 1040, y: 276 }, cols: 12, cellWidth: 46, cellHeight: 46, gapX: 10, gapY: 10 }
+const GRID = { origin: { x: 132, y: 310 }, cols: 17, cellWidth: 56, cellHeight: 56, gapX: 44, gapY: 14 }
 const width = GRID.cols * (GRID.cellWidth + GRID.gapX) - GRID.gapX
 const pairWidth = GRID.cellWidth * triggeringCampuses.length + GRID.gapX
 const cell = (i: number) => unitCellCenter(i, GRID)
+const chipX = (i: number) => 200 + i * 240
 const s = reactive({ reveal: OFF, pair: OFF, ping: OFF, board: OFF, dim: ON })
 const COPY = [
   { lead: `${waffleUniverse.visible} open campuses have a rating.`, body: 'The count excludes closed campuses and programs without a letter grade.' },
-  { lead: 'Both middle schools have appealed.', body: 'Their final ratings and counted years remain pending.' },
+  { lead: 'The appeals could prevent board replacement.', body: 'Their final ratings and counted years remain pending.' },
   { lead: 'The elected board could be replaced.', body: 'A state-appointed board would govern the whole district.' },
 ]
 const { clicks, copy, beats, isActive } = useStage({
@@ -63,21 +64,25 @@ const targetStyle = (i: number) => ({
         :y="cell(i).y - GRID.cellHeight / 2" :width="GRID.cellWidth" :height="GRID.cellHeight"
         hue="amber" :progress="s.ping" />
       <g :style="{ opacity: s.board }">
-        <path :d="`M ${GRID.origin.x} ${BASELINE_Y + 100} v 20 h ${width * s.board} v -20`" class="board-bracket" />
-        <text :x="GRID.origin.x + width / 2" :y="BASELINE_Y + 186" text-anchor="middle" class="od-stage-name">{{ campusLabels.board }}</text>
+        <path :d="`M ${GRID.origin.x} 732 v 20 h ${width * s.board} v -20`" class="board-bracket" />
+        <text :x="GRID.origin.x + width / 2" y="794" text-anchor="middle" class="od-stage-name" :style="{ fill: risk() }">{{ campusLabels.board }}</text>
+      </g>
+      <g :style="{ opacity: s.pair }">
+        <path v-for="(_, i) in triggeringCampuses" :key="i" :d="`M ${chipX(i)} 288 L ${cell(i).x} ${GRID.origin.y}`" class="board-bracket" />
       </g>
     </template>
     <template #overlay>
-      <h2 class="od-story-head">{{ campusDisplay.countWord }} middle school ratings could lead to replacing the elected board.</h2>
+      <h2 class="od-story-head">{{ campusDisplay.countWord }} schools could cost {{ campusDisplay.city }} its elected board.</h2>
       <div class="vt-campus-pair campus-pair" :style="{ opacity: s.reveal, color: pairColor }">
         <svg :viewBox="`0 0 ${pairWidth} ${GRID.cellHeight}`" aria-hidden="true">
           <rect v-for="(_, i) in triggeringCampuses" :key="i" :x="i * (GRID.cellWidth + GRID.gapX)"
             :width="GRID.cellWidth" :height="GRID.cellHeight" />
         </svg>
       </div>
-      <div class="pair-labels" :style="{ opacity: s.pair }">
-        <div v-for="campus in triggeringCampuses" :key="campus.campusNumber">{{ campus.name }}</div>
-        <span class="tx-tag is-pending">{{ campusDisplay.appeals }}</span>
+      <div v-for="(campus, i) in triggeringCampuses" :key="campus.campusNumber" class="campus-chip"
+        :style="{ opacity: s.pair, left: `${chipX(i) / 19.2}%` }">
+        <div>{{ campus.name.replace(' Middle School', '') }}</div>
+        <span class="tx-tag is-pending">{{ campusDisplay.appeal }}</span>
       </div>
       <div class="campus-targets" @keydown.esc.stop.prevent="dismiss">
         <button v-for="(campus, i) in campuses" :key="campus.campusNumber" type="button" class="campus-target"
@@ -99,11 +104,10 @@ const targetStyle = (i: number) => ({
 <style scoped>
 :deep(.od-unit-grid rect) { rx: var(--tx-radius-mark); }
 .board-bracket { stroke: var(--od-amber); stroke-width: var(--tx-oval-stroke); fill: none; }
-.campus-pair { position: absolute; left: calc(54.166667 * var(--sw)); top: calc(25.555556 * var(--sh)); width: calc(5.3125 * var(--sw)); height: calc(4.259259 * var(--sh)); }
+.campus-pair { position: absolute; left: calc(6.875 * var(--sw)); top: calc(28.703704 * var(--sh)); width: calc(8.125 * var(--sw)); height: calc(5.185185 * var(--sh)); }
 .campus-pair svg { width: var(--tx-full); height: var(--tx-full); }
 .campus-pair rect { fill: currentColor; rx: var(--tx-radius-mark); }
-.pair-labels { position: absolute; left: var(--tx-margin-x); top: calc(34 * var(--sh)); font-size: var(--tx-body-size); line-height: var(--tx-body-leading); color: var(--od-amber); }
-.pair-labels .tx-tag { margin-top: var(--tx-copy-gap); }
+.campus-chip { position: absolute; top: calc(18.888889 * var(--sh)); transform: translateX(-50%); text-align: center; font-size: var(--tx-body-size); line-height: var(--tx-body-leading); color: var(--od-amber); }
 .campus-target { position: absolute; pointer-events: auto; background: transparent; border: none; padding: var(--tx-zero); border-radius: var(--tx-radius-mark); cursor: help; }
 .campus-target:focus-visible { outline: var(--tx-hairline) solid var(--od-text); }
 @media print { .campus-targets { display: none; } }
