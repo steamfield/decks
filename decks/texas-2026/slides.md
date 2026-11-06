@@ -78,9 +78,9 @@ clicks: 1
 ---
 ---
 src: ./pages/13-futures.md
-clicks: 3
+clicks: 2
 ---
 ---
 src: ./pages/14-watch.md
-clicks: 3
+clicks: 2
 ---
