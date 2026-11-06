@@ -9,6 +9,17 @@ export type ClaimStatus = 'confirmed' | 'pending' | 'flag'
 export const asOf = '2026-11-06' as const
 export const electionSource = 'https://electionresults.sos.state.tx.us/results.html'
 
+// Display labels for the sourced results below.
+export const evidenceLabels = { pending: 'Pending', scenario: 'Scenario' } as const
+export const boardLabels = {
+  education: ['State Board', 'of Education'],
+  officialSource: 'Source: Texas secretary of state; certification pending.',
+  reportingSource: 'Source: Texas Tribune; certification pending.',
+  houseSource: 'https://www.texastribune.org/2026/11/03/texas-house-legislature-outcomes-control-republicans-democrats-2026/',
+  senateSource: 'https://www.texastribune.org/2026/11/05/texas-senate-republican-majority-lieutenant-governor-powers/',
+  educationSource: 'https://www.texastribune.org/2026/11/04/texas-state-board-education-elections-2026/',
+} as const
+
 // SOS office rows: each listed Democrat has the largest vote count; canvass pending.
 export const statewideOffices = [
   { office: 'Governor', name: 'Gina Hinojosa', party: 'Democratic', votes: 5230789, result: 'Winner in unofficial returns', status: 'confirmed', certification: 'pending' },

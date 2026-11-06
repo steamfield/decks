@@ -3,15 +3,12 @@ import { reactive } from 'vue'
 import { DUR, DRAW, useScriptedDemo, useStageEntrance } from 'slidev-addon-decks/story'
 import { FIELD, FRAME, OFF, ON } from './design'
 import BallotOval from './BallotOval.vue'
+import { statewideOffices, house, senate } from '../data/02-power-board'
 
-// FLAG: replace with data/02-power-board.ts. Contract-supplied outcomes, pending research.
 const OFFICES = [
-  { name: 'Governor', won: true },
-  { name: 'Lt. Governor', won: true },
-  { name: 'Attorney General', won: true },
-  { name: 'Comptroller', won: true },
-  { name: 'Texas House', won: true },
-  { name: 'Texas Senate', won: false },
+  ...statewideOffices.map(office => ({ name: office.office, won: office.status === 'confirmed' })),
+  { name: house.office, won: house.majorityStatus === 'confirmed' },
+  { name: senate.office, won: false },
 ]
 
 /** One public fill progress per row; the cover's entrance owns its settle. */
