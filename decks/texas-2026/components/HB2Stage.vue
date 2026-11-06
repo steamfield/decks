@@ -13,7 +13,7 @@ const voteDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric
 const COPY = [
   { lead: 'Schools receive the money through funding formulas.', body: `About $${billions}B statewide for the ${hb2.period.replace('state fiscal biennium', 'state budget')}.` },
   { lead: 'Both parties supported the funding bill.', body: `The Senate passed it on ${voteDate}.` },
-  { lead: 'The estimates cover different school years.', body: `The ${gap} gap preceded ${shortYear(aisdBudget.schoolYear)} cuts; ${returned} in property taxes was budgeted for the state in ${shortYear(recapture.schoolYear)}.` },
+  { lead: `${hb2Labels.district} still had to cut its budget.`, body: `It faced a ${gap} gap before ${shortYear(aisdBudget.schoolYear)} cuts and budgeted ${returned} in property taxes for the state in ${shortYear(recapture.schoolYear)}.` },
 ]
 const amount = ref<GrowHandle | null>(null)
 // Local compact position retains the vote above the final budget figures.
@@ -52,7 +52,7 @@ const source = computed(() => [
       </g>
     </template>
     <template #overlay>
-      <h2 class="od-story-head">{{ hb2Labels.district }} had to cut its budget.</h2>
+      <h2 class="od-story-head">The Senate voted {{ hb2SenateVote.yes }} to {{ hb2SenateVote.no }} for ${{ billions }}B more for schools.</h2>
       <div class="funding" :style="{ opacity: s.funding }">
         <InkNumber ref="amount" :value="billions" prefix="$" suffix="B" hue="slate" :label="`${hb2Labels.state} school funding added`" />
         <div class="period">{{ hb2.period.replace('state fiscal biennium', 'state budget') }}</div>

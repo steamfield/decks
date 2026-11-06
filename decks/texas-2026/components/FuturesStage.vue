@@ -5,10 +5,10 @@ import { DIM, OFF, ON } from './design'
 import { futureColumns, futureDimensions, futureRows, futureDisplay } from '../data/13-futures'
 
 const COPY = [
-  { lead: 'The commissioner appointment could remain unresolved.', body: 'Author scenarios based on public-school priorities; no estimated probabilities.' },
+  { lead: 'The commissioner appointment could remain unresolved.', body: 'Each column follows one set of choices by state and district leaders.' },
   { lead: 'An intervention can proceed after the election.', body: 'The middle scenario assumes an intervention with terms still undecided.' },
   { lead: 'Additional funding requires legislative agreement.', body: 'The middle scenario assumes some additional school funding.' },
-  { lead: 'Families may disagree about state intervention.', body: '“Most likely” is the author’s judgment. No probabilities have been estimated.' },
+  { lead: 'Families may disagree about state intervention.', body: 'These are judgment calls, with no probabilities attached.' },
 ]
 const rows = reactive(futureRows.map((_, i) => ({ reveal: i === 0 ? ON : OFF, emphasis: ON })))
 const s = reactive({ arrive: OFF, middle: OFF })
@@ -30,7 +30,7 @@ const { clicks, copy, beats } = useStage({
 <template>
   <StoryStage :beats="beats" :click="clicks">
     <template #overlay>
-      <h2 class="od-story-head">An intervention remains possible.</h2>
+      <h2 class="od-story-head">An intervention is the most likely outcome.</h2>
       <div class="futures" :style="{ opacity: s.arrive }">
         <div v-for="(column, c) in futureColumns" :key="column.label" class="future"
           :style="{ '--emphasis': c === 1 ? ON : ON - s.middle * (ON - DIM) }">

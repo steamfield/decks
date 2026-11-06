@@ -15,11 +15,11 @@ const margin = senateMarginSummary.fourthClosestMarginPp.toFixed(1)
 const previousMargin = senateMarginSummary2022.fourthClosestMarginPp?.toFixed(1)
 const previousSource = senateMargins2022.find(race => race.district === senateMarginSummary2022.fourthClosestDistrict)?.source
 const COPY = [
-  { lead: 'Each step adds Democratic wins.', body: 'Each scenario keeps the wins in earlier steps.' },
+  { lead: 'Each step adds one more office.', body: 'Step one is no change. Step six adds a Senate majority.' },
   { lead: 'Democrats won the governorship and the House.', body: 'The governor can veto bills and appoint officials. The House votes on school bills.' },
   { lead: 'Democrats won lieutenant governor, attorney general and comptroller.', body: `The education-board majority depends on District ${sboe.district}.` },
   { lead: `Democrats needed to flip ${senateMath.netFlipsNeeded} Senate seats.`, body: `In District ${senateMarginSummary.fourthClosestDistrict}, the fourth-closest contest, the Republican won by ${margin} points.` },
-  { lead: `The fourth-closest margin was ${previousMargin} points in ${comparisonLabels.previousElection}.`, body: 'We compare Democratic challenges in Republican-held districts on this ballot. Different districts ranked fourth.' },
+  { lead: `In ${comparisonLabels.previousElection}, the fourth-closest gap was ${previousMargin} points.`, body: `Same ${senateMath.republicanDefenses} Republican-held districts. The fourth-closest was District ${senateMarginSummary2022.fourthClosestDistrict} then.` },
 ]
 const descriptions = [
   outcomeLadder.map(rung => `${rung.rung}: ${rung.outcome}.`).join(' '),
@@ -67,7 +67,7 @@ const { clicks, copy, beats } = useStage({
 <template>
   <StoryStage :beats="beats" :click="clicks">
     <template #overlay>
-      <h2 class="od-story-head">Only a Senate majority would beat the projected wins.<span class="head-detail">Democrats fell {{ senateMath.netFlipsNeeded }} Senate seats short.</span></h2>
+      <h2 class="od-story-head">Only a Senate majority would have done better.<span class="head-detail">Democrats fell {{ senateMath.netFlipsNeeded }} Senate seats short.</span></h2>
       <p class="sr-only">{{ descriptions[clicks] }}</p>
       <div class="tx-baseline" />
       <StoryLayer v-for="morph in [false, true]" :key="String(morph)" :class="morph ? 'vt-power-board' : undefined">

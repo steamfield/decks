@@ -7,7 +7,7 @@ import { boardMeetings, collisionTimeline, decisionsToWatch, petitionProcessDate
 
 const COPY = [
   { lead: 'Lawmakers meet beyond the intervention order deadline.', body: 'The governor’s deadline for action on bills follows the end of the legislative session.' },
-  { lead: 'These topics involve different kinds of decisions.', body: `The author selected ${watchCount} topics. Some have legal deadlines; others depend on agreement among elected officials.` },
+  { lead: 'Each decision names who makes it.', body: 'Some have legal deadlines. Others wait on a vote by elected officials.' },
   { lead: 'Trustees must meet before the request deadline.', body: 'Trustees need a public vote to request a different intervention.' },
   { lead: '' },
 ]
@@ -64,7 +64,7 @@ const sources = computed(() => clicks.value === 2
       </g>
     </template>
     <template #overlay>
-      <h2 class="od-story-head">The next decisions fall to several offices.</h2>
+      <h2 class="od-story-head">Five decisions due by June settle what changes.</h2>
       <div class="calendar-labels" :style="{ opacity: s.arrive * s.calendar }" :aria-hidden="clicks !== 0">
         <div v-for="(event, i) in calendarTicks" :key="event.id">
           <strong>{{ date(event.date) }}</strong><span>{{ calendarLabels[i] }}</span>
