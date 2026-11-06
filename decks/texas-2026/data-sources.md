@@ -492,7 +492,7 @@ Module: `data/14-watch.ts`, reusing Slide 7 dates.
 | Sine die | May 31, 2027, day 140 | Confirmed legal schedule | [LRL][session-calendar]; [art. III §24][cn3]. | 2026-11-06 |
 | Post-session governor action | June 20, 2027 | Confirmed conditional legal calculation | May 31 + 20 calendar days under [art. IV §14][cn4] for bills covered by its post-adjournment provision. | 2026-11-06 |
 | Board meeting time | 6 p.m. America/Chicago | Confirmed published schedule | Individual AISD calendar events below; agenda and rescheduling remain subject to refresh. | 2026-11-06 |
-| Sources QR destination | Not supplied | FLAG | Author must provide the published source-ledger URL. Module exports null, not an invented address. | 2026-11-06 |
+| QR destination | https://decks.steamfield.io | Confirmed | Author chose the Decks homepage for the closing QR. | 2026-11-06 |
 
 ### AISD board calendar through February 2027
 
@@ -588,7 +588,6 @@ The $8.5B HB 2 total, 31–0 Senate vote and rounded 21,000 Houston loss passed 
 | Incoming-governor removal route | Authoritative legal analysis or ruling applying art. XV §9 and TEC §7.053 to this transition |
 | “Most likely” scenarios | Author owns the conditional scenario framing; no numerical likelihood is established |
 | Five-topic watch selection | Author accepts the editorial grouping; it is not a legal enumeration |
-| Sources QR | Published source-ledger URL |
 
 Ordinary pending election, petition, appointment, rulemaking and legislative outcomes remain Pending rather than being relabeled FLAG.
 

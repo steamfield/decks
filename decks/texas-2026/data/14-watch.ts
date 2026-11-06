@@ -38,13 +38,13 @@ export const decisionsToWatch = [
 // Derived from the author-selected list above; the window ends in June, not a legal deadline for all five decisions.
 export const watchCount = decisionsToWatch.length
 export const watchSelectionStatus = { status: 'flag', basis: 'author-reported editorial selection' } as const
-// FLAG: author must supply the published sources page before a QR can be generated.
-export const sourcesPage = { url: null, status: 'flag', needed: 'Published URL for the deck source ledger' } as const
+// Author-chosen QR destination (2026-11-06): the Decks homepage.
+export const sourcesPage = { url: 'https://decks.steamfield.io', status: 'confirmed', needed: 'QR code linking to decks.steamfield.io' } as const
 
 // Display labels for the sourced watch topics, calendar and author-supplied close.
 export const watchDisplay = {
   pending: 'Pending', flag: 'FLAG: sources URL needed',
-  sources: 'Deck sources', placeholder: 'Source page URL not supplied',
+  sources: 'decks.steamfield.io', placeholder: 'Built with Decks',
   calendarSource: 'Source: legislative session calendar',
   calendarUrl: 'https://www.lrl.texas.gov/sessions/sessionYears.cfm',
   rulesSource: 'Source: school intervention deadlines',
