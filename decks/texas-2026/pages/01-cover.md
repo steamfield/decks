@@ -19,8 +19,5 @@ import { byline } from '../data/01-cover'
 </StoryCover>
 
 <!--
-The statewide winners and Democratic House majority follow data/02-power-board.ts.
-These are unofficial election outcomes, with certification pending. Republicans
-retain the Senate. The projected House membership and State Board of Education
-majority still need a refresh before the talk.
+On November 3, Texas voters elected Democrats to the four top statewide offices and, on unofficial returns, a majority in the Texas House. Republicans kept the Senate. Austin ISD is in the middle of a possible state intervention at the same moment. Over the next twenty minutes: what changed, what the new leaders can and cannot do about Austin's schools, and which decisions come next. Results are unofficial until certification; I'll flag what is still pending as we go.
 -->
