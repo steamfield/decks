@@ -48,5 +48,10 @@
     "entry": "examples/state-of-js/slides.md",
     "name": "state-of-js",
     "animated": true
+  },
+  "tx26": {
+    "entry": "decks/texas-2026/slides.md",
+    "name": "texas-2026",
+    "animated": true
   }
 }

@@ -6,6 +6,8 @@
       "name": "decks",
       "dependencies": {
         "3d-force-graph": "^1.80.0",
+        "@fontsource-variable/public-sans": "^5.3.0",
+        "@fontsource-variable/source-serif-4": "^5.3.1",
         "@iconify-json/carbon": "^1.2.25",
         "@iconify-json/mdi": "^1.2.3",
         "@iconify-json/ph": "^1.2.2",
@@ -197,6 +199,10 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
 
     "@fontsource-variable/inter": ["@fontsource-variable/inter@5.3.0", "", {}, "sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA=="],
+
+    "@fontsource-variable/public-sans": ["@fontsource-variable/public-sans@5.3.0", "", {}, "sha512-AVfkmAt50BMXWpOO21FAntiJFKGX6xTc2dSL8dxtDteONe9IuRXJWGbs0EbG955vAMCq23ENeuopuW87cGWDSQ=="],
+
+    "@fontsource-variable/source-serif-4": ["@fontsource-variable/source-serif-4@5.3.1", "", {}, "sha512-4Rtay22SC4lMvw11r/+9kxANB6P3M0X8s1NudBC2v0J1KU2y3DcMoNcT3lBoZ/CqLirzf+StlO6UlJilyrvaUg=="],
 
     "@hono/node-server": ["@hono/node-server@2.1.6", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-p/KH9MnfNcsm3sR6x4lNgm5j+QN4Et8srKredl9DZfXiyZ1UQ3aQ2YVpFLbqktYN5JI+DB+VZFKM2PqE5hLKjQ=="],
 

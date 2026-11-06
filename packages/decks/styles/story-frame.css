@@ -196,6 +196,12 @@
 .od-slide.is-story.vt-on .vt-campus-grid {
   view-transition-name: od-campus-grid;
 }
+.od-slide.is-story.vt-on .vt-power-board {
+  view-transition-name: od-power-board;
+}
+.od-slide.is-story.vt-on .vt-campus-pair {
+  view-transition-name: od-campus-pair;
+}
 .od-slide.is-story.vt-on .vt-qr-frame {
   view-transition-name: od-qr-frame;
   background-color: var(--od-qr-white);
@@ -215,6 +221,8 @@
     .vt-seed-square,
     .vt-baseline,
     .vt-campus-grid,
+    .vt-power-board,
+    .vt-campus-pair,
     .vt-qr-frame
   ) {
   view-transition-name: none;
