@@ -10,8 +10,10 @@ const props = withDefaults(defineProps<{
   state?: 'empty' | 'filled' | 'hatched'
   meaning?: 'changed' | 'risk' | 'neutral'
   fill?: number
+  /** Paint the canvas color under the oval, so a rule drawn through it stops at its edge. */
+  knockout?: boolean
   pending?: boolean
-}>(), { size: OVAL.size, state: 'empty', meaning: 'neutral', fill: ON, pending: false })
+}>(), { size: OVAL.size, state: 'empty', meaning: 'neutral', fill: ON, pending: false, knockout: false })
 
 const patternId = `tx-hatch-${useId()}`
 const color = computed(() => ({ changed, risk, neutral })[props.meaning]())
@@ -27,9 +29,14 @@ const ry = computed(() => OVAL.ry * props.size)
         <path :d="HATCH.path" class="tx-hatch" />
       </pattern>
     </defs>
+    <ellipse v-if="props.knockout" class="tx-oval-knockout" :rx="rx" :ry="ry" />
     <ellipse v-if="props.state !== 'empty'" class="tx-oval-fill" :rx="rx" :ry="ry"
       :fill="props.state === 'hatched' ? `url(#${patternId})` : color"
       :transform="`scale(${progress})`" />
     <ellipse class="tx-oval-outline" :rx="rx" :ry="ry" :stroke-dasharray="props.pending ? DASH : undefined" />
   </g>
 </template>
+
+<style scoped>
+.tx-oval-knockout { fill: var(--od-canvas); }
+</style>

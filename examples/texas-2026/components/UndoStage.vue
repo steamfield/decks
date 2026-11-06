@@ -34,7 +34,7 @@ const LANE = { x: FRAME.left, right: FRAME.right, quick: 976, top: 340, bottom: 
         <text class="od-stage-name" :x="LANE.x" :y="LANE.top - 80">{{ replaceManager.label }}</text>
         <line class="lane" :x1="LANE.x" :x2="LANE.quick" :y1="LANE.top" :y2="LANE.top" :stroke="neutral()" />
         <line class="lane active" :x1="LANE.x" :x2="LANE.x + (LANE.quick - LANE.x) * s.replace" :y1="LANE.top" :y2="LANE.top" :stroke="changed()" />
-        <BallotOval :cx="LANE.quick" :cy="LANE.top" state="filled" meaning="changed" :fill="s.replace" />
+        <BallotOval :cx="LANE.quick" :cy="LANE.top" state="filled" meaning="changed" :fill="s.replace" knockout />
         <text class="od-stage-name" :x="LANE.quick + 72" :y="LANE.top + 9" :style="{ opacity: s.replace }">{{ replaceManager.timing }}</text>
         <text class="od-stage-note" :x="LANE.x" :y="LANE.top + 70">{{ replaceManager.actor }}</text>
       </g>
@@ -44,7 +44,7 @@ const LANE = { x: FRAME.left, right: FRAME.right, quick: 976, top: 340, bottom: 
         <line class="lane" :x1="LANE.x" :x2="LANE.right" :y1="LANE.bottom" :y2="LANE.bottom" :stroke="neutral()" />
         <line class="lane active" :x1="LANE.x" :x2="LANE.x + (LANE.right - LANE.x) * s.removal" :y1="LANE.bottom" :y2="LANE.bottom" :stroke="risk()" />
         <g v-for="(_, i) in earlyRemoval.acceptableRatings" :key="i" :style="{ opacity: s.ratings }">
-          <BallotOval :cx="LANE.ratingStart + i * LANE.ratingGap" :cy="LANE.bottom" state="empty" meaning="risk" />
+          <BallotOval :cx="LANE.ratingStart + i * LANE.ratingGap" :cy="LANE.bottom" state="empty" meaning="risk" knockout />
           <text class="od-stage-name" :x="LANE.ratingStart + i * LANE.ratingGap" :y="LANE.bottom + 68" text-anchor="middle">{{ undoLabels.acceptable }}</text>
         </g>
       </g>
