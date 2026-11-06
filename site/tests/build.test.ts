@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import "@testing-library/jest-dom/vitest";
 import { Window } from "happy-dom";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
@@ -291,6 +292,26 @@ describe("the whole site", () => {
     expect(manifest.short_name).toBe(site.name);
     for (const { src } of [{ src: "/apple-touch-icon.png" }, ...manifest.icons]) {
       expect(readFileSync(join("dist", src)).subarray(1, 4).toString(), src).toBe("PNG");
+    }
+  });
+
+  it("credits Steamfield with a linked lockup in every page's footer", () => {
+    for (const file of htmlFiles("dist").filter((file) => !file.startsWith("demo/"))) {
+      const footer = page("dist", file).querySelector("footer");
+      expect(footer, file).not.toBeNull();
+      if (!footer) throw new Error(`No footer in ${file}`);
+      const logo = footer.querySelector('a[href="https://steamfield.io"] svg');
+      const link = logo?.closest("a");
+      expect(link, file).toHaveAccessibleName("Steamfield");
+      expect(link?.previousElementSibling?.textContent?.trim(), file).toBe("Made by");
+      expect(logo, file).not.toBeNull();
+      expect(logo?.getAttribute("viewBox"), file).toBe("0 0 145.59 26");
+      expect(logo?.getAttribute("height"), file).toBe("22");
+      expect(logo?.querySelectorAll("path"), file).toHaveLength(2);
+      for (const path of logo?.querySelectorAll("path") ?? []) {
+        expect(path.getAttribute("fill"), file).toBe("currentColor");
+      }
+      expect(footer.textContent, file).not.toContain("A Steamfield project.");
     }
   });
 
