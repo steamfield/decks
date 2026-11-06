@@ -15,16 +15,20 @@ export const DASH = '8 6'
 export const RUNG_GAP = 92
 /** Radius of the later Senate hemicycle. */
 export const SEAT_ARC_RADIUS = 360
-/** Parliament rows: even spacing within each arc, with phases that leave the
- * majority and confirmation boundaries clear of the circular seat outlines. */
+/** Three concentric rows; SeatArc allocates seats in proportion to radius.
+ * A hemicycle only reads as rows when the spacing along a row matches the gap
+ * between rows. With n seats over three rows that means
+ * innerRadius ~= rowGap * (n / (3 * pi) - 1), about 2.3 row gaps for 31 seats,
+ * which gives 7 / 10 / 14 seats about 85 units apart in every direction.
+ * The outer radius (innerRadius + 2 * rowGap) equals SEAT_ARC_RADIUS. Threshold
+ * ticks sit outside it. */
 export const PARLIAMENT = {
-  rows: [
-    { radius: 180, seats: 5, phase: 0.75 },
-    { radius: 240, seats: 7, phase: 0.25 },
-    { radius: 300, seats: 9, phase: 0.25 },
-    { radius: SEAT_ARC_RADIUS, seats: 10, phase: 0.25 },
-  ],
-  seatRadius: 18, ringRadius: 22, ruleEnd: 1.12, labelRadius: 1.25,
+  rowCount: 3, innerRadius: 194, rowGap: 83,
+  seatRadius: 28, ringRadius: 33,
+  /** Thresholds are ticks outside the outer row: a line through rows this
+   * dense would always graze a seat. Padding from the outer seat edge, tick
+   * length, and the label radius beyond the tick. */
+  rulePadding: 16, tickLength: 44, labelRadius: 488,
 } as const
 /** 720 / 1080 = two-thirds down the frame; CSS uses --tx-baseline-y. */
 export const BASELINE_Y = 720
@@ -47,3 +51,6 @@ export const PING = { growth: 0.8, peak: 0.8 } as const
 export const changed = () => ink('cyan', 2)
 export const risk = () => ink('amber', 2)
 export const neutral = (step: InkStep = 2) => ink('slate', step)
+/** Party colors apply only to marks that show who holds a seat or office. */
+export const democrat = (step: InkStep = 2) => ink('violet', step)
+export const republican = (step: InkStep = 2) => ink('rose', step)
