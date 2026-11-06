@@ -170,7 +170,8 @@ curves has to land in both files.
   card), `StoryCover` (cover/thesis/divider/close chrome, slotted).
 - **Ink primitives:** `InkLine` (a drawn series with a `LineHandle`),
   `InkBars` (grow/reorder/recolor/exit rows, a `BarsHandle`), `InkRule`,
-  `InkNumber`, `InkTimeline`, `InkChip` (the floating annotation), `InkCardRect`,
+  `InkNumber`, `InkTimeline` (with `InkTimelineCursor`, a current-step
+  marker whose `position` the beat script tweens), `InkChip` (the floating annotation), `InkCardRect`,
   `InkLabeledCard` (a card box plus a name and a note line, for new stages
   that need the house box-and-label recipe without inventing text offsets),
   `InkPing` (a one-shot focus ring around a named mark, driven by a 0..1
