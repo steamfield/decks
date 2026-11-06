@@ -15,3 +15,10 @@ export const recapture = {
   basis: 'Adopted-budget estimate', status: 'confirmed', actualPaymentStatus: 'pending',
   definition: 'Local property-tax revenue above the state formula entitlement sent back into the statewide school-funding system',
 } as const
+
+// Display names and source labels for the records above.
+export const hb2Labels = {
+  state: 'Texas', district: 'Austin ISD', senate: 'Texas Senate',
+  fundingSource: 'Senate funding report', voteSource: 'Senate vote record',
+  budgetSource: 'Austin ISD budget',
+} as const
