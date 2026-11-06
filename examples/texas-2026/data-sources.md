@@ -696,7 +696,7 @@ All twenty-eight distinct URLs in `source-outline.md` were opened or fetched on 
 
 ## Finished-deck fact-check report (2026-11-06)
 
-Deck: `decks/texas-2026`, alias `tx26`. This report covers all fourteen pages, their presenter notes, all thirteen Stage components, the cover and every data module. The report is kept in this permitted provenance file; the hand-off also prints a per-slide table.
+Deck: `examples/texas-2026`, alias `tx26`. This report covers all fourteen pages, their presenter notes, all thirteen Stage components, the cover and every data module. The report is kept in this permitted provenance file; the hand-off also prints a per-slide table.
 
 Status: supported findings corrected; author flags and pending decisions remain. No numerical chart value required correction. The named-source records support the historical comparison; the official historical-results portal remains unreachable. The report has 41 grouped result rows: 23 VERIFIED, 10 MISMATCH-FIXED, 7 FLAGGED and 1 UNVERIFIABLE. These are claim families, not counts of individual campus values. Remaining counts: 0 unresolved mismatches, 0 unsourced arrays/slides, 0 unsourced humans, 0 unchecked external citations and 0 stale records. Four of the flagged families are author choices: byline, ladder ordering, scenarios and watch selection.
 

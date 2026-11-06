@@ -1,0 +1,338 @@
+{
+  "title": "Texas schools after the 2026 election",
+  "slides": 13,
+  "slideTitles": [
+    "Texas schools after the 2026 election",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 3,
+      "lead": "Democrats won 4 statewide offices.",
+      "body": "The winners have yet to take office."
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 3,
+      "lead": "Democrats won a House majority.",
+      "body": "The final House seat count is pending."
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Republicans kept the Senate.",
+      "body": "19 Republican and 12 Democratic seats are expected next session."
+    },
+    {
+      "slide": 2,
+      "beat": 3,
+      "beats": 3,
+      "lead": "The education-board majority depends on District 8.",
+      "body": "A Democratic win there would give the party 8 seats. A recount is possible."
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 4,
+      "lead": "Each step adds offices or a chamber.",
+      "body": "Step 1 is no change. Step 6 adds a Senate majority."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 4,
+      "lead": "Democrats won the governorship and the House.",
+      "body": "The governor can veto bills and appoint officials. The House votes on school bills."
+    },
+    {
+      "slide": 3,
+      "beat": 2,
+      "beats": 4,
+      "lead": "Democrats also won the other statewide offices shown.",
+      "body": "The education-board majority depends on District 8."
+    },
+    {
+      "slide": 3,
+      "beat": 3,
+      "beats": 4,
+      "lead": "Democrats needed to flip 4 Senate seats.",
+      "body": "In District 18, the fourth-closest contest, the Republican won by 8.6 points."
+    },
+    {
+      "slide": 3,
+      "beat": 4,
+      "beats": 4,
+      "lead": "In 2022, the fourth-closest gap was 39.9 points.",
+      "body": "Same 11 Republican-held districts. The fourth-closest was District 4 then."
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 2,
+      "lead": "The Legislature writes school law.",
+      "body": "The House and Senate also decide state school funding."
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 2,
+      "lead": "The governor appoints the education commissioner.",
+      "body": "The Senate must confirm the appointment."
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The commissioner decides how the state intervenes.",
+      "body": "State law sets the conditions for replacing elected trustees with an appointed board."
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 2,
+      "lead": "102 open campuses have a rating.",
+      "body": "The count excludes closed campuses and programs without a letter grade."
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 2,
+      "lead": "The appeals could prevent board replacement.",
+      "body": "Their final ratings and counted years remain pending."
+    },
+    {
+      "slide": 5,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The elected board could be replaced.",
+      "body": "Parents at both schools petitioned to close them instead."
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 3,
+      "lead": "The appeals could prevent mandatory intervention.",
+      "body": "The rule counts five failing ratings, with unrated years pausing the count."
+    },
+    {
+      "slide": 6,
+      "beat": 1,
+      "beats": 3,
+      "lead": "A replacement board governs every campus.",
+      "body": "Closure applies to the campus whose ratings triggered intervention."
+    },
+    {
+      "slide": 6,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Parents petitioned to close both schools.",
+      "body": "A valid petition generally sets the remedy. Trustees can ask the commissioner for the other one."
+    },
+    {
+      "slide": 6,
+      "beat": 3,
+      "beats": 3,
+      "lead": "A monitor alone does not satisfy the rule.",
+      "body": "A monitor or conservator can accompany board replacement or campus closure."
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 5,
+      "lead": "The incumbent can still nominate a commissioner.",
+      "body": "The governor-elect takes office at inauguration."
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 5,
+      "lead": "Petitions are due before the governor's inauguration.",
+      "body": "They ask the state to close both schools. The superintendent validates them first."
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 5,
+      "lead": "Successful appeals could prevent board replacement.",
+      "body": "Final ratings are scheduled for Dec 11."
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 5,
+      "lead": "Trustees can request closure or appointed managers.",
+      "body": "The request needs approval at a public board meeting."
+    },
+    {
+      "slide": 7,
+      "beat": 4,
+      "beats": 5,
+      "lead": "The new governor can nominate a commissioner.",
+      "body": "The nominee needs Senate confirmation."
+    },
+    {
+      "slide": 7,
+      "beat": 5,
+      "beats": 5,
+      "lead": "Who signs the February order?",
+      "body": "With valid petitions, that order would close both schools rather than replace the board."
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 3,
+      "lead": "Republicans are expected to keep their majority.",
+      "body": "The confirmation threshold assumes all 31 senators attend."
+    },
+    {
+      "slide": 8,
+      "beat": 1,
+      "beats": 3,
+      "lead": "A nominee would need both parties' votes.",
+      "body": "That assumes all 31 attend and all 12 Democrats support the nominee."
+    },
+    {
+      "slide": 8,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Mike Morath serves until a successor qualifies.",
+      "body": "Lawful removal or another applicable vacancy rule could alter his tenure."
+    },
+    {
+      "slide": 8,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Senators can change their chamber rules.",
+      "body": "The lieutenant governor's committee and agenda powers depend on rules senators can revise."
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 2,
+      "lead": "The commissioner may replace individual board managers.",
+      "body": "Elected trustees' authority stays suspended while the appointed board serves."
+    },
+    {
+      "slide": 9,
+      "beat": 1,
+      "beats": 2,
+      "lead": "The ratings must come from the same campus.",
+      "body": "The campus that triggered the appointment must earn 2 acceptable ratings in consecutive school years."
+    },
+    {
+      "slide": 9,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The commissioner can then consider early removal.",
+      "body": "The ratings condition must be met first. The law sets no fixed return date."
+    },
+    {
+      "slide": 10,
+      "beat": 0,
+      "beats": 2,
+      "lead": "The governor can nominate a commissioner.",
+      "body": "The nominee needs Senate confirmation."
+    },
+    {
+      "slide": 10,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Lawmakers must vote to change these requirements.",
+      "body": "The governor can ask lawmakers to revise the requirements."
+    },
+    {
+      "slide": 10,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Texas House and Texas Senate must agree.",
+      "body": "Both must pass identical bill text before it goes to the governor."
+    },
+    {
+      "slide": 11,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Schools receive the money through funding formulas.",
+      "body": "About $8.5B statewide for the 2026–27 state budget."
+    },
+    {
+      "slide": 11,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Both parties supported the funding bill.",
+      "body": "The Senate passed it on May 23, 2025."
+    },
+    {
+      "slide": 11,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Austin ISD still had to cut its budget.",
+      "body": "It faced a $181M gap before 2026–27 cuts and budgeted $715.5M in property taxes for the state in 2025–26."
+    },
+    {
+      "slide": 12,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Valid petitions would close Burnet and Webb.",
+      "body": "Initial counts topped the required majority. TEA is reviewing a complaint about signatures."
+    },
+    {
+      "slide": 12,
+      "beat": 1,
+      "beats": 2,
+      "lead": "A takeover puts appointed managers in charge.",
+      "body": "A new commissioner can replace managers named before inauguration."
+    },
+    {
+      "slide": 12,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Who runs a takeover shapes its aims.",
+      "body": "Hinojosa has pledged to end state takeovers. Houston has been under a state board since 2023."
+    },
+    {
+      "slide": 13,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Each decision names who makes it.",
+      "body": "Some have legal deadlines. Others wait on a vote by elected officials."
+    },
+    {
+      "slide": 13,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Trustees must meet before the request deadline.",
+      "body": "Trustees need a public vote to request a different intervention."
+    },
+    {
+      "slide": 13,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    }
+  ]
+}

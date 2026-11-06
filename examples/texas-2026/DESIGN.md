@@ -54,7 +54,7 @@ glows or shadows. Every ramp must get lighter and clear 3:1 at its first step;
 `packages/decks/theme/theme.test.ts` includes this deck.
 
 Run the browser token regression with
-`bunx vitest run decks/texas-2026/styles/tokens.test.ts`.
+`bunx vitest run examples/texas-2026/styles/tokens.test.ts`.
 
 The cover's office list is flagged until `data/02-power-board.ts` arrives.
 Replace that fallback with research exports before approving election claims.
