@@ -96,8 +96,17 @@ export const campusLabels = { district: 'Austin ISD', board: 'Elected school boa
 
 // Display labels for the scoped waffle; no additional legal count is inferred.
 export const campusDisplay = {
-  countWord: 'Two', pending: 'Pending', appeals: 'Appeals pending',
+  countWord: 'Two', city: 'Austin', pending: 'Pending', appeals: 'Appeals pending',
+  appeal: 'Appeal pending', finalRating: 'Final rating pending',
   source: 'Source: TEA campus ratings',
   schoolYear: '2025–26', grade: 'Preliminary grade', score: 'Score',
   universe: 'Open campuses with an A–F rating',
 } as const
+
+// Display expansions for the campus-name codes in the unchanged TEA snapshot.
+export const campusNameWords: Readonly<Record<string, string>> = {
+  H: 'High', S: 'School', SCH: 'School', EL: 'Elementary', PRI: 'Primary',
+  MIDDLE: 'Middle School', HTS: 'Heights', PREK: 'prekindergarten', FOR: 'for',
+  ISD: 'ISD', LBJ: 'LBJ', LASA: 'LASA', YMLA: 'YMLA', YWLA: 'YWLA', '(PKP)': '(PKP)',
+  MCCALLUM: 'McCallum', MCBEE: 'McBee', O: 'O.', ST: 'St.',
+}

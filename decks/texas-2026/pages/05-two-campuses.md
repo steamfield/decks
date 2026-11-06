@@ -5,9 +5,9 @@ SLIDE 5 · TWO CAMPUSES
 <TwoCampusesStage />
 
 <!--
-The state rates individual campuses. The grid includes open campuses with a letter grade in the researched snapshot. Closed campuses and programs without a letter grade are excluded. This count covers the rated campuses still operating after the reported closures. Families can look up a campus's preliminary grade by selecting its square.
+The state rates individual campuses. The count includes operating campuses with a letter grade. Closed campuses and programs without a letter grade are excluded. Families can select a square to see the campus's preliminary grade and score. Final ratings will include changes made through appeals.
 
-[click] The highlighted middle schools have each received the counted failing ratings that can trigger mandatory action. The count skips the intervening years without ratings. It does not mean an uninterrupted run of calendar years. Both schools appealed, and the final ratings and official year counts remain pending.
+[click] Burnet and Webb have preliminary failing-rating sequences that could require board replacement or campus closure. Years without ratings pause the count. Both schools appealed. The commissioner must resolve those appeals before the district's final ratings and official year counts establish whether the rule applies.
 
-[click] A board of managers is a state-appointed board that replaces elected trustees. It would govern the district, including campuses whose ratings did not trigger the intervention. The district has not already been taken over. The appeal outcomes determine whether this campus-trigger rule applies.
+[click] A board of managers is a state-appointed board that replaces elected trustees. It would govern the district, including campuses whose ratings did not trigger the intervention. Board replacement remains conditional on the final ratings and counted years after appeal.
 -->

@@ -3,7 +3,7 @@ import { computed, reactive } from 'vue'
 import { DUR, DRAW, SETTLE, useStage, type TickState } from 'slidev-addon-decks/story'
 import { DIM, OFF, ON } from './design'
 import CollisionTimeline from './CollisionTimeline.vue'
-import { collisionTimeline, reportedAppealEstimate, timelineDisplay } from '../data/07-collision-timeline'
+import { collisionTimeline, reportedAppealEstimate, timelineDisplay, timelineStatus } from '../data/07-collision-timeline'
 
 // The third speaking beat uses the reported response estimate. Publication is
 // a separate event, qualified in its card and notes rather than conflated.
@@ -13,12 +13,12 @@ const events = collisionTimeline.map(event => event.id === 'ratings'
 const ratings = collisionTimeline.find(event => event.id === 'ratings')!
 const dateLabel = (date: string) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 const COPY = [
-  { lead: 'Voters have elected the next governor.', body: 'The incumbent remains in office until inauguration.' },
-  { lead: 'Validated petitions go to the commissioner.', body: 'The superintendent submits petitions after checking their validity.' },
-  { lead: 'The district expects an appeal response.', body: `The response date is reported; final ratings are scheduled for ${dateLabel(ratings.date)}.` },
-  { lead: 'Trustees can request an alternative action.', body: 'The request needs approval at a public board meeting.' },
-  { lead: 'The new governor takes office.', body: 'The commissioner’s appointment remains unresolved.' },
-  { lead: `${timelineDisplay.question}`, body: 'The deadline applies after a valid petition; implementation may follow in the next school year.' },
+  { lead: 'The incumbent can still nominate a commissioner.', body: 'The governor-elect takes office at inauguration.' },
+  { lead: "Petitions are due before the governor's inauguration.", body: 'The superintendent must validate signatures before submitting the petitions.' },
+  { lead: 'Successful appeals could prevent board replacement.', body: `Final ratings are scheduled for ${dateLabel(ratings.date)}.` },
+  { lead: 'Trustees can request closure or appointed managers.', body: 'The request needs approval at a public board meeting.' },
+  { lead: 'The new governor can nominate a commissioner.', body: 'The nominee needs Senate confirmation.' },
+  { lead: `${timelineDisplay.question}`, body: 'After a valid petition, the commissioner must order board replacement or campus closure.' },
 ]
 const state = reactive<TickState[]>(events.map((_, i) => ({ ink: i === 0 ? ON : OFF, lift: OFF })))
 const s = reactive({ position: Date.parse(events[0].date), governor: OFF })
@@ -39,7 +39,7 @@ const { clicks, copy, beats } = useStage({
 const current = computed(() => events[Math.min(clicks.value, events.length - 1)])
 const source = computed(() => {
   if (current.value.id === 'election') return { href: timelineDisplay.electionUrl, label: timelineDisplay.electionSource }
-  if (current.value.id === 'inauguration') return { href: timelineDisplay.inaugurationUrl, label: timelineDisplay.inaugurationSource }
+  if (current.value.id === 'inauguration') return { href: timelineDisplay.inaugurationUrl, label: timelineDisplay.constitutionSource }
   if (current.value.status === 'reported') return { href: timelineDisplay.reportUrl, label: timelineDisplay.estimateSource }
   return { href: timelineDisplay.ruleUrl, label: timelineDisplay.deadlineSource }
 })
@@ -52,23 +52,23 @@ const source = computed(() => {
         :position="s.position" :governor-progress="s.governor" />
     </template>
     <template #overlay>
-      <h2 class="od-story-head">The district’s {{ timelineDisplay.deadlineMonth }} deadlines come before the new governor takes office.</h2>
-      <div class="event-detail">
-        <span class="sr-only">{{ current.status === 'reported' ? 'Approximately ' : '' }}{{ dateLabel(current.date) }}, {{ current.date.slice(0, 4) }}.</span>
-        <div class="event-name">{{ current.id === 'order' ? timelineDisplay.order : current.label }}</div>
-        <div class="actor">{{ current.actor }}</div>
-        <span class="tx-tag" :class="current.status === 'reported' ? 'is-reported' : 'is-pending'">
-          {{ current.status === 'reported' ? timelineDisplay.reported : current.id === 'election' ? timelineDisplay.electionStatus : timelineDisplay.pending }}
-        </span>
+      <h2 class="od-story-head">{{ timelineDisplay.deadlineMonth }} deadlines come before inauguration.</h2>
+      <div class="sr-only">
+        {{ timelineDisplay.commissioner }}: {{ timelineDisplay.commissionerName }}.
+        {{ current.status === 'reported' ? 'Approximately ' : '' }}{{ dateLabel(current.date) }}, {{ current.date.slice(0, 4) }}.
+        {{ current.label }}. {{ current.actor }}.
+        {{ current.status === 'reported' ? timelineDisplay.reported : timelineStatus[current.id] ?? timelineDisplay.pending }}.
       </div>
-      <StoryLink :href="source.href" :label="source.label" />
+      <div class="timeline-sources">
+        <StoryLink :href="source.href" :label="source.label" />
+        <StoryLink v-if="current.status === 'reported'" :href="timelineDisplay.appealsUrl" :label="timelineDisplay.appealsSource" />
+      </div>
     </template>
     <template #card><StoryCard anchor="left" hue="amber" :lead="copy.lead" :body="copy.body" /></template>
   </StoryStage>
 </template>
 
 <style scoped>
-.event-detail { position: absolute; left: calc(47.916667 * var(--sw)); right: var(--tx-margin-x); top: calc(75 * var(--sh)); font-size: var(--tx-body-size); line-height: var(--tx-body-leading); }
-.event-name { color: var(--od-text); font-weight: var(--tx-lead-weight); }
-.actor { color: var(--od-text-muted); margin-bottom: var(--tx-copy-gap); }
+.timeline-sources { position: absolute; right: var(--tx-margin-x); bottom: var(--tx-rail-bottom); display: flex; gap: var(--tx-byline-gap); }
+.timeline-sources :deep(.od-story-link) { position: static; }
 </style>
