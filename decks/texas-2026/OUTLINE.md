@@ -61,7 +61,7 @@ The full token map is `DESIGN.md`, which the design run writes. The essentials:
 - The canvas is a near-black chalkboard tint and text is chalk off-white.
 - Headlines are set in the serif, `--od-font-serif`. Everything else uses the sans (Public Sans). Figures use tabular numerals.
 - Marks are ballot ovals: filled means won or holds, empty means not won, hatched means scenario. Data marks are sharp, with 0–2 px radius. Cards and chips use `--tx-radius-card`. There are no shadows and no glows. Pings are a single thin ring.
-- The headline sits top-left and the card is anchored left. The visualization sits in the right two-thirds, on a shared chalk baseline in the lower third (`--tx-baseline-y`).
+- The headline sits top-left: one line of about 50 characters or fewer, two lines at most, with no qualifiers (qualifiers go in the card body or the notes). The card is anchored bottom-left. The visualization uses the full frame width above the card's top edge and beside it, on a shared chalk baseline in the lower third (`--tx-baseline-y`). Never leave the left third empty, and never float labels in it: a label sits on the mark it describes.
 - No values are hardcoded:
   - colors come from `ink()`, `theme` or `--od-*`;
   - shape and layout come from `var(--tx-*)` in `styles/tokens.css`;
