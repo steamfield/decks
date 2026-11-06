@@ -11,3 +11,16 @@ export const futureColumns = [
 ] as const
 // Author's selected dimensions; no quantitative forecast is encoded.
 export const futureDimensions = ['Leadership', 'Intervention', 'Finances', 'Trust'] as const
+
+// Display labels condensed from source-outline.md, Slide 23. All remain scenarios.
+export const futureRows = [
+  ['New commissioner confirmed', 'Appointment unresolved', 'Appointment disputed'],
+  ['Elected board retains authority', 'Intervention proceeds', 'Elected board replaced'],
+  ['Additional state funding', 'Some additional funding', 'School budget cuts'],
+  ['Families participate', 'Families differ on intervention', 'Families dispute decisions'],
+] as const
+export const futureDisplay = {
+  scenario: 'Scenario',
+  source: 'Source: school intervention law · scenarios are author judgment',
+  sourceUrl: 'https://tcss.legis.texas.gov/resources/ED/htm/ED.39A.htm',
+} as const
