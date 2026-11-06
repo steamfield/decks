@@ -7,15 +7,14 @@ import BallotOval from './BallotOval.vue'
 
 // Governor and Senate keep their positions in the ladder; the other offices cross-fade.
 const G = { x: 832, width: FRAME.right - 832, height: 88, groupHeight: 128 }
-const groupWidth = (G.width - BOARD.gap) / 2
 const TILES = [
-  { ...statewideOffices[0], x: G.x, y: 280, width: G.width, height: G.height, group: false },
-  { ...statewideOffices[1], x: G.x, y: 380, width: G.width, height: G.height, group: false },
-  { ...statewideOffices[2], x: G.x, y: 480, width: groupWidth, height: G.groupHeight, group: true },
-  { ...statewideOffices[3], x: G.x + groupWidth + BOARD.gap, y: 480, width: groupWidth, height: G.groupHeight, group: true },
-  { ...house, name: `${house.democratic} Democratic, ${house.republican} Republican`, x: G.x, y: 620, width: G.width, height: G.height, group: false },
+  { ...statewideOffices[0], x: G.x, y: BOARD.power.top, width: G.width, height: G.height, group: false },
+  { ...statewideOffices[1], x: BOARD.power.left, y: BOARD.power.top, width: BOARD.power.leftWidth, height: G.groupHeight, group: true },
+  { ...statewideOffices[2], x: BOARD.power.left, y: BOARD.power.middle, width: BOARD.power.leftWidth, height: G.groupHeight, group: true },
+  { ...statewideOffices[3], x: BOARD.power.left, y: BOARD.power.bottom, width: BOARD.power.leftWidth, height: G.groupHeight, group: true },
+  { ...house, name: `${house.democratic} Democratic, ${house.republican} Republican`, x: G.x, y: BOARD.power.middle, width: G.width, height: G.groupHeight, group: false },
   { ...senate, name: `${senate.republican} Republican, ${senate.democratic} Democratic`, x: G.x, y: 720, width: G.width, height: G.height, group: false },
-  { ...sboe, name: `${sboe.democratic} Democratic, ${sboe.republican} Republican`, x: G.x, y: 820, width: G.width, height: 136, group: false },
+  { ...sboe, name: `${sboe.democratic} Democratic, ${sboe.republican} Republican`, x: G.x, y: BOARD.power.bottom, width: G.width, height: BOARD.power.pendingHeight, group: false },
 ]
 const shared = (i: number) => i === 0 || i === 5
 const COPY = [

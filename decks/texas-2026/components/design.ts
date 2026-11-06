@@ -43,6 +43,8 @@ export const BOARD = {
   statusX: 124, statusY: 178,
   riskX: 1424, riskY: 640, riskWidth: 376, riskHeight: 56,
   riskTextX: 1444, riskTextY: 677,
+  /** Slide 2 fills the left column while Governor and Senate stay on slide 3's grid. */
+  power: { left: FRAME.left, leftWidth: 688, top: 280, middle: 420, bottom: 560, pendingHeight: 136 },
 } as const
 /** One unfiltered oval ring: expansion and peak opacity. */
 export const PING = { growth: 0.8, peak: 0.8 } as const
