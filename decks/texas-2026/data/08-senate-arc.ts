@@ -34,3 +34,15 @@ export const specialSessionProposal = {
   subject: 'Limit gubernatorial emergency powers', decisionMaker: 'Gov. Greg Abbott',
   proposalStatus: 'confirmed', sessionStatus: 'pending', enactedStatus: 'pending',
 } as const
+
+// Display labels for the qualified claims above; source URLs match the Slide 8 ledger.
+export const arcLabels = {
+  democratic: 'Democrats', republican: 'Republicans', gap: 'Republican votes needed',
+  expected: 'Expected Senate', certification: 'Pending: certification',
+  pending: 'Pending', scenario: 'Scenario',
+  majority: 'Majority', confirmation: 'Confirmation',
+  tenure: 'departure date', rules: 'Committee and agenda rules',
+  source: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.4.htm',
+  holdoverSource: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.16.htm',
+  rulesSource: 'https://www.texastribune.org/2026/11/05/texas-senate-republican-majority-lieutenant-governor-powers/',
+} as const

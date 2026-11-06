@@ -15,3 +15,11 @@ export const earlyRemoval = {
 export const expiration = { noticeAnniversary: 2, maximumExtensionYears: 2, transitionYears: 3, trusteeFractionPerYear: 1 / 3, status: 'confirmed' } as const
 // §39A.209(b)-(c): two further unacceptable years permit a replacement board; supplementary oversight can follow removal.
 export const furtherFailure = { unacceptableYears: 2, communityConsultation: true, replacementBoardPermitted: true, monitorAfterRemovalPermitted: true, status: 'confirmed' } as const
+
+// Short on-screen labels for the Slide 9 statutory conditions, not a forecast.
+export const undoLabels = {
+  acceptable: 'Acceptable rating', consecutive: 'Consecutive school years',
+  decision: 'Commissioner may remove the appointed board',
+  outcome: 'District outcome', pending: 'Pending',
+  source: 'https://tcss.legis.texas.gov/resources/ED/htm/ED.39A.htm',
+} as const
