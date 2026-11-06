@@ -64,7 +64,7 @@ const sources = computed(() => clicks.value === 2
       </g>
     </template>
     <template #overlay>
-      <h2 class="od-story-head">Five decisions due by June settle what changes.</h2>
+      <h2 class="od-story-head">{{ watchCount }} pending decisions will settle what changes.</h2>
       <div class="calendar-labels" :style="{ opacity: s.arrive * s.calendar }" :aria-hidden="clicks !== 0">
         <div v-for="(event, i) in calendarTicks" :key="event.id">
           <strong>{{ date(event.date) }}</strong><span>{{ calendarLabels[i] }}</span>

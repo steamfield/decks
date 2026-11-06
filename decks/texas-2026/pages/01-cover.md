@@ -2,15 +2,19 @@
 SLIDE 1 · COVER
 -->
 
+<script setup>
+import { byline } from '../data/01-cover'
+</script>
+
 <StoryCover brand>
   <template #field><BallotField /></template>
   <template #title>Texas elected new leaders.<br/>What can they change<br/>for Austin's schools?</template>
   <template #byline>
-    <span>Riley Hilliard</span>
+    <span>{{ byline.name }}</span>
     <span class="od-dim">·</span>
-    <span>Austin</span>
+    <span>{{ byline.location }}</span>
     <span class="od-dim">·</span>
-    <span>November 2026</span>
+    <span>{{ new Date(`${byline.month}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) }}</span>
   </template>
 </StoryCover>
 

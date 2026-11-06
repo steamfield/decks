@@ -13,7 +13,7 @@ The incumbent remains in office until inauguration. Certification is pending. AI
 
 [click] Trustees may request another authorized action after a valid petition. Trustees must approve the request at a publicly noticed meeting before submission, and it must include a written explanation. The commissioner may accept the request after considering the board's explanation.
 
-[click] At the time of this talk, a successor to Morath has not been appointed. The incoming governor can nominate a successor, with Senate confirmation required. The constitutional inauguration schedule also allows the governor to take office as soon afterward as practicable.
+[click] At the research cutoff, a successor to Morath had not been verified. Refresh his status before the talk. The incoming governor can nominate a successor, with Senate confirmation required. The constitutional inauguration schedule also allows the governor to take office as soon afterward as practicable.
 
 [click] This deadline applies only to the valid-petition process, including any trustee request. The rule permits implementation during the current school year or, if necessary, the next one. Who will hold the commissioner's office when the order is issued remains unresolved.
 -->

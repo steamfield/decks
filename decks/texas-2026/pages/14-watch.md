@@ -11,6 +11,6 @@ The governor's deadline applies to bills covered by the Constitution's rule for 
 
 [click] Parent petition collection has already closed. The submission date shown is for validated petitions going to the state agency. Any vote to request a different intervention needs an earlier public meeting announced with the required legal notice. The published voting meeting shown is after the request deadline. Check current notices and the agenda before attending.
 
-[click] The election changed who holds power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.
-The sources card is a placeholder until the author supplies the published source ledger URL. Check that destination before presenting.
+[click] The election chose who will hold power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.
+The QR card links to the Decks homepage. The claim sources are linked on the preceding beats; this card does not link to a published source ledger.
 -->
