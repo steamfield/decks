@@ -28,6 +28,27 @@ The UX reference is `../opendata/talks/aisd-takeover`, for its beat pacing, dimm
   - durations come only from `DUR`;
   - a beat's resting state is set before its `beat(n)` label, so seeking is exact in both directions.
 
+## Prose audit (every run, every visible string)
+
+The author has flagged AI-sounding prose in earlier drafts, so prose gets the same rigor as code. Before writing any headline, card, chip, label or note, read these in full:
+
+- `.claude/rules/deck-writing.md`: the slide-prose rules. Where the others disagree with it, it wins.
+- `.claude/rules/prose-patterns.md`.
+- The `ce:writer` skill: `$HOME/.claude/plugins/cache/claude-essentials/ce/<newest>/skills/writer/SKILL.md`, its `references/forbidden-patterns.md`, and `references/educator.md`, the persona for explaining government to a lay audience.
+
+Check each string against these tells and rewrite any that match:
+
+- Balanced antithesis or seesaw pairs ("X is easy; Y is hard", "A rose; B fell", "can push, but can't rewrite"). Two facts can share a sentence when both are facts. They can't be arranged as a rhetorical mirror.
+- Negation-then-assertion, and trailing contrasts ("..., not X", "but not the Senate" used for drama).
+- Characterizing instead of stating ("the best result the ballot allowed", "sits between relief and Houston", "the handover of power", "runs straight through"). Say the fact: which office, which date, which number.
+- Abstract nouns standing in for facts ("relief", "power", "change", "leadership"). Name the office, the person, the vote or the dollar figure.
+- Triads, false ranges ("between X and Y"), unearned profundity, rhetorical questions answered at once (the cover's question is the one allowed question), and section-ending kickers.
+- Cards that describe the visual ("A thin ring directs attention") rather than the content.
+- Ledes or notes that restate the headline, and recap openers in notes ("Tonight we'll look at...").
+- Em dashes, and inflated or literary vocabulary.
+
+Every hand-off includes a prose audit table. It has one row per visible string (headline, each card lead and body, chips, tags, axis labels) and three columns: the string, the patterns checked, and what was changed. The orchestrator re-audits every string before merging.
+
 ## Design system: "Ballot and chalk"
 
 The full token map is `DESIGN.md`, which the design run writes. The essentials:
@@ -50,22 +71,24 @@ The full token map is `DESIGN.md`, which the design run writes. The essentials:
 
 ## The arc
 
-| # | Page / stage | Headline (draft; tighten, keep the claim) | Beats | Min |
+| # | Page / stage | Headline (draft) | Beats | Min |
 |---|---|---|---|---|
 | 1 | `01-cover` / `StoryCover` + `BallotField` | Texas elected new leaders. What can they change for Austin's schools? | 1 | 0.5 |
-| 2 | `02-power-board` / `PowerBoardStage` | Democrats won the top four statewide offices and the House, but not the Senate. | 4 | 1.5 |
-| 3 | `03-outcome-ladder` / `OutcomeLadderStage` | This was one step short of the best result the ballot allowed. | 5 | 1.5 |
-| 4 | `04-rulebook` / `RulebookStage` | The Legislature writes the rules; an appointed commissioner enforces them. | 3 | 1.25 |
-| 5 | `05-two-campuses` / `TwoCampusesStage` | Two middle schools put the whole district's board at risk. | 3 | 1.25 |
-| 6 | `06-trigger-tree` / `TriggerTreeStage` | Five failing ratings in a row leave the state two choices. | 4 | 1.75 |
-| 7 | `07-collision-timeline` / `CollisionTimelineStage` | AISD's deadlines run straight through the handover of power. | 6 | 2 |
-| 8 | `08-senate-arc` / `SenateArcStage` | A new commissioner needs 21 Senate votes. Democrats hold 12. | 4 | 1.75 |
-| 9 | `09-undo` / `UndoStage` | Changing who runs a takeover is easier than ending one. | 3 | 1.25 |
-| 10 | `10-tools` / `ToolsStage` | The governor can push TEA, but rewriting the law takes a bill. | 3 | 1.25 |
-| 11 | `11-hb2` / `HB2Stage` | The Senate passed $8.5B for schools unanimously, and Austin still faces cuts. | 3 | 1.5 |
-| 12 | `12-houston` / `HoustonStage` | Houston's ratings rose under state control; enrollment fell by 21,000. | 2 | 1.25 |
-| 13 | `13-futures` / `FuturesStage` | Austin's most likely future sits between relief and Houston. | 4 | 1.75 |
-| 14 | `14-watch` / `WatchStage` | Five decisions between now and June will decide what changes. | 4 | 1.25 |
+| 2 | `02-power-board` / `PowerBoardStage` | Democrats won four statewide offices and the House. Republicans kept the Senate, 19 to 12. | 4 | 1.5 |
+| 3 | `03-outcome-ladder` / `OutcomeLadderStage` | Democrats won every office that was within reach this year. | 5 | 1.5 |
+| 4 | `04-rulebook` / `RulebookStage` | Lawmakers write school law. An appointed commissioner enforces it. | 3 | 1.25 |
+| 5 | `05-two-campuses` / `TwoCampusesStage` | Two middle schools put the whole district's elected board at risk. | 3 | 1.25 |
+| 6 | `06-trigger-tree` / `TriggerTreeStage` | After five failing ratings in a row, state law allows two outcomes. | 4 | 1.75 |
+| 7 | `07-collision-timeline` / `CollisionTimelineStage` | Most of AISD's deadlines fall before the new governor takes office. | 6 | 2 |
+| 8 | `08-senate-arc` / `SenateArcStage` | Confirming a new commissioner takes 21 Senate votes. Democrats hold 12. | 4 | 1.75 |
+| 9 | `09-undo` / `UndoStage` | A new commissioner can replace takeover managers at once. Ending a takeover takes at least two years. | 3 | 1.25 |
+| 10 | `10-tools` / `ToolsStage` | The governor can veto bills on her own. Changing school law takes both chambers. | 3 | 1.25 |
+| 11 | `11-hb2` / `HB2Stage` | The Senate voted unanimously for $8.5B in school funding. Austin still had to cut its budget. | 3 | 1.5 |
+| 12 | `12-houston` / `HoustonStage` | Houston's ratings rose after the 2023 takeover, and the district lost 21,000 students. | 2 | 1.25 |
+| 13 | `13-futures` / `FuturesStage` | In the most likely case, the intervention goes ahead under friendlier state leadership. | 4 | 1.75 |
+| 14 | `14-watch` / `WatchStage` | Five decisions due by June settle what the election changes for Austin. | 4 | 1.25 |
+
+The draft headlines record the claim each slide makes. The wording is still a draft and must pass the prose audit below before it ships. A headline is a plain statement of fact a parent could repeat at dinner.
 
 Every number in a headline is subject to `data-sources.md`. If research changes a figure, the headline changes with it.
 
