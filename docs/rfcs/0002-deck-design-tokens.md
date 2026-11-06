@@ -18,12 +18,15 @@ It also ran a "token drill": change one value in each file and confirm every sli
 
 Fonts were similar. Moving off Inter meant adding two fontsource packages, an import, a `fonts.serif` key and a headmatter change, all found by hand.
 
+Layout had the same gap. Every slide run left the left third of the frame empty above the card and squeezed the visualization into the right half, and labels floated unattached in that empty column. The deck spec said "visualization in the right two-thirds", but nothing in the tokens or the story frame defines the usable region around the card.
+
 ## Proposal
 
 1. Have `decks new --story` (and the conventional variant) scaffold `styles/tokens.css`, `components/design.ts` and a short `DESIGN.md`, pre-filled with the default values and comments. A deck that never customizes them looks the same as today.
 2. Add a guard test, next to `durations.test.ts` and `frame-units.test.ts`, that fails on hex colors, `px` border radii and numeric opacity literals in deck `components/*.vue`, with `design.ts` exempt. Allow a `lint-allow` escape, as the prose lint does.
 3. Add `--serif "<Family>"` and `--sans "<Family>"` to `decks new`. These install the fontsource package, write the import and set `fonts.*`. Document the two-line swap in `deck-patterns.md`.
-4. Add meaning-level helpers to the addon, so a deck maps "changed", "risk" and "neutral" onto slots once, in its `design.ts`, and stages never name slots. This could stay deck-local until a second deck wants it.
+4. Expose the stage's free region (the frame minus the headline band and the card box) as tokens and a `useStageMap()` helper, so stages lay out against the real space instead of a guessed column.
+5. Add meaning-level helpers to the addon, so a deck maps "changed", "risk" and "neutral" onto slots once, in its `design.ts`, and stages never name slots. This could stay deck-local until a second deck wants it.
 
 ## Scope
 

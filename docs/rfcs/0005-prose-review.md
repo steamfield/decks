@@ -31,7 +31,8 @@ That works, but it lives in one deck's contracts.
 1. Add a `decks review-prose <alias>` command. It extracts every visible string (headlines, COPY leads and bodies, chips, labels, notes) with its file and line, and writes a review prompt built from `deck-writing.md`, `prose-patterns.md` and the catalog. It then prints the prompt for a model, or runs one when a model CLI is configured. The output is a per-string table: the string, the pattern matched, and a rewrite.
 2. Add a "Prose audit" section to `building-a-deck/SKILL.md`, and make the review step part of its definition of done, between `lint` and `fact-extract`.
 3. Promote the catchable cases to warning-level patterns in the TSV: for example, a semicolon joining two short clauses with mirrored structure, or a "but not" clause at the end of a headline. Measure the false-positive rate against the shipped example decks before turning on any of them.
-4. Treat draft headlines in a spec as claims, not wording. Say in the skill that an orchestrator's draft headlines must pass the same audit before they go into a brief, because agents copy them.
+4. Add a story-headline length check to `beats.test.ts`, with the threshold measured against the shipped decks. Every slide run in texas-2026 produced two-line headlines carrying qualifiers ("With all 31 senators present, confirming a commissioner takes 21 votes."), and each needed a manual follow-up. A warning above about 55 characters, and an error above two rendered lines at the deck's headline size, would have caught all of them.
+5. Treat draft headlines in a spec as claims, not wording. Say in the skill that an orchestrator's draft headlines must pass the same audit before they go into a brief, because agents copy them.
 
 ## Scope
 
