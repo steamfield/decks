@@ -25,13 +25,13 @@
     "amber": ["#a78068", "#bd967e", "#d2b29b", "#e4cdb7"],
     "slate": ["#7a786e", "#a7a497", "#d2cfc3", "#f1eee6"],
     "emerald": ["#768871", "#98aa91", "#bbc9b2", "#d9e0ce"],
-    "violet": ["#827b85", "#a49ba6", "#c1b8c1", "#d8d1d7"],
-    "rose": ["#927885", "#b096a3", "#cbb6c0", "#e0d0d7"]
+    "violet": ["#4f78a8", "#6a8fbb", "#8fadd0", "#b8cde4"],
+    "rose": ["#b5534a", "#c66c61", "#d68e84", "#e6b4ac"]
   },
   "accents": {
     "blue": "{ramps.slate.2}",
     "blue-soft": "{ramps.slate.3}",
-    "pink": "{ramps.rose.2}"
+    "pink": "{ramps.amber.3}"
   },
   "glows": {
     "primary": "{surfaces.surface-raised}",
@@ -41,7 +41,7 @@
     "emerald": "{surfaces.surface-raised}",
     "rose": "{surfaces.surface-raised}"
   },
-  "categorical": ["{ramps.cyan.2}", "{ramps.slate.3}", "{ramps.amber.2}", "{ramps.emerald.2}", "{ramps.violet.2}", "{ramps.rose.2}"],
+  "categorical": ["{ramps.cyan.2}", "{ramps.slate.3}", "{ramps.amber.2}", "{ramps.emerald.2}", "{ramps.slate.2}", "{ramps.emerald.3}"],
   "fonts": {
     "sans": "'Public Sans Variable', sans-serif",
     "serif": "'Source Serif 4 Variable', serif",

@@ -42,6 +42,7 @@ export const arcLabels = {
   pending: 'Pending', scenario: 'Scenario',
   majority: 'Majority', confirmation: 'Confirmation',
   tenure: 'departure date', rules: 'Committee and agenda rules',
+  departureStatus: 'Pending: departure date unknown', ruleStatus: 'Pending: rule changes unverified',
   source: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.4.htm',
   holdoverSource: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.16.htm',
   rulesSource: 'https://www.texastribune.org/2026/11/05/texas-senate-republican-majority-lieutenant-governor-powers/',

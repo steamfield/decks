@@ -21,5 +21,6 @@ export const undoLabels = {
   acceptable: 'Acceptable rating', consecutive: 'Consecutive school years',
   decision: 'Commissioner may remove the appointed board',
   outcome: 'District outcome', pending: 'Pending',
+  removalStatus: 'Pending: early board removal',
   source: 'https://tcss.legis.texas.gov/resources/ED/htm/ED.39A.htm',
 } as const
