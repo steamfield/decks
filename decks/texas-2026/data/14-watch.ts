@@ -40,3 +40,36 @@ export const watchCount = decisionsToWatch.length
 export const watchSelectionStatus = { status: 'flag', basis: 'author-reported editorial selection' } as const
 // FLAG: author must supply the published sources page before a QR can be generated.
 export const sourcesPage = { url: null, status: 'flag', needed: 'Published URL for the deck source ledger' } as const
+
+// Display labels for the sourced watch topics, calendar and author-supplied close.
+export const watchDisplay = {
+  pending: 'Pending', flag: 'FLAG: sources URL needed',
+  sources: 'Deck sources', placeholder: 'Source page URL not supplied',
+  calendarSource: 'Source: legislative session calendar',
+  calendarUrl: 'https://www.lrl.texas.gov/sessions/sessionYears.cfm',
+  rulesSource: 'Source: school intervention deadlines',
+  rulesUrl: 'https://tea.texas.gov/laws-and-rules/commissioner-rules-tac/coe-tac-currently-effect/ch097ee.pdf',
+  boardSource: 'Source: published board meeting',
+  sessionEnd: 'Regular session ends', governorAction: 'Post-session bill action deadline',
+  window: 'Watch through', calendar: 'Decision dates remain pending',
+  petition: 'Validated petitions due at state education agency', request: 'Request for different intervention due',
+  meeting: 'Board voting meeting', collection: 'Parent petition collection closed',
+  timing: 'Meeting falls after request deadline',
+  closing: 'The election changed who holds power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.',
+  districtGloss: 'School district / state education agency',
+  election: 'Election', inauguration: 'Governor takes office',
+  petitionTick: 'Validated petitions due', order: 'Order after valid petition',
+  constitution: 'Governor and appointments',
+  constitutionUrl: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.4.htm',
+  legislature: 'Senate rules and legislation',
+  legislatureUrl: 'https://tcss.legis.texas.gov/resources/CN/htm/CN.3.htm',
+} as const
+
+// Short labels preserve the five topics and their decision-makers above.
+export const watchLabels = [
+  { name: 'Appeals / petitions', actor: 'Commissioner decides appeals', detail: 'Superintendent validates parent petitions' },
+  { name: 'Intervention order', actor: 'Commissioner', detail: 'Trustees may request a different intervention' },
+  { name: 'New commissioner', actor: 'Governor nominates', detail: 'Senate considers confirmation' },
+  { name: 'Senate rules', actor: 'Senators set rules', detail: 'Rules govern committee assignments' },
+  { name: 'School laws / funding', actor: 'House / Senate / Governor', detail: 'House and Senate must pass bills' },
+] as const
