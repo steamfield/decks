@@ -30,7 +30,7 @@ const { clicks, copy, beats } = useStage({
 <template>
   <StoryStage :beats="beats" :click="clicks">
     <template #overlay>
-      <h2 class="od-story-head">In the middle scenario, an intervention goes ahead.</h2>
+      <h2 class="od-story-head">In the most likely scenario, an intervention goes ahead.</h2>
       <div class="futures" :style="{ opacity: s.arrive }">
         <div v-for="(column, c) in futureColumns" :key="column.label" class="future"
           :style="{ '--emphasis': c === 1 ? ON : ON - s.middle * (ON - DIM) }">
