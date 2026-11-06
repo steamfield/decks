@@ -468,14 +468,20 @@ The outline's “21,000” is a supported rounded value, not a rejected figure. 
 
 ## Slide 12: Futures
 
-Module: `data/13-futures.ts`. No numerical probability or forecast is supplied.
+Rebuilt 2026-11-06 around three paths after the author questioned the earlier "intervention proceeds" middle column. Module: `data/13-futures.ts`.
 
-| Figure or claim | Value | Status | Source and evidence | Fetched |
+| Figure / claim | Value | Status | Source | Fetched |
 |---|---|---|---|---|
-| Scenario columns | Best, Most likely, Worst | FLAG: author-reported scenarios | `OUTLINE.md` Slide 13 and `source-outline.md` Slide 23. The author supplies the framing; evidence does not establish probabilities. | 2026-11-06 |
-| Scenario dimensions | Leadership, Intervention, Finances, Trust | FLAG: author-reported selection | `OUTLINE.md` selects these four rows from the longer source outline. | 2026-11-06 |
-| Conditions used in scenarios | Confirmation, legal intervention, finances and community response remain unresolved | Pending | Slides 6–11 establish the constraints. Do not label a hypothetical development Confirmed. | 2026-11-06 |
-| “Most likely” | Editorial label only | FLAG: author-reported | No model or named expert probability supports a modal forecast. Keep Scenario visible. | 2026-11-06 |
+| Petition remedy | Parents ask the commissioner to close Burnet and Webb, proposed by Mayor Kirk Watson in September as the alternative to a district takeover | Confirmed as reporting | [Austin Politics][petition-news] | 2026-11-06 |
+| Initial petition counts | "initial counts at both schools exceeded the required majority of currently enrolled students" | Confirmed as reporting; validation Pending | [Austin Politics][petition-news], quoting Superintendent Segura's Oct 19 letter | 2026-11-06 |
+| Signature complaint | TEA reviewing the Webb PTA complaint (Oct 26); no findings announced | Pending | [Austin Politics][petition-news] | 2026-11-06 |
+| Petition effect | A valid timely petition generally requires its requested action; trustees may request an alternative | Confirmed law | [TEC §39A.112][ed39a], [TAC §97.1065(d)][tac] | 2026-11-06 |
+| Replacing managers | The commissioner may replace board-of-managers members | Confirmed law | [TEC §39A.207][ed39a] | 2026-11-06 |
+| Hinojosa on takeovers | Pledged to end state takeovers; "on day one, I will fire Mike Morath" (Nov 3) | Confirmed as reporting | [Texas Tribune, Nov 4][election-aisd] | 2026-11-06 |
+| New commissioner's options | UH's Duncan Klussmann: a new commissioner might close the failing schools rather than take over the district; UT's Rachel White: the commissioner "would still be bound by state law" | Confirmed as reporting | [Texas Tribune, Nov 4][election-aisd] | 2026-11-06 |
+| Houston under state control | Board of managers installed June 1, 2023; extended through June 1, 2027 | Confirmed | [TEA extension announcement][hisd-extension] | 2026-11-06 |
+| "Most likely" column | Petitions hold: two campuses close, elected board keeps the district | FLAG: author judgment | Follows from the petition record above; no probability estimated. Fails if validation, the TEA complaint or a trustee request changes the remedy. | 2026-11-06 |
+| Takeover columns | A takeover run by a Hinojosa-appointed commissioner would aim to help the district; one run as in Houston would be imposed from the top | FLAG: author judgment | Hinojosa pledge and §39A.207 above; Houston record. A scenario, not an observed outcome. | 2026-11-06 |
 
 ## Slide 13: Watch and close
 

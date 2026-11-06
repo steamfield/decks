@@ -2,12 +2,12 @@
 import { reactive } from 'vue'
 import { DUR, SETTLE, useStage } from 'slidev-addon-decks/story'
 import { DIM, OFF, ON } from './design'
-import { futureColumns, futureDimensions, futureRows, futureDisplay } from '../data/13-futures'
+import { futureColumns, futureDimensions, futureRows, futureDisplay, houston, petitions } from '../data/13-futures'
 
 const COPY = [
-  { lead: 'The commissioner appointment could remain unresolved.', body: 'Each column follows one set of choices by state and district leaders.' },
-  { lead: 'An intervention can proceed after the election.', body: 'The most likely scenario assumes an intervention with terms still undecided.' },
-  { lead: 'Additional funding requires legislative agreement.', body: 'The most likely scenario assumes some additional school funding.' },
+  { lead: `Valid petitions would close ${petitions.campuses.join(' and ')}.`, body: 'Initial counts topped the required majority. TEA is reviewing a complaint about signatures.' },
+  { lead: 'A takeover puts appointed managers in charge.', body: 'A new commissioner can replace managers named before inauguration.' },
+  { lead: 'Who runs a takeover shapes its aims.', body: `Hinojosa has pledged to end state takeovers. Houston has been under a state board since ${houston.installed.slice(0, 4)}.` },
 ]
 const rows = reactive(futureRows.map((_, i) => ({ reveal: i === 0 ? ON : OFF, emphasis: ON })))
 const s = reactive({ arrive: OFF, middle: OFF })
@@ -19,7 +19,6 @@ const { clicks, copy, beats } = useStage({
     for (let i = 1; i < COPY.length; i++) {
       tl.to(rows[i], { reveal: ON, duration: DUR.card, ease: SETTLE })
       tl.to(rows[i - 1], { emphasis: DIM, duration: DUR.color, ease: SETTLE }, '<')
-      if (i === COPY.length - 1) tl.to(s, { middle: ON, duration: DUR.color, ease: SETTLE })
       beat(i)
     }
   },
@@ -29,17 +28,17 @@ const { clicks, copy, beats } = useStage({
 <template>
   <StoryStage :beats="beats" :click="clicks">
     <template #overlay>
-      <h2 class="od-story-head">Most likely, an intervention goes ahead.</h2>
+      <h2 class="od-story-head">Most likely, two schools close and the board stays.</h2>
       <div class="futures" :style="{ opacity: s.arrive }">
         <div v-for="(column, c) in futureColumns" :key="column.label" class="future"
-          :style="{ '--emphasis': c === 1 ? ON : ON - s.middle * (ON - DIM) }">
+          :style="{ '--emphasis': c === 0 ? ON : ON - s.middle * (ON - DIM) }">
           <header>
             <strong>{{ column.label }}</strong>
-            <span class="tx-tag is-scenario">{{ futureDisplay.scenario }}</span>
+            <span class="tx-tag is-scenario">{{ column.tag }}</span>
           </header>
           <div v-for="(dimension, r) in futureDimensions" :key="dimension" class="future-row"
             :aria-hidden="r > clicks"
-            :style="{ opacity: rows[r].reveal * (c === 1 ? rows[r].emphasis + s.middle * (ON - rows[r].emphasis) : Math.min(rows[r].emphasis, ON - s.middle * (ON - DIM))) }">
+            :style="{ opacity: rows[r].reveal * (c === 0 ? rows[r].emphasis + s.middle * (ON - rows[r].emphasis) : Math.min(rows[r].emphasis, ON - s.middle * (ON - DIM))) }">
             <span class="dimension">{{ dimension }}</span>
             <span class="outcome">{{ futureRows[r][c] }}</span>
           </div>
