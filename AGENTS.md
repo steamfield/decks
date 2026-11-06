@@ -107,6 +107,8 @@ Claude Code is the primary agent. Its config is `.claude/`:
 - Hooks are Node: `node packages/decks/scripts/deck.mjs hook lint` (PreToolUse: denies error-level AI-rhetoric patterns in deck prose; refuses the write if the scanner can't run) and `hook prompt` (adds the deck-writing reminder when a prompt asks to write or revise a deck). They need no `jq`. Wired in `.claude/settings.json` (Edit/Write/MultiEdit) and `.codex/hooks.json` (`apply_patch`, which the hook parses per file); `hooks/*.sh` are thin wrappers kept for old paths; tested by `bun run test:hooks`.
 - `decks init` installs this setup into user projects from `packages/decks/agent/`, which is rendered from `.claude/`. When a `.claude/` rule, skill or agent changes, run `bun run render:agent` (the drift test in `bun run test` fails otherwise).
 
+Follow-up infrastructure and tooling proposals are tracked as RFCs in `docs/rfcs/` (index: `docs/rfcs/README.md`). When building a deck exposes a gap in the shared tooling, add or extend an RFC there rather than fixing it ad hoc in the deck.
+
 ### Codex
 
 Codex reads this file, the skills under `.agents/skills/` (symlinks into `.claude/skills/`), the `deck-author` agent in `.codex/agents/deck-author.toml`, and the hooks in `.codex/hooks.json`. It does not load `.claude/rules/` on its own, so before editing a file, read every rule that covers it:
