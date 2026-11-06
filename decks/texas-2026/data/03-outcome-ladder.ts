@@ -5,6 +5,27 @@
  */
 import { senate } from './02-power-board'
 
+export const comparisonLabels = {
+  previousElection: '2022', currentElection: '2026',
+  officialSource: 'Source: Texas secretary of state; calculated vote-share margins',
+  historicalSource: 'Source: TXElectionResults.com, citing the Texas secretary of state',
+} as const
+
+// Short labels for the cumulative outcomes and school powers documented below.
+export const ladderLabels = [
+  { office: 'Republicans retain offices', lever: '' },
+  { office: 'Governor', lever: 'Vetoes and appointments' },
+  { office: 'Plus House', lever: 'Pass school bills in the House' },
+  { office: 'Plus Lt. Governor', lever: 'Schedule Senate business under its rules' },
+  { office: 'Plus other offices', lever: 'School lawsuits, vouchers and curriculum' },
+  { office: 'Plus Senate majority', lever: 'Pass school bills under Senate rules' },
+] as const
+export const additionalOffices = [
+  { office: 'Attorney General', lever: 'School lawsuits' },
+  { office: 'Comptroller', lever: 'Administer vouchers' },
+  { office: 'State Board of Education', lever: 'Curriculum' },
+] as const
+
 // SOS lists these 16 regular-election districts; SD 9 was already Democratic after its special election.
 export const senateBallot = [
   { district: 1, incumbent: 'Bryan Hughes', party: 'Republican' },

@@ -1,9 +1,5 @@
 <!--
 SLIDE 1 · COVER
-
-FLAG: contract-supplied outcomes; confirm against the research module.
-Texas elected a new governor, lieutenant governor, attorney general and
-comptroller. Democrats won the House. Republicans kept the Senate.
 -->
 
 <StoryCover brand>
@@ -17,3 +13,10 @@ comptroller. Democrats won the House. Republicans kept the Senate.
     <span>November 2026</span>
   </template>
 </StoryCover>
+
+<!--
+The statewide winners and Democratic House majority follow data/02-power-board.ts.
+These are unofficial election outcomes, with certification pending. Republicans
+retain the Senate. The projected House membership and State Board of Education
+majority still need a refresh before the talk.
+-->
