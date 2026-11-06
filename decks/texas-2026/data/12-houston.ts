@@ -58,3 +58,6 @@ export const houstonSeriesQualifications = [
   'The 2023 accountability refresh limits comparison with earlier ratings.',
   'The 2022-23 rating year is the pre-intervention baseline, even though publication was delayed.',
 ] as const
+
+// Display names for the source and district in the query above.
+export const houstonLabels = { city: 'Houston', agency: 'TEA' } as const
