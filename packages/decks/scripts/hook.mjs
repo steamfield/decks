@@ -1,7 +1,7 @@
-// Claude Code hooks, run as `decks hook lint` (PreToolUse on Edit/Write/
-// MultiEdit) and `decks hook prompt` (UserPromptSubmit). Both read the hook
-// payload as JSON on stdin and answer in Claude Code's hook JSON on stdout.
-// Node only: no jq, no bash, so they run wherever Claude Code does.
+// Claude Code and Codex hooks, run as `decks hook lint` (PreToolUse on Edit/
+// Write/MultiEdit, or Codex's apply_patch) and `decks hook prompt`
+// (UserPromptSubmit). Both read the hook payload as JSON on stdin and answer
+// in the hook JSON both agents read on stdout. Node only: no jq, no bash.
 //
 // `hook lint` denies a write to deck prose that carries an error-severity
 // AI-rhetoric pattern, in the prose or in a story stage's COPY array. Warns
@@ -220,6 +220,85 @@ append the lint-allow marker to that exact line:
   md/vue: <!-- lint-allow: pattern-id -->
   ts: // lint-allow: pattern-id`
 
+/**
+ * Codex's apply_patch body as the Claude Code calls it amounts to: an
+ * `*** Add File:` is a Write, an `*** Update File:` a MultiEdit whose edits are
+ * its hunks (context and `-` lines are the old text, context and `+` lines the
+ * new), so both go through the same replay. A `*** Move to:` is judged at its
+ * new path and replayed against the old one. Deletes write no prose.
+ */
+export function patchWrites(patch) {
+  const calls = []
+  let call = null
+  let hunk = null
+  const endHunk = () => {
+    if (call?.toolName === 'MultiEdit' && hunk && (hunk.old.length || hunk.new.length))
+      call.input.edits.push({ old_string: hunk.old.join('\n'), new_string: hunk.new.join('\n') })
+    hunk = null
+  }
+  const endFile = () => {
+    endHunk()
+    if (call?.toolName === 'Write') call.input.content = call.lines.join('\n') + '\n'
+    if (call) calls.push(call)
+    call = null
+  }
+  for (const line of String(patch ?? '').split('\n')) {
+    const header = /^\*\*\* (Add File|Update File|Delete File|Move to): (.+)$/.exec(line)
+    if (header) {
+      const [, kind, path] = header
+      if (kind === 'Move to') {
+        if (call) call.input.file_path = path.trim()
+        continue
+      }
+      endFile()
+      if (kind === 'Add File')
+        call = { toolName: 'Write', input: { file_path: path.trim() }, lines: [] }
+      if (kind === 'Update File')
+        call = { toolName: 'MultiEdit', input: { file_path: path.trim(), edits: [] }, source: path.trim() }
+      continue
+    }
+    if (/^\*\*\* (Begin|End) Patch\b/.test(line)) {
+      endFile()
+      continue
+    }
+    if (!call) continue
+    if (call.toolName === 'Write') {
+      if (line.startsWith('+')) call.lines.push(line.slice(1))
+      continue
+    }
+    if (line.startsWith('@@')) {
+      endHunk()
+      hunk = { old: [], new: [] }
+      continue
+    }
+    if (line === '*** End of File') continue
+    hunk ??= { old: [], new: [] }
+    if (line.startsWith('-')) hunk.old.push(line.slice(1))
+    else if (line.startsWith('+')) hunk.new.push(line.slice(1))
+    else {
+      const ctx = line.startsWith(' ') ? line.slice(1) : line
+      hunk.old.push(ctx)
+      hunk.new.push(ctx)
+    }
+  }
+  endFile()
+  return calls.map(({ toolName, input, source }) => ({ toolName, input, source }))
+}
+
+/** Load the scanner, or refuse: a broken scanner must not let deck prose through. */
+async function loadScanner() {
+  try {
+    const scan = await import('../lint/scan.mjs')
+    return { scan, patterns: scan.loadPatterns() }
+  } catch (err) {
+    refuse(
+      `decks hook lint cannot load the AI-rhetoric scanner or its patterns (${err.message}), ` +
+        'so this write to deck prose is refused rather than allowed unlinted. ' +
+        'Reinstall slidev-addon-decks, or restore lint/ai-rhetoric-patterns.tsv in it.',
+    )
+  }
+}
+
 export async function lintHook() {
   let payload
   try {
@@ -230,45 +309,65 @@ export async function lintHook() {
     )
   }
   const toolName = payload?.tool_name
-  if (!['Edit', 'Write', 'MultiEdit'].includes(toolName)) return
-  const input = payload.tool_input ?? {}
-  const filePath = input.file_path
-  if (!filePath) return
-  const projectDir = process.env.CLAUDE_PROJECT_DIR || payload.cwd || process.cwd()
+  const projectDir = process.env.CLAUDE_PROJECT_DIR || payload?.cwd || process.cwd()
   const registry = readRegistry(projectDir)
-  if (!inScope(filePath, projectDir, registry)) return
-  const text = writtenText(toolName, input)
-  // An empty Write writes no prose. An Edit with an empty new_string can still
-  // expose some (a deletion that joins a phrase, or opens a comment), so the
-  // replay below decides.
-  if (toolName === 'Write' && !text) return
+  let calls
+  if (toolName === 'apply_patch') calls = patchWrites(payload.tool_input?.command)
+  else if (['Edit', 'Write', 'MultiEdit'].includes(toolName))
+    calls = [{ toolName, input: payload.tool_input ?? {} }]
+  else return
 
-  // Loaded only now, so a broken scanner never blocks writes outside decks.
-  let scan, patterns
-  try {
-    scan = await import('../lint/scan.mjs')
-    patterns = scan.loadPatterns()
-  } catch (err) {
-    refuse(
-      `decks hook lint cannot load the AI-rhetoric scanner or its patterns (${err.message}), ` +
-        'so this write to deck prose is refused rather than allowed unlinted. ' +
-        'Reinstall slidev-addon-decks, or restore lint/ai-rhetoric-patterns.tsv in it.',
-    )
+  // The scanner is loaded on the first in-scope file, so a broken one never
+  // blocks writes outside decks.
+  let scanner
+  const found = []
+  for (const call of calls) {
+    const filePath = call.input.file_path
+    if (!filePath || !inScope(filePath, projectDir, registry)) continue
+    const text = writtenText(call.toolName, call.input)
+    // An empty Write writes no prose. An Edit with an empty new_string can
+    // still expose some (a deletion that joins a phrase, or opens a comment),
+    // so the replay decides.
+    if (call.toolName === 'Write' && !text) continue
+    scanner ??= await loadScanner()
+    const res = lintWrite(call, projectDir, scanner, toolName === 'apply_patch')
+    if (res.lines.length) found.push(res)
   }
+  if (!found.length) return
+  const body = found.map((r) => `${r.lines.join('\n')}\n\n${r.where}`).join('\n\n')
+  emit({
+    hookEventName: 'PreToolUse',
+    permissionDecision: 'deny',
+    permissionDecisionReason: `BLOCKED: AI-rhetoric patterns found in prose.\n\n${body} ${DENY_FOOTER}`,
+  })
+}
+
+/**
+ * The error-level hits one write would leave in a deck file, as formatted
+ * lines, plus a sentence saying what the line numbers refer to. `named` labels
+ * a Write by its path instead of `stdin` (a patch can add several files).
+ */
+function lintWrite({ toolName, input, source }, projectDir, { scan, patterns }, named) {
+  const filePath = input.file_path
+  const text = writtenText(toolName, input)
   const opts = { errorsOnly: true }
   const lines = []
   const absolute = isAbsolute(filePath) ? filePath : resolve(projectDir, filePath)
-  const after = replay(toolName, input, absolute)
-  let where = 'Line numbers refer to the NEW text being written.'
+  const from = source ? (isAbsolute(source) ? source : resolve(projectDir, source)) : absolute
+  const after = replay(toolName, input, from)
+  const pathLabel = relative(projectDir, absolute).split(sep).join('/')
+  let where = named
+    ? `Line numbers refer to the NEW text being written to ${pathLabel}.`
+    : 'Line numbers refer to the NEW text being written.'
 
   if (after) {
     // Judge the file as it will read after the call, so frontmatter, fences
     // and comments are known from context, and report only the lines the call
     // wrote. A Write is the whole file.
     const touched = linesOf(after.src, after.ranges)
-    let label = 'stdin'
+    let label = named ? pathLabel : 'stdin'
     if (toolName !== 'Write') {
-      label = relative(projectDir, absolute).split(sep).join('/')
+      label = pathLabel
       where = `Line numbers refer to ${label} as it will read after this edit.`
     }
     const prose = (src) => scan.scanEntries(scan.proseLines(src), patterns, opts)
@@ -296,19 +395,14 @@ export async function lintHook() {
   } else {
     // The edit cannot be replayed (no file yet, or old_string is not in it):
     // scan the written text alone, as a fragment cut from a file.
+    const label = named ? pathLabel : 'stdin'
     for (const hit of scan.scanEntries(scan.proseLines(text, { fragment: true }), patterns, opts))
-      lines.push(scan.formatHit('stdin', hit))
+      lines.push(scan.formatHit(label, hit))
     if (filePath.endsWith('.vue'))
       for (const hit of scan.scanEntries(scan.fieldStrings(text), patterns, opts))
-        lines.push(scan.formatHit('stdin', hit) + ' (story card COPY)')
+        lines.push(scan.formatHit(label, hit) + ' (story card COPY)')
   }
-  if (!lines.length) return
-
-  emit({
-    hookEventName: 'PreToolUse',
-    permissionDecision: 'deny',
-    permissionDecisionReason: `BLOCKED: AI-rhetoric patterns found in prose.\n\n${lines.join('\n')}\n\n${where} ${DENY_FOOTER}`,
-  })
+  return { lines, where }
 }
 
 const DECK_VERBS = '(write|writ|draft|revis|edit|polish|build|author|make)'

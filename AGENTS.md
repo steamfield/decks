@@ -54,7 +54,7 @@ bun run typecheck              # tsc over .ts only; a stage's .vue script is not
 bun run test                   # unit suites, story guards, theme contrast, story-card COPY lint
 bun run lint                   # AI-rhetoric lint over deck pages, slides.md, components and story-stage COPY
 bun run fact-extract <alias>   # every figure in a deck, for the fact-check
-bun run test:hooks             # tests for the two Claude Code hooks (`decks hook`, run through .claude/hooks/)
+bun run test:hooks             # tests for the two hooks (`decks hook`) and their Claude Code and Codex wiring
 bun run render:agent           # render .claude/ into packages/decks/agent/ (what `decks init` installs)
 bun run test:tarball           # pack the package; run init, lint, check and the hooks in scratch projects
 bun run shot <n> [clicks]      # headless screenshots of slide n at each click (dev server on :3030)
@@ -95,16 +95,35 @@ Decks with data-driven charts maintain `<deck>/data-sources.md` mapping slide nu
 
 Read `.claude/rules/deck-writing.md` before writing or revising any slide text. Slide prose is not article prose in miniature. The rules that trip people coming from articles: a headline is a claim ending in a period rather than a topic label, three single-sentence bullets is the ceiling, there are no paragraphs anywhere, and a normal conventional slide runs about 70 visible words (`agent-experience` is the exemplar deck; a story card's budget is eight/twenty words instead, per `.claude/rules/story-stage.md`).
 
-The anti-slop pattern set is `packages/decks/lint/ai-rhetoric-patterns.tsv`; `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; it also scans story-card `COPY`; and in Claude Code a write hook blocks error-level patterns as they are written.
+The anti-slop pattern set is `packages/decks/lint/ai-rhetoric-patterns.tsv`; `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; it also scans story-card `COPY`; and in Claude Code and Codex a write hook blocks error-level patterns as they are written.
 
 ## Agent ops
 
 Claude Code is the primary agent. Its config is `.claude/`:
 
 - `agents/deck-author.md`: builds or revises one deck per session.
-- `skills/building-a-deck/`, `skills/fact-checking-a-deck/`.
+- `skills/building-a-deck/`, `skills/fact-checking-a-deck/`, and `skills/openchart/` (the OpenChart spec reference, vendored from tryopendata/skills at the OpenChart version the decks use; see its `VENDORED.md`).
 - `rules/`: the files named above; each attaches by path.
-- Hooks are Node: `node packages/decks/scripts/deck.mjs hook lint` (PreToolUse on Edit/Write/MultiEdit: denies error-level AI-rhetoric patterns in deck prose; refuses the write if the scanner can't run) and `hook prompt` (adds the deck-writing reminder when a prompt asks to write or revise a deck). They need no `jq`. Wired in `.claude/settings.json`; `hooks/*.sh` are thin wrappers kept for old paths; tested by `bun run test:hooks`.
+- Hooks are Node: `node packages/decks/scripts/deck.mjs hook lint` (PreToolUse: denies error-level AI-rhetoric patterns in deck prose; refuses the write if the scanner can't run) and `hook prompt` (adds the deck-writing reminder when a prompt asks to write or revise a deck). They need no `jq`. Wired in `.claude/settings.json` (Edit/Write/MultiEdit) and `.codex/hooks.json` (`apply_patch`, which the hook parses per file); `hooks/*.sh` are thin wrappers kept for old paths; tested by `bun run test:hooks`.
 - `decks init` installs this setup into user projects from `packages/decks/agent/`, which is rendered from `.claude/`. When a `.claude/` rule, skill or agent changes, run `bun run render:agent` (the drift test in `bun run test` fails otherwise).
 
-Antigravity and Codex read the same guidance through generated copies: `.agents/rules/` (rules with Antigravity glob frontmatter), `.agents/skills/` (symlinks into `.claude/skills/`), and `.codex/agents/deck-author.toml`. They were generated once from `.claude/`; when you change a rule, skill or the agent, update the matching generated copy in the same commit. Never edit only the copy.
+### Codex
+
+Codex reads this file, the skills under `.agents/skills/` (symlinks into `.claude/skills/`), the `deck-author` agent in `.codex/agents/deck-author.toml`, and the hooks in `.codex/hooks.json`. It does not load `.claude/rules/` on its own, so before editing a file, read every rule that covers it:
+
+| Rule | Covers |
+| --- | --- |
+| `.claude/rules/deck-writing.md` | `{examples,decks}/*/pages/*.md`, `*/slides.md`, `*/components/*.vue` |
+| `.claude/rules/prose-patterns.md` | everything under `examples/` and `decks/` (`deck-writing.md` overrides it where they disagree) |
+| `.claude/rules/deck-patterns.md` | everything under `examples/`, `decks/` and `packages/decks/` |
+| `.claude/rules/story-stage.md` | `{examples,decks}/*/components/*Stage.vue`, `{examples,decks}/*/styles/*.css`, `packages/decks/story/**`, the addon's `Story*`/`Ink*`/`Unit*`/`CodeInk*`/`RowStrip*`/`Graph3D*` components and `styles/story-*.css` |
+| `.claude/rules/deck-data.md` | `{examples,decks}/*/data/*.ts`, `{examples,decks}/*/data-sources.md` |
+| `.claude/rules/project-glossary.md` | `{examples,decks}/*/pages/*.md`, `{examples,decks}/*/components/*.vue` |
+
+Building or revising a deck starts with the `building-a-deck` skill; any chart spec also loads `openchart`; a fact-check runs `fact-checking-a-deck`. The skill names Claude Code tools (Read, Edit, subagents); use the Codex equivalent.
+
+The hooks only run once trusted: open `codex` in the main checkout, run `/hooks`, and approve the project hooks (re-approve after `.codex/hooks.json` changes). `foreman doctor` reports whether they are trusted, and foreman worktrees under `.claude/worktrees/` inherit the approval. A worktree needs `bun install` before any `bun run` command works. A hook deny means rewrite the prose; never route the write around it (a shell heredoc or script skips the hook, and `bun run lint` will fail the deck later anyway).
+
+### Generated copies
+
+Antigravity reads `.agents/rules/` (the rules with Antigravity glob frontmatter); Codex reads `.codex/agents/deck-author.toml`. Both were generated once from `.claude/`; when you change a rule or the agent, update the matching copy in the same commit. Never edit only the copy.

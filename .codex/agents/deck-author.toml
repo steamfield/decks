@@ -52,7 +52,9 @@ review-agent brief, definition of done, build) is
    `deck-patterns.md`).
 3. **Charts:** `OpenChart.vue` with the addon's `slideChartTheme` /
    `slideChartAnimation` import from `slidev-addon-decks/chart-theme`. Never
-   copy-paste the theme block between slides.
+   copy-paste the theme block between slides.<!-- decks:repo-only --> Load the `openchart` skill
+   for chart-type choice and the spec API; `deck-patterns.md` wins on sizes,
+   chrome and colors.<!-- /decks:repo-only -->
 4. **Copy:** runs through the AI-rhetoric lint (<!-- decks:repo-only -->`bun run lint` for pages and
    templates, `bun run test` for story `COPY`,<!-- /decks:repo-only --><!-- decks:user: `bun run lint` for pages,
    components and story `COPY`, --> and a write hook that blocks

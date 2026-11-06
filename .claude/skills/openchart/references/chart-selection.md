@@ -1,0 +1,86 @@
+# Story-Driven Chart Selection
+
+How to choose the right chart for the story you're telling, grounded in perceptual science.
+
+## Perceptual Accuracy Ranking
+
+Cleveland & McGill (1984) measured how accurately humans read different visual encodings. Use higher-accuracy encodings for the most important data comparisons.
+
+| Rank | Encoding | Accuracy | Example charts |
+| --- | --- | --- | --- |
+| 1 | Position on common scale | Highest | Bar, circle (dot plot), line |
+| 2 | Position on non-aligned scales | High | Small multiples |
+| 3 | Length | High | Bar (length comparison) |
+| 4 | Direction / Angle | Medium | Arc (pie/donut) |
+| 5 | Area | Low | Bubble, treemap |
+| 6 | Color saturation | Lowest | Heatmap |
+
+Position-based encodings (bars, lines, point/scatter) beat area and angle-based ones (arc, bubble) for accurate reading. Choose the encoding that matches the precision your story needs.
+
+## Story Type to Chart Type
+
+| Story you're telling | Best chart | Why it works |
+| --- | --- | --- |
+| Change over time | Line | Position on common axis reveals trend |
+| Ranking | Bar (horizontal) | Position + length, category labels stay readable |
+| Part-to-whole | Arc/donut (2-5 categories) | Angle is adequate for small category counts |
+| Correlation | Point (scatter) | Two position channels show relationship directly |
+| Distribution / spread | Circle (dot/strip plot) | Individual values visible, shows density |
+| Composition over time | Stacked area (`mark: "area"`, stacked by default when colored) | Volume + trend together in one view. |
+| Before / after comparison | Grouped bar (vertical) | Side-by-side position makes difference obvious |
+| Change between two values per category | Range (`mark: "range"`, dumbbell / arrow) | Two dots + connector read as "moved from A to B"; arrow style makes direction explicit |
+| Part-to-whole as tangible counts | Waffle (`mark: "waffle"`, "x of 100") | Unit squares make a share concrete ("27 of every 100") where a pie only shows an angle |
+| Election / legislature seat share | Parliament (`mark: "parliament"`, hemicycle) | One dot per seat in a hemicycle is the convention readers expect for chamber composition; add a majority line |
+| Daily value across a year | Calendar heatmap (`mark: "calendar"`) | Weeks-by-weekdays grid exposes weekly/seasonal rhythm in daily data |
+| Distribution with many observations | Beeswarm (`mark: "beeswarm"`) | Every observation is a dot; grouped lanes compare distributions without hiding individuals |
+| Shape of one raw variable | Histogram (`mark: "histogram"`) | Binned counts on a continuous axis; two groups overlap translucently so you compare shapes, not heights |
+| The same, smoothed | Density (`mark: "density"`) | KDE curve; cleaner for comparing two groups, at the cost of a bandwidth choice the reader can't see |
+| Flow between stages/processes | Sankey | Width encodes volume, path shows where values move |
+| Value by region, real shapes matter | Geo map (`type: "map"`, choropleth) | Readers locate themselves geographically; use tilemap instead when equal state weight beats accuracy |
+| Locations over geography | Geo map with `points` layer (symbol map) | Lat/lon dots sized/colored by value over a quiet basemap |
+
+Two line-mark recipes cover common ranking-over-time stories: a **slope chart** (change between two time points, "who gained and who lost") and a **bump chart** (rank position over several periods, "who overtook whom"). See the *Slope and Bump Recipes* section in [line.md](line.md).
+
+## Data-Ink Ratio
+
+Tufte's principle: maximize the share of ink devoted to data. Every non-data element (decorative gridlines, background fills, border boxes) should earn its place or get removed.
+
+That said, don't go full minimalist. Research shows some embellishment aids memorability. The goal is intentionality, not austerity. Remove chartjunk (3D effects, gradient fills, decorative icons). Keep elements that support comprehension (subtle gridlines, axis labels, direct data labels).
+
+## Lie Factor
+
+The visual effect size should match the data effect size. A 50% increase in data should look like roughly a 50% increase on the chart. Common violations:
+
+- Truncated y-axis on bar charts (exaggerates small differences)
+- Area-based encodings where radius maps to value (area grows quadratically)
+- Perspective/3D effects that distort proportions
+
+For bars: start at zero. For lines: truncation is acceptable because position, not length, encodes the value.
+
+## Small Multiples vs. Overloading
+
+When a single chart has too many series, split into a grid of small charts with shared axes.
+
+| Situation | Approach |
+| --- | --- |
+| 2-5 series | Single chart with color encoding |
+| 6+ series on same scale | Small multiples (one chart per series, shared axes) |
+| Series with different y-scales | Always separate charts or index to common baseline |
+| Comparing a few series from a large set | Highlight + gray (color the 2-3 that matter, gray the rest) |
+
+## Dual-Axis Alternatives
+
+Dual y-axes create arbitrary visual correlations. The chart author controls where lines appear to cross by choosing axis ranges. Readers assume visual proximity means relationship.
+
+| Instead of dual axes | Use | When |
+| --- | --- | --- |
+| Side-by-side charts | Two charts, own scales | Different units, different magnitudes |
+| Indexed chart | Percentage change from baseline | Same direction, different magnitudes |
+| Connected scatterplot | One variable per axis | Exploring actual correlation |
+| Annotation | Primary series + text context | Secondary data is supporting context |
+
+## When to Break the Rules
+
+- **Audience familiarity**: if the audience expects a specific chart type (e.g., financial candlestick), use it even if another type is perceptually more accurate
+- **Publication consistency**: match the chart style of the surrounding content
+- **Simplicity over optimality**: a slightly less-optimal chart that's instantly understood beats a perceptually perfect chart that confuses readers

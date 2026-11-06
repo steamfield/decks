@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "root=\"$(git rev-parse --show-toplevel 2>/dev/null)\"; h=\"$root/packages/decks/scripts/deck.mjs\"; [ -f \"$h\" ] || { echo \"BLOCKED: packages/decks/scripts/deck.mjs not found under this checkout's git root, so the patch is refused rather than applied unlinted.\" >&2; exit 2; }; CLAUDE_PROJECT_DIR=\"$root\" node \"$h\" hook lint || exit 2",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "root=\"$(git rev-parse --show-toplevel 2>/dev/null)\"; h=\"$root/packages/decks/scripts/deck.mjs\"; [ -f \"$h\" ] || exit 0; CLAUDE_PROJECT_DIR=\"$root\" node \"$h\" hook prompt",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

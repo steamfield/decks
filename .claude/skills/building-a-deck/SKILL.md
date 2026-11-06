@@ -71,6 +71,11 @@ are just `src:` lines. Footers are `<OdFooter />` with no page prop (numbering
 comes from Slidev nav). Scripted demos: use `useScriptedDemo()` in a
 deck-local component (`examples/agent-experience/components/AxErrorCards.vue`
 is the reference); the page stanza declares `clicks: N`. Never timers.
+Charts are `<OpenChart :spec>` specs with the addon's slide theme ("Charts" in
+`.claude/rules/deck-patterns.md`)<!-- decks:repo-only -->; for chart-type choice,
+encodings, annotations and the spec API, load the `openchart` skill
+(`.claude/skills/openchart/`, pinned to the OpenChart version the decks
+render with), and let `deck-patterns.md` win where they disagree<!-- /decks:repo-only -->.
 
 **Story:** one `<Name>Stage.vue` per slide in `<deck>/components/`, on
 `useStage` (`.claude/rules/story-stage.md`). Its `COPY` array carries the

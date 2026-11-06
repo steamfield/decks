@@ -635,6 +635,129 @@ silent('', 'silent on an empty prompt')
   rmSync(project, { recursive: true, force: true })
 }
 
+console.log('== decks hook lint: Codex apply_patch ==')
+
+const patch = (...body) => ({
+  tool_name: 'apply_patch',
+  hook_event_name: 'PreToolUse',
+  tool_input: { command: ['*** Begin Patch', ...body, '*** End Patch'].join('\n') },
+})
+{
+  const project = scratch('decks-hook-patch-')
+  mkdirSync(join(project, 'decks/talk/pages'), { recursive: true })
+  writeFileSync(join(project, 'decks/talk/slides.md'), '---\nsrc: ./pages/01.md\n---\n')
+  writeFileSync(
+    join(project, 'decks/talk/pages/01.md'),
+    '<!--\nSLIDE 1\n-->\n\n<p>Ridership is back.</p>\n<p>An em — dash already here.</p>\n',
+  )
+  const at = { project }
+  assertDeny(
+    patch('*** Add File: decks/talk/pages/02.md', '+<p>An em — dash.</p>'),
+    'denies an em dash in an added page',
+    at,
+  )
+  const r = assertDeny(
+    patch(
+      '*** Update File: decks/talk/pages/01.md',
+      '@@',
+      '-<p>Ridership is back.</p>',
+      "+<p>Here's the thing about ridership.</p>",
+    ),
+    'denies a banned phrase in an updated page',
+    at,
+  )
+  check(
+    /decks\/talk\/pages\/01\.md:5\b/.test(r.json?.hookSpecificOutput?.permissionDecisionReason ?? ''),
+    'an update reports the hit at its line in the file after the patch',
+    () => r.json?.hookSpecificOutput?.permissionDecisionReason,
+  )
+  assertNotDeny(
+    patch(
+      '*** Update File: decks/talk/pages/01.md',
+      '@@',
+      '-<p>Ridership is back.</p>',
+      '+<p>Ridership passed 2019 in March.</p>',
+    ),
+    'allows a clean update next to an existing hit it did not write',
+    at,
+  )
+  assertDeny(
+    patch(
+      '*** Add File: src/notes.md',
+      '+An em — dash outside a deck.',
+      '*** Add File: decks/talk/components/TideStage.vue',
+      '+<script setup>',
+      "+const COPY = [{ lead: 'Tides', body: 'A seamless dance.' }]",
+      '+</script>',
+    ),
+    'a multi-file patch is judged per file (out-of-scope file skipped, card COPY caught)',
+    at,
+  )
+  assertNotDeny(
+    patch('*** Add File: src/notes.md', '+An em — dash outside a deck.'),
+    'ignores a patch that touches no deck prose',
+    at,
+  )
+  assertNotDeny(
+    patch('*** Delete File: decks/talk/pages/01.md'),
+    'a delete writes no prose',
+    at,
+  )
+  assertDeny(
+    patch(
+      '*** Update File: decks/talk/pages/01.md',
+      '*** Move to: decks/talk/pages/03.md',
+      '@@',
+      '-<p>Ridership is back.</p>',
+      '+<p>An em — dash.</p>',
+    ),
+    'a moved page is judged at its new path, replayed from its old one',
+    at,
+  )
+  rmSync(project, { recursive: true, force: true })
+}
+
+console.log('== .codex/hooks.json wiring ==')
+{
+  const codex = JSON.parse(readFileSync(join(ROOT, '.codex/hooks.json'), 'utf8'))
+  const lintCmd = codex.hooks?.PreToolUse?.find((h) => h.matcher === '^apply_patch$')?.hooks?.[0]
+    ?.command
+  const promptCmd = codex.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command
+  check(lintCmd?.includes('hook lint'), 'Codex apply_patch runs `decks hook lint`', () =>
+    JSON.stringify(codex),
+  )
+  check(promptCmd?.includes('hook prompt'), 'Codex UserPromptSubmit runs `decks hook prompt`', () =>
+    JSON.stringify(codex),
+  )
+  // Run the way Codex does: no CLAUDE_PROJECT_DIR, cwd at the checkout.
+  const { CLAUDE_PROJECT_DIR: _, ...env } = process.env
+  const sh = (command, input, cwd = ROOT) =>
+    spawnSync('sh', ['-c', command], { cwd, input, encoding: 'utf8', env })
+  const planted = JSON.stringify(
+    patch('*** Add File: examples/agent-experience/pages/99-x.md', '+An em — dash.'),
+  )
+  const r = sh(lintCmd, planted)
+  check(
+    r.status === 0 && r.stdout.includes('"deny"'),
+    'the wired Codex command denies a planted line',
+    () => `rc=${r.status} ${r.stdout}${r.stderr}`,
+  )
+  const outside = scratch('decks-hook-nogit-')
+  const gone = sh(lintCmd, planted, outside)
+  rmSync(outside, { recursive: true, force: true })
+  check(
+    gone.status === 2,
+    'the wired Codex command refuses (exit 2) outside a checkout with the CLI',
+    () => `rc=${gone.status} ${gone.stderr}`,
+  )
+  const p = sh(promptCmd, JSON.stringify({ prompt: 'write a deck about tides', cwd: ROOT }))
+  check(
+    p.status === 0 && p.stdout.includes('deck-writing.md'),
+    'the wired Codex prompt hook adds the reminder',
+    () => `rc=${p.status} ${p.stdout}${p.stderr}`,
+  )
+}
+
 console.log('== settings.json wiring ==')
 
 const settings = JSON.parse(readFileSync(join(ROOT, '.claude/settings.json'), 'utf8'))

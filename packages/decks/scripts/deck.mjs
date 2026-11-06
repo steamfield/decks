@@ -32,9 +32,10 @@
 //       the deck on a free port and stop it after; they need playwright-chromium
 //       (snap diff: pngjs, pixelmatch), optional peers installed on demand
 //   decks fact-extract <alias|deck-dir>   every figure in a deck, for the fact-check
-//   decks hook lint          Claude Code PreToolUse hook: deny deck prose with an
-//                            error-level pattern (hook JSON on stdin)
-//   decks hook prompt        Claude Code UserPromptSubmit hook: the deck-writing reminder
+//   decks hook lint          PreToolUse hook (Claude Code Edit/Write/MultiEdit, Codex
+//                            apply_patch): deny deck prose with an error-level
+//                            pattern (hook JSON on stdin)
+//   decks hook prompt        UserPromptSubmit hook: the deck-writing reminder
 //
 // The deck registry is decks.json in the current directory. Its `_config`
 // entry sets `decksDir` (where `new` scaffolds), `outDir` and `base` (both
