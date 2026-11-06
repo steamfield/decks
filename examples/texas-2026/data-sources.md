@@ -481,7 +481,8 @@ Rebuilt 2026-11-06 around three paths after the author questioned the earlier "i
 | New commissioner's options | UH's Duncan Klussmann: a new commissioner might close the failing schools rather than take over the district; UT's Rachel White: the commissioner "would still be bound by state law" | Confirmed as reporting | [Texas Tribune, Nov 4][election-aisd] | 2026-11-06 |
 | Houston under state control | Board of managers installed June 1, 2023; extended through June 1, 2027 | Confirmed | [TEA extension announcement][hisd-extension] | 2026-11-06 |
 | "Most likely" column | Petitions hold: two campuses close, elected board keeps the district | FLAG: author judgment | Follows from the petition record above; no probability estimated. Fails if validation, the TEA complaint or a trustee request changes the remedy. | 2026-11-06 |
-| Takeover columns | A takeover run by a Hinojosa-appointed commissioner would aim to help the district; one run as in Houston would be imposed from the top | FLAG: author judgment | Hinojosa pledge and §39A.207 above; Houston record. A scenario, not an observed outcome. | 2026-11-06 |
+| Takeover columns | Labeled "Hinojosa's TEA" and "Morath's TEA". A takeover run by a commissioner Hinojosa appoints would aim to help the district recover and return control; one run by Morath's TEA would follow the Houston model | FLAG: author judgment | Hinojosa pledge and §39A.207 above; Houston record. Morath may sign the February order; her commissioner can replace managers only after confirmation. A scenario, not an observed outcome. | 2026-11-06 |
+| Hinojosa's AISD service | Austin ISD trustee, 2012 to late 2015 | Confirmed as reporting | [Texas Tribune, Nov 4][election-aisd] | 2026-11-06 |
 
 ## Slide 13: Watch and close
 

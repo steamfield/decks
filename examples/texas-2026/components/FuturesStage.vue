@@ -6,8 +6,8 @@ import { futureColumns, futureDimensions, futureRows, futureDisplay, houston, pe
 
 const COPY = [
   { lead: `Valid petitions would close ${petitions.campuses.join(' and ')}.`, body: 'Initial counts topped the required majority. TEA is reviewing a complaint about signatures.' },
-  { lead: 'A takeover puts appointed managers in charge.', body: 'A new commissioner can replace managers named before inauguration.' },
-  { lead: 'Who runs a takeover shapes its aims.', body: `Hinojosa has pledged to end state takeovers. Houston has been under a state board since ${houston.installed.slice(0, 4)}.` },
+  { lead: 'If petitions fail, a state board takes over.', body: 'Morath may appoint it. Once confirmed, her commissioner can replace every manager.' },
+  { lead: "Hinojosa's TEA would run a different takeover.", body: `She pledged to end state takeovers. Morath's TEA has run Houston's since ${houston.installed.slice(0, 4)}.` },
 ]
 const rows = reactive(futureRows.map((_, i) => ({ reveal: i === 0 ? ON : OFF, emphasis: ON })))
 const s = reactive({ arrive: OFF, middle: OFF })

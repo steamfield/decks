@@ -25,16 +25,16 @@ export const houston = { installed: '2023-06-01', extendedThrough: '2027-06-01',
 // FLAG: author judgment. Column 0 is the author's "most likely"; no probability is estimated.
 export const futureColumns = [
   { label: 'Petitions hold', tag: 'Most likely', kind: 'scenario', status: 'flag', basis: 'author judgment from the petition record' },
-  { label: 'New commissioner', tag: 'Scenario', kind: 'scenario', status: 'flag', basis: 'author judgment; §39A.207 and Hinojosa pledge' },
-  { label: 'Houston-style', tag: 'Scenario', kind: 'scenario', status: 'flag', basis: 'author judgment; Houston record' },
+  { label: "Hinojosa's TEA", tag: 'Takeover', kind: 'scenario', status: 'flag', basis: 'author judgment; §39A.207 and Hinojosa pledge' },
+  { label: "Morath's TEA", tag: 'Takeover', kind: 'scenario', status: 'flag', basis: 'author judgment; Houston record' },
 ] as const
 export const futureDimensions = ['Board', 'Who leads', 'State aim'] as const
 
 // Display labels; every cell is a scenario, not an observed outcome.
 export const futureRows = [
   ['Elected board stays', 'Replaced for now', 'Replaced for years'],
-  ['Elected trustees', 'Managers a new commissioner picks', 'Managers named under Morath'],
-  ['Close Burnet and Webb', 'Help the district recover', 'Overhaul from the top'],
+  ['Elected trustees', 'Managers her commissioner picks', 'Managers Morath picks'],
+  ['Close Burnet and Webb', 'Help AISD recover, return control', 'Top-down overhaul, as in Houston'],
 ] as const
 export const futureDisplay = {
   scenario: 'Scenario',
