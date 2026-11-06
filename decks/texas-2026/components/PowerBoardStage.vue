@@ -19,7 +19,7 @@ const TILES = [
 const shared = (i: number) => i === 0 || i === 5
 const COPY = [
   { lead: `Democrats won ${statewideOffices.length} statewide offices.`, body: 'The winners have yet to take office.' },
-  { lead: 'The House has a Democratic majority.', body: 'The final House seat count is pending.' },
+  { lead: 'Democrats won a House majority.', body: 'The final House seat count is pending.' },
   { lead: 'Republicans kept the Senate.', body: `${senate.republican} Republican and ${senate.democratic} Democratic seats are expected next session.` },
   { lead: `The education-board majority depends on District ${sboe.district}.`, body: `A Democratic win there would give the party ${sboe.democratic} seats. A recount is possible.` },
 ]

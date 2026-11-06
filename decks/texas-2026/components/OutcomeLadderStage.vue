@@ -15,9 +15,9 @@ const margin = senateMarginSummary.fourthClosestMarginPp.toFixed(1)
 const previousMargin = senateMarginSummary2022.fourthClosestMarginPp?.toFixed(1)
 const previousSource = senateMargins2022.find(race => race.district === senateMarginSummary2022.fourthClosestDistrict)?.source
 const COPY = [
-  { lead: 'Each step adds one more office.', body: 'Step one is no change. Step six adds a Senate majority.' },
+  { lead: 'Each step adds offices or a chamber.', body: `Step ${outcomeLadder[0].rung} is no change. Step ${outcomeLadder[outcomeLadder.length - 1].rung} adds a Senate majority.` },
   { lead: 'Democrats won the governorship and the House.', body: 'The governor can veto bills and appoint officials. The House votes on school bills.' },
-  { lead: 'Democrats won lieutenant governor, attorney general and comptroller.', body: `The education-board majority depends on District ${sboe.district}.` },
+  { lead: 'Democrats also won the other statewide offices shown.', body: `The education-board majority depends on District ${sboe.district}.` },
   { lead: `Democrats needed to flip ${senateMath.netFlipsNeeded} Senate seats.`, body: `In District ${senateMarginSummary.fourthClosestDistrict}, the fourth-closest contest, the Republican won by ${margin} points.` },
   { lead: `In ${comparisonLabels.previousElection}, the fourth-closest gap was ${previousMargin} points.`, body: `Same ${senateMath.republicanDefenses} Republican-held districts. The fourth-closest was District ${senateMarginSummary2022.fourthClosestDistrict} then.` },
 ]

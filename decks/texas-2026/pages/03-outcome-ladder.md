@@ -25,10 +25,10 @@ They won none of the Republican-held contests. The fourth-closest margin shown h
 Republican share minus the Democratic share of valid votes in that race.
 The calculation uses each district's valid candidate votes and excludes undervotes.
 
-[click] The comparison group is the eleven Republican-held districts on the
-current ballot. Five had Democratic challengers in 2022.
-The fourth-closest Republican margin was 39.9 points
-in 2022, in District 4. In 2026, the fourth-closest was District 18 at
-8.6 points. The candidates and turnout also differed.
+[click] The comparison uses the Republican-held districts on the current ballot.
+Read the years, districts and margins from the displayed comparison, which uses
+the data module. Each ranked margin concerns a Democratic challenger; the earlier
+election also included unopposed races and Libertarian-only opposition.
+The candidates and turnout also differed.
 No flip probability was calculated.
 -->

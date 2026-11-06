@@ -39,7 +39,7 @@ export const senateBallot = [
   { district: 18, incumbent: 'Lois Kolkhorst', party: 'Republican' },
   { district: 19, incumbent: 'Roland Gutierrez', party: 'Democratic' },
   { district: 21, incumbent: 'Judith Zaffirini', party: 'Democratic' },
-  { district: 22, incumbent: 'Brian Birdwell', party: 'Republican' },
+  { district: 22, incumbent: 'Brian Birdwell (former; seat vacant at audit)', party: 'Republican' },
   { district: 24, incumbent: 'Pete Flores', party: 'Republican' },
   { district: 26, incumbent: 'José Menéndez', party: 'Democratic' },
   { district: 28, incumbent: 'Charles Perry', party: 'Republican' },

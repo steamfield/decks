@@ -54,7 +54,7 @@ Module: `data/03-outcome-ladder.ts`.
 | Rung reached | 4 confirmed; 5 provisional | Pending at rung 5 | Slide 2 outcomes: SBOE majority remains conditional on District 8. | 2026-11-06 |
 | “Best” and rung ordering | Author's judgment relative to Hinojosa's public-school platform | FLAG: author-reported | `OUTLINE.md`, Slide 3; not a statistical rank or a neutral ordering of voter preferences. | 2026-11-06 |
 
-| Ballot district | Pre-election incumbent | Party |
+| Ballot district | Incumbent / former incumbent | Party last holding seat |
 |---|---|---|
 | 1 | Bryan Hughes | Republican |
 | 2 | Bob Hall | Republican |
@@ -67,7 +67,7 @@ Module: `data/03-outcome-ladder.ts`.
 | 18 | Lois Kolkhorst | Republican |
 | 19 | Roland Gutierrez | Democratic |
 | 21 | Judith Zaffirini | Democratic |
-| 22 | Brian Birdwell | Republican |
+| 22 | Brian Birdwell (former; seat vacant at audit) | Republican |
 | 24 | Pete Flores | Republican |
 | 26 | José Menéndez | Democratic |
 | 28 | Charles Perry | Republican |
@@ -328,7 +328,7 @@ Module: `data/08-senate-arc.ts`, importing the expected Senate split.
 | Appointment threshold | Two-thirds of senators present | Confirmed | [Art. IV §12(b)-(c)][cn4]. | 2026-11-06 |
 | Threshold with full attendance | ceil(31 × 2 / 3) = 21 | Confirmed conditional arithmetic | All 31 present. It is not an invariant threshold independent of attendance. | 2026-11-06 |
 | Additional votes with all Democrats supporting | 21 − 12 = 9 | Confirmed conditional arithmetic | Requires all 12 Democrats still serving, present and supporting the nominee; vacancies or opposition change the calculation. | 2026-11-06 |
-| Holdover | Incumbent continues duties until successor qualifies | Confirmed general rule; Morath departure Pending | [Art. XVI §17(a)][cn16]. “Qualifies” is broader than merely nominated or confirmed. Lawful resignation/removal/vacancy rules can change the route. | 2026-11-06 |
+| Holdover | Incumbent continues duties until successor qualifies | Confirmed general rule; Morath departure Pending | [Art. XVI §17(a)][cn16]. “Qualifies” is broader than merely nominated or confirmed. Resignation alone does not end holdover service; [AG Letter Opinion 97-092][holdover-opinion] explains that an accepted resignation can leave the officer serving until a successor qualifies. Lawful removal or another applicable vacancy rule requires separate analysis. | 2026-11-06 |
 | Removal route | Appointing governor plus two-thirds of Senate present | Confirmed statutory text; incoming-governor application FLAG | [Art. XV §9][cn15] specifies the governor who appoints the officer; [TEC §7.053][ed7] incorporates that removal mechanism. No legal determination was found establishing that Hinojosa can invoke Abbott's appointing-governor route. | 2026-11-06 |
 | Current/incoming governors | Greg Abbott / Gina Hinojosa | Confirmed election context; inauguration Pending | [Tribune][election-aisd] and [KPRC][harrison]. | 2026-11-06 |
 | Senate rules changes | Possible changes to Lt. Governor's committee/agenda powers | Pending | [Tribune November 5][senate-news] reports discussion; [art. III §11][cn3] lets each chamber determine its rules. No adopted 2027 change verified. | 2026-11-06 |
@@ -407,7 +407,7 @@ Module: `data/12-houston.ts`.
 | Intervention extended through | June 1, 2027 | Confirmed extension; elected-board return Pending | Same [TEA announcement][hisd-extension]. Extension end is not a guaranteed complete handback date. | 2026-11-06 |
 | Enrollment series | Eight school years, 2018–19 through 2025–26 | Confirmed | TEA enrollment query and exact rows below. | 2026-11-06 |
 | Loss since pre-takeover baseline | 189,934 − 168,812 = 21,122; about 21,000 | Confirmed arithmetic | Baseline 2022–23, endpoint 2025–26. [Tribune September 21][hisd-report] reports the rounded decline. | 2026-11-06 |
-| Earlier “over 13,000” loss | 189,934 − 176,727 = 13,207 | Confirmed different endpoint | [University of Houston January 15][uh] covers the first two years, through 2024–25. Not a conflict with the later three-year comparison. | 2026-11-06 |
+| Earlier “over 13,000” loss | TEA query: 189,934 − 176,727 = 13,207; UH text: 13,208 | Confirmed rounded comparison; exact source difference unresolved | [University of Houston January 15][uh] covers the first two years, through 2024–25. Its exact figure differs from the query by one student; the cause is unverified. Both support “over 13,000.” Neither replaces the later three-year chart comparison. | 2026-11-06 |
 | Rating trend | A/B counts 93 → 170 → 198 → 205 from 2022–23 to 2025–26 | Confirmed snapshot; final 2026 ratings Pending | TEA campus aggregate below. D/F counts for those years: 120, 41, 17, 14. | 2026-11-06 |
 | Causation | Not established by these series | Confirmed limitation | Enrollment already fell before 2023; annual campus populations and accountability methodology change. These data are descriptive. | 2026-11-06 |
 
@@ -552,6 +552,10 @@ The scheduled December 17 voting meeting is after the December 15 trustee-reques
 | “Hinojosa can appoint a permanent commissioner without confirmation” | TEC and Constitution require Senate consent | Checked wrong; banned |
 | “Hinojosa can remove Morath unilaterally on inauguration day” | No such route established; removal/holdover restrictions apply | Unsupported; banned |
 | “Two years automatically ends a board of managers” | Ratings condition/discretion and separate expiration process | Checked wrong; banned |
+| “Resignation alone ends Morath's holdover service” | Art. XVI §17 and AG Letter Opinion 97-092 preserve holdover after an accepted resignation | Checked overbroad; banned |
+| “Five decisions are due by June” | June is the author's watch horizon; several topics have no such deadline | Unsupported; banned |
+| “An intervention is the most likely outcome” as a factual headline | No probability model or attributed forecast; author scenario only | Unsupported; banned as a settled claim |
+| “Only a Senate majority would have done better” as a settled election result | The education-board majority is still pending; ladder ordering is author judgment | Unsupported; banned as a settled claim |
 | “AISD currently has an unaddressed $181M deficit” | Original pre-reduction projection | Checked wrong use of historical figure |
 | “AISD pays exactly $715M in recapture every year” | Year-specific adopted estimate $715.5M | Checked wrong; banned |
 | “Houston lost 21,000 in a single year” or “the takeover caused all losses” | Three-school-year comparison; causal effect not identified | Checked wrong / unsupported; banned |
@@ -679,3 +683,98 @@ All twenty-eight distinct URLs in `source-outline.md` were opened or fetched on 
 [bre]: https://comptroller.texas.gov/transparency/reports/biennial-revenue-estimate/
 [aisd-home]: https://www.austinisd.org/
 [tea-home]: https://tea.texas.gov/
+[holdover-opinion]: https://www2.texasattorneygeneral.gov/opinions/opinions/48morales/lo/1997/htm/lo1997092.htm
+[refresh-methodology]: https://tea.texas.gov/taa-letters/2023-accountability-manual
+
+## Finished-deck fact-check report (2026-11-06)
+
+Deck: `decks/texas-2026`, alias `tx26`. This report covers all fourteen pages, their presenter notes, all thirteen Stage components, the cover and every data module. The report is kept in this permitted provenance file; the hand-off also prints a per-slide table.
+
+Status: supported findings corrected; author flags and pending decisions remain. No numerical chart value required correction. The named-source records support the historical comparison; the official historical-results portal remains unreachable. The report has 41 grouped result rows: 23 VERIFIED, 10 MISMATCH-FIXED, 7 FLAGGED and 1 UNVERIFIABLE. These are claim families, not counts of individual campus values. Remaining counts: 0 unresolved mismatches, 0 unsourced arrays/slides, 0 unsourced humans, 0 unchecked external citations and 0 stale records. Four of the flagged families are author choices: byline, ladder ordering, scenarios and watch selection.
+
+### Session evidence and method
+
+`bun run fact-extract tx26` completed. Every scalar export and every Stage headline, COPY entry, display label and presenter note was read separately. Geometry, bill/section identifiers and slide numbering are not statistical figures. The source links were fetched anew; the previous “Confirmed” labels were not evidence for this audit.
+
+Seventy-six distinct URLs already recorded in this file were attempted. Seventy-five returned content, including the TEA workbook; `https://results.texas-election.com/races` returned `HTTP Error 403: Forbidden`. The Senate news page failed in the browser tool and succeeded by direct HTTP. The TEA appeal PDF was read through the browser's PDF text and page screenshot after local text extraction yielded no usable text. The additional AG holdover opinion and TEA methodology notice were opened in this session.
+
+The SQL blocks above were rerun. Trailing semicolons initially caused `HTTP 400: SQL validation failed`; removing the trailing delimiters succeeded without changing query semantics. Three campus-page requests hit `Too many concurrent queries (limit: 4)` and succeeded on sequential retry. These recovered failures do not make the returned data unverifiable.
+
+Actual returned TEA rows, SQL, column names and origin URLs are preserved in `data/fact-check-evidence.json`. Its `austinSnapshot` contains all 1,123 rows, retrieved with offsets 0 through 1,080. Comparison against `05-waffle-campuses.json` found exact matches for all 114 current campus names, ratings, scores, enrollment counts and economically disadvantaged proportions, plus all 1,006 historical rating entries. No tolerance or estimate was needed. The four smaller query results are retained separately in the same evidence file.
+
+The existing Slide 3 returns tables and Slides 5/12 query tables above were compared against this session's source rows. Their values remain the evidence tables for those claims. Imported data modules were also evaluated to check all derived counts and margins. The rejected precinct query was rerun: `2 | Bob Hall | REP | 144010` and `5 | Tommy Estes | DEM | 983` reproduce the reasons for excluding it.
+
+### Per-slide results
+
+Each row covers the listed claim family; multiple dates, amounts or names are grouped only when they share an opened source. VERIFIED means the stated qualification is supported, including an explicitly preliminary result or published future schedule. It does not mean the pending event happened.
+
+| Slide | Claim / location | Source opened or query run | Status | Evidence quote, returned row or computation |
+|---|---|---|---|---|
+| 1 | Cover election context; `01-cover.ts`, page | [SOS][sos], [House][house], [Senate][senate-news] | VERIFIED | SOS statewide rows reproduced below; House wins/concessions establish a reported majority; Senate report gives expected 19 R / 12 D. Winners are not yet inaugurated. |
+| 1 | Byline and presentation month; page | `OUTLINE.md`, Cover specification; `01-cover.ts` | FLAGGED | Author-supplied record: `Riley Hilliard; Austin; 2026-11`. Page now reads the record, including its formatted month. Public identity/date still require author confirmation. |
+| 2 | Statewide winners and vote counts; `02-power-board.ts`, PowerBoardStage | [SOS][sos] | VERIFIED | `Governor: Hinojosa 5230789, Abbott 4524527; Lt. Governor: Goodwin 5083581, Patrick 4484652; AG: Johnson 5133629, Middleton 4502442; Comptroller: Eckhardt 5014496, Huffines 4511185`. Updated `11/04/2026 04:59 PM`. |
+| 2 | House majority versus projected roster; module/card/notes | [House][house], [art. III §2][cn3] | MISMATCH-FIXED | Reported arithmetic: `62 + 11 called flips + 3 concessions = 76`; seven further leads yield `83 D / 67 R`. Constitution: `150 members`. Changed present-tense “has” to election-result “won”; HD 93 and final totals stay pending. |
+| 2 | Senate and SBOE projections; module/cards/notes | [Senate][senate-news], [SBOE][sboe-news], [SOS][sos] | VERIFIED | Senate expected `19 R / 12 D`; SBOE seven each outside District 8. SOS: `Walker 300108; Young 299544`; `300108 - 299544 = 564`. Young had not conceded; a possible recount is not a verified filing. |
+| 2 | Canvass schedule and chamber thresholds | [SOS advisory][canvass], [arts. III][cn3] and [IV][cn4] | VERIFIED | Advisory gives `November 21, 2026` through `December 7, 2026`; art. IV §3 separately governs executive returns. `floor(150/2)+1=76`; `floor(31/2)+1=16`. |
+| 3 | Ballot districts, names and previous party; `senateBallot` | [SOS][sos], [TCTA][senate-ballot], [Senate roster][senate-roster], 2023 Senate Journal linked above | MISMATCH-FIXED | SOS lists `1,2,3,4,5,9,11,13,18,19,21,22,24,26,28,31`. Roster lists `Constituent Services* / District 22` and says the asterisk marks a vacancy. Birdwell is now identified as former; party classification means the party last holding the seat. Other crosswalk names match. |
+| 3 | Feasibility and outcome arithmetic; `senateMath`, `reachedRung` | Ballot/roster sources above; module evaluation | VERIFIED | `16 contested = 11 R defenses + 5 D defenses`; `12 - 5 = 7 D holdovers`; `7 + 5 + 4 = 16`; `5 + 4 = 9` contested wins; maximum `7 + 16 = 23`. Rung `4` reached; rung `5` conditional on SBOE. |
+| 3 | Eleven current race names, vote totals, margins | [SOS][sos]; Slide 3 source rows above | VERIFIED | Every candidate/vote pair matches. Sorted district/margin rows: `2/2.7162; 11/2.9902; 5/6.6072; 18/8.5909; 22/11.9570; 24/13.2795; 4/16.5972; 3/38.9867; 28/39.4265; 1/43.2119; 31/46.2926`. Margin is `100*(R-D)/(R+D)`. All eleven Republican wins, zero Democratic flips. |
+| 3 | Historical candidates, parties, counts and comparison | Eleven individual TXElectionResults race pages linked above; Senate Journal | VERIFIED | All seven reported vote pairs and SD 3's `3941` other votes match. Pages identify Democratic versus Libertarian candidates in their party-marked result bars. Four single-candidate pages contain zero placeholders, correctly stored as null. Fourth Democratic contest: `100*(202341-86946)/289287 = 39.889452343174774`; current fourth: `100*(196125-165093)/361218 = 8.590934006610967`. Rounded displays `39.9` and `8.6` match. |
+| 3 | Direct official 2022 archive retrieval | [Official results portal](https://results.texas-election.com/races) | UNVERIFIABLE | `HTTP Error 403: Forbidden`. Named compilation is verified above; do not call it a direct successful retrieval of the primary archive. |
+| 3 | Ladder ranking, first card and headline | `OUTLINE.md`, outcome arrays, SBOE reporting | MISMATCH-FIXED | “One more office” was false for a multi-office rung; step numbers were typed twice; “Only a Senate majority” treated the pending SBOE rung as achieved. Corrected these strings and removed duplicated comparison figures from notes; the displayed comparison reads the constants. Ordering remains author judgment. |
+| 3 | Platform-relative ladder ordering | `OUTLINE.md`, Slide3; `ladderJudgment` | FLAGGED | The author ranks combinations of offices against Hinojosa's public-school platform. No source makes this a neutral ordering of voter preferences or an estimated likelihood. |
+| 4 | Legislature, TEA, commissioner, trustees and appointed board | [ED 7][ed7], [ED 11][ed11], [ED 39A][ed39a], [art. III][cn3], [Morath reporting][election-aisd] | VERIFIED | §7.051: governor appoints with Senate advice/consent; §7.052: `four years commensurate with the term of the governor`; §11.151(b): trustees govern/oversee management; §39A.202: trustee powers suspended during managers' appointment. Article identifies Mike Morath and Abbott's appointment. |
+| 5 | All snapshot records, hover facts and rating histories | TEA paginated query, evidence JSON; [workbook][ratings-workbook] | VERIFIED | `1123 source rows; 114 snapshot records; 1006 historical grades; 0 mismatches`. Example row: `227901064, GARCIA YMLA, 2025-2026, B, 85, 243, 0.975`. |
+| 5 | Burnet/Webb sequences and appeals | TEA query; [AISD][aisd-appeal], [KUT][kut-appeal], [appeal schedule][appeals] | VERIFIED | Counted years `2019,2023,2024,2025,2026`: Burnet `F/54, F/55, F/57, F/54, F/59`; Webb `F/52, F/59, F/54, F/59, F/58`. Both appealed. Intervening disaster/SB 1365 rows are Not Rated. Final ratings/counts remain pending. |
+| 5 | Waffle denominator and closures | TEA query; [Austin Current][transfers], [AISD closure][paredes], [consolidation][consolidate] | VERIFIED | Query `A28/B33/C22/D11/F20/Not Rated8 = 122`; A-F `114`; remove the twelve named closed rated records listed above: `102`. Open own-grade D/F `25`; those D/F throughout 2024–26 `20`. Named report confirms six transfer pairs and ten retired numbers, six of them A-F records. |
+| 5 | Tier arithmetic versus legal classification | Module evaluation; [transfer report][transfers]; [§39A.118][ed39a] | FLAGGED | Computed `chronic2/atFour9/dfOther20/other71 = 102`. Arithmetic matches; six inherited histories and own-record legal counts require TEA letters/final counts. The algorithm's blanket D pause is not a general legal determination. |
+| 6 | Trigger, remedies, petitions, supplementary oversight | [§§39A.111–.112, .117–.118][ed39a]; [TAC §97.1065][tac] | VERIFIED | Trigger `five consecutive school years`; alternatives `(1) board of managers; (2) closure`. TAC: `more than 50%` and `only one parent signature per enrolled student`; trustees need public-meeting majority approval; commissioner may accept alternative; supplementary oversight allowed. Pending validation/appeals remain explicit. |
+| 6 | Petition snapshot and complaint status | [Austin Politics][petition-news] | VERIFIED | Reported record: `Oct. 30 enrollment`; complaint allegations under TEA review, no announced findings. Snapshot date is reported practice, not a date specified in the statute. |
+| 7 | Election, petition and intervention dates | [SOS][sos], [TAC §97.1065(d)][tac] | VERIFIED | `2026-11-03` election; `(1)(A) October15; (1)(C) December1; (3)(B) December15; (4) January30; (5) February15`. Order deadline follows a valid petition and any board request; implementation may be current or subsequent school year. |
+| 7 | Appeal estimate versus final publication | [Austin Politics][petition-news], [TEA PDF p.2][appeals] | VERIFIED | Report: `Around Dec. 10`; TEA rows: `Prior to 12/11/2026` decisions, `12/11/2026` final ratings and consecutive-year counts. Both are qualified correctly. |
+| 7 | Inauguration and commissioner identity at talk | [Art. IV §4][cn4], [LRL][session-calendar], [Morath reporting][election-aisd] | MISMATCH-FIXED | LRL starts session `Jan12,2027`; first following Tuesday is `Jan19,2027`, with constitutional practicability qualification. Replaced “at the time of this talk” with the research cutoff and required refresh; future commissioner identity is not established. |
+| 8 | Confirmation threshold, split and additional votes | [Art. IV §12][cn4]; Senate source above | MISMATCH-FIXED | “two-thirds of the Senate present”; `ceil(31*2/3)=21`; `21-12=9`. Headline now carries the attendance assumption. Vacancies and Democratic support can change the calculation. |
+| 8 | Holdover wording and resignation | [Art. XVI §17][cn16], [AG LO 97-092][holdover-opinion] | MISMATCH-FIXED | Constitutional endpoint: successor “duly qualified.” AG: “the law operates to continue him or her in office until his successor qualifies.” Removed resignation as an automatic earlier endpoint. |
+| 8 | Incoming-governor removal route | [Art. XV §9][cn15], [TEC §7.053][ed7] | FLAGGED | Text specifies “the governor who appoints an officer” and two-thirds present. No ruling applying this route to the incoming governor was established. |
+| 8 | Proposed rules / Harrison special-session request | [Senate report][senate-news], [KPRC][harrison], [arts. III][cn3] and [IV][cn4] | VERIFIED | Harrison's embedded request is dated `November4,2026`; article dated November5 identifies him as a Republican representative. Rule changes are discussed, not verified as adopted. Senators set rules; governor convenes; Lt. Governor's Senate presidency is constitutional. |
+| 9 | Manager replacement, early removal, expiration and further failure | [TEC §§39A.207–.209][ed39a] | VERIFIED | §207: replace individual manager “at any time.” §209(a): two consecutive acceptable ratings, discretionary removal. §208: notice by second anniversary, up to two additional years, one-third trustee replacement after each of last three years. §209(b)/(c): two further unacceptable years permit replacement after consultation; oversight may follow. |
+| 10 | Executive tools and legislation | [Art. IV][cn4], [art. III][cn3], [GV 401][gv401], [ED 7][ed7], [29][ed29], [39][ed39], [39A][ed39a], [48][ed48] | VERIFIED | §401.041 calls governor chief budget officer; §401.046 requires budget delivery. Art. IV covers nomination/conditional recess appointments, veto/override and special sessions. ED §29.352 assigns voucher administration to comptroller; other cited chapters establish testing, intervention and funding law. These statutes need legislative change. |
+| 10 | Bill origination in presenter notes | [Art. III §33][cn3] | MISMATCH-FIXED | “All bills for raising revenue shall originate in the House of Representatives.” Added the exception to the overbroad either-chamber claim. |
+| 11 | HB 2 funding, period and bipartisan vote | [Senate report][hb2-senate], [enrolled act][hb2-enrolled], [summary][hb2-summary] | VERIFIED | Senate describes `$8.5 billion in new school funding` for the upcoming biennium. Act certification: `May23,2025; Yeas31; Nays0`. Act §7.22 explicitly covers school years `2025-2026 and 2026-2027`; these fall in the displayed state fiscal biennium. |
+| 11 | AISD historical gap, operating budget, reductions, recapture | [AISD update][aisd-budget-update], [budget process][aisd-process] | VERIFIED | Update rows: `2026-27 operating887M; gap181M; reductions205M`. Recapture table: `2026 Adopted / $715523373`; `715523373/1e6 = 715.523373`, displayed `$715.5M`. Historical estimate and pre-reduction qualifications retained. |
+| 12 | All enrollment/rating rows, gains, losses and intervention dates | TEA query results in evidence JSON; [TEA extension][hisd-extension] | VERIFIED | Enrollment `209772,210061,196943,194607,189934,184109,176727,168812`; chart years 2018–19 through 2025–26. A/B baseline/latest `93/205`, gain `112`; enrollment loss `189934-168812=21122`, rounded `21000`, over three school years. Installation `June1,2023`; extension `June1,2027`. All eight rating rows match the table above. |
+| 12 | Missing grades, cohort changes and causal language | TEA query rows/caveat; [TEA methodology notice][refresh-methodology]; [UH report][uh] | MISMATCH-FIXED | 2020 disaster `280`; 2021 disaster `270` + ordinary NR `4`; 2022 A/B/C `96/117/43`, SB1365 NR `9` + ordinary NR `8`. Nulls correctly mean unavailable grades. TEA says “year-over-year comparisons are more difficult this year” during the 2023 refresh. Removed the unsourced generalization about “many urban districts”; retained the observed pre-takeover decline and no-causation qualification. |
+| 12 | UH exact two-year loss versus TEA subtraction | [UH][uh]; TEA enrollment query | FLAGGED | UH text says `13208`; this session's TEA rows give `189934-176727=13207`. Cause of one-student difference unresolved. Both support the earlier rounded “over 13000”; the chart uses TEA's later endpoint. |
+| 13 | Scenario rows and likelihood headline | `source-outline.md` Slide23; `OUTLINE.md` Futures; `13-futures.ts` | MISMATCH-FIXED | Author supplies Best / Most likely / Worst, four dimensions and hypothetical outcomes; no forecast probability. Headline now says scenarios depend on unresolved decisions. |
+| 13 | “Most likely” label, selected outcomes and family responses | Same author records | FLAGGED | Scenario badges and notes identify judgment. Author still owns the relative-likelihood label; it is not statistically verified. |
+| 14 | Session dates and governor deadline | [LRL][session-calendar], [city calendar][filing-calendar], [arts. III][cn3] and [IV][cn4] | VERIFIED | Published `Jan12,2027; Mar12,2027; May31,2027`; inclusive day counts `60/140`; `May31 + 20 days = June20`. Filing exceptions and conditional post-adjournment action remain explicit. |
+| 14 | Board meeting dates and time | All eight AISD event links in Slide14 above | VERIFIED | Event date rows, each `6:00 pm`: `2026-11-05,11-12,12-10,12-17; 2027-01-14,01-28,02-11,02-25`. December17 follows December15 request deadline; a prior noticed vote is needed for that request. Dates are schedules, not evidence of completed meetings. |
+| 14 | Five-topic deadline headline and election/QR closing | Watch data; [TAC][tac]; [Decks homepage](https://decks.steamfield.io) | MISMATCH-FIXED | Five comes from `decisionsToWatch.length`. No source makes all topics due by June. Headline now says unresolved; closing says officials will hold power; obsolete QR-placeholder/source-ledger note now identifies the live Decks homepage. |
+| 14 | Watch-list selection and QR destination choice | Author-supplied outline/data | FLAGGED | Five selected topics are an editorial grouping. The homepage loads; author intent to use it, rather than a published deck-specific ledger, remains author-reported. |
+
+### Fixes, limits and readiness
+
+- Corrected the District 22 incumbent description, House present-tense card, ladder's one-office/settled-outcome claims, unconditional confirmation headline, resignation/holdover wording, scenario likelihood headline, universal June deadline and future-talk commissioner claim.
+- Bound the cover byline/month and ladder step numbers to data; removed copied election-margin figures from presenter notes in favor of the existing data-driven comparison. The closing count now uses `watchCount`.
+- Shortened the ladder's nine-word statewide-office lead to the required eight-word budget while preserving the offices shown in the diagram.
+- Corrected the close's timing and obsolete QR note; added the revenue-bill exception; removed an unsourced multi-district enrollment generalization. Recorded the one-student UH/TEA provenance difference without changing the chart.
+- The existing source tables cover all data arrays and scalar figures. There are no remaining unsourced named people or anecdotes on the presented slides. The author byline, ladder preference, legal transfer counts, incoming-governor removal application, scenarios and watch selection remain explicitly flagged.
+- The official 2022 archive is the only unresolved retrieval failure; the comparison has an opened named compilation and independently opened certified-winner journal. No external citation was silently counted as checked. No current claim has a recorded retrieval older than 90 days; historical reports and fixed statutory dates are not stale merely because their publication date is older.
+- No load-bearing numerical mismatch remains. Present with the qualifications and Scenario/Pending labels intact. This audit does not settle future elections, appeals, petitions, appointments, funding or intervention outcomes.
+
+The author must complete the existing **Refresh within 24 hours of the talk** checklist above. In particular, refresh certification/HD93/SBOE recounts; Senate vacancies and vote attendance; appeals/final year counts; petition validation/complaints and trustee action; TEA assignment letters/orders; commissioner appointment and holdover; rules/special sessions; fiscal-year-specific budget/enrollment figures; HISD ratings; all future meeting/session dates; and author choices/byline/QR destination. The June endpoint is an editorial watch horizon.
+
+### Checks and review focus
+
+| Check | Result |
+|---|---|
+| `bun run fact-extract tx26` | Passed before and after the corrections; scalars checked separately. |
+| `bun run typecheck` | Passed, no reported TypeScript errors. |
+| `bun run test` | Passed: 30 files, 336 tests; 1 existing skipped test. |
+| `bun run lint` | Exit 0, no errors. Existing `parallel-reveal` warning in `examples/opendata-pitch/components/SkepticsStage.vue:31`; left outside this contract's scope. |
+| `bun run check` | Passed: page manifests match, no error-level rhetoric hits. |
+| `bun run build tx26` | Passed; cover data binding and revised Stage templates compile. |
+| Source/data comparisons | Exact match for current/historical Senate vote values, all 114 campus records and 1,006 history entries, all Houston series; derived tiers, margins and calendar arithmetic match. |
+| `git diff --check` | Passed. |
+
+Orchestrator review should focus on the retained “Most likely” author label, the District 22 former-incumbent qualification, the distinction between verified named-source historical results and the blocked primary archive, and the legal flags around inherited campus counts and commissioner removal. The UH one-student discrepancy is confined to contextual provenance. No layouts, styles, tokens or manifest were changed. Changes are uncommitted.

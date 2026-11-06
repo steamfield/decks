@@ -8,7 +8,7 @@ import SeatArc from './SeatArc.vue'
 const COPY = [
   { lead: 'Republicans are expected to keep their majority.', body: `The confirmation threshold assumes all ${confirmation.present} senators attend.` },
   { lead: "A nominee would need both parties' votes.", body: `That assumes all ${confirmation.present} attend and all ${senate.democratic} Democrats support the nominee.` },
-  { lead: `${holdover.name} serves until his replacement takes office.`, body: 'Resignation or lawful removal could end his service sooner.' },
+  { lead: `${holdover.name} serves until a successor qualifies.`, body: 'Lawful removal or another applicable vacancy rule could alter his tenure.' },
   { lead: 'Senators can change their chamber rules.', body: "The lieutenant governor's committee and agenda powers depend on rules senators can revise." },
 ]
 const s = reactive({ enter: OFF, confirm: OFF, incumbent: OFF, rules: OFF, arc: ON, tenure: ON })
@@ -55,7 +55,7 @@ const ARC = { x: 960, y: BASELINE_Y, scale: 1, labelGap: 40, labelY: -50, gapY: 
       </g>
     </template>
     <template #overlay>
-      <h2 class="od-story-head">Confirming a commissioner takes {{ confirmation.required }} Senate votes.</h2>
+      <h2 class="od-story-head">With {{ confirmation.present }} present, confirmation takes {{ confirmation.required }} votes.</h2>
       <span class="scenario tx-tag is-scenario" :aria-hidden="clicks < 1" :style="{ opacity: s.confirm * s.arc }">{{ arcLabels.scenario }}</span>
       <div class="office" :aria-hidden="clicks < 2" :style="{ opacity: s.incumbent * s.tenure }">
         <strong>{{ holdover.name }}</strong>

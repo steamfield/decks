@@ -11,5 +11,5 @@ The governor can nominate a commissioner, veto legislation, propose a budget and
 
 [click] Changing the takeover requirement needs legislation. The same applies to statutory testing requirements, school-funding formulas and repeal of the voucher program.
 
-[click] A bill may begin in either chamber. Both chambers must pass identical bill text before sending it to the governor. The governor can sign it, allow it to become law without a signature, or veto it. The Legislature can override a veto under the Constitution.
+[click] Bills generally may begin in either chamber; bills raising revenue must originate in the House. Both chambers must pass identical bill text before sending it to the governor. The governor can sign it, allow it to become law without a signature, or veto it. The Legislature can override a veto under the Constitution.
 -->

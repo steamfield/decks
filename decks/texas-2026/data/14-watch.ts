@@ -55,7 +55,7 @@ export const watchDisplay = {
   petition: 'Validated petitions due at state education agency', request: 'Request for different intervention due',
   meeting: 'Board voting meeting', collection: 'Parent petition collection closed',
   timing: 'Meeting falls after request deadline',
-  closing: 'The election changed who holds power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.',
+  closing: 'The election chose who will hold power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.',
   districtGloss: 'School district / state education agency',
   election: 'Election', inauguration: 'Governor takes office',
   petitionTick: 'Validated petitions due', order: 'Order after valid petition',
