@@ -286,14 +286,25 @@ One source: `packages/decks/theme/default.json`. A deck recolors or rebrands its
 - `brand` is `{ name, url, "wordmark-gradient", logo }`. `logo` is `{ "view-box", "svg" }` or `null` (no mark); `url: null` hides the cover URL. A custom mark only animates if it reuses the `od-intro*`/`od-settle-*` classes `OdLogo.vue` animates. `bun run new ... --brand "Name" --url example.com` writes this block for you.
 - Edits live-reload in `bun run dev` and apply at build time. <!-- decks:repo-only -->`examples/od-templates/theme.json` is the worked example (a full alternate palette and brand); `examples/opendata-pitch/theme.json` overrides only the brand.<!-- /decks:repo-only --><!-- decks:user: `examples/agent-experience/theme.json` overrides only the brand. -->
 
-In CSS, never use raw hex values. The theme renders to custom properties: `surfaces.K` and `accents.K` -> `--od-K`, `text.primary` -> `--od-text`, `text.K` -> `--od-text-K`, `borders.default` -> `--od-border`, `borders.K` -> `--od-border-K`, `glows.K` -> `--od-glow-K-rgb` (use as `rgba(var(--od-glow-amber-rgb), 0.2)`), `fonts.K` -> `--od-font-K`. The ones you'll reach for:
+In CSS, never use raw hex values. The theme renders to custom properties: `surfaces.K` and `accents.K` -> `--od-K`, `text.primary` -> `--od-text`, `text.K` -> `--od-text-K`, `borders.default` -> `--od-border`, `borders.K` -> `--od-border-K`, `glows.K` -> `--od-glow-K-rgb` (use as `rgba(var(--od-glow-amber-rgb), 0.2)`), `fonts.K` -> `--od-font-K`, `shape.K` -> `--od-K`. The ones you'll reach for:
 
 **Surfaces:** `--od-canvas`, `--od-surface`, `--od-surface-raised`
 **Text:** `--od-text`, `--od-text-secondary`, `--od-text-muted`, `--od-text-faint`, `--od-text-dim`
 **Borders:** `--od-border`, `--od-border-subtle`
 **Accents:** `--od-cyan`, `--od-rose`, `--od-amber`, `--od-emerald`, `--od-violet`, `--od-blue`, `--od-slate`
 
-In JS (chart specs, SVG fills computed in a stage), read colors through `slidev-addon-decks/theme` or `ink()`, never a hex literal (see Color conventions above).
+**Shape:** `--od-radius` (story card corners, `12px`), `--od-hairline` (story card and chip border width, `1px`), `--od-card-width` (story card width as a count of `--lw` units, `36`; use as `calc(var(--od-card-width) * var(--lw))`), `--od-dim` (opacity of a de-emphasized mark such as a ghosted `InkLine`, `0.4`). Set them in `theme.json` as strings, e.g. `"shape": { "radius": "4px" }`, instead of overriding the addon's card selectors; `card-width` and `dim` are unitless numbers.
+
+In JS (chart specs, SVG fills computed in a stage), read colors through `slidev-addon-decks/theme` or `ink()`, never a hex literal (see Color conventions above). The same import gives `theme.shape` (`Number(theme.shape.dim)` for an opacity). Deck-only JS constants that the theme doesn't cover (a geometry ratio, a dash pattern, a hatch spacing) go in one `components/design.ts` module rather than scattered literals<!-- decks:repo-only -->, as in `examples/texas-2026/components/design.ts`<!-- /decks:repo-only -->.<!-- decks:repo-only --> `design-literals.test.ts` fails on a new hex color in a color context (`fill`, `stroke`, `*color`, `background`, a custom property) in the addon's or any registered deck's `components/*.vue`; a color that must not follow the theme carries `lint-allow: hex-color` on its line.<!-- /decks:repo-only -->
+
+**Changing the fonts.** `fonts.sans`, `fonts.serif` and `fonts.mono` render to `--od-font-sans`/`-serif`/`-mono`. `serif` defaults to `{fonts.sans}`, and the story headline (`.od-story-head`) and the story cover title read it, so a deck that sets only `fonts.serif` gets serif headlines with no deck CSS. To use a family other than the bundled Inter:
+
+1. `bun add @fontsource-variable/<slug>` at the project root (e.g. `@fontsource-variable/source-serif-4`). Not every family has a variable package; check npm before writing the import, since a wrong one breaks the build.
+2. Import it at the top of the deck's `styles/index.css`: `@import '@fontsource-variable/source-serif-4';`.
+3. Set the family in `theme.json` by its variable name: `"fonts": { "serif": "'Source Serif 4 Variable', serif" }`.
+4. In headmatter, set `fonts.webfonts: []` and delete the template's `sans:`, `serif:` and `mono:` lines under `fonts:`, so Slidev neither fetches nor pins Inter.
+
+<!-- decks:repo-only -->`examples/texas-2026` is the worked example (Public Sans and Source Serif 4).<!-- /decks:repo-only -->
 
 ## Data provenance
 

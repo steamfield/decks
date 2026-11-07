@@ -67,7 +67,14 @@
   ],
   "fonts": {
     "sans": "Inter, sans-serif",
+    "serif": "{fonts.sans}",
     "mono": "{fonts.sans}"
+  },
+  "shape": {
+    "radius": "12px",
+    "hairline": "1px",
+    "card-width": "36",
+    "dim": "0.4"
   },
   "chart": {
     "text": "{text.muted}",

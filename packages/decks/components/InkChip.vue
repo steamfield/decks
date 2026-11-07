@@ -67,7 +67,7 @@ const style = computed(() => ({
 .od-inkchip {
   position: absolute;
   padding: calc(0.4 * var(--sw)) calc(0.7 * var(--sw));
-  border: 1px solid var(--od-border);
+  border: var(--od-hairline, 1px) solid var(--od-border);
   border-radius: 6px;
   background:
     radial-gradient(
@@ -99,7 +99,7 @@ const style = computed(() => ({
    is the frame here. */
 .od-inkchip.is-link {
   padding: calc(0.55 * var(--sw)) calc(1 * var(--sw));
-  border: 1px solid color-mix(in srgb, var(--od-chip-ink) 45%, var(--od-border));
+  border: var(--od-hairline, 1px) solid color-mix(in srgb, var(--od-chip-ink) 45%, var(--od-border));
   border-radius: 8px;
   background:
     linear-gradient(
