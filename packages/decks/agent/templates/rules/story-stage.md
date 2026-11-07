@@ -257,11 +257,15 @@ not copy to paste into the slide.
 
 ## Verification loop
 
-- `{{decks}} shot <alias> <n> [clicks]`: per-slide screenshots at each click, prints
-  the card lead per click and chip positions, and lists console errors
-  including unresolved-component failures. Restart the dev server first if a
-  component file was added or moved (Slidev's auto-import list is built at
-  startup).
+- `{{decks}} shot <alias> <n> [clicks]`: per-slide screenshots at each click,
+  prints the card lead per click and chip positions, and lists console errors
+  including unresolved-component failures. Without `--port` it starts a dev
+  server for the deck on a free port and stops it after, so runs in parallel
+  checkouts do not collide. To shoot after every edit, start one server with
+  `{{decks}} dev <alias> --no-open --port N` and pass `--port N` to each `shot`;
+  it refuses a server that is not this deck's, from this checkout. Restart the
+  dev server first if a component file was added or moved (Slidev's
+  auto-import list is built at startup).
 - `{{decks}} snap <alias>`: whole-deck screenshot walk. Walk before and after a
   theme or shared-styles change and compare the frames.
 - `{{decks}} lint`: the prose patterns over pages, components and every story

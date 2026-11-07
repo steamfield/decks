@@ -1,13 +1,14 @@
 /**
  * existingServer decides whether `--port N` points at a Slidev dev server for
  * the deck being shot: each outcome against a real HTTP server on a free port.
+ * startServer uses it to tell its own server from another run's.
  */
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { decodeEntities, existingServer, freePort } from './server.mjs'
+import { decodeEntities, existingServer, freePort, startServer } from './server.mjs'
 
 const servers: Server[] = []
 const dirs: string[] = []
@@ -85,6 +86,32 @@ describe('existingServer', () => {
     const port = await serve(page(entry.replace('Tides', 'tides')))
     expect((await existingServer(port, entry)).error).toMatch(/serves a different deck/)
   })
+})
+
+describe('startServer', () => {
+  it('waits for its own deck when another run already answers on the probed port', async () => {
+    // Two runs probe the same free port; the other run's server got it first.
+    const ours = deck('ours')
+    const taken = await serve(page(escapeAttr(deck('theirs'))))
+    // A stand-in for Slidev bumped off `taken`: it ignores --port, serves
+    // `ours` on another port after a delay, and prints that URL.
+    const bumped = await freePort(45000 + Math.floor(Math.random() * 2000))
+    const fake = join(dirs[0], 'fake-slidev.mjs')
+    writeFileSync(
+      fake,
+      `import { createServer } from 'node:http'
+const html = ${JSON.stringify(page(escapeAttr(ours)))}
+setTimeout(() => createServer((_, res) => res.end(html)).listen(${bumped}, 'localhost', () =>
+  console.log('public slide show > http://localhost:${bumped}/')), 1500)
+`,
+    )
+    const server = await startServer({ args: [fake], cwd: dirs[0], port: taken, entry: ours })
+    try {
+      expect(server.origin).toBe(`http://localhost:${bumped}`)
+    } finally {
+      server.stop()
+    }
+  }, 20_000)
 })
 
 describe('decodeEntities', () => {

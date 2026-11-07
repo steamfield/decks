@@ -2,7 +2,7 @@
 //
 //   decks snap <alias> [outDir] [--port N]          # the CLI (deck.mjs)
 //   decks snap diff <dirA> <dirB> [threshold]
-//   bun run snap <outDir> [port]             # repo shorthand: a server already on :3030
+//   bun run snap <alias> [outDir] [--port N]       # repo shorthand, same CLI
 //   bun run snap:diff <dirA> <dirB> [threshold]   # compare two walks, print per-frame diff
 //
 // The walk is deck agnostic: it starts at /1 and presses ArrowRight until the
@@ -20,8 +20,7 @@
 // The walk needs playwright-chromium and the diff needs pngjs and pixelmatch,
 // all optional peers of slidev-addon-decks, loaded on first use.
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
-import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { frameName } from './frames.mjs'
 import { openDeck, optionalPeer } from './browser.mjs'
 
@@ -106,23 +105,4 @@ export async function walk({ origin, outDir }) {
   // A walk that logged a console error is not a baseline: an unresolved
   // component renders as an empty slot, which diffs clean against itself.
   return errors.length === 0
-}
-
-// Run directly (`bun run snap`, `bun run snap:diff`): the repo shorthand.
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [mode, ...rest] = process.argv.slice(2)
-  if (mode === 'diff') {
-    const [a, b, thresholdArg = '0.002'] = rest
-    if (!a || !b) {
-      console.error('usage: bun run snap:diff <dirA> <dirB> [threshold]')
-      process.exit(2)
-    }
-    process.exit((await diff(a, b, Number(thresholdArg))) ? 1 : 0)
-  }
-  const [outDir, portArg = '3030'] = mode === 'walk' ? rest : [mode, ...rest]
-  if (!outDir) {
-    console.error('usage: bun run snap <outDir> [port]   (or: decks snap <alias> [outDir])')
-    process.exit(2)
-  }
-  process.exit((await walk({ origin: `http://localhost:${portArg}`, outDir })) ? 0 : 1)
 }

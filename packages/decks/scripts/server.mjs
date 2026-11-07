@@ -87,11 +87,13 @@ export async function existingServer(port, entry) {
 }
 
 /**
- * Start `node <args>` (a Slidev dev server) in `cwd` on `port` and resolve
- * once it serves. Returns `{ origin, stop }`. The server is stopped on exit,
- * and its output is shown only if it dies before it answers.
+ * Start `node <args>` (a Slidev dev server for `entry`, an absolute slides.md
+ * path) in `cwd` on `port` and resolve once it serves that deck. Returns
+ * `{ origin, stop }`, `origin` being the port it actually serves on. The
+ * server is stopped on exit, and its output is shown only if it dies before
+ * it answers.
  */
-export async function startServer({ args, cwd, port, timeoutMs = 120_000 }) {
+export async function startServer({ args, cwd, port, entry, timeoutMs = 120_000 }) {
   const child = spawn('node', [...args, '--port', String(port)], {
     cwd,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -120,10 +122,14 @@ export async function startServer({ args, cwd, port, timeoutMs = 120_000 }) {
 
   const deadline = Date.now() + timeoutMs
   for (;;) {
-    // Slidev moves to the next port if this one was taken in the meantime.
-    const actual = /http:\/\/localhost:(\d+)/.exec(output)?.[1] ?? port
+    // Slidev moves to the next port if this one was taken in the meantime,
+    // and until it prints its URL, `port` may be another run's server: two
+    // runs started together probe the same free port. So whatever answers
+    // has to be this deck's dev server before it counts.
+    const actual = Number(/http:\/\/localhost:(\d+)/.exec(output)?.[1] ?? port)
     const origin = `http://localhost:${actual}`
-    if (await answers(origin)) return { origin, stop }
+    if ((await answers(origin)) && (await existingServer(actual, entry)).origin)
+      return { origin, stop }
     if (exited !== null)
       throw new Error(`the dev server exited (${exited}) before it served:\n${output}`)
     if (Date.now() > deadline) {

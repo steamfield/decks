@@ -18,7 +18,7 @@ describe('render-agent', () => {
   })
 
   it('maps commands, directories and exemplars to template variables', () => {
-    expect(renderSource('`bun run shot <n> [clicks]` in `decks/<dir>` per `examples/agent-experience` and `packages/decks/story/README.md`\n')).toBe(
+    expect(renderSource('`bun run shot <alias> <n> [clicks]` in `decks/<dir>` per `examples/agent-experience` and `packages/decks/story/README.md`\n')).toBe(
       '`{{decks}} shot <alias> <n> [clicks]` in `{{decksDir}}/<dir>` per `{{exemplars}}/agent-experience` and `{{pkg}}/story/README.md`\n',
     )
     expect(renderSource('---\npaths:\n  - "examples/**"\n  - "decks/**"\n  - "packages/decks/**"\n---\n')).toBe('---\npaths:\n  - "{{decksDir}}/**"\n---\n')

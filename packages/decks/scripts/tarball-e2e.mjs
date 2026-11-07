@@ -632,7 +632,7 @@ await testCase('9b decks shot and snap produce PNGs', async () => {
 
   // Each run started its own dev server; none may outlive the command.
   const ports = [shot, one, snap].flatMap((r) =>
-    [...r.out.matchAll(/Starting a dev server for \S+ on port (\d+)/g)].map((m) => Number(m[1])),
+    [...r.out.matchAll(/Dev server for \S+ at http:\/\/localhost:(\d+)/g)].map((m) => Number(m[1])),
   )
   check(ports.length === 3, 'shot, shot and snap each started a dev server', ports.join(', '))
   for (const port of [...new Set(ports)])

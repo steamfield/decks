@@ -92,14 +92,16 @@ inside 4+-space-indented HTML becomes an indented code block and fails with
 
 ```bash
 {{decks}} check                 # manifest vs pages/ drift + unregistered decks    (every edit cycle)
-{{decks}} shot <alias> <n> [clicks]     # per-slide screenshot, card lead, chip position, console errors  (story: after each new/changed stage; restart the dev server first)
-{{decks}} snap <alias>            # whole-deck screenshot walk                       (before and after a theme or styles change)
+{{decks}} shot <alias> <n> [clicks]  # per-slide screenshot, card lead, chip position, console errors  (story: after each new/changed stage; restart the dev server first)
+{{decks}} snap <alias>          # whole-deck screenshot walk                       (before and after a theme or styles change)
 {{decks}} build <alias>         # must pass before any review                      (before handing off)
 {{decks}} lint                  # prose lint incl. story COPY (also enforced by the write hook)  (every edit cycle)
 {{decks}} fact-extract <alias>  # every number in the deck, to trace to data-sources.md   (before handing off)
 ```
 
-The dev server for `shot`: `{{decks}} dev <alias>` (port 3030 by default).
+`shot` and `snap` start a dev server for the deck on a free port and stop it
+after. To shoot after every edit, start one with
+`{{decks}} dev <alias> --no-open --port N` and pass `--port N` to each `shot`.
 
 Export for stage/PDF: `{{decks}} export <alias>` (flags are picked from
 `decks.json`, don't pass your own).

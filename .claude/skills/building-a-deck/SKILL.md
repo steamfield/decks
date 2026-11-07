@@ -99,12 +99,12 @@ bun run check                 # manifest vs pages/ drift + unregistered decks   
 bun run typecheck             # first-party TS errors (node_modules noise filtered)  (every edit cycle)
 bun run test                  # unit suites + story guards (beats incl. COPY lint, durations, frame units, vt-names)  (every edit cycle)
 <!-- /decks:repo-only -->
-bun run shot <n> [clicks]     # per-slide screenshot, card lead, chip position, console errors  (story: after each new/changed stage; restart the dev server first)
+bun run shot <alias> <n> [clicks]  # per-slide screenshot, card lead, chip position, console errors  (story: after each new/changed stage; restart the dev server first)
 <!-- decks:repo-only -->
-bun run snap <dir>            # whole-deck pixel walk                            (only around an addon refactor)
+bun run snap <alias>          # whole-deck pixel walk                            (only around an addon refactor)
 bun run snap:diff <a> <b>     # diff two walks; on the pitch, s01-c0/s04-c2/s04-c3/s13-c0 have a noise floor, everything else should be 0.000%
 <!-- /decks:repo-only -->
-<!-- decks:user: bun run snap <dir>            # whole-deck screenshot walk                       (before and after a theme or styles change) -->
+<!-- decks:user: bun run snap <alias>          # whole-deck screenshot walk                       (before and after a theme or styles change) -->
 bun run build <alias>         # must pass before any review                      (before handing off)
 <!-- decks:repo-only -->
 bun run lint                  # prose lint (also enforced by the write hook)      (before handing off)
@@ -113,7 +113,9 @@ bun run lint                  # prose lint (also enforced by the write hook)    
 bun run fact-extract <alias>  # every number in the deck, to trace to data-sources.md   (before handing off)
 ```
 
-The dev server for `shot`: `bun run dev <alias>` (port 3030 by default).
+`shot` and `snap` start a dev server for the deck on a free port and stop it
+after. To shoot after every edit, start one with
+`bun run dev <alias> --no-open --port N` and pass `--port N` to each `shot`.
 
 Export for stage/PDF: `bun run export <alias>` (flags are picked from
 `decks.json`, don't pass your own).
