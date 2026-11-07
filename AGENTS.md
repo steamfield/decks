@@ -130,6 +130,8 @@ Codex reads this file, the skills under `.agents/skills/` (symlinks into `.claud
 | `.claude/rules/deck-data.md` | `{examples,decks}/*/data/*.ts`, `{examples,decks}/*/data-sources.md` |
 | `.claude/rules/project-glossary.md` | `{examples,decks}/*/pages/*.md`, `{examples,decks}/*/components/*.vue` |
 
+A Codex run started by `foreman` or `codex-delegate` also reads "For the delegate" in `.claude/delegate.md`: worktree setup, screenshots without an assigned port, and the gate.
+
 Building or revising a deck starts with the `building-a-deck` skill; any chart spec also loads `openchart`; a fact-check runs `fact-checking-a-deck`. The skill names Claude Code tools (Read, Edit, subagents); use the Codex equivalent.
 
 The hooks only run once trusted: open `codex` in the main checkout, run `/hooks`, and approve the project hooks (re-approve after `.codex/hooks.json` changes). `foreman doctor` reports whether they are trusted, and foreman worktrees under `.claude/worktrees/` inherit the approval. A worktree needs `bun install` before any `bun run` command works. A hook deny means rewrite the prose; never route the write around it (a shell heredoc or script skips the hook, and `bun run lint` will fail the deck later anyway).

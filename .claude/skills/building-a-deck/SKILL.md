@@ -12,7 +12,7 @@ of operations and the verification chain. Gold-standard references:
 `examples/agent-experience` (conventional: the word budget and slide shape to
 copy) and `examples/opendata-pitch` (data storytelling: one pinned visualization
 per slide, beats on arrow keys, and the data-sources.md template). Run every
-command below from the repo root.
+command below from the repo root.<!-- decks:repo-only --> To build a deck through Codex runs (`foreman` or `codex-delegate`), the wave plan and contract templates are in `contracts/README.md` next to this file.<!-- /decks:repo-only -->
 
 A deck is either **conventional** (bullets, tables, charts, one file per slide)
 or a **story deck** (one pinned visualization per slide, beats on arrow keys,
