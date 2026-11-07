@@ -17,12 +17,16 @@
 // well above its own floor is the one to open. The default threshold is the
 // fraction of pixels that may differ before a frame is listed as changed.
 //
+// Every frame's visible text goes to text.json beside the PNGs (the harvest
+// `decks review-prose` reads), and a story headline that wraps past
+// HEAD_LINE_LIMIT lines prints a warning; neither fails the walk.
+//
 // The walk needs playwright-chromium and the diff needs pngjs and pixelmatch,
 // all optional peers of slidev-addon-decks, loaded on first use.
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { frameName } from './frames.mjs'
-import { openDeck, optionalPeer } from './browser.mjs'
+import { frameName, slideLocation } from './frames.mjs'
+import { harvestText, openDeck, optionalPeer, wrapWarning } from './browser.mjs'
 
 const SETTLE_MS = 3200
 
@@ -73,36 +77,52 @@ export async function diff(a, b, threshold = 0.002) {
 }
 
 /**
- * Walk every slide and click of the deck served at `origin`, one PNG per
- * frame into `outDir`. Returns false when the walk logged a console error.
+ * Walk every slide and click of the deck served at `origin`, harvesting each
+ * frame's visible text and warning on a headline that wraps. With `shots`
+ * (the default) each frame is also a PNG in `outDir`, with the harvest in
+ * `outDir/text.json`. `log` takes the progress lines; `review-prose` sends
+ * them to stderr. Returns `{ clean, frames }`: `clean` is false when the walk
+ * logged a console error, and `frames` holds `{ slide, click, entries, heads }`
+ * per frame in walk order.
  */
-export async function walk({ origin, outDir }) {
-  mkdirSync(outDir, { recursive: true })
+export async function walk({ origin, outDir, shots = true, log = console.log }) {
+  if (shots) mkdirSync(outDir, { recursive: true })
   const { browser, page, errors } = await openDeck(`${origin}/1`, {
     settleMs: SETTLE_MS,
-    what: 'decks snap',
+    what: shots ? 'decks snap' : 'decks review-prose',
   })
-  let frames = 0
+  const frames = []
   let last = null
   try {
     for (;;) {
       const name = frameName(page.url())
+      const at = slideLocation(page.url())
+      const slide = Number(at.pathname.replace(/^\//, '') || '1')
+      const click = Number(at.searchParams.get('clicks') ?? '0')
       // WebGL frames can take a while to rasterise on a loaded machine.
-      await page.screenshot({ path: join(outDir, name), timeout: 120_000 })
-      frames++
+      if (shots) await page.screenshot({ path: join(outDir, name), timeout: 120_000 })
+      const text = await harvestText(page, slide)
+      frames.push({ slide, click, ...text })
+      for (const head of text.heads) {
+        const warning = wrapWarning(slide, click, head)
+        if (warning) log(warning)
+      }
       await page.keyboard.press('ArrowRight')
       await page.waitForTimeout(SETTLE_MS)
       const now = page.url()
       if (now === last || frameName(now) === name) break
       last = now
     }
-    console.log(`${frames} frames -> ${outDir}`)
-    console.log('errors:', errors.length ? errors : 'none')
+    if (shots) {
+      writeFileSync(join(outDir, 'text.json'), JSON.stringify(frames, null, 2) + '\n')
+      log(`${frames.length} frames -> ${outDir}`)
+    } else log(`${frames.length} frames read`)
+    log('errors:', errors.length ? errors : 'none')
   } finally {
     // Always close, or a failed walk leaves a headless Chromium behind.
     await browser.close()
   }
   // A walk that logged a console error is not a baseline: an unresolved
   // component renders as an empty slot, which diffs clean against itself.
-  return errors.length === 0
+  return { clean: errors.length === 0, frames }
 }

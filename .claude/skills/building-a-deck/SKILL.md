@@ -110,11 +110,12 @@ bun run build <alias>         # must pass before any review                     
 bun run lint                  # prose lint (also enforced by the write hook)      (before handing off)
 <!-- /decks:repo-only -->
 <!-- decks:user: bun run lint                  # prose lint incl. story COPY (also enforced by the write hook)  (every edit cycle) -->
+bun run review-prose <alias>  # prose-audit prompt for a reviewer that did not write the deck  (before handing off)
 bun run fact-extract <alias>  # every number in the deck, to trace to data-sources.md   (before handing off)
 ```
 
 `shot` and `snap` start a dev server for the deck on a free port and stop it
-after. To shoot after every edit, start one with
+after, and warn when a story headline wraps past two lines. To shoot after every edit, start one with
 `bun run dev <alias> --no-open --port N` and pass `--port N` to each `shot`.
 
 Export for stage/PDF: `bun run export <alias>` (flags are picked from
@@ -144,27 +145,37 @@ wrong for exactly this reason and would have shipped unread.
    the story engine, `bun run build:all` (every registered deck, galleries
    included).<!-- /decks:repo-only -->
 3. `bun run lint` clean.
-4. Every figure `bun run fact-extract <alias>` lists is traced (run the
+4. Prose audit. `bun run review-prose <alias>` walks the deck and prints a
+   review prompt: every visible string (headlines, card copy, chips, SVG
+   labels) and the presenter notes, each with its slide, click and source
+   line, plus the writing rules. Hand it to a reviewer that did not write the
+   prose (a fresh subagent or another model), apply or answer each row of the
+   table it returns, then re-run `lint`. The lint catches fixed phrases; this
+   catches the shapes it can't, such as balanced antithesis or a card that
+   describes the visual. An orchestrator's draft headlines (in an outline or
+   a brief) are claims still to be rewritten, and they pass this audit before
+   they go into a brief, because agents copy draft headlines.
+5. Every figure `bun run fact-extract <alias>` lists is traced (run the
    `fact-checking-a-deck` skill); `data-sources.md` has a section per visible slide, every
    `FLAG` row resolved or carried deliberately, the banned-content table
    current.
-5. Dev server restarted after the last component was added; `bun run shot`
-   on every new or changed slide prints `errors: none` and a card lead per
-   click that matches the `COPY` entry.
-6. Every stage page ends with presenter notes in the story-stage format:
+6. Dev server restarted after the last component was added; `bun run shot`
+   on every new or changed slide prints `errors: none`, no headline-wrap
+   warning, and a card lead per click that matches the `COPY` entry.
+7. Every stage page ends with presenter notes in the story-stage format:
    `SAY (opening)` for beat 0, then exactly `clicks` plain `[click]`
    paragraphs.<!-- decks:repo-only --> `beats.test.ts` checks any notes a page has; it does not
    require them, so this item is what makes a new deck carry them.<!-- /decks:repo-only -->
 <!-- decks:repo-only -->
-7. For a refactor of `packages/decks/`: `snap` baseline before, `snap:diff` after,
+8. For a refactor of `packages/decks/`: `snap` baseline before, `snap:diff` after,
    every frame under its noise floor or explained, never widened.
 <!-- /decks:repo-only -->
-<!-- decks:user: 7. For a theme or shared-styles change: a `snap` walk before and after, and
+<!-- decks:user: 8. For a theme or shared-styles change: a `snap` walk before and after, and
    every changed frame explained. -->
-8. `bun run export <alias>` produces a PDF with every click state
+9. `bun run export <alias>` produces a PDF with every click state
    (`animated: true` set).
-9. The author's own visual QA is the last step, and the only one that judges
-   aesthetics.
+10. The author's own visual QA is the last step, and the only one that judges
+    aesthetics.
 
 ## 8. Publish
 

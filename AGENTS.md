@@ -18,7 +18,7 @@ packages/decks/       # the addon (npm: slidev-addon-decks)
   story/              # the story engine (import from slidev-addon-decks/story) + guard tests
   theme/              # default.json (the one theme source), resolver, contrast test
   styles/             # base, layout, components, stats, story-frame, story-marks
-  scripts/            # deck.mjs (the `decks` bin) + init, hook, lint, shot, snap, fact-extract, render-agent
+  scripts/            # deck.mjs (the `decks` bin) + init, hook, lint, shot, snap, review-prose, fact-extract, render-agent
   lint/               # scan.mjs and ai-rhetoric-patterns.tsv (the pattern list)
   agent/              # what `decks init` installs: rendered templates, instructions.md, exemplars/, INVENTORY.md
   templates/          # what `decks new` scaffolds
@@ -54,6 +54,7 @@ bun run typecheck              # tsc over .ts only; a stage's .vue script is not
 bun run test                   # unit suites, story guards, theme contrast, story-card COPY lint
 bun run lint                   # AI-rhetoric lint over deck pages, slides.md, components and story-stage COPY
 bun run fact-extract <alias>   # every figure in a deck, for the fact-check
+bun run review-prose <alias>   # prompt for a prose review by a model that did not write the deck (stdout)
 bun run test:hooks             # tests for the two hooks (`decks hook`) and their Claude Code and Codex wiring
 bun run render:agent           # render .claude/ into packages/decks/agent/ (what `decks init` installs)
 bun run test:tarball           # pack the package; run init, lint, check and the hooks in scratch projects

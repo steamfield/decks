@@ -24,7 +24,7 @@
 //   decks lint --stdin [--errors-only]   scan prose piped in
 //   decks shot <alias> <slide> [clicks] [--port N] [--out DIR]
 //                            screenshot one slide at each click; prints card leads,
-//                            chips and console errors
+//                            chips, wrapped-headline warnings and console errors
 //   decks snap <alias> [outDir] [--port N]   screenshot every slide and click
 //                            (outDir defaults to snaps/<alias>-<timestamp>)
 //   decks snap diff <dirA> <dirB> [threshold]   per-frame pixel diff of two walks
@@ -33,6 +33,9 @@
 //       after; they need playwright-chromium
 //       (snap diff: pngjs, pixelmatch), optional peers installed on demand
 //   decks fact-extract <alias|deck-dir>   every figure in a deck, for the fact-check
+//   decks review-prose <alias> [--port N]   walk the deck, harvest its visible text
+//                            and presenter notes, and print a prose-review prompt
+//                            for a model that did not write the deck (stdout)
 //   decks hook lint          PreToolUse hook (Claude Code Edit/Write/MultiEdit, Codex
 //                            apply_patch): deny deck prose with an error-level
 //                            pattern (hook JSON on stdin)
@@ -149,8 +152,9 @@ function takeFlag(args, name) {
 /**
  * Run `fn(origin)` against a dev server for `deck`: the one already on `port`
  * when given, else a fresh one on a free port, stopped once `fn` settles.
+ * `log` takes the status lines (stderr for a command whose stdout is its output).
  */
-async function withDevServer(deck, port, fn) {
+async function withDevServer(deck, port, fn, log = console.log) {
   const { existingServer, freePort, startServer } = await import('./server.mjs')
   if (port) {
     const { origin, error } = await existingServer(port, resolve(rootDir, deck.entry))
@@ -158,7 +162,7 @@ async function withDevServer(deck, port, fn) {
       die(
         `--port ${port}: ${error}. Start one with \`decks dev <alias> --port ${port}\`, or drop --port.`,
       )
-    console.log(`Using the dev server at ${origin}`)
+    log(`Using the dev server at ${origin}`)
     return fn(origin)
   }
   let free
@@ -167,7 +171,7 @@ async function withDevServer(deck, port, fn) {
   } catch (err) {
     die(`Could not find a free port for the dev server: ${err.message}`)
   }
-  console.log(
+  log(
     `Starting a dev server for ${deck.entry} on a free port (pass --port N to use a running one)`,
   )
   let server
@@ -182,7 +186,7 @@ async function withDevServer(deck, port, fn) {
     die(err.message)
   }
   // The origin it serves on, which is not `free` when another run took that port first.
-  console.log(`Dev server for ${deck.entry} at ${server.origin}`)
+  log(`Dev server for ${deck.entry} at ${server.origin}`)
   try {
     return await fn(server.origin)
   } finally {
@@ -459,7 +463,29 @@ switch (cmd) {
     const outDir = resolve(dir ?? join('snaps', `${alias}-${stamp}`))
     const { requireChromium } = await import('./browser.mjs')
     await requireChromium('decks snap')
-    const clean = await withDevServer(deck, port, (origin) => walk({ origin, outDir }))
+    const { clean } = await withDevServer(deck, port, (origin) => walk({ origin, outDir }))
+    if (!clean) process.exitCode = 1
+    break
+  }
+  case 'review-prose': {
+    const args = [...rest]
+    const port = takeFlag(args, '--port')
+    const [alias] = args
+    if (!alias) die('Usage: decks review-prose <alias> [--port N]')
+    const deck = deckFor(alias)
+    const { requireChromium } = await import('./browser.mjs')
+    await requireChromium('decks review-prose')
+    const { walk } = await import('./snap.mjs')
+    const { reviewPrompt } = await import('./review-prose.mjs')
+    // stdout is the prompt; every status line goes to stderr.
+    const log = (...a) => console.error(...a)
+    const { clean, frames } = await withDevServer(
+      deck,
+      port,
+      (origin) => walk({ origin, shots: false, log }),
+      log,
+    )
+    process.stdout.write(reviewPrompt({ rootDir, deck, alias, frames, decksDir: config.decksDir }))
     if (!clean) process.exitCode = 1
     break
   }
@@ -479,7 +505,7 @@ switch (cmd) {
   }
   default:
     die(
-      'Usage: decks {init|dev|build|export|new|list|check|lint|shot|snap|fact-extract|hook} ...' +
+      'Usage: decks {init|dev|build|export|new|list|check|lint|shot|snap|review-prose|fact-extract|hook} ...' +
         '  (each prints its own usage; the full list heads slidev-addon-decks/scripts/deck.mjs)',
     )
 }

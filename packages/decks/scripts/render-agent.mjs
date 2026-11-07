@@ -40,7 +40,7 @@ export { SOURCES }
 const MAPPINGS = [
   // CLI commands.
   [/bun run build:all\b/g, '{{decks}} build --all'],
-  [/bun run (new|dev|build|export|list|check|lint|fact-extract|shot|snap)\b/g, '{{decks}} $1'],
+  [/bun run (new|dev|build|export|list|check|lint|fact-extract|review-prose|shot|snap)\b/g, '{{decks}} $1'],
   // Exemplar decks. opendata-pitch is not bundled; tides is the story exemplar.
   [/examples\/(agent-experience|tides)\b/g, '{{exemplars}}/$1'],
   [/examples\/opendata-pitch(?=\/?`|\/data-sources\.md)/g, '{{exemplars}}/tides'],

@@ -29,6 +29,7 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 | `bun run snap <alias> [outDir]` | A, BD, SS | CLI | `{{decks}} snap <alias>`, reframed as a before/after walk for a theme or styles change |
 | `bun run snap:diff <a> <b>` and the pitch noise-floor frames | BD, SS | Delete + user wording | `decks snap diff <a> <b>` exists, but the noise-floor parity gate is a repo refactor gate, so the passages stay repo-only; BD's user wording asks for a `snap` walk before and after a theme or styles change |
 | `bun run fact-extract <alias>` | BD, DD, FC, DP | CLI | `{{decks}} fact-extract <alias>` |
+| `bun run review-prose <alias>` | BD (verify, definition of done) | CLI | `{{decks}} review-prose <alias>`: the prompt reads the project's installed `.claude/rules/` copies, falling back to the package's `agent/templates/rules/` |
 | `bun tools/content-fact-extract.mjs <deck-dir>` | FC | Delete | Covered by `{{decks}} fact-extract <alias>` |
 | `bun run test:hooks`, `bun run test:embed` | AGENTS.md only | n/a | Not in the agent setup |
 

@@ -34,3 +34,22 @@ The existing extractors can't feed a reviewer. `fact-extract.mjs` keeps only lin
 ## Verification
 
 `bun run test`, `bun run lint`, `bun run render:agent` with the drift test, `bun run test:tarball`, and the checks in items 2 and 3.
+
+## Results
+
+Measured on this branch, 2026-11-07.
+
+**Item 3, the wrap limit.** A snap of the eight shipped story decks (od-story-templates, aisd-showcase, keeling, texas-2026, state-of-js, opendata-showcase, opendata-pitch, tides) with the limit at one warned only on state-of-js: its headlines on slides 2 to 5 render on two lines. No deck reached three. By the rule in item 3 the limit is two (`HEAD_LINE_LIMIT` in `browser.mjs`).
+
+The texas-2026 check does not pass at two. At `0cc4cc9` (both the slides 5-7 and 8-10 runs merged, before `c67ec74` and `ac0e94c` rewrote their headlines) the walk at a limit of one warned on exactly the five headlines those commits shortened, slides 5, 6, 7, 8 and 9, and on nothing else (slide 10's rewrite replaced a one-line headline for content); current texas-2026 is quiet at one. Every one of those five rendered on two lines, so at two none warns. The two conditions in item 3 cannot both hold with one global limit: a limit of one catches the texas-2026 wraps and flags state-of-js slides 2 to 5; two keeps main quiet and catches nothing seen so far. Changing the constant is a one-line decision for whoever owns state-of-js's headlines.
+
+**Item 5, the TSV candidates.** Run over every registered deck's lint surfaces (prose and story `COPY`) and over the rendered text of the eight snaps above. A true positive is a pair of short parallel clauses that reads as balanced antithesis.
+
+| Candidate | ERE tried | Source hits (true / false) | Rendered hits (true / false) | Added |
+|---|---|---|---|---|
+| Semicolon joining two short mirrored clauses | `\b[A-Za-z]+( [A-Za-z]+){0,3} (is\|are\|was\|were\|has\|have\|gets?\|takes?\|stays?\|needs?) [A-Za-z]+[^;.]{0,20}; ` and the same clause again | 0 | 0 | No |
+| Any short clause pair joined by a semicolon (the wider form) | `[A-Za-z][^;.!?]{0,60}; [^;.!?]{1,60}[.!?]` | 14 (5 / 9) | 10 (5 / 5) | No |
+| Trailing "but not" clause | `, but not [^,.;]+[.]` | 0 | 0 | No |
+| Any "but not" | `\bbut not\b` | 0 | 0 | No |
+
+The wider semicolon form's true positives are the mirrored lines ("One row leaves the series hue; everything else stays grey-green.", "630 datasets and 2,135 links in July; 952 and 3,291 today."); its false positives are YAML comments in `slides.md`, legend definitions in `CampusHoverCard.vue`, source lines ("Source: Texas Tribune; certification pending.") and plain sequences of facts. The mirrored lines vary their verbs, so the narrow form misses all of them. Neither semicolon form is mostly true positives, and the "but not" forms have nothing to judge, so no row was added; `review-prose` is where these shapes get caught.

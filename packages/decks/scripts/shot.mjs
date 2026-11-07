@@ -4,12 +4,13 @@
 //   bun run shot <alias> <slide> [clicks] [--port N]             # repo shorthand, same CLI
 //
 // Writes slide-<n>-c<k>.png into the out dir (default: SHOT_DIR, else the
-// current directory), prints the card lead and any InkChip per click, and
-// lists console errors, including "Failed to resolve component", which means
+// current directory), prints the card lead and any InkChip per click, warns
+// when a story headline wraps past HEAD_LINE_LIMIT lines, and lists console
+// errors, including "Failed to resolve component", which means
 // the dev server predates a component file and needs a restart. The boot
 // sequence is browser.mjs; playwright-chromium is an optional peer.
 import { resolve } from 'node:path'
-import { openDeck } from './browser.mjs'
+import { harvestText, openDeck, wrapWarning } from './browser.mjs'
 
 /** Screenshot `slide` at clicks 0..`clicks` from the server at `origin`. */
 export async function shot({
@@ -46,6 +47,11 @@ export async function shot({
       const file = resolve(out, `slide-${slide}-c${c}.png`)
       await page.screenshot({ path: file })
       console.log(`click ${c}: chip=${chip}\n  ${lead.split('\n')[0]}\n  -> ${file}`)
+      const { heads } = await harvestText(page, slide)
+      for (const head of heads) {
+        const warning = wrapWarning(slide, c, head)
+        if (warning) console.log(warning)
+      }
     }
     console.log('errors:', errors.length ? errors : 'none')
   } finally {
