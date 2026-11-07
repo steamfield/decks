@@ -135,6 +135,31 @@ slide; it never moves within a slide, only its content cross-fades (`riseIn`
 in, `fadeOutInPlace` out). Match its `hue` to the ink it sits beside. At most
 two live text zones per beat: the card plus one chip or end label.
 
+## Reserved regions
+
+Two parts of the frame belong to the overlay, and the stage's ink stays out
+of them; everything else is the stage's, including the left third. Lay the
+visual out across the whole free area rather than squeezing it into the
+half the card doesn't cover. Figures below are at 1920x1080 (frame units in
+brackets) and come from `story-frame.css` and `story-marks.css`:
+
+- **Headline band**: `.od-story-head`, top left at `top: calc(6.2 * var(--sh))`,
+  `left: calc(5.7 * var(--lw))`, `64lw` wide (`88lw` with `.is-wide`). Two
+  lines of headline end near y = 175 (16sh); keep the top 16sh of the
+  headline's columns, x 110 to 1340 (5.7lw to 69.7lw), clear. An
+  `.is-wide` headline never wraps (`white-space: nowrap`), so its band is one
+  line, to about y = 120, across x 110 to 1800.
+- **Card column**: `.od-story-card`, bottom anchored at
+  `bottom: calc(12 * var(--sh))` (y = 950), `calc(var(--od-card-width) * var(--lw))`
+  wide (36lw, 691px) and `5.7lw` in from the side it anchors to. Its height
+  follows its copy, so reserve it at the full budget (an eight-word lead and a
+  twenty-word body), about 240px: y 710 to 950 (66sh to 88sh), over
+  x 110 to 800 for `anchor="left"` and x 1120 to 1810 for `anchor="right"`.
+
+A deck that changes these (`shape.card-width` in `theme.json`, or its own
+headline rule) moves the regions with them; measure with `{{decks}} shot`
+rather than trusting the numbers above.
+
 ## Entrance vs beat
 
 Two separate motion systems, and mixing them up is the most common authoring

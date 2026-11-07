@@ -20,8 +20,8 @@
 .od-slide.is-story .od-dataset-card {
   --card-accent: var(--od-cyan);
   --card-glow: 12%;
-  border: 1px solid var(--od-border);
-  border-radius: 12px;
+  border: var(--od-hairline, 1px) solid var(--od-border);
+  border-radius: var(--od-radius, 12px);
   background:
     radial-gradient(
       ellipse 80% 100% at 0% 0%,
@@ -50,7 +50,8 @@
 .od-slide.is-story .od-story-card {
   position: absolute;
   bottom: calc(12 * var(--sh));
-  width: calc(36 * var(--lw));
+  /* shape.card-width, in --lw frame units. */
+  width: calc(var(--od-card-width, 36) * var(--lw));
   padding: calc(1.5 * var(--sw)) calc(1.7 * var(--sw));
 }
 .od-slide.is-story .od-story-card.anchor-left {

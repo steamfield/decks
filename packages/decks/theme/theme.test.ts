@@ -99,6 +99,33 @@ describe('tokens css', () => {
     expect([...new Set(missing)]).toEqual([])
   })
 
+  it('emits the shape group as --od-<key>, overridable like any group', () => {
+    const css = themeCss(THEMES.default)
+    expect(css).toContain('--od-radius: 12px;')
+    expect(css).toContain('--od-hairline: 1px;')
+    expect(css).toContain('--od-card-width: 36;')
+    expect(css).toContain('--od-dim: 0.4;')
+    expect(themeCss(resolveTheme(defaults, { shape: { radius: '4px' } }))).toContain('--od-radius: 4px;')
+  })
+
+  it('keeps the CSS fallbacks equal to the shape defaults, so a var miss changes nothing', () => {
+    const shape = THEMES.default.shape as Record<string, string>
+    const uses = files.flatMap((f) => [
+      ...f.matchAll(/var\(--od-(radius|hairline|card-width|dim),\s*([^)]+)\)/g),
+    ])
+    expect(uses.length).toBeGreaterThan(0)
+    for (const [, key, fallback] of uses) expect(`${key}: ${fallback.trim()}`).toBe(`${key}: ${shape[key]}`)
+  })
+
+  it('defaults fonts.serif to the sans, and follows a deck that sets only the sans', () => {
+    expect(THEMES.default.fonts.serif).toBe(THEMES.default.fonts.sans)
+    expect(resolveTheme(defaults, { fonts: { sans: 'Lato' } }).fonts.serif).toBe('Lato')
+  })
+
+  it('rejects a shape number with a unit', () => {
+    expect(() => resolveTheme(defaults, { shape: { dim: '40%' } })).toThrow(/shape.dim/)
+  })
+
   it('emits glows as rgb triplets for rgba(var(), alpha)', () => {
     expect(themeCss(THEMES.default)).toContain('--od-glow-primary-rgb: 6, 182, 212;')
   })
