@@ -68,11 +68,12 @@ export async function openDeck(url, { reloadMs = 4000, settleMs, what = 'This co
 
 /**
  * A story headline that renders on more lines than this gets a warning from
- * `shot` and `snap`. RFC 0005 set it from a snap of every shipped story deck:
- * one if they were all quiet at one line, else two. state-of-js wraps to two
- * lines on slides 2 to 5, so it is two; no shipped deck reaches three.
+ * `shot` and `snap`. One line: every headline texas-2026's slide runs had to
+ * shorten by hand rendered on two, and a limit of two catches none of them.
+ * state-of-js slides 2 to 5 warn at one; their headlines carry the same kind
+ * of leading qualifier. See RFC 0005, "Results".
  */
-export const HEAD_LINE_LIMIT = 2
+export const HEAD_LINE_LIMIT = 1
 
 /**
  * How many lines a run of text occupies, from the client rects of its text
