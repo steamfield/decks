@@ -10,7 +10,8 @@
 // resolved and labels kept in data/*.ts objects arrive as the audience reads
 // them. Each string is mapped back to a file and line by searching the deck's
 // sources, and marked unmapped when the search fails. Presenter notes come
-// from each page through lint/scan.mjs `presenterNotes`.
+// from each slide (its `src:` page, or slides.md for a slide written inline)
+// through lint/scan.mjs `presenterNotes`, free-form notes included.
 //
 // The rules are deck-writing.md and prose-patterns.md: the project's
 // .claude/rules/ copies (this repo's sources, or what `decks init` installed),
@@ -55,9 +56,57 @@ export function deckSourceFiles(deckDir) {
   return out
 }
 
-/** Page files in slide order from a deck's `src:` manifest; index 0 is slide 1. */
+/**
+ * The slides of a slides.md in order, split the way Slidev's parser splits
+ * them: at a `---` line outside a code fence or HTML comment, a `---` followed
+ * by a non-blank line opening a frontmatter block up to the next `---`. Each
+ * is `{ src, line, content }`: `src` the page its frontmatter imports (or
+ * null for a slide written inline), `content` the text after its frontmatter,
+ * and `line` the 1-based slides.md line `content` starts on.
+ */
+export function deckSlides(slidesMd) {
+  const lines = slidesMd.split(/\r?\n/)
+  const slides = []
+  let start = 0
+  let contentStart = 0
+  let inComment = false
+  const slice = (end) => {
+    if (start === end) return
+    const src = /^src:\s*(.+?)\s*$/m.exec(lines.slice(start, contentStart).join('\n'))?.[1]
+    slides.push({
+      src: src ? src.replace(/^["']|["']$/g, '').replace(/^\.\//, '') : null,
+      line: contentStart + 1,
+      content: lines.slice(contentStart, end).join('\n'),
+    })
+    start = contentStart = end + 1
+  }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trimEnd()
+    if (inComment) {
+      inComment = line.lastIndexOf('-->') < line.lastIndexOf('<!--') || !line.includes('-->')
+      continue
+    }
+    if (line.startsWith('---')) {
+      slice(i)
+      if (line[3] !== '-' && lines[i + 1]?.trim()) {
+        start = i
+        for (i += 1; i < lines.length; i++) if (lines[i].trimEnd() === '---') break
+        contentStart = i + 1
+      }
+    } else if (line.trimStart().startsWith('```')) {
+      const fence = /^\s*`+/.exec(line)[0].trimStart()
+      let j = i + 1
+      while (j < lines.length && !lines[j].trimStart().startsWith(fence)) j++
+      if (j < lines.length) i = j
+    } else if (line.lastIndexOf('<!--') > line.lastIndexOf('-->')) inComment = true
+  }
+  if (start <= lines.length - 1) slice(lines.length)
+  return slides
+}
+
+/** Page files in slide order from a deck's slides.md; index 0 is slide 1, null for an inline slide. */
 export function slidePages(slidesMd) {
-  return [...slidesMd.matchAll(/^src:\s*(.+?)\s*$/gm)].map((m) => m[1].replace(/^\.\//, ''))
+  return deckSlides(slidesMd).map((s) => s.src)
 }
 
 /**
@@ -195,9 +244,11 @@ function assembled(target, index, rank) {
 
 /**
  * A page's presenter notes cut at their markers: `ABOUT THIS SLIDE`,
- * `SAY (opening)` (click 0), each `[click]` (clicks 1..n) and `IF ASKED`.
- * Returns `{ click, text, line }` per section, `click` a number or the
- * section's name; notes without the markers come back whole as `notes`.
+ * `SAY (opening)` (click 0) and `IF ASKED` at the start of a line, and each
+ * click marker wherever it sits. A plain `[click]` is the click after the
+ * previous one and `[click:N]` is click N, as Slidev counts them. Returns
+ * `{ click, text, line }` per section, `click` a number or the section's
+ * name; notes without the markers come back whole as `notes`.
  */
 export function noteSections(src) {
   const notes = presenterNotes(src)
@@ -205,24 +256,35 @@ export function noteSections(src) {
   const sections = []
   let cur = null
   let click = 0
+  const open = (label, line) => sections.push((cur = { click: label, parts: [], line }))
+  const HEADINGS = [
+    [/^\s*ABOUT THIS SLIDE\b/, 'about'],
+    [/^\s*SAY \(opening\)/, 0],
+    [/^\s*IF ASKED\b/, 'if asked'],
+  ]
   notes.text.split('\n').forEach((raw, i) => {
     const line = notes.line + i
-    let m
     let rest = raw
-    if ((m = /^\s*ABOUT THIS SLIDE\b/.exec(raw))) cur = { click: 'about', parts: [], line }
-    else if ((m = /^\s*SAY \(opening\)/.exec(raw))) cur = { click: 0, parts: [], line }
-    else if ((m = /^\s*\[click(?::\d+)?\]/.exec(raw))) cur = { click: ++click, parts: [], line }
-    else if ((m = /^\s*IF ASKED\b/.exec(raw))) cur = { click: 'if asked', parts: [], line }
-    if (m) {
-      sections.push(cur)
+    for (const [re, label] of HEADINGS) {
+      const m = re.exec(raw)
+      if (!m) continue
+      open(label, line)
       rest = raw.slice(m[0].length)
+      break
     }
-    if (!cur) {
-      if (!rest.trim()) return
-      cur = { click: 'notes', parts: [], line }
-      sections.push(cur)
-    }
-    cur.parts.push(rest)
+    // Odd pieces are the markers the split kept.
+    rest.split(/(\[click(?::\d+)?\])/).forEach((piece, j) => {
+      if (j % 2) {
+        const n = /:(\d+)/.exec(piece)
+        click = n ? Number(n[1]) : click + 1
+        return open(click, line)
+      }
+      if (!cur) {
+        if (!piece.trim()) return
+        open('notes', line)
+      }
+      cur.parts.push(piece)
+    })
   })
   return sections
     .map(({ click, parts, line }) => ({ click, line, text: parts.join(' ').replace(/\s+/g, ' ').trim() }))
@@ -275,7 +337,8 @@ export function reviewPrompt({ rootDir, deck, alias, frames, decksDir }) {
   const fileList = deckSourceFiles(deckDir)
   const texts = Object.fromEntries(fileList.map((f) => [f, readFileSync(join(deckDir, f), 'utf8')]))
   const index = sourceIndex(texts)
-  const pages = slidePages(texts['slides.md'] ?? '')
+  const deckSlideList = deckSlides(texts['slides.md'] ?? '')
+  const pages = deckSlideList.map((s) => s.src)
 
   // Per slide: each distinct visible string with the clicks it shows at.
   const slides = new Map()
@@ -294,8 +357,9 @@ export function reviewPrompt({ rootDir, deck, alias, frames, decksDir }) {
   let strings = 0
   const sections = []
   for (const n of numbers) {
-    const page = pages[n - 1]
-    const related = page ? relatedFiles(deckDir, page) : new Map()
+    const slide = deckSlideList[n - 1]
+    const page = slide?.src
+    const related = page ? relatedFiles(deckDir, page) : new Map([['slides.md', 0]])
     const rows = []
     for (const { kind, text, clicks } of slides.get(n)?.values() ?? []) {
       const at = locate(text, index, related)
@@ -304,11 +368,26 @@ export function reviewPrompt({ rootDir, deck, alias, frames, decksDir }) {
       const source = at ? `${rel(at.file)}:${at.line}${at.exact ? '' : ' (partial)'}` : 'unmapped'
       rows.push(`| ${clickList(clicks)} | ${kind} | ${cell(text)} | ${source} |`)
     }
-    if (page && texts[page] !== undefined)
-      for (const s of noteSections(texts[page])) {
-        strings++
-        rows.push(`| ${s.click} | notes | ${cell(s.text)} | ${rel(page)}:${s.line} |`)
+    // Notes from the page a slide imports, or from slides.md for one written
+    // inline; a page that cannot be read gets a row saying so.
+    let notes = []
+    let noteFile = 'slides.md'
+    let noteLine = (s) => s.line
+    if (page) {
+      noteFile = page
+      try {
+        notes = noteSections(texts[page] ?? readFileSync(join(deckDir, page), 'utf8'))
+      } catch (err) {
+        rows.push(`| - | notes | (notes not read: ${cell(err.code ?? err.message)}) | ${rel(page)} |`)
       }
+    } else if (slide) {
+      notes = noteSections(slide.content)
+      noteLine = (s) => slide.line + s.line - 1
+    }
+    for (const s of notes) {
+      strings++
+      rows.push(`| ${s.click} | notes | ${cell(s.text)} | ${rel(noteFile)}:${noteLine(s)} |`)
+    }
     if (!rows.length) continue
     sections.push(
       [`### Slide ${n}${page ? ` (${rel(page)})` : ''}`, '', '| Click | Kind | Text | Source |', '|---|---|---|---|', ...rows].join('\n'),
@@ -328,7 +407,7 @@ How to review:
 - A rewrite that introduces a figure names the \`data-sources.md\` row or the \`data/*.ts\` constant it comes from. Keep each rewrite in the budget its kind carries: a story card's lead is at most eight words and its body twenty; a headline is one claim ending in a period.
 - Presenter notes (kind \`notes\`) are spoken, not shown. Hold them to the sentence-level patterns only.
 
-Kinds: \`head\` is a story headline, \`lead\` and \`body\` a story card, \`chip\` an InkChip, \`svg\` an SVG label, \`foreign\` text inside an SVG foreignObject, \`text\` any other visible text, \`notes\` a section of the presenter notes. Click is the beat (or notes section) the string shows at. Source is where the string was found by search; "(partial)" means the string is assembled from code (an interpolated figure or label) and the line holds the literal part, and "unmapped" means the search found no source.
+Kinds: \`head\` is a story headline, \`lead\` and \`body\` a story card, \`chip\` an InkChip, \`svg\` an SVG label, \`foreign\` text inside an SVG foreignObject, \`text\` any other visible text, \`notes\` a section of the presenter notes. Click is the beat (or notes section) the string shows at. Source is where the string was found by search; "(partial)" means the string is assembled from code (an interpolated figure or label) and the line holds the literal part, and "unmapped" means the search found no source. A notes row reading "(notes not read: ...)" means that slide's page could not be read, so its notes are missing from this list.
 
 Reply with one Markdown table, one row per string that breaks a rule, and nothing for strings that pass:
 

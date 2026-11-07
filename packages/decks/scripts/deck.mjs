@@ -41,6 +41,15 @@
 //                            pattern (hook JSON on stdin)
 //   decks hook prompt        UserPromptSubmit hook: the deck-writing reminder
 //
+// Exit codes: 0 on success; 1 on a usage error, an unknown deck, a failed
+// Slidev run (dev/build/export pass Slidev's own code through), drift or an
+// error hit in check, a lint hit (2 when lint's pattern file is missing), a
+// snap diff over threshold, a dev server or browser walk that fails (one
+// line on stderr), and a snap or review-prose walk that logged console errors
+// (snap still writes its frames, review-prose still prints the prompt);
+// 130/143 when SIGINT/SIGTERM stops a dev server shot, snap or review-prose
+// started.
+//
 // The deck registry is decks.json in the current directory. Its `_config`
 // entry sets `decksDir` (where `new` scaffolds), `outDir` and `base` (both
 // may contain `{name}`); a deck entry may override `outDir` and `base`.
@@ -103,6 +112,19 @@ const config = {
 function die(msg) {
   console.error(msg)
   process.exit(1)
+}
+
+/**
+ * `run()`, with a throw turned into die() and its message's first line, so a
+ * browser walk that fails exits 1 with a cause instead of an unhandled
+ * rejection's stack.
+ */
+async function orDie(what, run) {
+  try {
+    return await run()
+  } catch (err) {
+    die(`${what}: ${String(err?.message ?? err).split('\n')[0]}`)
+  }
 }
 
 function deckFor(alias) {
@@ -438,8 +460,10 @@ switch (cmd) {
     const { requireChromium } = await import('./browser.mjs')
     await requireChromium('decks shot')
     const { shot } = await import('./shot.mjs')
-    await withDevServer(deck, port, (origin) =>
-      shot({ origin, slide, clicks: Number(clicks), ...(out && { out: resolve(out) }) }),
+    await orDie('decks shot', () =>
+      withDevServer(deck, port, (origin) =>
+        shot({ origin, slide, clicks: Number(clicks), ...(out && { out: resolve(out) }) }),
+      ),
     )
     break
   }
@@ -463,7 +487,9 @@ switch (cmd) {
     const outDir = resolve(dir ?? join('snaps', `${alias}-${stamp}`))
     const { requireChromium } = await import('./browser.mjs')
     await requireChromium('decks snap')
-    const { clean } = await withDevServer(deck, port, (origin) => walk({ origin, outDir }))
+    const { clean } = await orDie('decks snap', () =>
+      withDevServer(deck, port, (origin) => walk({ origin, outDir })),
+    )
     if (!clean) process.exitCode = 1
     break
   }
@@ -479,14 +505,14 @@ switch (cmd) {
     const { reviewPrompt } = await import('./review-prose.mjs')
     // stdout is the prompt; every status line goes to stderr.
     const log = (...a) => console.error(...a)
-    const { clean, frames } = await withDevServer(
-      deck,
-      port,
-      (origin) => walk({ origin, shots: false, log }),
-      log,
+    const { clean, frames } = await orDie('decks review-prose', () =>
+      withDevServer(deck, port, (origin) => walk({ origin, shots: false, log }), log),
     )
     process.stdout.write(reviewPrompt({ rootDir, deck, alias, frames, decksDir: config.decksDir }))
-    if (!clean) process.exitCode = 1
+    if (!clean) {
+      console.error('review-prose: the walk logged console errors; strings from broken slides may be missing')
+      process.exitCode = 1
+    }
     break
   }
   case 'fact-extract': {

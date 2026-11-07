@@ -4,12 +4,14 @@
  * its text rects. The browser half is exercised by running the command on a
  * deck; these pin the parts that decide what the reviewer is told.
  */
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { lineCount, wrapWarning } from './browser.mjs'
 import {
   clickList,
+  deckSlides,
   locate,
   noteSections,
   relatedFiles,
@@ -69,13 +71,68 @@ describe('noteSections', () => {
     const lines = src.split('\n')
     expect(lines[sections[2].line - 1]).toMatch(/^\[click\] Confirming/)
   })
+
+  const notes = (body: string) => `<!--\nSLIDE 1 · X\n-->\n\n# A slide.\n\n<!--\n${body}\n-->\n`
+
+  it('labels [click:N] with N and counts a plain [click] on from it', () => {
+    const sections = noteSections(notes('SAY (opening)\nZero.\n\n[click:3] Three.\n\n[click] Four.'))
+    expect(sections.map((s) => [s.click, s.text])).toEqual([
+      [0, 'Zero.'],
+      [3, 'Three.'],
+      [4, 'Four.'],
+    ])
+  })
+
+  it('splits on a click marker in the middle of a line', () => {
+    const sections = noteSections(notes('SAY (opening) Zero. [click] One. [click] Two.\nStill two.'))
+    expect(sections.map((s) => [s.click, s.text, s.line])).toEqual([
+      [0, 'Zero.', 8],
+      [1, 'One.', 8],
+      [2, 'Two. Still two.', 8],
+    ])
+  })
+
+  it('returns free-form notes whole', () => {
+    expect(noteSections(notes('Point at the chart.'))).toEqual([{ click: 'notes', text: 'Point at the chart.', line: 8 }])
+  })
+})
+
+describe('deckSlides', () => {
+  it('splits inline slides and src stanzas, skipping a --- inside a comment or fence', () => {
+    const md = [
+      '---',
+      'title: T',
+      'src: ./pages/01-cover.md',
+      '---',
+      '',
+      '---',
+      'layout: full',
+      '---',
+      '',
+      '# Inline.',
+      '<!--',
+      '---',
+      '-->',
+      '```md',
+      '---',
+      '```',
+      '---',
+      '',
+      '# Second inline.',
+    ].join('\r\n')
+    const slides = deckSlides(md)
+    expect(slides.map((s) => s.src)).toEqual(['pages/01-cover.md', null, null])
+    expect(slides[1].line).toBe(9)
+    expect(slides[1].content).toContain('# Inline.')
+    expect(slides[2].content.trim()).toBe('# Second inline.')
+  })
 })
 
 describe('slidePages and relatedFiles', () => {
   it('reads the manifest in order and follows a page to its stage and data', () => {
     const pages = slidePages(readFileSync(join(TX, 'slides.md'), 'utf8'))
     expect(pages[7]).toBe('pages/08-senate-arc.md')
-    const related = relatedFiles(TX, pages[7])
+    const related = relatedFiles(TX, pages[7] as string)
     expect(related.get('components/SenateArcStage.vue')).toBe(1)
     expect(related.get('data/08-senate-arc.ts')).toBe(2)
     expect(related.get('data/02-power-board.ts')).toBe(3)
@@ -122,6 +179,43 @@ describe('reviewPrompt', () => {
     expect(prompt).toContain('`deck-writing.md` wins where it and `prose-patterns.md` disagree.')
     expect(prompt).toContain('Skip paragraph-level review.')
     expect(prompt).toContain('### .claude/rules/prose-patterns.md')
+  })
+
+  it('takes notes from inline slides and free-form pages, and says when a page cannot be read', () => {
+    const root = mkdtempSync(join(tmpdir(), 'decks-review-'))
+    try {
+      mkdirSync(join(root, 'd', 'pages'), { recursive: true })
+      writeFileSync(
+        join(root, 'd', 'slides.md'),
+        [
+          '---',
+          'src: ./pages/01-cover.md',
+          '---',
+          '',
+          '---',
+          'layout: full',
+          '---',
+          '',
+          '# Inline.',
+          '',
+          '<!--',
+          'Say the inline thing.',
+          '-->',
+          '',
+          '---',
+          'src: ./pages/03-gone.md',
+          '---',
+          '',
+        ].join('\n'),
+      )
+      writeFileSync(join(root, 'd', 'pages', '01-cover.md'), '<!--\nSLIDE 1 · COVER\n-->\n\n# Cover.\n\n<!--\nWelcome them.\n-->\n')
+      const prompt = reviewPrompt({ rootDir: root, alias: 'd', deck: { entry: 'd/slides.md' }, frames: [] })
+      expect(prompt).toContain('| notes | notes | Welcome them. | d/pages/01-cover.md:8 |')
+      expect(prompt).toContain('| notes | notes | Say the inline thing. | d/slides.md:12 |')
+      expect(prompt).toMatch(/\| - \| notes \| \(notes not read: ENOENT\) \| d\/pages\/03-gone\.md \|/)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })
 

@@ -93,18 +93,22 @@ describe('startServer', () => {
     // Two runs probe the same free port; the other run's server got it first.
     const ours = deck('ours')
     const taken = await serve(page(escapeAttr(deck('theirs'))))
-    // A stand-in for Slidev bumped off `taken`: it ignores --port, serves
-    // `ours` on another port after a delay, and prints that URL.
-    const bumped = await freePort(45000 + Math.floor(Math.random() * 2000))
-    const fake = join(dirs[0], 'fake-slidev.mjs')
-    writeFileSync(
-      fake,
-      `import { createServer } from 'node:http'
-const html = ${JSON.stringify(page(escapeAttr(ours)))}
-setTimeout(() => createServer((_, res) => res.end(html)).listen(${bumped}, 'localhost', () =>
-  console.log('public slide show > http://localhost:${bumped}/')), 1500)
-`,
-    )
+    const { fake, bumped } = await fakeSlidev(ours)
+    const server = await startServer({ args: [fake], cwd: dirs[0], port: taken, entry: ours })
+    try {
+      expect(server.origin).toBe(`http://localhost:${bumped}`)
+    } finally {
+      server.stop()
+    }
+  }, 20_000)
+
+  it('does not take over another run serving the same deck on the probed port', async () => {
+    // Both runs shoot the same deck, so the other run's server passes the
+    // entry check; only the URL this child prints tells them apart. The noise
+    // after it scrolls that URL out of the 4000-char output tail.
+    const ours = deck('same')
+    const taken = await serve(page(escapeAttr(ours)))
+    const { fake, bumped } = await fakeSlidev(ours, 6000)
     const server = await startServer({ args: [fake], cwd: dirs[0], port: taken, entry: ours })
     try {
       expect(server.origin).toBe(`http://localhost:${bumped}`)
@@ -113,6 +117,27 @@ setTimeout(() => createServer((_, res) => res.end(html)).listen(${bumped}, 'loca
     }
   }, 20_000)
 })
+
+/**
+ * A stand-in for Slidev bumped off the probed port: it ignores --port, serves
+ * `entry` on another port after a delay, prints that URL, then `noise`
+ * characters of further output.
+ */
+async function fakeSlidev(entry: string, noise = 0) {
+  const bumped = await freePort(45000 + Math.floor(Math.random() * 2000))
+  const fake = join(dirs[0], 'fake-slidev.mjs')
+  writeFileSync(
+    fake,
+    `import { createServer } from 'node:http'
+const html = ${JSON.stringify(page(escapeAttr(entry)))}
+setTimeout(() => createServer((_, res) => res.end(html)).listen(${bumped}, 'localhost', () => {
+  console.log('public slide show > http://localhost:${bumped}/')
+  console.log('x'.repeat(${noise}))
+}), 1500)
+`,
+  )
+  return { fake, bumped }
+}
 
 describe('decodeEntities', () => {
   it('decodes the named and numeric entities an attribute escape writes', () => {

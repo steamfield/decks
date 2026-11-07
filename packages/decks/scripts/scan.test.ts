@@ -7,7 +7,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { PATTERNS_FILE, loadPatterns, proseLines } from '../lint/scan.mjs'
+import { PATTERNS_FILE, loadPatterns, presenterNotes, proseLines } from '../lint/scan.mjs'
 
 const dirs: string[] = []
 afterEach(() => {
@@ -54,5 +54,45 @@ describe('proseLines', () => {
   it('reads lint-allow on the closing line, inside or after the comment', () => {
     const [entry] = proseLines('<!--\nnote\n--> Quoted. <!-- lint-allow: em-dash -->\n')
     expect(entry.allow).toEqual(['em-dash'])
+  })
+})
+
+describe('presenterNotes', () => {
+  const page = (...parts: string[]) => parts.join('\n\n') + '\n'
+  const header = '<!--\nSLIDE 3 · X\n-->'
+
+  it('skips a plain SLIDE header and finds nothing on a page without notes', () => {
+    expect(presenterNotes(page(header, '<XStage />'))).toBeNull()
+  })
+
+  it('reads a SLIDE header that holds SAY (opening) or a marker as notes, not as the header', () => {
+    const say = presenterNotes(page('<!--\nSLIDE 3 · X\nSAY (opening)\nBeat 0.\n-->', '<XStage />'))
+    expect(say).toMatchObject({ line: 1, trailing: false, structured: true, clicks: 0 })
+    const click = presenterNotes(page('<!--\nSLIDE 3 · X\n[click] Beat 1.\n-->', '<XStage />'))
+    expect(click).toMatchObject({ line: 1, trailing: false, structured: true, clicks: 1 })
+  })
+
+  it('returns free-form trailing notes as unstructured', () => {
+    const plain = presenterNotes(page(header, '# A slide.', '<!--\nSpeak to the chart.\n-->'))
+    expect(plain).toMatchObject({ line: 7, trailing: true, structured: false, clicks: 0, numbered: [] })
+    expect(plain?.text).toBe('\nSpeak to the chart.\n')
+    const asked = presenterNotes(page(header, '<XStage />', '<!--\nABOUT THIS SLIDE\nA map.\n\nIF ASKED\nNo.\n-->'))
+    expect(asked).toMatchObject({ trailing: true, structured: false })
+  })
+
+  it('does not read a mid-page comment without markers as notes', () => {
+    expect(presenterNotes(page(header, '<!-- layout aside -->', '# A slide.'))).toBeNull()
+  })
+
+  it('skips the header after a CRLF frontmatter block', () => {
+    const src = page('---\r\nclicks: 1\r\n---', header, '# A slide.', '<!--\r\nSAY (opening)\r\n[click] B.\r\n-->').replace(
+      /(?<!\r)\n/g,
+      '\r\n',
+    )
+    expect(presenterNotes(src)).toMatchObject({ trailing: true, structured: true, clicks: 1 })
+    // The header ends the page here, so only the frontmatter match keeps it
+    // from reading as free-form notes.
+    const plain = page('---\r\nclicks: 0\r\n---', header).replace(/(?<!\r)\n/g, '\r\n')
+    expect(presenterNotes(plain)).toBeNull()
   })
 })

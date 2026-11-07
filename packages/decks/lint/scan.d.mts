@@ -58,6 +58,8 @@ export interface PresenterNotes {
   line: number
   /** The comment is the last non-blank content on the page. */
   trailing: boolean
+  /** Holds a click marker or `SAY (opening)`; false for free-form trailing notes. */
+  structured: boolean
   /** Plain `[click]` markers. */
   clicks: number
   /** Every `[click:N]` marker, as written. */

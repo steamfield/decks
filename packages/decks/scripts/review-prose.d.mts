@@ -1,7 +1,10 @@
 export declare const RULES: string[]
 export declare function normalize(text: string): string
 export declare function deckSourceFiles(deckDir: string): string[]
-export declare function slidePages(slidesMd: string): string[]
+export declare function deckSlides(
+  slidesMd: string,
+): { src: string | null; line: number; content: string }[]
+export declare function slidePages(slidesMd: string): (string | null)[]
 export declare function relatedFiles(deckDir: string, page: string): Map<string, number>
 export interface SourceIndex {
   lines: { file: string; line: number; text: string }[]

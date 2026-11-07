@@ -19,7 +19,9 @@
  * A stage page's presenter notes (found by `presenterNotes` in scan.mjs) must
  * end the page, since Slidev reads no other comment as notes, and carry one
  * plain `[click]` per click in the stanza: the opening paragraph covers beat
- * 0. A page with no notes passes.
+ * 0. Notes written into the `SLIDE N` header fail as not trailing. Free-form
+ * trailing notes (no `SAY (opening)`, no markers) fail too, since a stage
+ * page's notes need both. A page with no notes passes.
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -157,6 +159,8 @@ function notesProblems(src: string, clicks: number): string[] {
   if (!notes) return []
   const out: string[] = []
   const at = `notes at line ${notes.line}`
+  if (!notes.structured)
+    return [`${at}: no SAY (opening) or [click] markers; a stage page's notes need SAY (opening) and one [click] per click`]
   if (notes.numbered.length)
     out.push(`${at}: ${notes.numbered.join(', ')}: use plain [click] markers, one per beat after the opening`)
   if (!notes.trailing)
@@ -262,6 +266,13 @@ describe('beats', () => {
     expect(notesProblems(page(header, '<XStage />', notes.replace('[click] Beat 2', '[click:2] Beat 2')), 2)).toEqual([
       'notes at line 7: [click:2]: use plain [click] markers, one per beat after the opening',
       'notes at line 7: 1 [click] markers for clicks: 2; need one per click after SAY (opening)',
+    ])
+    const inHeader = '<!--\nSLIDE 3 · X\n\nSAY (opening)\nBeat 0.\n\n[click] Beat 1.\n-->'
+    expect(notesProblems(page(inHeader, '<XStage />'), 1)).toEqual([
+      'notes at line 1: not the last thing on the page; Slidev reads notes only from a comment that ends the page',
+    ])
+    expect(notesProblems(page(header, '<XStage />', '<!--\nIF ASKED\nA question.\n-->'), 0)).toEqual([
+      "notes at line 7: no SAY (opening) or [click] markers; a stage page's notes need SAY (opening) and one [click] per click",
     ])
   })
 

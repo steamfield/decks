@@ -99,8 +99,16 @@ export async function startServer({ args, cwd, port, entry, timeoutMs = 120_000 
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   let output = ''
+  // The port this child printed in its own URL, kept once seen: `output` is a
+  // rolling tail, so the line can scroll out of it.
+  let printed = null
   const collect = (chunk) => {
     output = (output + chunk).slice(-4000)
+    if (printed === null) {
+      // ANSI codes stripped, in case Slidev colors the port it prints.
+      const m = /http:\/\/localhost:(\d+)/.exec(output.replace(/\x1b\[[0-9;]*m/g, ''))
+      if (m) printed = Number(m[1])
+    }
   }
   child.stdout.on('data', collect)
   child.stderr.on('data', collect)
@@ -122,13 +130,17 @@ export async function startServer({ args, cwd, port, entry, timeoutMs = 120_000 
 
   const deadline = Date.now() + timeoutMs
   for (;;) {
-    // Slidev moves to the next port if this one was taken in the meantime,
-    // and until it prints its URL, `port` may be another run's server: two
-    // runs started together probe the same free port. So whatever answers
-    // has to be this deck's dev server before it counts.
-    const actual = Number(/http:\/\/localhost:(\d+)/.exec(output)?.[1] ?? port)
-    const origin = `http://localhost:${actual}`
-    if ((await answers(origin)) && (await existingServer(actual, entry)).origin)
+    // Slidev moves to the next port if this one was taken in the meantime, so
+    // `port` may be another run's server, even one for this same deck: two
+    // runs started together probe the same free port. Nothing counts until
+    // this child has printed its own URL, and then only this deck's server
+    // answering on that port.
+    const origin = `http://localhost:${printed ?? port}`
+    if (
+      printed !== null &&
+      (await answers(origin)) &&
+      (await existingServer(printed, entry)).origin
+    )
       return { origin, stop }
     if (exited !== null)
       throw new Error(`the dev server exited (${exited}) before it served:\n${output}`)
