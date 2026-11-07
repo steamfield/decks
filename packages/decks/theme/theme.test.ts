@@ -112,7 +112,7 @@ describe('tokens css', () => {
   })
 
   it('emits the shape group as --od-<key>, overridable like any group', () => {
-    const css = themeCss(THEMES.default)
+    const css = themeCss(themeFor('default'))
     expect(css).toContain('--od-radius: 12px;')
     expect(css).toContain('--od-hairline: 1px;')
     expect(css).toContain('--od-card-width: 36;')
@@ -121,7 +121,7 @@ describe('tokens css', () => {
   })
 
   it('keeps the CSS fallbacks equal to the shape defaults, so a var miss changes nothing', () => {
-    const shape = THEMES.default.shape as Record<string, string>
+    const shape = themeFor('default').shape as Record<string, string>
     const uses = files.flatMap((f) => [
       ...f.matchAll(/var\(--od-(radius|hairline|card-width|dim),\s*([^)]+)\)/g),
     ])
@@ -130,7 +130,7 @@ describe('tokens css', () => {
   })
 
   it('defaults fonts.serif to the sans, and follows a deck that sets only the sans', () => {
-    expect(THEMES.default.fonts.serif).toBe(THEMES.default.fonts.sans)
+    expect(themeFor('default').fonts.serif).toBe(themeFor('default').fonts.sans)
     expect(resolveTheme(defaults, { fonts: { sans: 'Lato' } }).fonts.serif).toBe('Lato')
   })
 
