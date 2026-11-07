@@ -224,25 +224,30 @@ not copy to paste into the slide.
 
 ## Verification loop
 
-- `bun run shot <n> [clicks]`: per-slide screenshots at each click, prints
-  the card lead per click and chip positions, and lists console errors
-  including unresolved-component failures. Restart the dev server first if a
-  component file was added or moved (Slidev's auto-import list is built at
-  startup).
+- `bun run shot <alias> <n> [clicks]`: per-slide screenshots at each click,
+  prints the card lead per click and chip positions, and lists console errors
+  including unresolved-component failures. Without `--port` it starts a dev
+  server for the deck on a free port and stops it after, so runs in parallel
+  checkouts do not collide. To shoot after every edit, start one server with
+  `bun run dev <alias> --no-open --port N` and pass `--port N` to each `shot`;
+  it refuses a server that is not this deck's, from this checkout. Restart the
+  dev server first if a component file was added or moved (Slidev's
+  auto-import list is built at startup).
 <!-- decks:repo-only -->
-- `bun run snap <dir> [port]` / `bun run snap:diff <a> <b>`: whole-deck pixel
-  walk and diff. The port defaults to 3030, the same as `shot`; a parity gate
-  run from a worktree passes 3031 and points its own dev server at that port,
-  so the two servers do not collide. On `opendata-pitch`, frames `s01-c0`,
+- `bun run snap <alias> [outDir]` / `bun run snap:diff <a> <b>`: whole-deck
+  pixel walk and diff. Like `shot`, `snap` starts its own dev server on a free
+  port unless given `--port N`, so a parity gate run from a worktree needs no
+  port of its own. On `opendata-pitch`, frames `s01-c0`,
   `s04-c2`, `s04-c3` and `s13-c0` carry a force graph in continuous motion
   and differ by roughly 3 to 20 percent between two identical walks; every
   other frame should be `0.000%` (under 0.2% at most). Walk twice before a refactor to see
   the floor for yourself, then diff the refactor against either walk.
-- `bun run test` (vitest over `packages/decks/{story,scripts,theme}`): the
-  guard tests above, the theme contrast test, plus the unit suites.
+- `bun run test` (vitest over `packages/decks/{story,scripts,theme,lint}` and
+  every deck's own `*.test.ts`): the guard tests above, the theme contrast
+  test, plus the unit suites.
 - `bun run typecheck`, `bun run check`, `bun run build <alias>`.
 <!-- /decks:repo-only -->
-<!-- decks:user: - `bun run snap <dir>`: whole-deck screenshot walk. Walk before and after a
+<!-- decks:user: - `bun run snap <alias>`: whole-deck screenshot walk. Walk before and after a
   theme or shared-styles change and compare the frames.
 - `bun run lint`: the prose patterns over pages, components and every story
   card's `lead`/`body`.

@@ -8,5 +8,6 @@ export declare function startServer(opts: {
   args: string[]
   cwd: string
   port: number
+  entry: string
   timeoutMs?: number
 }): Promise<{ origin: string; stop: () => void }>

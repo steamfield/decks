@@ -28,8 +28,9 @@
 //   decks snap <alias> [outDir] [--port N]   screenshot every slide and click
 //                            (outDir defaults to snaps/<alias>-<timestamp>)
 //   decks snap diff <dirA> <dirB> [threshold]   per-frame pixel diff of two walks
-//       shot and snap target a dev server already on --port N, or start one for
-//       the deck on a free port and stop it after; they need playwright-chromium
+//       shot and snap target a dev server already on --port N (checked to be
+//       this deck's), or start one for the deck on a free port and stop it
+//       after; they need playwright-chromium
 //       (snap diff: pngjs, pixelmatch), optional peers installed on demand
 //   decks fact-extract <alias|deck-dir>   every figure in a deck, for the fact-check
 //   decks hook lint          PreToolUse hook (Claude Code Edit/Write/MultiEdit, Codex
@@ -46,6 +47,7 @@ import { spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { nameHint } from './fact-extract.mjs'
 
 const rootDir = process.cwd()
 const templatesDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'templates')
@@ -102,7 +104,7 @@ function die(msg) {
 
 function deckFor(alias) {
   const deck = decks[alias]
-  if (!deck) die(`Unknown deck "${alias}". Known: ${Object.keys(decks).join(', ')}`)
+  if (!deck) die(nameHint(alias, decks) ?? `Unknown deck "${alias}". Known: ${Object.keys(decks).join(', ')}`)
   return deck
 }
 
@@ -166,14 +168,21 @@ async function withDevServer(deck, port, fn) {
     die(`Could not find a free port for the dev server: ${err.message}`)
   }
   console.log(
-    `Starting a dev server for ${deck.entry} on port ${free} (pass --port N to use a running one)`,
+    `Starting a dev server for ${deck.entry} on a free port (pass --port N to use a running one)`,
   )
   let server
   try {
-    server = await startServer({ args: [slidevBin(), deck.entry], cwd: rootDir, port: free })
+    server = await startServer({
+      args: [slidevBin(), deck.entry],
+      cwd: rootDir,
+      port: free,
+      entry: resolve(rootDir, deck.entry),
+    })
   } catch (err) {
     die(err.message)
   }
+  // The origin it serves on, which is not `free` when another run took that port first.
+  console.log(`Dev server for ${deck.entry} at ${server.origin}`)
   try {
     return await fn(server.origin)
   } finally {
@@ -194,6 +203,16 @@ async function checkManifests() {
     if (existsSync(join(rootDir, entry)) && !registered.has(entry)) {
       console.log(`unregistered: ${entry} (deck exists on disk but has no decks.json entry)`)
       bad++
+    }
+  }
+  // `deckFor` reads an alias first, so an alias spelled like another deck's
+  // name makes that name select the wrong deck instead of naming its alias.
+  for (const [alias, { name }] of Object.entries(decks)) {
+    for (const [other, deck] of Object.entries(decks)) {
+      if (other !== alias && deck.name === alias) {
+        console.log(`alias collision: alias "${alias}" (${name}) is the name of the deck aliased "${other}"`)
+        bad++
+      }
     }
   }
   for (const [alias, { entry }] of Object.entries(decks)) {
@@ -282,10 +301,14 @@ function scaffoldStory(vars, write) {
 switch (cmd) {
   case 'dev': {
     const { entry } = deckFor(
-      rest[0] ?? die('Usage: decks dev <alias> [slidev flags, e.g. --port 3031]'),
+      rest[0] ?? die('Usage: decks dev <alias> [--no-open] [slidev flags, e.g. --port 3031]'),
     )
-    // Flags after the alias go to Slidev as-is (--port, --remote, --bind, ...).
-    slidev([entry, '--open', ...rest.slice(1)])
+    // Flags after the alias go to Slidev as-is (--port, --remote, --bind, ...),
+    // except --no-open, which keeps the browser shut for a server only `shot`
+    // and `snap --port` will read.
+    const flags = rest.slice(1)
+    const open = !flags.includes('--no-open')
+    slidev([entry, ...(open ? ['--open'] : []), ...flags.filter((f) => f !== '--no-open')])
     break
   }
   case 'build': {

@@ -1,7 +1,7 @@
 // Headless screenshot of one slide at each click, against a dev server.
 //
 //   decks shot <alias> <slide> [clicks] [--port N] [--out DIR]   # the CLI (deck.mjs)
-//   bun run shot <slide> [clicks] [port]      # repo shorthand: a server already on :3030
+//   bun run shot <alias> <slide> [clicks] [--port N]             # repo shorthand, same CLI
 //
 // Writes slide-<n>-c<k>.png into the out dir (default: SHOT_DIR, else the
 // current directory), prints the card lead and any InkChip per click, and
@@ -9,7 +9,6 @@
 // the dev server predates a component file and needs a restart. The boot
 // sequence is browser.mjs; playwright-chromium is an optional peer.
 import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { openDeck } from './browser.mjs'
 
 /** Screenshot `slide` at clicks 0..`clicks` from the server at `origin`. */
@@ -52,17 +51,4 @@ export async function shot({
   } finally {
     await browser.close()
   }
-}
-
-// Run directly (`bun run shot`): the repo shorthand against a server already up.
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [slide, clicksArg = '0', portArg = '3030'] = process.argv.slice(2)
-  if (!slide) {
-    console.error(
-      'usage: bun run shot <slide> [clicks] [port]   (or: decks shot <alias> <slide> [clicks])',
-    )
-    process.exit(2)
-  }
-  await shot({ origin: `http://localhost:${portArg}`, slide, clicks: Number(clicksArg) })
-  process.exit(0)
 }

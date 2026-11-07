@@ -42,13 +42,13 @@ Slidev resolves `components/`, `public/`, and `setup/` relative to the deck's `s
 Run from the repo root:
 
 ```bash
-bun run dev <alias>            # dev server (port 3030)
+bun run dev <alias> [--no-open]  # dev server (port 3030, or the next free one)
 bun run build <alias>          # static build to dist/<name> (decks.json _config.outDir)
 bun run export <alias>         # PDF export (flags picked per deck from decks.json)
 bun run new <alias> <dir> [--story] [--author "Name"] [--brand "Name"] [--url example.com]
                                # scaffold decks/<dir> (conventional or story) + register it
 bun run list                   # registered decks
-bun run check                  # orphaned/missing pages vs src: manifests, plus error-level lint hits
+bun run check                  # orphaned/missing pages vs src: manifests, alias/name collisions, plus error-level lint hits
 bun run build:all              # build every registered deck except `skipAll` ones; runs check first
 bun run typecheck              # tsc over .ts only; a stage's .vue script is not read
 bun run test                   # unit suites, story guards, theme contrast, story-card COPY lint
@@ -57,8 +57,8 @@ bun run fact-extract <alias>   # every figure in a deck, for the fact-check
 bun run test:hooks             # tests for the two hooks (`decks hook`) and their Claude Code and Codex wiring
 bun run render:agent           # render .claude/ into packages/decks/agent/ (what `decks init` installs)
 bun run test:tarball           # pack the package; run init, lint, check and the hooks in scratch projects
-bun run shot <n> [clicks]      # headless screenshots of slide n at each click (dev server on :3030)
-bun run snap <dir> [port]      # whole-deck screenshot walk against the dev server
+bun run shot <alias> <n> [clicks] [--port N]   # headless screenshots of slide n at each click
+bun run snap <alias> [dir] [--port N]          # whole-deck screenshot walk
 bun run snap:diff <a> <b>      # per-frame pixel diff between two snap walks
 ```
 
@@ -72,6 +72,13 @@ prints that console line so the cause is visible without opening the browser.
 This rule lives here only; the story-authoring detail
 (`.claude/rules/story-stage.md`) and the skill both point back to this
 paragraph rather than restating it.
+
+`shot` and `snap` start a dev server for the deck on a free port and stop it
+after, so parallel runs in separate worktrees don't collide. To shoot after
+every edit, start one server with `bun run dev <alias> --no-open --port N` and
+pass `--port N`; both check that the server there is this deck's, from this
+checkout. A command given the deck's `name` where it takes the alias exits
+with the alias to use.
 
 Set `"animated": true` in `decks.json` when the deck uses OpenChart or scripted demos (it switches export from `--with-clicks --with-toc` to `--with-clicks --wait 1500`); `--story` sets it for you.
 

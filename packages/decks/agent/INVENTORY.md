@@ -16,17 +16,17 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 | Reference | Where | Kind | Rendered as |
 |---|---|---|---|
 | `bun run new <alias> <dir> [--story] …` | A, BD, DP | CLI | `{{decks}} new …` |
-| `bun run dev <alias>` | BD, DP | CLI | `{{decks}} dev <alias>` |
+| `bun run dev <alias>` (and `--no-open --port N`) | BD, DP, SS | CLI | `{{decks}} dev <alias>` |
 | `bun run build <alias>` | A, BD, DP, SS | CLI | `{{decks}} build <alias>` |
 | `bun run build:all` | BD (definition of done 2) | CLI + Delete | Mapped to `{{decks}} build --all`. Its one use, the gate for a change to `packages/decks/` in BD, sits in a repo-only block, so the rendered BD drops it. |
 | `bun run export <alias>` | BD, DP | CLI | `{{decks}} export <alias>` |
 | `bun run list` | BD | CLI | `{{decks}} list` |
-| `bun run check` | A, BD, DP, SS | CLI | `{{decks}} check` (manifest drift plus `decks lint` errors) |
+| `bun run check` | A, BD, DP, SS | CLI | `{{decks}} check` (manifest drift, alias/name collisions, plus `decks lint` errors) |
 | `bun run lint` | A, BD, DP, DW | CLI | `{{decks}} lint`, which also covers story `COPY`; the user wording says so where the repo text splits lint and test |
 | `bun run test` (story guards, `COPY` lint) | A, BD, SS | Delete + CLI | The `COPY` lint half is `{{decks}} lint`. The beats/clicks/durations/frame-units/vt-names guards are vitest suites that don't ship; user text says to keep `clicks:` in step by hand and confirm with `shot` |
 | `bun run typecheck` | A, BD, SS | Delete | A user project has no repo `tsc` config to run |
-| `bun run shot <n> [clicks]` | A, BD, SS | CLI | `{{decks}} shot <alias> <n> [clicks]` (the package CLI takes the alias) |
-| `bun run snap <dir> [port]` | A, BD, SS | CLI | `{{decks}} snap <alias>`, reframed as a before/after walk for a theme or styles change |
+| `bun run shot <alias> <n> [clicks]` | A, BD, SS | CLI | `{{decks}} shot <alias> <n> [clicks]`: the repo script runs the same CLI |
+| `bun run snap <alias> [outDir]` | A, BD, SS | CLI | `{{decks}} snap <alias>`, reframed as a before/after walk for a theme or styles change |
 | `bun run snap:diff <a> <b>` and the pitch noise-floor frames | BD, SS | Delete + user wording | `decks snap diff <a> <b>` exists, but the noise-floor parity gate is a repo refactor gate, so the passages stay repo-only; BD's user wording asks for a `snap` walk before and after a theme or styles change |
 | `bun run fact-extract <alias>` | BD, DD, FC, DP | CLI | `{{decks}} fact-extract <alias>` |
 | `bun tools/content-fact-extract.mjs <deck-dir>` | FC | Delete | Covered by `{{decks}} fact-extract <alias>` |
@@ -77,7 +77,6 @@ Files: A = `agents/deck-author.md`, BD = `skills/building-a-deck/SKILL.md`, FC =
 | `tools/content-fact-extract.mjs` | DD, FC | CLI | `decks fact-extract <alias>` |
 | `.claude/hooks/lint-ai-rhetoric.sh` (bash + jq) | `.claude/settings.json` | CLI | `decks hook lint`, wired by `init` as `node "$CLAUDE_PROJECT_DIR/{{pkg}}/scripts/deck.mjs" hook lint` |
 | `.claude/hooks/user-prompt-submit.sh` (bash + jq) | `.claude/settings.json` | CLI | `decks hook prompt`, wired the same way |
-| `packages/decks/scripts/shot.mjs`, `snap.mjs` | root `package.json` | CLI | `decks shot <alias> <slide> [clicks]`, `decks snap <alias>` |
 
 ## Not changed
 

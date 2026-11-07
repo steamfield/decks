@@ -38,9 +38,7 @@ export { SOURCES }
 
 /** Ordered: the specific CLI shapes run before the generic `bun run <cmd>` rule. */
 const MAPPINGS = [
-  // CLI commands. `shot` and `snap` take the deck alias in the package CLI.
-  [/bun run shot <n> \[clicks\]/g, '{{decks}} shot <alias> <n> [clicks]'],
-  [/bun run snap <dir>(?: \[port\])?/g, '{{decks}} snap <alias>'],
+  // CLI commands.
   [/bun run build:all\b/g, '{{decks}} build --all'],
   [/bun run (new|dev|build|export|list|check|lint|fact-extract|shot|snap)\b/g, '{{decks}} $1'],
   // Exemplar decks. opendata-pitch is not bundled; tides is the story exemplar.
