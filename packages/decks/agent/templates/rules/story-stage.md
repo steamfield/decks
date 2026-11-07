@@ -84,6 +84,47 @@ A beat with no card is `{ lead: '' }`: it still counts toward the beat count,
 and the template hides the card at that beat with `v-if="copy.lead"`. Do not
 skip the array entry to save the beat.
 
+## The stage page and its presenter notes
+
+A stage page holds three things, in this order: the `SLIDE N` header comment
+(it names the slide and holds no notes), the stage tag, then one trailing
+comment with the presenter notes. Slidev reads notes only from a comment that
+ends the page, so notes placed above the stage tag never reach the presenter
+view, and nothing warns you.
+
+```md
+<!--
+SLIDE 8 · SENATE ARC
+-->
+
+<SenateArcStage />
+
+<!--
+ABOUT THIS SLIDE
+What the visual shows, in a sentence or two.
+Source: the data-sources.md row behind each figure.
+
+SAY (opening)
+What you say at beat 0, before the first click.
+
+[click] What you say as beat 1 lands.
+
+[click] What you say as beat 2 lands.
+
+IF ASKED
+A likely question, then a short answer.
+-->
+```
+
+`SAY (opening)` covers beat 0, because Slidev's `[click]` markers start at
+click 1. So the notes carry exactly as many `[click]` markers as the page's
+`clicks:`, one paragraph each. Write plain `[click]`, never `[click:N]`: a
+numbered marker sets its own click index, so the marker count no longer says
+which beat each paragraph belongs to. `ABOUT THIS SLIDE` and `IF ASKED` are optional; `SAY (opening)` and the
+markers are not. Nothing checks
+this for you: count the markers against `clicks:` and step through
+`/presenter` on the dev server before the talk.
+
 ## Frame units
 
 Ink is drawn in a 1920x1080 viewBox; the overlay is laid out in CSS. The two

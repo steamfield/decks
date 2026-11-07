@@ -65,6 +65,13 @@ SLIDE 5 · CHART: Ridership is back above 2019
 -->
 ```
 
+The header identifies the slide and holds no notes. Presenter notes go in one
+comment at the end of the page, after everything else: Slidev reads notes
+only from a comment that ends the page, so notes in the header (or anywhere
+above the slide's content) never reach the presenter view. A story page's
+notes format (`SAY (opening)`, one `[click]` per click) is in
+`.claude/rules/story-stage.md`.
+
 ## Slide types and root classes
 
 Every slide is wrapped in a `<div class="od-slide ...">` that fills the full canvas. Modifier classes control the layout variant:
