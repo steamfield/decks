@@ -141,11 +141,13 @@ click 1. So the notes carry exactly as many `[click]` markers as the page's
 `clicks:`, one paragraph each. Write plain `[click]`, never `[click:N]`: a
 numbered marker sets its own click index, so the marker count no longer says
 which beat each paragraph belongs to. `ABOUT THIS SLIDE` and `IF ASKED` are optional; `SAY (opening)` and the
-markers are not.<!-- decks:repo-only --> `beats.test.ts` finds the notes by content (any comment
-other than the header that holds a click marker or `SAY (opening)`, via
-`presenterNotes` in `packages/decks/lint/scan.mjs`) and fails a stage page
-whose notes are not the last thing on the page, whose marker count differs
-from its `clicks`, or that uses `[click:N]`. A page with no notes passes.<!-- /decks:repo-only --><!-- decks:user:  Nothing checks
+markers are not.<!-- decks:repo-only --> `beats.test.ts` reads the notes with
+`presenterNotes` in `packages/decks/lint/scan.mjs`: a comment holding a click
+marker or `SAY (opening)` (the header comment included), or else a comment
+that ends the page. It fails a stage page whose notes are not the last thing
+on the page (so notes written into the header fail), whose trailing comment
+has no `SAY (opening)` or markers, whose marker count differs from its
+`clicks`, or that uses `[click:N]`. A page with no notes passes.<!-- /decks:repo-only --><!-- decks:user:  Nothing checks
 this for you: count the markers against `clicks:` and step through
 `/presenter` on the dev server before the talk. -->
 

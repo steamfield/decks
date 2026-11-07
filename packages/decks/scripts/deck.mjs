@@ -44,8 +44,9 @@
 // Exit codes: 0 on success; 1 on a usage error, an unknown deck, a failed
 // Slidev run (dev/build/export pass Slidev's own code through), drift or an
 // error hit in check, a lint hit (2 when lint's pattern file is missing), a
-// snap diff over threshold, a dev server or browser walk that fails (one
-// line on stderr), and a snap or review-prose walk that logged console errors
+// snap diff over threshold, a dev server that fails to start (its output on
+// stderr), a browser walk that throws (one line on stderr; set DECKS_DEBUG=1
+// for the stack), and a snap or review-prose walk that logged console errors
 // (snap still writes its frames, review-prose still prints the prompt);
 // 130/143 when SIGINT/SIGTERM stops a dev server shot, snap or review-prose
 // started.
@@ -123,7 +124,10 @@ async function orDie(what, run) {
   try {
     return await run()
   } catch (err) {
-    die(`${what}: ${String(err?.message ?? err).split('\n')[0]}`)
+    // One line reads well for a Playwright timeout; DECKS_DEBUG keeps the
+    // stack for a bug in the walk itself.
+    if (process.env.DECKS_DEBUG && err?.stack) die(`${what}: ${err.stack}`)
+    die(`${what}: ${String(err?.message ?? err).split('\n')[0]} (DECKS_DEBUG=1 for the stack)`)
   }
 }
 

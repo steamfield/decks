@@ -105,7 +105,7 @@ describe('startServer', () => {
   it('does not take over another run serving the same deck on the probed port', async () => {
     // Both runs shoot the same deck, so the other run's server passes the
     // entry check; only the URL this child prints tells them apart. The noise
-    // after it scrolls that URL out of the 4000-char output tail.
+    // after it, in the same chunk, is longer than the 4000-char output tail.
     const ours = deck('same')
     const taken = await serve(page(escapeAttr(ours)))
     const { fake, bumped } = await fakeSlidev(ours, 6000)
@@ -131,8 +131,8 @@ async function fakeSlidev(entry: string, noise = 0) {
     `import { createServer } from 'node:http'
 const html = ${JSON.stringify(page(escapeAttr(entry)))}
 setTimeout(() => createServer((_, res) => res.end(html)).listen(${bumped}, 'localhost', () => {
-  console.log('public slide show > http://localhost:${bumped}/')
-  console.log('x'.repeat(${noise}))
+  // One write, so the URL and the noise after it reach the parent as one chunk.
+  process.stdout.write('public slide show > http://localhost:${bumped}/\\n' + 'x'.repeat(${noise}) + '\\n')
 }), 1500)
 `,
   )

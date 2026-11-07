@@ -464,8 +464,13 @@ async function deckServer() {
   })
 }
 
-/** How many credit elements slide 1 draws on a fresh dev server, through the repo's Chromium. */
-async function creditCount() {
+/**
+ * How many credit elements slide 1 draws on a fresh dev server, through the
+ * repo's Chromium. With `expectCredit` it waits for the credit to mount rather
+ * than sleeping; without, it waits for the page to go network-idle, by which
+ * point Slidev has mounted every global layer.
+ */
+async function creditCount(expectCredit) {
   const { chromium } = await import('playwright-chromium')
   const server = await deckServer()
   const browser = await chromium.launch()
@@ -473,8 +478,9 @@ async function creditCount() {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } })
     await page.goto(`${server.origin}/1`, { waitUntil: 'load' })
     await page.waitForSelector('.slidev-page-1', { timeout: 60_000 })
-    // The global layer mounts with the slide; give it a beat past the page.
-    await page.waitForTimeout(1500)
+    if (expectCredit)
+      await page.locator('.od-decks-credit').first().waitFor({ timeout: 30_000 }).catch(() => {})
+    else await page.waitForLoadState('networkidle', { timeout: 30_000 })
     return await page.locator('.od-decks-credit').count()
   } finally {
     await browser.close()
@@ -675,11 +681,11 @@ await testCase('9b decks shot and snap produce PNGs, and the credit draws only w
     check(!(await stillListening(port)), `nothing is left listening on port ${port}`)
 
   // The credit layer draws only for a deck that opts in.
-  check((await creditCount()) === 0, 'without decksCredit, slide 1 draws no credit')
+  check((await creditCount(false)) === 0, 'without decksCredit, slide 1 draws no credit')
   const text = read(deckProj, SLIDES)
   write(deckProj, SLIDES, text.replace(/^---\n/, '---\ndecksCredit: true\n'))
   try {
-    check((await creditCount()) === 1, 'with decksCredit: true, slide 1 draws the credit')
+    check((await creditCount(true)) === 1, 'with decksCredit: true, slide 1 draws the credit')
   } finally {
     write(deckProj, SLIDES, text)
   }

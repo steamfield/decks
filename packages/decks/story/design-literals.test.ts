@@ -59,8 +59,8 @@ function filesIn(dir: string, exts: string[]): string[] {
 const COLOR_PROP =
   /(?:^|[^\w-])(?:--[\w-]+|[\w-]*color|fill|stroke|background(?:-image)?|border(?:-[a-z]+)*|outline|box-shadow|text-shadow|column-rule|text-decoration|-webkit-text-stroke)['"]?\s*[:=]/gi
 
-/** A 3, 4, 6 or 8 digit hex color, not an entity (`&#160;`) or a `url(#id)`. */
-const HEX = /(?<![\w&#])(?<!url\()#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})(?![\w-])/gi
+/** A 3, 4, 6 or 8 digit hex color, not an entity (`&#160;`) or a `url(#id)` / `url('#id')`. */
+const HEX = /(?<![\w&#])(?<!url\(\s*['"]?)#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})(?![\w-])/gi
 
 function allowed(line: string): boolean {
   if (!line.includes('lint-allow')) return false
@@ -79,14 +79,6 @@ function hexColors(line: string): string[] {
 
 /** A whole quoted string that is a hex color: `'#fff'`, `"#1e293b"`, a template literal. */
 const QUOTED_HEX = /(['"`])(#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4}))\1/gi
-
-/** Quoted hex strings on a script line, except an `href="#id"` or `url('#id')`. */
-function quotedHex(line: string): string[] {
-  if (allowed(line)) return []
-  return [...line.matchAll(QUOTED_HEX)]
-    .filter((m) => !/(?:href\s*=\s*|url\(\s*)$/i.test(line.slice(0, m.index!)))
-    .map((m) => m[2])
-}
 
 /** [index, hex] for each hex color on a line, each position counted once. */
 function hexMatches(line: string, script: boolean): [number, string][] {
@@ -198,9 +190,10 @@ describe('script hex', () => {
   it('counts every quoted hex string in script, once per position', () => {
     expect(countText("const ACCENT = '#fb7185'\nconst b = { color: \"#fff\" }\n", 'design.ts')).toBe(2)
     expect(countText('<template>\n<b class="x">\'#fff\'</b>\n</template>\n<script setup lang="ts">\nconst c = `#abc`\n</script>\n', 'X.vue')).toBe(1)
-    expect(quotedHex(`const a = '#abc'; const b = url('#fade')`)).toEqual(['#abc'])
-    expect(quotedHex(`<use href="#abc" /> fill: url('#def')`)).toEqual([])
-    expect(quotedHex("const ID = '#fade' // lint-allow: hex-color")).toEqual([])
+    const scriptHex = (line: string) => hexMatches(line, true).map(([, hex]) => hex)
+    expect(scriptHex(`const a = '#abc'; const b = url('#fade')`)).toEqual(['#abc'])
+    expect(scriptHex(`<use href="#abc" /> fill: url('#def')`)).toEqual([])
+    expect(scriptHex("const ID = '#fade' // lint-allow: hex-color")).toEqual([])
   })
 
   it('reports a pinned file that no longer exists instead of throwing', () => {

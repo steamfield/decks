@@ -103,12 +103,16 @@ export async function startServer({ args, cwd, port, entry, timeoutMs = 120_000 
   // rolling tail, so the line can scroll out of it.
   let printed = null
   const collect = (chunk) => {
-    output = (output + chunk).slice(-4000)
     if (printed === null) {
-      // ANSI codes stripped, in case Slidev colors the port it prints.
-      const m = /http:\/\/localhost:(\d+)/.exec(output.replace(/\x1b\[[0-9;]*m/g, ''))
+      // Matched before the trim, on the previous tail plus this chunk, so the
+      // URL is found even when more than the tail's length follows it in one
+      // chunk, or it is split across two. ANSI codes stripped, in case Slidev
+      // colors the port it prints.
+      const seen = (output.slice(-200) + chunk).replace(/\x1b\[[0-9;]*m/g, '')
+      const m = /http:\/\/localhost:(\d+)/.exec(seen)
       if (m) printed = Number(m[1])
     }
+    output = (output + chunk).slice(-4000)
   }
   child.stdout.on('data', collect)
   child.stderr.on('data', collect)
