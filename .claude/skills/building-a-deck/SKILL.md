@@ -115,7 +115,7 @@ bun run fact-extract <alias>  # every number in the deck, to trace to data-sourc
 ```
 
 `shot` and `snap` start a dev server for the deck on a free port and stop it
-after, and warn when a story headline wraps past two lines. To shoot after every edit, start one with
+after, and warn when a story headline wraps past one line. To shoot after every edit, start one with
 `bun run dev <alias> --no-open --port N` and pass `--port N` to each `shot`.
 
 Export for stage/PDF: `bun run export <alias>` (flags are picked from

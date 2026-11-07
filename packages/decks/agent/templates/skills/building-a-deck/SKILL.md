@@ -101,7 +101,7 @@ inside 4+-space-indented HTML becomes an indented code block and fails with
 ```
 
 `shot` and `snap` start a dev server for the deck on a free port and stop it
-after, and warn when a story headline wraps past two lines. To shoot after every edit, start one with
+after, and warn when a story headline wraps past one line. To shoot after every edit, start one with
 `{{decks}} dev <alias> --no-open --port N` and pass `--port N` to each `shot`.
 
 Export for stage/PDF: `{{decks}} export <alias>` (flags are picked from

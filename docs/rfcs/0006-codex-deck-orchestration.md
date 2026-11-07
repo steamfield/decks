@@ -14,7 +14,7 @@ Four things were fixed mid-run: the presenter-notes format (RFC 0003), port coll
 
 Every contract repeated the same Codex reading list, hard rules, review recipe and hand-off table. The snapshots also depend on things a template can't carry: an absolute build-machine path in each file, `decks/texas-2026/` paths (the deck now lives in `examples/`), a reference deck in another repository (`opendata/talks/aisd-takeover`), user-level `ce` plugin skills found by globbing `~/.claude/plugins/cache`, and the review recipe in `~/.claude/skills/codex-delegate/contract.md`.
 
-`codex-delegate` reads a repo overlay at `.claude/delegate.md` before anything else (`SKILL.md:21`), and names hook trust as overlay content: Codex trusts `.codex/hooks.json` per absolute path, so without `DELEGATE_TRUST_REPO_HOOKS=1` the prose-lint write hook doesn't run in its worktrees (`scripts/delegate.sh:29-32`). `foreman` has no overlay convention; its worktrees inherit hook approval (`AGENTS.md`, Codex section).
+`codex-delegate` reads a repo overlay at `.claude/delegate.md` before anything else (`SKILL.md:21`), and names hook trust as overlay content: Codex trusts `.codex/hooks.json` per absolute path, so without `DELEGATE_TRUST_REPO_HOOKS=1` the prose-lint write hook doesn't run in its worktrees (`scripts/delegate.sh:29-32`). `foreman guide` also tells the orchestrator to read `.claude/delegate.md`, and foreman worktrees inherit hook approval from the main checkout (`AGENTS.md`, Codex section).
 
 ## Plan
 
