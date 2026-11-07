@@ -76,7 +76,10 @@ Charts are `<OpenChart :spec>` specs with the addon's slide theme ("Charts" in
 
 **Story:** one `<Name>Stage.vue` per slide in `<deck>/components/`, on
 `useStage` (`.claude/rules/story-stage.md`). Its `COPY` array carries the
-slide's prose, not the page file; the page is just `<XStage />`. A `data/*.ts`
+slide's prose, not the page file; the page is the header comment,
+`<XStage />`, and a trailing presenter-notes comment (`SAY (opening)` plus one
+`[click]` per click; "The stage page and its presenter notes" in
+`.claude/rules/story-stage.md`). A `data/*.ts`
 module per slide, provenance-commented (`.claude/rules/deck-data.md`), holds
 the figures the stage draws. **Restart the dev server after adding, moving,
 or deleting a component file**: Slidev's auto-import list is built at
@@ -125,11 +128,14 @@ wrong for exactly this reason and would have shipped unread.
 5. Dev server restarted after the last component was added; `{{decks}} shot`
    on every new or changed slide prints `errors: none` and a card lead per
    click that matches the `COPY` entry.
-6. For a theme or shared-styles change: a `snap` walk before and after, and
+6. Every stage page ends with presenter notes in the story-stage format:
+   `SAY (opening)` for beat 0, then exactly `clicks` plain `[click]`
+   paragraphs.
+7. For a theme or shared-styles change: a `snap` walk before and after, and
    every changed frame explained.
-7. `{{decks}} export <alias>` produces a PDF with every click state
+8. `{{decks}} export <alias>` produces a PDF with every click state
    (`animated: true` set).
-8. The author's own visual QA is the last step, and the only one that judges
+9. The author's own visual QA is the last step, and the only one that judges
    aesthetics.
 
 ## 8. Publish

@@ -49,3 +49,19 @@ export declare function scanSource(
   opts?: { errorsOnly?: boolean },
 ): Hit[]
 export declare function formatHit(file: string, hit: Hit): string
+
+export interface PresenterNotes {
+  /** The comment body, between `<!--` and `-->`. */
+  text: string
+  offset: number
+  /** 1-based line of the `<!--`. */
+  line: number
+  /** The comment is the last non-blank content on the page. */
+  trailing: boolean
+  /** Plain `[click]` markers. */
+  clicks: number
+  /** Every `[click:N]` marker, as written. */
+  numbered: string[]
+}
+
+export declare function presenterNotes(src: string): PresenterNotes | null
