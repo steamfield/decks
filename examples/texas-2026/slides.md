@@ -38,8 +38,10 @@ defaults:
   layout: full
 addons: ["slidev-addon-decks"]
 exportFilename: texas-2026
-# The Decks mark (public/favicon.svg) instead of Slidev's default favicon.
-favicon: /favicon.svg
+# The addon's "Created with Decks" credit on every slide, and the Decks mark
+# (the addon's public/favicon.svg, served under /theme/) as the favicon.
+decksCredit: true
+favicon: /theme/favicon.svg
 src: ./pages/01-cover.md
 ---
 ---

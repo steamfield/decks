@@ -30,6 +30,8 @@
     "vite.config.mts",
     "components",
     "composables",
+    "global-bottom.vue",
+    "public",
     "setup",
     "theme",
     "!theme/*.test.ts",

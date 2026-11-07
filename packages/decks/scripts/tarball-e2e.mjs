@@ -639,6 +639,25 @@ await testCase('9b decks shot and snap produce PNGs', async () => {
     check(!(await stillListening(port)), `nothing is left listening on port ${port}`)
 })
 
+await testCase('9c the credit layer and favicon ship, and a build under a base serves the favicon', () => {
+  for (const f of ['global-bottom.vue', 'public/favicon.svg']) {
+    check(existsSync(join(deckProj, `node_modules/${PACKAGE}/${f}`)), `the package ships ${f}`)
+  }
+  const slides = 'decks/my-talk/slides.md'
+  const text = read(deckProj, slides)
+  write(deckProj, slides, text.replace(/^---\n/, '---\ndecksCredit: true\nfavicon: /theme/favicon.svg\n'))
+  try {
+    const out = join(base, 'favicon-build')
+    const build = run(join(deckProj, 'node_modules/.bin/slidev'), ['build', slides, '--base', '/talk/', '--out', out], { cwd: deckProj })
+    if (!check(build.status === 0, 'slidev build --base /talk/ exits 0', tail(build.out))) return
+    check(existsSync(join(out, 'theme/favicon.svg')), 'the build has theme/favicon.svg')
+    check(read(out, 'index.html').includes('<link rel="icon" href="/talk/theme/favicon.svg">'),
+      'the favicon link carries the base', read(out, 'index.html').match(/<link rel="icon"[^>]*>/)?.[0])
+  } finally {
+    write(deckProj, slides, text)
+  }
+})
+
 await testCase('10 hook: MultiEdit, an unreplayable Edit, a ./talks decksDir, hook prompt', () => {
   if (!lintCmd) return check(false, 'case 7 found the hook command')
   const pagePath = join(deckProj, PAGE)
