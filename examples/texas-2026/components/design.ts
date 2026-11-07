@@ -15,15 +15,14 @@ export const DASH = '8 6'
 export const RUNG_GAP = 92
 /** Radius of the later Senate hemicycle. */
 export const SEAT_ARC_RADIUS = 360
-/** Three concentric rows; SeatArc allocates seats in proportion to radius.
- * A hemicycle only reads as rows when the spacing along a row matches the gap
- * between rows. With n seats over three rows that means
- * innerRadius ~= rowGap * (n / (3 * pi) - 1), about 2.3 row gaps for 31 seats,
- * which gives 7 / 10 / 14 seats about 85 units apart in every direction.
- * The outer radius (innerRadius + 2 * rowGap) equals SEAT_ARC_RADIUS. Threshold
- * ticks sit outside it. */
+/** Three concentric rows; SeatArc hands them to the addon's parliament.layout,
+ * which allocates seats in proportion to radius. The outer row sits at
+ * SEAT_ARC_RADIUS and the rows 83 apart (inner radius 194), which gives
+ * 7 / 10 / 14 seats about 85 units apart in every direction. The layout's own
+ * pick for 31 seats is within a unit of this; passing it pins the slides as
+ * drawn. Threshold ticks sit outside the outer row. */
 export const PARLIAMENT = {
-  rowCount: 3, innerRadius: 194, rowGap: 83,
+  rowCount: 3, rowGap: 83,
   seatRadius: 28, ringRadius: 33,
   /** Thresholds are ticks outside the outer row: a line through rows this
    * dense would always graze a seat. Padding from the outer seat edge, tick

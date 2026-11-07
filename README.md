@@ -40,6 +40,8 @@ Every command uses the `-p slidev-addon-decks` form. The bare name `decks` on np
 
 A deck enables the addon in its headmatter with `addons: ["slidev-addon-decks"]`. The scaffold sets this up for you. `Graph3D` needs `three`, `3d-force-graph` and `three-spritetext` installed alongside. Other components don't need them.
 
+Two optional headmatter keys show the Decks brand. `decksCredit: true` draws a small "Created with Decks" link in the bottom-right corner of every slide; without it the addon draws nothing. `favicon: /theme/favicon.svg` uses the Decks mark, which ships in the addon, as the browser tab icon. Both work under a non-root `base`. `decks new` writes neither.
+
 `decks.json` can carry a `_config` entry: `decksDir` (where `new` writes, default `decks`), `outDir` (default `dist/{name}`) and `base` (default `/`). A deck entry can override `outDir` and `base`. The `_readme` key in this repo's `decks.json` documents every field.
 
 ### What `decks init` writes

@@ -1,5 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin, type ViteDevServer } from 'vite'
 import defaults from './theme/default.json'
 import { resolveTheme, themeCss } from './theme/resolve'
@@ -55,11 +56,53 @@ function decksTheme(): Plugin {
   }
 }
 
+const PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), 'public')
+
+/**
+ * Serves the addon's `public/` files at `<base>theme/<file>`, so a deck can set
+ * `favicon: /theme/favicon.svg`. Slidev means to copy addon public files to
+ * `theme/`, but its vite-plugin-static-copy 4 target keeps the source path
+ * (`theme/packages/decks/public/...`, or `theme/node_modules/...` once
+ * installed), and Slidev writes the `favicon:` value into `index.html`
+ * verbatim, so under a non-root `base` it would miss. This serves the files in
+ * dev, emits them in a build, and prefixes `/theme/` hrefs in the page head
+ * with the base.
+ */
+function decksPublic(): Plugin {
+  const files = existsSync(PUBLIC_DIR)
+    ? readdirSync(PUBLIC_DIR, { withFileTypes: true }).filter(e => e.isFile()).map(e => e.name)
+    : []
+  let base = '/'
+  return {
+    name: 'decks-public',
+    configResolved(config) {
+      base = config.base
+    },
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use((req, res, next) => {
+        const path = (req.url ?? '').split('?')[0]
+        const name = path.startsWith(`${base}theme/`) ? path.slice(`${base}theme/`.length) : ''
+        if (!files.includes(name)) return next()
+        res.setHeader('Content-Type', name.endsWith('.svg') ? 'image/svg+xml' : 'application/octet-stream')
+        res.end(readFileSync(join(PUBLIC_DIR, name)))
+      })
+    },
+    generateBundle() {
+      for (const name of files) {
+        this.emitFile({ type: 'asset', fileName: `theme/${name}`, source: readFileSync(join(PUBLIC_DIR, name)) })
+      }
+    },
+    transformIndexHtml(html) {
+      return base === '/' ? html : html.replaceAll('href="/theme/', `href="${base}theme/`)
+    },
+  }
+}
+
 // Merged into every deck's Vite config by Slidev (addon root). Pre-bundling the
 // 3D graph entry and gsap keeps the dev server from discovering three.js on the
 // first 3D mount mid-talk and forcing a full reload.
 export default defineConfig({
-  plugins: [decksTheme()],
+  plugins: [decksTheme(), decksPublic()],
   // Linked OpenChart must share Slidev's Vue instance for lifecycle hooks.
   resolve: { dedupe: ['vue'] },
   optimizeDeps: {

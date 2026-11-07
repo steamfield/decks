@@ -3,8 +3,8 @@
  * DecksCredit: a small "Created with Decks" credit for the bottom-right corner
  * of every slide.
  *
- * Opt in per deck with a `global-bottom.vue` next to `slides.md` that renders
- * `<DecksCredit />`; Slidev draws that layer on every slide. The mark is the
+ * Opt in per deck with `decksCredit: true` in the headmatter: the addon's
+ * `global-bottom.vue` then draws it on every slide. The mark is the
  * Decks logo (two slides on the diagonal, the same geometry as the site's
  * `site/src/lib/brand.ts`) drawn in `currentColor` at two strengths, so it
  * takes the deck's own text color and adds no hue to the palette. It sits below
