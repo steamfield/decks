@@ -41,6 +41,7 @@ import {
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { freePort, startServer } from './server.mjs'
 
 const started = Date.now()
 const keep = process.argv.includes('--keep')
@@ -444,8 +445,48 @@ await testCase('6c neither: AGENTS.md with the block plus a one-line CLAUDE.md',
 // Cases 7-9 share a project with init run and a story deck scaffolded.
 let deckProj
 let lintCmd
+// Set by 9b once a Chromium launches in deckProj.
+let chromiumReady = false
 const PAGE = 'decks/my-talk/pages/02-x.md'
 const STAGE = 'decks/my-talk/components/FirstStage.vue'
+const SLIDES = 'decks/my-talk/slides.md'
+
+/** A dev server for the scaffolded deck, started the way `decks shot` starts one. */
+async function deckServer() {
+  const cli = join(deckProj, 'node_modules/@slidev/cli')
+  const { bin } = readJson(cli, 'package.json')
+  const entry = join(deckProj, SLIDES)
+  return startServer({
+    args: [join(cli, typeof bin === 'string' ? bin : bin.slidev), entry],
+    cwd: deckProj,
+    port: await freePort(3030),
+    entry,
+  })
+}
+
+/**
+ * How many credit elements slide 1 draws on a fresh dev server, through the
+ * repo's Chromium. With `expectCredit` it waits for the credit to mount rather
+ * than sleeping; without, it waits for the page to go network-idle, by which
+ * point Slidev has mounted every global layer.
+ */
+async function creditCount(expectCredit) {
+  const { chromium } = await import('playwright-chromium')
+  const server = await deckServer()
+  const browser = await chromium.launch()
+  try {
+    const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } })
+    await page.goto(`${server.origin}/1`, { waitUntil: 'load' })
+    await page.waitForSelector('.slidev-page-1', { timeout: 60_000 })
+    if (expectCredit)
+      await page.locator('.od-decks-credit').first().waitFor({ timeout: 30_000 }).catch(() => {})
+    else await page.waitForLoadState('networkidle', { timeout: 30_000 })
+    return await page.locator('.od-decks-credit').count()
+  } finally {
+    await browser.close()
+    server.stop()
+  }
+}
 
 /** Pipe a PreToolUse payload into init's hook command, as Claude Code runs it. */
 function runHook(root, tool_name, tool_input) {
@@ -595,7 +636,7 @@ await testCase('9a decks lint, check and the missing-playwright hint', () => {
   }
 })
 
-await testCase('9b decks shot and snap produce PNGs', async () => {
+await testCase('9b decks shot and snap produce PNGs, and the credit draws only when opted in', async () => {
   const add = run('bun', ['add', '-d', playwrightSpec()], { cwd: deckProj })
   if (add.status !== 0) return skip(`could not install ${playwrightSpec()}: ${tail(add.out, 300)}`)
   const probeJs =
@@ -609,6 +650,7 @@ await testCase('9b decks shot and snap produce PNGs', async () => {
         `no launchable Chromium for ${playwrightSpec()} (install: exit ${get.status}): ${tail(probe.out, 300)}`,
       )
   }
+  chromiumReady = true
   const shotDir = join(deckProj, 'shots')
   mkdirSync(shotDir)
   const shot = decks(deckProj, ['shot', 'talk', '2', '2', '--out', shotDir], { timeout: 240_000 })
@@ -632,11 +674,62 @@ await testCase('9b decks shot and snap produce PNGs', async () => {
 
   // Each run started its own dev server; none may outlive the command.
   const ports = [shot, one, snap].flatMap((r) =>
-    [...r.out.matchAll(/Starting a dev server for \S+ on port (\d+)/g)].map((m) => Number(m[1])),
+    [...r.out.matchAll(/Dev server for \S+ at http:\/\/localhost:(\d+)/g)].map((m) => Number(m[1])),
   )
   check(ports.length === 3, 'shot, shot and snap each started a dev server', ports.join(', '))
   for (const port of [...new Set(ports)])
     check(!(await stillListening(port)), `nothing is left listening on port ${port}`)
+
+  // The credit layer draws only for a deck that opts in.
+  check((await creditCount(false)) === 0, 'without decksCredit, slide 1 draws no credit')
+  const text = read(deckProj, SLIDES)
+  write(deckProj, SLIDES, text.replace(/^---\n/, '---\ndecksCredit: true\n'))
+  try {
+    check((await creditCount(true)) === 1, 'with decksCredit: true, slide 1 draws the credit')
+  } finally {
+    write(deckProj, SLIDES, text)
+  }
+})
+
+await testCase('9b2 decks review-prose prints the prompt for the scaffolded deck', () => {
+  if (!chromiumReady) return skip('9b found no launchable Chromium')
+  const review = decks(deckProj, ['review-prose', 'talk'], { timeout: 300_000 })
+  check(review.status === 0, 'decks review-prose talk exits 0', tail(review.out))
+  check(/^# Prose review: talk$/m.test(review.stdout), 'stdout is the prompt', tail(review.stdout, 300))
+  check(/Claim headline\s*goes here\./.test(review.stdout), 'the prompt lists the cover headline', tail(review.stdout))
+  check(review.stdout.includes('### .claude/rules/deck-writing.md\n'), 'the prompt carries the deck-writing.md rules', tail(review.stdout))
+  check(!/Prose review/.test(review.stderr), 'status lines stay on stderr', tail(review.stderr))
+})
+
+await testCase('9c the credit layer and favicon ship, dev and a build under a base serve the favicon', async () => {
+  for (const f of ['global-bottom.vue', 'public/favicon.svg']) {
+    check(existsSync(join(deckProj, `node_modules/${PACKAGE}/${f}`)), `the package ships ${f}`)
+  }
+  const server = await deckServer()
+  try {
+    const res = await fetch(`${server.origin}/theme/favicon.svg`)
+    const body = await res.text()
+    check(
+      res.ok && /svg/.test(res.headers.get('content-type') ?? '') && body.includes('<svg'),
+      'the dev server serves /theme/favicon.svg',
+      `HTTP ${res.status} ${res.headers.get('content-type')}: ${body.slice(0, 120)}`,
+    )
+  } finally {
+    server.stop()
+  }
+  const slides = SLIDES
+  const text = read(deckProj, slides)
+  write(deckProj, slides, text.replace(/^---\n/, '---\ndecksCredit: true\nfavicon: /theme/favicon.svg\n'))
+  try {
+    const out = join(base, 'favicon-build')
+    const build = run(join(deckProj, 'node_modules/.bin/slidev'), ['build', slides, '--base', '/talk/', '--out', out], { cwd: deckProj })
+    if (!check(build.status === 0, 'slidev build --base /talk/ exits 0', tail(build.out))) return
+    check(existsSync(join(out, 'theme/favicon.svg')), 'the build has theme/favicon.svg')
+    check(read(out, 'index.html').includes('<link rel="icon" href="/talk/theme/favicon.svg">'),
+      'the favicon link carries the base', read(out, 'index.html').match(/<link rel="icon"[^>]*>/)?.[0])
+  } finally {
+    write(deckProj, slides, text)
+  }
 })
 
 await testCase('10 hook: MultiEdit, an unreplayable Edit, a ./talks decksDir, hook prompt', () => {

@@ -23,6 +23,7 @@
  * from data identity, so a resize never changes a stroke.
  */
 import { computed, reactive, ref } from 'vue'
+import theme from '#decks/theme'
 import {
   BRUSH_DEFAULTS,
   DRAW,
@@ -176,8 +177,8 @@ const ghostTweened = computed(() => typeof props.ghost === 'number')
 const ghostT = computed(() => (typeof props.ghost === 'number' ? clamp01(props.ghost) : props.ghost ? 1 : 0))
 /** Glow and head drop at the midpoint, as they did for the boolean. */
 const isGhost = computed(() => ghostT.value >= 0.5)
-/** Body and dot opacity at full ghost, matched by `.is-ghost` in CSS. */
-const GHOST_OPACITY = 0.4
+/** Body and dot opacity at full ghost (`shape.dim`), matched by `.is-ghost` in CSS. */
+const GHOST_OPACITY = Number(theme.shape.dim)
 
 const color = computed(() => {
   if (props.color) return props.color
@@ -366,7 +367,7 @@ defineExpose({ root, addDraw, addErase, settle })
 }
 .od-ink-line-root.is-ghost .od-ink-body,
 .od-ink-line-root.is-ghost .od-ink-dots {
-  opacity: 0.4;
+  opacity: var(--od-dim, 0.4);
 }
 /* A numeric `ghost` is a beat-timeline value: the root carries the blended
    color (every mark reads currentColor) and this opacity, so a seek lands on

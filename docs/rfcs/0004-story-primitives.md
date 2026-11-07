@@ -1,33 +1,31 @@
-# RFC 0004: Promote parliament chart, track timeline and status tags to the addon
+# RFC 0004: Promote the parliament layout math, and gate the credit from the addon
 
-Status: Draft. Candidates are still being built in texas-2026, so this RFC grows until that deck lands.
+Status: Done. Landed in `29821fb`, with review fixes in `537fc52`. Item 3 (whether `decks new` turns the credit on) is still open.
 
 ## Problem
 
-The story engine has strong primitives for data series (`InkLine`, `InkBars`, `UnitGrid`, `InkTimeline`), but civic and process stories need shapes it lacks. Each deck that needs one builds it deck-locally, and the repo's "promote on second use" rule means the second deck rebuilds it first. A few of these shapes are generic enough that the first good version should be promoted once it has proven itself.
+The story engine has primitives for data series, but civic and process stories need shapes it lacks. The repo's rule is to promote a component on its second use, which is the right default. This RFC asks for one narrow exception, for geometry that's generic and was hard to get right, and fixes the hand-wiring every deck does to show the Decks credit.
 
 ## Evidence (texas-2026)
 
-1. Seat charts. Slide 8 needs a 31-seat legislature with threshold lines, and slide 11 reuses it. The engine had nothing closer than `UnitGrid`, a rectangular waffle. The first attempt forced the deck's ballot-oval mark onto an arc and produced uneven rows, a slanted majority line through a seat, and hollow seats that contradicted the deck's own "hollow means not won" rule. The author asked for a properly designed parliament layout instead: concentric rows with seat counts proportional to radius, parties as contiguous wedges, and thresholds on seat boundaries. That geometry is the same for any legislature, board or jury. The second attempt still produced jittered rows and a threshold line slanting through the seats, until the run was handed the exact algorithm: rows proportional to radius with largest-remainder rounding, seats sorted by angle, and thresholds at the mean angle of the seats either side. Two failed attempts at the same geometry is the case for one tested implementation in the addon.
-2. Multi-track timelines. Slide 7 needs one date axis with several labelled rows (AISD and TEA, Governor, Commissioner), each lighting up separately, and slide 14 reuses the axis extended. `InkTimeline` is one row. The talks deck's `InkTimelineCursor` was ported into the addon for this deck (`2d0ca83`).
-3. Evidence status. The deck prints "Pending", "Reported date" and "Scenario" on objects, with a matching line style (dashed, dotted, hatched). Any deck about live events needs this. Today it's deck-local CSS (`tx-tag`).
+1. Seat chart. Slides 8 and 11 show a 31-seat Senate with threshold ticks. Two runs produced uneven rows and a threshold line slanting through a seat before the third was handed the algorithm: rows with seat counts proportional to radius by largest-remainder rounding, seats sorted by angle, thresholds at the mean angle of the seats either side. It lives in `examples/texas-2026/components/SeatArc.vue` (plain circles, not the deck's ballot ovals) with spacing constants in `design.ts:17-32` and a test in `components/seat-arc.test.ts`. The constants are tuned for 31 seats over three rows; `design.ts` says so, and the inner-radius formula goes negative for small totals. Sorting every seat by angle also ties at the top of the arc when two rows both have an odd count. 31 seats (rows of 7, 10 and 14) avoids that by luck.
+2. Multi-track timeline and status tags. `CollisionTimeline.vue` builds rows on `InkTimelineCursor` (ported in `2d0ca83`), but hard-codes the deck's event ids and hides the cursor's progress line. The `tx-tag` status CSS is used by 12 components. Both are tied to this deck; neither has a second user.
+3. Credit and favicon. `DecksCredit` is in the addon, but each deck opts in by hand with its own `global-bottom.vue`, a copied `public/favicon.svg` and a `favicon:` headmatter key.
 
-4. Product credit and favicon. The author asked for a "Created with Decks" credit, linked to decks.steamfield.io, on every slide, and the Decks mark as the favicon in place of Slidev's. `DecksCredit` landed in the addon, but each deck still opts in by hand (a `global-bottom.vue` plus a copied `public/favicon.svg` and a `favicon:` headmatter key). The mark's geometry is now duplicated between `site/src/lib/brand.ts` and `DecksCredit.vue`.
+## Plan
 
-## Proposal
+1. Promote the layout math only. Add `packages/decks/story/parliament.ts`, exported from `slidev-addon-decks/story`: `layout(total, { rows?, radius })` returns seat positions, row and angle, choosing the row count and seat size from the total so spacing along a row matches the gap between rows; and `thresholdAngle(seats, at)`. Break angle ties by row, so the order is total and a threshold never lands between two tied seats. Move and extend `seat-arc.test.ts`: totals from 5 to 200, rows proportional to radius, contiguous wedges, no seat overlap, and no threshold bisecting a seat or splitting tied seats. `SeatArc.vue` imports it and stays deck-local; `UnitArc.vue` waits for the second deck.
+   - Done when: the extended test passes, and `bun run snap:diff` shows slides 8 and 11 unchanged after `SeatArc` switches to the shared module.
+2. Gate the credit from the addon. Slidev merges global layers from addons, so ship `packages/decks/global-bottom.vue` rendering `DecksCredit` only when headmatter sets `decksCredit: true`. It defaults to off, so existing decks and `decks init` users see no change. Ship the favicon in the addon's `public/` (add `public` to `files` in `packages/decks/package.json`), and document `favicon: /theme/favicon.svg`. (As landed: Slidev 52.20.1 copies an addon's `public/` under its source path, not `/theme/`, and writes `favicon:` without the base, so a small `decksPublic()` plugin in `packages/decks/vite.config.mts` serves and emits those files at `<base>theme/<file>`.) Remove texas-2026's own `global-bottom.vue` and copied favicon in the same commit, or the credit draws twice. Keep the mark geometry where it is, with a site test asserting `DecksCredit.vue` uses the same constants as `site/src/lib/brand.ts`, rather than adding a cross-package import that `site/AGENTS.md` lists as debt.
+   - Done when: texas-2026 shows one credit and the Decks favicon, a deck without `decksCredit` shows neither, both hold in a build with a non-root `base`, and `bun run test:tarball` finds the favicon in the package.
+3. Decide separately whether `decks new` writes `decksCredit: true` into new decks. That puts a "Created with Decks" badge on every user's new deck by default, which is a product call. Until then it writes nothing, and the README documents the key. `DecksCredit` has only been placed on story slides, so check a conventional scaffold against `OdFooter` before defaulting it on anywhere.
 
-After texas-2026 lands, review its components and promote the ones whose APIs held up:
-
-- `UnitArc` (from the deck's `SeatArc`): `total`, `groups: [{ count, label, hue|step }]`, `thresholds: [{ at, label, progress }]`, `highlight: { from, to, progress }`. The parliament layout math goes in `packages/decks/story/` with a unit test: equal spacing, contiguous wedges, and a threshold that never bisects a seat.
-- `InkTimelineTracks`: `InkTimeline`'s axis plus N labelled rows, each with its own tick set and a per-row `lit` progress, with the domain end as a prop so a later slide can extend it.
-- `StoryTag`: a small printed status word with `status: 'pending' | 'reported' | 'scenario' | 'confirmed'`, styled from theme tokens, plus matching SVG stroke presets for marks.
-- Have `decks new` write the credit's `global-bottom.vue`, the favicon and the headmatter key, with a flag to leave them out. Ship the favicon from the addon, and move the mark geometry to one module that both the site and the addon import.
-- Add each one to `examples/od-story-templates` as a gallery stage, and to the README's component list.
+Not promoting: the timeline tracks and status tags (one user each, tied to this deck), and `BallotOval`.
 
 ## Scope
 
-`packages/decks/components/`, `packages/decks/story/` (geometry plus tests), the story templates gallery, the README, and `render:agent` output.
+`packages/decks/story/parliament.ts` and test, `packages/decks/story/index.ts`, `packages/decks/global-bottom.vue`, `packages/decks/public/favicon.svg`, `packages/decks/package.json` (`files`), `examples/texas-2026/components/SeatArc.vue`, `seat-arc.test.ts`, `global-bottom.vue`, `public/` and `slides.md`, a test in `site/`, and `packages/decks/story/README.md`.
 
-## Open questions
+## Verification
 
-- Should `BallotOval`'s filled, empty and hatched states become a generic `InkMark` state, or stay this deck's motif?
+`bun run test`, `bun run snap:diff` on texas-2026 before and after, `bun run build tx26` with a non-root `base`, the `site/` tests, and `bun run test:tarball`.

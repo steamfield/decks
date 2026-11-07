@@ -40,7 +40,15 @@ export interface Theme {
   >
   glows: Record<'primary' | 'secondary' | 'amber' | 'violet' | 'emerald' | 'rose', string>
   categorical: string[]
-  fonts: Record<'sans' | 'mono', string>
+  /** `serif` defaults to `{fonts.sans}`; the story headline and cover title read it. */
+  fonts: Record<'sans' | 'serif' | 'mono', string>
+  /**
+   * Shape values the addon CSS reads as `--od-<key>`. `radius` and `hairline`
+   * are CSS lengths (card corners, card and chip borders); `card-width` is the
+   * story card's width in `--lw` frame units; `dim` is the opacity of a
+   * de-emphasized mark (`InkLine` with `ghost`).
+   */
+  shape: Record<'radius' | 'hairline' | 'card-width' | 'dim', string>
   chart: Record<
     'text' | 'gridline' | 'axis' | 'eyebrow' | 'title' | 'subtitle' | 'source' | 'graph-label',
     string
@@ -102,8 +110,11 @@ export function resolveAliases(raw: Json): Json {
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
+/** Shape keys are emitted as root `--od-<key>` vars, so an unknown one could shadow a color token. */
+const SHAPE_KEYS = ['radius', 'hairline', 'card-width', 'dim']
+const CSS_LENGTH = /^(?:0|\d*\.?\d+(?:px|r?em|%|vw|vh|vmin|vmax|pt|ch|ex))$/
 
-/** Throws on a theme the components cannot render: missing hues, bad ramps, non-hex glows. */
+/** Throws on a theme the components cannot render: missing hues, bad ramps, non-hex glows, unknown or malformed shape keys. */
 export function validateTheme(t: Theme): Theme {
   for (const hue of HUE_NAMES) {
     const ramp = t.ramps?.[hue]
@@ -116,6 +127,15 @@ export function validateTheme(t: Theme): Theme {
       throw new Error(`theme: glows.${k} must be #rrggbb (it is used as an rgb triplet)`)
   if (!Array.isArray(t.categorical) || t.categorical.length === 0)
     throw new Error('theme: categorical must be a non-empty array')
+  for (const k of Object.keys(t.shape ?? {}))
+    if (!SHAPE_KEYS.includes(k))
+      throw new Error(`theme: shape.${k} is not a shape key (expected one of ${SHAPE_KEYS.join(', ')})`)
+  for (const k of ['radius', 'hairline'] as const)
+    if (!CSS_LENGTH.test(String(t.shape?.[k])))
+      throw new Error(`theme: shape.${k} must be a CSS length, e.g. "12px"`)
+  for (const k of ['card-width', 'dim'] as const)
+    if (!/^\d*\.?\d+$/.test(String(t.shape?.[k])))
+      throw new Error(`theme: shape.${k} must be a unitless number as a string, e.g. "0.4"`)
   return t
 }
 
@@ -145,6 +165,7 @@ export function themeCss(t: Theme): string {
     vars.push([k === 'default' ? 'border' : `border-${k}`, v])
   for (const [k, v] of Object.entries(t.glows)) vars.push([`glow-${k}-rgb`, rgbTriplet(v)])
   for (const [k, v] of Object.entries(t.fonts)) vars.push([`font-${k}`, v])
+  for (const [k, v] of Object.entries(t.shape)) vars.push([k, v])
   vars.push(['qr-white', t['qr-white']])
   vars.push(['wordmark-gradient', t.brand['wordmark-gradient']])
   const lines = vars.map(([k, v]) => `  --od-${k}: ${v};`)

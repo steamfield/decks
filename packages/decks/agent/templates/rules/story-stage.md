@@ -84,6 +84,47 @@ A beat with no card is `{ lead: '' }`: it still counts toward the beat count,
 and the template hides the card at that beat with `v-if="copy.lead"`. Do not
 skip the array entry to save the beat.
 
+## The stage page and its presenter notes
+
+A stage page holds three things, in this order: the `SLIDE N` header comment
+(it names the slide and holds no notes), the stage tag, then one trailing
+comment with the presenter notes. Slidev reads notes only from a comment that
+ends the page, so notes placed above the stage tag never reach the presenter
+view, and nothing warns you.
+
+```md
+<!--
+SLIDE 8 · SENATE ARC
+-->
+
+<SenateArcStage />
+
+<!--
+ABOUT THIS SLIDE
+What the visual shows, in a sentence or two.
+Source: the data-sources.md row behind each figure.
+
+SAY (opening)
+What you say at beat 0, before the first click.
+
+[click] What you say as beat 1 lands.
+
+[click] What you say as beat 2 lands.
+
+IF ASKED
+A likely question, then a short answer.
+-->
+```
+
+`SAY (opening)` covers beat 0, because Slidev's `[click]` markers start at
+click 1. So the notes carry exactly as many `[click]` markers as the page's
+`clicks:`, one paragraph each. Write plain `[click]`, never `[click:N]`: a
+numbered marker sets its own click index, so the marker count no longer says
+which beat each paragraph belongs to. `ABOUT THIS SLIDE` and `IF ASKED` are optional; `SAY (opening)` and the
+markers are not. Nothing checks
+this for you: count the markers against `clicks:` and step through
+`/presenter` on the dev server before the talk.
+
 ## Frame units
 
 Ink is drawn in a 1920x1080 viewBox; the overlay is laid out in CSS. The two
@@ -135,6 +176,31 @@ slide; it never moves within a slide, only its content cross-fades (`riseIn`
 in, `fadeOutInPlace` out). Match its `hue` to the ink it sits beside. At most
 two live text zones per beat: the card plus one chip or end label.
 
+## Reserved regions
+
+Two parts of the frame belong to the overlay, and the stage's ink stays out
+of them; everything else is the stage's, including the left third. Lay the
+visual out across the whole free area rather than squeezing it into the
+half the card doesn't cover. Figures below are at 1920x1080 (frame units in
+brackets) and come from `story-frame.css` and `story-marks.css`:
+
+- **Headline band**: `.od-story-head`, top left at `top: calc(6.2 * var(--sh))`,
+  `left: calc(5.7 * var(--lw))`, `64lw` wide (`88lw` with `.is-wide`). Two
+  lines of headline end near y = 175 (16sh); keep the top 16sh of the
+  headline's columns, x 110 to 1340 (5.7lw to 69.7lw), clear. An
+  `.is-wide` headline never wraps (`white-space: nowrap`), so its band is one
+  line, to about y = 120, across x 110 to 1800.
+- **Card column**: `.od-story-card`, bottom anchored at
+  `bottom: calc(12 * var(--sh))` (y = 950), `calc(var(--od-card-width) * var(--lw))`
+  wide (36lw, 691px) and `5.7lw` in from the side it anchors to. Its height
+  follows its copy, so reserve it at the full budget (an eight-word lead and a
+  twenty-word body), about 240px: y 710 to 950 (66sh to 88sh), over
+  x 110 to 800 for `anchor="left"` and x 1120 to 1810 for `anchor="right"`.
+
+A deck that changes these (`shape.card-width` in `theme.json`, or its own
+headline rule) moves the regions with them; measure with `{{decks}} shot`
+rather than trusting the numbers above.
+
 ## Entrance vs beat
 
 Two separate motion systems, and mixing them up is the most common authoring
@@ -179,7 +245,6 @@ every route change, and a click is a route change, so every click would
 remount every slide. `{{pkg}}/setup/main.ts` runs `document.startViewTransition`
 itself from a router guard instead.
 
-
 ## Review-agent brief
 
 A stage design or architecture review runs read-only, with no checkout: it
@@ -191,11 +256,15 @@ not copy to paste into the slide.
 
 ## Verification loop
 
-- `{{decks}} shot <alias> <n> [clicks]`: per-slide screenshots at each click, prints
-  the card lead per click and chip positions, and lists console errors
-  including unresolved-component failures. Restart the dev server first if a
-  component file was added or moved (Slidev's auto-import list is built at
-  startup).
+- `{{decks}} shot <alias> <n> [clicks]`: per-slide screenshots at each click,
+  prints the card lead per click and chip positions, and lists console errors
+  including unresolved-component failures. Without `--port` it starts a dev
+  server for the deck on a free port and stops it after, so runs in parallel
+  checkouts do not collide. To shoot after every edit, start one server with
+  `{{decks}} dev <alias> --no-open --port N` and pass `--port N` to each `shot`;
+  it refuses a server that is not this deck's, from this checkout. Restart the
+  dev server first if a component file was added or moved (Slidev's
+  auto-import list is built at startup).
 - `{{decks}} snap <alias>`: whole-deck screenshot walk. Walk before and after a
   theme or shared-styles change and compare the frames.
 - `{{decks}} lint`: the prose patterns over pages, components and every story

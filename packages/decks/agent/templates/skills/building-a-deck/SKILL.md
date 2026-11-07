@@ -76,7 +76,10 @@ Charts are `<OpenChart :spec>` specs with the addon's slide theme ("Charts" in
 
 **Story:** one `<Name>Stage.vue` per slide in `<deck>/components/`, on
 `useStage` (`.claude/rules/story-stage.md`). Its `COPY` array carries the
-slide's prose, not the page file; the page is just `<XStage />`. A `data/*.ts`
+slide's prose, not the page file; the page is the header comment,
+`<XStage />`, and a trailing presenter-notes comment (`SAY (opening)` plus one
+`[click]` per click; "The stage page and its presenter notes" in
+`.claude/rules/story-stage.md`). A `data/*.ts`
 module per slide, provenance-commented (`.claude/rules/deck-data.md`), holds
 the figures the stage draws. **Restart the dev server after adding, moving,
 or deleting a component file**: Slidev's auto-import list is built at
@@ -89,14 +92,17 @@ inside 4+-space-indented HTML becomes an indented code block and fails with
 
 ```bash
 {{decks}} check                 # manifest vs pages/ drift + unregistered decks    (every edit cycle)
-{{decks}} shot <alias> <n> [clicks]     # per-slide screenshot, card lead, chip position, console errors  (story: after each new/changed stage; restart the dev server first)
-{{decks}} snap <alias>            # whole-deck screenshot walk                       (before and after a theme or styles change)
+{{decks}} shot <alias> <n> [clicks]  # per-slide screenshot, card lead, chip position, console errors  (story: after each new/changed stage; restart the dev server first)
+{{decks}} snap <alias>          # whole-deck screenshot walk                       (before and after a theme or styles change)
 {{decks}} build <alias>         # must pass before any review                      (before handing off)
 {{decks}} lint                  # prose lint incl. story COPY (also enforced by the write hook)  (every edit cycle)
+{{decks}} review-prose <alias>  # prose-audit prompt for a reviewer that did not write the deck  (before handing off)
 {{decks}} fact-extract <alias>  # every number in the deck, to trace to data-sources.md   (before handing off)
 ```
 
-The dev server for `shot`: `{{decks}} dev <alias>` (port 3030 by default).
+`shot` and `snap` start a dev server for the deck on a free port and stop it
+after, and warn when a story headline wraps past one line. To shoot after every edit, start one with
+`{{decks}} dev <alias> --no-open --port N` and pass `--port N` to each `shot`.
 
 Export for stage/PDF: `{{decks}} export <alias>` (flags are picked from
 `decks.json`, don't pass your own).
@@ -118,19 +124,32 @@ wrong for exactly this reason and would have shipped unread.
    `clicks:` agree (`.claude/rules/story-stage.md`).
 2. `{{decks}} build <alias>` succeeds.
 3. `{{decks}} lint` clean.
-4. Every figure `{{decks}} fact-extract <alias>` lists is traced (run the
+4. Prose audit. `{{decks}} review-prose <alias>` walks the deck and prints a
+   review prompt: every visible string (headlines, card copy, chips, SVG
+   labels) and the presenter notes, each with its slide, click and source
+   line, plus the writing rules. Hand it to a reviewer that did not write the
+   prose (a fresh subagent or another model), apply or answer each row of the
+   table it returns, then re-run `lint`. The lint catches fixed phrases; this
+   catches the shapes it can't, such as balanced antithesis or a card that
+   describes the visual. An orchestrator's draft headlines (in an outline or
+   a brief) are claims still to be rewritten, and they pass this audit before
+   they go into a brief, because agents copy draft headlines.
+5. Every figure `{{decks}} fact-extract <alias>` lists is traced (run the
    `fact-checking-a-deck` skill); `data-sources.md` has a section per visible slide, every
    `FLAG` row resolved or carried deliberately, the banned-content table
    current.
-5. Dev server restarted after the last component was added; `{{decks}} shot`
-   on every new or changed slide prints `errors: none` and a card lead per
-   click that matches the `COPY` entry.
-6. For a theme or shared-styles change: a `snap` walk before and after, and
+6. Dev server restarted after the last component was added; `{{decks}} shot`
+   on every new or changed slide prints `errors: none`, no headline-wrap
+   warning, and a card lead per click that matches the `COPY` entry.
+7. Every stage page ends with presenter notes in the story-stage format:
+   `SAY (opening)` for beat 0, then exactly `clicks` plain `[click]`
+   paragraphs.
+8. For a theme or shared-styles change: a `snap` walk before and after, and
    every changed frame explained.
-7. `{{decks}} export <alias>` produces a PDF with every click state
+9. `{{decks}} export <alias>` produces a PDF with every click state
    (`animated: true` set).
-8. The author's own visual QA is the last step, and the only one that judges
-   aesthetics.
+10. The author's own visual QA is the last step, and the only one that judges
+    aesthetics.
 
 ## 8. Publish
 

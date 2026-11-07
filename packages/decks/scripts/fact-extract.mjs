@@ -20,12 +20,25 @@ import { join, dirname } from "path";
 
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 
-// An alias in the registry wins; otherwise the argument is a deck directory.
+/**
+ * When `arg` is not an alias but is a deck's registry `name`, the line naming
+ * that deck's alias; otherwise undefined. Commands take the alias, and the
+ * name (the deck's directory and URL slug) is the easier one to remember.
+ */
+export function nameHint(arg, registry) {
+  if (!isObject(registry) || isObject(registry[arg])) return undefined;
+  const alias = Object.keys(registry).find(
+    (key) => !key.startsWith("_") && isObject(registry[key]) && registry[key].name === arg,
+  );
+  return alias === undefined ? undefined : `"${arg}" is the deck name; its alias is ${alias}`;
+}
+
+// An alias in the registry wins; then the argument as a deck directory.
 function resolveDeckDir(arg, registry, rootDir) {
   const deck = isObject(registry) ? registry[arg] : undefined;
   if (isObject(deck) && typeof deck.entry === "string") return dirname(join(rootDir, deck.entry));
   if (existsSync(join(arg, "slides.md"))) return arg;
-  console.error(`No deck alias "${arg}" in decks.json and no slides.md under ${arg}/`);
+  console.error(nameHint(arg, registry) ?? `No deck alias "${arg}" in decks.json and no slides.md under ${arg}/`);
   process.exit(1);
 }
 

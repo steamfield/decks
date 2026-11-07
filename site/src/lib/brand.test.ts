@@ -1,7 +1,9 @@
 // @vitest-environment node
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { faviconSvg, ico, markColors, markColorsDark, markPng, markSvg } from "./brand";
+import { faviconSvg, ico, MARK, markColors, markColorsDark, markPng, markSvg } from "./brand";
 import { productTheme } from "./tokens";
 
 describe("brand mark", () => {
@@ -41,5 +43,27 @@ describe("brand mark", () => {
     const second = file.readUInt32LE(22 + 12);
     expect(file.subarray(second + 1, second + 4).toString()).toBe("PNG");
     expect(second + file.readUInt32LE(22 + 8)).toBe(file.length);
+  });
+});
+
+// The addon draws the same mark without importing this module (a cross-package
+// import is listed as debt in AGENTS.md), so these compare the copies instead.
+describe("the addon's copies of the mark", () => {
+  const addon = (path: string) =>
+    readFileSync(join(process.cwd(), "..", "packages/decks", path), "utf8");
+
+  it("DecksCredit.vue uses the same geometry", () => {
+    const credit = addon("components/DecksCredit.vue");
+    expect(credit).toMatch(/<svg class="mark" viewBox="0 0 32 32"/);
+    expect(credit.match(/class="back"\s+d="([^"]+)"/)?.[1]).toBe(MARK.back);
+    const rect = credit.match(/<rect class="front"([^>]*)\/>/)?.[1] ?? "";
+    const attrs = Object.fromEntries(
+      [...rect.matchAll(/(\w+)="([^"]*)"/g)].map(([, name, value]) => [name, Number(value)]),
+    );
+    expect(attrs).toEqual(MARK.front);
+  });
+
+  it("the shipped favicon is the site's favicon", () => {
+    expect(addon("public/favicon.svg").trim()).toBe(faviconSvg());
   });
 });

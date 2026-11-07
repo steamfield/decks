@@ -38,11 +38,9 @@ export { SOURCES }
 
 /** Ordered: the specific CLI shapes run before the generic `bun run <cmd>` rule. */
 const MAPPINGS = [
-  // CLI commands. `shot` and `snap` take the deck alias in the package CLI.
-  [/bun run shot <n> \[clicks\]/g, '{{decks}} shot <alias> <n> [clicks]'],
-  [/bun run snap <dir>(?: \[port\])?/g, '{{decks}} snap <alias>'],
+  // CLI commands.
   [/bun run build:all\b/g, '{{decks}} build --all'],
-  [/bun run (new|dev|build|export|list|check|lint|fact-extract|shot|snap)\b/g, '{{decks}} $1'],
+  [/bun run (new|dev|build|export|list|check|lint|fact-extract|review-prose|shot|snap)\b/g, '{{decks}} $1'],
   // Exemplar decks. opendata-pitch is not bundled; tides is the story exemplar.
   [/examples\/(agent-experience|tides)\b/g, '{{exemplars}}/$1'],
   [/examples\/opendata-pitch(?=\/?`|\/data-sources\.md)/g, '{{exemplars}}/tides'],
@@ -69,6 +67,8 @@ export function renderSource(text, name = 'source') {
     .replace(/^<!-- decks:repo-only -->\n[\s\S]*?\n<!-- \/decks:repo-only -->\n/gm, '')
     .replace(/<!-- decks:repo-only -->[\s\S]*?<!-- \/decks:repo-only -->/g, '')
     .replace(/<!-- decks:user: ([\s\S]*?) -->/g, '$1')
+    // A stripped block between two blank lines would leave a run of them.
+    .replace(/\n{3,}/g, '\n\n')
   out = renderFrontmatter(out)
   for (const [re, to] of MAPPINGS) out = out.replace(re, to)
   const bad = out

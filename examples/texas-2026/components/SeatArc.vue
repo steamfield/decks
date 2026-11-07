@@ -12,7 +12,7 @@
  * For a unanimous vote, pass one group with seats and filled both the total.
  */
 import { computed } from 'vue'
-import { clamp01, type InkStep } from 'slidev-addon-decks/story'
+import { clamp01, parliament, type InkStep } from 'slidev-addon-decks/story'
 import { ON, OFF, PARLIAMENT, SEAT_ARC_RADIUS, neutral } from './design'
 
 const props = withDefaults(defineProps<{
@@ -22,22 +22,10 @@ const props = withDefaults(defineProps<{
   highlight?: { from: number; to: number; progress: number }
 }>(), { progress: ON, thresholds: () => [] })
 
-const positions = computed(() => {
-  const total = props.groups.reduce((sum, group) => sum + group.seats, OFF)
-  const radii = Array.from({ length: PARLIAMENT.rowCount }, (_, i) => PARLIAMENT.innerRadius + i * PARLIAMENT.rowGap)
-  const radiusSum = radii.reduce((sum, radius) => sum + radius, OFF)
-  const rows = radii.map(radius => {
-    const quota = total * radius / radiusSum
-    return { radius, seats: Math.floor(quota), remainder: quota % ON }
-  })
-  const remaining = total - rows.reduce((sum, row) => sum + row.seats, OFF)
-  const ranked = [...rows].sort((a, b) => b.remainder - a.remainder)
-  for (let i = OFF; i < remaining; i++) ranked[i].seats++
-  return rows.flatMap(row => Array.from({ length: row.seats }, (_, i) => {
-    const angle = Math.PI * (ON - (i + ON / 2) / row.seats)
-    return { angle, x: Math.cos(angle) * row.radius, y: -Math.sin(angle) * row.radius }
-  })).sort((a, b) => b.angle - a.angle)
-})
+const positions = computed(() => parliament.layout(
+  props.groups.reduce((sum, group) => sum + group.seats, OFF),
+  { radius: SEAT_ARC_RADIUS, rows: PARLIAMENT.rowCount, rowGap: PARLIAMENT.rowGap },
+).seats)
 const seats = computed(() => {
   let start = OFF
   return props.groups.flatMap(group => {
@@ -51,9 +39,7 @@ const seats = computed(() => {
   })
 })
 const thresholdPoint = (at: number, radius: number) => {
-  const before = positions.value[Math.max(OFF, Math.min(positions.value.length - ON, at - ON))]
-  const after = positions.value[Math.max(OFF, Math.min(positions.value.length - ON, at))]
-  const angle = (before.angle + after.angle) / 2
+  const angle = parliament.thresholdAngle(positions.value, at)
   return { x: Math.cos(angle) * radius, y: -Math.sin(angle) * radius }
 }
 const ruleStart = SEAT_ARC_RADIUS + PARLIAMENT.seatRadius + PARLIAMENT.rulePadding

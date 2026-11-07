@@ -1,13 +1,14 @@
 /**
  * existingServer decides whether `--port N` points at a Slidev dev server for
  * the deck being shot: each outcome against a real HTTP server on a free port.
+ * startServer uses it to tell its own server from another run's.
  */
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { decodeEntities, existingServer, freePort } from './server.mjs'
+import { decodeEntities, existingServer, freePort, startServer } from './server.mjs'
 
 const servers: Server[] = []
 const dirs: string[] = []
@@ -86,6 +87,57 @@ describe('existingServer', () => {
     expect((await existingServer(port, entry)).error).toMatch(/serves a different deck/)
   })
 })
+
+describe('startServer', () => {
+  it('waits for its own deck when another run already answers on the probed port', async () => {
+    // Two runs probe the same free port; the other run's server got it first.
+    const ours = deck('ours')
+    const taken = await serve(page(escapeAttr(deck('theirs'))))
+    const { fake, bumped } = await fakeSlidev(ours)
+    const server = await startServer({ args: [fake], cwd: dirs[0], port: taken, entry: ours })
+    try {
+      expect(server.origin).toBe(`http://localhost:${bumped}`)
+    } finally {
+      server.stop()
+    }
+  }, 20_000)
+
+  it('does not take over another run serving the same deck on the probed port', async () => {
+    // Both runs shoot the same deck, so the other run's server passes the
+    // entry check; only the URL this child prints tells them apart. The noise
+    // after it, in the same chunk, is longer than the 4000-char output tail.
+    const ours = deck('same')
+    const taken = await serve(page(escapeAttr(ours)))
+    const { fake, bumped } = await fakeSlidev(ours, 6000)
+    const server = await startServer({ args: [fake], cwd: dirs[0], port: taken, entry: ours })
+    try {
+      expect(server.origin).toBe(`http://localhost:${bumped}`)
+    } finally {
+      server.stop()
+    }
+  }, 20_000)
+})
+
+/**
+ * A stand-in for Slidev bumped off the probed port: it ignores --port, serves
+ * `entry` on another port after a delay, prints that URL, then `noise`
+ * characters of further output.
+ */
+async function fakeSlidev(entry: string, noise = 0) {
+  const bumped = await freePort(45000 + Math.floor(Math.random() * 2000))
+  const fake = join(dirs[0], 'fake-slidev.mjs')
+  writeFileSync(
+    fake,
+    `import { createServer } from 'node:http'
+const html = ${JSON.stringify(page(escapeAttr(entry)))}
+setTimeout(() => createServer((_, res) => res.end(html)).listen(${bumped}, 'localhost', () => {
+  // One write, so the URL and the noise after it reach the parent as one chunk.
+  process.stdout.write('public slide show > http://localhost:${bumped}/\\n' + 'x'.repeat(${noise}) + '\\n')
+}), 1500)
+`,
+  )
+  return { fake, bumped }
+}
 
 describe('decodeEntities', () => {
   it('decodes the named and numeric entities an attribute escape writes', () => {

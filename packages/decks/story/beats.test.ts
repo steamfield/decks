@@ -15,11 +15,25 @@
  *
  * A card that says nothing at a beat is `{ lead: '' }` (see `BeatCopy`): it
  * counts as a beat and as zero words.
+ *
+ * A stage page's presenter notes (found by `presenterNotes` in scan.mjs) must
+ * end the page, since Slidev reads no other comment as notes, and carry one
+ * plain `[click]` per click in the stanza: the opening paragraph covers beat
+ * 0. Notes written into the `SLIDE N` header fail as not trailing. Free-form
+ * trailing notes (no `SAY (opening)`, no markers) fail too, since a stage
+ * page's notes need both. A page with no notes passes.
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { FIELD, copyLiteral as copyLiteralAt, copyStrings, loadPatterns } from '../lint/scan.mjs'
+import {
+  FIELD,
+  copyLiteral as copyLiteralAt,
+  copyStrings,
+  loadPatterns,
+  presenterNotes,
+} from '../lint/scan.mjs'
 import { storyDecks } from './test-decks'
 
 const LEAD_WORDS = 8
@@ -139,7 +153,25 @@ function pageFor(deck: { dir: string }, stage: string): string | null {
   return hits[0] ?? null
 }
 
+/** What is wrong with a page's presenter notes against its `clicks`; empty when nothing is. */
+function notesProblems(src: string, clicks: number): string[] {
+  const notes = presenterNotes(src)
+  if (!notes) return []
+  const out: string[] = []
+  const at = `notes at line ${notes.line}`
+  if (!notes.structured)
+    return [`${at}: no SAY (opening) or [click] markers; a stage page's notes need SAY (opening) and one [click] per click`]
+  if (notes.numbered.length)
+    out.push(`${at}: ${notes.numbered.join(', ')}: use plain [click] markers, one per beat after the opening`)
+  if (!notes.trailing)
+    out.push(`${at}: not the last thing on the page; Slidev reads notes only from a comment that ends the page`)
+  if (notes.clicks !== clicks)
+    out.push(`${at}: ${notes.clicks} [click] markers for clicks: ${clicks}; need one per click after SAY (opening)`)
+  return out
+}
+
 const DECKS = storyDecks()
+const TEMPLATE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../templates/story')
 
 /**
  * Copy over budget today, pinned so the guard still fails on a new offender
@@ -201,8 +233,57 @@ describe('beats', () => {
         expect(stanza, `${page} in slides.md`).toBeDefined()
         expect(stanza?.clicks, 'clicks').toBe(beats - 1)
       })
+
+      it(`${label}: presenter notes trail the page and match clicks`, () => {
+        const page = pageFor(deck, stage.name)
+        const stanza = page ? stanzas(deck).get(page) : undefined
+        if (!page || !stanza) return
+        const src = readFileSync(join(deck.dir, 'pages', page), 'utf8')
+        expect(notesProblems(src, stanza.clicks), page).toEqual([])
+      })
     }
   }
+
+  it('finds presenter notes by content and checks them against clicks', () => {
+    const page = (...parts: string[]) => parts.join('\n\n') + '\n'
+    const header = '<!--\nSLIDE 3 · X\n-->'
+    const notes = '<!--\nSAY (opening)\nBeat 0.\n\n[click] Beat 1.\n\n[click] Beat 2.\n-->'
+    expect(presenterNotes(page(header, '<XStage />'))).toBeNull()
+    expect(notesProblems(page(header, '<XStage />'), 2)).toEqual([])
+    expect(presenterNotes(page(header, '<XStage />', notes))).toMatchObject({
+      line: 7,
+      trailing: true,
+      clicks: 2,
+      numbered: [],
+    })
+    expect(notesProblems(page(header, '<XStage />', notes), 2)).toEqual([])
+    expect(notesProblems(page(header, notes, '<XStage />'), 2)).toEqual([
+      'notes at line 5: not the last thing on the page; Slidev reads notes only from a comment that ends the page',
+    ])
+    expect(notesProblems(page(header, '<XStage />', notes), 3)).toEqual([
+      'notes at line 7: 2 [click] markers for clicks: 3; need one per click after SAY (opening)',
+    ])
+    expect(notesProblems(page(header, '<XStage />', notes.replace('[click] Beat 2', '[click:2] Beat 2')), 2)).toEqual([
+      'notes at line 7: [click:2]: use plain [click] markers, one per beat after the opening',
+      'notes at line 7: 1 [click] markers for clicks: 2; need one per click after SAY (opening)',
+    ])
+    const inHeader = '<!--\nSLIDE 3 · X\n\nSAY (opening)\nBeat 0.\n\n[click] Beat 1.\n-->'
+    expect(notesProblems(page(inHeader, '<XStage />'), 1)).toEqual([
+      'notes at line 1: not the last thing on the page; Slidev reads notes only from a comment that ends the page',
+    ])
+    expect(notesProblems(page(header, '<XStage />', '<!--\nIF ASKED\nA question.\n-->'), 0)).toEqual([
+      "notes at line 7: no SAY (opening) or [click] markers; a stage page's notes need SAY (opening) and one [click] per click",
+    ])
+  })
+
+  it('scaffolds a story stage page whose notes match its clicks', () => {
+    const page = '02-first.md'
+    const stanza = stanzas({ dir: TEMPLATE_DIR }).get(page)
+    expect(stanza, `${page} in the template slides.md`).toBeDefined()
+    const src = readFileSync(join(TEMPLATE_DIR, 'pages', page), 'utf8')
+    expect(presenterNotes(src), 'template notes').not.toBeNull()
+    expect(notesProblems(src, stanza!.clicks)).toEqual([])
+  })
 
   it('reads the pattern file and catches a planted tell', () => {
     const patterns = errorPatterns()

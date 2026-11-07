@@ -2,7 +2,7 @@
 //
 //   decks snap <alias> [outDir] [--port N]          # the CLI (deck.mjs)
 //   decks snap diff <dirA> <dirB> [threshold]
-//   bun run snap <outDir> [port]             # repo shorthand: a server already on :3030
+//   bun run snap <alias> [outDir] [--port N]       # repo shorthand, same CLI
 //   bun run snap:diff <dirA> <dirB> [threshold]   # compare two walks, print per-frame diff
 //
 // The walk is deck agnostic: it starts at /1 and presses ArrowRight until the
@@ -17,13 +17,16 @@
 // well above its own floor is the one to open. The default threshold is the
 // fraction of pixels that may differ before a frame is listed as changed.
 //
+// Every frame's visible text goes to text.json beside the PNGs (the harvest
+// `decks review-prose` reads), and a story headline that wraps past
+// HEAD_LINE_LIMIT lines prints a warning; neither fails the walk.
+//
 // The walk needs playwright-chromium and the diff needs pngjs and pixelmatch,
 // all optional peers of slidev-addon-decks, loaded on first use.
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
-import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { frameName } from './frames.mjs'
-import { openDeck, optionalPeer } from './browser.mjs'
+import { join } from 'node:path'
+import { frameName, slideLocation } from './frames.mjs'
+import { harvestText, openDeck, optionalPeer, wrapWarning } from './browser.mjs'
 
 const SETTLE_MS = 3200
 
@@ -74,55 +77,52 @@ export async function diff(a, b, threshold = 0.002) {
 }
 
 /**
- * Walk every slide and click of the deck served at `origin`, one PNG per
- * frame into `outDir`. Returns false when the walk logged a console error.
+ * Walk every slide and click of the deck served at `origin`, harvesting each
+ * frame's visible text and warning on a headline that wraps. With `shots`
+ * (the default) each frame is also a PNG in `outDir`, with the harvest in
+ * `outDir/text.json`. `log` takes the progress lines; `review-prose` sends
+ * them to stderr. Returns `{ clean, frames }`: `clean` is false when the walk
+ * logged a console error, and `frames` holds `{ slide, click, entries, heads }`
+ * per frame in walk order.
  */
-export async function walk({ origin, outDir }) {
-  mkdirSync(outDir, { recursive: true })
+export async function walk({ origin, outDir, shots = true, log = console.log }) {
+  if (shots) mkdirSync(outDir, { recursive: true })
   const { browser, page, errors } = await openDeck(`${origin}/1`, {
     settleMs: SETTLE_MS,
-    what: 'decks snap',
+    what: shots ? 'decks snap' : 'decks review-prose',
   })
-  let frames = 0
+  const frames = []
   let last = null
   try {
     for (;;) {
       const name = frameName(page.url())
+      const at = slideLocation(page.url())
+      const slide = Number(at.pathname.replace(/^\//, '') || '1')
+      const click = Number(at.searchParams.get('clicks') ?? '0')
       // WebGL frames can take a while to rasterise on a loaded machine.
-      await page.screenshot({ path: join(outDir, name), timeout: 120_000 })
-      frames++
+      if (shots) await page.screenshot({ path: join(outDir, name), timeout: 120_000 })
+      const text = await harvestText(page, slide)
+      frames.push({ slide, click, ...text })
+      for (const head of text.heads) {
+        const warning = wrapWarning(slide, click, head)
+        if (warning) log(warning)
+      }
       await page.keyboard.press('ArrowRight')
       await page.waitForTimeout(SETTLE_MS)
       const now = page.url()
       if (now === last || frameName(now) === name) break
       last = now
     }
-    console.log(`${frames} frames -> ${outDir}`)
-    console.log('errors:', errors.length ? errors : 'none')
+    if (shots) {
+      writeFileSync(join(outDir, 'text.json'), JSON.stringify(frames, null, 2) + '\n')
+      log(`${frames.length} frames -> ${outDir}`)
+    } else log(`${frames.length} frames read`)
+    log('errors:', errors.length ? errors : 'none')
   } finally {
     // Always close, or a failed walk leaves a headless Chromium behind.
     await browser.close()
   }
   // A walk that logged a console error is not a baseline: an unresolved
   // component renders as an empty slot, which diffs clean against itself.
-  return errors.length === 0
-}
-
-// Run directly (`bun run snap`, `bun run snap:diff`): the repo shorthand.
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [mode, ...rest] = process.argv.slice(2)
-  if (mode === 'diff') {
-    const [a, b, thresholdArg = '0.002'] = rest
-    if (!a || !b) {
-      console.error('usage: bun run snap:diff <dirA> <dirB> [threshold]')
-      process.exit(2)
-    }
-    process.exit((await diff(a, b, Number(thresholdArg))) ? 1 : 0)
-  }
-  const [outDir, portArg = '3030'] = mode === 'walk' ? rest : [mode, ...rest]
-  if (!outDir) {
-    console.error('usage: bun run snap <outDir> [port]   (or: decks snap <alias> [outDir])')
-    process.exit(2)
-  }
-  process.exit((await walk({ origin: `http://localhost:${portArg}`, outDir })) ? 0 : 1)
+  return { clean: errors.length === 0, frames }
 }

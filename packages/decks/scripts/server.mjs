@@ -87,17 +87,31 @@ export async function existingServer(port, entry) {
 }
 
 /**
- * Start `node <args>` (a Slidev dev server) in `cwd` on `port` and resolve
- * once it serves. Returns `{ origin, stop }`. The server is stopped on exit,
- * and its output is shown only if it dies before it answers.
+ * Start `node <args>` (a Slidev dev server for `entry`, an absolute slides.md
+ * path) in `cwd` on `port` and resolve once it serves that deck. Returns
+ * `{ origin, stop }`, `origin` being the port it actually serves on. The
+ * server is stopped on exit, and its output is shown only if it dies before
+ * it answers.
  */
-export async function startServer({ args, cwd, port, timeoutMs = 120_000 }) {
+export async function startServer({ args, cwd, port, entry, timeoutMs = 120_000 }) {
   const child = spawn('node', [...args, '--port', String(port)], {
     cwd,
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   let output = ''
+  // The port this child printed in its own URL, kept once seen: `output` is a
+  // rolling tail, so the line can scroll out of it.
+  let printed = null
   const collect = (chunk) => {
+    if (printed === null) {
+      // Matched before the trim, on the previous tail plus this chunk, so the
+      // URL is found even when more than the tail's length follows it in one
+      // chunk, or it is split across two. ANSI codes stripped, in case Slidev
+      // colors the port it prints.
+      const seen = (output.slice(-200) + chunk).replace(/\x1b\[[0-9;]*m/g, '')
+      const m = /http:\/\/localhost:(\d+)/.exec(seen)
+      if (m) printed = Number(m[1])
+    }
     output = (output + chunk).slice(-4000)
   }
   child.stdout.on('data', collect)
@@ -120,10 +134,18 @@ export async function startServer({ args, cwd, port, timeoutMs = 120_000 }) {
 
   const deadline = Date.now() + timeoutMs
   for (;;) {
-    // Slidev moves to the next port if this one was taken in the meantime.
-    const actual = /http:\/\/localhost:(\d+)/.exec(output)?.[1] ?? port
-    const origin = `http://localhost:${actual}`
-    if (await answers(origin)) return { origin, stop }
+    // Slidev moves to the next port if this one was taken in the meantime, so
+    // `port` may be another run's server, even one for this same deck: two
+    // runs started together probe the same free port. Nothing counts until
+    // this child has printed its own URL, and then only this deck's server
+    // answering on that port.
+    const origin = `http://localhost:${printed ?? port}`
+    if (
+      printed !== null &&
+      (await answers(origin)) &&
+      (await existingServer(printed, entry)).origin
+    )
+      return { origin, stop }
     if (exited !== null)
       throw new Error(`the dev server exited (${exited}) before it served:\n${output}`)
     if (Date.now() > deadline) {

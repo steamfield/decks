@@ -31,7 +31,6 @@ addons: ["slidev-addon-decks"]
 
 **Cover and close slides:** build from the addon primitives: `<OdCoverHead url="example.com" />` (omit `url` to use the theme's `brand.url`; a `null` one shows nothing), `<OdEyebrow>label</OdEyebrow>`, `<OdByline>` for the mono meta row, root class `is-close` (+ a `glow-*`) for the close background, `<OdQrCard url="...">` for the CTA. `{{exemplars}}/agent-experience/pages/01-cover.md` and `10-closing.md` are the canonical usage. The logo and wordmark come from the theme's `brand` (see Theme below). (`tides` builds its cover out of `StoryCover` instead, so it is not the example to copy for a normal deck.) Byline: three spans separated by `od-dim` bullets — name · role · month year.
 
-
 ## Story slides
 
 A story slide is one pinned visualization whose state animates from beat to beat on arrow keys, with a floating prose card carrying the arc. `{{exemplars}}/tides` is the reference deck. The full authoring contract (beats/copy/clicks, frame units, marks, hue, view-transition hand-offs, the verification loop) is `.claude/rules/story-stage.md`; the library API and lifecycle are `{{pkg}}/story/README.md`. Read both before writing a stage component rather than reverse-engineering one from `tides`.
@@ -59,6 +58,13 @@ Every page file starts with a comment identifying the slide:
 SLIDE 5 · CHART: Ridership is back above 2019
 -->
 ```
+
+The header identifies the slide and holds no notes. Presenter notes go in one
+comment at the end of the page, after everything else: Slidev reads notes
+only from a comment that ends the page, so notes in the header (or anywhere
+above the slide's content) never reach the presenter view. A story page's
+notes format (`SAY (opening)`, one `[click]` per click) is in
+`.claude/rules/story-stage.md`.
 
 ## Slide types and root classes
 
@@ -262,7 +268,6 @@ metrics: [
 ],
 ```
 
-
 ## Theme and tokens
 
 One source: `{{pkg}}/theme/default.json`. A deck recolors or rebrands itself with a `theme.json` next to its `slides.md`, a partial override of the default:
@@ -274,14 +279,23 @@ One source: `{{pkg}}/theme/default.json`. A deck recolors or rebrands itself wit
 - `brand` is `{ name, url, "wordmark-gradient", logo }`. `logo` is `{ "view-box", "svg" }` or `null` (no mark); `url: null` hides the cover URL. A custom mark only animates if it reuses the `od-intro*`/`od-settle-*` classes `OdLogo.vue` animates. `{{decks}} new ... --brand "Name" --url example.com` writes this block for you.
 - Edits live-reload in `{{decks}} dev` and apply at build time. `{{exemplars}}/agent-experience/theme.json` overrides only the brand.
 
-In CSS, never use raw hex values. The theme renders to custom properties: `surfaces.K` and `accents.K` -> `--od-K`, `text.primary` -> `--od-text`, `text.K` -> `--od-text-K`, `borders.default` -> `--od-border`, `borders.K` -> `--od-border-K`, `glows.K` -> `--od-glow-K-rgb` (use as `rgba(var(--od-glow-amber-rgb), 0.2)`), `fonts.K` -> `--od-font-K`. The ones you'll reach for:
+In CSS, never use raw hex values. The theme renders to custom properties: `surfaces.K` and `accents.K` -> `--od-K`, `text.primary` -> `--od-text`, `text.K` -> `--od-text-K`, `borders.default` -> `--od-border`, `borders.K` -> `--od-border-K`, `glows.K` -> `--od-glow-K-rgb` (use as `rgba(var(--od-glow-amber-rgb), 0.2)`), `fonts.K` -> `--od-font-K`, `shape.K` -> `--od-K`. The ones you'll reach for:
 
 **Surfaces:** `--od-canvas`, `--od-surface`, `--od-surface-raised`
 **Text:** `--od-text`, `--od-text-secondary`, `--od-text-muted`, `--od-text-faint`, `--od-text-dim`
 **Borders:** `--od-border`, `--od-border-subtle`
 **Accents:** `--od-cyan`, `--od-rose`, `--od-amber`, `--od-emerald`, `--od-violet`, `--od-blue`, `--od-slate`
 
-In JS (chart specs, SVG fills computed in a stage), read colors through `slidev-addon-decks/theme` or `ink()`, never a hex literal (see Color conventions above).
+**Shape:** `--od-radius` (story card corners, `12px`), `--od-hairline` (story card and chip border width, `1px`), `--od-card-width` (story card width as a count of `--lw` units, `36`; use as `calc(var(--od-card-width) * var(--lw))`), `--od-dim` (opacity of a de-emphasized mark such as a ghosted `InkLine`, `0.4`). Set them in `theme.json` as strings, e.g. `"shape": { "radius": "4px" }`, instead of overriding the addon's card selectors; `card-width` and `dim` are unitless numbers.
+
+In JS (chart specs, SVG fills computed in a stage), read colors through `slidev-addon-decks/theme` or `ink()`, never a hex literal (see Color conventions above). The same import gives `theme.shape` (`Number(theme.shape.dim)` for an opacity). Deck-only JS constants that the theme doesn't cover (a geometry ratio, a dash pattern, a hatch spacing) go in one `components/design.ts` module rather than scattered literals.
+
+**Changing the fonts.** `fonts.sans`, `fonts.serif` and `fonts.mono` render to `--od-font-sans`/`-serif`/`-mono`. `serif` defaults to `{fonts.sans}`, and the story headline (`.od-story-head`) and the story cover title read it, so a deck that sets only `fonts.serif` gets serif headlines with no deck CSS. To use a family other than the bundled Inter:
+
+1. `bun add @fontsource-variable/<slug>` at the project root (e.g. `@fontsource-variable/source-serif-4`). Not every family has a variable package; check npm before writing the import, since a wrong one breaks the build.
+2. Import it at the top of the deck's `styles/index.css`: `@import '@fontsource-variable/source-serif-4';`.
+3. Set the family in `theme.json` by its variable name: `"fonts": { "serif": "'Source Serif 4 Variable', serif" }`.
+4. In headmatter, set `fonts.webfonts: []` and delete the template's `sans:`, `serif:` and `mono:` lines under `fonts:`, so Slidev neither fetches nor pins Inter.
 
 ## Data provenance
 

@@ -15,10 +15,11 @@ describe('render-agent', () => {
     const src = 'a <!-- decks:repo-only -->`bun run test`<!-- /decks:repo-only --><!-- decks:user: `bun run lint` -->.\n'
     expect(renderSource(src)).toBe('a `{{decks}} lint`.\n')
     expect(renderSource('x\n<!-- decks:repo-only -->\nrepo line\n<!-- /decks:repo-only -->\ny\n')).toBe('x\ny\n')
+    expect(renderSource('x\n\n<!-- decks:repo-only -->`bun run test`<!-- /decks:repo-only -->\n\ny\n')).toBe('x\n\ny\n')
   })
 
   it('maps commands, directories and exemplars to template variables', () => {
-    expect(renderSource('`bun run shot <n> [clicks]` in `decks/<dir>` per `examples/agent-experience` and `packages/decks/story/README.md`\n')).toBe(
+    expect(renderSource('`bun run shot <alias> <n> [clicks]` in `decks/<dir>` per `examples/agent-experience` and `packages/decks/story/README.md`\n')).toBe(
       '`{{decks}} shot <alias> <n> [clicks]` in `{{decksDir}}/<dir>` per `{{exemplars}}/agent-experience` and `{{pkg}}/story/README.md`\n',
     )
     expect(renderSource('---\npaths:\n  - "examples/**"\n  - "decks/**"\n  - "packages/decks/**"\n---\n')).toBe('---\npaths:\n  - "{{decksDir}}/**"\n---\n')

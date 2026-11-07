@@ -24,18 +24,32 @@
 //   decks lint --stdin [--errors-only]   scan prose piped in
 //   decks shot <alias> <slide> [clicks] [--port N] [--out DIR]
 //                            screenshot one slide at each click; prints card leads,
-//                            chips and console errors
+//                            chips, wrapped-headline warnings and console errors
 //   decks snap <alias> [outDir] [--port N]   screenshot every slide and click
 //                            (outDir defaults to snaps/<alias>-<timestamp>)
 //   decks snap diff <dirA> <dirB> [threshold]   per-frame pixel diff of two walks
-//       shot and snap target a dev server already on --port N, or start one for
-//       the deck on a free port and stop it after; they need playwright-chromium
+//       shot and snap target a dev server already on --port N (checked to be
+//       this deck's), or start one for the deck on a free port and stop it
+//       after; they need playwright-chromium
 //       (snap diff: pngjs, pixelmatch), optional peers installed on demand
 //   decks fact-extract <alias|deck-dir>   every figure in a deck, for the fact-check
+//   decks review-prose <alias> [--port N]   walk the deck, harvest its visible text
+//                            and presenter notes, and print a prose-review prompt
+//                            for a model that did not write the deck (stdout)
 //   decks hook lint          PreToolUse hook (Claude Code Edit/Write/MultiEdit, Codex
 //                            apply_patch): deny deck prose with an error-level
 //                            pattern (hook JSON on stdin)
 //   decks hook prompt        UserPromptSubmit hook: the deck-writing reminder
+//
+// Exit codes: 0 on success; 1 on a usage error, an unknown deck, a failed
+// Slidev run (dev/build/export pass Slidev's own code through), drift or an
+// error hit in check, a lint hit (2 when lint's pattern file is missing), a
+// snap diff over threshold, a dev server that fails to start (its output on
+// stderr), a browser walk that throws (one line on stderr; set DECKS_DEBUG=1
+// for the stack), and a snap or review-prose walk that logged console errors
+// (snap still writes its frames, review-prose still prints the prompt);
+// 130/143 when SIGINT/SIGTERM stops a dev server shot, snap or review-prose
+// started.
 //
 // The deck registry is decks.json in the current directory. Its `_config`
 // entry sets `decksDir` (where `new` scaffolds), `outDir` and `base` (both
@@ -46,6 +60,7 @@ import { spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { nameHint } from './fact-extract.mjs'
 
 const rootDir = process.cwd()
 const templatesDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'templates')
@@ -100,9 +115,25 @@ function die(msg) {
   process.exit(1)
 }
 
+/**
+ * `run()`, with a throw turned into die() and its message's first line, so a
+ * browser walk that fails exits 1 with a cause instead of an unhandled
+ * rejection's stack.
+ */
+async function orDie(what, run) {
+  try {
+    return await run()
+  } catch (err) {
+    // One line reads well for a Playwright timeout; DECKS_DEBUG keeps the
+    // stack for a bug in the walk itself.
+    if (process.env.DECKS_DEBUG && err?.stack) die(`${what}: ${err.stack}`)
+    die(`${what}: ${String(err?.message ?? err).split('\n')[0]} (DECKS_DEBUG=1 for the stack)`)
+  }
+}
+
 function deckFor(alias) {
   const deck = decks[alias]
-  if (!deck) die(`Unknown deck "${alias}". Known: ${Object.keys(decks).join(', ')}`)
+  if (!deck) die(nameHint(alias, decks) ?? `Unknown deck "${alias}". Known: ${Object.keys(decks).join(', ')}`)
   return deck
 }
 
@@ -147,8 +178,9 @@ function takeFlag(args, name) {
 /**
  * Run `fn(origin)` against a dev server for `deck`: the one already on `port`
  * when given, else a fresh one on a free port, stopped once `fn` settles.
+ * `log` takes the status lines (stderr for a command whose stdout is its output).
  */
-async function withDevServer(deck, port, fn) {
+async function withDevServer(deck, port, fn, log = console.log) {
   const { existingServer, freePort, startServer } = await import('./server.mjs')
   if (port) {
     const { origin, error } = await existingServer(port, resolve(rootDir, deck.entry))
@@ -156,7 +188,7 @@ async function withDevServer(deck, port, fn) {
       die(
         `--port ${port}: ${error}. Start one with \`decks dev <alias> --port ${port}\`, or drop --port.`,
       )
-    console.log(`Using the dev server at ${origin}`)
+    log(`Using the dev server at ${origin}`)
     return fn(origin)
   }
   let free
@@ -165,15 +197,22 @@ async function withDevServer(deck, port, fn) {
   } catch (err) {
     die(`Could not find a free port for the dev server: ${err.message}`)
   }
-  console.log(
-    `Starting a dev server for ${deck.entry} on port ${free} (pass --port N to use a running one)`,
+  log(
+    `Starting a dev server for ${deck.entry} on a free port (pass --port N to use a running one)`,
   )
   let server
   try {
-    server = await startServer({ args: [slidevBin(), deck.entry], cwd: rootDir, port: free })
+    server = await startServer({
+      args: [slidevBin(), deck.entry],
+      cwd: rootDir,
+      port: free,
+      entry: resolve(rootDir, deck.entry),
+    })
   } catch (err) {
     die(err.message)
   }
+  // The origin it serves on, which is not `free` when another run took that port first.
+  log(`Dev server for ${deck.entry} at ${server.origin}`)
   try {
     return await fn(server.origin)
   } finally {
@@ -194,6 +233,16 @@ async function checkManifests() {
     if (existsSync(join(rootDir, entry)) && !registered.has(entry)) {
       console.log(`unregistered: ${entry} (deck exists on disk but has no decks.json entry)`)
       bad++
+    }
+  }
+  // `deckFor` reads an alias first, so an alias spelled like another deck's
+  // name makes that name select the wrong deck instead of naming its alias.
+  for (const [alias, { name }] of Object.entries(decks)) {
+    for (const [other, deck] of Object.entries(decks)) {
+      if (other !== alias && deck.name === alias) {
+        console.log(`alias collision: alias "${alias}" (${name}) is the name of the deck aliased "${other}"`)
+        bad++
+      }
     }
   }
   for (const [alias, { entry }] of Object.entries(decks)) {
@@ -282,10 +331,14 @@ function scaffoldStory(vars, write) {
 switch (cmd) {
   case 'dev': {
     const { entry } = deckFor(
-      rest[0] ?? die('Usage: decks dev <alias> [slidev flags, e.g. --port 3031]'),
+      rest[0] ?? die('Usage: decks dev <alias> [--no-open] [slidev flags, e.g. --port 3031]'),
     )
-    // Flags after the alias go to Slidev as-is (--port, --remote, --bind, ...).
-    slidev([entry, '--open', ...rest.slice(1)])
+    // Flags after the alias go to Slidev as-is (--port, --remote, --bind, ...),
+    // except --no-open, which keeps the browser shut for a server only `shot`
+    // and `snap --port` will read.
+    const flags = rest.slice(1)
+    const open = !flags.includes('--no-open')
+    slidev([entry, ...(open ? ['--open'] : []), ...flags.filter((f) => f !== '--no-open')])
     break
   }
   case 'build': {
@@ -411,8 +464,10 @@ switch (cmd) {
     const { requireChromium } = await import('./browser.mjs')
     await requireChromium('decks shot')
     const { shot } = await import('./shot.mjs')
-    await withDevServer(deck, port, (origin) =>
-      shot({ origin, slide, clicks: Number(clicks), ...(out && { out: resolve(out) }) }),
+    await orDie('decks shot', () =>
+      withDevServer(deck, port, (origin) =>
+        shot({ origin, slide, clicks: Number(clicks), ...(out && { out: resolve(out) }) }),
+      ),
     )
     break
   }
@@ -436,8 +491,32 @@ switch (cmd) {
     const outDir = resolve(dir ?? join('snaps', `${alias}-${stamp}`))
     const { requireChromium } = await import('./browser.mjs')
     await requireChromium('decks snap')
-    const clean = await withDevServer(deck, port, (origin) => walk({ origin, outDir }))
+    const { clean } = await orDie('decks snap', () =>
+      withDevServer(deck, port, (origin) => walk({ origin, outDir })),
+    )
     if (!clean) process.exitCode = 1
+    break
+  }
+  case 'review-prose': {
+    const args = [...rest]
+    const port = takeFlag(args, '--port')
+    const [alias] = args
+    if (!alias) die('Usage: decks review-prose <alias> [--port N]')
+    const deck = deckFor(alias)
+    const { requireChromium } = await import('./browser.mjs')
+    await requireChromium('decks review-prose')
+    const { walk } = await import('./snap.mjs')
+    const { reviewPrompt } = await import('./review-prose.mjs')
+    // stdout is the prompt; every status line goes to stderr.
+    const log = (...a) => console.error(...a)
+    const { clean, frames } = await orDie('decks review-prose', () =>
+      withDevServer(deck, port, (origin) => walk({ origin, shots: false, log }), log),
+    )
+    process.stdout.write(reviewPrompt({ rootDir, deck, alias, frames, decksDir: config.decksDir }))
+    if (!clean) {
+      console.error('review-prose: the walk logged console errors; strings from broken slides may be missing')
+      process.exitCode = 1
+    }
     break
   }
   case 'fact-extract': {
@@ -456,7 +535,7 @@ switch (cmd) {
   }
   default:
     die(
-      'Usage: decks {init|dev|build|export|new|list|check|lint|shot|snap|fact-extract|hook} ...' +
+      'Usage: decks {init|dev|build|export|new|list|check|lint|shot|snap|review-prose|fact-extract|hook} ...' +
         '  (each prints its own usage; the full list heads slidev-addon-decks/scripts/deck.mjs)',
     )
 }

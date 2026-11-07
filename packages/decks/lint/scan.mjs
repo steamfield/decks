@@ -8,6 +8,9 @@
 //   - card copy: the lead/body strings of a story stage's `const COPY = [...]`,
 //     which sits inside <script setup> where the prose extractor never looks.
 //
+// It also carries presenterNotes(), the parser for a page's trailing notes
+// comment, which story/beats.test.ts checks against the page's `clicks`.
+//
 // Patterns are ai-rhetoric-patterns.tsv next to this file: id, severity
 // (error|warn), a POSIX ERE, a message. A line carrying `lint-allow` is exempt
 // from every pattern; `lint-allow: id, id` exempts those ids only.
@@ -213,6 +216,55 @@ export function scanSource(name, src, patterns, opts) {
   const hits = scanEntries(proseLines(src), patterns, opts)
   if (name.endsWith('.vue')) hits.push(...scanEntries(copyStrings(src), patterns, opts))
   return hits
+}
+
+/** A beat marker in presenter notes: Slidev's `[click]`, or `[click:N]`. */
+const CLICK_MARKER = /\[click(?::\d+)?\]/g
+
+/**
+ * A page's presenter notes comment, or null for a page without one.
+ *
+ * Slidev reads notes only from the last HTML comment on a page, so position
+ * alone cannot say which comment was meant as notes. Structured notes are
+ * found by content: the first comment that holds a click marker or
+ * `SAY (opening)`, the leading `SLIDE N` header included when it holds one
+ * (notes written into the header, which Slidev never shows). Failing that, a
+ * comment that ends the page and is not the plain header is free-form notes
+ * (a conventional deck's, or only `ABOUT THIS SLIDE` / `IF ASKED`). Returns:
+ *
+ *   - `text`: the comment's body, between `<!--` and `-->`;
+ *   - `offset` / `line`: where the `<!--` sits in `src` (`line` is 1-based);
+ *   - `trailing`: whether the comment is the last non-blank content on the
+ *     page, which is the only place Slidev reads it;
+ *   - `structured`: whether it holds a click marker or `SAY (opening)`;
+ *     false only for free-form trailing notes;
+ *   - `clicks`: the count of plain `[click]` markers;
+ *   - `numbered`: every `[click:N]` marker, as written.
+ *
+ * A second notes-like comment makes the first one non-trailing, so a caller
+ * that requires `trailing` catches both a misplaced and a duplicated block.
+ */
+export function presenterNotes(src) {
+  const lead = /^\s*(?:---\r?\n[\s\S]*?\r?\n---\s*)?/.exec(src)[0].length
+  const at = (m, markers, structured) => ({
+    text: m[1],
+    offset: m.index,
+    line: src.slice(0, m.index).split('\n').length,
+    trailing: !/\S/.test(src.slice(m.index + m[0].length)),
+    structured,
+    clicks: markers.filter((k) => k === '[click]').length,
+    numbered: markers.filter((k) => k !== '[click]'),
+  })
+  let last = null
+  for (const m of src.matchAll(/<!--([\s\S]*?)-->/g)) {
+    const text = m[1]
+    const markers = text.match(CLICK_MARKER) ?? []
+    if (markers.length || text.includes('SAY (opening)')) return at(m, markers, true)
+    if (m.index === lead && /^\s*SLIDE\b/.test(text)) continue
+    last = m
+  }
+  if (last && !/\S/.test(src.slice(last.index + last[0].length))) return at(last, [], false)
+  return null
 }
 
 /** One hit as content-lint.sh printed it. */

@@ -181,6 +181,16 @@ curves has to land in both files.
   `UnitGrid` cell's centre from the same props, and `rippleProgress(t, at,
   from, stagger, { reach, seed, index })` spreads one beat field across marks
   by distance from `from`, nearest first, so a recolor travels outward.
+  `parliament.layout(total, { radius, rows?, rowGap? })` places a hemicycle's
+  seats (`{ x, y, angle, row }`, centred on its baseline at the origin) in
+  concentric rows sized by radius, picking the row count and gap from the
+  total so seats sit as far apart along a row as rows sit apart, and returns
+  them in reading order, ties at one angle inner row first; it also returns a
+  `seatRadius` that clears every neighbour. `parliament.thresholdAngle(seats,
+  at)` is the angle between seat `at - 1` and seat `at`, and throws when those
+  two share an angle, since no radial tick can separate them. There is no
+  component yet: a deck draws the seats itself, one circle of `seatRadius` per
+  seat, and a radial line at a `thresholdAngle` for each majority tick.
 - **Other:** `CodeInk` (syntax-highlighted code reveal), `Underline`,
   `Graph3D` (WebGL force graph, mounts only in the real slide view).
 

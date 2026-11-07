@@ -1,5 +1,5 @@
 /** Browser regression for deck tokens overriding shared component styles. */
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { chromium } from 'playwright-chromium'
@@ -14,7 +14,12 @@ vi.mock('@slidev/client', () => ({}))
 const css = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8')
   .replace(/^@import[^;]+;/gm, '')
 
-it('resizes an InkNumber when the deck figure-size token changes', async () => {
+// A machine without Playwright's browser download skips this instead of failing
+// the suite; `bunx playwright install chromium` fetches it.
+const hasChromium = existsSync(chromium.executablePath())
+if (!hasChromium) console.warn(`tokens.test.ts: skipped, no Chromium at ${chromium.executablePath()}`)
+
+it.runIf(hasChromium)('resizes an InkNumber when the deck figure-size token changes', async () => {
   const markup = await renderToString(createSSRApp({
     render: () => h(InkNumber, { value: '120', count: false }),
   }))

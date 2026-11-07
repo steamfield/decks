@@ -153,6 +153,13 @@
   letter-spacing: -0.022em;
   color: var(--od-text);
 }
+/* The headline and the cover title set in `fonts.serif`, which is the sans
+   unless the deck's theme.json says otherwise. The !important answers the
+   `.slidev-layout h1, h2` rule in base.css, which pins headings to the sans. */
+.od-slide.is-story .od-story-head,
+.od-slide.is-story .od-title {
+  font-family: var(--od-font-serif) !important;
+}
 /* One line at the full width of the frame, for a stage that needs the height
    a wrapped headline would take. */
 .od-slide.is-story .od-story-head.is-wide {

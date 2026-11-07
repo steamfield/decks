@@ -30,6 +30,8 @@ export { beatCopy } from './copy'
 export { clamp01, lerp, stackEndLabels, stagger, xScale, yScale } from './scales'
 export { rippleProgress, type RippleOptions } from './ripple'
 export { UNIT_GRID_DEFAULTS, unitCellCenter, unitCellHeight, type UnitGridGeometry } from './grid'
+/** `parliament.layout(total, { radius })` and `parliament.thresholdAngle(seats, at)`. */
+export * as parliament from './parliament'
 export { STORY_STYLE, STROKE, inkStyle, polylinePath } from './style'
 export { RISE, easeHeight, entrance, fadeIn, fadeOutInPlace, riseIn } from './motion'
 export {
