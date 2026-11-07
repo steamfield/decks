@@ -1,6 +1,6 @@
 # RFC 0005: Prose review beyond the regex lint
 
-Status: Ready (reviewed). Depends on RFC 0001 item 2 (the alias form of `shot`) and RFC 0003 item 3 (the shared notes parser).
+Status: Done. Landed in `62dade2`, with review fixes in `6aaf924`.
 
 ## Problem
 

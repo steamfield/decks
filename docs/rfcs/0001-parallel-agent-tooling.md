@@ -1,6 +1,6 @@
 # RFC 0001: Tooling that works with parallel agent runs
 
-Status: Ready (reviewed). Item 1 landed in `29bea71`.
+Status: Done. Landed in `c53ef7f` (item 1 in `29bea71`), with review fixes in `6aaf924` and the commit after it.
 
 ## Problem
 

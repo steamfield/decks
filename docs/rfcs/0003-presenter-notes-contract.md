@@ -1,6 +1,6 @@
 # RFC 0003: A presenter-notes format, template and guard
 
-Status: Ready (reviewed).
+Status: Done. Landed in `bc82bb9`, with review fixes in `6aaf924` and the commit after it.
 
 ## Problem
 

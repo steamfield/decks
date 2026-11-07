@@ -6,12 +6,12 @@ They are follow-up work: nothing here blocks the deck in progress. An RFC is dra
 
 | RFC | Title | Status | Found while building |
 |---|---|---|---|
-| [0001](0001-parallel-agent-tooling.md) | Tooling that works with parallel agent runs | Ready (one fix landed) | texas-2026 |
-| [0002](0002-deck-design-tokens.md) | Shape tokens in the theme, a hex guard, and a serif font slot | Ready | texas-2026 |
-| [0003](0003-presenter-notes-contract.md) | A presenter-notes format, template and guard | Ready | texas-2026 |
-| [0004](0004-story-primitives.md) | Promote the parliament layout math, and gate the credit from the addon | Ready | texas-2026 |
-| [0005](0005-prose-review.md) | Prose review beyond the regex lint | Ready | texas-2026 |
-| [0006](0006-codex-deck-orchestration.md) | A repo kit for orchestrating deck builds through Codex | Ready | texas-2026 |
+| [0001](0001-parallel-agent-tooling.md) | Tooling that works with parallel agent runs | Done | texas-2026 |
+| [0002](0002-deck-design-tokens.md) | Shape tokens in the theme, a hex guard, and a serif font slot | Done | texas-2026 |
+| [0003](0003-presenter-notes-contract.md) | A presenter-notes format, template and guard | Done | texas-2026 |
+| [0004](0004-story-primitives.md) | Promote the parliament layout math, and gate the credit from the addon | Done | texas-2026 |
+| [0005](0005-prose-review.md) | Prose review beyond the regex lint | Done | texas-2026 |
+| [0006](0006-codex-deck-orchestration.md) | A repo kit for orchestrating deck builds through Codex | Done | texas-2026 |
 
 Statuses: Draft, Ready (reviewed and executable, awaiting a go-ahead), Accepted, In progress, Done, Rejected. An RFC that's done keeps its file, with a line at the top naming the commit that landed it.
 

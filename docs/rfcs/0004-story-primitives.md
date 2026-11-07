@@ -1,6 +1,6 @@
 # RFC 0004: Promote the parliament layout math, and gate the credit from the addon
 
-Status: Ready (reviewed). Narrowed after review: the component API stays deck-local until a second deck uses it.
+Status: Done. Landed in `29821fb`, with review fixes in `537fc52`. Item 3 (whether `decks new` turns the credit on) is still open.
 
 ## Problem
 

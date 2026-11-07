@@ -1,6 +1,6 @@
 # RFC 0006: A repo kit for orchestrating deck builds through Codex
 
-Status: Ready (reviewed). Execute last: the templates point at the commands and formats RFCs 0001, 0002, 0003 and 0005 add.
+Status: Done, except the "Done when" check: landed in `e01d967`; a fresh orchestrator run on a throwaway deck has not been tried.
 
 ## Problem
 

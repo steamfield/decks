@@ -1,6 +1,6 @@
 # RFC 0002: Shape tokens in the theme, a hex guard, and a serif font slot
 
-Status: Ready (reviewed). Reworked after review: the first draft scaffolded per-deck token files, which would have copied addon defaults into every deck with nothing reading them.
+Status: Done. Landed in `56f6340`, with review fixes in `537fc52`. Reworked before landing: the first draft scaffolded per-deck token files that nothing would have read.
 
 ## Problem
 
