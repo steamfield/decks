@@ -31,7 +31,6 @@ addons: ["slidev-addon-decks"]
 
 **Cover and close slides:** build from the addon primitives: `<OdCoverHead url="example.com" />` (omit `url` to use the theme's `brand.url`; a `null` one shows nothing), `<OdEyebrow>label</OdEyebrow>`, `<OdByline>` for the mono meta row, root class `is-close` (+ a `glow-*`) for the close background, `<OdQrCard url="...">` for the CTA. `{{exemplars}}/agent-experience/pages/01-cover.md` and `10-closing.md` are the canonical usage. The logo and wordmark come from the theme's `brand` (see Theme below). (`tides` builds its cover out of `StoryCover` instead, so it is not the example to copy for a normal deck.) Byline: three spans separated by `od-dim` bullets — name · role · month year.
 
-
 ## Story slides
 
 A story slide is one pinned visualization whose state animates from beat to beat on arrow keys, with a floating prose card carrying the arc. `{{exemplars}}/tides` is the reference deck. The full authoring contract (beats/copy/clicks, frame units, marks, hue, view-transition hand-offs, the verification loop) is `.claude/rules/story-stage.md`; the library API and lifecycle are `{{pkg}}/story/README.md`. Read both before writing a stage component rather than reverse-engineering one from `tides`.
@@ -269,7 +268,6 @@ metrics: [
 ],
 ```
 
-
 ## Theme and tokens
 
 One source: `{{pkg}}/theme/default.json`. A deck recolors or rebrands itself with a `theme.json` next to its `slides.md`, a partial override of the default:
@@ -298,8 +296,6 @@ In JS (chart specs, SVG fills computed in a stage), read colors through `slidev-
 2. Import it at the top of the deck's `styles/index.css`: `@import '@fontsource-variable/source-serif-4';`.
 3. Set the family in `theme.json` by its variable name: `"fonts": { "serif": "'Source Serif 4 Variable', serif" }`.
 4. In headmatter, set `fonts.webfonts: []` and delete the template's `sans:`, `serif:` and `mono:` lines under `fonts:`, so Slidev neither fetches nor pins Inter.
-
-
 
 ## Data provenance
 

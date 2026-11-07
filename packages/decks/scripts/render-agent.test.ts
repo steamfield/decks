@@ -15,6 +15,7 @@ describe('render-agent', () => {
     const src = 'a <!-- decks:repo-only -->`bun run test`<!-- /decks:repo-only --><!-- decks:user: `bun run lint` -->.\n'
     expect(renderSource(src)).toBe('a `{{decks}} lint`.\n')
     expect(renderSource('x\n<!-- decks:repo-only -->\nrepo line\n<!-- /decks:repo-only -->\ny\n')).toBe('x\ny\n')
+    expect(renderSource('x\n\n<!-- decks:repo-only -->`bun run test`<!-- /decks:repo-only -->\n\ny\n')).toBe('x\n\ny\n')
   })
 
   it('maps commands, directories and exemplars to template variables', () => {

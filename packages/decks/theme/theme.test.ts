@@ -138,6 +138,18 @@ describe('tokens css', () => {
     expect(() => resolveTheme(defaults, { shape: { dim: '40%' } })).toThrow(/shape.dim/)
   })
 
+  it('rejects a shape key outside the shape group, since it would shadow a root --od- var', () => {
+    expect(() => resolveTheme(defaults, { shape: { border: '2px' } })).toThrow(/shape.border is not a shape key/)
+    expect(() => resolveTheme(defaults, { shape: { canvas: '#000000' } })).toThrow(/shape.canvas/)
+  })
+
+  it('rejects a radius or hairline that is not a CSS length', () => {
+    expect(() => resolveTheme(defaults, { shape: { radius: '12' } })).toThrow(/shape.radius must be a CSS length/)
+    expect(() => resolveTheme(defaults, { shape: { hairline: 'red' } })).toThrow(/shape.hairline/)
+    expect(() => resolveTheme(defaults, { shape: { radius: '12px; color: red' } })).toThrow(/shape.radius/)
+    expect(resolveTheme(defaults, { shape: { radius: '0.5rem', hairline: '0' } }).shape.radius).toBe('0.5rem')
+  })
+
   it('emits glows as rgb triplets for rgba(var(), alpha)', () => {
     expect(themeCss(themeFor('default'))).toContain('--od-glow-primary-rgb: 6, 182, 212;')
   })

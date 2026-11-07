@@ -245,7 +245,6 @@ every route change, and a click is a route change, so every click would
 remount every slide. `{{pkg}}/setup/main.ts` runs `document.startViewTransition`
 itself from a router guard instead.
 
-
 ## Review-agent brief
 
 A stage design or architecture review runs read-only, with no checkout: it

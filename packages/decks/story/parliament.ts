@@ -7,9 +7,10 @@
  * ends. A hemicycle only reads as rows when the spacing along a row matches the
  * gap between rows, so `layout` picks the row count and that gap from the
  * total. Seats come back in reading order, left to right by angle; two seats at
- * the same angle (two rows whose counts share a power of two, such as two odd
- * rows meeting at the top) go inner row first, so the order is total and a
- * caller can hand out contiguous wedges by index.
+ * the same angle go inner row first, so the order is total and a caller can
+ * hand out contiguous wedges by index. Two rows of n and m seats share an angle
+ * whenever (2i+1)/(2n) equals (2j+1)/(2m) for some seats i and j: two odd rows
+ * meeting at the top, or rows of 3 and 9 at a sixth of the arc.
  *
  * ```ts
  * const arc = layout(31, { radius: 360 })
@@ -87,6 +88,10 @@ function innerQuota(total: number, rows: number): number {
 export function layout(total: number, options: ParliamentOptions): ParliamentLayout {
   if (!Number.isInteger(total) || total < 1) throw new RangeError(`parliament: total must be a positive integer, got ${total}`)
   const { radius } = options
+  if (!Number.isFinite(radius) || radius <= 0) throw new RangeError(`parliament: radius must be a finite number above 0, got ${radius}`)
+  if (options.rowGap !== undefined && (!Number.isFinite(options.rowGap) || options.rowGap <= 0)) {
+    throw new RangeError(`parliament: rowGap must be a finite number above 0, got ${options.rowGap}`)
+  }
   const rows = options.rows ?? defaultRows(total)
   if (!Number.isInteger(rows) || rows < 1) throw new RangeError(`parliament: rows must be a positive integer, got ${rows}`)
   const rowGap = rows === 1 ? 0 : (options.rowGap ?? matchedGap(total, rows, radius))

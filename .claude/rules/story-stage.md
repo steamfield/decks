@@ -110,7 +110,7 @@ A stage page holds three things, in this order: the `SLIDE N` header comment
 (it names the slide and holds no notes), the stage tag, then one trailing
 comment with the presenter notes. Slidev reads notes only from a comment that
 ends the page, so notes placed above the stage tag never reach the presenter
-view, and nothing warns you.
+view<!-- decks:user: , and nothing warns you -->.
 
 ```md
 <!--

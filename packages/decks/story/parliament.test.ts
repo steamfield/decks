@@ -108,6 +108,20 @@ describe('parliament layout', () => {
     expect(() => layout(31, { radius: 360, rows: 5, rowGap: 100 })).toThrow(RangeError)
     expect(() => layout(0, { radius: 360 })).toThrow(RangeError)
   })
+
+  it.each([
+    ['NaN radius', { radius: NaN }, /radius/],
+    ['missing radius', {} as { radius: number }, /radius/],
+    ['zero radius', { radius: 0 }, /radius must be/],
+    ['negative radius', { radius: -10 }, /radius/],
+    ['infinite radius', { radius: Infinity }, /radius/],
+    ['negative rowGap', { radius: 360, rows: 3, rowGap: -20 }, /rowGap/],
+    ['zero rowGap', { radius: 360, rows: 3, rowGap: 0 }, /rowGap/],
+    ['NaN rowGap', { radius: 360, rows: 3, rowGap: NaN }, /rowGap/],
+  ])('refuses a %s', (_, options, message) => {
+    expect(() => layout(10, options)).toThrow(RangeError)
+    expect(() => layout(10, options)).toThrow(message)
+  })
 })
 
 describe('thresholdAngle', () => {

@@ -189,7 +189,8 @@ curves has to land in both files.
   `seatRadius` that clears every neighbour. `parliament.thresholdAngle(seats,
   at)` is the angle between seat `at - 1` and seat `at`, and throws when those
   two share an angle, since no radial tick can separate them. There is no
-  component yet: `examples/texas-2026/components/SeatArc.vue` draws one.
+  component yet: a deck draws the seats itself, one circle of `seatRadius` per
+  seat, and a radial line at a `thresholdAngle` for each majority tick.
 - **Other:** `CodeInk` (syntax-highlighted code reveal), `Underline`,
   `Graph3D` (WebGL force graph, mounts only in the real slide view).
 

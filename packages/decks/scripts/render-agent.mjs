@@ -67,6 +67,8 @@ export function renderSource(text, name = 'source') {
     .replace(/^<!-- decks:repo-only -->\n[\s\S]*?\n<!-- \/decks:repo-only -->\n/gm, '')
     .replace(/<!-- decks:repo-only -->[\s\S]*?<!-- \/decks:repo-only -->/g, '')
     .replace(/<!-- decks:user: ([\s\S]*?) -->/g, '$1')
+    // A stripped block between two blank lines would leave a run of them.
+    .replace(/\n{3,}/g, '\n\n')
   out = renderFrontmatter(out)
   for (const [re, to] of MAPPINGS) out = out.replace(re, to)
   const bad = out
