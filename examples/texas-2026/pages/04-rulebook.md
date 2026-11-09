@@ -17,5 +17,5 @@ School law starts with the Legislature. The House and Senate write it and decide
 [click] Today that commissioner is Mike Morath. He runs the Texas Education Agency and decides how the state intervenes in a struggling district, within the conditions the law sets.
 
 IF ASKED
-Can the governor fire the commissioner? The removal rules are written for the governor who made the appointment, and how they apply to a new governor is unresolved. Slide 8 covers this.
+Can the governor fire the commissioner? The removal rules are written for the governor who made the appointment, and how they apply to a new governor is unresolved. Slide 6 covers this.
 -->

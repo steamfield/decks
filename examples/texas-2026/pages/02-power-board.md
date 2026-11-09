@@ -14,7 +14,7 @@ Democrats won four statewide offices: Gina Hinojosa for governor, Vikki Goodwin 
 
 [click] The House flips. The Texas Tribune projects 83 Democrats to 67 Republicans, but some races are still being counted and one, District 93, has an eligibility dispute. Treat the exact number as pending.
 
-[click] The Senate does not flip. Republicans keep it 19 to 12. Remember that number; it comes back on slide 8.
+[click] The Senate does not flip. Republicans keep it 19 to 12. Remember that number; it comes back on slide 6. Democrats needed to flip four Republican Senate seats and flipped none; their four closest losses were by about 3, 3, 7 and 9 points.
 
 [click] The State Board of Education may tip to an 8 to 7 Democratic majority, but that depends on District 8, where a recount is possible.
 

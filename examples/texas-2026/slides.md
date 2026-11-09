@@ -50,7 +50,8 @@ clicks: 3
 ---
 ---
 src: ./pages/03-outcome-ladder.md
-clicks: 4
+clicks: 2
+hide: true
 ---
 ---
 src: ./pages/04-rulebook.md
@@ -63,6 +64,7 @@ clicks: 2
 ---
 src: ./pages/06-trigger-tree.md
 clicks: 3
+hide: true
 ---
 ---
 src: ./pages/07-collision-timeline.md
@@ -75,10 +77,12 @@ clicks: 3
 ---
 src: ./pages/09-undo.md
 clicks: 2
+hide: true
 ---
 ---
 src: ./pages/10-tools.md
 clicks: 2
+hide: true
 ---
 ---
 src: ./pages/11-hb2.md

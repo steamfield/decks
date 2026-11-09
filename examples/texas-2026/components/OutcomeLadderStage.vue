@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { DRAW, DUR, SETTLE, clamp01, useStage } from 'slidev-addon-decks/story'
 import { BOARD, DASH, DIM, FRAME, OFF, ON, OVAL, changed, neutral } from './design'
-import { outcomeLadder, ladderLabels, additionalOffices, reachedRung, senateMath, senateMarginSummary, senateMarginSummary2022, senateMargins2022, comparisonLabels } from '../data/03-outcome-ladder'
+import { outcomeLadder, ladderLabels, additionalOffices, reachedRung, senateMath, comparisonLabels } from '../data/03-outcome-ladder'
 import { sboe, electionSource, evidenceLabels, boardLabels } from '../data/02-power-board'
 import BallotOval from './BallotOval.vue'
 
@@ -11,31 +11,24 @@ const G = { x: 832, width: FRAME.right - 832, height: 88, groupHeight: 128 }
 const rowY = (rung: number) => 180 + (rung - 1) * 100 + (rung > 5 ? 40 : OFF)
 const shared = (rung: number) => rung === 2 || rung === outcomeLadder.length
 const groupWidth = (G.width - 2 * BOARD.gap) / 3
-const margin = senateMarginSummary.fourthClosestMarginPp.toFixed(1)
-const previousMargin = senateMarginSummary2022.fourthClosestMarginPp?.toFixed(1)
-const previousSource = senateMargins2022.find(race => race.district === senateMarginSummary2022.fourthClosestDistrict)?.source
 const COPY = [
   { lead: 'Each step adds offices or a chamber.', body: `Step ${outcomeLadder[0].rung} is no change. Step ${outcomeLadder[outcomeLadder.length - 1].rung} adds a Senate majority.` },
   { lead: 'Democrats won the governorship and the House.', body: 'The governor can veto bills and appoint officials. The House votes on school bills.' },
   { lead: 'Democrats also won the other statewide offices shown.', body: `The education-board majority depends on District ${sboe.district}.` },
-  { lead: `Democrats needed to flip ${senateMath.netFlipsNeeded} Senate seats.`, body: `In District ${senateMarginSummary.fourthClosestDistrict}, the fourth-closest contest, the Republican won by ${margin} points.` },
-  { lead: `In ${comparisonLabels.previousElection}, the fourth-closest gap was ${previousMargin} points.`, body: `Same ${senateMath.republicanDefenses} Republican-held districts. The fourth-closest was District ${senateMarginSummary2022.fourthClosestDistrict} then.` },
 ]
 const descriptions = [
   outcomeLadder.map(rung => `${rung.rung}: ${rung.outcome}.`).join(' '),
   'The governor and House rungs are filled for Democratic wins.',
   `The lieutenant governor, attorney general and comptroller are also filled. The ${comparisonLabels.currentElection} result marker reaches rung ${reachedRung.provisional}, pending the education-board result.`,
-  `Democrats won ${senateMarginSummary.democraticFlipsWon} of ${senateMath.republicanDefenses} Republican-held seats. They needed ${senateMath.netFlipsNeeded} flips. The fourth-closest Republican win was District ${senateMarginSummary.fourthClosestDistrict}, by ${margin} percentage points.`,
-  `The comparison group is the ${senateMath.republicanDefenses} Republican-held districts on the ${comparisonLabels.currentElection} ballot. Only ${senateMarginSummary2022.contestedSeats} had Democratic challengers in ${comparisonLabels.previousElection}. The fourth-closest was District ${senateMarginSummary2022.fourthClosestDistrict}, at ${previousMargin} points, compared with District ${senateMarginSummary.fourthClosestDistrict} at ${margin} points in ${comparisonLabels.currentElection}.`,
 ]
 // The entrance holds the previous slide's filled marks through the transition,
 // then resets them and draws the grey comparison before the click-driven climb.
-const s = reactive({ carry: ON, reveal: OFF, climb: OFF, ping: OFF, senate: OFF, history: OFF })
+const s = reactive({ carry: ON, reveal: OFF, climb: OFF, ping: OFF })
 const outline = () => Math.max(s.carry, s.reveal)
 const lit = (rung: number) => rung > 1 && rung <= reachedRung.provisional ? Math.max(s.carry, clamp01(s.climb - rung + 2)) : OFF
 const emphasis = (rung: number) => {
   if (rung === 1) return s.reveal * (ON - (ON - DIM) * clamp01(s.climb))
-  const earlier = rung < reachedRung.provisional ? clamp01(s.climb - rung + 1) : s.senate
+  const earlier = rung < reachedRung.provisional ? clamp01(s.climb - rung + 1) : OFF
   return outline() * (ON - (ON - DIM) * Math.max(s.carry, rung === outcomeLadder.length ? OFF : earlier))
 }
 const rowInk = (rung: number) => `color-mix(in srgb, ${changed()} ${lit(rung) * 100}%, ${neutral(2)})`
@@ -56,10 +49,6 @@ const { clicks, copy, beats } = useStage({
     beat(1)
     tl.to(s, { climb: reachedRung.provisional - 1, ping: ON, duration: DUR.grow, ease: DRAW })
     beat(2)
-    tl.to(s, { senate: ON, duration: DUR.color, ease: SETTLE })
-    beat(3)
-    tl.to(s, { history: ON, duration: DUR.color, ease: SETTLE })
-    beat(4)
   },
 })
 </script>
@@ -86,19 +75,13 @@ const { clicks, copy, beats } = useStage({
             </g>
           </template>
           <template v-else>
-            <rect class="tx-office-box rung" :x="G.x" :y="rowY(rung.rung)" :width="G.width * outline()" :height="G.height + (rung.rung === outcomeLadder.length ? 120 * s.senate : OFF)" :style="{ stroke: rowInk(rung.rung) }" />
+            <rect class="tx-office-box rung" :x="G.x" :y="rowY(rung.rung)" :width="G.width * outline()" :height="G.height" :style="{ stroke: rowInk(rung.rung) }" />
             <BallotOval :cx="G.x + BOARD.pad + OVAL.rx" :cy="rowY(rung.rung) + G.height / 2"
-              :state="rung.rung === outcomeLadder.length && s.senate > OFF ? 'hatched' : 'filled'"
+              state="filled"
               :meaning="lit(rung.rung) > OFF ? 'changed' : 'neutral'"
-              :fill="rung.rung === outcomeLadder.length ? Math.max(s.carry, s.senate) : lit(rung.rung)" />
+              :fill="rung.rung === outcomeLadder.length ? s.carry : lit(rung.rung)" />
             <text class="od-stage-name" :x="G.x + 124" :y="rowY(rung.rung) + 32">{{ ladderLabels[i].office }}</text>
-            <text class="od-stage-note" :x="G.x + 124" :y="rowY(rung.rung) + 61">{{ rung.rung === outcomeLadder.length && s.senate > OFF ? `Democrats needed ${senateMath.netFlipsNeeded} Republican seats` : ladderLabels[i].lever }}</text>
-            <foreignObject v-if="rung.rung === outcomeLadder.length" :x="G.x + 740" :y="rowY(rung.rung) + 4" width="180" height="42"><span class="tx-tag is-scenario">{{ evidenceLabels.scenario }}</span></foreignObject>
-            <g v-if="rung.rung === outcomeLadder.length" :style="{ opacity: s.senate }">
-              <text class="od-stage-note" :x="G.x + 124" :y="rowY(rung.rung) + 104">Fourth-closest Republican win over a Democrat</text>
-              <text class="od-stage-name" :x="G.x + 124" :y="rowY(rung.rung) + 146">{{ `${comparisonLabels.currentElection}, District ${senateMarginSummary.fourthClosestDistrict}: ${margin} points` }}</text>
-              <text class="od-stage-note" :x="G.x + 124" :y="rowY(rung.rung) + 184" :style="{ opacity: s.history }">{{ `${comparisonLabels.previousElection}, District ${senateMarginSummary2022.fourthClosestDistrict}: ${previousMargin} points` }}</text>
-            </g>
+            <text class="od-stage-note" :x="G.x + 124" :y="rowY(rung.rung) + 61">{{ ladderLabels[i].lever }}</text>
           </template>
           <text class="od-stage-note rung-number" :x="G.x - BOARD.pad" :y="rowY(rung.rung) + G.height / 2 + 8">{{ rung.rung }}</text>
         </g>
@@ -109,7 +92,7 @@ const { clicks, copy, beats } = useStage({
         </foreignObject>
         <InkPing v-if="!morph" :x="G.x - 3" :y="rowY(reachedRung.provisional) + G.height / 2" :r="OVAL.ry" :progress="s.ping" />
       </StoryLayer>
-      <StoryLink :href="clicks === COPY.length - 1 ? previousSource : electionSource" :label="clicks === COPY.length - 1 ? comparisonLabels.historicalSource : comparisonLabels.officialSource" />
+      <StoryLink :href="electionSource" :label="comparisonLabels.officialSource" />
     </template>
     <template #card><StoryCard anchor="left" :lead="copy.lead" :body="copy.body" /></template>
   </StoryStage>

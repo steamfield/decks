@@ -6,7 +6,7 @@ This guide is for anyone presenting this deck. Read it once, then run the deck i
 
 The 2026 election put Democrats in four statewide offices and, on unofficial returns, in control of the Texas House. Republicans kept the Senate 19 to 12, which was the only better outcome on the ballot, and Democrats fell four seats short of it. Meanwhile two Austin middle schools, Burnet and Webb, have five failing ratings in a row, which by state law forces the education commissioner to either close them or replace Austin's elected school board. Parents petitioned to close the schools, so the most likely outcome keeps the elected board. If a takeover happens anyway, who runs it matters: a commissioner appointed by the new governor would likely work with the district, unlike Houston's takeover. The talk ends on the five decisions to watch and the December dates.
 
-Audience: Austin parents, teachers and residents with no background in Texas government. Length: 13 slides, about 17 minutes at a normal speaking pace, plus questions.
+Audience: Austin parents, teachers and residents with no background in Texas government. Length: 9 slides, about 10.5 minutes at a normal speaking pace, plus questions.
 
 ## Running the deck
 
@@ -42,19 +42,17 @@ Three conventions run through the whole deck. Point them out once, on slide 2.
 |---|---|---|---|
 | 1 | Cover: what can new leaders change? | 0 | 0.5 |
 | 2 | Who won | 3 | 1.5 |
-| 3 | What could have happened | 4 | 1.5 |
-| 4 | Who controls Texas schools | 2 | 1 |
-| 5 | Burnet and Webb | 2 | 1.25 |
-| 6 | The two legal choices | 3 | 1.5 |
-| 7 | The December to February calendar | 5 | 2 |
-| 8 | The Senate confirmation math | 3 | 1.5 |
-| 9 | Changing versus ending a takeover | 2 | 1 |
-| 10 | What the governor can do alone | 2 | 1 |
-| 11 | HB 2 and Austin's budget | 2 | 1.25 |
-| 12 | Three paths for Austin | 2 | 1.75 |
-| 13 | What to watch, and the close | 2 | 1.25 |
+| 3 | Who controls Texas schools | 2 | 1 |
+| 4 | Burnet and Webb | 2 | 1 |
+| 5 | The December to February calendar | 5 | 2 |
+| 6 | The Senate confirmation math | 3 | 1.25 |
+| 7 | HB 2 and Austin's budget | 2 | 1.25 |
+| 8 | Three paths for Austin | 2 | 1.25 |
+| 9 | What to watch, and the close | 2 | 0.75 |
 
-If you are running long, shorten slides 9 and 10; nothing later depends on them. Do not cut slide 7: slides 8 and 12 answer the question it ends on.
+The 10-minute version hides four slides in `slides.md` (`hide: true`): what could have happened (`03-outcome-ladder`), the two legal choices (`06-trigger-tree`), changing versus ending a takeover (`09-undo`), and what the governor can do alone (`10-tools`). Remove the `hide` lines to restore the longer talk. Their key points survive elsewhere: slide 2's notes carry the Senate seat math, slide 4 names both remedies, slide 8 says a new commissioner can replace every manager, and slide 7's notes answer what the governor can do without the Senate.
+
+If you are running long, skip the Senate-rules click on slide 6. Do not cut slide 5: slides 6 and 8 answer the question it ends on.
 
 ## Before you present
 
@@ -75,7 +73,7 @@ The audience will include people who voted both ways. A few habits keep the talk
 
 - State results as results ("Democrats won four statewide offices"), not as good or bad news.
 - Say "pending" out loud whenever a slide shows the tag.
-- "Most likely" on slide 12 and the best-to-worst ordering on slide 3 are judgment calls. Say so; the notes give you the wording.
+- "Most likely" on slide 8 is a judgment call. Say so; the notes give you the wording.
 - When someone asks what a new official will do, answer with what the law lets them do, and point out the limits: the Senate, the courts, and the statute itself.
 
 ## Questions you will probably get
