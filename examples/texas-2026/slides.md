@@ -94,5 +94,5 @@ clicks: 2
 ---
 ---
 src: ./pages/14-watch.md
-clicks: 2
+clicks: 1
 ---

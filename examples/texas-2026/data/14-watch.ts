@@ -38,15 +38,9 @@ export const decisionsToWatch = [
 // Derived from the author-selected list above; the window ends in June, not a legal deadline for all five decisions.
 export const watchCount = decisionsToWatch.length
 export const watchSelectionStatus = { status: 'flag', basis: 'author-reported editorial selection' } as const
-// Author-chosen QR destination (2026-11-06): the Decks homepage.
-// Author, 2026-11-06: hide the closing QR for now; set true to bring it back.
-export const showQr = false
-export const sourcesPage = { url: 'https://decks.steamfield.io', status: 'confirmed', needed: 'QR code linking to decks.steamfield.io' } as const
-
-// Display labels for the sourced watch topics, calendar and author-supplied close.
+// Display labels for the sourced watch topics, and calendar.
 export const watchDisplay = {
-  pending: 'Pending', flag: 'FLAG: sources URL needed',
-  sources: 'decks.steamfield.io', placeholder: 'Built with Decks',
+  pending: 'Pending',
   calendarSource: 'Source: legislative session calendar',
   calendarUrl: 'https://www.lrl.texas.gov/sessions/sessionYears.cfm',
   rulesSource: 'Source: school intervention deadlines',
@@ -57,7 +51,6 @@ export const watchDisplay = {
   petition: 'Validated petitions due at state education agency', request: 'Request for different intervention due',
   meeting: 'Board voting meeting', collection: 'Parent petition collection closed',
   timing: 'Meeting falls after request deadline',
-  closing: 'The election chose who will hold power. The next question is whether those officials can use that power, within the laws that still exist, to make Texas public schools stronger.',
   districtGloss: 'School district / state education agency',
   election: 'Election', inauguration: 'Governor takes office',
   petitionTick: 'Validated petitions due', order: 'Order after valid petition',

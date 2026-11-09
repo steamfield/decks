@@ -503,7 +503,7 @@ Module: `data/14-watch.ts`, reusing Slide 7 dates.
 | Sine die | May 31, 2027, day 140 | Confirmed legal schedule | [LRL][session-calendar]; [art. III §24][cn3]. | 2026-11-06 |
 | Post-session governor action | June 20, 2027 | Confirmed conditional legal calculation | May 31 + 20 calendar days under [art. IV §14][cn4] for bills covered by its post-adjournment provision. | 2026-11-06 |
 | Board meeting time | 6 p.m. America/Chicago | Confirmed published schedule | Individual AISD calendar events below; agenda and rescheduling remain subject to refresh. | 2026-11-06 |
-| QR destination | https://decks.steamfield.io | Confirmed | Author chose the Decks homepage for the closing QR. | 2026-11-06 |
+| QR destination | https://decks.steamfield.io | Confirmed | Author chose the Decks homepage for the closing QR. Not on a slide since 2026-11-09: the closing beat was cut and the line is spoken over the December dates. | 2026-11-06 |
 
 ### AISD board calendar through February 2027
 
