@@ -7,6 +7,8 @@ import BallotOval from './BallotOval.vue'
 
 // Governor and Senate keep their positions in the ladder; the other offices cross-fade.
 const G = { x: 832, width: FRAME.right - 832, height: 88, groupHeight: 128 }
+// Evidence tags sit on the oval's centerline, against the tile's right padding.
+const TAG = { width: 180, height: 42 }
 const TILES = [
   { ...statewideOffices[0], x: G.x, y: BOARD.power.top, width: G.width, height: G.height, group: false },
   { ...statewideOffices[1], x: BOARD.power.left, y: BOARD.power.top, width: BOARD.power.leftWidth, height: G.groupHeight, group: true },
@@ -73,8 +75,8 @@ const { clicks, copy, beats } = useStage({
           </text>
           <text :class="tile.group || i === 6 ? 'od-stage-note' : 'od-stage-name holder'" :x="tile.x + (tile.group || i === 6 ? 124 : 400)" :y="tile.y + (tile.group || i === 6 ? 64 : 33)">{{ tile.name }}</text>
           <text v-if="i < statewideOffices.length" class="od-stage-note" :x="tile.x + (tile.group ? 124 : 400)" :y="tile.y + (tile.group ? 100 : 64)">{{ tile.party }}</text>
-          <foreignObject v-if="i === 4 || i === 6" :x="tile.x + 740" :y="tile.y + 43" width="180" height="42">
-            <span class="tx-tag is-pending">{{ evidenceLabels.pending }}</span>
+          <foreignObject v-if="i === 4 || i === 6" :x="tile.x + tile.width - BOARD.pad - TAG.width" :y="tile.y + (G.height - TAG.height) / 2" :width="TAG.width" :height="TAG.height">
+            <div class="tag-slot"><span class="tx-tag is-pending">{{ evidenceLabels.pending }}</span></div>
           </foreignObject>
           <text v-if="i === 6" class="od-stage-note result-note" :x="tile.x + 124" :y="tile.y + 108" :style="{ opacity: s.pending }">{{ `District ${sboe.district}: possible recount` }}</text>
         </g>
@@ -92,5 +94,6 @@ const { clicks, copy, beats } = useStage({
 .tile { rx: var(--tx-radius-mark); }
 .holder { font-weight: var(--tx-body-weight); }
 .tx-tag { font-size: var(--tx-svg-note); }
+.tag-slot { display: flex; align-items: center; justify-content: flex-end; height: var(--tx-full); }
 .result-note { fill: var(--od-amber); }
 </style>

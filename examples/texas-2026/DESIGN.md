@@ -36,15 +36,18 @@ HTML lengths scale with `--sw` and `--sh`; SVG geometry stays in viewBox units.
 
 `BallotOval` takes `cx`, `cy`, a `size` multiplier, `state`, `meaning`, `fill`
 and `pending`. Filled means won or holds; empty means not won; hatched means
-Scenario. A dashed stroke means Pending. Print the evidence word on the
+Scenario. A dashed stroke means Pending, and a pending fill stops short of
+that stroke (`OVAL.pendingFill`). Print the evidence word on the
 object: `tx-tag is-pending`, `is-reported` (Reported date) or `is-scenario`.
 Reported dates keep a solid border; scenario tags are dotted. A ping is one
 unfiltered thin ring. Earlier evidence dims to `DIM`.
 
 Keep the documented mirrors together: `DIM` / `--tx-dim`, `BASELINE_Y` /
 `--tx-baseline-y`, `HATCH.spacing` / `--tx-hatch-spacing`, and `DASH` /
-`--tx-pending-dash`. CSS timing mirrors `DUR.color` for the normal fade and
-`DUR.opacity` for reduced motion. The addon mirror test does not scan these
+`--tx-pending-dash`. CSS timing mirrors `DUR.color` for the incoming fade and
+`DUR.opacity` for the outgoing one and for reduced motion. On a slide change
+the old stage and headline clear first and the new ones settle in after
+`--tx-vt-delay`; only the card cross-fades. The addon mirror test does not scan these
 deck-local values. View-transition selectors must live on `html`; this
 deck's stylesheet supplies them without changing the shared addon.
 

@@ -2,7 +2,7 @@
 import { computed, reactive } from 'vue'
 import { DRAW, DUR, SETTLE, useStage } from 'slidev-addon-decks/story'
 import { senate, confirmation, holdover, senateRules, arcLabels } from '../data/08-senate-arc'
-import { BASELINE_Y, DIM, FRAME, OFF, ON, SEAT_ARC_RADIUS, democrat, republican, risk } from './design'
+import { BASELINE_Y, DIM, FRAME, OFF, ON, SEAT_ARC_RADIUS, democrat, republican } from './design'
 import SeatArc from './SeatArc.vue'
 
 const COPY = [
@@ -35,7 +35,7 @@ const thresholds = computed(() => [
 ])
 const source = computed(() => clicks.value >= 3 ? arcLabels.rulesSource : clicks.value === 2 ? arcLabels.holdoverSource : arcLabels.source)
 // Enlarge the shared intrinsic geometry above the card; slide 11 keeps its scale.
-const ARC = { x: 960, y: BASELINE_Y, scale: 1, labelGap: 40, labelY: -50, gapY: 72 }
+const ARC = { x: 960, y: BASELINE_Y, scale: 1, labelGap: 40, labelY: -50 }
 </script>
 
 <template>
@@ -51,12 +51,14 @@ const ARC = { x: 960, y: BASELINE_Y, scale: 1, labelGap: 40, labelY: -50, gapY: 
           <text class="od-stage-name" :x="-SEAT_ARC_RADIUS * ARC.scale - ARC.labelGap" :y="ARC.labelY" text-anchor="end">{{ senate.democratic }} {{ arcLabels.democratic }}</text>
           <text class="od-stage-name" :x="SEAT_ARC_RADIUS * ARC.scale + ARC.labelGap" :y="ARC.labelY">{{ senate.republican }} {{ arcLabels.republican }}</text>
         </g>
-        <text class="od-stage-name" :x="OFF" :y="ARC.gapY" text-anchor="middle" :style="{ opacity: s.confirm, fill: risk() }">{{ confirmation.otherVotesNeeded }} {{ arcLabels.gap }}</text>
       </g>
     </template>
     <template #overlay>
       <h2 class="od-story-head">With {{ confirmation.present }} present, confirmation takes {{ confirmation.required }} votes.</h2>
-      <span class="scenario tx-tag is-scenario" :aria-hidden="clicks < 1" :style="{ opacity: s.confirm * s.arc }">{{ arcLabels.scenario }}</span>
+      <div class="gap" :aria-hidden="clicks < 1" :style="{ opacity: s.confirm * s.arc }">
+        <strong>{{ confirmation.otherVotesNeeded }} {{ arcLabels.gap }}</strong>
+        <span class="tx-tag is-scenario">{{ arcLabels.scenario }}</span>
+      </div>
       <div class="office" :aria-hidden="clicks < 2" :style="{ opacity: s.incumbent * s.tenure }">
         <strong>{{ holdover.name }}</strong>
         <span class="tx-tag is-pending">{{ arcLabels.departureStatus }}</span>
@@ -73,9 +75,11 @@ const ARC = { x: 960, y: BASELINE_Y, scale: 1, labelGap: 40, labelY: -50, gapY: 
 </template>
 
 <style scoped>
-.scenario { position: absolute; left: calc(60.6 * var(--sw)); top: calc(70.4 * var(--sh)); }
-.office, .rules { position: absolute; left: calc(45 * var(--sw)); right: var(--tx-margin-x); display: flex; align-items: center; gap: var(--tx-byline-gap); font-size: var(--tx-small-size); }
+/* The three notes under the arc share one left edge, clear of the card. */
+.gap, .office, .rules { position: absolute; left: calc(45 * var(--sw)); right: var(--tx-margin-x); display: flex; align-items: center; gap: var(--tx-byline-gap); font-size: var(--tx-small-size); }
 .office { top: calc(79 * var(--sh)); flex-wrap: wrap; }
-.office strong { font-size: var(--tx-body-size); }
+.gap { top: calc(70.4 * var(--sh)); }
+.gap strong { font-weight: var(--tx-label-weight); color: var(--od-amber); }
+.gap strong, .office strong { font-size: var(--tx-body-size); }
 .rules { top: calc(87 * var(--sh)); padding-top: var(--tx-copy-gap); border-top: var(--tx-hairline) dashed var(--od-amber); }
 </style>

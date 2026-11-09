@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<{
 
 const patternId = `tx-hatch-${useId()}`
 const color = computed(() => ({ changed, risk, neutral })[props.meaning]())
-const progress = computed(() => Math.max(OFF, Math.min(ON, props.fill)))
+const progress = computed(() => Math.max(OFF, Math.min(ON, props.fill)) * (props.pending ? OVAL.pendingFill : ON))
 const rx = computed(() => OVAL.rx * props.size)
 const ry = computed(() => OVAL.ry * props.size)
 </script>

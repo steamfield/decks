@@ -214,16 +214,37 @@
 html[data-od-story]::view-transition-group(*),
 html[data-od-story]::view-transition-old(*),
 html[data-od-story]::view-transition-new(*) { animation-duration: var(--tx-vt-fade); }
+/* A slide change is a quick clear, then a settle. The outgoing stage and
+   headline fade out first and the incoming ones fade up behind them, so two
+   diagrams or two headlines never sit double-exposed. The canvas shows in
+   between. The card is left on the browser's cross-fade: its surface holds
+   still while the copy changes, which carries the eye across the cut. */
+html[data-od-story]::view-transition { background: var(--od-canvas); }
+html[data-od-story][data-od-nav]::view-transition-old(root),
+html[data-od-story][data-od-nav]::view-transition-old(od-story-head),
+html[data-od-story][data-od-nav]::view-transition-old(od-power-board),
+html[data-od-story][data-od-nav]::view-transition-old(od-campus-pair) {
+  animation: od-vt-out var(--tx-vt-out) linear both;
+}
 html[data-od-story][data-od-nav]::view-transition-new(root),
-html[data-od-story][data-od-nav]::view-transition-new(od-story-head):only-child,
+html[data-od-story][data-od-nav]::view-transition-new(od-story-head),
+html[data-od-story][data-od-nav]::view-transition-new(od-power-board),
+html[data-od-story][data-od-nav]::view-transition-new(od-campus-pair),
 html[data-od-story][data-od-nav]::view-transition-new(od-story-card-left):only-child,
 html[data-od-story][data-od-nav]::view-transition-new(od-story-card-right):only-child {
-  animation-name: od-vt-fade;
-  animation-duration: var(--tx-vt-fade);
-  animation-delay: var(--tx-vt-delay);
+  animation: od-vt-fade var(--tx-vt-fade) var(--tx-vt-ease) var(--tx-vt-delay) both;
 }
+/* The card is bottom anchored and its height follows its copy. Pinning both
+   snapshots to the bottom of the morphing group keeps the lower edge still. */
+html[data-od-story]::view-transition-old(od-story-card-left),
+html[data-od-story]::view-transition-new(od-story-card-left),
+html[data-od-story]::view-transition-old(od-story-card-right),
+html[data-od-story]::view-transition-new(od-story-card-right) { inset-block: auto 0; }
 @media (prefers-reduced-motion: reduce) {
   html[data-od-story]::view-transition-group(*),
   html[data-od-story]::view-transition-old(*),
-  html[data-od-story]::view-transition-new(*) { animation-duration: var(--tx-vt-reduced) !important; }
+  html[data-od-story]::view-transition-new(*) {
+    animation-duration: var(--tx-vt-reduced) !important;
+    animation-delay: 0ms !important;
+  }
 }

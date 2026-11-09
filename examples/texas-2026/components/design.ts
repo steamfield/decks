@@ -6,8 +6,9 @@ export const DIM = 0.55
 /** Resting and hidden endpoints for beat opacity and progress. */
 export const ON = 1
 export const OFF = 0
-/** Ballot proportions; size is a multiplier of these two radii. */
-export const OVAL = { rx: 34, ry: 20, size: 1 } as const
+/** Ballot proportions; size is a multiplier of these two radii. A pending
+ * fill stops at pendingFill of the outline, so the dashed ring stays legible. */
+export const OVAL = { rx: 34, ry: 20, size: 1, pendingFill: 0.72 } as const
 /** Scenario stripes and pending dashes; mirrors live in tokens.css. */
 export const HATCH = { spacing: 8, path: 'M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6' } as const
 export const DASH = '8 6'

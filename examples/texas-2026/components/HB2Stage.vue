@@ -69,8 +69,10 @@ const source = computed(() => [
           <span v-if="recapture.actualPaymentStatus === 'pending'" class="tx-tag is-pending">Actual payment pending</span>
         </div>
       </div>
-      <StoryLink :href="source.href" :label="source.label" />
-      <StoryLink v-if="clicks === beats - 1" class="gap-source" href="https://www.austinisd.org/announcements/2026/06/23/superintendents-update-approved-2026-27-budget-en-espanol" label="Budget reductions" />
+      <div class="source-links">
+        <StoryLink v-if="clicks === beats - 1" href="https://www.austinisd.org/announcements/2026/06/23/superintendents-update-approved-2026-27-budget-en-espanol" label="Budget reductions" />
+        <StoryLink :href="source.href" :label="source.label" />
+      </div>
     </template>
     <template #card>
       <StoryCard anchor="left" :hue="clicks === beats - 1 ? 'amber' : 'slate'" :lead="copy.lead" :body="copy.body" />
@@ -87,5 +89,6 @@ const source = computed(() => [
 .figure { font-size: calc(4.5 * var(--sw)); font-weight: var(--tx-lead-weight); font-variant-numeric: tabular-nums; line-height: var(--tx-figure-leading); color: var(--od-amber); }
 .label { font-size: var(--tx-body-size); line-height: var(--tx-label-leading); margin-top: var(--tx-copy-gap); }
 .tx-tag { margin-top: var(--tx-byline-gap); }
-.gap-source { right: calc(23 * var(--sw)); }
+.source-links { position: absolute; right: var(--tx-margin-x); bottom: var(--tx-rail-bottom); display: flex; gap: calc(1.5 * var(--sw)); }
+.source-links :deep(.od-story-link) { position: static; }
 </style>

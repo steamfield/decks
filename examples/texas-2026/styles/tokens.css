@@ -1,12 +1,16 @@
 @import '@fontsource-variable/source-serif-4';
 @import '@fontsource-variable/public-sans';
 
-/* Document timing: mirrors of DUR.color and DUR.opacity. css-mirror.test.ts
-   guards the addon's CSS only. Root scope is required for VT pseudo-elements. */
+/* Document timing: mirrors of DUR.color, DUR.opacity and SETTLE_CSS.
+   css-mirror.test.ts guards the addon's CSS only. Root scope is required for
+   VT pseudo-elements. The outgoing slide clears in --tx-vt-out; the incoming
+   one starts --tx-vt-delay in, so the two overlap only at low opacity. */
 :root {
   --tx-vt-fade: 340ms;
+  --tx-vt-out: 140ms;
   --tx-vt-reduced: 140ms;
-  --tx-vt-delay: 0ms;
+  --tx-vt-delay: 100ms;
+  --tx-vt-ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .od-slide.is-story {

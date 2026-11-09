@@ -18,6 +18,8 @@ const descriptions = [
 ]
 const s = reactive({ draw: OFF, appointment: OFF, commissioner: OFF })
 const fade = (progress: number) => ON - (ON - DIM) * progress
+// The named box brightens with its beat instead of switching on its first frame.
+const lit = (progress: number) => `color-mix(in srgb, ${neutral(4)} ${progress * 100}%, ${neutral(2)})`
 const { clicks, copy, beats } = useStage({
   copy: COPY,
   enter: tl => { tl.to(s, { draw: ON, duration: DUR.scale, ease: DRAW }) },
@@ -47,13 +49,13 @@ const { clicks, copy, beats } = useStage({
       </g>
       <g :style="{ opacity: fade(s.commissioner) }">
         <g v-for="(node, i) in [{ title: labels.governor, role: labels.appoints }, { title: labels.senate, role: labels.confirms }]" :key="node.title" :transform="`translate(${i ? G.right - G.branchWidth : G.x} ${G.appointmentY})`">
-          <rect class="tx-office-box" :width="G.branchWidth" :height="G.height" :style="{ stroke: neutral(s.appointment > OFF ? 4 : 2) }" />
+          <rect class="tx-office-box" :width="G.branchWidth" :height="G.height" :style="{ stroke: lit(s.appointment) }" />
           <text class="od-stage-name" :x="BOARD.pad" y="38">{{ node.title }}</text>
           <text class="od-stage-note" :x="BOARD.pad" y="73">{{ node.role }}</text>
         </g>
       </g>
       <g>
-        <rect class="tx-office-box" :x="G.x" :y="G.agencyY" :width="G.width" :height="148" :style="{ stroke: neutral(s.commissioner > OFF ? 4 : 2) }" />
+        <rect class="tx-office-box" :x="G.x" :y="G.agencyY" :width="G.width" :height="148" :style="{ stroke: lit(s.commissioner) }" />
         <text class="od-stage-name" :x="G.x + BOARD.pad" :y="G.agencyY + 38">{{ labels.agency }}</text>
         <text class="od-stage-note" :x="G.x + BOARD.pad" :y="G.agencyY + 73">{{ labels.administers }}</text>
         <g :style="{ opacity: s.commissioner }">

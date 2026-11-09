@@ -22,11 +22,17 @@ const { clicks, copy, beats } = useStage({
     beat(0)
     tl.to(s, { topics: OFF, civic: ON, duration: DUR.color, ease: SETTLE })
     beat(1)
-    // Move the date marks below the quote before it appears, then gather them into the QR footprint.
-    tl.to(s, { dock: ON, duration: DUR.card, ease: SETTLE })
-    tl.to(s, { closing: ON, duration: DUR.card, ease: SETTLE })
-    tl.to(s, { collapse: ON, civic: OFF, duration: DUR.gather, ease: SETTLE })
-    tl.to(s, { qr: ON, duration: DUR.card, ease: SETTLE }, `-=${DUR.card}`)
+    if (showQr) {
+      // Move the date marks below the quote before it appears, then gather them into the QR footprint.
+      tl.to(s, { dock: ON, duration: DUR.card, ease: SETTLE })
+      tl.to(s, { closing: ON, duration: DUR.card, ease: SETTLE })
+      tl.to(s, { collapse: ON, civic: OFF, duration: DUR.gather, ease: SETTLE })
+      tl.to(s, { qr: ON, duration: DUR.card, ease: SETTLE }, `-=${DUR.card}`)
+    } else {
+      // With no QR to gather into, the dates clear and the close settles in alone.
+      tl.to(s, { civic: OFF, duration: DUR.opacity, ease: SETTLE })
+      tl.to(s, { closing: ON, duration: DUR.grow, ease: SETTLE })
+    }
     beat(2)
   },
 })
@@ -53,7 +59,7 @@ const sources = computed(() => clicks.value === 1
         <div class="deadline"><strong>{{ date(request.date) }}</strong><span>{{ watchDisplay.request }}</span><span class="tx-tag is-pending">{{ watchDisplay.pending }}</span></div>
         <div class="deadline"><strong>{{ date(meeting.date) }}</strong><span>{{ watchDisplay.meeting }}</span><span class="timing">{{ watchDisplay.timing }}</span></div>
       </div>
-      <div class="closing" :style="{ opacity: s.closing }" :aria-hidden="clicks !== 2">{{ watchDisplay.closing }}</div>
+      <div class="closing" :class="{ 'is-solo': !showQr }" :style="{ opacity: s.closing }" :aria-hidden="clicks !== 2">{{ watchDisplay.closing }}</div>
       <div v-if="showQr" class="sources" :style="{ opacity: s.qr }" :aria-hidden="s.qr === OFF">
         <OdQrCard :url="sourcesPage.url ?? undefined" :label="watchDisplay.sources" :sublabel="watchDisplay.placeholder" :aria-label="sourcesPage.needed" />
         <span v-if="!sourcesPage.url" class="qr-placeholder">{{ watchDisplay.flag }}</span>
@@ -62,7 +68,9 @@ const sources = computed(() => clicks.value === 1
         <StoryLink v-for="source in sources" :key="source.href" :href="source.href" :label="source.label" />
       </div>
     </template>
-    <template #card><StoryCard v-if="copy.lead" anchor="left" hue="slate" :lead="copy.lead" :body="copy.body" /></template>
+    <template #card>
+      <Transition name="card"><StoryCard v-if="copy.lead" anchor="left" hue="slate" :lead="copy.lead" :body="copy.body" /></Transition>
+    </template>
   </StoryStage>
 </template>
 
@@ -78,6 +86,11 @@ const sources = computed(() => clicks.value === 1
 .deadline strong { font-size: calc(3 * var(--sw)); font-weight: var(--tx-lead-weight); }
 .timing { font-size: var(--tx-small-size); color: var(--od-amber); }
 .closing { position: absolute; top: calc(24 * var(--sh)); left: var(--tx-margin-x); right: calc(27 * var(--sw)); font-family: var(--od-font-serif); font-size: calc(2.4 * var(--sw)); line-height: 1.4; }
+/* Alone on the frame, the close sits on the cover title's centerline. */
+.closing.is-solo { top: calc(50 * var(--sh));transform: translateY(-50%); }
+/* The last beat has no card; it leaves on the same clock as the dates. */
+.card-enter-active, .card-leave-active { transition: opacity var(--tx-vt-out) linear; }
+.card-enter-from, .card-leave-to { opacity: var(--tx-off); }
 .sources { position: absolute; top: calc(30 * var(--sh)); right: var(--tx-margin-x); width: calc(17 * var(--sw)); }
 .sources :deep(.od-qr-frame) { width: calc(15 * var(--sw)); padding: calc(1 * var(--sw)); border-radius: var(--tx-radius-card); }
 .sources :deep(.od-qr-label), .sources :deep(.od-qr-sublabel) { font-size: var(--tx-small-size); text-transform: none; letter-spacing: var(--tx-body-tracking); }

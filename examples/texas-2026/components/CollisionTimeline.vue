@@ -16,8 +16,9 @@ const props = withDefaults(defineProps<{
 // Separate district event lines keep the closely spaced December dates readable.
 const RANGE: [number, number] = [400, 1740]
 const DISTRICT_ROWS = [310, 400, 490]
-const GOVERNOR_Y = 600
-const COMMISSIONER_Y = 700
+// The lower two rows stop short of the card's tallest state (top edge at 718).
+const GOVERNOR_Y = 580
+const COMMISSIONER_Y = 672
 const start = Date.parse(collisionTimeline[0].date)
 const inauguration = Date.parse(collisionTimeline.find(event => event.id === 'inauguration')!.date)
 const domain = computed<[number, number]>(() => [start, Date.parse(props.domainEnd)])
