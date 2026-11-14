@@ -1,0 +1,21 @@
+.lane {
+  stroke-width: var(--tx-hairline);
+}
+.lane.active {
+  stroke-width: var(--tx-oval-stroke);
+}
+.ratingsLabel {
+  position: absolute;
+  left: calc(50 * var(--sw));
+  top: calc(48 * var(--sh));
+  color: var(--od-amber);
+  font-size: var(--tx-small-size);
+}
+.decision {
+  position: absolute;
+  right: var(--tx-margin-x);
+  top: calc(48 * var(--sh));
+}
+.decision :global(.tx-tag) {
+  margin-top: var(--tx-copy-gap);
+}

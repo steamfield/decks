@@ -1,0 +1,36 @@
+.headDetail {
+  display: block;
+  margin-top: var(--tx-copy-gap);
+  font-family: var(--od-font-sans);
+  font-size: var(--tx-body-size);
+  font-weight: var(--tx-body-weight);
+  line-height: var(--tx-body-leading);
+}
+.rung {
+  rx: var(--tx-radius-mark);
+}
+.office {
+  fill: var(--od-text);
+}
+.tag {
+  font-size: var(--tx-svg-note);
+}
+.rungNumber {
+  text-anchor: end;
+}
+.cursor {
+  fill: none;
+  stroke: var(--od-cyan);
+  stroke-width: var(--tx-oval-stroke);
+}
+.description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

@@ -1,0 +1,32 @@
+.office {
+  fill: var(--od-text);
+}
+.tile {
+  rx: var(--tx-radius-mark);
+}
+.holder {
+  font-weight: var(--tx-body-weight);
+}
+.tag {
+  font-size: var(--tx-svg-note);
+}
+.tagSlot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: var(--tx-full);
+}
+.resultNote {
+  fill: var(--od-amber);
+}
+.description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
