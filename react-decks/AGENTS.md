@@ -71,6 +71,8 @@ These come from mistakes made here. They outrank a wish to be thorough.
   type), the design is probably wrong. Ask before keeping it.
 - A finding from your own review that asks for more than the contract does goes to the
   orchestrator. Do not expand scope to satisfy it.
+- When a case turns out to be uncovered, ask whether it should exist before supporting it.
+  Forbidding a file type, an input or a state is usually cheaper than handling it.
 - The spec can be wrong. Replay the contract's QA situations against the spec before you
   code, and for anything with several actors (windows, tabs, timers, client and server) step
   through the interleavings: both start at once, one restarts, a third joins mid-change, a
