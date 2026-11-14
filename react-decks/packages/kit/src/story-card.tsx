@@ -1,6 +1,6 @@
 import { gsap, motionMode } from "@react-decks/motion";
 import { useSlide } from "@react-decks/runtime";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useLayoutEffect, useRef, useState } from "react";
 import { DUR, SETTLE } from "./easings";
 import type { Hue } from "./theme-resolve";
 
@@ -9,11 +9,15 @@ export function StoryCard({
   body = "",
   anchor = "left",
   hue = "cyan",
+  className = "",
+  style,
 }: {
   lead: string;
   body?: string;
   anchor?: "left" | "right";
   hue?: Hue;
+  className?: string;
+  style?: CSSProperties;
 }) {
   const { isActive, renderContext } = useSlide();
   const box = useRef<HTMLDivElement>(null);
@@ -73,7 +77,8 @@ export function StoryCard({
   );
   return (
     <div
-      className={`od-story-card anchor-${anchor} accent-${hue}`}
+      className={`od-story-card anchor-${anchor} accent-${hue}${className ? ` ${className}` : ""}`}
+      style={style}
       data-lead={lead}
       data-body={body}
     >

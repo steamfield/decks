@@ -8,6 +8,23 @@ function Card() {
   return <StoryCard lead={clicks === 0 ? "First lead" : "New lead"} body={`Body ${clicks}`} />;
 }
 
+function HiddenCard() {
+  return (
+    <StoryCard
+      className="is-filled"
+      style={{ visibility: "hidden" }}
+      lead="Hidden lead"
+      body="Hidden body"
+    />
+  );
+}
+
+it("lets a deck hide the entire card with its root style", async () => {
+  await setup(HiddenCard, { instant: true });
+  expect(screen.getByText("Hidden lead")).not.toBeVisible();
+  expect(screen.getByText("Hidden body")).not.toBeVisible();
+});
+
 it("keeps outgoing copy during a swap and removes it after the incoming copy settles", async () => {
   const app = await setup(Card);
   await app.next();

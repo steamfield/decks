@@ -1,0 +1,11 @@
+.field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--od-canvas) 0%, var(--od-canvas) 34%, transparent 58%);
+}
