@@ -82,7 +82,9 @@ try {
       console.log(`${name}\tnot ported yet`);
       continue;
     }
-    await page.goto(`${url}/?motion=instant#/${slide}${click ? `?clicks=${click}` : ""}`);
+    // The cover and close are compared with their scene running, as the baseline was captured.
+    const query = LIVE.has(name) ? "" : "?motion=instant";
+    await page.goto(`${url}/${query}#/${slide}${click ? `?clicks=${click}` : ""}`);
     await page.reload();
     // The slide's host exists before its lazily loaded module has rendered.
     await page
@@ -94,6 +96,15 @@ try {
       await document.fonts.ready;
       await window.__deck.settled();
     });
+    // A slide with a hosted page (slide 13) shows a placeholder until its iframe has loaded.
+    const hosted = page.frames().filter((frame) => frame !== page.mainFrame());
+    if (hosted.length) {
+      await Promise.all(hosted.map((frame) => frame.waitForLoadState("load")));
+      await page.locator("[data-deck-active] iframe").first().waitFor();
+      await page.waitForTimeout(1500);
+    }
+    // The Slidev capture waited 3.2 s on every frame; the live scene needs the same to draw.
+    if (LIVE.has(name)) await page.waitForTimeout(3200);
     const file = join(out, name);
     await page.screenshot({ path: file });
     const actual = PNG.sync.read(await readFile(file));
