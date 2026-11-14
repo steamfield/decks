@@ -5,6 +5,7 @@ import matter from "gray-matter";
 import { glob } from "tinyglobby";
 import { z } from "zod";
 import { countClicks } from "./clicks";
+import { componentsModule } from "./components";
 import type { ResolvedDeck } from "./config";
 
 export interface ScannedSlide {
@@ -24,13 +25,18 @@ export async function scanSlides(deck: ResolvedDeck): Promise<readonly ScannedSl
   return (await scanSlidesWithCounts(deck, new Map())).slides;
 }
 
-export function readSlide(source: string, file: string, previous?: number) {
+export function readSlide(
+  source: string,
+  file: string,
+  previous?: number,
+  motionNames?: ReadonlyMap<string, string>,
+) {
   try {
     const { data, content } = matter(source);
     const frontmatter = frontmatterSchema.parse(data);
     const clicks = frontmatter.hide
       ? 0
-      : (frontmatter.clicks ?? countClicks(content, file, previous));
+      : (frontmatter.clicks ?? countClicks(content, file, previous, motionNames));
     return { frontmatter, clicks, fingerprint: JSON.stringify([data, clicks]) };
   } catch (cause) {
     if (cause instanceof Error && cause.message.startsWith(`${file}:`)) throw cause;
@@ -41,6 +47,7 @@ export function readSlide(source: string, file: string, previous?: number) {
 }
 
 export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<string, number>) {
+  const { motionNames, code: componentsCode } = await componentsModule(deck.dir);
   const files = (await glob("slides/*.mdx", { cwd: deck.dir })).sort();
   const slides: ScannedSlide[] = [];
   const metadata = new Map<string, string>();
@@ -51,6 +58,7 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
         await readFile(join(deck.dir, file), "utf8"),
         join(deck.dir, file),
         totals.get(file),
+        motionNames,
       );
       metadata.set(file, fingerprint);
       totals.set(file, clicks);
@@ -78,7 +86,7 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
     }
   }
   if (!slides.length) throw new Error(`${deck.dir}: no visible slides`);
-  return { slides, metadata };
+  return { slides, metadata, componentsCode };
 }
 
 export function buildManifest(deck: ResolvedDeck, slides: readonly ScannedSlide[]): DeckManifest {

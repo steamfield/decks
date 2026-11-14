@@ -44,41 +44,26 @@ async function serve(files: Record<string, string> = {}) {
 const virtual = (name: string) => `/@id/__x00__virtual:react-decks/${name}`;
 
 describe("deck modules and HTML", () => {
-  it.each(["Step", "Steps", "Stagger", "TextReveal", "Highlight", "CountUp", "Draw"])(
-    "rejects a deck's own %s export even with explicit slide clicks",
-    async (name) => {
-      const { dir } = await fixture({
-        "slides/01-first.mdx": "---\nclicks: 2\n---\n# Slide",
-        "components/Own.tsx": `export function ${name}() { return null; }`,
-      });
-      await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
-        new RegExp(`components/Own\\.tsx.*${name}.*@react-decks/motion`),
-      );
-    },
-  );
-  it.each([
-    ["Step.tsx", "export default function Own() {}"],
-    ["Other.tsx", 'export { Badge as Step } from "./Badge";'],
-  ])("rejects a reserved component name provided by %s: %s", async (file, source) => {
-    const { dir } = await fixture({ [`components/${file}`]: source });
-    await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
-      new RegExp(`components/${file.replace(".", "\\.")}.*Step.*@react-decks/motion`),
-    );
+  it("loads a deck's own Highlight without counting or validating its at expression", async () => {
+    const app = await serve({
+      "components/Highlight.tsx": "export function Highlight() { return <b>Local highlight</b>; }",
+      "slides/01-first.mdx": "export const n = 3;\n\n<Highlight at={n} />",
+    });
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":0');
+    expect(await app.get("/slides/01-first.mdx")).toContain("Highlight");
+    await build(await loadDeck(app.dir), { outDir: join(app.dir, "site") });
   });
   it.each([
     'export { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw } from "@react-decks/motion";',
     'import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw } from "@react-decks/motion"; export { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw };',
-  ])(
-    "allows reserved names re-exported from motion without loading them on the server: %s",
-    async (source) => {
-      const app = await serve({
-        "components/Motion.tsx": source,
-      });
-      const code = await app.get(virtual("components"));
-      for (const name of ["Step", "Steps", "Stagger", "TextReveal", "Highlight", "CountUp", "Draw"])
-        expect(code).toContain(JSON.stringify(name));
-    },
-  );
+  ])("allows motion re-exports without loading them on the server: %s", async (source) => {
+    const app = await serve({
+      "components/Motion.tsx": source,
+    });
+    const code = await app.get(virtual("components"));
+    for (const name of ["Step", "Steps", "Stagger", "TextReveal", "Highlight", "CountUp", "Draw"])
+      expect(code).toContain(JSON.stringify(name));
+  });
   it("fails a build in the slide compiler when an uncounted body does not parse", async () => {
     const { dir } = await fixture({ "slides/01-first.mdx": "# Broken\n\n<Step at={3}>" });
     await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
@@ -111,13 +96,12 @@ describe("deck modules and HTML", () => {
       expect(typeof component).toBe("function");
   });
   it("names both files when component exports collide", async () => {
-    const app = await serve({
-      "components/Badge.tsx": "export default function Badge() {}",
-      "components/Other.tsx": "export function Badge() {}",
-    });
-    await expect(app.server.ssrLoadModule("virtual:react-decks/components")).rejects.toThrow(
-      /Badge.*components\/Badge\.tsx.*components\/Other\.tsx/,
-    );
+    await expect(
+      serve({
+        "components/Badge.tsx": "export default function Badge() {}",
+        "components/Other.tsx": "export function Badge() {}",
+      }),
+    ).rejects.toThrow(/Badge.*components\/Badge\.tsx.*components\/Other\.tsx/);
   });
   it("fails a build naming both files when component exports collide", async () => {
     const { dir } = await fixture({
@@ -361,8 +345,31 @@ describe("deck modules and HTML", () => {
 });
 
 describe("dev changes", () => {
+  it("hot-updates a component body when its exports and inferred totals stay the same", async () => {
+    const app = await serve({
+      "components/Label.tsx": "export function Label() { return <b>Before</b>; }",
+      "slides/01-first.mdx": "<Label />",
+    });
+    await app.get(virtual("manifest"));
+    await app.get(virtual("components"));
+    await app.get("/components/Label.tsx");
+    const start = app.messages.length;
+    await app.put("components/Label.tsx", "export function Label() { return <b>After</b>; }");
+    await vi.waitFor(() =>
+      expect(app.messages.slice(start).some((message) => message.includes('"type":"update"'))).toBe(
+        true,
+      ),
+    );
+    expect(
+      app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+    ).toBe(false);
+    expect(await app.get("/components/Label.tsx")).toContain("After");
+  });
   it("keeps the last valid total when invalid frontmatter is removed during a syntax error", async () => {
-    const app = await serve({ "slides/01-first.mdx": "<Step at={4} />" });
+    const app = await serve({
+      "components/motion.tsx": 'export { Step } from "@react-decks/motion";',
+      "slides/01-first.mdx": "<Step at={4} />",
+    });
     expect(await app.get(virtual("manifest"))).toContain('"clicks":4');
     await app.get("/slides/01-first.mdx");
     const invalid = app.messages.length;
@@ -392,26 +399,32 @@ describe("dev changes", () => {
     );
     expect(await app.get(virtual("manifest"))).toContain('"clicks":4');
   });
-  it("rejects a reserved name introduced by editing an existing component", async () => {
-    const app = await serve({ "components/Own.tsx": "export function Own() { return null; }" });
+  it("updates inferred totals when a component starts and stops re-exporting motion", async () => {
+    const app = await serve({
+      "components/Own.tsx": 'export { Step } from "@react-decks/motion";',
+      "slides/01-first.mdx": "<Step at={2} />",
+    });
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":2');
     await app.get(virtual("components"));
     await app.get("/components/Own.tsx");
-    const start = app.messages.length;
-    await app.put("components/Own.tsx", "export function Step() { return null; }");
-    await vi.waitFor(() =>
-      expect(
-        app.messages
-          .slice(start)
-          .some(
-            (message) =>
-              message.includes('"type":"error"') &&
-              /Own\.tsx.*Step.*@react-decks\/motion/.test(message),
-          ),
-      ).toBe(true),
-    );
+    for (const { source, total } of [
+      { source: "export function Step() { return null; }", total: 0 },
+      { source: 'export { Step } from "@react-decks/motion";', total: 2 },
+    ]) {
+      const start = app.messages.length;
+      await app.put("components/Own.tsx", source);
+      await vi.waitFor(() =>
+        expect(
+          app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+        ).toBe(true),
+      );
+      expect(await app.get(virtual("manifest"))).toContain(`"clicks":${total}`);
+      await app.get("/components/Own.tsx");
+    }
   });
   it("reloads only when the inferred total changes and honours adding and removing an override", async () => {
     const app = await serve({
+      "components/motion.tsx": 'export { Step } from "@react-decks/motion";',
       "slides/01-first.mdx": "<Step at={1} />\n\n<Step at={3} until={4} />",
     });
     expect(await app.get(virtual("manifest"))).toContain('"clicks":4');
@@ -444,7 +457,10 @@ describe("dev changes", () => {
     );
   });
   it("retains the last total through a parse error, a new manifest request and a repair", async () => {
-    const app = await serve({ "slides/01-first.mdx": "<Step at={3} />" });
+    const app = await serve({
+      "components/motion.tsx": 'export { Step } from "@react-decks/motion";',
+      "slides/01-first.mdx": "<Step at={3} />",
+    });
     expect(await app.get(virtual("manifest"))).toContain('"clicks":3');
     await app.get("/slides/01-first.mdx");
     const start = app.messages.length;

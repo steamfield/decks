@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import mdx from "@mdx-js/rollup";
 import react from "@vitejs/plugin-react";
 import remarkFrontmatter from "remark-frontmatter";
-import { mergeConfig, normalizePath, type Plugin } from "vite";
+import { mergeConfig, normalizePath, type Plugin, type ViteDevServer } from "vite";
 import { componentsModule } from "./components";
 import { loadDeck, type ResolvedDeck } from "./config";
 import { deckHtml, entryModule } from "./entry";
@@ -23,7 +23,23 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
   const htmlFile = normalizePath(join(deck.dir, "index.html"));
   const configFile = normalizePath(join(deck.dir, "deck.config.ts"));
   let metadata = new Map<string, string>();
+  let componentsCode: string | undefined;
   const totals = new Map<string, number>();
+  const reload = (server: ViteDevServer, name: string) => {
+    changedModules.add(name);
+    if (reloadTimer) clearTimeout(reloadTimer);
+    // A rename can deliver its add and unlink as separate watcher events.
+    reloadTimer = setTimeout(() => {
+      const graph = server.environments.client?.moduleGraph;
+      changedModules.add("notes");
+      for (const name of changedModules) {
+        const module = graph?.getModuleById(`\0${prefix}${name}`);
+        if (module) graph?.invalidateModule(module);
+      }
+      changedModules.clear();
+      server.ws.send({ type: "full-reload" });
+    }, 100);
+  };
   const plugin: Plugin = {
     name: "react-decks",
     enforce: "pre",
@@ -48,12 +64,13 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
     async load(id) {
       if (normalizePath(id) === htmlFile) return deckHtml(current, false);
       if (id === `\0${prefix}entry`) return entryModule(current);
-      if (id === `\0${prefix}components`) return componentsModule(deck.dir);
+      if (id === `\0${prefix}components`) return (await componentsModule(deck.dir)).code;
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;
       const scanned = await scanSlidesWithCounts(current, totals);
       const slides = scanned.slides;
       if (id === `\0${prefix}manifest`) {
         metadata = scanned.metadata;
+        componentsCode = scanned.componentsCode;
         const loaders = slides
           .map(
             ({ meta }) =>
@@ -73,31 +90,17 @@ export const slides = Object.fromEntries([${loaders}]);`;
       return `export const notes = Object.fromEntries(${JSON.stringify(notes)});`;
     },
     async configureServer(server) {
-      const invalidate = (name: string) => {
-        const graph = server.environments.client?.moduleGraph;
-        const module = graph?.getModuleById(`\0${prefix}${name}`);
-        if (module) graph?.invalidateModule(module);
-      };
-      const reload = (name: string) => {
-        changedModules.add(name);
-        if (reloadTimer) clearTimeout(reloadTimer);
-        // A rename can deliver its add and unlink as separate watcher events.
-        reloadTimer = setTimeout(() => {
-          for (const name of changedModules) invalidate(name);
-          changedModules.clear();
-          invalidate("notes");
-          server.ws.send({ type: "full-reload" });
-        }, 100);
-      };
       const structural = (path: string) => {
         const file = normalizePath(path);
         if (normalizePath(dirname(file)) === `${deckDir}/slides` && file.endsWith(".mdx")) {
           metadata.delete(file.slice(deckDir.length + 1));
           totals.delete(file.slice(deckDir.length + 1));
-          reload("manifest");
+          reload(server, "manifest");
         }
-        if (normalizePath(dirname(file)) === `${deckDir}/components` && file.endsWith(".tsx"))
-          reload("components");
+        if (normalizePath(dirname(file)) === `${deckDir}/components` && file.endsWith(".tsx")) {
+          reload(server, "components");
+          reload(server, "manifest");
+        }
       };
       server.watcher.on("add", structural);
       server.watcher.on("unlink", structural);
@@ -139,7 +142,9 @@ export const slides = Object.fromEntries([${loaders}]);`;
           next(error);
         }
       });
-      metadata = (await scanSlidesWithCounts(current, totals)).metadata;
+      const scanned = await scanSlidesWithCounts(current, totals);
+      metadata = scanned.metadata;
+      componentsCode = scanned.componentsCode;
       configChanged(configFile);
     },
     closeBundle() {
@@ -150,8 +155,24 @@ export const slides = Object.fromEntries([${loaders}]);`;
       if (this.environment.name !== "client") return;
       const file = normalizePath(context.file);
       const parent = normalizePath(dirname(file));
-      if (parent === `${deckDir}/components` && file.endsWith(".tsx") && context.type === "update")
-        await componentsModule(deck.dir);
+      if (
+        parent === `${deckDir}/components` &&
+        file.endsWith(".tsx") &&
+        context.type === "update"
+      ) {
+        const scanned = await scanSlidesWithCounts(current, totals);
+        if (
+          scanned.componentsCode === componentsCode &&
+          Array.from(scanned.metadata).every(([file, value]) => metadata.get(file) === value)
+        )
+          return;
+        componentsCode = scanned.componentsCode;
+        metadata = scanned.metadata;
+        // A re-export edit can change how every slide's JSX names resolve.
+        reload(context.server, "components");
+        reload(context.server, "manifest");
+        return [];
+      }
       if (
         context.type !== "update" &&
         ((parent === `${deckDir}/slides` && file.endsWith(".mdx")) ||
@@ -165,6 +186,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
         await context.read(),
         file,
         totals.get(key),
+        (await componentsModule(deck.dir)).motionNames,
       );
       const previous = metadata.get(key);
       metadata.set(key, next);

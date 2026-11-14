@@ -10,7 +10,7 @@ export async function fixture(
   const dir = await mkdtemp(join(root, "node-"));
   cleanup(() => rm(dir, { recursive: true, force: true }));
   await mkdir(join(dir, "node_modules/@react-decks"), { recursive: true });
-  for (const name of ["node", "runtime"])
+  for (const name of ["node", "runtime", "motion"])
     await symlink(resolve("packages", name), join(dir, "node_modules/@react-decks", name), "dir");
   const put = async (file: string, text: string) => {
     await mkdir(dirname(join(dir, file)), { recursive: true });
