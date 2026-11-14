@@ -60,3 +60,34 @@ export async function resolveDeck(value: string) {
     );
   return { deck: await loadDeck(directory, basename(resolve(directory))), defaults };
 }
+
+/** Every registered deck with its directory, and the registry defaults, from ./decks.json. */
+export async function readRegistry(): Promise<{
+  path: string;
+  defaults: z.infer<typeof defaultsSchema>;
+  decks: { alias: string; dir: string }[];
+}> {
+  const path = resolve("decks.json");
+  let input: unknown = {};
+  try {
+    if (existsSync(path)) input = JSON.parse(await readFile(path, "utf8"));
+    const registry = registrySchema.parse(input);
+    input = registry._config ?? {};
+    const defaults = defaultsSchema.parse(input);
+    const decks = Object.entries(registry)
+      .filter(([alias]) => !alias.startsWith("_"))
+      .map(([alias, entry]) => {
+        input = entry;
+        return { alias, dir: entrySchema.parse(entry).dir };
+      });
+    return { path, defaults, decks };
+  } catch (cause) {
+    if (cause instanceof z.ZodError) throw validationError(path, cause.issues, input);
+    throw new DeckError(
+      `malformed decks.json: ${cause instanceof Error ? cause.message : String(cause)}`,
+      path,
+      undefined,
+      { cause },
+    );
+  }
+}
