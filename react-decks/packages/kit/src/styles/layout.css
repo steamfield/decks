@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   padding: 4.4cqh 5.7cqw;
+  padding-bottom: max(4.4cqh, var(--deck-credit-space, 0px));
   background: var(--od-canvas);
   color: var(--od-text);
   font-feature-settings: "cv01", "ss03";
@@ -18,6 +19,7 @@
 .od-slide.is-close {
   justify-content: space-between;
   padding: 8.1cqh 5.7cqw;
+  padding-bottom: max(8.1cqh, var(--deck-credit-space, 0px));
 }
 .od-slide.is-cover {
   background:
@@ -76,7 +78,7 @@
 /* ── Chart slide ── */
 .od-slide.is-chart {
   padding-top: 3.4cqh;
-  padding-bottom: 3cqh;
+  padding-bottom: max(3cqh, var(--deck-credit-space, 0px));
 }
 .od-chart-host {
   flex: 1;
@@ -108,7 +110,7 @@
 /* ── Timeline ── */
 .od-slide.is-timeline {
   padding-top: 3.6cqh;
-  padding-bottom: 3cqh;
+  padding-bottom: max(3cqh, var(--deck-credit-space, 0px));
 }
 
 /* ── Section divider slide ── */
@@ -116,6 +118,7 @@
   justify-content: center;
   align-items: flex-start;
   padding: 8cqh 8cqw;
+  padding-bottom: max(8cqh, var(--deck-credit-space, 0px));
   background:
     radial-gradient(
       40cqw 40cqh at 80% 50%,
@@ -158,6 +161,7 @@
   align-items: center;
   gap: 5cqw;
   padding: 8cqh 8cqw;
+  padding-bottom: max(8cqh, var(--deck-credit-space, 0px));
   background:
     radial-gradient(46cqw 52cqh at 78% 50%, rgba(var(--od-glow-rose-rgb), 0.07), transparent 62%),
     var(--od-canvas);

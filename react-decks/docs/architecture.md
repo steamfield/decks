@@ -1550,7 +1550,12 @@ mid-transition, so the below layer moves with its slide like any background.
 
 The credit is a third layer that is on by default: with no `layers/credit.tsx`, every slide in
 every context shows "Created with Decks" (the mark and a link to the Decks site) in its lower
-right corner, at `right: 110px; bottom: 14px` in canvas px, in the slide's own text color.
+right corner, in the slide's own text color. A slide with a credit carries `data-deck-credit`
+and sets `--deck-credit-space` (64px; 0px without a credit): a band along the bottom edge that
+the credit is centred in and content stays out of. The framework's layouts pad their bottom by
+at least the band, the kit's `.od-slide` variants do the same, and the kit's 16:9 story frame
+is fitted and centred in the height above the band, so no stage can reach the credit. A deck's
+own full-bleed content reads the variable the same way.
 Its element carries `data-deck-layer="credit"` and sits after the content and before the above
 layer, so an above layer covers it. `credit: false` in `deck.config.ts` removes it, own file
 or not; `layers/credit.tsx` replaces it. Frontmatter `layers` does not affect it.

@@ -69,6 +69,21 @@ const page = await browser.newPage({
   viewport: { width: 1920, height: 1080 },
   deviceScaleFactor: 1,
 });
+// The Slidev baseline has no credit, so compare without it and without the band it reserves.
+await page.addInitScript(() => {
+  const style = document.createElement("style");
+  style.textContent =
+    '[data-deck-slide] { --deck-credit-space: 0px !important; } [data-deck-layer="credit"] { display: none; }';
+  // An init script runs before the document has a root element.
+  const add = () => document.documentElement?.append(style);
+  if (document.documentElement) add();
+  else
+    new MutationObserver((_records, observer) => {
+      if (!document.documentElement) return;
+      observer.disconnect();
+      add();
+    }).observe(document, { childList: true });
+});
 const errors = [];
 page.on("console", (message) => message.type() === "error" && errors.push(message.text()));
 page.on("pageerror", (error) => errors.push(String(error)));

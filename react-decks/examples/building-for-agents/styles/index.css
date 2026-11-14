@@ -488,8 +488,10 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: max(100cqw, 177.7778cqh);
-  height: max(100cqh, 56.25cqw);
+  /* The frame sits above the credit's band, so the scene reaches that much further down. */
+  --sf-night-h: calc(100cqh + var(--deck-credit-space, 0px));
+  width: max(100cqw, var(--sf-night-h) * 16 / 9);
+  height: max(var(--sf-night-h), 56.25cqw);
   transform: translate(-50%, -50%);
 }
 .od-slide.is-story .sf-night-canvas {

@@ -65,6 +65,7 @@ export function SlideHost({
       data-deck-slide={no}
       data-deck-context={context}
       data-deck-active={active ? "" : undefined}
+      data-deck-credit={Credit ? "" : undefined}
       hidden={context === "slide" && !active}
     >
       <SlideContext value={value}>

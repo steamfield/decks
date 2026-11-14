@@ -28,8 +28,11 @@
      ink: fullscreen on a 16:10 laptop cut everything past viewBox x=1824,
      which is where this deck draws. Both layers live in this frame instead, so
      nothing is ever cropped and ink lands on overlay at any aspect ratio. */
-  --od-fw: min(100cqw, 177.7778cqh);
-  --od-fh: min(100cqh, 56.25cqw);
+  /* The frame fits above the credit's band (0px on a deck with no credit), so nothing in a
+     stage can reach the credit. */
+  --od-avail-h: calc(100cqh - var(--deck-credit-space, 0px));
+  --od-fw: min(100cqw, var(--od-avail-h) * 16 / 9);
+  --od-fh: min(var(--od-avail-h), 56.25cqw);
 
   /* One percent of the frame, for everything inside it. These replace cqw and
      cqh: a viewport unit inside the frame drifts from the ink the moment the
@@ -70,7 +73,7 @@
 .od-slide.is-story .od-story-frame {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: calc(var(--od-avail-h) / 2);
   width: var(--od-fw);
   height: var(--od-fh);
   transform: translate(-50%, -50%);
@@ -80,7 +83,7 @@
    on ultrawide displays. Type stays tied to the fitted frame height so it
    cannot crowd the vertical layout. Fixed-coordinate SVG scenes opt out. */
 .od-slide.is-story.is-fluid {
-  --od-fw: min(100cqw, 240cqh);
+  --od-fw: min(100cqw, var(--od-avail-h) * 2.4);
   --sw: calc(min(var(--od-fw), var(--od-fh) * 16 / 9) / 100);
   --lw: calc(var(--od-fw) / 100);
 }

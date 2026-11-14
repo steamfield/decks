@@ -63,16 +63,36 @@ export default function Above() {
     };
   }, [on]);
 
-  // The window in canvas px. It is the frame at 16:9 and larger on one axis otherwise.
-  const [size, setSize] = useState<{ width: number; height: number }>(FRAME);
+  // Where the 16:9 picture sits in the window, in canvas px. The picture fills a 16:9 window
+  // with no credit; otherwise the window is larger on one axis and the picture is centred
+  // above the credit's band.
+  const [box, setBox] = useState({
+    width: FRAME.width as number,
+    height: FRAME.height as number,
+    left: 0,
+    top: 0,
+    windowWidth: FRAME.width as number,
+    windowHeight: FRAME.height as number,
+  });
   useLayoutEffect(() => {
     const el = host.current;
     if (!on || !el || scale <= 0) return;
-    const measure = () =>
-      setSize({
-        width: Math.max(FRAME.width, el.offsetWidth / scale),
-        height: Math.max(FRAME.height, el.offsetHeight / scale),
+    const measure = () => {
+      const windowWidth = el.offsetWidth / scale;
+      const windowHeight = el.offsetHeight / scale;
+      const band = Number.parseFloat(getComputedStyle(el).getPropertyValue("--deck-credit-space"));
+      const room = windowHeight - (Number.isFinite(band) ? band : 0);
+      const width = Math.min(windowWidth, (room * FRAME.width) / FRAME.height);
+      const height = (width * FRAME.height) / FRAME.width;
+      setBox({
+        width,
+        height,
+        left: (windowWidth - width) / 2,
+        top: (room - height) / 2,
+        windowWidth,
+        windowHeight,
       });
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
@@ -80,13 +100,9 @@ export default function Above() {
   }, [on, scale]);
 
   if (!on || scale <= 0) return null;
-  // The warp covers the window, not only the frame, so a scene that bleeds past the frame is
-  // not cut off at the frame's edge.
-  const bleedX = (size.width - FRAME.width) / 2;
-  const bleedY = (size.height - FRAME.height) / 2;
   const style: CSSProperties & Record<`--${string}`, string> = {
-    "--od-fw": `${FRAME.width * scale}px`,
-    "--od-fh": `${FRAME.height * scale}px`,
+    "--od-fw": `${box.width * scale}px`,
+    "--od-fh": `${box.height * scale}px`,
     "--sf-tube-scale": String(scale),
     "--sf-tube-counter-scale": String(1 / scale),
   };
@@ -99,27 +115,29 @@ export default function Above() {
     >
       <svg className="sf-tube-defs" width="0" height="0" aria-hidden="true">
         <defs>
+          {/* The warp covers the window, not only the picture, so a scene that bleeds past the
+              picture is not cut off at its edge. The filter's box is the picture's. */}
           <filter
             id={id}
-            x={-bleedX / FRAME.width}
-            y={-bleedY / FRAME.height}
-            width={size.width / FRAME.width}
-            height={size.height / FRAME.height}
+            x={-box.left / box.width}
+            y={-box.top / box.height}
+            width={box.windowWidth / box.width}
+            height={box.windowHeight / box.height}
             colorInterpolationFilters="sRGB"
           >
             <feImage
               href={map || undefined}
-              x={-bleedX}
-              y={-bleedY}
-              width={size.width}
-              height={size.height}
+              x={-box.left}
+              y={-box.top}
+              width={box.windowWidth}
+              height={box.windowHeight}
               preserveAspectRatio="none"
               result="map"
             />
             <feDisplacementMap
               in="SourceGraphic"
               in2="map"
-              scale={warpScale(size.width)}
+              scale={warpScale(box.windowWidth)}
               xChannelSelector="R"
               yChannelSelector="G"
             />

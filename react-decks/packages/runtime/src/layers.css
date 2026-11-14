@@ -17,18 +17,29 @@
     z-index: 1;
   }
 
-  /* Canvas px, as the Slidev addon placed it: under a story slide's source line. */
+  /* A slide with a credit keeps a band along its bottom edge free for it. The credit is centred
+     in the band; layouts and the kit's slides keep their content above it by reading
+     --deck-credit-space, which is 0px on a deck that turned the credit off. */
+  [data-deck-slide] {
+    --deck-credit-space: 0px;
+  }
+
+  [data-deck-slide][data-deck-credit] {
+    --deck-credit-space: 64px;
+  }
+
   .rd-credit {
     position: absolute;
     right: 110px;
-    bottom: 14px;
+    bottom: 0;
+    height: var(--deck-credit-space);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: calc(15px * var(--deck-text-scale, 1));
+    gap: 10px;
+    font-size: calc(22px * var(--deck-text-scale, 1));
     line-height: 1;
     color: inherit;
-    opacity: 0.5;
+    opacity: 0.6;
     text-decoration: none;
     pointer-events: auto;
   }
@@ -38,8 +49,8 @@
   }
 
   .rd-credit svg {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     fill: currentColor;
   }
 

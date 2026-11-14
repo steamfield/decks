@@ -6,9 +6,9 @@ import { dev, loadDeck } from "@react-decks/node";
 export const test = base.extend<object, { kitURL: string }>({
   kitURL: [
     async ({ browserName: _browserName }, use) => {
-      const server = await dev(await loadDeck(resolve("examples/tides-slide"), "tides-slide"), {
-        port: 0,
-      });
+      // The Slidev baselines these specs compare against have no credit and no band for it.
+      const deck = await loadDeck(resolve("examples/tides-slide"), "tides-slide");
+      const server = await dev({ ...deck, config: { ...deck.config, credit: false } }, { port: 0 });
       try {
         await use(server.url);
       } finally {

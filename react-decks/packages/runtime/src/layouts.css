@@ -9,6 +9,8 @@
     inset: 0;
     box-sizing: border-box;
     padding: var(--deck-pad-y) var(--deck-pad-x);
+    /* Never less than the credit's band. */
+    padding-bottom: max(var(--deck-pad-y), var(--deck-credit-space, 0px));
     display: flex;
     flex-direction: column;
     gap: var(--deck-gap);
@@ -47,6 +49,7 @@
     grid-row: 1;
     min-width: 0;
     padding: var(--deck-pad-y) var(--deck-pad-x);
+    padding-bottom: max(var(--deck-pad-y), var(--deck-credit-space, 0px));
     display: flex;
     flex-direction: column;
     justify-content: center;
