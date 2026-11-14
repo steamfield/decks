@@ -1,5 +1,5 @@
 import { gsap, motionMode } from "@react-decks/motion";
-import { useSlide } from "@react-decks/runtime";
+import { registerCaptionProvider, useSlide } from "@react-decks/runtime";
 import {
   type CSSProperties,
   type ReactNode,
@@ -29,6 +29,18 @@ export function StoryCard({
   style?: CSSProperties;
 }) {
   const { isActive, renderContext } = useSlide();
+  const captionRoot = useRef<HTMLDivElement>(null);
+  // Root styles can change caption visibility without changing its text.
+  useLayoutEffect(() => {
+    if (isActive && renderContext === "slide")
+      return registerCaptionProvider(() => {
+        const root = captionRoot.current;
+        if (!root) return;
+        const { display, visibility } = getComputedStyle(root);
+        if (display === "none" || visibility === "hidden" || visibility === "collapse") return;
+        return { lead, body };
+      });
+  });
   const box = useRef<HTMLDivElement>(null);
   const incoming = useRef<HTMLDivElement>(null);
   const outgoing = useRef<HTMLDivElement>(null);
@@ -95,6 +107,7 @@ export function StoryCard({
   );
   return (
     <div
+      ref={captionRoot}
       className={`od-story-card anchor-${anchor} accent-${hue}${className ? ` ${className}` : ""}`}
       style={style}
       data-lead={lead}

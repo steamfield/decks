@@ -2,6 +2,8 @@
 
 export { createBroadcastTransport } from "./broadcast-transport";
 export { Deck } from "./deck";
+export { registerCaptionProvider } from "./embed-caption";
+export { routeEmbedNavigation } from "./embed-navigation";
 export {
   type DeckApi,
   type RenderContext,

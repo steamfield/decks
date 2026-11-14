@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Embed host</title>
+<iframe title="Deck" width="1280" height="720"></iframe>
+<script>
+  window.embedMessages = [];
+  const frame = document.querySelector("iframe");
+  window.addEventListener("message", (event) => {
+    if (event.source === frame.contentWindow && event.data?.type?.startsWith("decks:"))
+      window.embedMessages.push(event.data);
+  });
+  window.sendEmbed = (command) => frame.contentWindow.postMessage(command, new URL(frame.src).origin);
+  frame.src = new URLSearchParams(location.search).get("src") ?? "./index.html?decks-bridge=1#/2";
+</script>
