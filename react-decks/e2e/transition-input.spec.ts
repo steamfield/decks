@@ -2,6 +2,70 @@ import { expect } from "@playwright/test";
 
 import { keys, open, settle, test } from "./fixtures/transitions";
 
+declare global {
+  interface Window {
+    e2eAnswers: number;
+  }
+}
+
+test("A newcomer answered during a pending transition receives the logical position", async ({
+  page,
+  context,
+}) => {
+  await open(page);
+  const responder = await context.newPage();
+  await open(responder);
+  const newcomer = await context.newPage();
+  // A long CSS animation starts after the callback; only gating it holds the old snapshot.
+  await page.evaluate(() => {
+    const start = document.startViewTransition.bind(document);
+    document.startViewTransition = (update) =>
+      start(async () => {
+        await new Promise<void>((resolve) =>
+          window.addEventListener("release-snapshot", () => resolve(), { once: true }),
+        );
+        if (typeof update === "function") await update();
+      });
+  });
+  await keys(page, ["ArrowRight"]);
+  await expect(responder).toHaveURL(/#\/18$/);
+  await responder.evaluate(() => {
+    const post = BroadcastChannel.prototype.postMessage;
+    window.e2eAnswers = 0;
+    BroadcastChannel.prototype.postMessage = function (message: unknown) {
+      if (message && typeof message === "object" && "type" in message && message.type === "state")
+        window.e2eAnswers++;
+      post.call(this, message);
+    };
+  });
+  // Deliver the responder's answer before the navigating window's delayed answer.
+  await page.evaluate(() => {
+    const post = BroadcastChannel.prototype.postMessage;
+    const held: { channel: BroadcastChannel; message: unknown }[] = [];
+    BroadcastChannel.prototype.postMessage = function (message: unknown) {
+      held.push({ channel: this, message });
+    };
+    window.addEventListener(
+      "release-answers",
+      () => {
+        BroadcastChannel.prototype.postMessage = post;
+        for (const { channel, message } of held) post.call(channel, message);
+      },
+      { once: true },
+    );
+  });
+  await newcomer.goto(new URL("/#/1", page.url()).href);
+  await expect(newcomer).toHaveURL(/#\/18$/);
+  await expect.poll(() => responder.evaluate(() => window.e2eAnswers)).toBeGreaterThan(0);
+  await expect(page.getByRole("heading", { name: "Keep moving." })).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event("release-answers")));
+  await page.evaluate(() => window.dispatchEvent(new Event("release-snapshot")));
+  await settle(page);
+  await settle(newcomer);
+  await settle(responder);
+  await expect(newcomer.getByRole("heading", { name: "Change the scale." })).toBeVisible();
+});
+
 test("Two arrows in one frame cross two boundaries with one transition", async ({ page }) => {
   await open(page);
   await keys(page, ["ArrowRight", "ArrowRight"]);

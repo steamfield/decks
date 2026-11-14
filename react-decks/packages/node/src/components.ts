@@ -10,9 +10,20 @@ export async function componentsModule(dir: string) {
   const components = new Map<string, { file: string; value: string }>();
   const motionNames = new Map(Array.from(stepNames, (name) => [name, name]));
   for (const [index, file] of files.entries()) {
-    const parsed = parseSync(file, await readFile(join(dir, file), "utf8"));
-    if (parsed.errors.length)
-      throw new DeckError(parsed.errors[0]?.message ?? "cannot parse component.", join(dir, file));
+    const source = await readFile(join(dir, file), "utf8");
+    const parsed = parseSync(file, source);
+    const error = parsed.errors[0];
+    if (error) {
+      const label = error.labels[0];
+      const lines = label
+        ? source.slice(0, label.start).split(/\r\n|[\n\r\u2028\u2029]/)
+        : undefined;
+      throw new DeckError(
+        `${error.message}${/[.!?]$/.test(error.message) ? "" : "."} Check the component syntax.`,
+        join(dir, file),
+        lines ? { line: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 } : undefined,
+      );
+    }
     for (const declaration of parsed.module.staticExports) {
       for (const entry of declaration.entries) {
         if (entry.isType) continue;

@@ -124,13 +124,16 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
     throw new DeckError(
       files.length
         ? `every slide in ${displayPath(deck.dir)}/slides has hide: true.`
-        : `no slides/*.mdx files in ${displayPath(deck.dir)}.`,
+        : `no slides/*.mdx files in ${displayPath(deck.dir) === "." ? "the current directory" : displayPath(deck.dir)}.`,
     );
   return { slides, metadata, componentsCode, motionNames, componentNames };
 }
 
 export function buildManifest(deck: ResolvedDeck, slides: readonly ScannedSlide[]): DeckManifest {
-  if (!slides.length) throw new DeckError(`no slides/*.mdx files in ${displayPath(deck.dir)}.`);
+  if (!slides.length)
+    throw new DeckError(
+      `no slides/*.mdx files in ${displayPath(deck.dir) === "." ? "the current directory" : displayPath(deck.dir)}.`,
+    );
   return assertManifest({
     name: deck.name,
     title: deck.config.title,

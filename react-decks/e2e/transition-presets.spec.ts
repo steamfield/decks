@@ -2,6 +2,19 @@ import { expect } from "@playwright/test";
 
 import { keys, open, settle, test } from "./fixtures/transitions";
 
+test("Attribute logs preserve two changes delivered in one mutation batch", async ({ page }) => {
+  await open(page);
+  await page.evaluate(() => {
+    const html = document.documentElement;
+    html.setAttribute("data-deck-transition", "fade");
+    html.setAttribute("data-deck-nav", "forward");
+    html.setAttribute("data-deck-transition", "zoom");
+    html.setAttribute("data-deck-nav", "backward");
+  });
+  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toEqual(["fade", "zoom"]);
+  expect(await page.evaluate(() => window.e2eNavAttributes)).toEqual(["forward", "backward"]);
+});
+
 test("A fade boundary publishes its URL immediately and removes its forward attributes before settling", async ({
   page,
 }) => {

@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { access, readdir, readFile, realpath, stat } from "node:fs/promises";
+import { access, lstat, readdir, readFile, realpath, stat } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import getPort, { portNumbers } from "get-port";
@@ -107,6 +107,19 @@ async function guardOutput(deck: ResolvedDeck, value: string) {
   const out = resolve(value);
   const label = displayPath(out);
   try {
+    const link = await lstat(out).catch((cause: unknown) => {
+      if (cause instanceof Error && "code" in cause && cause.code === "ENOENT") return undefined;
+      throw cause;
+    });
+    if (link?.isSymbolicLink()) {
+      await realpath(out).catch((cause: unknown) => {
+        if (cause instanceof Error && "code" in cause && cause.code === "ENOENT")
+          throw new DeckError(
+            `--out ${label} is a dangling symlink. Remove it or choose a directory.`,
+          );
+        throw cause;
+      });
+    }
     const canonical = await canonicalPath(out);
     for (const protectedDir of [await realpath(deck.dir), await realpath(process.cwd())]) {
       const inside = relative(canonical, protectedDir);
@@ -137,6 +150,8 @@ async function guardOutput(deck: ResolvedDeck, value: string) {
         );
     }
   } catch (cause) {
+    if (cause instanceof Error && "code" in cause && cause.code === "ENOTDIR")
+      throw new DeckError(`--out ${label} is a file. Choose a directory.`);
     if (
       cause instanceof Error &&
       "code" in cause &&

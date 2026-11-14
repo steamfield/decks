@@ -36,6 +36,17 @@ describe("boundary checker rules", () => {
     ]);
   });
 
+  it.each([
+    ['export * from "@react-decks/kit";', "@react-decks/kit"],
+    ['export {} from "../../kit/src/index";', "../../kit/src/index"],
+    ['type X = typeof import("@react-decks/kit");', "@react-decks/kit"],
+  ])("rejects forbidden module requests in %s", (source, specifier) => {
+    const file = "packages/runtime/src/probe.ts";
+    const errors = checkSource("runtime", file, `// first line\n${source}`);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain(`${file}:2: ${specifier}:`);
+  });
+
   it("allows TypeScript sources and rejects other extensions", () => {
     expect(checkSource("core", "packages/core/src/probe.ts", "export {};")).toEqual([]);
     expect(checkSource("core", "packages/core/src/probe.js", "export {};")).toEqual([
@@ -114,17 +125,20 @@ describe("boundary checker rules", () => {
     }
   });
 
-  it("the core type checker permits timers and rejects DOM globals", () => {
-    for (const [source, status] of [
-      ["const timer = setTimeout(() => {}, 0); clearTimeout(timer);", 0],
-      ['globalThis["document"].title;', 1],
-    ] as const) {
-      const result = typecheckSource("core", "probe.ts", source);
-      if (status === 0) expect(result.status, result.output).toBe(0);
-      else {
-        expect(result.status, result.output).not.toBe(0);
-        expect(result.output).toContain("document");
+  it.each(["core", "node"])(
+    "the %s type checker permits timers and rejects DOM globals",
+    (owner) => {
+      for (const [source, status] of [
+        ["const timer = setTimeout(() => {}, 0); clearTimeout(timer);", 0],
+        ['globalThis["document"].title;', 1],
+      ] as const) {
+        const result = typecheckSource(owner, "probe.ts", source);
+        if (status === 0) expect(result.status, result.output).toBe(0);
+        else {
+          expect(result.status, result.output).not.toBe(0);
+          expect(result.output).toContain("document");
+        }
       }
-    }
-  });
+    },
+  );
 });

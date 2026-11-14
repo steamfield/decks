@@ -41,6 +41,23 @@ it("refuses an output file without deleting it", async () => {
   expect(await readFile(join(dir, "site"), "utf8")).toBe("Keep this file");
 });
 
+it.each(["canary.txt/sub", "dangling"])(
+  "explains unusable output %s without a stack",
+  async (out) => {
+    const { dir, put } = await fixture(onTestFinished);
+    await put("canary.txt", "Keep this file");
+    if (out === "dangling") await symlink("missing-target", join(dir, out));
+    const process = cli(dir, ["build", ".", "--out", out]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toBe(
+      out === "dangling"
+        ? "decks build: --out dangling is a dangling symlink. Remove it or choose a directory.\n"
+        : "decks build: --out canary.txt/sub is a file. Choose a directory.\n",
+    );
+    expect(await readFile(join(dir, "canary.txt"), "utf8")).toBe("Keep this file");
+  },
+);
+
 it("explains an unwritable output directory", async () => {
   const { dir, put } = await fixture(onTestFinished);
   await put("locked/keep.txt", "Must survive");

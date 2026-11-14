@@ -66,14 +66,20 @@ export const test = motionTest.extend({
       window.e2eTransitionAttributes = [];
       window.e2eNavAttributes = [];
       new MutationObserver((records) => {
+        const changed = new Set<string>();
         for (const record of records) {
           if (record.target !== document.documentElement) continue;
           const name = record.attributeName;
           if (!name) continue;
           const log =
             name === "data-deck-nav" ? window.e2eNavAttributes : window.e2eTransitionAttributes;
-          const current = document.documentElement.getAttribute(name);
           if (record.oldValue) log.push(record.oldValue);
+          changed.add(name);
+        }
+        for (const name of changed) {
+          const log =
+            name === "data-deck-nav" ? window.e2eNavAttributes : window.e2eTransitionAttributes;
+          const current = document.documentElement.getAttribute(name);
           if (current) log.push(current);
         }
       }).observe(document, {
