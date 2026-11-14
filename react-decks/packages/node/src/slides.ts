@@ -3,6 +3,7 @@ import { basename, join } from "node:path";
 import { assertManifest, type DeckManifest, type SlideMeta } from "@react-decks/core";
 import matter from "gray-matter";
 import { glob } from "tinyglobby";
+import type { PluggableList } from "unified";
 import { z } from "zod";
 import { countClicks } from "./clicks";
 import { componentsModule } from "./components";
@@ -30,13 +31,14 @@ export function readSlide(
   file: string,
   previous?: number,
   motionNames?: ReadonlyMap<string, string>,
+  remarkPlugins?: PluggableList,
 ) {
   try {
     const { data, content } = matter(source);
     const frontmatter = frontmatterSchema.parse(data);
     const clicks = frontmatter.hide
       ? 0
-      : (frontmatter.clicks ?? countClicks(content, file, previous, motionNames));
+      : (frontmatter.clicks ?? countClicks(content, file, previous, motionNames, remarkPlugins));
     return { frontmatter, clicks, fingerprint: JSON.stringify([data, clicks]) };
   } catch (cause) {
     if (cause instanceof Error && cause.message.startsWith(`${file}:`)) throw cause;
@@ -59,6 +61,7 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
         join(deck.dir, file),
         totals.get(file),
         motionNames,
+        deck.config.mdx?.remarkPlugins,
       );
       metadata.set(file, fingerprint);
       totals.set(file, clicks);

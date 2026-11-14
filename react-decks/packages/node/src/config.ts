@@ -1,5 +1,6 @@
 import { basename, resolve } from "node:path";
 import { createJiti } from "jiti";
+import type { PluggableList } from "unified";
 import type { UserConfig } from "vite";
 import { z } from "zod";
 
@@ -11,6 +12,11 @@ export interface DeckConfig {
   readonly transition?: string;
   readonly htmlAttrs?: Readonly<Record<string, string>>;
   readonly vite?: UserConfig;
+  /** remark and rehype plugins added to the slide compiler. */
+  readonly mdx?: {
+    readonly remarkPlugins?: PluggableList;
+    readonly rehypePlugins?: PluggableList;
+  };
 }
 
 export interface ResolvedDeck {
@@ -38,6 +44,16 @@ const schema = z.strictObject({
     .custom<UserConfig>(
       (value) => typeof value === "object" && value !== null && !Array.isArray(value),
     )
+    .optional(),
+  mdx: z
+    .strictObject({
+      remarkPlugins: z
+        .custom<PluggableList>(Array.isArray, "mdx.remarkPlugins must be an array")
+        .optional(),
+      rehypePlugins: z
+        .custom<PluggableList>(Array.isArray, "mdx.rehypePlugins must be an array")
+        .optional(),
+    })
     .optional(),
 });
 

@@ -1,6 +1,6 @@
 import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
-import { unified } from "unified";
+import { type PluggableList, unified } from "unified";
 import { parseCodeOptions } from "./code-options";
 
 export const stepNames = new Set([
@@ -94,10 +94,11 @@ export function countClicks(
   file: string,
   previous = 0,
   motionNames: ReadonlyMap<string, string> = new Map(Array.from(stepNames, (name) => [name, name])),
+  remarkPlugins: PluggableList = [],
 ): number {
   let tree: ReturnType<typeof parser.parse>;
   try {
-    tree = parser.parse(source);
+    tree = parser().use(remarkPlugins).parse(source);
   } catch {
     return previous;
   }
