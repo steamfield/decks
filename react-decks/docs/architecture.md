@@ -1483,13 +1483,16 @@ export interface DeckConfig {
 ```
 
 A deck adds markdown extensions (math, diagrams, its own syntax) here. The deck's remark
-plugins run after the framework's (frontmatter, notes removal); its rehype plugins run after
-the framework's code highlighting. `mdx` must be an object whose two keys, when present, are
+plugins run after the framework's (frontmatter, notes removal). Its rehype plugins run
+before the framework's code highlighting, so a plugin can claim a code element first (math,
+a diagram) and the highlighter handles what is still a code block. `mdx` must be an object whose two keys, when present, are
 arrays; anything else is a config error naming the key. A plugin that throws while compiling
 a slide is reported as that slide's compile error. Editing `deck.config.ts` restarts the dev
-server, as for any config change. The click count (section 6.2) parses slides without the
-deck's plugins: a plugin that generates step components does not add clicks, and such a
-slide sets `clicks:`.
+server, as for any config change. Anything that parses a slide outside the
+compiler (the click count of section 6.2, notes extraction) parses with the deck's remark
+plugins attached, so their syntax extensions apply and a slide with math still parses. Their
+transforms are not run there: a plugin that generates step components does not add clicks,
+and such a slide sets `clicks:`.
 
 | Situation | Outcome |
 | --- | --- |
