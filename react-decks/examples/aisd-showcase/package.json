@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@opendata-ai/openchart-react": "9.0.0",
     "@steamfield/decks": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"

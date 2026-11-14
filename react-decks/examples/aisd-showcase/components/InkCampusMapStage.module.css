@@ -1,0 +1,65 @@
+.map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--od-bleed-x));
+  right: calc(-1 * var(--od-bleed-x));
+  overflow: hidden;
+}
+.map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom right,
+    rgb(0 0 0) 0%,
+    rgb(0 0 0 / 0.9) 18%,
+    rgb(0 0 0 / 0.68) 33%,
+    rgb(0 0 0 / 0.4) 48%,
+    rgb(0 0 0 / 0.15) 62%,
+    rgb(0 0 0 / 0) 78%
+  );
+}
+.camera {
+  position: absolute;
+  pointer-events: auto;
+  top: calc(-27.8 * var(--sh));
+  left: calc(var(--od-bleed-x) - 3.3 * var(--sw));
+  width: calc(140 * var(--sw));
+}
+.head {
+  position: absolute;
+  top: calc(6.2 * var(--sh));
+  left: calc(5.7 * var(--sw));
+}
+.stage .head :global(.od-story-head) {
+  position: static;
+}
+.legendSwap {
+  position: relative;
+  margin: calc(0.75 * var(--sw)) 0 0;
+}
+.legend {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(0.916667 * var(--sw));
+  padding: 0;
+  list-style: none;
+  font-size: calc(0.875 * var(--sw));
+  color: var(--od-text-muted);
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: calc(0.333333 * var(--sw));
+}
+.dot {
+  width: calc(0.516667 * var(--sw));
+  height: calc(0.516667 * var(--sw));
+  border-radius: 50%;
+}
+.live .dot {
+  transition: background-color var(--od-dur-card) var(--od-settle);
+}
