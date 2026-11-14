@@ -1,7 +1,7 @@
 // Public product metadata. Every landing section reads from here; a section whose
 // value is empty (null or an empty list) doesn't render. The copy comes from the
-// repository's README and AGENTS.md, and src/content-drift.test.ts checks every
-// command shown here against packages/decks/scripts/deck.mjs and the package's
+// package guide and plugin, and src/lib/content-commands.test.ts checks every
+// command shown here against packages/node/src/cli-command.ts and the package's
 // package.json.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -13,25 +13,14 @@ export type Comparison = { topic: string; vclick: string; decks: string };
 export type Requirement = { label: string; text: string };
 
 const repo = "https://github.com/steamfield/decks";
-/**
- * Every decks command runs through the package: the bare `decks` on npm is
- * unrelated. bunx and npx pin it with -p; pnpm has no -p, so `pnpm exec` runs
- * the bin the `pnpm add` line above it installed.
- */
+/** Package runners resolve the decks bin installed in the project first. */
 const run = (runner: "bunx" | "npx" | "pnpm", args: string) =>
-  runner === "pnpm" ? `pnpm exec decks ${args}` : `${runner} -p slidev-addon-decks decks ${args}`;
-const peers = "slidev-addon-decks @slidev/cli slidev-theme-the-unnamed";
+  runner === "pnpm" ? `pnpm exec decks ${args}` : `${runner} -p @steamfield/decks decks ${args}`;
+const peers = "@steamfield/decks react react-dom";
+const pluginInstall = "claude plugin install decks@steamfield --scope project";
 
 /** The agents the installed guidance supports. The requirements row, the hero's fine print and the section lede all read this list. */
-export const agents = [
-  "Claude Code",
-  "Codex",
-  "Cursor",
-  "Copilot",
-  "Gemini CLI",
-  "Windsurf",
-  "OpenCode",
-];
+export const agents = ["Claude Code", "Codex"];
 const numberWords = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 /** A count under ten as a word ("seven"), otherwise digits. */
 export const countWord = (n: number) => numberWords[n] ?? String(n);
@@ -54,15 +43,15 @@ const price = license ? `Free, ${license}` : "Free";
 
 export const site = {
   name: "Decks",
-  packageName: "slidev-addon-decks",
+  packageName: "@steamfield/decks",
   /** The home page's <title> and OG title. */
   title: "Animated presentations with coding agents | Decks",
   /** The H1. */
   tagline: "Build animated presentations with coding agents.",
   description:
-    "Build animated presentations with coding agents using Decks, a Slidev addon. Add interactive charts, scaffold slides and trace figures to their sources.",
+    "Build animated presentations with coding agents using Decks, a React slide framework. Add interactive charts, scaffold slides and trace figures to their sources.",
   heroDescription:
-    "Decks is a Slidev addon for data storytelling. Give your coding agent a brief, then review the animated charts and trace the figures to their sources.",
+    "Decks is a React slide framework for animated data storytelling, built as an alternative to Slidev. Give your coding agent a brief, then review the animated charts and trace the figures to their sources.",
   /** Absolute production URL: canonicals, the sitemap, OG images and llms.txt use it. */
   url: "https://decks.steamfield.io",
   repo,
@@ -72,27 +61,43 @@ export const site = {
   version: pkg.version ?? "",
   announcement: null as Link | null,
   /** The hero's install block: three lines, one copy button. */
-  quickstart: [`bun add ${peers}`, run("bunx", "init"), run("bunx", "new my-talk --story")],
+  quickstart: [
+    `bun add ${peers}`,
+    run("bunx", "init"),
+    pluginInstall,
+    run("bunx", "new my-talk --story"),
+  ],
   /** Shown under the hero's install block. */
   price,
   /** The hero's last line, under the install block and buttons. */
-  heroFineprint: `${price}. Runs on Slidev, with shared guidance for ${agents.slice(0, 3).join(", ")} and ${countWord(agents.length - 3)} other agents.`,
+  heroFineprint: `${price}. React 19 and Node 22.12+. Bun runs the installed local decks bin. Guidance for ${agents.join(" and ")}.`,
   install: [
     {
       label: "bun",
-      command: [`bun add ${peers}`, run("bunx", "init"), run("bunx", "new my-talk --story")].join(
-        "\n",
-      ),
+      command: [
+        `bun add ${peers}`,
+        run("bunx", "init"),
+        pluginInstall,
+        run("bunx", "new my-talk --story"),
+      ].join("\n"),
     },
     {
       label: "npm",
-      command: [`npm i ${peers}`, run("npx", "init"), run("npx", "new my-talk --story")].join("\n"),
+      command: [
+        `npm i ${peers}`,
+        run("npx", "init"),
+        pluginInstall,
+        run("npx", "new my-talk --story"),
+      ].join("\n"),
     },
     {
       label: "pnpm",
-      command: [`pnpm add ${peers}`, run("pnpm", "init"), run("pnpm", "new my-talk --story")].join(
-        "\n",
-      ),
+      command: [
+        `pnpm add ${peers}`,
+        run("pnpm", "init"),
+        pluginInstall,
+        run("pnpm", "new my-talk --story"),
+      ].join("\n"),
     },
   ] as InstallOption[],
   /** The dev server for the new deck, named in "What you get". */
@@ -101,15 +106,15 @@ export const site = {
   requirements: [
     {
       label: "Agent",
-      text: `${agents.slice(0, -1).join(", ")} or ${agents.at(-1)}. Shared guidance; automatic writing hooks in Claude Code.`,
+      text: `${agents.join(" and ")}. Run decks init, then install the Claude Code plugin once per collaborator.`,
     },
     {
       label: "Slides",
-      text: "Slidev with the slidev-theme-the-unnamed base theme. Every slide is dark; there is no light slide theme.",
+      text: "React 19 and MDX. The kit ships a dark theme; decks can supply their own CSS.",
     },
     {
       label: "Runtime",
-      text: "Node 20.19+ or 22.12+ (Vite's minimum). Bun is optional.",
+      text: "Node 22.12+. Bun is optional.",
     },
     {
       label: "Export",
@@ -117,55 +122,27 @@ export const site = {
     },
     {
       label: "Charts",
-      text: "OpenChart 9.0.0 (@opendata-ai/openchart-vue).",
+      text: "OpenChart 9.0.0 (@opendata-ai/openchart-react).",
     },
   ] as Requirement[],
   /** Section 3: a few words per file `decks init` and `decks new my-talk --story` write. */
   files: {
-    ".claude/agents/deck-author.md": "the agent that builds or revises one deck",
-    ".claude/skills/building-a-deck/SKILL.md": "scaffold, write, check, build",
-    ".claude/skills/fact-checking-a-deck/SKILL.md": "re-runs the source behind every figure",
-    ".claude/rules/deck-writing.md": "headline, bullet and word budgets",
-    ".claude/rules/deck-patterns.md": "layouts, type and chart specs",
-    ".claude/rules/deck-data.md": "where each figure's source goes",
-    ".claude/rules/story-stage.md": "how a story slide is written",
-    ".claude/rules/prose-patterns.md": "the AI-prose patterns the hook blocks",
-    ".claude/rules/project-glossary.md": "your terms; starts empty",
-    ".claude/hooks/decks.sh": "runs the package's lint and prompt hooks",
-    ".claude/settings.json": "the two hook entries, merged into yours",
-    ".claude/decks.json": "the files init wrote, with their hashes",
-    "AGENTS.md": "a marked Decks block with the commands",
-    "CLAUDE.md": "imports AGENTS.md",
+    ".agents/skills/building-a-deck/SKILL.md": "scaffold, source, write and review",
+    ".agents/skills/deck-data/SKILL.md": "trace each figure to its source",
+    ".agents/skills/writing-slides/SKILL.md": "write headlines, labels and notes",
+    ".claude/settings.json": "the versioned marketplace and enabled plugin",
+    "AGENTS.md": "the Decks reading order and skills",
     "decks.json": "the deck registry",
-    "decks/my-talk/slides.md": "headmatter and the page list",
-    "decks/my-talk/pages/01-cover.md": "the cover",
-    "decks/my-talk/pages/02-first.md": "the first story slide",
-    "decks/my-talk/components/FirstStage.vue": "its chart and captions, step by step",
-    "decks/my-talk/data/first.ts": "its figures, each with a source comment",
-    "decks/my-talk/data-sources.md": "slide-by-slide sources for the fact-check",
-    "decks/my-talk/styles/index.css": "deck-only CSS",
+    "decks/my-talk/deck.config.ts": "the deck's title and configuration",
+    "decks/my-talk/slides/01-cover.mdx": "the cover",
+    "decks/my-talk/slides/02-first-point.mdx": "the first story slide",
+    "decks/my-talk/components/FirstStage.tsx": "its chart and captions, step by step",
+    "decks/my-talk/data/01-first.ts": "its figures, each with a source comment",
+    "decks/my-talk/data-sources.md": "slide-by-slide sources for review",
+    "decks/my-talk/setup.ts": "installs the kit theme",
+    "decks/my-talk/styles/index.css": "deck CSS and the kit stylesheet",
   } as Record<string, string>,
-  /** Section 5: three differences from v-click plus a chart library. */
-  compare: [
-    {
-      topic: "Going back",
-      vclick:
-        "Each click toggles an element, so going back makes the chart jump to its earlier state.",
-      decks:
-        "The chart is drawn from the click count, so going back plays the animation in reverse.",
-    },
-    {
-      topic: "Captions",
-      vclick:
-        "Captions are separate elements that you reveal alongside the chart and keep in sync by hand.",
-      decks: "The caption is a card next to the chart, and its text changes at each step.",
-    },
-    {
-      topic: "The next slide",
-      vclick: "Each slide mounts its own chart, so the next slide starts empty.",
-      decks: "A chart can stay on screen from one slide into the next.",
-    },
-  ] as Comparison[],
+  compare: [] as Comparison[],
   footer: [
     {
       title: "Product",
@@ -173,14 +150,14 @@ export const site = {
         { label: "Install", href: "/#install" },
         { label: "Blog", href: "/blog/" },
         { label: "Changelog", href: `${repo}/blob/main/CHANGELOG.md` },
-        { label: "npm", href: "https://www.npmjs.com/package/slidev-addon-decks" },
+        { label: "npm", href: "https://www.npmjs.com/package/@steamfield/decks" },
       ],
     },
     {
       title: "Docs",
       links: [
         { label: "Quickstart", href: "/docs/getting-started/quickstart/" },
-        { label: "decks CLI", href: "/docs/reference/cli/" },
+        { label: "decks CLI", href: "/docs/cli/" },
         { label: "llms.txt", href: "/llms.txt" },
       ],
     },

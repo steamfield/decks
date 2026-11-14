@@ -4,13 +4,12 @@
 // deck's own title and recording.
 // These checks read the repository around the site, so a renamed command, a
 // changed hook or a stale recording fails here instead of shipping.
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { resolveTheme } from "../../packages/decks/theme/resolve.ts";
+import { resolveTheme } from "../../packages/kit/src/theme-resolve.ts";
 import { computeEdits } from "../scripts/edits.mjs";
 import { runHook } from "../scripts/hook.mjs";
-import { site } from "./config";
 import {
   deckDir,
   ENTRIES,
@@ -24,160 +23,14 @@ import {
   startSlideOf,
 } from "./data/examples";
 import { loadHookDenial, loadRun, runFigures } from "./data/fixtures";
-import { loadProjectFiles, setupCommands } from "./data/project";
+import { subcommands } from "./lib/cli-content.test-support";
 import { draftLine, editSize } from "./lib/player/example";
 
 const repo = join(process.cwd(), "..");
 const read = (path: string) => readFileSync(join(repo, path), "utf8");
-const readme = read("README.md");
-const runner = read("packages/decks/scripts/deck.mjs");
-const pkg = JSON.parse(read("packages/decks/package.json")) as {
-  name: string;
-  version: string;
-  bin: Record<string, string>;
-};
-const subcommands = new Set([...runner.matchAll(/case '([\w-]+)':/g)].map((match) => match[1]));
-/** Every --flag deck.mjs reads or prints in a usage string. */
-const runnerFlags = new Set(runner.match(/--[a-z][\w-]*/g));
-
-/** "a && b" and multi-line commands become one entry per command. */
-const splitCommands = (text: string) =>
-  text
-    .split(/\n|&&/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-const contentFiles = ["docs", "blog"].flatMap((collection) => {
-  const base = join(process.cwd(), "src/content", collection);
-  return readdirSync(base, { recursive: true, encoding: "utf8" })
-    .filter((file) => /\.mdx?$/.test(file))
-    .map((file) => ({ file, path: join(base, file) }));
-});
-/** Command lines in the docs that call the decks bin, from fenced bash blocks. */
-const docsCommands = contentFiles.flatMap(({ file, path }) => {
-  const text = readFileSync(path, "utf8");
-  return [...text.matchAll(/```bash[^\n]*\n([\s\S]*?)```/g)].flatMap((match) =>
-    splitCommands(match[1] ?? "").map((line) => ({ file, line: line.replace(/\s+#.*$/, "") })),
-  );
-});
-/** `bunx -p slidev-addon-decks decks new ...`; the `-p` group is empty for the bare form. */
+const pkg = JSON.parse(read("packages/decks/package.json"));
 const deckInvocation = /^(bunx|npx|pnpm exec)( -p \S+)? (\S+)\s*(.*)$/;
-/** The bare `decks` name on npm is an unrelated package: docs must pin the package with -p. */
 const pinned = " -p slidev-addon-decks";
-
-const shown = [
-  ...site.quickstart.map((line) => ({ file: "config: hero", line })),
-  ...site.install.flatMap((option) =>
-    splitCommands(option.command).map((line) => ({ file: `config: ${option.label}`, line })),
-  ),
-  { file: "config: what you get", line: site.devCommand },
-  ...setupCommands.map((line) => ({ file: "page: what you get", line })),
-  // Docs pages show only Decks commands. Blog posts also show other tools' commands (Slidev's
-  // exporter, Playwright's installer), so there only lines that run the decks bin or install
-  // the package are checked.
-  ...docsCommands.filter(({ file, line }) => {
-    const blog = file.endsWith(".mdx");
-    if (deckInvocation.test(line)) return !blog || deckInvocation.exec(line)?.[3] === "decks";
-    if (/^(bun add|npm i|pnpm add) /.test(line)) return !blog || line.includes(pkg.name);
-    return false;
-  }),
-];
-
-describe("every shown command matches the CLI", () => {
-  it("shows commands from the hero, every install tab and the CLI reference", () => {
-    const files = new Set(shown.map((command) => command.file));
-    for (const label of [
-      "config: hero",
-      "config: bun",
-      "config: npm",
-      "config: pnpm",
-      "page: what you get",
-    ]) {
-      expect(files, label).toContain(label);
-    }
-    expect(files).toContain("reference/cli.md");
-  });
-
-  it.each(shown.filter(({ line }) => deckInvocation.test(line)))("$file: $line", ({ line }) => {
-    const [, , , bin = "", rest = ""] = deckInvocation.exec(line) ?? [];
-    expect(Object.keys(pkg.bin), "the package's bin").toContain(bin);
-    const [subcommand] = rest.split(/\s+/);
-    expect(subcommands, "a deck.mjs case").toContain(subcommand);
-    for (const flag of rest.match(/--[a-z][\w-]*/g) ?? []) {
-      expect(runnerFlags, `${flag} in deck.mjs`).toContain(flag);
-    }
-  });
-
-  it.each(shown.filter(({ line }) => deckInvocation.test(line)))(
-    "$file: $line pins the package with -p slidev-addon-decks",
-    ({ file, line }) => {
-      // pnpm has no -p: `pnpm exec` runs the bin of the package the same block's `pnpm add` installed.
-      if (line.startsWith("pnpm exec ")) {
-        const added = shown.some(
-          (other) =>
-            other.file === file && /^pnpm add (.+ )?slidev-addon-decks( |$)/.test(other.line),
-        );
-        expect(added, `${file} installs slidev-addon-decks with pnpm add`).toBe(true);
-        return;
-      }
-      expect(deckInvocation.exec(line)?.[2]).toBe(pinned);
-    },
-  );
-
-  it("pins the package in every docs and blog page's inline decks commands", () => {
-    for (const { file, path } of contentFiles) {
-      const text = readFileSync(path, "utf8");
-      expect(text, file).not.toMatch(/\b(bunx|npx) decks\b/);
-    }
-  });
-
-  it.each(shown.filter(({ line }) => /^(bun add|npm i|pnpm add) /.test(line)))(
-    "$file: $line installs the package and the README's peers",
-    ({ line }) => {
-      const packages = line.split(/\s+/).slice(2);
-      expect(packages).toContain(pkg.name);
-      for (const name of packages) expect(readme, name).toContain(name);
-    },
-  );
-
-  it("installs the same packages from every tab", () => {
-    const installs = site.install.map((option) =>
-      splitCommands(option.command)[0]?.split(/\s+/).slice(2),
-    );
-    for (const packages of installs) expect(packages).toEqual(installs[0]);
-  });
-
-  it("quotes the README's quickstart", () => {
-    for (const line of site.quickstart) expect(readme).toContain(line);
-    expect(readme).toContain(site.devCommand);
-  });
-});
-
-describe("copy matches the repository", () => {
-  it("shows the package's version and name", () => {
-    expect(site.version).toBe(pkg.version);
-    expect(site.packageName).toBe(pkg.name);
-  });
-
-  it("states the README's runtime requirements", () => {
-    const node = /Node 20\.19\+ or 22\.12\+/;
-    expect(readme).toMatch(node);
-    expect(site.requirements.map((row) => row.text).join(" ")).toMatch(node);
-    expect(readme).toMatch(/Bun is optional/);
-  });
-
-  it("names OpenChart at the version the package depends on", () => {
-    const version = JSON.parse(read("packages/decks/package.json")).dependencies[
-      "@opendata-ai/openchart-core"
-    ];
-    expect(site.requirements.map((row) => row.text).join(" ")).toContain(`OpenChart ${version}`);
-  });
-
-  it("notes only files decks init and decks new really write", () => {
-    const files = loadProjectFiles();
-    for (const path of Object.keys(site.files)) expect(files, path).toContain(path);
-  });
-});
 
 const hero = ENTRIES.find((entry) => entry.name === "keeling");
 
@@ -336,17 +189,17 @@ describe("example decks", () => {
 
 describe("the WARM still's theme.json", () => {
   const warm = JSON.parse(readFileSync(join(process.cwd(), "demo/warm-theme.json"), "utf8"));
-  const templates = JSON.parse(read("examples/od-templates/theme.json"));
 
   it("is a valid override with surfaces and two ramps", () => {
     expect(Object.keys(warm).sort()).toEqual(["ramps", "surfaces"]);
     expect(Object.keys(warm.ramps)).toHaveLength(2);
     expect(() =>
-      resolveTheme(JSON.parse(read("packages/decks/theme/default.json")), warm),
+      resolveTheme(JSON.parse(read("packages/kit/src/theme-default.json")), warm),
     ).not.toThrow();
   });
 
   it("takes its values from the od-templates palette", () => {
+    const templates = JSON.parse(read("examples/od-templates/theme.json"));
     expect(warm.surfaces).toEqual(templates.surfaces);
     for (const [hue, ramp] of Object.entries(warm.ramps))
       expect(ramp).toEqual(templates.ramps[hue]);

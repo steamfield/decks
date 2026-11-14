@@ -1,5 +1,5 @@
 // Acceptance tests over the real build in dist/. `make build` runs them after
-// `astro build`. The page list comes from src/content/docs, not from the build.
+// `astro build`. The page list comes from ../docs/guide, not from the build.
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
@@ -20,6 +20,7 @@ import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
 import { ENTRIES, loadExamples } from "../src/data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../src/data/fixtures";
+import { guideId } from "../src/lib/guide";
 import { deckDemoCount } from "./mdx";
 
 const parser = new new Window().DOMParser();
@@ -73,13 +74,13 @@ function websiteData(doc: ReturnType<typeof page>) {
 }
 
 function sourceDocs(root = ".") {
-  const base = join(root, "src/content/docs");
-  return readdirSync(base, { recursive: true, encoding: "utf8" })
+  const base = join(root, "../docs/guide");
+  return readdirSync(base, { encoding: "utf8" })
     .filter((file) => file.endsWith(".md"))
-    .map((file) => {
-      const title = /^title:\s*["']?(.+?)["']?\s*$/m.exec(readFileSync(join(base, file), "utf8"));
-      return { id: file.replace(/\.md$/, "").replaceAll("\\", "/"), title: title?.[1] ?? "" };
-    });
+    .map((file) => ({
+      id: guideId(file),
+      title: /^# (.+)$/m.exec(readFileSync(join(base, file), "utf8"))?.[1] ?? "",
+    }));
 }
 
 function htmlFiles(root: string) {
@@ -101,6 +102,7 @@ describe("docs pages", () => {
     const doc = page("dist", pagePath(id));
     const href = `/docs/${id}/`;
     expect(doc.querySelector("h1")?.textContent).toBe(title);
+    expect(doc.querySelectorAll("h1")).toHaveLength(1);
     expectIndexableMetadata(doc.head, href, `/og/docs/${id}.png`);
     expect(websiteData(doc)).toEqual([]);
     expect(
@@ -119,16 +121,34 @@ describe("docs pages", () => {
 
   it("renders the Markdown conventions", () => {
     const html = docs.map(({ id }) => read("dist", pagePath(id))).join("\n");
-    expect(html).toMatch(/<blockquote role="note" data-callout="note">/);
-    expect(html).toMatch(/<figcaption data-code-title="">Terminal<\/figcaption>/);
     expect(html).toMatch(/<div data-table-scroll="" tabindex="0" role="region"/);
     expect(html).toMatch(/<a href="#[\w-]+" data-heading-anchor/);
     expect(html).toMatch(/--shiki-dark:/);
   });
 
+  it("serves the package guide to agents without the old addon instructions", () => {
+    const full = read("dist", "llms-full.txt");
+    expect(full).toContain("bun add @steamfield/decks react react-dom");
+    expect(full).toContain('import { defineDeck } from "@steamfield/decks/node"');
+    expect(full).not.toMatch(/slidev-addon-decks|@slidev\/cli|slidev-theme/);
+    for (const { id } of docs)
+      expect(full).toContain(`# ${page("dist", pagePath(id)).querySelector("h1")?.textContent}\n`);
+  });
+
+  it("redirects every retired docs route to a built guide page", () => {
+    const redirects = read("dist", "_redirects");
+    expect(redirects).toContain("/docs/reference/cli/ /docs/cli/ 301");
+    for (const line of redirects.trim().split("\n")) {
+      const [from = "", to = "", status] = line.split(/\s+/);
+      if (!from.startsWith("/docs/")) continue;
+      expect(status).toBe("301");
+      expect(existsSync(join("dist", to.endsWith("/") ? `${to}index.html` : to)), line).toBe(true);
+    }
+  });
+
   it("lists every page on the docs home", () => {
     const home = page("dist", "docs/index.html");
-    expect(home.querySelector("h1")?.textContent).toBe("Slidev addon documentation");
+    expect(home.querySelector("h1")?.textContent).toBe("Decks documentation");
     expectIndexableMetadata(home.head, "/docs/", "/og/index.png");
     expect(websiteData(home)).toEqual([]);
     for (const { id } of docs) {
@@ -360,6 +380,17 @@ describe("the whole site", () => {
       .filter((file) => file.endsWith(".mdx"))
       .map((file) => `blog/${file.replace(/\.mdx$/, "")}/index.html`),
   ];
+  it("lints visible prose literally even when it describes JSX or theme aliases", () => {
+    const text = "Use <v-clicks> and {ramps.cyan.2}. At its core, this is a game-changer.";
+    const lint = spawnSync("node", ["../packages/decks/dist/cli.js", "lint", "--stdin"], {
+      input: `<Prose text={${JSON.stringify(text)}} />`,
+      encoding: "utf8",
+    });
+    expect(lint.status).toBe(1);
+    expect(lint.stdout).toContain("banned-phrase");
+    expect(lint.stdout).toContain("ai-vocab");
+    expect(lint.stderr).toBe("");
+  });
   it.each(lintPages)("passes the package's prose lint over %s text (R6)", (file) => {
     // Its own copy: this test strips the page down, and `page` shares documents.
     const home = fresh("dist", file);
@@ -386,8 +417,8 @@ describe("the whole site", () => {
       .map((line) => line.replace(/\s+/g, " ").trim())
       .filter(Boolean);
     expect(strings.length).toBeGreaterThan(20);
-    const lint = spawnSync("node", ["../packages/decks/scripts/deck.mjs", "lint", "--stdin"], {
-      input: strings.join("\n"),
+    const lint = spawnSync("node", ["../packages/decks/dist/cli.js", "lint", "--stdin"], {
+      input: strings.map((text) => `<Prose text={${JSON.stringify(text)}} />`).join("\n"),
       encoding: "utf8",
     });
     expect(`${lint.stdout}${lint.stderr}`.trim()).toBe("");
@@ -464,12 +495,13 @@ describe("adding a docs page", () => {
         });
       }
       symlinkSync(resolve("node_modules"), join(root, "node_modules"), "dir");
-      for (const entry of ["packages", "examples", "README.md"]) {
+      for (const entry of ["packages", "examples", "plugins", "node_modules"]) {
         symlinkSync(resolve("..", entry), join(parent, entry));
       }
+      cpSync(resolve("../docs/guide"), join(parent, "docs/guide"), { recursive: true });
       writeFileSync(
-        join(root, "src/content/docs/guides/probe-page.md"),
-        "---\ntitle: Probe page\ndescription: Checks that a new page is wired in.\ngroup: guides\norder: -1000\n---\n\n## Probe heading\n\nProbe body.\n",
+        join(parent, "docs/guide/probe-page.md"),
+        '# Probe page\n\nChecks that a new page is wired in.\n\n## Probe heading\n\nProbe body.\n\n[Kit](kit.md)\n\n> [!NOTE]\n> Guide callout.\n\n```sh title="Terminal"\nbunx -p @steamfield/decks decks check\n```\n',
       );
       const built = spawnSync("bunx", ["--no-install", "astro", "build"], {
         cwd: root,
@@ -478,22 +510,24 @@ describe("adding a docs page", () => {
       });
       expect(built.status, `${built.stdout}\n${built.stderr}`).toBe(0);
       const dist = join(root, "dist");
-      const href = "/docs/guides/probe-page/";
+      const href = "/docs/probe-page/";
       const other = page(dist, pagePath(docs[0]?.id ?? ""));
       expect(other.querySelector(`nav[aria-label="Docs"] a[href="${href}"]`)).not.toBeNull();
-      // order -1000 makes the probe its group's first page, so another page links back to it.
+      // The probe sorts between the kit and presenting pages, so its successor links back.
       const linksBack = docs.some(
         ({ id }) =>
           page(dist, pagePath(id)).querySelector(`a[rel="prev"][href="${href}"]`) !== null,
       );
       expect(linksBack).toBe(true);
-      expect(
-        page(dist, pagePath("guides/probe-page")).querySelector("#probe-heading"),
-      ).not.toBeNull();
-      expect(read(dist, "docs/guides/probe-page.md")).toContain("Probe body.");
-      expect(read(dist, "llms.txt")).toContain(absolute("/docs/guides/probe-page.md"));
+      expect(page(dist, pagePath("probe-page")).querySelector("#probe-heading")).not.toBeNull();
+      expect(read(dist, "docs/probe-page.md")).toContain("Probe body.");
+      const probe = page(dist, pagePath("probe-page"));
+      expect(probe.querySelector('article a[href="/docs/kit/"]')?.textContent).toBe("Kit");
+      expect(probe.querySelector('[data-callout="note"]')?.textContent).toContain("Guide callout.");
+      expect(probe.querySelector("[data-code-title]")?.textContent).toBe("Terminal");
+      expect(read(dist, "llms.txt")).toContain(absolute("/docs/probe-page.md"));
       expect(read(dist, "sitemap-0.xml")).toContain(absolute(href));
-      expect(existsSync(join(dist, "og/docs/guides/probe-page.png"))).toBe(true);
+      expect(existsSync(join(dist, "og/docs/probe-page.png"))).toBe(true);
     } finally {
       rmSync(parent, { recursive: true, force: true });
     }

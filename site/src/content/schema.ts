@@ -2,10 +2,11 @@ import { reference } from "astro:content";
 import { readdirSync } from "node:fs";
 import { z } from "astro/zod";
 import { docsGroups } from "../config";
+import { guideId } from "../lib/guide";
 
 const groupIds = docsGroups.map((group) => group.id) as [string, ...string[]];
 
-/** Frontmatter for every page under src/content/docs/. */
+/** Site metadata derived from the package guide. */
 export const docSchema = z.object({
   title: z.string().trim().min(1),
   /** Meta description, docs-home card text and the llms.txt summary. */
@@ -22,9 +23,9 @@ export type DocData = z.infer<typeof docSchema>;
 // Astro references normalize ids but do not reject missing entries during parsing.
 // The glob loader uses these same paths as ids; validate before a page can render.
 const docIds = new Set(
-  readdirSync("src/content/docs", { recursive: true, encoding: "utf8" })
+  readdirSync("../docs/guide", { encoding: "utf8" })
     .filter((file) => file.endsWith(".md"))
-    .map((file) => file.replace(/\.md$/, "").replaceAll("\\", "/")),
+    .map(guideId),
 );
 
 export const blogSchema = z

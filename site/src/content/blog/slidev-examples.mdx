@@ -6,10 +6,11 @@ published: 2026-11-05
 keyword: "slidev examples"
 feature: examples
 relatedDocs:
-  - getting-started/your-first-story-deck
+  - kit
   - getting-started/quickstart
-  - concepts/story-vs-conventional-decks
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 import Figure from "../../components/blog/Figure.astro";
@@ -40,7 +41,7 @@ Evaluate a talk by stepping through it as an audience member before reading its 
 
 Decks is a Slidev addon and deck runner for data-storytelling talks. Its examples include excerpts from talks, agent drafts that were edited, and templates intended for reuse. Those labels describe how each example was made; they help you choose a reference without assuming every polished slide came directly from a prompt.
 
-The repository's `examples/` directory contains the nine decks below. The [first-story-deck guide](/docs/getting-started/your-first-story-deck/) describes the authoring references and their file structure.
+The repository's `examples/` directory contains the nine decks below. The [first-story-deck guide](/docs/kit/) describes the authoring references and their file structure.
 
 | Example | What to inspect | How it was made |
 | --- | --- | --- |
@@ -54,7 +55,7 @@ The repository's `examples/` directory contains the nine decks below. The [first
 | `od-story-templates` | Minimal stages, bars, labelled cards and a hand-off between slides | Template |
 | `od-templates` | Conventional layouts in the warm palette, including a story slide | Template |
 
-A story slide keeps one visualization in place while each step advances its explanation. The stage component contains the visualization and the caption card's text for each step. A conventional slide holds material such as bullets, tables or charts. The [story and conventional deck comparison](/docs/concepts/story-vs-conventional-decks/) calls story steps "beats" and explains where the prose lives in each format.
+A story slide keeps one visualization in place while each step advances its explanation. The stage component contains the visualization and the caption card's text for each step. A conventional slide holds material such as bullets, tables or charts. The [story and conventional deck comparison](/docs/kit/) calls story steps "beats" and explains where the prose lives in each format.
 
 The tides player below gives you a Slidev story deck example to inspect before opening the files. Step through the explanation and compare the visualization with the changing caption. Go back a step to see how the preceding view supports the next part of the explanation. [How to build a data storytelling presentation](/blog/data-storytelling-presentation/) covers the structure these decks follow.
 

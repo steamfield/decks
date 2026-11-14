@@ -6,9 +6,10 @@ keyword: "how to make slides with claude code"
 feature: agents
 relatedDocs:
   - getting-started/quickstart
-  - guides/writing-decks-with-an-agent
-  - guides/checking-a-deck
+  - cli
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -89,7 +90,7 @@ writing a numerical claim. Keep implementation detail in speaker notes.
 
 Give the agent permission to leave a gap when evidence is missing. "Find a convincing statistic" invites a different task from "Use these measurements and flag anything they cannot establish." For internal results, include the measurement period and what each field means.
 
-Review the sequence with the arrow keys in both directions. Check whether the caption still describes the visible data after going backward. Ask for a specific change when the explanation arrives too early or a label competes with the part you're discussing. The [agent authoring guide](/docs/guides/writing-decks-with-an-agent/) explains the installed workflow in more detail.
+Review the sequence with the arrow keys in both directions. Check whether the caption still describes the visible data after going backward. Ask for a specific change when the explanation arrives too early or a label competes with the part you're discussing. The [agent authoring guide](/docs/cli/) explains the installed workflow in more detail.
 
 ## How do you check the numbers on the slides?
 
@@ -110,7 +111,7 @@ bunx -p slidev-addon-decks decks check
 bunx -p slidev-addon-decks decks lint my-talk
 ```
 
-The [deck checking guide](/docs/guides/checking-a-deck/) explains these checks and the screenshot tools. The manifest check finds missing or orphaned pages. Neither that check nor prose lint replaces source review.
+The [deck checking guide](/docs/cli/) explains these checks and the screenshot tools. The manifest check finds missing or orphaned pages. Neither that check nor prose lint replaces source review.
 
 ## How do you stop slides from sounding like AI wrote them?
 

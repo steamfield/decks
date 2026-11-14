@@ -6,10 +6,11 @@ published: 2026-11-05
 keyword: "claude code presentation skill"
 feature: skills
 relatedDocs:
-  - guides/writing-decks-with-an-agent
-  - guides/checking-a-deck
-  - concepts/story-vs-conventional-decks
+  - cli
+  - kit
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -93,7 +94,7 @@ Every runner command names `slidev-addon-decks` explicitly because the unscoped 
 
 The `building-a-deck` skill covers scaffolding, sourcing data and the verification chain through the build. It defines when a deck counts as done. The `fact-checking-a-deck` skill reruns the source behind each figure and compares it with the deck's data and visible copy.
 
-The installation also includes a `deck-author` agent and rules that attach by path in Claude Code when editing files under the configured decks directory. Those rules cover layout and writing, with separate guidance for story stages and data provenance. Two Claude Code hooks add a writing reminder and check prose before writes. The [agent authoring guide](/docs/guides/writing-decks-with-an-agent/) describes the installed files.
+The installation also includes a `deck-author` agent and rules that attach by path in Claude Code when editing files under the configured decks directory. Those rules cover layout and writing, with separate guidance for story stages and data provenance. Two Claude Code hooks add a writing reminder and check prose before writes. The [agent authoring guide](/docs/cli/) describes the installed files.
 
 A story slide holds one pinned visualization. Each step redraws it from Slidev's click count and changes the caption card; stepping backward reverses the transition. Decks uses dark slides, and its file export is PDF through Chromium. It does not produce PowerPoint or Keynote files.
 
@@ -115,7 +116,7 @@ The skill asks the agent to run each recorded query or open its source, then com
 
 A figure gets a verified status only after the source has been opened or the query run in that session. An unreachable source stays unverifiable with its error recorded. Author-reported claims remain flagged. The skill writes a report that distinguishes these cases, so a failed request cannot silently become a guessed value.
 
-This procedure depends on usable source records. A deck with missing queries needs those gaps resolved before the comparison can happen. The [deck checking guide](/docs/guides/checking-a-deck/) explains the extractor and the separate manifest and prose checks.
+This procedure depends on usable source records. A deck with missing queries needs those gaps resolved before the comparison can happen. The [deck checking guide](/docs/cli/) explains the extractor and the separate manifest and prose checks.
 
 ## How do the hooks block AI-sounding prose?
 

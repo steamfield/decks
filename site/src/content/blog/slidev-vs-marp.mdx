@@ -6,10 +6,11 @@ published: 2026-11-05
 keyword: "slidev vs marp"
 feature: comparison
 relatedDocs:
-  - concepts/story-vs-conventional-decks
-  - getting-started/add-decks-to-an-existing-deck
+  - kit
   - getting-started/quickstart
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -118,7 +119,7 @@ Shared guidance does not establish equal authoring results across agents. Live a
 
 Use built-in reveals for a chart image and its annotations when that explains the subject. For a chart that changes at each step, a Vue component can read Slidev's click state. Decks supplies a story engine for this pattern: the visualization is drawn from the click count, so stepping backward plays the transition in reverse. Its caption card changes with the step, and a chart can persist into the next slide. The [Slidev charts guide](/blog/slidev-charts/) covers chart components in detail.
 
-The [story versus conventional deck guide](/docs/concepts/story-vs-conventional-decks/) calls these steps "beats." Conventional slides hold bullets, tables or charts; story slides keep prose inside the stage component as text for each step. A conventional deck can include a story slide.
+The [story versus conventional deck guide](/docs/kit/) calls these steps "beats." Conventional slides hold bullets, tables or charts; story slides keep prose inside the stage component as text for each step. A conventional deck can include a story slide.
 
 ### Enable the addon in an existing deck
 
@@ -135,7 +136,7 @@ theme: the-unnamed
 addons: ["slidev-addon-decks"]
 ```
 
-Story slides need additional headmatter. The [existing-deck guide](/docs/getting-started/add-decks-to-an-existing-deck/) explains how to copy it from a temporary story scaffold:
+Story slides need additional headmatter. The [existing-deck guide](/docs/getting-started/quickstart/) explains how to copy it from a temporary story scaffold:
 
 ```bash title="Terminal"
 bunx -p slidev-addon-decks decks new scratch --story

@@ -1,6 +1,6 @@
 # Decks site
 
-The site presents Decks as a slide framework for coding agents. It supplies slide components, animation tools and a presentation workflow for stories told through transitions and interactive visualizations. Visitors can explore real decks, then learn how to build their own with an agent. The installed agent setup currently targets Claude Code; the requirements state that limit. Presentation quality is the first evidence, and recorded agent runs show how a deck was produced.
+The site presents `@steamfield/decks` as a React slide framework for coding agents and an alternative to Slidev. It supplies slide components, animation tools and a presentation workflow for stories told through transitions and interactive visualizations. Visitors can explore real decks, then learn how to build their own with an agent. The installed agent setup targets Claude Code and Codex; the requirements state that limit. Presentation quality is the first evidence, and recorded agent runs show how a deck was produced.
 
 ## Composition
 
@@ -8,7 +8,7 @@ The sticky header contains Decks, the version, Examples, Docs, GitHub and Instal
 
 The player reads like a presenter's console. One sticky title bar holds the example switcher (a segmented control with the rest under More), the live state and slide/step position in mono, and the transport, fullscreen and Open deck. Below the 16:9 canvas, a rail lists the slides with a progress line that fills step by step; a slide in the rail is a jump target. Captions stay below the rail as readable page text. The complete slide scales uniformly at every size: no internal mobile reflow, stretched charts or cropped artwork. Fullscreen contains the complete slide with letterboxing. Player controls are 36px for a mouse and 44px on touch screens and below 900px; the slide's own chart targets keep their original geometry. The rail keeps the current slide scrolled into view.
 
-Below the showcase, sections alternate between the canvas and a tinted band: the agent evidence (the prompt, its figures, the hook's blocked write and the recorded run in a terminal frame), install with three workflow rows, the example decks as hairline rows tagged by provenance, themes (one slide with a Default/Warm switch beside its theme.json), requirements and docs, then a closing call to action under the brand rule. Section headings are claims ending in a period. The scaffolded files and the v-click comparison stay in labeled disclosures. Keeling supplies the agent evidence independently of the selected hero.
+Below the showcase, sections alternate between the canvas and a tinted band: the agent evidence (the prompt, its figures, the hook's blocked write and the recorded run in a terminal frame), install with three workflow rows, the example decks as hairline rows tagged by provenance, themes (one slide with a Default/Warm switch beside its theme.json), requirements and docs, then a closing call to action under the brand rule. Section headings are claims ending in a period. The scaffolded files stay in a labeled disclosure. Keeling supplies the agent evidence independently of the selected hero.
 
 ## Design
 

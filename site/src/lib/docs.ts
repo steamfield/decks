@@ -4,6 +4,7 @@
 // breaks ties by id, its llms files are a different format, and its pageMarkdown
 // rewrites links and adds a "Start here" list to an index page.
 import type { DocData } from "../content/schema";
+import { guideMarkdown } from "./guide";
 
 export type DocEntry = { id: string; data: DocData; body: string };
 export type Group = { readonly id: string; readonly label: string };
@@ -47,7 +48,8 @@ export function pageLinks(nav: readonly NavGroup[], id: string) {
 
 /** The Markdown served beside each page at /docs/<id>.md. */
 export function toMarkdownExport(entry: DocEntry): string {
-  return `# ${entry.data.title}\n\n> ${entry.data.description}\n\n${entry.body.trim()}\n`;
+  const body = guideMarkdown(entry.body.replace(/^# .+\r?\n/, "").trim());
+  return `# ${entry.data.title}\n\n> ${entry.data.description}\n\n${body}\n`;
 }
 
 /** llms.txt: the product summary, then every page by group with its description. */

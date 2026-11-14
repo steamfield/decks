@@ -1,5 +1,5 @@
 // The landing page's colors, read at build time from the product's own theme
-// (packages/decks/theme/default.json). The page canvas is the slide canvas, so
+// (packages/kit/src/theme-default.json). The page canvas is the slide canvas, so
 // the live deck sits flush in the hero. Every other surface is the theme's
 // zinc tinted toward its own blue and violet, which gives the page a cast the
 // slides don't have. Sections alternate between canvas and band, and a panel
@@ -31,7 +31,7 @@ export function mix(a: string, b: string, t: number): string {
 // Builds and tests run from site/.
 export const productTheme = (): ProductTheme =>
   JSON.parse(
-    readFileSync(join(process.cwd(), "..", "packages/decks/theme/default.json"), "utf8"),
+    readFileSync(join(process.cwd(), "..", "packages/kit/src/theme-default.json"), "utf8"),
   ) as ProductTheme;
 
 /** Token name (without --color-) to value, for the landing page. */

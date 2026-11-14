@@ -1,12 +1,12 @@
 # decks-site
 
-The landing page and docs for Decks (`slidev-addon-decks`), a Slidev addon for step-by-step chart slides, at decks.steamfield.io.
+The landing page and docs for Decks (`@steamfield/decks`), a React slide framework for animated data-storytelling presentations, at decks.steamfield.io.
 
 The product's static site: a landing page at `/` and documentation under `/docs/`, built with [Astro](https://astro.build). Every docs page is also served as Markdown, and `/llms.txt` lists them for coding agents. The landing page's player plays the repository's example decks, built into `public/d/` by `make demo`.
 
 ## Quickstart
 
-Requires [bun](https://bun.sh), Node and make. Run from `site/` inside the decks repository; the site reads `../packages/decks` and `../examples` at build time.
+Requires [bun](https://bun.sh), Node 22.12+ and make. Run from `site/` inside the decks repository; the site reads `../packages/`, `../docs/guide/`, `../plugins/decks/` and `../examples/` at build time.
 
 ```bash
 make install
@@ -16,7 +16,9 @@ make dev          # http://localhost:4321
 
 ## Adding a docs page
 
-Create a Markdown file under `src/content/docs/<group>/` with `title`, `description` and `group` in its frontmatter. The sidebar, pager, docs home, sitemap, social card, Markdown export and `llms.txt` pick it up on the next build.
+Add a Markdown file under `../docs/guide/` with a level-one title and an opening paragraph. This is the same guide that ships in the npm package. The site derives navigation metadata from the text; the sidebar, pager, docs home, sitemap, social card, Markdown export and both `llms` files pick it up on the next build.
+
+The guide's getting-started page keeps `/docs/getting-started/quickstart/`; other pages use their filename, with `README.md` at `/docs/overview/`. Retired docs routes redirect through `public/_redirects`.
 
 ## Commands
 
