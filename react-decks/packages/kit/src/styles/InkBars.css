@@ -1,0 +1,7 @@
+.od-ink-bars .od-bars-value {
+  font-family: var(--od-font-mono);
+  font-size: 30px;
+  font-weight: 590;
+  letter-spacing: 0.01em;
+  fill: currentColor;
+}

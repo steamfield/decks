@@ -22,6 +22,10 @@
 @import "./InkRule.css";
 @import "./InkCardRect.css";
 @import "./OdEyebrow.css";
+@import "./InkLine.css";
+@import "./InkBars.css";
+@import "./InkTimeline.css";
+@import "./InkTimelineCursor.css";
 .oc-slide-chart {
   min-height: 1px;
 }

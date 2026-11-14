@@ -23,12 +23,21 @@ export {
   unitCellHeight,
 } from "./grid";
 export { hash, hashRange, hashSigned } from "./hash";
+export { type BarsHandle, type InkBarRow, InkBars } from "./ink-bars";
 export { InkCardRect } from "./ink-card-rect";
 export { InkChip } from "./ink-chip";
+export { type DrawOptions, InkLine, type LineHandle } from "./ink-line";
 export { type GrowHandle, InkNumber } from "./ink-number";
 export { InkPing } from "./ink-ping";
 export { InkRule, type RuleHandle } from "./ink-rule";
 export { inkStyle, polylinePath, STORY_STYLE, STROKE } from "./ink-style";
+export {
+  InkTimeline,
+  type TickState,
+  type TimelineHandle,
+  type TimelineTick,
+} from "./ink-timeline";
+export { InkTimelineCursor } from "./ink-timeline-cursor";
 export { easeHeight, entrance, fadeIn, fadeOutInPlace, RISE, riseIn } from "./motion";
 export { OdByline } from "./od-byline";
 export { OdCoverHead } from "./od-cover-head";
