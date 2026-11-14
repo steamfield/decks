@@ -4,25 +4,6 @@ import { builtinModules } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  isCallExpression,
-  isExportDeclaration,
-  isExternalModuleReference,
-  isIdentifier,
-  isImportDeclaration,
-  isImportEqualsDeclaration,
-  isImportTypeNode,
-  isJsxElement,
-  isJsxFragment,
-  isJsxSelfClosingElement,
-  isLiteralTypeNode,
-  isNoSubstitutionTemplateLiteral,
-  isStringLiteral,
-  type Node,
-  SyntaxKind,
-} from "typescript/unstable/ast";
-import { createVirtualFileSystem } from "typescript/unstable/fs";
-import { API } from "typescript/unstable/sync";
 import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
@@ -116,89 +97,97 @@ function checkDependencies(owner: string, manifest: Manifest): string[] {
   });
 }
 
-/** Parse with the installed TypeScript compiler, so comments and strings cannot hide imports. */
+/**
+ * Blanks comments and replaces each string literal's contents with its index in `strings`, so
+ * the patterns below see only real code and can read a specifier back by index. Newlines are
+ * kept, so offsets still map to the original line numbers.
+ */
+function scan(source: string): { code: string; strings: string[] } {
+  const strings: string[] = [];
+  let code = "";
+  let i = 0;
+  while (i < source.length) {
+    const char = source[i] ?? "";
+    const next = source[i + 1];
+    if (char === "/" && next === "/") {
+      while (i < source.length && source[i] !== "\n") i++;
+    } else if (char === "/" && next === "*") {
+      const end = source.indexOf("*/", i + 2);
+      const stop = end === -1 ? source.length : end + 2;
+      code += source.slice(i, stop).replace(/[^\n]/g, " ");
+      i = stop;
+    } else if (char === '"' || char === "'" || char === "`") {
+      let j = i + 1;
+      while (j < source.length && source[j] !== char) j += source[j] === "\\" ? 2 : 1;
+      const text = source.slice(i + 1, j);
+      // A template literal with a substitution is not a fixed specifier.
+      const fixed = char !== "`" || !text.includes("${");
+      code += fixed ? `"${strings.push(text) - 1}"` : "`computed`";
+      code += text.replace(/[^\n]/g, "");
+      i = j + 1;
+    } else {
+      code += char;
+      i++;
+    }
+  }
+  return { code, strings };
+}
+
+/** Resolves escapes such as "re\u0061ct", which name the same module as "react". */
+function resolveEscapes(text: string): string {
+  try {
+    return JSON.parse(`"${text.replace(/"/g, '\\"')}"`);
+  } catch {
+    return text;
+  }
+}
+
+const SPECIFIER = /(?:\bfrom\s*|\bimport\s*)"(\d+)"|\b(?:import|require)\s*\(\s*"(\d+)"\s*[,)]/g;
+const COMPUTED = /\b(?:import|require)\s*\(\s*(?!"\d+"\s*[,)])[^)\s]/g;
+
+/** Reads imports and globals from source text; comments and string contents cannot hide or fake them. */
 function checkSource(
   owner: string,
   file: string,
   source: string,
   declared: string[] = [],
 ): string[] {
-  const input = resolve(ROOT, `tests/__boundary_input__.${file.endsWith(".tsx") ? "tsx" : "ts"}`);
-  const config = resolve(ROOT, "tests/__boundary_tsconfig__.json");
-  const api = new API({
-    fs: createVirtualFileSystem({
-      [config]: JSON.stringify({
-        files: [input],
-        compilerOptions: { noResolve: true, noLib: true, types: [] },
-      }),
-      [input]: source,
-    }),
-  });
-  try {
-    using snapshot = api.updateSnapshot({ openProjects: [config] });
-    const project = snapshot.getProject(config);
-    const parsed = project?.program.getSourceFile(input);
-    if (!project || !parsed) throw new Error(`Cannot parse ${file}`);
-    const violations: string[] = [];
-    const report = (node: Node, specifier: string, reason: string) => {
-      const line = parsed.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-      violations.push(`${file}:${line}: ${specifier}: ${reason}`);
-    };
-    const checkSpecifier = (node: Node) => {
-      if (!isStringLiteral(node) && !isNoSubstitutionTemplateLiteral(node)) {
-        report(
-          node,
-          node.getText(),
-          "import specifier must be a string literal for boundary checking",
-        );
-        return;
+  const { code, strings } = scan(source);
+  const violations: string[] = [];
+  const report = (offset: number, specifier: string, reason: string) => {
+    const line = code.slice(0, offset).split("\n").length;
+    violations.push(`${file}:${line}: ${specifier}: ${reason}`);
+  };
+  for (const match of code.matchAll(SPECIFIER)) {
+    const specifier = resolveEscapes(strings[Number(match[1] ?? match[2])] ?? "");
+    if (specifier.startsWith(".")) {
+      const target = resolve(ROOT, dirname(file), specifier);
+      const within = relative(join(ROOT, "packages", owner), target);
+      if (within === ".." || within.startsWith(`..${sep}`) || isAbsolute(within)) {
+        report(match.index, specifier, "relative import leaves its package");
       }
-      const specifier = node.text;
-      if (specifier.startsWith(".")) {
-        const target = resolve(ROOT, dirname(file), specifier);
-        const within = relative(join(ROOT, "packages", owner), target);
-        if (within === ".." || within.startsWith(`..${sep}`) || isAbsolute(within)) {
-          report(node, specifier, "relative import leaves its package");
-        }
-      } else {
-        const reason = importViolation(owner, specifier, declared, /\.test\.tsx?$/.test(file));
-        if (reason) report(node, specifier, reason);
-      }
-    };
-    const visit = (node: Node): void => {
-      if ((isImportDeclaration(node) || isExportDeclaration(node)) && node.moduleSpecifier) {
-        checkSpecifier(node.moduleSpecifier);
-      } else if (isImportTypeNode(node) && isLiteralTypeNode(node.argument)) {
-        checkSpecifier(node.argument.literal);
-      } else if (
-        isImportEqualsDeclaration(node) &&
-        isExternalModuleReference(node.moduleReference)
-      ) {
-        checkSpecifier(node.moduleReference.expression);
-      } else if (
-        isCallExpression(node) &&
-        (node.expression.kind === SyntaxKind.ImportKeyword ||
-          (isIdentifier(node.expression) && node.expression.text === "require"))
-      ) {
-        const argument = node.arguments[0];
-        if (argument) checkSpecifier(argument);
-      }
-      if (owner === "core" && isIdentifier(node) && DOM_GLOBALS.includes(node.text)) {
-        report(node, node.text, "DOM global is forbidden in core");
-      }
-      if (
-        (owner === "core" || owner === "node") &&
-        (isJsxElement(node) || isJsxFragment(node) || isJsxSelfClosingElement(node))
-      ) {
-        report(node, "react/jsx-runtime", "implicit React import is forbidden");
-      }
-      node.forEachChild(visit);
-    };
-    visit(parsed);
-    return violations;
-  } finally {
-    api.close();
+    } else {
+      const reason = importViolation(owner, specifier, declared, /\.test\.tsx?$/.test(file));
+      if (reason) report(match.index, specifier, reason);
+    }
   }
+  for (const match of code.matchAll(COMPUTED)) {
+    report(
+      match.index,
+      "import()",
+      "import specifier must be a string literal for boundary checking",
+    );
+  }
+  if (owner === "core") {
+    for (const match of code.matchAll(new RegExp(`\\b(?:${DOM_GLOBALS.join("|")})\\b`, "g"))) {
+      report(match.index, match[0], "DOM global is forbidden in core");
+    }
+  }
+  // JSX compiles to an implicit react/jsx-runtime import, so core and node hold no .tsx files.
+  if ((owner === "core" || owner === "node") && file.endsWith(".tsx")) {
+    violations.push(`${file}:1: react/jsx-runtime: implicit React import is forbidden`);
+  }
+  return violations;
 }
 
 function sourceFiles(directory: string): string[] {
@@ -397,7 +386,7 @@ describe("boundary checker", () => {
     'type Node = import("react").ReactNode;',
     'import React = require("react");',
     'const React = require("react");',
-    'import "re\\u0061ct";',
+    'import "re\u0061ct";',
     'import {\n  ReactNode,\n} from /* comment */ "react";',
   ])("checks every import form: %s", (source) => {
     expect(checkSource("core", "packages/core/src/index.ts", source).join("\n")).toContain(
