@@ -457,7 +457,9 @@ an error.
 
 A component file under `components/` provides each of its named exports, and its default
 export under the file's basename, to MDX under that name. Two files exporting the same name
-is an error naming both files. Subdirectories are not scanned.
+is an error naming both files. A wildcard re-export (`export * from "..."`) is an error
+naming the file: re-export by name instead. Type-only exports are ignored. Subdirectories
+are not scanned.
 
 `<Notes>...</Notes>` in a slide holds speaker notes as markdown. It is removed from the
 slide's rendered output at compile time and collected into the notes module. More than one
