@@ -1,6 +1,6 @@
 import { rm } from "node:fs/promises";
 import { resolve } from "node:path";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 
 export default async function setup() {
   const dir = resolve("examples/basic");

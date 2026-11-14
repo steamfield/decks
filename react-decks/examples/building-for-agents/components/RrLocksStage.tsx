@@ -1,6 +1,6 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
-import { useSlide } from "@react-decks/runtime";
+import { useSlide } from "@steamfield/decks";
+import { DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   AGENT_COUNT,
   type ChipView,

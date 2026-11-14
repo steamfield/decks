@@ -1,5 +1,5 @@
-import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { SRC_FILES, SRC_LINES, TREE } from "../data/05-stacks-tour";
 import {
   APP_LAYER,

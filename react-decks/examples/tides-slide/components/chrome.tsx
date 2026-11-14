@@ -1,1 +1,1 @@
-export { StoryCover } from "@react-decks/kit";
+export { StoryCover } from "@steamfield/decks/kit";

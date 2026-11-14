@@ -43,19 +43,15 @@
       },
     },
     "examples/basic": {
-      "name": "@react-decks/example-basic",
+      "name": "@steamfield/example-basic",
       "dependencies": {
-        "@react-decks/motion": "workspace:*",
-        "@react-decks/runtime": "workspace:*",
+        "@steamfield/decks": "workspace:*",
         "react": "19.3.1",
         "react-dom": "19.3.1",
       },
-      "devDependencies": {
-        "@react-decks/node": "workspace:*",
-      },
     },
     "examples/building-for-agents": {
-      "name": "@react-decks/example-building-for-agents",
+      "name": "@steamfield/example-building-for-agents",
       "dependencies": {
         "@fontsource-variable/jetbrains-mono": "5.3.0",
         "@fontsource-variable/orbitron": "5.3.0",
@@ -63,29 +59,22 @@
         "@fontsource/press-start-2p": "5.3.0",
         "@fontsource/vt323": "5.3.0",
         "@opendata-ai/openchart-engine": "9.0.0",
-        "@react-decks/kit": "workspace:*",
-        "@react-decks/motion": "workspace:*",
-        "@react-decks/runtime": "workspace:*",
+        "@steamfield/decks": "workspace:*",
         "postprocessing": "6.39.6",
         "react": "19.3.1",
         "react-dom": "19.3.1",
         "three": "0.185.1",
       },
       "devDependencies": {
-        "@react-decks/node": "workspace:*",
         "@types/three": "0.185.0",
       },
     },
     "examples/motion": {
-      "name": "@react-decks/example-motion",
+      "name": "@steamfield/example-motion",
       "dependencies": {
-        "@react-decks/motion": "workspace:*",
-        "@react-decks/runtime": "workspace:*",
+        "@steamfield/decks": "workspace:*",
         "react": "19.3.1",
         "react-dom": "19.3.1",
-      },
-      "devDependencies": {
-        "@react-decks/node": "workspace:*",
       },
     },
     "examples/opendata-pitch": {
@@ -107,16 +96,11 @@
       },
     },
     "examples/tides-slide": {
-      "name": "@react-decks/example-tides-slide",
+      "name": "@steamfield/example-tides-slide",
       "dependencies": {
-        "@react-decks/kit": "workspace:*",
-        "@react-decks/motion": "workspace:*",
-        "@react-decks/runtime": "workspace:*",
+        "@steamfield/decks": "workspace:*",
         "react": "19.3.1",
         "react-dom": "19.3.1",
-      },
-      "devDependencies": {
-        "@react-decks/node": "workspace:*",
       },
     },
     "packages/core": {
@@ -444,17 +428,9 @@
 
     "@react-decks/example-aisd-showcase": ["@react-decks/example-aisd-showcase@workspace:examples/aisd-showcase"],
 
-    "@react-decks/example-basic": ["@react-decks/example-basic@workspace:examples/basic"],
-
-    "@react-decks/example-building-for-agents": ["@react-decks/example-building-for-agents@workspace:examples/building-for-agents"],
-
-    "@react-decks/example-motion": ["@react-decks/example-motion@workspace:examples/motion"],
-
     "@react-decks/example-opendata-pitch": ["@react-decks/example-opendata-pitch@workspace:examples/opendata-pitch"],
 
     "@react-decks/example-texas-2026": ["@react-decks/example-texas-2026@workspace:examples/texas-2026"],
-
-    "@react-decks/example-tides-slide": ["@react-decks/example-tides-slide@workspace:examples/tides-slide"],
 
     "@react-decks/kit": ["@react-decks/kit@workspace:packages/kit"],
 
@@ -571,6 +547,14 @@
     "@shikijs/vscode-textmate": ["@shikijs/vscode-textmate@10.1.0", "", {}, "sha512-cVBuhDQjBZaNMTwBquYfPydrUP+E3hE6oYGasx8h6ZrODIM7/r+gxLDXdd66oszbrggZHEntdE6j+5gYIVyMWQ=="],
 
     "@steamfield/decks": ["@steamfield/decks@workspace:packages/decks"],
+
+    "@steamfield/example-basic": ["@steamfield/example-basic@workspace:examples/basic"],
+
+    "@steamfield/example-building-for-agents": ["@steamfield/example-building-for-agents@workspace:examples/building-for-agents"],
+
+    "@steamfield/example-motion": ["@steamfield/example-motion@workspace:examples/motion"],
+
+    "@steamfield/example-tides-slide": ["@steamfield/example-tides-slide@workspace:examples/tides-slide"],
 
     "@testing-library/dom": ["@testing-library/dom@10.4.2", "", { "dependencies": { "@babel/code-frame": "^7.10.4", "@babel/runtime": "^7.12.5", "@types/aria-query": "^5.0.1", "aria-query": "5.3.0", "dom-accessibility-api": "^0.5.9", "lz-string": "^1.5.0", "picocolors": "1.1.1", "pretty-format": "^27.0.2" } }, "sha512-yzr2S9HyAIdhz2/6qHgbs665Q7PKVcDF05vsOlHPxG1mo36gKVesdYVeDLnXgfjJ03CrKRk08knc6+E/9m8v2Q=="],
 

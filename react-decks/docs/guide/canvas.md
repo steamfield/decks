@@ -65,12 +65,12 @@ Each slide also carries `--deck-credit-space`: the height of the band along the 
 
 ## `useSlideScale()`
 
-`useSlideScale()` from `@react-decks/runtime` returns the same scale factor in JavaScript. It returns 1 outside a frame.
+`useSlideScale()` from `@steamfield/decks` returns the same scale factor in JavaScript. It returns 1 outside a frame.
 
 You need it only when code measures or draws in screen pixels: `getBoundingClientRect()` returns screen pixels, and a canvas or chart library that sizes itself from its container sees the scaled size. Divide a measurement by the scale to get design pixels.
 
 ```tsx
-import { useSlideScale } from "@react-decks/runtime";
+import { useSlideScale } from "@steamfield/decks";
 
 export function Measured() {
   const scale = useSlideScale();

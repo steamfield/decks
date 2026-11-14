@@ -1,6 +1,6 @@
 # Motion
 
-Motion in a deck is driven by clicks. A slide has a click total; each key press moves one click forward or back; components decide what to show from the current click. Everything on this page is exported by `@react-decks/motion`, and the components are available in slides without an import.
+Motion in a deck is driven by clicks. A slide has a click total; each key press moves one click forward or back; components decide what to show from the current click. Everything on this page is exported by `@steamfield/decks/motion`, and the components are available in slides without an import.
 
 ## Click steps
 
@@ -33,7 +33,7 @@ The count is static. It reads the source and never runs it, which sets these rul
 - No spread attributes on a counted element (`<Step {...props}>`).
 - No counted element inside a JavaScript expression (`{show && <Step at={1} />}`, a `.map()`).
 - Children of `Steps` must be JSX elements or a single markdown list.
-- A motion component counts under another name when a file in `components/` re-exports it from `@react-decks/motion` (`export { Step as Reveal } from "@react-decks/motion"`), or when the slide imports it from there.
+- A motion component counts under another name when a file in `components/` re-exports it from `@steamfield/decks/motion` (`export { Step as Reveal } from "@steamfield/decks/motion"`), or when the slide imports it from there.
 - A deck component that only shares a name with a motion component (`components/Step.tsx`) is not counted.
 
 Steps inside a deck component are not seen, and neither is a component that paces itself from `useSlide().clicks` or `useTimeline`. Such a slide sets the total itself:
@@ -164,7 +164,7 @@ Props: `at`, `until`.
 Returns the state of a step on the current slide: `"before"`, `"current"`, `"after"` or `"gone"`. Use it to build a step component of your own.
 
 ```tsx
-import { useStepState } from "@react-decks/motion";
+import { useStepState } from "@steamfield/decks/motion";
 
 export function Callout({ at }: { at: number }) {
   const state = useStepState(at);
@@ -191,7 +191,7 @@ Only the fields present in `initial` cause a render. Use it with `useTimeline`, 
 Builds a paused gsap timeline with one label per click and keeps it positioned at the slide's click. `examples/motion/components/TimelineScene.tsx`:
 
 ```tsx
-import { duration, useTimeline, useTween } from "@react-decks/motion";
+import { duration, useTimeline, useTween } from "@steamfield/decks/motion";
 
 export function TimelineScene() {
   const value = useTween({ x: 0, turn: 0, color: 0 });
@@ -238,7 +238,7 @@ Use the tokens instead of raw durations and curves, in JavaScript and in CSS. Th
 The JavaScript `ease` values are gsap ease names, and `ease.settle` is gsap's default ease.
 
 ```tsx
-import { duration, ease, gsap } from "@react-decks/motion";
+import { duration, ease, gsap } from "@steamfield/decks/motion";
 
 gsap.to(target, { opacity: 1, duration: duration.base, ease: ease.enter });
 ```
@@ -249,7 +249,7 @@ gsap.to(target, { opacity: 1, duration: duration.base, ease: ease.enter });
 }
 ```
 
-Import `gsap` from `@react-decks/motion` (or from the kit, which re-exports it), not from the `gsap` package, so a deck has one instance with the eases registered. When motion is instant the CSS durations and the stagger are `0ms`, so a CSS transition written on the tokens needs no special case.
+Import `gsap` from `@steamfield/decks/motion` (or from the kit, which re-exports it), not from the `gsap` package, so a deck has one instance with the eases registered. When motion is instant the CSS durations and the stagger are `0ms`, so a CSS transition written on the tokens needs no special case.
 
 ## Slide transitions
 
@@ -353,8 +353,8 @@ In instant mode every state is shown at its end pose: steps do not transition, s
 In your own components, read the mode with `motionMode()`. It reads the DOM, so call it in an effect or a handler, never during render:
 
 ```tsx
-import { gsap, motionMode } from "@react-decks/motion";
-import { useSlide } from "@react-decks/runtime";
+import { gsap, motionMode } from "@steamfield/decks/motion";
+import { useSlide } from "@steamfield/decks";
 
 const { isActive, renderContext } = useSlide();
 useLayoutEffect(() => {
@@ -387,10 +387,10 @@ await page.screenshot({ path: "slide.png" });
 
 After a change made in another window, wait for the URL to change first; the sync message may not have arrived yet.
 
-A component that animates outside gsap and CSS (a canvas loop, a chart library) can report itself busy with `registerSettleProbe` from `@react-decks/runtime`:
+A component that animates outside gsap and CSS (a canvas loop, a chart library) can report itself busy with `registerSettleProbe` from `@steamfield/decks`:
 
 ```tsx
-import { registerSettleProbe } from "@react-decks/runtime";
+import { registerSettleProbe } from "@steamfield/decks";
 
 useEffect(() => registerSettleProbe(() => busy.current), []);
 ```

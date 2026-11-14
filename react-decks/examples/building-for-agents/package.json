@@ -1,5 +1,5 @@
 {
-  "name": "@react-decks/example-building-for-agents",
+  "name": "@steamfield/example-building-for-agents",
   "private": true,
   "type": "module",
   "dependencies": {
@@ -9,16 +9,13 @@
     "@fontsource/press-start-2p": "5.3.0",
     "@fontsource/vt323": "5.3.0",
     "@opendata-ai/openchart-engine": "9.0.0",
-    "@react-decks/kit": "workspace:*",
-    "@react-decks/motion": "workspace:*",
-    "@react-decks/runtime": "workspace:*",
     "postprocessing": "6.39.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "three": "0.185.1"
+    "three": "0.185.1",
+    "@steamfield/decks": "workspace:*"
   },
   "devDependencies": {
-    "@react-decks/node": "workspace:*",
     "@types/three": "0.185.0"
   }
 }

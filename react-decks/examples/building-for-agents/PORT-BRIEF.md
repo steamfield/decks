@@ -21,7 +21,7 @@ monitor frames, the code and terminal panes, the repo tree, the thread rail, the
 scene and every stage are this deck's own and are not shared with other decks.
 
 - Do not edit anything under `react-decks/packages/`. If the deck needs something the kit
-  (`@react-decks/kit`), the motion package or the runtime does not provide, stop and ask the
+  (`@steamfield/decks/kit`), the motion package or the runtime does not provide, stop and ask the
   orchestrator in one question, saying exactly what is missing. Do not work around it by
   copying framework code into the deck or by reaching into a package's `src/`.
 - Do not edit the Slidev deck at `examples/building-for-agents/`.
@@ -33,7 +33,7 @@ deck.config.ts  setup.ts  theme.json
 slides/NN-slug.mdx        one per Slidev page, same numbers and slugs
 components/*.tsx          auto-provided to slides by name (named exports)
 layers/above.tsx          the tube: CRT glass over every slide (was global-top.vue)
-styles/index.css          imports @react-decks/kit/styles.css, then the deck's own
+styles/index.css          imports @steamfield/decks/kit/styles.css, then the deck's own
 data/  scene/  public/
 ```
 
@@ -41,8 +41,8 @@ data/  scene/  public/
 
 | Vue | React |
 | --- | --- |
-| `reactive({ a: 0 })` driven by gsap | `useTween({ a: 0 })` from `@react-decks/motion` |
-| `useStage({ copy, enter, beats })` | the same call, from `@react-decks/kit` |
+| `reactive({ a: 0 })` driven by gsap | `useTween({ a: 0 })` from `@steamfield/decks/motion` |
+| `useStage({ copy, enter, beats })` | the same call, from `@steamfield/decks/kit` |
 | `computed` | compute in render; module scope for constants |
 | `ref` to a child + `defineExpose` | `useRef` + `useImperativeHandle` |
 | named slots (`#stage`, `#overlay`, `#card`) | props holding nodes: `stage`, `overlay`, `card` |
@@ -50,9 +50,9 @@ data/  scene/  public/
 | `:style="{ opacity: String(s.x) }"` | `style={{ opacity: s.x }}` |
 | `<style scoped>` | a CSS Module beside the component, or rules in `styles/index.css` under the deck's own class |
 | `useId()` | `useId()` from React; never a fixed id (a slide renders in several contexts at once) |
-| `useNav()`, `useSlideContext()` | `useDeck()`, `useSlide()` from `@react-decks/runtime` |
-| `slidev-addon-decks/story` | `@react-decks/kit` |
-| `slidev-addon-decks/chart-theme` | `@react-decks/kit` |
+| `useNav()`, `useSlideContext()` | `useDeck()`, `useSlide()` from `@steamfield/decks` |
+| `slidev-addon-decks/story` | `@steamfield/decks/kit` |
+| `slidev-addon-decks/chart-theme` | `@steamfield/decks/kit` |
 | `vw`, `vh` in CSS | `cqw`, `cqh` (the slide frame is a size container) |
 
 A slide page becomes MDX: the header comment becomes `{/* ... */}`, the stage element stays,

@@ -1,6 +1,14 @@
-import { clamp01, DRAW, DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
-import source from "./DecksStage.tsx?raw";
+import {
+  clamp01,
+  DRAW,
+  DUR,
+  ink,
+  SETTLE,
+  StoryCard,
+  StoryStage,
+  useStage,
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   DENIAL,
   DENIAL_RECORDED,
@@ -14,6 +22,7 @@ import {
 import type { Excerpt } from "../data/code/types";
 import { CodePane } from "./CodePane";
 import styles from "./DecksStage.module.css";
+import source from "./DecksStage.tsx?raw";
 import { DIM, OFF, ON } from "./design";
 import { NamePlate } from "./NamePlate";
 import { TermPane } from "./TermPane";

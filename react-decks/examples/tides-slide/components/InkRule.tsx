@@ -1,4 +1,4 @@
-import { DRAW, DUR, type gsap, ink } from "@react-decks/kit";
+import { DRAW, DUR, type gsap, ink } from "@steamfield/decks/kit";
 import { type Ref, useImperativeHandle, useRef } from "react";
 
 export interface RuleHandle {

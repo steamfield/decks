@@ -1,4 +1,4 @@
-import { defineDeck } from "@react-decks/node";
+import { defineDeck } from "@steamfield/decks/node";
 
 export default defineDeck({
   title: "Basic fixture deck",

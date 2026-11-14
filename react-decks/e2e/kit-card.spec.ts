@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
-import type { gsap } from "@react-decks/kit";
+import type { gsap } from "@steamfield/decks/kit";
 import { kitFixture, settled } from "./fixtures/kit.fixture";
 
 test("A card overlaps outgoing copy and eases its top edge to the new height", async ({ page }) => {
   const server = await kitFixture({
     "slides/01-card.mdx": "---\nclicks: 1\n---\n<CardProbe />",
     "components/CardProbe.tsx": `
-import { StoryStage, StoryCard, useScriptedDemo, gsap } from "@react-decks/kit";
+import { StoryStage, StoryCard, useScriptedDemo, gsap } from "@steamfield/decks/kit";
 export { gsap };
 export function CardProbe() {
  const { clicks } = useScriptedDemo();

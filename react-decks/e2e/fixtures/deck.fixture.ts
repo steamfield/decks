@@ -1,7 +1,7 @@
 import { cp, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, type Page } from "@playwright/test";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 
 declare global {
   interface Window {

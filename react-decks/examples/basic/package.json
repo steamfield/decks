@@ -1,14 +1,10 @@
 {
-  "name": "@react-decks/example-basic",
+  "name": "@steamfield/example-basic",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@react-decks/motion": "workspace:*",
-    "@react-decks/runtime": "workspace:*",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
-  },
-  "devDependencies": {
-    "@react-decks/node": "workspace:*"
+    "react-dom": "19.3.1",
+    "@steamfield/decks": "workspace:*"
   }
 }

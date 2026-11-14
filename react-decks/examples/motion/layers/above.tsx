@@ -1,4 +1,4 @@
-import { useDeck, useSlide } from "@react-decks/runtime";
+import { useDeck, useSlide } from "@steamfield/decks";
 
 export default function Above() {
   const { no } = useSlide();

@@ -1,4 +1,4 @@
-import { STAGE, stagger } from "@react-decks/kit";
+import { STAGE, stagger } from "@steamfield/decks/kit";
 import type { TreeNode } from "../data/types";
 import styles from "./RepoTree.module.css";
 

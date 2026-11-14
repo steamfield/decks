@@ -1,4 +1,4 @@
-import { duration, useTimeline, useTween } from "@react-decks/motion";
+import { duration, useTimeline, useTween } from "@steamfield/decks/motion";
 
 export function TimelineScene() {
   const value = useTween({ x: 0, turn: 0, color: 0 });

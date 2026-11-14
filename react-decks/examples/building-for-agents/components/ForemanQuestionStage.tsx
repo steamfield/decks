@@ -1,5 +1,5 @@
-import { DRAW, DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DRAW, DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   FAKE_SERVER_LINES,
   QUESTION_TIMEOUT_MIN,

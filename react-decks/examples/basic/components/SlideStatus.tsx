@@ -1,4 +1,4 @@
-import { useDeck, useSlide } from "@react-decks/runtime";
+import { useDeck, useSlide } from "@steamfield/decks";
 
 /** Prints what the hooks report, so tests can read deck state off the page. */
 export function SlideStatus() {

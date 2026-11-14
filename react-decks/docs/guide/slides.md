@@ -42,7 +42,7 @@ A slide can also import and declare things at the top, as any MDX file can:
 ---
 title: Building for agents
 ---
-import { StoryCover } from '@react-decks/kit'
+import { StoryCover } from '@steamfield/decks/kit'
 import { BYLINE } from '../data/01-cover'
 
 export const month = new Date(`${BYLINE.month}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })
@@ -92,8 +92,8 @@ Every slide can use these names with no import.
 | Source | Names |
 | --- | --- |
 | The deck's `components/*.tsx` | Every named export under its own name; a default export under the file's basename. |
-| Motion (`@react-decks/motion`) | `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph` |
-| Layouts (`@react-decks/runtime`) | `Center`, `Cover`, `Section`, `TwoCol`, `ImageSide` |
+| Motion (`@steamfield/decks/motion`) | `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph` |
+| Layouts (`@steamfield/decks`) | `Center`, `Cover`, `Section`, `TwoCol`, `ImageSide` |
 | Built in | `Notes`; fenced code blocks render through `CodeBlock` |
 
 A deck component with the same name as a framework one replaces it for that deck. A replaced motion component no longer adds clicks.
@@ -108,7 +108,7 @@ Rules for `components/`:
 Kit components are not provided automatically. Re-export the ones you want, as `examples/tides-slide/components/chrome.tsx` does:
 
 ```tsx
-export { StoryCover } from "@react-decks/kit";
+export { StoryCover } from "@steamfield/decks/kit";
 ```
 
 or import them in the slide.
@@ -156,10 +156,10 @@ From `examples/motion/slides/29-two-col.mdx` and `30-image-side.mdx`:
 
 ## `useDeck()` and `useSlide()`
 
-Both come from `@react-decks/runtime`. Use them in components rendered from a slide or a layer. Outside a deck or a slide they throw an error that says so.
+Both come from `@steamfield/decks`. Use them in components rendered from a slide or a layer. Outside a deck or a slide they throw an error that says so.
 
 ```tsx
-import { useDeck, useSlide } from "@react-decks/runtime";
+import { useDeck, useSlide } from "@steamfield/decks";
 
 export function SlideStatus() {
   const { slide, total } = useDeck();

@@ -1,4 +1,4 @@
-import { STAGE } from "@react-decks/kit";
+import { STAGE } from "@steamfield/decks/kit";
 import type { ReactNode } from "react";
 import styles from "./CrtPanel.module.css";
 

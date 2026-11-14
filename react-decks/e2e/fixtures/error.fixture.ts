@@ -1,7 +1,7 @@
 import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { test as base } from "@playwright/test";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 import { createLogger } from "vite";
 
 export const test = base.extend<{

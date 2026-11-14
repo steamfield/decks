@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { test as base, type Page } from "@playwright/test";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 
 export const test = base.extend<object, { kitURL: string }>({
   kitURL: [
@@ -37,20 +37,15 @@ export async function kitFixture(files: Record<string, string>) {
     "package.json": '{"private":true,"type":"module"}',
     "deck.config.ts": 'export default { title: "Kit test" };',
     "setup.ts":
-      'import { installTheme, resolveTheme } from "@react-decks/kit"; installTheme(resolveTheme());',
-    "styles/index.css": '@import "@react-decks/kit/styles.css";',
+      'import { installTheme, resolveTheme } from "@steamfield/decks/kit"; installTheme(resolveTheme());',
+    "styles/index.css": '@import "@steamfield/decks/kit/styles.css";',
     ...files,
   })) {
     await mkdir(dirname(join(dir, file)), { recursive: true });
     await writeFile(join(dir, file), content);
   }
-  await mkdir(join(dir, "node_modules/@react-decks"), { recursive: true });
-  for (const name of ["node", "runtime", "motion", "kit"])
-    await symlink(
-      resolve(`packages/${name}`),
-      join(dir, `node_modules/@react-decks/${name}`),
-      "dir",
-    );
+  await mkdir(join(dir, "node_modules/@steamfield"), { recursive: true });
+  await symlink(resolve("packages/decks"), join(dir, "node_modules/@steamfield/decks"), "dir");
   try {
     const server = await dev(await loadDeck(dir), { port: 0 });
     return {

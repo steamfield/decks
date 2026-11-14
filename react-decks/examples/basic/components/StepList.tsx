@@ -1,4 +1,4 @@
-import { useSlide } from "@react-decks/runtime";
+import { useSlide } from "@steamfield/decks";
 
 const POINTS = ["First point", "Second point", "Third point"];
 

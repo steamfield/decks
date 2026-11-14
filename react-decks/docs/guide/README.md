@@ -1,6 +1,6 @@
 # react-decks guide
 
-react-decks is a React slide framework. A deck is a directory of MDX files, one per slide, plus optional React components, styles and a config file. The `decks` command serves it with live updates or builds it into a static site. Slides are drawn on a 1920x1080 design canvas that scales to the window, clicks reveal steps inside a slide, and a presenter window with notes follows the audience window. The framework is five packages: `@react-decks/node` (the CLI and config), `@react-decks/runtime` (hooks, layouts, views), `@react-decks/motion` (steps, timelines, code blocks), `@react-decks/kit` (theme, story stages, charts) and `@react-decks/core` (pure logic the others share). The packages are private and their names are not final.
+react-decks is a React slide framework. A deck is a directory of MDX files, one per slide, plus optional React components, styles and a config file. The `decks` command serves it with live updates or builds it into a static site. Slides are drawn on a 1920x1080 design canvas that scales to the window, clicks reveal steps inside a slide, and a presenter window with notes follows the audience window. Install `@steamfield/decks` with `bun add @steamfield/decks react react-dom` on Node 22.12 or later. Its import paths are `@steamfield/decks` (hooks, layouts, views and core types), `@steamfield/decks/motion` (steps, timelines, code blocks), `@steamfield/decks/kit` (theme, story stages, charts) and `@steamfield/decks/node` (the CLI and config).
 
 Each page stands alone. Read the one that answers your question.
 
@@ -13,7 +13,7 @@ Each page stands alone. Read the one that answers your question.
 | [code-blocks.md](code-blocks.md) | How do I show highlighted code and step through lines? |
 | [config.md](config.md) | What can `deck.config.ts` set, how do I add MDX plugins, layers or a setup file, and how are errors reported? |
 | [presenting.md](presenting.md) | Which keys do what, and how do the presenter window, overview, sync and text sizing behave? |
-| [kit.md](kit.md) | What does `@react-decks/kit` provide: theme, story stages, `OpenChart`, the `story` transition? |
+| [kit.md](kit.md) | What does `@steamfield/decks/kit` provide: theme, story stages, `OpenChart`, the `story` transition? |
 
 ## Not built yet
 
@@ -26,4 +26,3 @@ These are planned or mentioned in the design document, and do not exist in the c
 - Pinch zoom and pan in the viewer.
 - The embed message protocol. `?embedded` only turns off sync and the presenter key.
 - Most of the kit beyond the exports listed in [kit.md](kit.md): the `Ink*` and `Unit*` marks, `Graph3D`, `CodeInk`, `RowStrip` and the conventional slide chrome have not been ported.
-- A published npm package. Imports in this guide use the current workspace names (`@react-decks/*`).

@@ -13,8 +13,8 @@ import {
   stagger,
   useFrameScale,
   useStage,
-} from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { type ComponentProps, useMemo } from "react";
 import {
   BAD_EXCERPT,

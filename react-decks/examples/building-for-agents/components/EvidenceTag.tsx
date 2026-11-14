@@ -1,4 +1,4 @@
-import { STAGE } from "@react-decks/kit";
+import { STAGE } from "@steamfield/decks/kit";
 import type { ReactNode } from "react";
 
 /** Figure status, positioned in the stage's viewBox coordinates. */

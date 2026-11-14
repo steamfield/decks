@@ -3,7 +3,7 @@
 A deck is configured by `deck.config.ts` at its root. It must default-export an object; `defineDeck` gives it types.
 
 ```ts
-import { defineDeck } from "@react-decks/node";
+import { defineDeck } from "@steamfield/decks/node";
 
 export default defineDeck({
   title: "Building for agents",
@@ -32,7 +32,7 @@ Only `title` is required. An unknown key is an error that lists the known ones. 
 Examples of each:
 
 ```ts
-import { defineDeck } from "@react-decks/node";
+import { defineDeck } from "@steamfield/decks/node";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 
@@ -93,7 +93,7 @@ Any other `.tsx` file under `layers/` is an error.
 `examples/motion/layers/above.tsx`:
 
 ```tsx
-import { useDeck, useSlide } from "@react-decks/runtime";
+import { useDeck, useSlide } from "@steamfield/decks";
 
 export default function Above() {
   const { no } = useSlide();
@@ -135,7 +135,7 @@ A deck may have a `setup.ts` beside `deck.config.ts`. It is imported for its sid
 A deck that uses the kit installs its theme there. `examples/building-for-agents/setup.ts`:
 
 ```ts
-import { installTheme, resolveTheme } from "@react-decks/kit";
+import { installTheme, resolveTheme } from "@steamfield/decks/kit";
 import deckTheme from "./theme.json";
 
 installTheme(resolveTheme(deckTheme));

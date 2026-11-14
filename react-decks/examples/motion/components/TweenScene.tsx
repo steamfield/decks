@@ -1,4 +1,4 @@
-import { duration, useTimeline, useTween } from "@react-decks/motion";
+import { duration, useTimeline, useTween } from "@steamfield/decks/motion";
 
 export function TweenScene() {
   const value = useTween({ radius: 48 });

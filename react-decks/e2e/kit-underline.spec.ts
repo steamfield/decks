@@ -26,10 +26,10 @@ for (const style of ["clean", "marker"]) {
   }) => {
     const fonts = Promise.withResolvers<void>();
     const server = await kitFixture({
-      "setup.ts": `import { installTheme, resolveTheme, STORY_STYLE } from "@react-decks/kit";
+      "setup.ts": `import { installTheme, resolveTheme, STORY_STYLE } from "@steamfield/decks/kit";
 installTheme(resolveTheme()); STORY_STYLE.ink = "${style}";`,
       "slides/01-underline.mdx": "<UnderlineProbe />",
-      "components/UnderlineProbe.tsx": `import { StoryStage, Underline } from "@react-decks/kit";
+      "components/UnderlineProbe.tsx": `import { StoryStage, Underline } from "@steamfield/decks/kit";
 export function UnderlineProbe() {
   return <StoryStage overlay={<p style={{ position: "absolute", left: "10%", top: "30%", fontFamily: "Inter, monospace", fontSize: "calc(3 * var(--sw))" }}><Underline>WWWiii last</Underline></p>} />;
 }`,

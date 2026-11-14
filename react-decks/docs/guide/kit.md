@@ -1,15 +1,15 @@
 # The kit
 
-`@react-decks/kit` is an optional package for data-storytelling decks: a token theme, a "story stage" (one pinned visualization per slide, advanced by clicks, with a prose card), a chart wrapper, and a stylesheet. Two example decks use it and are the references for this page: `examples/tides-slide` (two slides, the smallest working story deck) and `examples/building-for-agents` (19 slides with its own design system).
+`@steamfield/decks/kit` is the optional kit import path for data-storytelling decks: a token theme, a "story stage" (one pinned visualization per slide, advanced by clicks, with a prose card), a chart wrapper, and a stylesheet. Two example decks use it and are the references for this page: `examples/tides-slide` (two slides, the smallest working story deck) and `examples/building-for-agents` (19 slides with its own design system).
 
 ## Setting up a deck
 
-Add the package to the deck's dependencies, then do three things.
+Add `@steamfield/decks` to the deck's dependencies, then do three things.
 
 Install a theme in `setup.ts` (`examples/tides-slide/setup.ts`):
 
 ```ts
-import { installTheme, resolveTheme } from "@react-decks/kit";
+import { installTheme, resolveTheme } from "@steamfield/decks/kit";
 
 installTheme(resolveTheme());
 ```
@@ -17,20 +17,20 @@ installTheme(resolveTheme());
 Import the stylesheet first in `styles/index.css` (`examples/tides-slide/styles/index.css`):
 
 ```css
-@import "@react-decks/kit/styles.css";
+@import "@steamfield/decks/kit/styles.css";
 ```
 
 Set the `story` transition in `deck.config.ts` (`examples/tides-slide/deck.config.ts`):
 
 ```ts
-import { defineDeck } from "@react-decks/node";
+import { defineDeck } from "@steamfield/decks/node";
 export default defineDeck({ title: "Tides", transition: "story" });
 ```
 
 Kit components are not available in slides automatically. Import them in your stage components, and re-export any you want to write directly in MDX from a file in `components/` (`examples/tides-slide/components/chrome.tsx`):
 
 ```tsx
-export { StoryCover } from "@react-decks/kit";
+export { StoryCover } from "@steamfield/decks/kit";
 ```
 
 ## What the package exports
@@ -47,7 +47,7 @@ export { StoryCover } from "@react-decks/kit";
 | `FILTER_IDS`, `filterUrl` | SVG filters every `StoryStage` defines (marker textures and a glow), referenced as `filter={filterUrl(FILTER_IDS.glow)}`. |
 | `gsap` | The motion package's gsap instance, re-exported. |
 
-The package also exports `@react-decks/kit/styles.css`. Nothing else is public.
+The package also exports `@steamfield/decks/kit/styles.css`. Nothing else is public.
 
 ## Theme
 
@@ -56,7 +56,7 @@ The theme is a set of tokens: surfaces, text colors, borders, six color ramps, a
 `examples/building-for-agents/setup.ts`:
 
 ```ts
-import { installTheme, resolveTheme } from "@react-decks/kit";
+import { installTheme, resolveTheme } from "@steamfield/decks/kit";
 import deckTheme from "./theme.json";
 
 installTheme(resolveTheme(deckTheme));
@@ -143,8 +143,8 @@ clicks: 2
 The stage component holds the copy, the timeline and the drawing. A condensed `examples/tides-slide/components/TideDayStage.tsx`:
 
 ```tsx
-import { DUR, ink, StoryCard, StoryLayer, StoryLink, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DUR, ink, StoryCard, StoryLayer, StoryLink, StoryStage, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 
 const COPY = [
   { lead: "Water level, hour by hour, for two days.", body: "NOAA prediction for Boston Harbor..." },
@@ -209,7 +209,7 @@ It returns `{ copy, beats, clicks, isActive, playCount, shown }`: `copy` is the 
 
 A slide with three copy entries has clicks 0 to 2, so its frontmatter says `clicks: 2`. The click count is not read from a stage component; always set `clicks:`.
 
-Animated values live in `useTween({ ... })` from `@react-decks/motion` and are read in JSX. Use `DUR` for durations and `SETTLE`, `DRAW` or `TRACE` for eases, not raw numbers.
+Animated values live in `useTween({ ... })` from `@steamfield/decks/motion` and are read in JSX. Use `DUR` for durations and `SETTLE`, `DRAW` or `TRACE` for eases, not raw numbers.
 
 Outside the play view, on a slide that is not active, and when motion is instant, the stage shows the finished state for its click with no animation. The hooks handle that; your marks only need to render from the tweened values.
 
@@ -353,7 +353,7 @@ Use `useFrameScale()` only for values handed to `OpenChart`. Anything drawn in o
 
 ## The stylesheet
 
-`@import "@react-decks/kit/styles.css";` at the top of the deck's `styles/index.css` loads everything the components need: the Inter font, a small reset scoped to slides, the `od-*` classes, the story frame and marks, and the `story` transition. Put your own rules after it. `examples/building-for-agents/styles/index.css` imports it first and then restyles the headline, the cover and the card with the theme's variables.
+`@import "@steamfield/decks/kit/styles.css";` at the top of the deck's `styles/index.css` loads everything the components need: the Inter font, a small reset scoped to slides, the `od-*` classes, the story frame and marks, and the `story` transition. Put your own rules after it. `examples/building-for-agents/styles/index.css` imports it first and then restyles the headline, the cover and the card with the theme's variables.
 
 Classes the examples use from it: `od-story-head` (stage headline), `od-stage-label` (SVG label text), `od-mono` (monospace text), `od-dim` (de-emphasized text), `od-enter-a`, `od-enter-b`, `od-enter-c` (entrance groups).
 

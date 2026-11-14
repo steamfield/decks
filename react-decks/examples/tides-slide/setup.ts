@@ -1,3 +1,3 @@
-import { installTheme, resolveTheme } from "@react-decks/kit";
+import { installTheme, resolveTheme } from "@steamfield/decks/kit";
 
 installTheme(resolveTheme());
