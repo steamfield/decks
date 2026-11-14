@@ -441,7 +441,7 @@ no CSS reset.
 ```
 <deck>/
   deck.config.ts      export default defineDeck({ ... })
-  package.json        depends on @react-decks/runtime; dev-depends on @react-decks/node
+  package.json        depends on @react-decks/runtime and @react-decks/motion; dev-depends on @react-decks/node
   slides/*.mdx        one file per slide, ordered by filename
   components/*.tsx    optional; provided to every slide without an import
   layers/above.tsx    optional; drawn over every slide (section 6.5)
@@ -1403,7 +1403,13 @@ language is the block's options:
 
 ````md
 ```ts {2,4-5|7|all} lines title="store.ts" maxHeight=420 at=1
-const store = createStore()
+import { createStore } from "zustand/vanilla"
+const store = createStore(() => ({ slide: 1, click: 0 }))
+
+export function next() {
+  store.setState((s) => ({ ...s, click: s.click + 1 }))
+}
+export const position = () => store.getState()
 ```
 ````
 
@@ -1449,7 +1455,10 @@ line is brought into view by setting the block's own `scrollTop` (from the line'
 inside the block, which is unaffected by the canvas scale), never scrolling the page. Line numbers are CSS counters from `data-lines`; they are not selectable
 text. The block is `tabindex="0"` when it scrolls, so it is reachable by keyboard.
 
-Inline code is not highlighted.
+Inline code is not highlighted. In the `print` context a block ignores `maxHeight` and shows
+every line. A code block or motion step inside `<Notes>` is not counted and not rendered.
+Accepted limits: arrow keys navigate the deck even while a scrolling block has focus, and
+with `maxHeight` only the first active line of a step is guaranteed to be in view.
 
 | Situation (browser test, gallery slide) | Outcome |
 | --- | --- |
