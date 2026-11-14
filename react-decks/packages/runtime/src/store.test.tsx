@@ -1,18 +1,22 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, it, onTestFinished } from "vitest";
-import { makeSource } from "./deck.test-support";
-import { createDeckStore, Deck } from "./index";
+import { expect, it } from "vitest";
+import { setup } from "./deck.test-support";
 
-function setup(hash = "#/1", source = makeSource()) {
-  window.history.replaceState(null, "", `/${hash}`);
-  const store = createDeckStore(source.manifest);
-  onTestFinished(() => {
-    store.destroy();
-    window.history.replaceState(null, "", "/");
-  });
-  return { ...render(<Deck source={source} store={store} />), store, source };
-}
+it.each(["overview", "print"])(
+  "dispatch in %s leaves the position and history unchanged",
+  async (view) => {
+    const { store } = setup(`#/${view}`);
+    const notifications: string[] = [];
+    store.subscribe(() => notifications.push(window.location.hash));
+    const history = window.history.length;
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Next slide" }));
+    expect(window.location.hash).toBe(`#/${view}`);
+    expect(window.history.length).toBe(history);
+    expect(notifications).toEqual([]);
+    expect(screen.getByRole("heading", { name: "Title 1" })).toBeVisible();
+  },
+);
 
 it("creation parses search flags and clamps and canonicalizes the hash", async () => {
   const { store } = setup("?embedded&decks-bridge=1#/99?clicks=88");

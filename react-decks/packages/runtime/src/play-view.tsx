@@ -16,39 +16,25 @@ export function PlayView(): ReactElement {
         store.dispatch(action);
       };
     }
-    return tinykeys(
-      window,
-      {
-        ArrowRight: bind({ type: "next" }),
-        Space: bind({ type: "next" }),
-        PageDown: bind({ type: "next" }),
-        ArrowLeft: bind({ type: "prev" }),
-        "Shift+Space": bind({ type: "prev" }),
-        PageUp: bind({ type: "prev" }),
-        ArrowDown: bind({ type: "nextSlide" }),
-        ArrowUp: bind({ type: "prevSlide" }),
-        Home: bind({ type: "go", slide: 1 }),
-        End: bind({ type: "go", slide: total }),
-      },
-      {
-        ignore(event) {
-          if (event.repeat || event.isComposing) return true;
-          const target = event.target;
-          if (!(target instanceof Element)) return false;
-          if (target.closest("input, textarea, select")) return true;
-          const boundary = target.closest(
-            '[contenteditable="true" i], [contenteditable=""], [contenteditable="plaintext-only" i], [contenteditable="false" i]',
-          );
-          return (
-            boundary !== null && boundary.getAttribute("contenteditable")?.toLowerCase() !== "false"
-          );
-        },
-      },
-    );
+    return tinykeys(window, {
+      ArrowRight: bind({ type: "next" }),
+      Space: bind({ type: "next" }),
+      PageDown: bind({ type: "next" }),
+      ArrowLeft: bind({ type: "prev" }),
+      "Shift+Space": bind({ type: "prev" }),
+      PageUp: bind({ type: "prev" }),
+      ArrowDown: bind({ type: "nextSlide" }),
+      ArrowUp: bind({ type: "prevSlide" }),
+      Home: bind({ type: "go", slide: 1 }),
+      End: bind({ type: "go", slide: total }),
+    });
   }, [store, total]);
   useEffect(() => {
     const preload = () => {
-      for (const module of modules.values()) void module.load();
+      for (const module of modules.values())
+        void module.load().catch(() => {
+          // SlideHost reports the failure if this slide is mounted.
+        });
     };
     if (typeof window.requestIdleCallback === "function") {
       const id = window.requestIdleCallback(preload);

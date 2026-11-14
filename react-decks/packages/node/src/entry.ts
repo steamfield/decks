@@ -12,7 +12,7 @@ mountDeck({ manifest, slides, frontmatter, components,
 });`;
 }
 
-export function deckHtml(deck: ResolvedDeck): string {
+export function deckHtml(deck: ResolvedDeck, dev: boolean): string {
   const escapeHtml = (value: string) =>
     value
       .replaceAll("&", "&amp;")
@@ -26,7 +26,7 @@ export function deckHtml(deck: ResolvedDeck): string {
 <link rel="icon" href="${existsSync(join(deck.dir, "public/favicon.ico")) ? "/favicon.ico" : "data:,"}">
 <title>${escapeHtml(deck.config.title)}</title>
 ${deck.config.author === undefined ? "" : `<meta name="author" content="${escapeHtml(deck.config.author)}">`}
-<meta name="decks:entry" content="${escapeHtml(deck.dir)}">
+${dev ? `<meta name="decks:entry" content="${escapeHtml(deck.dir)}">` : ""}
 <meta name="decks:name" content="${escapeHtml(deck.name)}">
 </head><body><div id="deck-root"></div><script type="module" src="/virtual:react-decks/entry"></script></body></html>`;
 }

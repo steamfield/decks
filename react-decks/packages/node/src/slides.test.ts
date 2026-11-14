@@ -69,13 +69,6 @@ describe("slide scanning and manifest", () => {
     await expect(scanSlides(deck)).rejects.toThrow("no visible slides");
     expect(() => buildManifest(deck, [])).toThrow("no visible slides");
   });
-  it("includes dot-prefixed mdx files as visible slides", async () => {
-    const { dir } = await fixture({
-      "slides/01-first.mdx": "---\nhide: true\n---\n# Hidden",
-      "slides/.intro.mdx": "# Intro",
-    });
-    expect((await scanSlides(await loadDeck(dir))).map(({ meta }) => meta.id)).toEqual([".intro"]);
-  });
   it("numbers the five visible basic fixture slides from 1 to 5", async () => {
     const slides = await scanSlides(await loadDeck("examples/basic"));
     expect(slides.map(({ meta }) => meta.no)).toEqual([1, 2, 3, 4, 5]);

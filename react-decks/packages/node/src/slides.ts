@@ -19,7 +19,7 @@ const frontmatterSchema = z.looseObject({
 });
 
 export async function scanSlides(deck: ResolvedDeck): Promise<readonly ScannedSlide[]> {
-  const files = (await glob("slides/*.mdx", { cwd: deck.dir, dot: true })).sort();
+  const files = (await glob("slides/*.mdx", { cwd: deck.dir })).sort();
   const slides: ScannedSlide[] = [];
   for (const file of files) {
     const id = basename(file, ".mdx");

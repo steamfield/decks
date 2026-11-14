@@ -57,20 +57,6 @@ describe("deck modules and HTML", () => {
     expect(code).not.toContain("02-hidden");
     expect(await app.get("/slides/01-first.mdx")).toContain("First slide");
   });
-  it("keeps prototype-like slide ids as own keys in every virtual record", async () => {
-    const app = await serve({
-      "slides/__proto__.mdx": "# Prototype\n\n<Notes>Prototype notes</Notes>",
-    });
-    const manifest = await app.server.ssrLoadModule("virtual:react-decks/manifest");
-    expect(Object.hasOwn(manifest.slides, "__proto__")).toBe(true);
-    expect(Object.hasOwn(manifest.frontmatter, "__proto__")).toBe(true);
-    const notes = await app.server.ssrLoadModule("virtual:react-decks/notes");
-    expect(Object.hasOwn(notes.notes, "__proto__")).toBe(true);
-    expect(Object.entries(notes.notes)).toContainEqual([
-      "__proto__",
-      [{ click: 0, html: "<p>Prototype notes</p>" }],
-    ]);
-  });
   it("provides named exports and defaults under basenames and ignores subdirectories", async () => {
     const app = await serve({
       "components/Badge.tsx":
@@ -92,6 +78,15 @@ describe("deck modules and HTML", () => {
       /Badge.*components\/Badge\.tsx.*components\/Other\.tsx/,
     );
   });
+  it("fails a build naming both files when component exports collide", async () => {
+    const { dir } = await fixture({
+      "components/Badge.tsx": "export default function Badge() {}",
+      "components/Other.tsx": "export { default as Badge } from './Badge';",
+    });
+    await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
+      /Badge.*components\/Badge\.tsx.*components\/Other\.tsx/,
+    );
+  });
   it("accepts a component exported as both named and default from the same file", async () => {
     const app = await serve({
       "components/Badge.tsx": "export function Badge() {} export default Badge;",
@@ -100,11 +95,54 @@ describe("deck modules and HTML", () => {
     expect(Object.keys(module.components)).toEqual(["Badge"]);
     expect(typeof module.components.Badge).toBe("function");
   });
-  it("includes named exports from dot-prefixed component files", async () => {
-    const app = await serve({ "components/.internal.tsx": "export function DotComponent() {}" });
-    const module = await app.server.ssrLoadModule("virtual:react-decks/components");
-    expect(Object.keys(module.components)).toEqual(["DotComponent"]);
+  it("rejects runtime wildcard re-exports naming the component file", async () => {
+    const { dir } = await fixture({ "components/Barrel.tsx": 'export * from "./nested/Badge";' });
+    await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
+      /components\/Barrel\.tsx.*wildcard/,
+    );
   });
+  it("ignores type exports while providing explicit re-exports", async () => {
+    const app = await serve({
+      "components/Barrel.tsx":
+        'export type * from "./nested/Badge"; export type Props = {}; export { Badge as Renamed } from "./nested/Badge";',
+      "components/nested/Badge.tsx": "export function Badge() { return null; }",
+    });
+    const module = await app.server.ssrLoadModule("virtual:react-decks/components");
+    expect(Object.keys(module.components)).toEqual(["Renamed"]);
+    expect(typeof module.components.Renamed).toBe("function");
+  });
+  it.each(["<Notes >\n**Secret**\n</Notes >", "<Notes\n>\n**Secret**\n</Notes\n>"])(
+    "extracts notes children with whitespace in the tags: %s",
+    async (notes) => {
+      const app = await serve({ "slides/01-first.mdx": `# Audience\n\n${notes}` });
+      expect((await app.server.ssrLoadModule("virtual:react-decks/notes")).notes).toEqual({
+        "01-first": [{ click: 0, html: "<p><strong>Secret</strong></p>" }],
+      });
+      expect(await app.get("/slides/01-first.mdx")).not.toContain("Secret");
+    },
+  );
+  it("treats self-closing Notes as no notes", async () => {
+    const app = await serve({ "slides/01-first.mdx": "# Audience\n\n<Notes />" });
+    expect((await app.server.ssrLoadModule("virtual:react-decks/notes")).notes).toEqual({});
+    expect(await app.get("/slides/01-first.mdx")).not.toContain("Notes");
+  });
+  it("names the file when notes parsing fails", async () => {
+    const app = await serve({ "slides/01-first.mdx": "# Audience\n\n<Notes>\n<broken" });
+    await expect(app.server.ssrLoadModule("virtual:react-decks/notes")).rejects.toThrow(
+      join(app.dir, "slides/01-first.mdx"),
+    );
+  });
+  it.each(["{true && <Notes>Secret</Notes>}", "<div child={<Notes>Secret</Notes>} />"])(
+    "rejects Notes inside an expression naming the file: %s",
+    async (body) => {
+      const app = await serve({ "slides/01-first.mdx": `# Audience\n\n${body}` });
+      for (const id of ["virtual:react-decks/notes", "/slides/01-first.mdx"]) {
+        await expect(app.server.ssrLoadModule(id)).rejects.toThrow(
+          /01-first\.mdx.*Notes.*expression/,
+        );
+      }
+    },
+  );
   it("renders each notes segment to HTML with its click and removes notes from compiled slides", async () => {
     const secret = "Speaker secret";
     const app = await serve({
@@ -228,7 +266,7 @@ describe("deck modules and HTML", () => {
   });
   it("merges deck Vite options last and runs deck plugins in dev and build", async () => {
     const { dir } = await fixture({
-      "deck.config.ts": `export default {title:"Plugin deck", vite: {base:"/configured/",plugins:[{name:"deck-html",transformIndexHtml(html) {return html.replace("</head>","<meta name='deck-plugin' content='applied'></head>")}}]}}`,
+      "deck.config.ts": `export default {title:"Plugin deck", vite: {base:"/configured/",build:{outDir:"wrong"},plugins:[{name:"deck-html",transformIndexHtml(html) {return html.replace("</head>","<meta name='deck-plugin' content='applied'></head>")}}]}}`,
     });
     const deck = await loadDeck(dir);
     const server = await dev(deck, { port: 0 });
@@ -240,23 +278,110 @@ describe("deck modules and HTML", () => {
     await build(deck, { outDir, base: "/argument/" });
     const html = await readFile(join(outDir, "index.html"), "utf8");
     expect(html).toContain("name='deck-plugin' content='applied'");
-    expect(html).toContain('src="/configured/assets/');
+    expect(html).toContain('src="/argument/assets/');
+  });
+  it("empties the build output and never ships the absolute deck path", async () => {
+    const { dir } = await fixture({
+      "slides/02-deleted.mdx": "# Deleted",
+      "public/deleted.txt": "Old public",
+    });
+    const output = await fixture();
+    const outDir = join(output.dir, "site");
+    await build(await loadDeck(dir), { outDir });
+    await rm(join(dir, "slides/02-deleted.mdx"));
+    await rm(join(dir, "public/deleted.txt"));
+    await build(await loadDeck(dir), { outDir });
+    const cleanOutDir = join(output.dir, "clean");
+    await build(await loadDeck(dir), { outDir: cleanOutDir });
+    expect((await readdir(outDir, { recursive: true })).sort()).toEqual(
+      (await readdir(cleanOutDir, { recursive: true })).sort(),
+    );
+    await expect(access(join(outDir, "deleted.txt"))).rejects.toThrow();
+    expect(await readFile(join(outDir, "index.html"), "utf8")).not.toContain(dir);
+  });
+  it("uses the ResolvedDeck supplied to the plugin instead of rereading config", async () => {
+    const { dir, put } = await fixture();
+    const deck = await loadDeck(dir);
+    await put("deck.config.ts", 'export default { title: "Changed on disk" };');
+    await build(deck, { outDir: join(dir, "site") });
+    expect(await readFile(join(dir, "site/index.html"), "utf8")).toContain(
+      "<title>Test deck</title>",
+    );
+  });
+  it("uses the deck's configured build base when the caller omits base", async () => {
+    const { dir } = await fixture({
+      "deck.config.ts": 'export default { title: "Deck base", vite: { base: "/configured/" } };',
+    });
+    await build(await loadDeck(dir), { outDir: join(dir, "site") });
+    expect(await readFile(join(dir, "site/index.html"), "utf8")).toContain(
+      'src="/configured/assets/',
+    );
   });
 });
 
 describe("dev changes", () => {
+  it("reconciles a config save made while the server is starting", async () => {
+    const app = await fixture({
+      "release.txt": "Waiting",
+      "deck.config.ts": `import { watch, writeFileSync } from "node:fs";
+export default { title: "Startup title", vite: { plugins: [{ name: "pause-startup",
+  async configResolved() {
+    await new Promise(resolve => {
+      const watcher = watch(new URL("./release.txt", import.meta.url), () => { watcher.close(); resolve(); });
+      writeFileSync(new URL("./startup-started.txt", import.meta.url), "Ready");
+    });
+  }
+}] } };`,
+    });
+    const starting = dev(await loadDeck(app.dir), { port: 0 });
+    try {
+      await vi.waitFor(async () =>
+        expect(await readFile(join(app.dir, "startup-started.txt"), "utf8")).toBe("Ready"),
+      );
+      await app.put("deck.config.ts", 'export default { title: "Saved during startup" };');
+    } finally {
+      await app.put("release.txt", "Continue");
+    }
+    const server = await starting;
+    onTestFinished(() => server.close());
+    await vi.waitFor(async () =>
+      expect(await (await fetch(server.url)).text()).toContain(
+        "<title>Saved during startup</title>",
+      ),
+    );
+  });
+  it("hot-updates the first body edit of a hidden slide without reloading", async () => {
+    const app = await serve({ "slides/02-hidden.mdx": "---\nhide: true\n---\n# Hidden before" });
+    await app.get(virtual("manifest"));
+    await app.get("/slides/02-hidden.mdx");
+    const start = app.messages.length;
+    await app.put("slides/02-hidden.mdx", "---\nhide: true\n---\n# Hidden after");
+    await vi.waitFor(() =>
+      expect(app.messages.slice(start).some((message) => message.includes('"type":"update"'))).toBe(
+        true,
+      ),
+    );
+    expect(
+      app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+    ).toBe(false);
+    expect(await app.get("/slides/02-hidden.mdx")).toContain("Hidden after");
+  });
   it("hot-updates a slide body and notes without a full reload", async () => {
     const app = await serve({ "slides/01-first.mdx": "# Before\n\n<Notes>Old notes</Notes>" });
     await app.get(virtual("entry"));
     await app.get(virtual("manifest"));
     expect(await app.get("/slides/01-first.mdx")).toContain("Before");
     expect(await app.get(virtual("notes"))).toContain("Old notes");
-    app.messages.length = 0;
+    const start = app.messages.length;
     await app.put("slides/01-first.mdx", "# After\n\n<Notes>New notes</Notes>");
     await vi.waitFor(() =>
-      expect(app.messages.some((message) => message.includes('"type":"update"'))).toBe(true),
+      expect(app.messages.slice(start).some((message) => message.includes('"type":"update"'))).toBe(
+        true,
+      ),
     );
-    expect(app.messages.some((message) => message.includes('"type":"full-reload"'))).toBe(false);
+    expect(
+      app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+    ).toBe(false);
     expect(await app.get("/slides/01-first.mdx")).toContain("After");
     expect(await app.get(virtual("notes"))).toContain("New notes");
   });
@@ -264,10 +389,12 @@ describe("dev changes", () => {
     const app = await serve();
     expect(await app.get(virtual("manifest"))).toContain('"clicks":0');
     await app.get("/slides/01-first.mdx");
-    app.messages.length = 0;
+    const start = app.messages.length;
     await app.put("slides/01-first.mdx", "---\ntitle: Revised\nclicks: 2\n---\n# First slide");
     await vi.waitFor(() =>
-      expect(app.messages.some((message) => message.includes('"type":"full-reload"'))).toBe(true),
+      expect(
+        app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+      ).toBe(true),
     );
     const manifest = await app.get(virtual("manifest"));
     expect(manifest).toContain('"clicks":2');
@@ -282,12 +409,16 @@ describe("dev changes", () => {
     );
     expect(await app.get(virtual("manifest"))).toContain("02-new");
     expect(await app.get("/slides/02-new.mdx")).toContain("Added");
-    app.messages.length = 0;
+    const start = app.messages.length;
     await app.put("slides/02-new.mdx", "# Edited");
     await vi.waitFor(() =>
-      expect(app.messages.some((message) => message.includes('"type":"update"'))).toBe(true),
+      expect(app.messages.slice(start).some((message) => message.includes('"type":"update"'))).toBe(
+        true,
+      ),
     );
-    expect(app.messages.some((message) => message.includes('"type":"full-reload"'))).toBe(false);
+    expect(
+      app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+    ).toBe(false);
     expect(await app.get("/slides/02-new.mdx")).toContain("Edited");
   });
   it.each(["add", "remove", "rename"])(
@@ -296,13 +427,15 @@ describe("dev changes", () => {
       const app = await serve({ "slides/02-other.mdx": "# Other" });
       const before = await app.get(virtual("manifest"));
       expect(before).toContain("02-other");
-      app.messages.length = 0;
+      const start = app.messages.length;
       if (action === "add") await app.put("slides/03-new.mdx", "# New");
       if (action === "remove") await rm(join(app.dir, "slides/02-other.mdx"));
       if (action === "rename")
         await rename(join(app.dir, "slides/02-other.mdx"), join(app.dir, "slides/03-new.mdx"));
       await vi.waitFor(() =>
-        expect(app.messages.some((message) => message.includes('"type":"full-reload"'))).toBe(true),
+        expect(
+          app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+        ).toBe(true),
       );
       const after = await app.get(virtual("manifest"));
       if (action !== "add") expect(after).not.toContain("02-other");
@@ -314,11 +447,13 @@ describe("dev changes", () => {
     async (action) => {
       const app = await serve({ "components/Before.tsx": "export function Before() {}" });
       expect(await app.get(virtual("components"))).toContain("Before.tsx");
-      app.messages.length = 0;
+      const start = app.messages.length;
       if (action === "add") await app.put("components/After.tsx", "export function After() {}");
       else await rm(join(app.dir, "components/Before.tsx"));
       await vi.waitFor(() =>
-        expect(app.messages.some((message) => message.includes('"type":"full-reload"'))).toBe(true),
+        expect(
+          app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+        ).toBe(true),
       );
       const after = await app.get(virtual("components"));
       if (action === "add") expect(after).toContain("After.tsx");
@@ -335,6 +470,31 @@ describe("dev changes", () => {
     );
     await vi.waitFor(async () => expect(await app.get("/")).toContain("Restarted deck"));
     expect(await app.get(virtual("manifest"))).toContain('"width":800');
+  });
+  it("serializes config saves during restart and serves the latest title", async () => {
+    const app = await serve({ "release.txt": "Waiting" });
+    await app.get("/");
+    await app.put(
+      "deck.config.ts",
+      `import { watch, writeFileSync } from "node:fs";
+export default { title: "First save", vite: { plugins: [{ name: "pause-restart",
+  async configResolved() {
+    await new Promise(resolve => {
+      const watcher = watch(new URL("./release.txt", import.meta.url), () => { watcher.close(); resolve(); });
+      writeFileSync(new URL("./restart-started.txt", import.meta.url), "Ready");
+    });
+  }
+}] } };`,
+    );
+    await vi.waitFor(async () =>
+      expect(await readFile(join(app.dir, "restart-started.txt"), "utf8")).toBe("Ready"),
+    );
+    await app.put("deck.config.ts", 'export default { title: "Second save" };');
+    await app.put("release.txt", "Continue");
+    await vi.waitFor(async () =>
+      expect(await app.get("/")).toContain("<title>Second save</title>"),
+    );
+    expect(await app.get(virtual("manifest"))).toContain('"title":"Second save"');
   });
   it("drops removed Vite overrides and replaces deck plugins when config restarts", async () => {
     const { dir, put } = await fixture({

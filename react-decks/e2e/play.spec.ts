@@ -1,8 +1,9 @@
 import { expect, type Page } from "@playwright/test";
-import { test } from "./deck.fixture";
+import { test, waitForSlideModules } from "./deck.fixture";
 
 const headings = ["Basic fixture deck", "Three steps", "A deck component", "One click", "The end"];
 const points = ["First point", "Second point", "Third point"];
+
 const frames: readonly (readonly [number, number])[] = [
   [1, 0],
   [2, 0],
@@ -51,7 +52,7 @@ test("A cold start loads once without console errors or outdated dependencies.",
     window.e2eDocument = "first paint";
   });
   // Idle prefetch can discover dependencies after the first slide has painted.
-  await page.waitForLoadState("networkidle");
+  await waitForSlideModules(page);
   await expect(
     page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
   ).toBeVisible();
@@ -59,6 +60,41 @@ test("A cold start loads once without console errors or outdated dependencies.",
   expect(documents).toHaveLength(1);
   expect(outdated).toEqual([]);
   expect(errors).toEqual([]);
+});
+
+test("Prefetched slides paint in the next animation frame when jumping.", async ({ page }) => {
+  const loaded = new Set<string>();
+  page.on("requestfinished", (request) => {
+    if (/\/slides\/.*\.mdx(?:\?|$)/.test(request.url()))
+      loaded.add(new URL(request.url()).pathname);
+  });
+  await page.goto("/");
+  await position(page, 1);
+  await expect.poll(() => loaded.size).toBe(5);
+  for (const [key, heading] of [
+    ["End", "The end"],
+    ["Home", "Basic fixture deck"],
+    ["End", "The end"],
+  ] as const) {
+    await page.evaluate((name) => {
+      window.e2eFrame = undefined;
+      window.addEventListener(
+        "keydown",
+        () => {
+          requestAnimationFrame(() => {
+            const heading = Array.from(document.querySelectorAll("h1")).find(
+              (node) => node.textContent === name,
+            );
+            window.e2eFrame = Boolean(heading?.checkVisibility());
+          });
+        },
+        { once: true },
+      );
+    }, heading);
+    await page.keyboard.press(key);
+    await page.waitForFunction(() => window.e2eFrame !== undefined);
+    expect(await page.evaluate(() => window.e2eFrame)).toBe(true);
+  }
 });
 
 test("Arrow keys walk every frame forward and backward and stop at the ends.", async ({ page }) => {
@@ -149,7 +185,48 @@ test("Only the active slide and its neighbours are mounted.", async ({ page }) =
   await expect(page.locator('[data-deck-slide="4"]')).toHaveCount(1);
   await expect(page.locator('[data-deck-slide="2"]')).toBeHidden();
   await expect(page.locator('[data-deck-slide="4"]')).toBeHidden();
+  await page.addStyleTag({ content: "[data-deck-slide] { display: grid; }" });
+  await expect(page.locator('[data-deck-slide="2"]')).toBeHidden();
+  await expect(page.locator('[data-deck-slide="4"]')).toBeHidden();
 });
+
+test("The canvas fits a fractional parent content box.", async ({ page }) => {
+  await page.goto("/");
+  await position(page, 1);
+  await page.locator("#deck-frame").evaluate((frame) => {
+    const parent = frame.parentElement;
+    if (!parent) throw new Error("Missing canvas parent");
+    Object.assign(parent.style, {
+      width: "960.5px",
+      height: "540.25px",
+      padding: "3px",
+      boxSizing: "content-box",
+    });
+  });
+  await expect
+    .poll(() => page.locator("#deck-frame").boundingBox())
+    .toEqual({ x: 3, y: 3, width: expect.closeTo(960.5, 2), height: expect.closeTo(540.25, 2) });
+});
+
+for (const view of ["overview", "print"]) {
+  test(`Arrow keys in ${view} preserve the view and position after reload.`, async ({ page }) => {
+    await page.goto(`/#/${view}`);
+    await expect(
+      page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowDown");
+    await expect(page).toHaveURL(new RegExp(`#/${view}$`));
+    await expect(
+      page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`#/${view}$`));
+  });
+}
 
 test("The canvas fills each window and live resizing preserves the document.", async ({ page }) => {
   await page.goto("/#/3");

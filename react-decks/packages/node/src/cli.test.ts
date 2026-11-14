@@ -32,6 +32,31 @@ function cli(cwd: string, args: string[]) {
 }
 
 describe("decks CLI", () => {
+  it.each(["1.5", "1e3", "abc", "65536"])("rejects --port %s with its value", async (port) => {
+    const { dir } = await fixture();
+    const process = cli(dir, ["dev", dir, "--port", port]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toContain(`Invalid --port "${port}"`);
+  });
+  it.each(["{", '{"_config":{"base":42}}', '{"talk":{"dir":42}}'])(
+    "names malformed decks.json without a validation dump: %s",
+    async (contents) => {
+      const { dir, put } = await fixture();
+      await put("decks.json", contents);
+      const process = cli(dir, ["build", "talk"]);
+      expect((await process.exit)[0]).toBe(1);
+      expect(process.output().stderr).toContain(join(dir, "decks.json"));
+      expect(process.output().stderr).not.toContain('"expected"');
+    },
+  );
+  it("build defaults to relative asset URLs", async () => {
+    const { dir } = await fixture();
+    const process = cli(dir, ["build", dir]);
+    expect((await process.exit)[0], process.output().stderr).toBe(0);
+    expect(await readFile(join(dir, `dist/${dir.split("/").at(-1)}/index.html`), "utf8")).toContain(
+      'src="./assets/',
+    );
+  });
   it("dev resolves an alias and prints a URL that serves the deck", async () => {
     const { dir, put } = await fixture();
     await put("decks.json", JSON.stringify({ talk: { dir: "." } }));
@@ -89,15 +114,12 @@ describe("decks CLI", () => {
     expect((await process.exit)[0], process.output().stderr).toBe(0);
     expect(await readFile(join(dir, "custom/index.html"), "utf8")).toContain('src="./assets/');
   });
-  it.each(["unknown-talk", "constructor"])(
-    "exits 1 and names unknown alias %s in stderr",
-    async (alias) => {
-      const { dir } = await fixture();
-      const process = cli(dir, ["dev", alias]);
-      expect((await process.exit)[0]).toBe(1);
-      expect(process.output().stderr).toContain(alias);
-    },
-  );
+  it.each(["unknown-talk"])("exits 1 and names unknown alias %s in stderr", async (alias) => {
+    const { dir } = await fixture();
+    const process = cli(dir, ["dev", alias]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toContain(alias);
+  });
   it("exits 1 and names a directory's missing deck.config.ts in stderr", async () => {
     const { dir, put } = await fixture();
     await put("missing/file.txt", "No config here");

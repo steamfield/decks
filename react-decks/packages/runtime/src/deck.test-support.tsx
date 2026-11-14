@@ -1,5 +1,17 @@
+import { render } from "@testing-library/react";
 import type { MDXComponents } from "mdx/types";
-import { type DeckSource, useDeck, useSlide } from "./index";
+import { onTestFinished } from "vitest";
+import { createDeckStore, Deck, type DeckSource, useDeck, useSlide } from "./index";
+
+export function setup(hash = "#/1", source = makeSource()) {
+  window.history.replaceState(null, "", `/${hash}`);
+  const store = createDeckStore(source.manifest);
+  onTestFinished(() => {
+    store.destroy();
+    window.history.replaceState(null, "", "/");
+  });
+  return { ...render(<Deck source={source} store={store} />), store, source };
+}
 
 export function Status() {
   const deck = useDeck();

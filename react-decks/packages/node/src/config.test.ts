@@ -6,6 +6,26 @@ import { defineDeck, loadDeck } from "./index";
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
 
 describe("loadDeck", () => {
+  it("rereads edited config and imported settings without a cache", async () => {
+    const { dir, put } = await fixture({
+      "title.ts": 'export const title = "Before";',
+      "deck.config.ts": 'import { title } from "./title"; export default { title };',
+    });
+    expect((await loadDeck(dir)).config.title).toBe("Before");
+    await put("title.ts", 'export const title = "After";');
+    expect((await loadDeck(dir)).config.title).toBe("After");
+    await put("deck.config.ts", 'export default { title: "Last" };');
+    expect((await loadDeck(dir)).config.title).toBe("Last");
+  });
+  it.each(['bad"name', "bad name", "bad=key", "bad>key"])(
+    "rejects htmlAttrs key %s by name",
+    async (key) => {
+      const { dir } = await fixture({
+        "deck.config.ts": `export default ${JSON.stringify({ title: "Deck", htmlAttrs: { [key]: "value" } })}`,
+      });
+      await expect(loadDeck(dir)).rejects.toThrow(key);
+    },
+  );
   it("loads defineDeck config and preserves all supported settings", async () => {
     const input = {
       title: "A title",

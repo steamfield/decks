@@ -16,4 +16,8 @@
     position: absolute;
     inset: 0;
   }
+
+  #deck-frame > [data-deck-slide][hidden] {
+    display: none !important;
+  }
 }

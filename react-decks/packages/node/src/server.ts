@@ -54,10 +54,11 @@ export async function build(
 ): Promise<void> {
   await viteBuild({
     ...config(deck),
-    base: options.base ?? "./",
+    base: options.base ?? deck.config.vite?.base ?? "./",
     build: {
       outDir: resolve(options.outDir),
-      rollupOptions: { input: resolve(deck.dir, "index.html") },
+      emptyOutDir: true,
+      rolldownOptions: { input: resolve(deck.dir, "index.html") },
     },
   });
 }

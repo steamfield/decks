@@ -1,17 +1,7 @@
-import { render, screen } from "@testing-library/react";
-import { expect, it, onTestFinished } from "vitest";
-import { makeSource } from "./deck.test-support";
-import { createDeckStore, Deck, SlideFrame, useSlideScale } from "./index";
-
-function setup(hash = "#/1", source = makeSource()) {
-  window.history.replaceState(null, "", `/${hash}`);
-  const store = createDeckStore(source.manifest);
-  onTestFinished(() => {
-    store.destroy();
-    window.history.replaceState(null, "", "/");
-  });
-  return { ...render(<Deck source={source} store={store} />), store, source };
-}
+import { screen } from "@testing-library/react";
+import { expect, it } from "vitest";
+import { makeSource, setup } from "./deck.test-support";
+import { SlideFrame, useSlideScale } from "./index";
 
 function Scale() {
   return <p>Canvas scale {useSlideScale()}</p>;

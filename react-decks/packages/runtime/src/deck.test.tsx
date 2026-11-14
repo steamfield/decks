@@ -1,18 +1,8 @@
-import { act, render, renderHook, screen, waitFor, within } from "@testing-library/react";
+import { act, renderHook, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, it, onTestFinished } from "vitest";
-import { AutoFromProps, makeSource, Status } from "./deck.test-support";
-import { createDeckStore, Deck, Notes, SlideHost, useDeck, useSlide, useSlideScale } from "./index";
-
-function setup(hash = "#/1", source = makeSource()) {
-  window.history.replaceState(null, "", `/${hash}`);
-  const store = createDeckStore(source.manifest);
-  onTestFinished(() => {
-    store.destroy();
-    window.history.replaceState(null, "", "/");
-  });
-  return { ...render(<Deck source={source} store={store} />), store, source };
-}
+import { expect, it } from "vitest";
+import { AutoFromProps, makeSource, Status, setup } from "./deck.test-support";
+import { Notes, SlideHost, useDeck, useSlide, useSlideScale } from "./index";
 
 function Preview() {
   const slide = useSlide();
