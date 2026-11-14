@@ -12,6 +12,8 @@
     "@react-decks/core": "workspace:*",
     "@react-decks/motion": "workspace:*",
     "@react-decks/runtime": "workspace:*",
+    "@types/d3-scale": "4.0.9",
+    "d3-scale": "4.0.2",
     "gsap": "3.15.1",
     "uqr": "0.1.3"
   },
