@@ -88,22 +88,26 @@ export type Pt = readonly [number, number];
 
 /** The point a share `t` (0..1) of the way along a polyline, by length. */
 export function along(points: readonly Pt[], t: number): Pt {
-  const lengths = points
-    .slice(1)
-    .map((p, i) => Math.hypot(p[0] - points[i][0], p[1] - points[i][1]));
+  const first = points[0];
+  if (!first) throw new Error("along: points must contain at least one point");
+  const lengths = points.slice(1).map((p, i) => {
+    const previous = points[i];
+    if (!previous) throw new Error(`along: missing point ${i}`);
+    return Math.hypot(p[0] - previous[0], p[1] - previous[1]);
+  });
   const total = lengths.reduce((a, b) => a + b, 0);
   let left = Math.min(1, Math.max(0, t)) * total;
-  for (let i = 0; i < lengths.length; i++) {
-    if (left <= lengths[i] || i === lengths.length - 1) {
-      const f = lengths[i] === 0 ? 0 : Math.min(1, left / lengths[i]);
-      return [
-        points[i][0] + (points[i + 1][0] - points[i][0]) * f,
-        points[i][1] + (points[i + 1][1] - points[i][1]) * f,
-      ];
+  for (const [i, length] of lengths.entries()) {
+    if (left <= length || i === lengths.length - 1) {
+      const start = points[i];
+      const end = points[i + 1];
+      if (!start || !end) throw new Error(`along: missing segment ${i}`);
+      const f = length === 0 ? 0 : Math.min(1, left / length);
+      return [start[0] + (end[0] - start[0]) * f, start[1] + (end[1] - start[1]) * f];
     }
-    left -= lengths[i];
+    left -= length;
   }
-  return points[points.length - 1];
+  return points.at(-1) ?? first;
 }
 
 /** An SVG path through a polyline. */

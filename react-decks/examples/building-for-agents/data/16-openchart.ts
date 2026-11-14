@@ -76,7 +76,11 @@ function shownLines(spec: unknown): string[] {
   const dataEnd = all.indexOf("  ],", data);
   const encoding = all.indexOf('  "encoding": {', dataEnd);
   const encodingEnd = all.indexOf("  },", encoding);
-  return [all[1], all[data], ELIDED, ...all.slice(dataEnd, encodingEnd + 1)];
+  const mark = all[1];
+  const dataLine = all[data];
+  if (mark === undefined || dataLine === undefined)
+    throw new Error("16-openchart: missing mark or data line");
+  return [mark, dataLine, ELIDED, ...all.slice(dataEnd, encodingEnd + 1)];
 }
 
 /**

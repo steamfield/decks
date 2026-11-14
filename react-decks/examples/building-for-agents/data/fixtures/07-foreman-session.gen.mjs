@@ -57,4 +57,4 @@ const out = {
   duration: s.duration,
   stillAt: s.stillAt,
 };
-await Bun.write(process.argv[2], JSON.stringify(out, null, 1) + "\n");
+await Bun.write(process.argv[2], `${JSON.stringify(out, null, 1)}\n`);

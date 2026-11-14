@@ -83,11 +83,19 @@ const RIDGE_DEPTH = 54;
 const APPROACH_DURATION = 60;
 const APPROACH_ZOOM = 1.2;
 
+function requiredUniform<T>(uniform: T | undefined, name: string): T {
+  if (uniform === undefined) throw new Error(`night-drive: missing uniform ${name}`);
+  return uniform;
+}
+
 function makeStars(count: number) {
   const pos = new Float32Array(count * 3);
   const seed = new Float32Array(count);
   let s = 11;
-  const rand = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const rand = () => {
+    s = (s * 16807) % 2147483647;
+    return s / 2147483647;
+  };
   for (let i = 0; i < count; i++) {
     pos[i * 3] = (rand() - 0.5) * 760;
     pos[i * 3 + 1] = 6 + rand() ** 1.6 * 150;
@@ -135,7 +143,7 @@ function makeRidge(values: readonly number[], ink: Color, violet: Color, cyan: C
   const depth = RIDGE_DEPTH;
   const geometry = new PlaneGeometry(width, depth, cols - 1, rows - 1);
   geometry.rotateX(-Math.PI / 2);
-  const pos = geometry.getAttribute("position") as Float32BufferAttribute;
+  const pos = geometry.getAttribute("position");
   const frontRow = rows - 2;
   const frontDistance = 10 - (RIDGE_Z + depth / 2 - depth / (rows - 1));
   for (let r = 0; r < rows; r++) {
@@ -147,7 +155,8 @@ function makeRidge(values: readonly number[], ink: Color, violet: Color, cyan: C
     const back = (rows - 1 - r) / (rows - 1); // 1 at the far row, 0 at the front
     for (let c = 0; c < cols; c++) {
       const i = r * cols + c;
-      const shifted = values[Math.min(cols - 1, Math.max(0, c - Math.round(back * 6)))]!;
+      const shifted = values[Math.min(cols - 1, Math.max(0, c - Math.round(back * 6)))];
+      if (shifted === undefined) throw new Error(`night-drive: missing ridge value ${c}`);
       const h = (shifted * (1 - back * 0.35) + back * 0.12) * RIDGE_H;
       const x = pos.getX(i);
       pos.setX(i, x * (1 + stretch * Math.abs(x / (width / 2)) ** 4));
@@ -386,10 +395,10 @@ export function mountNightDrive(
     const haze = createGroundHaze(palette.orange, palette.pink, rays.texture, horizon);
     addPass(new EffectPass(camera, haze));
     const tape = createTape();
-    const tapeTime = tape.uniforms.get("tapeTime")!;
-    const tapeClock = tape.uniforms.get("tapeClock")!;
-    const tapeSize = tape.uniforms.get("tapeSize")!;
-    tape.uniforms.get("tapeLine")!.value = options.crtLine;
+    const tapeTime = requiredUniform(tape.uniforms.get("tapeTime"), "tapeTime");
+    const tapeClock = requiredUniform(tape.uniforms.get("tapeClock"), "tapeClock");
+    const tapeSize = requiredUniform(tape.uniforms.get("tapeSize"), "tapeSize");
+    requiredUniform(tape.uniforms.get("tapeLine"), "tapeLine").value = options.crtLine;
     addPass(new EffectPass(camera, tape));
     const bloom = new BloomEffect({
       intensity: 0.95,
@@ -401,7 +410,7 @@ export function mountNightDrive(
     const vignette = new VignetteEffect({ offset: 0.32, darkness: 0.62 });
     addPass(new EffectPass(camera, bloom, vignette));
     const tube = createCrtTube();
-    const tubeSize = tube.uniforms.get("tubeSize")!;
+    const tubeSize = requiredUniform(tube.uniforms.get("tubeSize"), "tubeSize");
     addPass(new EffectPass(camera, tube));
 
     let approach = 0;
@@ -431,7 +440,8 @@ export function mountNightDrive(
       stars.position.z = camera.position.z - 10;
       floor.position.z = -190 + camera.position.z - 10;
       floorLight.position.z = floor.position.z;
-      gridMaterial.uniforms.uCameraTravel!.value = camera.position.z - 10;
+      requiredUniform(gridMaterial.uniforms.uCameraTravel, "uCameraTravel").value =
+        camera.position.z - 10;
     };
     const projectedSun = new Vector3();
     const projectedEdge = new Vector3();
@@ -443,9 +453,16 @@ export function mountNightDrive(
       raySource.updateMatrix();
       projectedSun.copy(sun.position).project(camera);
       projectedEdge.set(sun.position.x, sun.position.y + SUN_R, sun.position.z).project(camera);
-      sky.material.uniforms.uSun!.value.set(projectedSun.x * 0.5 + 0.5, projectedSun.y * 0.5 + 0.5);
-      sky.material.uniforms.uRadius!.value = Math.abs(projectedEdge.y - projectedSun.y) * 0.5;
-      sky.material.uniforms.uReveal!.value = sunMaterial.uniforms.uReveal!.value;
+      requiredUniform(sky.material.uniforms.uSun, "uSun").value.set(
+        projectedSun.x * 0.5 + 0.5,
+        projectedSun.y * 0.5 + 0.5,
+      );
+      requiredUniform(sky.material.uniforms.uRadius, "uRadius").value =
+        Math.abs(projectedEdge.y - projectedSun.y) * 0.5;
+      requiredUniform(sky.material.uniforms.uReveal, "uReveal").value = requiredUniform(
+        sunMaterial.uniforms.uReveal,
+        "uReveal",
+      ).value;
       if (sunlight.position.x !== sunRiseX || sunlight.position.y !== sun.position.y) {
         sunlight.position.set(sunRiseX, sun.position.y, SUN_Z);
         renderer.shadowMap.needsUpdate = true;
@@ -453,16 +470,22 @@ export function mountNightDrive(
       // Fraction of the luminous disc above the ground horizon.
       const limb = Math.min(1, Math.max(-1, sun.position.y / SUN_R));
       const visibleDisc = 0.5 + (Math.asin(limb) + limb * Math.sqrt(1 - limb * limb)) / Math.PI;
-      const reveal = sunMaterial.uniforms.uReveal!.value;
+      const reveal = requiredUniform(sunMaterial.uniforms.uReveal, "uReveal").value;
       light.uDaylight.value = visibleDisc ** 1.5 * reveal;
-      haze.uniforms.get("hazeSun")!.value.copy(sky.material.uniforms.uSun!.value);
-      haze.uniforms.get("hazeDaylight")!.value = light.uDaylight.value;
+      requiredUniform(haze.uniforms.get("hazeSun"), "hazeSun").value.copy(
+        requiredUniform(sky.material.uniforms.uSun, "uSun").value,
+      );
+      requiredUniform(haze.uniforms.get("hazeDaylight"), "hazeDaylight").value =
+        light.uDaylight.value;
       // Scattering peaks at low elevation; once the disc clears, a residual remains.
       const crossing = Math.exp(-(((sun.position.y + 4) / 11) ** 2));
       const rayStrength = reveal * (0.006 + 1.2 * crossing);
-      rays.uniforms.get("rayRadius")!.value = sky.material.uniforms.uRadius!.value;
+      requiredUniform(rays.uniforms.get("rayRadius"), "rayRadius").value = requiredUniform(
+        sky.material.uniforms.uRadius,
+        "uRadius",
+      ).value;
       rays.blendMode.opacity.value = rayStrength;
-      haze.uniforms.get("hazeRayStrength")!.value = rayStrength;
+      requiredUniform(haze.uniforms.get("hazeRayStrength"), "hazeRayStrength").value = rayStrength;
       const elevation = Math.min(1, Math.max(0, sun.position.y / sunRestY));
       sunlight.intensity =
         sun.position.y > 0
@@ -482,10 +505,12 @@ export function mountNightDrive(
       camera.setViewOffset(w, h, (0.5 - sunX) * w, (0.5 - horizon) * h, w, h);
       camera.updateProjectionMatrix();
       fitRange();
-      haze.uniforms.get("hazeAspect")!.value = camera.aspect;
-      rays.uniforms.get("rayAspect")!.value = camera.aspect;
-      (stars.material as ShaderMaterial).uniforms.uPixel!.value = dpr;
-      renderer.getDrawingBufferSize(sky.material.uniforms.uResolution!.value);
+      requiredUniform(haze.uniforms.get("hazeAspect"), "hazeAspect").value = camera.aspect;
+      requiredUniform(rays.uniforms.get("rayAspect"), "rayAspect").value = camera.aspect;
+      requiredUniform(stars.material.uniforms.uPixel, "uPixel").value = dpr;
+      renderer.getDrawingBufferSize(
+        requiredUniform(sky.material.uniforms.uResolution, "uResolution").value,
+      );
       tapeSize.value.set(w, h);
       tubeSize.value.set(w, h);
       updateLight();
@@ -517,16 +542,18 @@ export function mountNightDrive(
       // The dropout clock starts once the sun settles.
       if (intro >= SUNRISE_DELAY + SUNRISE_DURATION) tapeTime.value += dt;
       offset = (offset + dt * 9 * ease(driveTime / 1.8)) % 4;
-      gridMaterial.uniforms.uOffset!.value = offset;
-      gridMaterial.uniforms.uReveal!.value = ease(intro / 1.2);
+      requiredUniform(gridMaterial.uniforms.uOffset, "uOffset").value = offset;
+      requiredUniform(gridMaterial.uniforms.uReveal, "uReveal").value = ease(intro / 1.2);
       light.uTime.value = elapsed;
       const rise = Math.min(1, Math.max(0, (intro - SUNRISE_DELAY) / SUNRISE_DURATION));
       // Linger at the ridge before settling, without changing the arc itself.
       const sunrise = rise * rise * (3 - 2 * rise);
-      sunMaterial.uniforms.uReveal!.value = ease((intro - SUNRISE_DELAY) / 1.2);
+      requiredUniform(sunMaterial.uniforms.uReveal, "uReveal").value = ease(
+        (intro - SUNRISE_DELAY) / 1.2,
+      );
       sunRiseX = -SUN_R * 0.65 * (1 - sunrise);
       sun.position.y = sunRestY - (1 - sunrise) ** 2 * SUN_R * 2.0;
-      (stars.material as ShaderMaterial).uniforms.uTime!.value = elapsed;
+      requiredUniform(stars.material.uniforms.uTime, "uTime").value = elapsed;
       const approachProgress = Math.min(
         1,
         Math.max(0, (intro - SUNRISE_DELAY - SUNRISE_DURATION) / APPROACH_DURATION),
@@ -535,7 +562,7 @@ export function mountNightDrive(
       updateView();
       sun.position.x = sunRiseX;
       updateLight();
-      haze.uniforms.get("hazeTime")!.value = elapsed;
+      requiredUniform(haze.uniforms.get("hazeTime"), "hazeTime").value = elapsed;
       composer.render(dt);
       if (first) {
         first = false;

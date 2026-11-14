@@ -96,6 +96,18 @@ const FOLLOWUP_DONE = 41_500;
 const ARCHIVE = 48_500;
 export const FLIGHT = 1500;
 
+for (const delegate of fixture.delegates) {
+  for (const { event } of delegate.activity) {
+    if (event.kind !== "command" && event.kind !== "files")
+      throw new Error(`07-foreman-session: unknown activity ${event.kind}`);
+  }
+}
+for (const packet of fixture.packets) {
+  for (const endpoint of [packet.from, packet.to]) {
+    if (typeof endpoint !== "number" && endpoint !== "claude" && endpoint !== "daemon")
+      throw new Error(`07-foreman-session: unknown endpoint ${endpoint}`);
+  }
+}
 export const SESSION = fixture as Session;
 
 export function stepAt(session: Session, t: number): number {
@@ -181,7 +193,9 @@ export function claudeStatus(session: Session, t: number): string {
 /* ── Figures ── */
 
 /** The runs' `createdAt` date (all three: 2026-11-06, UTC), from the fixture's `runs`. */
-export const RECORDED = fixture.runs[0].createdAt.slice(0, 10);
+const firstRun = fixture.runs[0];
+if (!firstRun) throw new Error("07-foreman-session: no recorded runs");
+export const RECORDED = firstRun.createdAt.slice(0, 10);
 /** Delegates in the session: the three lanes index.astro passes to `buildSession`. */
 export const DELEGATES = SESSION.delegates.length;
 /**
@@ -227,6 +241,8 @@ export function wrap(text: string, width: number, lines: number): string[] {
   if (line) out.push(line);
   if (out.length <= lines) return out;
   const kept = out.slice(0, lines);
-  kept[lines - 1] = `${kept[lines - 1].slice(0, width - 1)}…`;
+  const last = kept[lines - 1];
+  if (last === undefined) throw new Error(`wrap: invalid line count ${lines}`);
+  kept[lines - 1] = `${last.slice(0, width - 1)}…`;
   return kept;
 }

@@ -92,7 +92,11 @@ const pad = (value: string | number, width: number) => String(value).padEnd(widt
 const WIDTHS = [22, 10, 12, 11, 0];
 const tableRow = (cells: readonly (string | number)[]) =>
   `  ${cells
-    .map((cell, i) => pad(cell, WIDTHS[i]))
+    .map((cell, i) => {
+      const width = WIDTHS[i];
+      if (width === undefined) throw new Error(`15-opendata: missing column width ${i}`);
+      return pad(cell, width);
+    })
     .join("")
     .trimEnd()}`;
 
