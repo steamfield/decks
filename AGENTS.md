@@ -129,12 +129,19 @@ Codex reads this file, the skills under `.agents/skills/` (symlinks into `.claud
 | `.claude/rules/story-stage.md` | `{examples,decks}/*/components/*Stage.vue`, `{examples,decks}/*/styles/*.css`, `packages/decks/story/**`, the addon's `Story*`/`Ink*`/`Unit*`/`CodeInk*`/`RowStrip*`/`Graph3D*` components and `styles/story-*.css` |
 | `.claude/rules/deck-data.md` | `{examples,decks}/*/data/*.ts`, `{examples,decks}/*/data-sources.md` |
 | `.claude/rules/project-glossary.md` | `{examples,decks}/*/pages/*.md`, `{examples,decks}/*/components/*.vue` |
+| `.claude/rules/react-decks/architecture.md` | everything under `react-decks/` |
+| `.claude/rules/react-decks/testing.md` | everything under `react-decks/` |
+| `.claude/rules/react-decks/react.md` | `react-decks/packages/{runtime,motion,kit}/**`, `react-decks/examples/**` |
 
 A Codex run started by `foreman` or `codex-delegate` also reads "For the delegate" in `.claude/delegate.md`: worktree setup, screenshots without an assigned port, and the gate.
 
 Building or revising a deck starts with the `building-a-deck` skill; any chart spec also loads `openchart`; a fact-check runs `fact-checking-a-deck`. The skill names Claude Code tools (Read, Edit, subagents); use the Codex equivalent.
 
 The hooks only run once trusted: open `codex` in the main checkout, run `/hooks`, and approve the project hooks (re-approve after `.codex/hooks.json` changes). `foreman doctor` reports whether they are trusted, and foreman worktrees under `.claude/worktrees/` inherit the approval. A worktree needs `bun install` before any `bun run` command works. A hook deny means rewrite the prose; never route the write around it (a shell heredoc or script skips the hook, and `bun run lint` will fail the deck later anyway).
+
+### react-decks
+
+`react-decks/` is a React slide framework being built to replace Slidev here (RFC 0007). It is its own bun workspace with its own `AGENTS.md`, which Codex loads only when working inside that directory, so the routing is repeated here: before editing anything under `react-decks/`, read `react-decks/AGENTS.md`, `react-decks/docs/architecture.md`, and the three `.claude/rules/react-decks/` rules in the table above, and load the `ce:architecting-systems` and `ce:writing-tests` skills. Its gate is `bun run --cwd react-decks check`; a worktree needs `bun install --cwd react-decks` first. The deck prose rules and hooks above do not apply to framework code. Delegated runs also read the react-decks part of `.claude/delegate.md`.
 
 ### Generated copies
 

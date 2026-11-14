@@ -12,6 +12,7 @@ They are follow-up work: nothing here blocks the deck in progress. An RFC is dra
 | [0004](0004-story-primitives.md) | Promote the parliament layout math, and gate the credit from the addon | Done | texas-2026 |
 | [0005](0005-prose-review.md) | Prose review beyond the regex lint | Done | texas-2026 |
 | [0006](0006-codex-deck-orchestration.md) | A repo kit for orchestrating deck builds through Codex | Done | texas-2026 |
+| [0007](0007-react-decks.md) | react-decks, a React slide framework to replace Slidev | In progress | every deck so far |
 
 Statuses: Draft, Ready (reviewed and executable, awaiting a go-ahead), Accepted, In progress, Done, Rejected. An RFC that's done keeps its file, with a line at the top naming the commit that landed it.
 
