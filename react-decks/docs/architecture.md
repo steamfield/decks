@@ -1309,7 +1309,7 @@ with a message naming it.
 click total is counted from the motion step components written in the MDX, so an author who
 uses `<Step at={2}>` does not also maintain a number:
 
-| Element in the MDX | Contributes |
+| Element in the MDX (by the motion component it resolves to) | Contributes |
 | --- | --- |
 | `Step`, `Stagger`, `Highlight`, `Draw` with `at` and optional `until` | `until` if present, else `at` |
 | `TextReveal`, `CountUp` with `at` | `at` |
@@ -1319,8 +1319,14 @@ The total is the largest contribution, or 0. The count runs on the MDX syntax tr
 (`remark-parse` + `remark-mdx`, already installed), after `hide` is checked, so a hidden
 slide's body is never parsed.
 
-- Elements are matched by the name written in the slide, block or inline. An aliased import
-  or a member name (`<motion.Step>`) is not counted; such a slide sets `clicks:`.
+- An element is counted by what its name resolves to, not by the name. It counts when the
+  name is one the deck's `components/` re-exports from `@react-decks/motion`
+  (`export { Step } from "@react-decks/motion"`, or `export { Step as Reveal } ...`, which
+  counts `<Reveal>` as a `Step`), or one the slide file itself imports from
+  `@react-decks/motion`, under any local name. A slide's own import wins over the deck's
+  components. A deck component that merely shares a name with a motion component
+  (`components/Highlight.tsx`) is allowed and is not counted. A member name
+  (`<motion.Step>`) is not counted.
 - `at`, `until` and `from` must be non-negative integer literals (`at={2}`), and `until`
   must be greater than `at`. Anything else (an expression, a string, a fraction, a negative
   number) is an error naming the file and the attribute.
@@ -1334,9 +1340,8 @@ slide's body is never parsed.
   at={1} />}`, a `.map()`), where it cannot be counted, is an error naming the file.
 - None of these errors is raised when the slide sets `clicks:`; the number is then the
   author's.
-- A file under `components/` may export one of the seven counted names only as a re-export
-  from `@react-decks/motion`; defining its own is an error naming the file and the name.
-- Steps inside a deck component are not seen; such a slide sets `clicks:`.
+- Steps inside a deck component are not seen, and neither are a deck's own components that
+  share a motion name; such a slide sets `clicks:`.
 
 `ScannedSlide.frontmatter` holds what the author wrote: `clicks` is absent from it when the
 author did not write it (the existing expectation in `slides.test.ts` changes accordingly).
