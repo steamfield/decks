@@ -667,9 +667,11 @@ export interface DeckState {
 
 export interface DeckStore {
   // ...the Phase 2 members, plus:
-  /** Switches view, optionally moving to `nav` (clamped) in the same step. One history write:
-   *  `pushState` when the slide changes, `replaceState` otherwise, so Back always steps the
-   *  talk and never returns to the overview. Does nothing when nothing would change. */
+  /** Switches view, optionally moving to `nav` (clamped) in the same step. When the slide
+   *  does not change it is one `replaceState`. When it does, the current entry is first
+   *  rewritten with `replaceState` to the destination view at the old position, then the new
+   *  position is written with `pushState`; so Back always steps the talk and never returns
+   *  to the overview. Does nothing when nothing would change. */
   setView(view: DeckView, nav?: NavState): void;
 }
 
@@ -783,8 +785,9 @@ A scrollable grid with one button per slide, named "Slide 3: <title>", each show
 of the canvas's design ratio. The button for the store's current slide has
 `aria-current="true"`, and on entry it is focused and scrolled into view.
 
-In every view a navigation key is ignored when the event target is a button or inside one,
-so `Space` and `Enter` on a focused button do the button's own job.
+In every view `Space`, `Shift+Space` and `Enter` are ignored when the event target is a
+button or inside one, so they do the button's own job. Arrow keys, `PageUp`, `PageDown`,
+`Home` and `End` stay bound there: a speaker who clicked "Reset timer" can still advance.
 
 Arrow keys move focus: `ArrowRight` and `ArrowDown` to the next button, `ArrowLeft` and
 `ArrowUp` to the previous, `Home` and `End` to the first and last. Nothing is bound to
@@ -817,7 +820,8 @@ it.
 | Reload the play window mid-talk | It returns to the talk's position; the presenter does not move. |
 | Open a third window at `#/1` mid-talk | It is brought to the talk's position; the others do not move. |
 | Presenter opens the overview, arrows to another slide, presses `Escape` | The audience never moved; the presenter is back on the talk's slide and click. |
-| Presenter opens the overview and activates slide 6 | Both windows go to slide 6, click 0, and the presenter is in the presenter view. |
+| Presenter opens the overview and activates slide 6 | Both windows go to slide 6, click 0, and the presenter is in the presenter view. Back then returns both to the slide they left, with the presenter still in the presenter view. |
+| Click "Reset timer" in the presenter, then press ArrowRight | The talk advances. |
 | The audience window reloads while the presenter is browsing the overview | The audience returns to the talk's position, not the focused tile. |
 | Presenter reloaded while in the overview, then `Escape` | It returns to the presenter view. |
 | The talk advances three slides from the play window; press back in the presenter | Both windows step back one slide. |
@@ -1331,8 +1335,9 @@ slide's body is never parsed.
 
 - An element is counted by what its name resolves to, not by the name. It counts when the
   name is one the deck's `components/` re-exports from `@react-decks/motion`
-  (`export { Step } from "@react-decks/motion"`, or `export { Step as Reveal } ...`, which
-  counts `<Reveal>` as a `Step`), or one the slide file itself imports from
+  (`export { Step } from "@react-decks/motion"`, `export { Step as Reveal } ...`, which
+  counts `<Reveal>` as a `Step`, or an import from the motion package followed by a local
+  `export { Step }`), or one the slide file itself imports from
   `@react-decks/motion`, under any local name. A slide's own import wins over the deck's
   components. A deck component that merely shares a name with a motion component
   (`components/Highlight.tsx`) is allowed and is not counted. A member name
@@ -1340,10 +1345,13 @@ slide's body is never parsed.
 - `at`, `until` and `from` must be non-negative integer literals (`at={2}`), and `until`
   must be greater than `at`. Anything else (an expression, a string, a fraction, a negative
   number) is an error naming the file and the attribute.
-- A child of `Steps` that is neither a JSX element nor whitespace is an error naming the
-  file and saying how to fix it, except a markdown list as the only child. MDX wraps inline
-  JSX written on consecutive lines in one paragraph, so `<li>` elements on adjacent lines are
-  this error: each child goes in its own block, or the items are written as a markdown list.
+- The count sees children the way MDX compiles them: a paragraph that holds only JSX
+  elements and whitespace is unwrapped into those elements (MDX's own rule), so
+  `<li>a</li>` or `<div>a</div>` written on one line each, adjacent or separated by blank
+  lines, count as elements, inside `Steps` and inside a `ul`/`ol`.
+- After that unwrapping, a child of `Steps` that is neither a JSX element nor whitespace
+  (markdown text, an expression) is an error naming the file, except a list as the only
+  child.
 - A spread attribute on a counted element (`<Step {...props}>`) is an error naming the file
   and the element, since it could override `at`.
 - A counted name that appears inside a JavaScript expression in the slide (`{cond && <Step
