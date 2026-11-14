@@ -9,11 +9,13 @@ export function registerSettleProbe(isBusy: () => boolean): () => void {
   };
 }
 
-export function settled(): Promise<void> {
+export async function settled(): Promise<void> {
+  await document.fonts?.ready;
   return new Promise((resolve) => {
     let quietFrames = 0;
     function frame() {
       const busy =
+        document.fonts?.status === "loading" ||
         transitionInFlight() ||
         [...probes].some((probe) => probe()) ||
         (document.getAnimations?.() ?? []).some((animation) => {

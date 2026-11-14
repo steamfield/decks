@@ -121,8 +121,8 @@ it("a URL view change updates useDeck and the html attribute", async () => {
   });
   await waitFor(() => expect(document.documentElement).toHaveAttribute("data-deck-view", "print"));
   expect(
-    await screen.findByRole("status", { name: "Deck 1/5 click 0/0 view print print true" }),
-  ).toBeVisible();
+    await screen.findAllByRole("status", { name: "Deck 1/5 click 0/0 view print print true" }),
+  ).toHaveLength(9);
 });
 
 it("a slide receives the deck's components without importing them", async () => {

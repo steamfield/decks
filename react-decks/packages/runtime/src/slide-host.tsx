@@ -1,10 +1,19 @@
 /// <reference types="vite/client" />
 
 import { clicksForSlide } from "@react-decks/core";
-import { lazy, type ReactElement, Suspense, useEffect, useMemo, useState } from "react";
+import {
+  lazy,
+  type ReactElement,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { DeckCredit } from "./deck-credit";
 import { type RenderContext, SlideContext, useDeckContext, useDeckSelector } from "./hooks";
+import { registerSettleProbe } from "./settle";
 import "./layers.css";
 
 export function SlideHost({
@@ -90,7 +99,7 @@ export function SlideHost({
               <Below />
             </div>
           )}
-          {startedPending ? <Suspense fallback={null}>{content}</Suspense> : content}
+          {startedPending ? <Suspense fallback={<LoadingSlide />}>{content}</Suspense> : content}
           {Above && (
             <div
               data-deck-layer="above"
@@ -103,6 +112,11 @@ export function SlideHost({
       </SlideContext>
     </div>
   );
+}
+
+function LoadingSlide() {
+  useLayoutEffect(() => registerSettleProbe(() => true), []);
+  return null;
 }
 
 function ReloadFailedSlide() {

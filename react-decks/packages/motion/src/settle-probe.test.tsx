@@ -1,10 +1,9 @@
 import { type DeckSource, mountDeck } from "@react-decks/runtime";
-import { act } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { expect, it, onTestFinished, vi } from "vitest";
 import { gsap } from "./index";
 
-function mount() {
-  vi.useFakeTimers();
+async function mount() {
   const source: DeckSource = {
     manifest: {
       name: "probe",
@@ -19,7 +18,7 @@ function mount() {
   const root = document.createElement("div");
   document.body.append(root);
   let unmount = () => {};
-  act(() => {
+  await act(async () => {
     unmount = mountDeck(source, root);
   });
   onTestFinished(() => {
@@ -27,10 +26,12 @@ function mount() {
     root.remove();
     vi.useRealTimers();
   });
+  await screen.findByRole("heading", { name: "Probe" });
+  vi.useFakeTimers();
 }
 
 it("settled includes a delayed finite tween nested under a running timeline", async () => {
-  mount();
+  await mount();
   const timeline = gsap.timeline().to({ x: 0 }, { x: 1, duration: 10, delay: 10 });
   onTestFinished(() => {
     timeline.kill();
@@ -46,7 +47,7 @@ it("settled includes a delayed finite tween nested under a running timeline", as
 });
 
 it("settled ignores paused ancestors and an infinite child inside a finite timeline", async () => {
-  mount();
+  await mount();
   const paused = gsap.timeline({ paused: true }).to({ x: 0 }, { x: 1, duration: 10 });
   const loop = gsap.timeline().to({ x: 0 }, { x: 1, duration: 1, repeat: -1 });
   onTestFinished(() => {
@@ -61,7 +62,7 @@ it("settled ignores paused ancestors and an infinite child inside a finite timel
 });
 
 it("settled waits through a finite parent's repeat delay until its final iteration ends", async () => {
-  mount();
+  await mount();
   const timeline = gsap
     .timeline({ repeat: 1, repeatDelay: 10 })
     .to({ x: 0 }, { x: 1, duration: 1 });

@@ -7,6 +7,7 @@ import { PlayView } from "./play-view";
 import { PresenterView } from "./presenter-view";
 import { createSlideModules, type DeckSource } from "./source";
 import type { DeckStore } from "./store";
+import { PrintView } from "./views/print-view";
 
 function DeckView(): ReactElement {
   const view = useDeckSelector((state) => state.view);
@@ -37,6 +38,7 @@ function DeckView(): ReactElement {
   }, [view]);
   if (view === "presenter") return <PresenterView />;
   if (view === "overview") return <OverviewView />;
+  if (view === "print") return <PrintView />;
   return <PlayView />;
 }
 
