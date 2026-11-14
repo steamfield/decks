@@ -93,6 +93,8 @@ export interface SlideMeta {
   readonly clicks: number
   /** Name of the transition into the following slide; undefined uses the deck default. */
   readonly transition?: string
+  /** True when a click on this slide commits through a view transition (section 4.3). */
+  readonly morphSteps?: boolean
 }
 
 export interface CanvasSize {
@@ -105,6 +107,8 @@ export interface DeckManifest {
   readonly name: string
   readonly title: string
   readonly canvas: CanvasSize
+  /** The deck's default slide transition; undefined means `fade`. */
+  readonly transition?: string
   readonly slides: readonly SlideMeta[]
 }
 
@@ -822,6 +826,113 @@ it.
 | Two decks served from one origin at different paths, each with two windows | Navigating one deck does not move the other. |
 | The same built deck opened as `/dir/` and `/dir/index.html` | The two windows sync. |
 
+## 4.3 runtime, Phase 3 surface: transitions, motion mode, settle (Final)
+
+```ts
+/** Registers something that can be mid-animation where `document.getAnimations()` cannot see
+ *  it. Returns a function that removes it. */
+export function registerSettleProbe(isBusy: () => boolean): () => void;
+
+declare global {
+  interface Window {
+    /** Set by `mountDeck`, removed on unmount. */
+    __deck?: { settled(): Promise<void> };
+  }
+}
+```
+
+### Motion mode
+
+`Deck` sets `data-deck-motion` to `instant` when the view is not `play`, or
+`(prefers-reduced-motion: reduce)` matches (followed live), or the page's search string has
+`motion=instant` (what `shot`, `snap` and print use). Otherwise `live`.
+
+### Presented and logical state
+
+A view transition has to snapshot the old DOM before React commits the new one, and the
+browser calls the update callback a frame after `startViewTransition`. So the store keeps two
+states. The logical state changes at once on `dispatch`, `setView`, a remote state or a URL
+change; every later action, the URL and sync publishing work from it. The presented state is
+what `getState()` returns and what subscribers are notified about; it becomes the logical
+state either at once or inside a transition's update callback. Two key presses in one frame
+therefore advance two steps, not one.
+
+`createDeckStore(manifest, options)` takes `present?: (change: { from: DeckState; to: DeckState }, apply: () => void) => void`.
+The store calls it for every change with the previous presented state and the new logical
+state; `apply` sets the presented state to `to` and notifies. Without the option the store
+applies at once. `mountDeck` passes the runtime's presenter, below. `apply` may be called
+late but exactly once per change, in order; when several are pending, each applies its own
+`to`.
+
+### When a change transitions
+
+The presenter applies at once, with no view transition, when any of these holds:
+`document.startViewTransition` is missing; `data-deck-motion` is `instant`; the view is not
+`play` both before and after; the position did not change; the target slide's module has not
+loaded yet; the transition name is `cut`.
+
+Otherwise it calls `document.startViewTransition(() => flushSync(apply))`:
+
+| Change | Transition name |
+| --- | --- |
+| To the next slide (`n` to `n + 1`) | Slide `n`'s `transition`, else the manifest's, else `fade`. |
+| To the previous slide (`n + 1` to `n`) | The same boundary: slide `n`'s `transition`, else the manifest's, else `fade`. |
+| A jump of more than one slide | The manifest's `transition`, else `fade`. |
+| A click on a slide with `morphSteps` | `step`. |
+| A click on any other slide | No transition; applied at once. |
+
+While a transition is in flight `<html>` has `data-deck-transition="<name>"` and
+`data-deck-nav="forward"` or `"backward"` (by slide number, then click). Both are set before
+`startViewTransition` is called and removed when its `finished` promise settles, unless a
+newer transition has replaced them. A change that arrives while one is in flight starts its
+own; the browser skips the old one to its end. A rejected `ready` or `finished` promise (a
+skipped transition) is expected and is not an error.
+
+The presenter window never transitions (its view is not `play`).
+
+### Presets
+
+`transition.css`, in `@layer react-decks`, styles the root snapshot per name. Durations and
+eases read the motion tokens with fallbacks (`var(--deck-dur-slow, 600ms)`), because runtime
+cannot import the motion package.
+
+| Name | Root animation |
+| --- | --- |
+| `cut` | None; never starts a view transition. |
+| `fade` | Old fades out, new fades in, over `--deck-dur-base`. |
+| `push` | Old slides out and new slides in horizontally by the full width, leftward when `forward`, rightward when `backward`, over `--deck-dur-slow` with `--deck-ease-settle`. |
+| `zoom` | Old scales up to 1.08 and fades, new scales from 0.94 and fades in, reversed when `backward`, over `--deck-dur-slow`. |
+| `step` | The root does not animate (`animation: none` on old and new root). |
+
+For every name, a named group (`::view-transition-group(*)` other than `root`) moves and
+resizes over `--deck-dur-slow` with `--deck-ease-settle`, so an element with the same
+`view-transition-name` before and after glides to its new place under any preset. A deck
+defines its own transition by naming it in frontmatter and writing CSS against
+`html[data-deck-transition="<name>"]::view-transition-old(root)` and `new(root)`; a name with
+no CSS gets the browser's cross-fade.
+
+### `settled()`
+
+Resolves once, for two consecutive animation frames: no view transition is in flight, no
+change is waiting to be applied, no registered probe reports busy, and no animation from
+`document.getAnimations()` is running with a finite end (an animation with infinite
+iterations or infinite duration is ignored, so a looping logo does not block it). It never
+rejects. Tests, `shot`, `snap` and export wait on it instead of sleeping.
+
+### Behaviour that needs a browser test
+
+| Situation | Outcome |
+| --- | --- |
+| ArrowRight across a `fade` boundary | `data-deck-transition="fade"` and `data-deck-nav="forward"` appear, then are removed; `settled()` resolves after they are gone; the URL changed at once. |
+| ArrowLeft back across it | The same name with `data-deck-nav="backward"`. |
+| ArrowRight twice within one frame at a slide boundary | The deck ends two steps on; no step is lost. |
+| ArrowRight, then ArrowRight again mid-transition | Ends on the second target; the first transition's attributes do not linger. |
+| A slide with `transition: cut` | No `data-deck-transition` attribute ever appears. |
+| `?motion=instant` or reduced motion | No transition; `data-deck-motion="instant"`. |
+| A click on a slide without `morphSteps` | No transition. With `morphSteps`, `data-deck-transition="step"`. |
+| End from slide 1 before the last slide's module loaded | A cut to the last slide, no error. |
+| The presenter window while the audience transitions | No transition attributes in the presenter. |
+
 ## 5. motion (Outline)
 
 - Tokens: `motion.duration.{quick,base,slow}`, `motion.ease.{enter,exit,settle,draw}`,
@@ -994,6 +1105,36 @@ Against `examples/motion`, one slide per primitive and preset:
 | `useTimeline` slide reloaded at `?clicks=2` | The click-2 pose in the first painted frame. |
 | `useTween` slide during a beat | The tweened attribute changes on every animation frame of the beat, and stops changing when it ends. |
 
+## 5.2 motion, Phase 3 surface: `Morph` and the settle probe (Final)
+
+```ts
+/** Gives its element a `view-transition-name` while its slide is the active one in the play
+ *  view. An element with the same name on the next slide, or at the next click of a slide
+ *  with `morphSteps`, moves and resizes to the new place and cross-fades. */
+export function Morph(props: { name: string; as?: "div" | "span" | "h1" | "h2" | "h3" | "p" | "figure" | "g"; className?: string; children?: ReactNode }): ReactElement;
+```
+
+`name` must be a CSS identifier (`/^[A-Za-z_][A-Za-z0-9_-]*$/`) other than `root` and `none`;
+anything else throws naming it. The name is set as an inline `view-transition-name` only when
+`useSlide()` reports `isActive` and the `slide` context; in every other context, and on the
+hidden neighbour slides, the element carries no name, so a name is never present twice in
+one document. Two `Morph`s with the same name on one slide at the same time are an author
+error the browser reports by skipping the transition; the framework does not police it.
+
+The package registers one settle probe with the runtime when it is first imported: busy
+while any gsap tween or timeline on the global timeline is active and does not repeat
+forever, or while a `useTween` notification is pending.
+
+Browser tests, against two new gallery slides (`Morph` across slides, `Morph` across clicks
+with `morphSteps: true`):
+
+| Situation | Outcome |
+| --- | --- |
+| ArrowRight between the two `Morph` slides, sampling the `::view-transition-group` box each frame | Its left and top move monotonically from the first slide's box to the second's. |
+| A click on the `morphSteps` slide | The morphing element's box moves monotonically; the rest of the slide does not cross-fade. |
+| `settled()` during a `useTimeline` beat | Resolves only after the beat's last change. |
+| `settled()` on the gallery's looping element | Resolves. |
+
 ## 6. node (Outline)
 
 - Vite plugins: `slides` (scan `slides/*.mdx`, frontmatter, drop `hide: true`, build the
@@ -1126,6 +1267,29 @@ with `_` are config) or a path to a deck directory. `dev` prints the URL it serv
 `dist/{name}`), and `--base` to `_config.base` (default `./`). A `--port` that is not a whole
 number, and a malformed `decks.json`, exit 1 with a message naming the value or the file. An unknown alias or a directory without `deck.config.ts` exits 1
 with a message naming it.
+
+## 6.2 node: static click totals and transition metadata (Final)
+
+`clicks` in frontmatter stays authoritative when present. When it is absent, the slide's
+click total is counted from the motion step components written in the MDX, so an author who
+uses `<Step at={2}>` does not also maintain a number:
+
+| Element in the MDX | Contributes |
+| --- | --- |
+| `Step`, `Stagger`, `Highlight`, `Draw` with numeric literal `at` and optional `until` | `until` if present, else `at` |
+| `TextReveal`, `CountUp` with numeric literal `at` | `at` |
+| `Steps` with numeric literal `from` and `k` direct JSX element children | `from + k - 1` (nothing when `k` is 0) |
+
+The total is the largest contribution, or 0. Only JSX written in the slide file counts,
+matched by element name; a step inside a deck component is not seen, and such a slide sets
+`clicks:`. An `at`, `until` or `from` that is an expression rather than a numeric literal is
+an error naming the file and the attribute, unless the slide sets `clicks:`. The count is
+done on the MDX syntax tree (`remark-parse` + `remark-mdx`, already installed), not with a
+regular expression.
+
+Frontmatter `morphSteps: true` becomes `SlideMeta.morphSteps`; anything but a boolean is an
+error. `deck.config.ts`'s `transition` becomes `DeckManifest.transition`. `assertManifest`
+rejects a `transition` that is an empty string and a `morphSteps` that is not a boolean.
 
 ## 7. kit (Outline)
 
