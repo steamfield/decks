@@ -1,0 +1,52 @@
+.sf-term-lines {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--sf-font-term);
+  line-height: 1.12;
+  color: var(--od-text-secondary);
+}
+.sf-term-lines:global(.is-follow) {
+  justify-content: flex-end;
+}
+.sf-term-line {
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: clip;
+  transition:
+    opacity var(--od-dur-card) var(--od-settle),
+    color var(--od-dur-card) var(--od-settle);
+}
+.sf-term-prefix {
+  color: var(--od-text-faint);
+}
+.sf-term-line:global(.is-cmd) {
+  color: var(--od-phosphor);
+}
+.sf-term-line:global(.is-user) {
+  color: var(--od-text);
+}
+.sf-term-line:global(.is-user) .sf-term-prefix {
+  color: var(--od-pink);
+}
+.sf-term-line:global(.is-agent) {
+  color: var(--od-text);
+}
+.sf-term-line:global(.is-ok) {
+  color: var(--od-phosphor);
+}
+.sf-term-line:global(.is-fail) {
+  color: var(--od-pink);
+}
+.sf-term-line:global(.is-warn) {
+  color: var(--od-amber);
+}
+.sf-term-line:global(.is-muted) {
+  color: var(--od-text-faint);
+}
+.sf-term-line:global(.is-cold) {
+  opacity: var(--sf-dim);
+}
+.sf-term-line:global(.is-hot) {
+  color: var(--od-pink);
+}
