@@ -1575,6 +1575,101 @@ layouts use the extra canvas: columns widen, centered content stays centered.
 | `Cover`, `Section` | Content is inside the padding at all three window shapes. |
 | A deck defines `components/Center.tsx` | Its component renders. |
 
+## 6.6 Errors (Final)
+
+Two kinds of failure are reported differently.
+
+An author mistake (a bad config, frontmatter, MDX, component file, CLI argument, or deck
+path) is a `DeckError` (node package, not exported): a message, the file it concerns relative
+to the working directory, and a line and column when known. It is reported once, as one or
+two plain sentences that say what is wrong, with which value, and what to do, and never with
+a stack trace or a raw validation dump. Anything else is a bug in react-decks: it keeps its
+stack and is followed by the line `This is a bug in react-decks.`
+
+Message shape: `<file>[:line:col]: <what is wrong, naming the value>. <what to do>`.
+
+| Mistake | Message |
+| --- | --- |
+| Config lacks `title` | `deck.config.ts: title is required (a string).` |
+| Unknown config key | `deck.config.ts: unknown key "titel". Known keys: title, author, ...` |
+| Wrong type | `deck.config.ts: canvas.width must be a number, got "1920".` |
+| No default export, or an empty file | `deck.config.ts has no default export. Write: export default defineDeck({ title: "..." })` |
+| No `deck.config.ts` | `no deck.config.ts in <dir>. A deck directory holds deck.config.ts and slides/.` |
+| Unknown deck | `"aa" is not a registered deck or a directory. Registered in decks.json: basic, motion.` |
+| Registry entry points nowhere | `decks.json entry "a" points at nope/, which does not exist.` |
+| Frontmatter | `slides/03-x.mdx: frontmatter clicks must be a whole number 0 or greater, got "two".` |
+| No slides | `no slides/*.mdx files in <dir>.` or `every slide in <dir>/slides has hide: true.` |
+| Step attribute | `slides/03-x.mdx:7:1: <Step at={n}>: at must be a literal whole number (at={2}). To compute it, set clicks: in the frontmatter.` |
+| Undefined component | `slides/03-x.mdx:3:1: <Nonexistent> is not defined. Export it from a file in components/ or import it in the slide.` |
+| Unknown CLI option | `decks build: unknown option --bogus. Options: --out, --base.` |
+| Port in use | `decks dev: port 3040 is already in use. Stop what is using it or pass a different --port.` |
+
+All validation issues go through one formatter (the one `cli.ts` uses for `decks.json`,
+extended); every issue of one file is listed, one per line. Paths are relative to the
+working directory everywhere. Step-count and component errors carry the position of the
+element (the syntax tree has it). A YAML error's line is the line in the file.
+
+### Where each is shown
+
+- CLI, before a server exists: `decks <command>: <message>`, exit code 1, nothing else.
+- Dev server running: one line in the terminal through Vite's logger and the same message in
+  the browser overlay with the file and position (`this.error({ message, id, loc })` in a
+  plugin hook), for cold start, hot update and config changes alike. An error raised in
+  `hotUpdate` is logged to the terminal, not only sent to the browser.
+- An invalid file stays reported until it is fixed: while a slide or component file is in a
+  failed state the manifest module fails with the same error, so a reload shows it again
+  and never a deck that looks fine on stale data. When it is fixed the terminal says
+  `<file>: fixed`.
+- A slide whose module never loaded (it failed to compile at cold start) triggers a full
+  reload when it next changes, so fixing it recovers without a manual reload.
+- An invalid `deck.config.ts` during a session: `deck.config.ts is invalid, still serving
+  the last valid config:` and the issues; on the next good load `deck.config.ts is valid
+  again, restarting.` The overlay stays up (resent when a client connects) while it is
+  invalid.
+- A build reports each mistake once: slides and components are scanned once per build.
+- An explicit `--port` is strict: if it is taken, `dev` fails with the message above and
+  does not move to another port.
+
+### `decks build` and the output directory
+
+`build` empties its output directory, so it refuses, before doing anything, when the
+resolved `--out`: is the deck directory or the working directory, or contains either
+(`--out <path> is the deck directory (or contains it). build empties --out first, which
+would delete the deck. Choose another directory.`); exists, is not empty, and was not
+written by `decks build` (no `index.html` carrying the `decks:name` meta) (`<path> is not
+empty and was not written by decks build. Empty it yourself or choose another --out.`); is
+a file; or cannot be written (`cannot write to <path> (permission denied).`).
+
+### CLI
+
+`decks`, `decks <command> --help` and an unknown command print usage with the program name
+`decks`, a description for every command and option, and no source path. An unknown option
+is an error.
+
+### Build-time check for undefined components
+
+A capitalized JSX element in a slide whose name is not provided by the framework, exported
+by `components/`, imported or declared in the slide, is an error at build and in dev (the
+message in the table). Member names (`<motion.div>`) and lowercase elements are not checked.
+
+### Browser
+
+- A slide that fails to render shows, in place of the slide: `Slide <id> (<file>) failed to
+  render: <message>`, with the component stack in dev. A slide whose module failed to load
+  shows `Slide <id> failed to load. See the terminal or the error overlay.` The boundary
+  resets when the slide's module or click changes, so a fix shows without a reload.
+- A failure while starting the deck (a component file that throws at import) writes `The
+  deck failed to start: <message>` into `#deck-root`; the page is never blank.
+- Hook errors name the hook and the remedy: `useSlide() was called outside a slide (this is
+  also what <Step>, <Morph> and the other motion components use). Render the component from
+  a slide.`; likewise `useDeck()`.
+- `Morph` and `TextReveal` errors state the rule as well as the value.
+- Notes that fail to load are logged with their cause and show `Notes failed to load:
+  <message>. Reload to retry.`
+- A sync message of an unknown shape (a tab on an older build) is ignored.
+- An exception thrown while applying a state inside a view transition is reported
+  (`reportError`), not swallowed; only the expected skip rejections are ignored.
+
 ## 7. kit (Outline)
 
 The port of `packages/decks`: theme tokens, global `od-*` styles, `compat.css`, the story
