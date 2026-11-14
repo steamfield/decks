@@ -59,6 +59,10 @@ for (;;) {
   await new Promise((done) => setTimeout(done, 200));
 }
 
+// A baseline frame's slide number is the Slidev page number, which is the file prefix here.
+// While the port is partial the deck has fewer slides, so find each slide's current position.
+const ported = (await readdir(join(deck, "slides"))).filter((name) => name.endsWith(".mdx")).sort();
+const position = (slide) => ported.findIndex((name) => Number(name.slice(0, 2)) === slide) + 1;
 const frames = (await readdir(baseline))
   .filter((name) => /^s\d+-c\d+\.png$/.test(name))
   .filter((name) => !only.length || only.includes(Number(name.slice(1, 3))))
@@ -75,8 +79,13 @@ page.on("pageerror", (error) => errors.push(String(error)));
 let failed = 0;
 try {
   for (const name of frames) {
-    const slide = Number(name.slice(1, 3));
+    const page_ = Number(name.slice(1, 3));
+    const slide = position(page_);
     const click = Number(name.match(/-c(\d+)/)[1]);
+    if (!slide) {
+      console.log(`${name}\tnot ported yet`);
+      continue;
+    }
     await page.goto(`${url}/?motion=instant#/${slide}${click ? `?clicks=${click}` : ""}`);
     await page.reload();
     await page.locator(`[data-deck-slide="${slide}"][data-deck-active]`).waitFor();

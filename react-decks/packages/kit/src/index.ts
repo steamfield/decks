@@ -7,7 +7,7 @@ export { OdByline } from "./od-byline";
 export { OdCoverHead } from "./od-cover-head";
 export { OdQrCard } from "./od-qr-card";
 export { OpenChart } from "./open-chart";
-export { clamp01, xScale, yScale } from "./scales";
+export { clamp01, stagger, xScale, yScale } from "./scales";
 export { useScriptedDemo } from "./scripted-demo";
 export { useStage } from "./stage";
 export { StoryCard } from "./story-card";

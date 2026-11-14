@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { clamp01, STAGE, xScale, yScale } from "./index";
+import { clamp01, STAGE, stagger, xScale, yScale } from "./index";
 
 it("maps stage domains in both directions with d3 scale semantics", () => {
   const x = xScale([1997, 2025], [200, 1720]);
@@ -17,4 +17,12 @@ it("maps stage domains in both directions with d3 scale semantics", () => {
 });
 it("clamps progress at the boundaries", () => {
   expect([-1, 0, 0.5, 1, 2].map(clamp01)).toEqual([0, 0, 0.5, 1, 1]);
+});
+
+it("staggers items across one beat so the last still lands at 1", () => {
+  expect(stagger(0, 0, 3, 0.2)).toBe(0);
+  expect(stagger(0.3, 0, 3, 0.2)).toBe(0.5);
+  expect(stagger(0.3, 1, 3, 0.2)).toBeCloseTo(1 / 6);
+  expect(stagger(0.3, 2, 3, 0.2)).toBe(0);
+  expect(stagger(1, 2, 3, 0.2)).toBe(1);
 });

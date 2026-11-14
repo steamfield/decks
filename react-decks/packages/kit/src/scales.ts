@@ -23,3 +23,11 @@ export function xScale(domain: [number, number], range: [number, number]): Linea
 export function yScale(domain: [number, number], range: [number, number]): LinearScale {
   return scaleLinear().domain(domain).range(range);
 }
+
+/**
+ * Progress of item `i` of `n` when one 0..1 beat field is staggered by `step` per item: each
+ * item starts `step` after the one before it, and the last one still lands at 1.
+ */
+export function stagger(progress: number, i: number, n: number, step: number): number {
+  return clamp01((progress - i * step) / (1 - (n - 1) * step));
+}
