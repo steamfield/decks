@@ -909,7 +909,7 @@ export function useTimeline(
 `--deck-ease-settle: cubic-bezier(.32,.72,0,1)`, `--deck-ease-draw: cubic-bezier(.65,0,.35,1)`.
 The JS `ease` names are the same four curves registered with `CustomEase`. Under
 `html[data-deck-motion="instant"]` the three durations and the stagger are `0ms`. A unit test
-reads `motion.css` and fails if a CSS value and its JS constant disagree. Theme overrides of
+(`tests/motion-tokens.test.ts`, in the Node project) reads `motion.css` and fails if a CSS value and its JS constant disagree. Theme overrides of
 these tokens arrive with themes in Phase 4; until then they are fixed.
 
 All of the package's CSS is in `@layer react-decks`.
@@ -937,9 +937,9 @@ transition has run.
 | `Step` | As above, on an element chosen by `as` (default `div`). |
 | `Steps` | Wraps each child in a `Step` at `from + index` with the given `enter`. With `as="ul"` or `"ol"` each wrapper is an `li`; otherwise a `div`. |
 | `Stagger` | One step state for the group on the container; each child is wrapped in an element with `--step-index: <index>`, and its transition is delayed by `index * --deck-stagger` when entering. The delay sits on the CSS rule for the visible states, so any move into `current` or `after` is staggered (re-entering from `gone` included) and any move into `before` or `gone` is not. |
-| `TextReveal` | Splits `children` on whitespace (`by="word"`, the default) or into characters. The root is a `span` with `aria-label` set to the whole text; each piece is an `aria-hidden` `span` with `--step-index`, staggered like `Stagger`. Whitespace between words is preserved. |
+| `TextReveal` | Splits `children` on whitespace (`by="word"`, the default) or into characters. The root is a `span` holding a visually hidden `span` with the whole text, then the pieces inside an `aria-hidden` `span`, each piece a `span` with `--step-index`, staggered like `Stagger`. Whitespace between words is preserved. |
 | `Highlight` | A `mark` whose background (the `--deck-highlight` color, default a translucent `currentColor`) grows from zero to full width over `--deck-dur-slow` with `--deck-ease-draw` when its state is `current` or `after`. Its text is always visible; it is never `inert` or `aria-hidden`. |
-| `CountUp` | Shows `format(from)` (default `from` 0) before click `at` and `format(to)` from it. On the live transition from `before` to `current` in the `slide` context it tweens the value over `duration.slow` with `ease.settle`; going back, or motion `instant`, or any other context, shows the value for the state with no tween. Default `format` rounds to an integer and uses `Intl.NumberFormat`. The root is a `span` with `aria-label` of the final formatted value from click `at`. Like `Highlight` it is always visible and never `inert` or `aria-hidden`. |
+| `CountUp` | Shows `format(from)` (default `from` 0) before click `at` and `format(to)` from it. On the live transition from `before` to `current` in the `slide` context it tweens the value over `duration.slow` with `ease.settle`; going back, or motion `instant`, or any other context, shows the value for the state with no tween. Default `format` rounds to an integer and uses `Intl.NumberFormat`. The root is a `span` holding a visually hidden `span` with the formatted value for the current state (`format(from)` before `at`, `format(to)` from it) and the animated number in an `aria-hidden` `span`. Like `Highlight` it is always visible and never `inert` or `aria-hidden`. |
 | `Draw` | A `g` with the step attributes. Each direct child that is an SVG shape element (`path`, `line`, `polyline`, `polygon`, `circle`, `ellipse`, `rect`) gets `pathLength="1"`; CSS sets `stroke-dasharray: 1` and moves `stroke-dashoffset` from 1 (`before`, `gone`) to 0 over `--deck-dur-slow` with `--deck-ease-draw`. |
 
 A step outside a `SlideHost` throws through `useSlide()`.
