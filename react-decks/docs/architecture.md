@@ -429,6 +429,9 @@ Kit CSS, deck CSS, tests and tooling select on these and nothing else from the f
 | `#deck-frame` | the scaled canvas element of the main view | sets `--deck-w`, `--deck-h`, `--deck-scale`, `--deck-text-scale` |
 | `#deck-print` | the print container | |
 | `data-step-state` | each step primitive's element | `before`, `current`, `after`, `gone` |
+| `data-deck-layer` | a layer's element inside a slide root | `above`, `below` |
+| `data-deck-layout` | a layout component's element | `center`, `cover`, `section`, `two-col`, `image-side` |
+| `data-line`, `data-line-state` | a line of a code block | the line number; `active`, `dim` |
 
 Framework UI classes are prefixed `rd-` and live in `@layer react-decks`. The framework ships
 no CSS reset.
@@ -441,6 +444,8 @@ no CSS reset.
   package.json        depends on @react-decks/runtime; dev-depends on @react-decks/node
   slides/*.mdx        one file per slide, ordered by filename
   components/*.tsx    optional; provided to every slide without an import
+  layers/above.tsx    optional; drawn over every slide (section 6.5)
+  layers/below.tsx    optional; drawn under every slide
   styles/index.css    optional; loaded once, after framework styles
   public/             optional; served at the site root
 ```
@@ -458,6 +463,7 @@ strings (`"02-a" < "10-b"`). A slide's `id` is its filename without `.mdx`. Fron
 | `morphSteps` | boolean | false | clicks on this slide commit through a view transition (section 4.3) |
 | `hide` | boolean | false | when true the slide is dropped before numbering and never compiled into the deck |
 | `transition` | string | none | transition into the following slide |
+| `layers` | `false`, `"above"`, `"below"` | both | which layers this slide shows (section 6.5) |
 
 Any other key is kept and reaches the slide through `useSlide().frontmatter`. A `clicks` that
 is not a non-negative integer, a `title` or `transition` that is not a string, or a `hide`
@@ -1454,6 +1460,111 @@ Inline code is not highlighted.
 | `maxHeight` with a step on a line below the fold | That line is within the block's visible area after the click; the page did not scroll. |
 | A deck defines `components/Step.tsx` | Its `Step` renders in slides, and is not counted. |
 | A new deck with no `components/` directory uses `<Step at={1}>` | It renders and counts. |
+
+## 6.4 Deck-supplied MDX plugins (Final)
+
+```ts
+import type { PluggableList } from "unified";
+
+export interface DeckConfig {
+  // ...the fields of section 6.1, plus:
+  /** remark and rehype plugins added to the slide compiler. */
+  readonly mdx?: { readonly remarkPlugins?: PluggableList; readonly rehypePlugins?: PluggableList };
+}
+```
+
+A deck adds markdown extensions (math, diagrams, its own syntax) here. The deck's remark
+plugins run after the framework's (frontmatter, notes removal); its rehype plugins run after
+the framework's code highlighting. `mdx` must be an object whose two keys, when present, are
+arrays; anything else is a config error naming the key. A plugin that throws while compiling
+a slide is reported as that slide's compile error. Editing `deck.config.ts` restarts the dev
+server, as for any config change. The click count (section 6.2) parses slides without the
+deck's plugins: a plugin that generates step components does not add clicks, and such a
+slide sets `clicks:`.
+
+| Situation | Outcome |
+| --- | --- |
+| `remark-math` and `rehype-katex` in `mdx`, a slide with `$$e^{i\pi}+1=0$$` | The built slide contains KaTeX markup. |
+| No `mdx` key | Slides compile as before. |
+| `mdx: { remarkPlugins: "x" }` | Config error naming `mdx.remarkPlugins`. |
+| A deck remark plugin and a `<Step at={2}>` in the same slide | The click total is still 2. |
+| A deck rehype plugin and a fenced code block | The block is highlighted and the plugin's change is present. |
+
+## 6.5 Layers (Final)
+
+A layer is a component that appears on every slide: a logo, a progress bar, a footer, a
+background. A deck provides up to two, each the default export of its file:
+
+```
+<deck>/layers/above.tsx   drawn over the slide's content
+<deck>/layers/below.tsx   drawn under it
+```
+
+`virtual:react-decks/layers` exports `{ above?, below? }`, and the entry passes it as
+`DeckSource.layers`. Adding, removing or editing a layer file in dev takes effect without a
+restart. Any other file under `layers/` is an error naming it.
+
+`SlideHost` renders the layers inside each slide root, as siblings of the slide's content:
+an element with `data-deck-layer="below"`, the content, an element with
+`data-deck-layer="above"`. Each fills the slide (`position: absolute; inset: 0`); the slide
+root is its own stacking context, with the layers at `z-index` -1 and 1, so ordinary content
+sits between them. Layer elements take no pointer events; a layer's own children may turn
+them back on. Because a layer is inside the slide, `useSlide()` and `useDeck()` work in it
+and it renders correctly in every context (a preview's layer shows the preview's slide
+number).
+
+While its slide is the active one in the play view, a layer element carries
+`view-transition-name: deck-layer-below` or `deck-layer-above`. The outgoing and incoming
+slide's layers therefore pair up as one named group, and the layer holds still while the
+slides transition under any preset. In other contexts it carries no name.
+
+Frontmatter `layers: false` leaves both out for that slide; `layers: "above"` or `"below"`
+keeps only that one. Any other value is an error naming the file.
+
+| Situation (browser test) | Outcome |
+| --- | --- |
+| A deck with `layers/above.tsx` showing "n / total" | Every slide shows it with its own number; the overview tiles and the presenter's "Next" box show theirs. |
+| A `push` transition between two slides | The layer's box does not move during the transition. |
+| A slide with `layers: false` | No layer elements in that slide. |
+| A layer file added while the dev server runs | It appears without a restart. |
+| A below layer and slide content | The content is painted over the layer. |
+
+## 4.4 Layout components (Final)
+
+Structural layouts, exported by the runtime package and provided to every slide like the
+motion components (section 6.3). They arrange; they set no fonts, colors or type sizes, so a
+theme styles what goes inside. A deck component with the same name replaces one.
+
+```ts
+/** Centers its children on both axes. */
+export function Center(props: { children?: ReactNode }): ReactElement;
+/** Children stacked from the top, vertically centered as a group and aligned to the start: a title slide. */
+export function Cover(props: { children?: ReactNode }): ReactElement;
+/** Children anchored to the bottom start corner: a section divider. */
+export function Section(props: { children?: ReactNode }): ReactElement;
+/** Its first two element children side by side. */
+export function TwoCol(props: { ratio?: "1:1" | "2:1" | "1:2" | "3:2" | "2:3"; align?: "start" | "center" | "end"; children?: ReactNode }): ReactElement;
+/** An image filling one side, children on the other. */
+export function ImageSide(props: { src: string; alt: string; side?: "left" | "right"; ratio?: "1:1" | "2:1" | "1:2"; children?: ReactNode }): ReactElement;
+```
+
+Each renders one element that fills the slide, with class `rd-layout` and a
+`data-deck-layout` attribute naming it (added to the DOM contract), and pads its content
+with `--deck-pad-x` and `--deck-pad-y` (defaults 120px and 96px, set on the frame, which a
+theme overrides). The columns of `TwoCol` and `ImageSide` have a gap of `--deck-gap`
+(default 80px). `ImageSide`'s image is edge to edge on its side (no padding), covers its
+half (`object-fit: cover`), and requires `alt`; an empty string marks it decorative.
+`TwoCol` with other than two element children throws naming the count. Whitespace-only text
+between children is ignored, as in `Steps`. In a window wider or taller than 16:9 the
+layouts use the extra canvas: columns widen, centered content stays centered.
+
+| Situation (browser test, one gallery slide each) | Outcome |
+| --- | --- |
+| `Center` | The content's box is centered in the slide at 16:9, 4:3 and 21:9. |
+| `TwoCol ratio="2:1"` | The first column is twice the second's width, within a pixel, and neither overflows the slide. |
+| `ImageSide side="right"` | The image touches the top, right and bottom edges; the text is within the padding on the left. |
+| `Cover`, `Section` | Content is inside the padding at all three window shapes. |
+| A deck defines `components/Center.tsx` | Its component renders. |
 
 ## 7. kit (Outline)
 

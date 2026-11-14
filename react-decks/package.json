@@ -30,6 +30,8 @@
     "oxc-parser": "0.158.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "rehype-katex": "7.0.1",
+    "remark-math": "6.0.0",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vite": "8.3.8",
