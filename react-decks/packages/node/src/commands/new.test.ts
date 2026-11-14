@@ -240,6 +240,8 @@ it("ships templates, typechecks them and builds both scaffolds with the real Vit
     "--resolveJsonModule",
     "--customConditions",
     "@steamfield/decks/source",
+    // Source resolution compiles the kit itself, whose CSS custom properties need this augmentation.
+    "packages/kit/src/style.d.ts",
     "packages/node/templates/conventional/deck.config.ts",
     "packages/node/templates/conventional/setup.ts",
     "packages/node/templates/story/deck.config.ts",
