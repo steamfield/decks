@@ -1722,7 +1722,8 @@ conventional `Od*` chrome and the viewer come later.
 ### Deck setup file
 
 A deck may have `setup.ts` beside `deck.config.ts`. The generated entry imports it for its
-side effects before the deck mounts. It is where a deck installs its theme. Editing it in
+side effects first, before any component module is evaluated and before the deck mounts,
+so a component may read the theme at module level. It is where a deck installs its theme. Editing it in
 dev reloads the page.
 
 ### Theme
@@ -1751,7 +1752,7 @@ Exported from `@react-decks/kit`, same names and meanings as `slidev-addon-decks
 
 - `DUR` (the duration table, seconds), `SETTLE`, `DRAW`, `TRACE` (gsap ease names registered
   on the motion package's `gsap`), `SETTLE_CSS`, `DRAW_CSS`, `TRACE_CSS`, `easedStagger`.
-- `STAGE` and `CANVAS` (the 1920x1080 stage box), `clamp01`, `xScale`, `yScale`,
+- `STAGE` (the 1920x1080 stage box), `clamp01`, `xScale`, `yScale`,
   `filterUrl` and the filter definitions `StoryStage` renders.
 - `useStage({ copy, enter, beats })`: returns `{ clicks, isActive, playCount, copy, beats }`.
   `beats` is `copy.length`; `copy` is the entry for the current click, clamped. The beat
