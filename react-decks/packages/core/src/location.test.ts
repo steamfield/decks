@@ -85,6 +85,10 @@ describe("parseLocation", () => {
     "#/print/5",
     "#/play/5",
     "#/abc?clicks=2",
+    "#/99999999999999999999",
+    "#/9007199254740993",
+    "#/1e21",
+    "#/presenter/9007199254740993?clicks=2",
   ])("anything unrecognized (%s) parses as play, slide 1, click 0", (hash) => {
     expect(parseLocation(hash, "")).toEqual({
       view: "play",
@@ -125,6 +129,7 @@ describe("parseLocation", () => {
     "?clicks=2%0D%0A",
     "?clicks=2%E2%80%A8",
     "?clicks=2%E2%80%A9",
+    "?clicks=9007199254740993",
   ])("a missing or malformed clicks value (%s) parses as 0", (query) => {
     expect(parseLocation(`#/5${query}`, "")).toEqual({
       view: "play",
@@ -271,6 +276,20 @@ describe("formatHash", () => {
   });
 
   const views: DeckView[] = ["play", "presenter", "overview", "print"];
+  it.each(views)("round-trips safe integer boundaries in %s", (view) => {
+    for (const slide of [0, 1, Number.MAX_SAFE_INTEGER]) {
+      for (const click of [0, 1, Number.MAX_SAFE_INTEGER]) {
+        expect(parseLocation(formatHash({ view, slide, click }), "")).toEqual({
+          view,
+          slide: view === "overview" || view === "print" ? 1 : slide,
+          click: view === "overview" || view === "print" ? 0 : click,
+          embedded: false,
+          bridge: false,
+        });
+      }
+    }
+  });
+
   it.each(views)("round-trips a range of non-negative integer slides and clicks in %s", (view) => {
     for (let slide = 0; slide <= 12; slide++) {
       for (let click = 0; click <= 6; click++) {

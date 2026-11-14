@@ -6,9 +6,23 @@ export interface SyncState {
   readonly aspect?: number;
 }
 
+/** Orders states by sequence, then earlier start, then origin as strings. */
+export interface SyncStamp {
+  readonly seq: number;
+  /** `startedAt` of the session that published this state. */
+  readonly started: number;
+  /** Id of the session that published this state. */
+  readonly origin: string;
+}
+
 export type SyncMessage =
   | { readonly type: "hello"; readonly from: string }
-  | { readonly type: "state"; readonly from: string; readonly state: SyncState };
+  | {
+      readonly type: "state";
+      readonly from: string;
+      readonly stamp: SyncStamp;
+      readonly state: SyncState;
+    };
 
 export interface Transport {
   post(message: SyncMessage): void;
@@ -39,7 +53,7 @@ export function createMemoryHub(): MemoryHub {
         post(message) {
           if (closed) return;
           for (const participant of [...participants]) {
-            if (participant !== receive) participant(message);
+            if (participant !== receive) setTimeout(() => participant(message), 0);
           }
         },
         subscribe(listener) {
@@ -61,53 +75,49 @@ export function createMemoryHub(): MemoryHub {
 export interface SyncSessionOptions {
   /** Unique per tab. */
   readonly id: string;
+  /** When this tab's session began, in milliseconds since the epoch. The caller supplies it. */
+  readonly startedAt: number;
   readonly transport: Transport;
-  /** Called to answer a newcomer's hello. */
+  /** The session's current local state; used to answer a newcomer. */
   readonly current: () => SyncState;
-  /** Called when another participant's state should be applied locally. */
+  /** Called when a newer state from another participant should be applied locally. */
   readonly onRemote: (state: SyncState) => void;
-  /** How long to wait for an answer before assuming this tab is alone. Default 300. */
-  readonly joinTimeoutMs?: number;
 }
 
 export interface SyncSession {
-  /** False until a state arrived or the join timeout passed. */
-  readonly joined: boolean;
-  /** Tell the other participants about a local change. No-op until joined. */
+  /** Tell the other participants about a local change. */
   publish(state: SyncState): void;
-  /** Stops listening, cancels the join timer, closes the transport. */
+  /** Stops listening and closes the transport. Later publishes do nothing. */
   close(): void;
 }
 
 export function createSyncSession(options: SyncSessionOptions): SyncSession {
-  const { id, transport, current, onRemote, joinTimeoutMs = 300 } = options;
-  let joined = false;
+  const { id, startedAt, transport, current, onRemote } = options;
+  let stamp: SyncStamp = { seq: 0, started: startedAt, origin: id };
   let closed = false;
-  // Arm the timer and listen before hello: the memory hub can answer synchronously.
-  const timer = setTimeout(() => {
-    joined = true;
-  }, joinTimeoutMs);
   const unsubscribe = transport.subscribe((message) => {
     if (closed || message.from === id) return;
     if (message.type === "hello") {
-      if (joined) transport.post({ type: "state", from: id, state: current() });
-    } else {
+      transport.post({ type: "state", from: id, stamp, state: current() });
+    } else if (
+      message.stamp.seq > stamp.seq ||
+      (message.stamp.seq === stamp.seq &&
+        (message.stamp.started < stamp.started ||
+          (message.stamp.started === stamp.started && message.stamp.origin > stamp.origin)))
+    ) {
+      stamp = message.stamp;
       onRemote(message.state);
-      joined = true;
-      clearTimeout(timer);
     }
   });
   transport.post({ type: "hello", from: id });
   return {
-    get joined() {
-      return joined;
-    },
     publish(state) {
-      if (joined && !closed) transport.post({ type: "state", from: id, state });
+      if (closed) return;
+      stamp = { seq: stamp.seq + 1, started: startedAt, origin: id };
+      transport.post({ type: "state", from: id, stamp, state });
     },
     close() {
       closed = true;
-      clearTimeout(timer);
       unsubscribe();
       transport.close();
     },
