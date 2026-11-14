@@ -976,9 +976,9 @@ have arrived yet. Tests, `shot`, `snap` and export wait on it instead of sleepin
 Decided at checkpoint 1 (`docs/spikes/parity.md` has the measurements):
 
 - `useTween` stays as designed: a stable Proxy over the initial numeric fields, read through
-  `useSyncExternalStore`. A changed field schedules one notification on `gsap.ticker`, so the
-  render lands in the same frame as gsap's update. A separate `requestAnimationFrame` queue
-  halved the visible update rate and is not used. On the 102-cell waffle stage React matched
+  `useSyncExternalStore`, notifying once per tick (section 5.1 has the scheduling, which
+  changed after the spike). A separate `requestAnimationFrame` queue halved the visible
+  update rate and is not used. On the 102-cell waffle stage React matched
   Vue's frame interval at 1x and 4x CPU throttle, so no mark writes through refs. If a later
   stage does drop frames, that mark alone moves to gsap writing attributes through refs.
 - `useTimeline` builds in a layout effect, after child `useImperativeHandle` refs exist, and
@@ -1082,7 +1082,7 @@ transition has run.
 | `Step` | As above, on an element chosen by `as` (default `div`). |
 | `Steps` | Wraps each child in a `Step` at `from + index` with the given `enter`, skipping whitespace-only text (MDX puts newlines between block children). When its only child is a list (`ul` or `ol`, which is what a markdown list compiles to), it renders that list and gives each top-level `li` the step attributes for `from + index` instead of wrapping it, so a markdown list reveals one item per click. With `as="ul"` or `"ol"` each wrapper is an `li`; otherwise a `div`. |
 | `Stagger` | One step state for the group on the container; each child is wrapped in an element with `--step-index: <index>`, and its transition is delayed by `index * --deck-stagger` when entering. The delay sits on the CSS rule for the visible states, so any move into `current` or `after` is staggered (re-entering from `gone` included) and any move into `before` or `gone` is not. |
-| `TextReveal` | Splits `children` on whitespace (`by="word"`, the default) or into characters. The root is a `span` holding a visually hidden `span` with the whole text, then the pieces inside an `aria-hidden` `span`, each piece a `span` with `--step-index`, staggered like `Stagger`. Whitespace between words is preserved. |
+| `TextReveal` | Splits `children` on whitespace (`by="word"`, the default) or into characters (grapheme clusters, with `Intl.Segmenter`). The root is a `span` holding a visually hidden `span` with the whole text, then the pieces inside an `aria-hidden` `span`, each piece a `span` with `--step-index`, staggered like `Stagger`. Whitespace between words is preserved. |
 | `Highlight` | A `mark` whose background (the `--deck-highlight` color, default a translucent `currentColor`) grows from zero to full width over `--deck-dur-slow` with `--deck-ease-draw` when its state is `current` or `after`. Its text is always visible; it is never `inert` or `aria-hidden`. |
 | `CountUp` | Shows `format(from)` (default `from` 0) before click `at` and `format(to)` from it. On the live transition from `before` to `current` in the `slide` context it tweens the value over `duration.slow` with `ease.settle`; going back, or motion `instant`, or any other context, shows the value for the state with no tween. Default `format` rounds to an integer and uses `Intl.NumberFormat`. The root is a `span` holding a visually hidden `span` with the formatted value for the current state (`format(from)` before `at`, `format(to)` from it) and the animated number in an `aria-hidden` `span`. Like `Highlight` it is always visible and never `inert` or `aria-hidden`. |
 | `Draw` | A `g` with the step attributes. Each direct child that is an SVG shape element (`path`, `line`, `polyline`, `polygon`, `circle`, `ellipse`, `rect`) gets `pathLength="1"`; CSS sets `stroke-dasharray: 1` and moves `stroke-dashoffset` from 1 (`before`, `gone`) to 0 over `--deck-dur-slow` with `--deck-ease-draw`. |
@@ -1092,11 +1092,14 @@ A step outside a `SlideHost` throws through `useSlide()`.
 ### `useTween`
 
 Returns the same object for the component's lifetime: a Proxy over a copy of `initial`.
-Setting one of the initial numeric fields to a different value schedules one notification on
-`gsap.ticker` (so the render lands in the frame gsap updated in) and the owning component
-re-renders through `useSyncExternalStore`. Several fields set in one tick cause one render.
+Setting one of the initial numeric fields to a different value bumps the store's revision
+(the `useSyncExternalStore` snapshot) at once and schedules one notification in a microtask.
+gsap sets every field of a tick inside one animation-frame task, so a tick causes one render,
+in the same frame; a seek made in a layout effect re-renders before paint, so a reloaded
+stage never paints its click-0 pose first. (Notifying on `gsap.ticker`, as the spike did,
+painted one stale frame on reload.)
 Nothing is scheduled while no field changes. Fields that were not in `initial` (gsap's own
-cache) never notify. The pending ticker callback is removed on unmount.
+cache) never notify. A notification pending at unmount does nothing.
 
 ### `useTimeline`
 
@@ -1104,7 +1107,9 @@ Builds one paused timeline in a layout effect (child `useImperativeHandle` refs 
 then), calling `build(tl, beat)`; `beat(n)` adds the label `beat<n>` at the current end. The
 first call in `build` must be `beat(0)` and labels must increase by one; otherwise it throws,
 naming the label. The timeline is killed and rebuilt when `deps` change, and killed on
-unmount.
+unmount. Accepted limits: a rebuilt timeline made of `.to()` tweens starts from whatever the
+previous one left on its targets, so a timeline with `deps` uses `fromTo`; and switching
+motion to `instant` while a tween is travelling does not cut it short.
 
 After each build and whenever the slide's click, active flag or render context changes, the
 timeline is positioned at the label for the click (clamped to the last label):
