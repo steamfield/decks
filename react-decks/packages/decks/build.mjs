@@ -24,9 +24,9 @@ await build({
 // JS chunks retain relative CSS imports; ship those files at the same level.
 for (const name of ["runtime", "motion"]) {
   const source = new URL(`../${name}/src/`, import.meta.url);
-  for (const file of await readdir(source)) {
+  for (const file of await readdir(source, { recursive: true })) {
     if (file.endsWith(".css"))
-      await cp(new URL(file, source), new URL(`dist/${file}`, import.meta.url));
+      await cp(new URL(file, source), new URL(`dist/${basename(file)}`, import.meta.url));
   }
 }
 await cp(new URL("../kit/src/styles/", import.meta.url), new URL("dist/kit/", import.meta.url), {

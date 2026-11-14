@@ -174,13 +174,18 @@ test("A horizontally scrolling block is keyboard reachable without maxHeight.", 
 test("Print shows every code line beyond the authored maxHeight.", async ({ page, freshDeck }) => {
   await page.goto(`${freshDeck.url}#/print`);
   const pre = page.getByRole("figure").locator("pre");
-  await expect(pre).toHaveCSS("max-height", "none");
-  await expect
-    .poll(() =>
-      pre.evaluate((node) => node.clientHeight === node.scrollHeight && node.clientHeight > 180),
-    )
-    .toBe(true);
-  await expect(page.locator('html[data-deck-view="print"] [data-line="12"]')).toBeVisible();
+  await expect(pre).toHaveCount(2);
+  for (const frame of await pre.all()) {
+    await expect(frame).toHaveCSS("max-height", "none");
+    await expect
+      .poll(() =>
+        frame.evaluate(
+          (node) => node.clientHeight === node.scrollHeight && node.clientHeight > 180,
+        ),
+      )
+      .toBe(true);
+    await expect(frame.locator('[data-line="12"]')).toBeVisible();
+  }
 });
 
 test("A fresh deck provides and counts Step and code without a components directory.", async ({

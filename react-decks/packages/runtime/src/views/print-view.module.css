@@ -1,0 +1,33 @@
+@page {
+  size: 1920px 1080px;
+  margin: 0;
+}
+
+@layer react-decks {
+  html[data-deck-view="print"],
+  html[data-deck-view="print"] body {
+    margin: 0;
+    overflow: visible;
+    print-color-adjust: exact;
+  }
+
+  .print {
+    width: max-content;
+  }
+
+  .page {
+    position: relative;
+    overflow: hidden;
+    break-after: page;
+    break-inside: avoid;
+  }
+
+  .page:last-child {
+    break-after: auto;
+  }
+
+  .page > div > [data-deck-slide] {
+    position: absolute;
+    inset: 0;
+  }
+}

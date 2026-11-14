@@ -1,5 +1,5 @@
-import { constants } from "node:fs";
-import { access, lstat, readdir, readFile, realpath, stat } from "node:fs/promises";
+import { constants, existsSync } from "node:fs";
+import { access, lstat, readdir, readFile, realpath, stat, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import getPort, { portNumbers } from "get-port";
@@ -11,6 +11,7 @@ import {
   type Plugin,
   build as viteBuild,
 } from "vite";
+import { launchBrowser, MissingChromiumError, openBuiltDeck } from "./browser";
 import type { ResolvedDeck } from "./config";
 import { DeckError, displayPath } from "./errors";
 import { createDeckPlugins, reactDecks } from "./plugins";
@@ -116,6 +117,67 @@ export async function build(
       rolldownOptions: { input: resolve(deck.dir, "index.html") },
     },
   });
+  await generateOgImage(
+    deck,
+    resolve(options.outDir),
+    options.base ?? deck.config.vite?.base ?? "./",
+  );
+}
+
+async function generateOgImage(deck: ResolvedDeck, outDir: string, base: string): Promise<void> {
+  if (existsSync(join(deck.dir, "public/og.png"))) return;
+  const browser = await launchBrowser().catch((cause: unknown) => {
+    if (!(cause instanceof MissingChromiumError)) throw cause;
+    console.warn(`decks build: og.png skipped. ${cause.message}`);
+    return undefined;
+  });
+  if (!browser) return;
+  try {
+    const capture = await openBuiltDeck(browser, outDir, base, "?motion=instant#/1", {
+      width: 1200,
+      height: 630,
+    });
+    try {
+      const scale = Math.min(1200 / deck.config.canvas.width, 630 / deck.config.canvas.height);
+      const width = deck.config.canvas.width * scale;
+      const height = deck.config.canvas.height * scale;
+      // Keep the authored canvas aspect ratio, with its background filling the letterbox.
+      await capture.page.evaluate(`(() => {
+        const frame = document.getElementById("deck-frame");
+        const slide = document.querySelector("[data-deck-active]");
+        if (!frame || !slide) throw new Error("Slide 1 did not render for og.png");
+        const background = getComputedStyle(slide).backgroundColor;
+        if (background !== "rgba(0, 0, 0, 0)") document.body.style.backgroundColor = background;
+        Object.assign(frame.parentElement.style, {
+          width: "${width}px", height: "${height}px",
+          left: "${(1200 - width) / 2}px", top: "${(630 - height) / 2}px"
+        });
+      })()`);
+      await capture.page.evaluate("window.__deck.settled()");
+      await capture.page.screenshot({ path: join(outDir, "og.png"), type: "png" });
+    } finally {
+      await capture.close();
+    }
+    if (deck.config.url && !existsSync(join(deck.dir, "public/og.jpg"))) {
+      const url = deck.config.url;
+      const image = new URL("og.png", url.endsWith("/") ? url : `${url}/`).href
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;");
+      const htmlPath = join(outDir, "index.html");
+      const html = await readFile(htmlPath, "utf8");
+      await writeFile(
+        htmlPath,
+        html
+          .replace("</head>", `<meta property="og:image" content="${image}"></head>`)
+          .replace(
+            '<meta name="twitter:card" content="summary">',
+            '<meta name="twitter:card" content="summary_large_image">',
+          ),
+      );
+    }
+  } finally {
+    await browser.close();
+  }
 }
 
 async function canonicalPath(path: string): Promise<string> {
