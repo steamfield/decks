@@ -1525,10 +1525,12 @@ them back on. Because a layer is inside the slide, `useSlide()` and `useDeck()` 
 and it renders correctly in every context (a preview's layer shows the preview's slide
 number).
 
-While its slide is the active one in the play view, a layer element carries
-`view-transition-name: deck-layer-below` or `deck-layer-above`. The outgoing and incoming
-slide's layers therefore pair up as one named group, and the layer holds still while the
-slides transition under any preset. In other contexts it carries no name.
+While its slide is the active one in the play view, the above layer's element carries
+`view-transition-name: deck-layer-above`. The outgoing and incoming slide's above layers
+therefore pair up as one named group, and it holds still while the slides transition under
+any preset. In other contexts it carries no name. The below layer is never named: a named
+group is painted over the root snapshot, which would put a background on top of the slide
+mid-transition, so the below layer moves with its slide like any background.
 
 Frontmatter `layers: false` leaves both out for that slide; `layers: "above"` or `"below"`
 keeps only that one. Any other value is an error naming the file.
@@ -1536,7 +1538,7 @@ keeps only that one. Any other value is an error naming the file.
 | Situation (browser test) | Outcome |
 | --- | --- |
 | A deck with `layers/above.tsx` showing "n / total" | Every slide shows it with its own number; the overview tiles and the presenter's "Next" box show theirs. |
-| A `push` transition between two slides | The layer's box does not move during the transition. |
+| A `push` transition between two slides | The above layer's box does not move during the transition; slide content is painted over the below layer before, during and after it. |
 | A slide with `layers: false` | No layer elements in that slide. |
 | A layer file added while the dev server runs | It appears without a restart. |
 | A below layer and slide content | The content is painted over the layer. |
