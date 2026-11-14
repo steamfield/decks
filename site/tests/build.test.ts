@@ -24,7 +24,16 @@ import { deckDemoCount } from "./mdx";
 
 const parser = new new Window().DOMParser();
 const read = (root: string, path: string) => readFileSync(join(root, path), "utf8");
-const page = (root: string, path: string) => parser.parseFromString(read(root, path), "text/html");
+// One parse per file: happy-dom keeps every parsed document alive for the life of
+// its Window, and the link check asks for the same target once per link to it.
+const parsed = new Map<string, ReturnType<typeof parser.parseFromString>>();
+const fresh = (root: string, path: string) => parser.parseFromString(read(root, path), "text/html");
+const page = (root: string, path: string) => {
+  const file = join(root, path);
+  const doc = parsed.get(file) ?? fresh(root, path);
+  parsed.set(file, doc);
+  return doc;
+};
 const absolute = (path: string) => new URL(path, site.url).href;
 const pagePath = (id: string) => `docs/${id}/index.html`;
 
@@ -352,7 +361,8 @@ describe("the whole site", () => {
       .map((file) => `blog/${file.replace(/\.mdx$/, "")}/index.html`),
   ];
   it.each(lintPages)("passes the package's prose lint over %s text (R6)", (file) => {
-    const home = page("dist", file);
+    // Its own copy: this test strips the page down, and `page` shares documents.
+    const home = fresh("dist", file);
     if (file !== "index.html") {
       const article = home.querySelector("article");
       if (!article) throw new Error(`No article in ${file}`);
