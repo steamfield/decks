@@ -17,6 +17,11 @@
 @import "./InkPing.css";
 @import "./CodeInk.css";
 @import "./Graph3D.css";
+@import "./InkNumber.css";
+@import "./InkChip.css";
+@import "./InkRule.css";
+@import "./InkCardRect.css";
+@import "./OdEyebrow.css";
 .oc-slide-chart {
   min-height: 1px;
 }

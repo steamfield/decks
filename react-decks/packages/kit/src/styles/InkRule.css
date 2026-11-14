@@ -1,0 +1,4 @@
+.od-ink-rule {
+  /* Keep the filtered layer static while the unfiltered parent sweeps. */
+  clip-path: inset(0 0% 0 0);
+}
