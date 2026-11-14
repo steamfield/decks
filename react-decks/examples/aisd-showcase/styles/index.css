@@ -94,10 +94,10 @@ html[data-aisd-design]::view-transition-old(*),
 html[data-aisd-design]::view-transition-new(*) {
   animation-duration: 340ms;
 }
-html[data-aisd-design][data-od-nav]::view-transition-new(root),
-html[data-aisd-design][data-od-nav]::view-transition-new(od-story-head):only-child,
-html[data-aisd-design][data-od-nav]::view-transition-new(od-story-card-left):only-child,
-html[data-aisd-design][data-od-nav]::view-transition-new(od-story-card-right):only-child {
+html[data-aisd-design][data-deck-nav]::view-transition-new(root),
+html[data-aisd-design][data-deck-nav]::view-transition-new(od-story-head):only-child,
+html[data-aisd-design][data-deck-nav]::view-transition-new(od-story-card-left):only-child,
+html[data-aisd-design][data-deck-nav]::view-transition-new(od-story-card-right):only-child {
   animation-name: od-vt-fade;
   animation-duration: 340ms;
   animation-delay: 0ms;
@@ -118,9 +118,9 @@ html[data-aisd-design]::view-transition-new(od-campus-grid) {
   html[data-aisd-design]::view-transition-group(*),
   html[data-aisd-design]::view-transition-old(*),
   html[data-aisd-design]::view-transition-new(*),
-  html[data-aisd-design][data-od-nav]::view-transition-group(*),
-  html[data-aisd-design][data-od-nav]::view-transition-old(*),
-  html[data-aisd-design][data-od-nav]::view-transition-new(*) {
+  html[data-aisd-design][data-deck-nav]::view-transition-group(*),
+  html[data-aisd-design][data-deck-nav]::view-transition-old(*),
+  html[data-aisd-design][data-deck-nav]::view-transition-new(*) {
     animation-duration: 1ms !important;
     animation-delay: 0ms !important;
   }
