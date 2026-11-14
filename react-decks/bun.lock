@@ -7,6 +7,7 @@
       "devDependencies": {
         "@biomejs/biome": "2.6.7",
         "@playwright/test": "1.65.1",
+        "@react-decks/motion": "workspace:*",
         "@react-decks/node": "workspace:*",
         "@testing-library/jest-dom": "7.0.1",
         "@testing-library/react": "16.3.3",
