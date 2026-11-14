@@ -1439,8 +1439,8 @@ the step in force is the last one whose click is at or below the slide's click
 force, absent otherwise. `all` makes every line `active`; `none` makes every line `dim`.
 Dimming is an opacity transition on the motion tokens, so it reverses on going back and is
 immediate when motion is `instant`. With `maxHeight`, when the step changes the first active
-line is scrolled into view within the block (`scrollIntoView({ block: "nearest" })`), never
-scrolling the page. Line numbers are CSS counters from `data-lines`; they are not selectable
+line is brought into view by setting the block's own `scrollTop` (from the line's offset
+inside the block, which is unaffected by the canvas scale), never scrolling the page. Line numbers are CSS counters from `data-lines`; they are not selectable
 text. The block is `tabindex="0"` when it scrolls, so it is reachable by keyboard.
 
 Inline code is not highlighted.
