@@ -1,0 +1,36 @@
+.signals {
+  position: absolute;
+  left: calc(5.7 * var(--sw));
+  top: calc(26 * var(--sh));
+  width: calc(44 * var(--sw));
+}
+.rows {
+  list-style: none;
+  margin: calc(3.4 * var(--sh)) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--od-border);
+}
+.rows .row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(1.6 * var(--sw));
+  padding: calc(1.1 * var(--sh)) 0;
+  border-bottom: 1px solid var(--od-border);
+  font-family: var(--od-font-sans);
+  font-size: calc(1.25 * var(--sw) * var(--deck-text-scale, 1));
+  font-weight: 510;
+  letter-spacing: -0.01em;
+  color: var(--od-text-secondary);
+}
+.tag {
+  flex: none;
+  font-size: calc(0.86 * var(--sw) * var(--deck-text-scale, 1));
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--od-text-faint);
+}
+.figure {
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
