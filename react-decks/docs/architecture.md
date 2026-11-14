@@ -30,8 +30,10 @@ it (`navigation.ts`, `navigation.test.ts`). There is no `utils/` or `shared/` di
 helper used by one file lives in that file.
 
 `core` takes numbers, strings and plain objects and returns the same. Anything that needs the
-browser or Node is passed in by the caller. `setTimeout` and `clearTimeout` are the one
-exception: they exist in both environments and core may use them.
+browser or Node is passed in by the caller. `setTimeout`, `clearTimeout` and
+`URLSearchParams` are the exceptions: they exist in both environments and core may use them.
+`packages/core/tsconfig.json` type-checks core without DOM, Node or React types, so any other
+global is a compile error.
 
 ## 1.1 Libraries (Final)
 
