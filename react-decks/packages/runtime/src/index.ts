@@ -1,2 +1,2 @@
-// React client: store, hooks, canvas, views, and transitions.
-export {};
+// React client: the deck store, hooks, the adaptive canvas and the views.
+export { mountDeck } from "./mount";
