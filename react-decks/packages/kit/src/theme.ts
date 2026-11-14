@@ -3,6 +3,9 @@ import { type Hue, resolveTheme as resolve, type Theme, themeCss } from "./theme
 
 let active: Theme | undefined;
 let sheet: HTMLStyleElement | undefined;
+const initial = resolveTheme();
+export let CATEGORICAL_COLORS: string[] = initial.categorical;
+export let CANVAS: string = initial.surfaces.canvas;
 
 export function resolveTheme(deckTheme?: unknown): Theme {
   return resolve(defaults, deckTheme);
@@ -15,6 +18,8 @@ export function installTheme(value: Theme): void {
   else document.head.append(next);
   sheet = next;
   active = value;
+  CATEGORICAL_COLORS = value.categorical;
+  CANVAS = value.surfaces.canvas;
 }
 
 export function theme(): Theme {
