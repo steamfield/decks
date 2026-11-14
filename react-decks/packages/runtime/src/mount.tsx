@@ -1,7 +1,9 @@
 import { parseLocation, syncChannelId } from "@react-decks/core";
+import { useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { createBroadcastTransport } from "./broadcast-transport";
 import { Deck } from "./deck";
+import { installEmbed } from "./embed";
 import { settled } from "./settle";
 import type { DeckSource } from "./source";
 import { createDeckStore } from "./store";
@@ -23,11 +25,31 @@ export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
   const store = createDeckStore(source.manifest, { transport, present: createPresenter(source) });
   const api = { settled };
   window.__deck = api;
-  const reactRoot = createRoot(element);
-  reactRoot.render(<Deck source={source} store={store} />);
+  const embed = installEmbed(source.manifest, store);
+  const reactRoot = createRoot(
+    element,
+    embed
+      ? {
+          onCaughtError: embed.onError,
+          onUncaughtError: embed.onError,
+        }
+      : undefined,
+  );
+  reactRoot.render(
+    <>
+      <Deck source={source} store={store} />
+      {embed && <EmbedReady start={embed.start} />}
+    </>,
+  );
   return () => {
+    embed?.dispose();
     reactRoot.unmount();
     store.destroy();
     if (window.__deck === api) delete window.__deck;
   };
+}
+
+function EmbedReady({ start }: { start: () => void }) {
+  useLayoutEffect(start, [start]);
+  return null;
 }
