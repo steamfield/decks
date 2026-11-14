@@ -268,9 +268,11 @@ export interface SyncState {
   readonly aspect?: number
 }
 
-/** Orders states across tabs: higher `seq` wins; equal `seq` is decided by comparing `origin` as strings. */
+/** Orders states across tabs. See "newer" below. */
 export interface SyncStamp {
   readonly seq: number
+  /** `startedAt` of the session that published this state. */
+  readonly started: number
   /** Id of the session that published this state. */
   readonly origin: string
 }
@@ -300,6 +302,8 @@ export function createMemoryHub(): MemoryHub
 export interface SyncSessionOptions {
   /** Unique per tab. */
   readonly id: string
+  /** When this tab's session began, in milliseconds since the epoch. The caller supplies it. */
+  readonly startedAt: number
   readonly transport: Transport
   /** The session's current local state; used to answer a newcomer. */
   readonly current: () => SyncState
@@ -321,8 +325,9 @@ export function syncChannelId(deckName: string, base: string): string
 ```
 
 Every session keeps a stamp for the state it currently shows. It starts at
-`{ seq: 0, origin: id }`. Stamp `a` is newer than stamp `b` when `a.seq > b.seq`, or the
-`seq`s are equal and `a.origin > b.origin`.
+`{ seq: 0, started: startedAt, origin: id }`. Stamp `a` is newer than stamp `b` when
+`a.seq > b.seq`; or the `seq`s are equal and `a.started < b.started` (the session that has
+been open longer wins a tie); or both are equal and `a.origin > b.origin` as strings.
 
 1. On creation a session subscribes, then posts `hello`.
 2. A session that receives `hello` from another id posts `state` carrying its own stamp,
@@ -330,8 +335,8 @@ Every session keeps a stamp for the state it currently shows. It starts at
 3. A session that receives `state` whose stamp is newer than its own adopts that stamp and
    calls `onRemote(state)`. A `state` whose stamp is not newer is ignored. The stamp is
    adopted before `onRemote` is called.
-4. `publish(state)` sets the session's stamp to `{ seq: seq + 1, origin: id }` and posts
-   `state` with it.
+4. `publish(state)` sets the session's stamp to
+   `{ seq: seq + 1, started: startedAt, origin: id }` and posts `state` with it.
 5. A message whose `from` equals the session's own id is ignored.
 6. Receiving a `state` never causes a post.
 
@@ -339,12 +344,18 @@ What this guarantees, each of which is a test:
 
 | Case | Outcome |
 | --- | --- |
-| A tab opens or reloads while others are mid-talk | Its `hello` is answered with stamps above 0; it adopts the talk's position. Its own answer and any publish it makes before hearing back carry lower stamps and are ignored by the others: a late tab never moves them. |
-| Two tabs open at the same moment on different slides | Both answer each other's `hello` at `seq` 0; the stamp with the greater `origin` wins on both sides and they agree. |
+| A tab opens or reloads while another is already open, before anyone has navigated (both at `seq` 0) | The older tab's answer wins the tie on `started`, so the new tab adopts the older tab's position, whichever id is greater. The older tab never changes. |
+| A tab opens or reloads mid-talk | Its `hello` is answered with a stamp above its own; it adopts the talk's position. Its own answers carry `seq` 0 and are ignored. |
+| A new tab publishes before it has heard back, while the talk is at the same `seq` it publishes | The talk's stamp started earlier, so the others ignore the publish and the new tab is brought to the talk's position when the answer arrives. |
+| Two tabs open at the same moment on different slides | Both answer each other at `seq` 0; the one with the earlier `startedAt` wins on both sides (equal times fall to `origin`), and they agree. |
 | Three tabs; one navigates while another's answer to a newcomer is in flight | The answer carries the older stamp, so the navigating tab ignores it; the newcomer ends on the newest stamp whichever arrives first. All three agree. |
-| Two tabs publish at the same moment | Equal `seq`, different `origin`: both sides keep the state with the greater `origin`. |
-| A joined tab receives another tab's answer to a newcomer | The stamp equals its own; ignored, no `onRemote`. |
+| Two tabs publish at the same moment | Equal `seq`: both sides keep the state from the tab that has been open longer. |
+| A tab receives another tab's answer to a newcomer | The stamp equals its own; ignored, no `onRemote`. |
 | The only other tab closes before answering a newcomer | The newcomer keeps its own state; nothing is posted after close. |
+
+Known limit, accepted: a new tab that navigates twice or more before it has heard any answer
+can publish a `seq` above the talk's and move the others. The window is the few milliseconds
+between opening and the first answer.
 
 `onRemote` applying a state must not `publish` it back; the runtime store guards this.
 
