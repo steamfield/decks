@@ -1661,8 +1661,9 @@ message in the table). Member names (`<motion.div>`) and lowercase elements are 
 
 - A slide that fails to render shows, in place of the slide: `Slide <id> (<file>) failed to
   render: <message>`, with the component stack in dev. A slide whose module failed to load
-  shows `Slide <id> failed to load. See the terminal or the error overlay.` The boundary
-  resets when the slide's module or click changes, so a fix shows without a reload.
+  shows `Slide <id> failed to load. See the terminal or the error overlay.` In dev,
+  while any slide is showing a render failure the next successful hot update reloads the
+  page, so a fix shows without the author doing anything; the position is in the URL.
 - A failure while starting the deck (a component file that throws at import) writes `The
   deck failed to start: <message>` into `#deck-root`; the page is never blank.
 - Hook errors name the hook and the remedy: `useSlide() was called outside a slide (this is

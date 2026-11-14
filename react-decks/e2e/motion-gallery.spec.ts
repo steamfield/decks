@@ -91,12 +91,14 @@ test("The gallery reverses interruptions and fits 4:3.", async ({ page }) => {
     await position(page, no ?? 0, click);
     await settled(page, no ?? 0, click ?? 0);
     await expect(page.locator("#deck-frame")).toHaveCSS("--deck-scale", String(1024 / 1920));
-    const boxes = await page.locator("[data-deck-active] > *").evaluateAll((elements) =>
-      elements.map((element) => {
-        const { x, y, right, bottom } = element.getBoundingClientRect();
-        return { x, y, right, bottom };
-      }),
-    );
+    const boxes = await page
+      .locator("[data-deck-active] > :not([data-deck-layer])")
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const { x, y, right, bottom } = element.getBoundingClientRect();
+          return { x, y, right, bottom };
+        }),
+      );
     for (const [index, box] of boxes.entries()) {
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.y).toBeGreaterThanOrEqual(0);

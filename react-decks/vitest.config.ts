@@ -7,6 +7,10 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "node",
+          // Node tests start real Vite servers and builds. The first test in a file pays for
+          // loading the compiler and highlighter, which took over five seconds on the slower
+          // cluster hosts; the limit bounds a hang, it is not an assertion.
+          testTimeout: 30_000,
           include: ["packages/{core,node}/src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
         },
       },
