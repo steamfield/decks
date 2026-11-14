@@ -15,9 +15,13 @@ export function Morph({
   const { isActive, renderContext } = useSlide();
   if (
     !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(name) ||
-    /^(none|auto|match-element|root|initial|inherit|unset|revert|revert-layer|default)$/i.test(name)
+    /^(none|auto|match-element|root|initial|inherit|unset|revert|revert-layer|default|deck-layer-above)$/i.test(
+      name,
+    )
   )
-    throw new Error(`Invalid Morph name ${JSON.stringify(name)}`);
+    throw new Error(
+      `Invalid Morph name ${JSON.stringify(name)}. Use a CSS identifier starting with a letter or underscore; CSS keywords and deck-layer-above are reserved.`,
+    );
   return (
     <Element
       className={className}

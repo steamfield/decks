@@ -69,8 +69,8 @@ describe("slide scanning and manifest", () => {
   it("rejects a deck with no visible slide", async () => {
     const { dir } = await fixture({ "slides/01-first.mdx": "---\nhide: true\n---\n# Hidden" });
     const deck = await loadDeck(dir);
-    await expect(scanSlides(deck)).rejects.toThrow("no visible slides");
-    expect(() => buildManifest(deck, [])).toThrow("no visible slides");
+    await expect(scanSlides(deck)).rejects.toThrow("has hide: true.");
+    expect(() => buildManifest(deck, [])).toThrow("no slides/*.mdx files");
   });
   it.each([true, false])(
     "preserves morphSteps %s and the deck default transition",

@@ -43,6 +43,7 @@ export function useDeckKeys() {
           window.location.pathname.replace(/index\.html$/, ""),
         );
         const presenter = window.open("", `react-decks-presenter:${channel}`);
+        // A blocked popup is intentionally silent; the deck remains usable in this window.
         if (!presenter) return;
         if (presenter.location.href === "about:blank") {
           const url = new URL(window.location.href);

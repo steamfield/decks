@@ -2,6 +2,7 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { type PluggableList, unified } from "unified";
 import { parseCodeOptions } from "./code-options";
+import { DeckError } from "./errors";
 
 export const stepNames = new Set([
   "Step",
@@ -27,6 +28,7 @@ interface ClickNode {
   attributes?: Element["attributes"];
   data?: unknown;
   children?: ClickNode[];
+  position?: { start: { line: number; column: number; offset?: number }; end: { offset?: number } };
 }
 
 function elementChildren(node: ClickNode | undefined): ClickNode[] {
@@ -63,7 +65,11 @@ function integerAttribute(node: ClickNode, name: string, file: string): number {
     expression.value >= 0
   )
     return expression.value;
-  throw new Error(`${file}: <${node.name}> ${name} must be a non-negative integer literal`);
+  throw new DeckError(
+    `<${node.name} ${name}={${typeof value === "object" && value !== null ? value.value : String(value)}}>: ${name} must be a literal whole number (${name}={2}). To compute it, set clicks: in the frontmatter.`,
+    file,
+    node.position?.start,
+  );
 }
 
 function rejectExpressionSteps(
@@ -81,10 +87,26 @@ function rejectExpressionSteps(
     "name" in node.name &&
     typeof node.name.name === "string" &&
     names.has(node.name.name)
-  )
-    throw new Error(
-      `${file}: <${node.name.name}> inside a JavaScript expression cannot be counted; set clicks`,
+  ) {
+    const start =
+      "loc" in node && typeof node.loc === "object" && node.loc !== null && "start" in node.loc
+        ? node.loc.start
+        : undefined;
+    const loc =
+      typeof start === "object" &&
+      start !== null &&
+      "line" in start &&
+      typeof start.line === "number" &&
+      "column" in start &&
+      typeof start.column === "number"
+        ? { line: start.line, column: start.column + 1 }
+        : undefined;
+    throw new DeckError(
+      `<${node.name.name}> inside a JavaScript expression cannot be counted. To compute it, set clicks: in the frontmatter.`,
+      file,
+      loc,
     );
+  }
   for (const child of Object.values(node)) rejectExpressionSteps(child, file, names);
 }
 
@@ -167,7 +189,11 @@ export function countClicks(
     const motion = typeof node.name === "string" ? names.get(node.name) : undefined;
     if (element && motion) {
       if (node.attributes?.some((attribute) => attribute.type === "mdxJsxExpressionAttribute"))
-        throw new Error(`${file}: <${node.name}> spread attributes cannot be counted; set clicks`);
+        throw new DeckError(
+          `<${node.name}> spread attributes cannot be counted. To compute it, set clicks: in the frontmatter.`,
+          file,
+          node.position?.start,
+        );
       if (motion === "Steps") {
         const from = integerAttribute(node, "from", file);
         let children = 0;
@@ -185,8 +211,10 @@ export function countClicks(
             if (child.type === "mdxJsxFlowElement" || child.type === "mdxJsxTextElement")
               children++;
             else
-              throw new Error(
-                `${file}: <Steps> children must be JSX elements or a single markdown list`,
+              throw new DeckError(
+                `<Steps> children must be JSX elements or a single markdown list. To compute it, set clicks: in the frontmatter.`,
+                file,
+                node.position?.start,
               );
           }
         if (children) total = Math.max(total, from + children - 1);
@@ -200,7 +228,11 @@ export function countClicks(
             ? integerAttribute(node, "until", file)
             : undefined;
         if (until !== undefined && until <= at)
-          throw new Error(`${file}: <${node.name}> until must be greater than at`);
+          throw new DeckError(
+            `<${node.name}> until must be greater than at. To compute it, set clicks: in the frontmatter.`,
+            file,
+            node.position?.start,
+          );
         total = Math.max(total, until ?? at);
       }
     }

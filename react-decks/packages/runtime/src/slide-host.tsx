@@ -1,4 +1,7 @@
-import { lazy, type ReactElement, Suspense, useMemo } from "react";
+/// <reference types="vite/client" />
+
+import { clicksForSlide } from "@react-decks/core";
+import { lazy, type ReactElement, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { type RenderContext, SlideContext, useDeckContext, useDeckSelector } from "./hooks";
 import "./layers.css";
@@ -13,6 +16,10 @@ export function SlideHost({
   clicks?: number;
 }): ReactElement {
   const { source, modules } = useDeckContext();
+  const [componentStack, setComponentStack] = useState<string | null | undefined>();
+  const resetClick = useDeckSelector(
+    (state) => clicks ?? clicksForSlide(no, state.nav, source.manifest),
+  );
   const meta = source.manifest.slides[no - 1];
   const active = useDeckSelector((state) => context === "slide" && state.nav.slide === no);
   const value = useMemo(() => {
@@ -24,9 +31,21 @@ export function SlideHost({
   const Above = layers !== false && layers !== "below" ? source.layers?.above : undefined;
   const Below = layers !== false && layers !== "above" ? source.layers?.below : undefined;
   if (!module) throw new Error(`Missing slide module for ${value.meta.id}`);
-  const { Component, startedPending } = useMemo(() => {
+  const { Component, startedPending, loadState } = useMemo(() => {
     const loaded = module.resolved?.default;
-    return { Component: loaded ?? lazy(module.load), startedPending: loaded === undefined };
+    const loadState = { failed: false };
+    return {
+      Component:
+        loaded ??
+        lazy(() =>
+          module.load().catch((cause: unknown) => {
+            loadState.failed = true;
+            throw cause;
+          }),
+        ),
+      startedPending: loaded === undefined,
+      loadState,
+    };
   }, [module]);
   return (
     <div
@@ -36,7 +55,21 @@ export function SlideHost({
       hidden={context === "slide" && !active}
     >
       <SlideContext value={value}>
-        <ErrorBoundary fallback={<p>Unable to render slide {value.meta.id}.</p>}>
+        <ErrorBoundary
+          resetKeys={[module, Component, resetClick]}
+          onError={(_error, info) => setComponentStack(info.componentStack)}
+          fallbackRender={({ error }) => (
+            <>
+              <ReloadFailedSlide />
+              <p>
+                {!loadState.failed
+                  ? `Slide ${value.meta.id} (${value.meta.file}) failed to render: ${error instanceof Error ? error.message : String(error)}`
+                  : `Slide ${value.meta.id} failed to load. See the terminal or the error overlay.`}
+              </p>
+              {import.meta.env.DEV && componentStack && <pre>{componentStack}</pre>}
+            </>
+          )}
+        >
           {Below && (
             <div data-deck-layer="below">
               <Below />
@@ -61,4 +94,14 @@ export function SlideHost({
       </SlideContext>
     </div>
   );
+}
+
+function ReloadFailedSlide() {
+  useEffect(() => {
+    // A failed lazy import or an unmounted render subtree cannot reliably refresh itself.
+    const reload = () => window.location.reload();
+    import.meta.hot?.on("vite:afterUpdate", reload);
+    return () => import.meta.hot?.off("vite:afterUpdate", reload);
+  }, []);
+  return null;
 }

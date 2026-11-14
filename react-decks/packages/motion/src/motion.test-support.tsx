@@ -72,7 +72,7 @@ export async function setupMotion(
     else document.documentElement.setAttribute("data-deck-motion", previousMotion);
     window.history.replaceState(null, "", "/");
   });
-  if (options.error) await screen.findByText("Unable to render slide slide-1.");
+  if (options.error) await screen.findByText(/^Slide slide-1 \(1.mdx\) failed to render:/);
   else await screen.findByRole("button", { name: "Next" });
   const user = userEvent.setup();
   return {

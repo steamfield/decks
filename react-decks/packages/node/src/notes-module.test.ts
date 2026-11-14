@@ -1,10 +1,28 @@
+import { execFile } from "node:child_process";
+import { open, rename } from "node:fs/promises";
 import { join } from "node:path";
+import { promisify } from "node:util";
+import { describe, expect, it, onTestFinished } from "vitest";
 
-import { describe, expect, it } from "vitest";
-
-import { serve } from "./deck.test-support";
+import { fixture, serve } from "./deck.test-support";
+import { renderNotes } from "./notes";
+import { readSource } from "./read-source";
 
 describe("notes-module", () => {
+  it("reads notes after an editor finishes a transient empty write", async () => {
+    const { dir, put } = await fixture(onTestFinished);
+    const file = join(dir, "editor-write.mdx");
+    await put("saved-source.mdx", "# Slide\n\n<Notes>Saved notes</Notes>");
+    await promisify(execFile)("mkfifo", [file]);
+    const source = readSource(file);
+    const emptyWrite = await open(file, "w");
+    // The first reader holds the empty FIFO; its next read sees the saved regular file.
+    await rename(join(dir, "saved-source.mdx"), file);
+    await emptyWrite.close();
+    expect(await renderNotes(await source, file)).toEqual([
+      { click: 0, html: "<p>Saved notes</p>" },
+    ]);
+  });
   it.each(["<Notes >\n**Secret**\n</Notes >", "<Notes\n>\n**Secret**\n</Notes\n>"])(
     "extracts notes children with whitespace in the tags: %s",
     async (notes) => {
@@ -23,7 +41,7 @@ describe("notes-module", () => {
   it("names the file when notes parsing fails", async () => {
     const app = await serve({ "slides/01-first.mdx": "# Audience\n\n<Notes>\n<broken" });
     await expect(app.server.ssrLoadModule("virtual:react-decks/notes")).rejects.toThrow(
-      join(app.dir, "slides/01-first.mdx"),
+      "slides/01-first.mdx",
     );
   });
   it.each(["{true && <Notes>Secret</Notes>}", "<div child={<Notes>Secret</Notes>} />"])(

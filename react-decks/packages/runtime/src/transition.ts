@@ -42,7 +42,12 @@ export function runTransition(apply: () => void, name: string, direction: string
   const transition = document.startViewTransition(() => {
     if (active !== current) return;
     current.pending = false;
-    flushSync(apply);
+    try {
+      flushSync(apply);
+    } catch (cause) {
+      reportError(cause);
+      throw cause;
+    }
   });
   current.transition = transition;
   void transition.ready.catch(() => {
@@ -52,7 +57,9 @@ export function runTransition(apply: () => void, name: string, direction: string
     // The browser can reject all three promises when a snapshot is skipped.
   });
   void transition.finished
-    .catch(() => {})
+    .catch(() => {
+      // Skipping a transition rejects finished too; apply failures were reported above.
+    })
     .then(() => {
       if (active !== current) return;
       active = undefined;

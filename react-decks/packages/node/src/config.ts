@@ -1,8 +1,10 @@
+import { existsSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { createJiti } from "jiti";
 import type { PluggableList } from "unified";
 import type { UserConfig } from "vite";
 import { z } from "zod";
+import { DeckError, displayPath, validationError } from "./errors";
 
 export interface DeckConfig {
   readonly title: string;
@@ -60,17 +62,36 @@ const schema = z.strictObject({
 export async function loadDeck(dir: string, name?: string): Promise<ResolvedDeck> {
   const absolute = resolve(dir);
   const file = resolve(absolute, "deck.config.ts");
-  try {
-    const jiti = createJiti(import.meta.url, { moduleCache: false, fsCache: false });
-    const config = schema.parse(await jiti.import(file, { default: true }));
-    for (const key of Object.keys(config.htmlAttrs ?? {})) {
-      if (!/^[A-Za-z_:][-A-Za-z0-9_:.]*$/.test(key))
-        throw new Error(`Invalid htmlAttrs key ${key}`);
-    }
-    return { name: name ?? basename(absolute), dir: absolute, config };
-  } catch (cause) {
-    throw new Error(`${file}: ${cause instanceof Error ? cause.message : String(cause)}`, {
-      cause,
-    });
+  if (!existsSync(file))
+    throw new DeckError(
+      `no deck.config.ts in ${displayPath(absolute)}. A deck directory holds deck.config.ts and slides/.`,
+      file,
+      undefined,
+      { prefix: false },
+    );
+  const jiti = createJiti(import.meta.url, { moduleCache: false, fsCache: false });
+  const module = await jiti.import<Record<string, unknown>>(file).catch((cause: unknown) => {
+    throw new DeckError(
+      `cannot load config: ${cause instanceof Error ? cause.message : String(cause)}`,
+      file,
+      undefined,
+      { cause },
+    );
+  });
+  if (!Object.hasOwn(module, "default"))
+    throw new DeckError(
+      `${displayPath(file)} has no default export. Write: export default defineDeck({ title: "..." })`,
+      file,
+      undefined,
+      { prefix: false },
+    );
+  const parsed = schema.safeParse(module.default);
+  if (!parsed.success)
+    throw validationError(file, parsed.error.issues, module.default, Object.keys(schema.shape));
+  const config = parsed.data;
+  for (const key of Object.keys(config.htmlAttrs ?? {})) {
+    if (!/^[A-Za-z_:][-A-Za-z0-9_:.]*$/.test(key))
+      throw new DeckError(`htmlAttrs key ${key} is not a valid HTML attribute name.`, file);
   }
+  return { name: name ?? basename(absolute), dir: absolute, config };
 }

@@ -1,3 +1,5 @@
+import { DeckError } from "./errors";
+
 export function parseCodeOptions(meta: string, lineCount: number, file: string) {
   const options: {
     steps?: (number[] | "all" | "none")[];
@@ -8,7 +10,10 @@ export function parseCodeOptions(meta: string, lineCount: number, file: string) 
   } = { at: 0 };
   const seen = new Set<string>();
   const fail = (option: string): never => {
-    throw new Error(`${file}: invalid code option ${option}`);
+    throw new DeckError(
+      `invalid code option ${option}. Use line ranges within this block and whole numbers for at, lines and maxHeight.`,
+      file,
+    );
   };
   const integer = (value: string, option: string, minimum: number) => {
     const number = Number(value);

@@ -5,6 +5,7 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { type PluggableList, unified } from "unified";
+import { compileError, DeckError } from "./errors";
 
 interface NotesNode {
   type: string;
@@ -30,12 +31,11 @@ export async function renderNotes(
   try {
     tree = parser().use(remarkPlugins).parse(source);
   } catch (cause) {
-    throw new Error(`${file}: ${cause instanceof Error ? cause.message : String(cause)}`, {
-      cause,
-    });
+    throw compileError(cause, file);
   }
   collectNotes(tree, notes, file);
-  if (notes.length > 1) throw new Error(`${file}: more than one <Notes> block`);
+  if (notes.length > 1)
+    throw new DeckError(`more than one <Notes> block. Keep one <Notes> block per slide.`, file);
   const node = notes[0];
   if (!node?.children?.length) return undefined;
   const markdown = source.slice(
@@ -61,7 +61,10 @@ function rejectExpressionNotes(node: unknown, file: string): void {
     "name" in node.name &&
     node.name.name === "Notes"
   )
-    throw new Error(`${file}: <Notes> inside a JSX expression is not supported`);
+    throw new DeckError(
+      `<Notes> inside a JSX expression is not supported. Write it as a separate block.`,
+      file,
+    );
   for (const child of Object.values(node)) rejectExpressionNotes(child, file);
 }
 
@@ -80,7 +83,11 @@ export function removeNotes() {
   return (tree: NotesNode, file: { path: string }) => {
     const notes: NotesNode[] = [];
     collectNotes(tree, notes, file.path);
-    if (notes.length > 1) throw new Error(`${file.path}: more than one <Notes> block`);
+    if (notes.length > 1)
+      throw new DeckError(
+        `more than one <Notes> block. Keep one <Notes> block per slide.`,
+        file.path,
+      );
     const remove = (node: NotesNode): void => {
       if (!node.children) return;
       node.children = node.children.filter((child) => !notes.includes(child));
