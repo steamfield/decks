@@ -765,6 +765,10 @@ for dependencies, so a cold start does not reload. A package imported directly i
 MDX is not scanned and can cost one reload the first time it is seen: import packages from
 components, or list them in `deck.config.ts` under `vite.optimizeDeps.include`.
 
+While `dev` is running, a slide edited into a state that does not compile keeps showing its
+last good version under Vite's standard error overlay, as any Vite app does; the per-slide
+error applies when a slide fails to load or throws while rendering.
+
 Known limits, accepted: a slide's URL holds its number, so after a slide is inserted before
 it the same URL shows a different slide; and a structural reload (a slide or component file
 added or removed, frontmatter changed) discards component-local state.
