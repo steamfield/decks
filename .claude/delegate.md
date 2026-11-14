@@ -121,3 +121,41 @@ again before it commits.
   hand-off
 - add a dependency
 - mention a repository outside this one, or an absolute path, in a tracked file
+
+## react-decks
+
+Work under `react-decks/` (RFC 0007) follows this section in place of the deck-specific parts
+above. The hook-trust and worktree notes above still apply.
+
+### For the orchestrator
+
+- Guidance for Codex lives in `react-decks/AGENTS.md`, not in `.claude/rules/`: Codex scopes
+  instructions by directory and has no path-glob rules. After each run, add what its diff and
+  hand-off taught you to that file's Proportion or Testing section (keep it under 14 KB) and
+  note it in `react-decks/docs/delegation-log.md`.
+- Contracts come from `.claude/delegate/react-decks-contract.md`. Fill its QA section with
+  three to five concrete situations a user would hit; runs find spec flaws by replaying
+  those, not from a general instruction to be careful. Copy the signatures and
+  behaviour tables a run needs out of `react-decks/docs/architecture.md` into the contract's
+  Interface section; a run implements what its contract says.
+- Setup: `foreman start <name> --new-worktree --from react-decks --setup "bun install && bun install --cwd react-decks" ...`.
+- Parallel runs get disjoint May-change paths. Before starting runs that share a package,
+  write that package's `src/index.ts` exports and any shared type yourself and commit them.
+- Only you edit `react-decks/docs/`, any `package.json`, any `packages/*/src/index.ts`,
+  `biome.json`, `tsconfig.json`, `vitest.config.ts`, `react-decks/decks.json`, and the agent
+  harness. A run asks for such a change in its hand-off.
+- After a run: read the hand-off and the diff, refactor with Edit, then run
+  `bun run --cwd react-decks check` and `bun run --cwd react-decks check:isolated` in the
+  worktree before committing. Merge into the `react-decks` branch.
+
+### For the delegate
+
+- Read `react-decks/AGENTS.md` (the whole rulebook) and `react-decks/docs/architecture.md`
+  before the first edit. Load `ce:architecting-systems` and `ce:writing-tests`.
+- If `react-decks/node_modules/` is missing, run `bun install --cwd react-decks`.
+- Iterate on the scoped test command in your contract, then `bun run --cwd react-decks lint`
+  and `bun run --cwd react-decks typecheck`. Run each new test file three times alone, then
+  `bun run --cwd react-decks test` once.
+- Do not edit the files listed as the orchestrator's in `react-decks/AGENTS.md`, or commit.
+  When a maintained library would do a job better than hand-written code and is not
+  installed, ask the orchestrator for it in a question; do not edit a `package.json`.

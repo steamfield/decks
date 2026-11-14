@@ -1,0 +1,40 @@
+{
+  "name": "react-decks",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/core/tsconfig.json && tsc --noEmit -p packages/node/tsconfig.json",
+    "test": "vitest run",
+    "check": "bun run lint && bun run typecheck && bun run test && bun run test:e2e",
+    "check:isolated": "node scripts/check-isolated.mjs",
+    "decks": "tsx packages/node/src/cli.ts",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.7",
+    "@playwright/test": "1.65.1",
+    "@react-decks/motion": "workspace:*",
+    "@react-decks/node": "workspace:*",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.10",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsdom": "31.0.1",
+    "oxc-parser": "0.158.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "rehype-katex": "7.0.1",
+    "remark-math": "6.0.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

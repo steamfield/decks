@@ -1,0 +1,216 @@
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { expect, type Page } from "@playwright/test";
+import { loadDeck, scanSlides } from "@react-decks/node";
+import { test as editableTest } from "./fixtures/deck.fixture";
+import { test } from "./fixtures/motion.fixture";
+
+const total = (await scanSlides(await loadDeck("examples/motion"))).length;
+
+async function pixels(page: Page, blueX: number) {
+  const data = (await page.screenshot({ animations: "allow" })).toString("base64");
+  return page.evaluate(
+    async ({ data, blueX }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Missing canvas context");
+      context.drawImage(image, 0, 0);
+      return [
+        Array.from(context.getImageData(blueX, 110, 1, 1).data),
+        Array.from(context.getImageData(400, 400, 1, 1).data),
+      ];
+    },
+    { data, blueX },
+  );
+}
+
+test("Every gallery slide and each overview and presenter instance shows its own number", async ({
+  page,
+}) => {
+  await page.goto("/?motion=instant#/2");
+  for (let no = 2; no <= total; no++) {
+    await expect(page.locator("[data-deck-active]").getByLabel("Slide number")).toHaveText(
+      `${no} / ${total}`,
+    );
+    if (no < total) await page.keyboard.press("ArrowDown");
+  }
+  await page.keyboard.press("o");
+  for (let no = 2; no <= total; no++) {
+    await expect(
+      page
+        .locator(`[data-deck-context="overview"][data-deck-slide="${no}"]`)
+        .getByLabel("Slide number"),
+    ).toHaveText(`${no} / ${total}`);
+  }
+  await page.goto("/?motion=instant#/17");
+  await expect(page.locator("[data-deck-active]").getByLabel("Slide number")).toHaveText(
+    `17 / ${total}`,
+  );
+  const popup = page.waitForEvent("popup");
+  await page.keyboard.press("p");
+  const presenter = await popup;
+  await expect(
+    presenter.getByRole("region", { name: "Current slide" }).getByLabel("Slide number"),
+  ).toHaveText(`17 / ${total}`);
+  await expect(
+    presenter.getByRole("region", { name: "Next", exact: true }).getByLabel("Slide number"),
+  ).toHaveText(`18 / ${total}`);
+});
+
+test("The layer holds its box still throughout a push transition", async ({ page }) => {
+  await page.goto("/#/17");
+  await expect(page.getByRole("heading", { name: "Keep moving." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Change the scale.", includeHidden: true }),
+  ).toHaveCount(1);
+  await page.evaluate(() => window.__deck?.settled());
+  const frames = await page.evaluate(async () => {
+    const start = document.startViewTransition.bind(document);
+    let captured: ViewTransition | undefined;
+    document.startViewTransition = (update) => {
+      captured = start(update);
+      return captured;
+    };
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", code: "ArrowRight" }));
+    window.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowRight", code: "ArrowRight" }));
+    if (!captured) throw new Error("No transition started");
+    await captured.ready;
+    const animations = document.getAnimations();
+    const samples = [];
+    for (const fraction of [0, 0.25, 0.5, 0.75, 1]) {
+      for (const animation of animations) {
+        animation.pause();
+        animation.currentTime = Number(animation.effect?.getComputedTiming().duration) * fraction;
+      }
+      const group = getComputedStyle(
+        document.documentElement,
+        "::view-transition-group(deck-layer-above)",
+      );
+      const root = getComputedStyle(document.documentElement, "::view-transition-new(root)");
+      samples.push({
+        transform: group.transform,
+        width: group.width,
+        height: group.height,
+        root: root.transform,
+      });
+    }
+    for (const animation of animations) animation.finish();
+    await captured.finished;
+    return samples;
+  });
+  expect(frames).toHaveLength(5);
+  expect(
+    new Set(frames.map(({ transform, width, height }) => `${transform}/${width}/${height}`)).size,
+  ).toBe(1);
+  expect(new Set(frames.map(({ root }) => root)).size).toBeGreaterThan(1);
+  expect(frames[0]?.width).toBe("1920px");
+  expect(frames[0]?.height).toBe("1080px");
+  await expect(page.locator("[data-deck-active]").getByLabel("Slide number")).toHaveText(
+    `18 / ${total}`,
+  );
+});
+
+test("The cover opts out of every layer", async ({ page }) => {
+  await page.goto("/#/1");
+  await expect(page.getByRole("heading", { name: "Motion", exact: true })).toBeVisible();
+  await expect(page.locator("[data-deck-active] [data-deck-layer]")).toHaveCount(0);
+});
+
+editableTest(
+  "Adding editing and removing a layer takes effect in the running deck",
+  async ({ page, editableDeck }) => {
+    const errors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${editableDeck.url}#/3`);
+    await expect(page.getByRole("heading", { name: "A deck component" })).toBeVisible();
+    await mkdir(join(editableDeck.dir, "layers"), { recursive: true });
+    const file = join(editableDeck.dir, "layers/below.tsx");
+    const loaded = page.waitForEvent("load");
+    await writeFile(
+      file,
+      "export default function Below() { return <span>Added backdrop</span>; }",
+    );
+    await loaded;
+    await expect(
+      page.locator("[data-deck-active]").getByText("Added backdrop", { exact: true }),
+    ).toBeVisible();
+    await writeFile(
+      file,
+      "export default function Below() { return <span>Edited backdrop</span>; }",
+    );
+    await expect(
+      page.locator("[data-deck-active]").getByText("Edited backdrop", { exact: true }),
+    ).toBeVisible();
+    const removed = page.waitForEvent("load");
+    await rm(file);
+    await removed;
+    await expect(page.getByText("Edited backdrop", { exact: true })).toHaveCount(0);
+    await expect(page).toHaveURL(/#\/3$/);
+    expect(errors).toEqual([]);
+  },
+);
+
+editableTest(
+  "Slide content paints over a below layer before during and after a push",
+  async ({ page, editableDeck }) => {
+    await mkdir(join(editableDeck.dir, "layers"), { recursive: true });
+    await writeFile(
+      join(editableDeck.dir, "layers/below.tsx"),
+      'export default function Below() { return <div style={{position:"absolute",inset:0,background:"rgb(255,0,0)"}} />; }',
+    );
+    const body =
+      '---\ntransition: push\n---\n<button style={{position:"absolute",left:100,top:100,width:200,height:200,background:"rgb(0,0,255)",border:0}} onClick={event => event.currentTarget.textContent = "Pressed"}>Press me</button>';
+    await writeFile(join(editableDeck.dir, "slides/01-cover.mdx"), body);
+    await writeFile(join(editableDeck.dir, "slides/02-steps.mdx"), body);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(editableDeck.url);
+    await page.locator("[data-deck-active]").getByRole("button", { name: "Press me" }).click();
+    await expect(page.getByRole("button", { name: "Pressed" })).toBeVisible();
+    const colors = [
+      [0, 0, 255, 255],
+      [255, 0, 0, 255],
+    ];
+    expect(await pixels(page, 110)).toEqual(colors);
+    await expect(
+      page
+        .locator('[data-deck-slide="2"]')
+        .getByRole("button", { name: "Press me", includeHidden: true }),
+    ).toBeAttached();
+    const blueX = await page.evaluate(async () => {
+      const start = document.startViewTransition.bind(document);
+      let captured: ViewTransition | undefined;
+      document.startViewTransition = (update) => {
+        captured = start(update);
+        return captured;
+      };
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", code: "ArrowRight" }));
+      window.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowRight", code: "ArrowRight" }));
+      if (!captured) throw new Error("Missing push transition");
+      await captured.ready;
+      for (const animation of document.getAnimations()) {
+        animation.pause();
+        animation.currentTime = Number(animation.effect?.getComputedTiming().duration) * 0.5;
+      }
+      const transform = getComputedStyle(
+        document.documentElement,
+        "::view-transition-new(root)",
+      ).transform;
+      return new DOMMatrixReadOnly(transform).e + 110;
+    });
+    expect(await pixels(page, blueX)).toEqual(colors);
+    await page.evaluate(async () => {
+      for (const animation of document.getAnimations()) animation.finish();
+      await window.__deck?.settled();
+    });
+    await expect(page).toHaveURL(/#\/2$/);
+    expect(await pixels(page, 110)).toEqual(colors);
+  },
+);

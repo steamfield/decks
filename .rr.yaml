@@ -1,0 +1,47 @@
+version: 1
+
+# Remote test runs for react-decks/ (the React framework). `rr <task> --repeat N` spreads
+# N runs across the hosts, which is how intermittent failures are hunted.
+hosts: [m4-mini, m1-mini, m1-linux]
+
+require: [bun, node]
+
+defaults:
+  setup:
+    # react-decks is its own workspace with its own lockfile.
+    - bun install --cwd react-decks --frozen-lockfile
+
+sync:
+  # Setting exclude replaces rr's defaults, so they are repeated here. The react-decks
+  # scratch directories are ignored by a nested .gitignore, which rr does not read.
+  exclude:
+    - .git
+    - node_modules
+    - .venv
+    - __pycache__/
+    - .DS_Store
+    - "*.log"
+    - .claude/
+    - .cursor/
+    - .aider/
+    - .copilot/
+    - dist/
+    - react-decks/.tmp/
+    - react-decks/test-results/
+    - react-decks/playwright-report/
+  preserve:
+    - node_modules/
+    - react-decks/.tmp/
+
+tasks:
+  rd-test:
+    description: react-decks unit and integration tests (Vitest). Pass a path after the task name.
+    run: bun run --cwd react-decks test
+
+  rd-e2e:
+    description: react-decks browser tests (Playwright, Chromium). Pass a spec file or flags after --.
+    run: bun run --cwd react-decks playwright install chromium && bun run --cwd react-decks test:e2e {args}
+
+  rd-check:
+    description: The react-decks gate (lint, typecheck, tests, browser tests).
+    run: bun run --cwd react-decks playwright install chromium && bun run --cwd react-decks check

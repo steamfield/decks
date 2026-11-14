@@ -1,0 +1,27 @@
+@layer react-decks {
+  html[data-deck-idle],
+  html[data-deck-idle] * {
+    cursor: none;
+  }
+  .rd-play-view {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Every mounted slide fills the frame, so the hidden neighbours cost no layout. */
+  #deck-frame {
+    position: relative;
+  }
+
+  #deck-frame > [data-deck-slide] {
+    position: absolute;
+    inset: 0;
+  }
+
+  #deck-frame > [data-deck-slide][hidden] {
+    display: none !important;
+  }
+}

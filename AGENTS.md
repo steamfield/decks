@@ -136,6 +136,10 @@ Building or revising a deck starts with the `building-a-deck` skill; any chart s
 
 The hooks only run once trusted: open `codex` in the main checkout, run `/hooks`, and approve the project hooks (re-approve after `.codex/hooks.json` changes). `foreman doctor` reports whether they are trusted, and foreman worktrees under `.claude/worktrees/` inherit the approval. A worktree needs `bun install` before any `bun run` command works. A hook deny means rewrite the prose; never route the write around it (a shell heredoc or script skips the hook, and `bun run lint` will fail the deck later anyway).
 
+### react-decks
+
+`react-decks/` is a React slide framework being built to replace Slidev here (RFC 0007). It is its own bun workspace, and `react-decks/AGENTS.md` is its whole rulebook: package boundaries, proportion, testing and React conventions. Codex scopes instructions by directory and loads that file automatically only when started inside `react-decks/`, so when you are started at the repo root, read `react-decks/AGENTS.md` and `react-decks/docs/architecture.md` before editing anything under `react-decks/`. Three habits matter most there: build what the contract's acceptance asks for and stop; ask before using an unstable API or keeping a workaround; and replay the contract's QA situations against the spec before implementing it, reporting what you find. The gate is `bun run --cwd react-decks check`; a worktree needs `bun install --cwd react-decks` first. The deck prose rules and hooks in this file do not apply to framework code. Delegated runs also read the react-decks part of `.claude/delegate.md`.
+
 ### Generated copies
 
 Antigravity reads `.agents/rules/` (the rules with Antigravity glob frontmatter); Codex reads `.codex/agents/deck-author.toml`. Both were generated once from `.claude/`; when you change a rule or the agent, update the matching copy in the same commit. Never edit only the copy.
