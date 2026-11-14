@@ -6,16 +6,20 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@react-decks/core": "workspace:*",
     "@mdx-js/rollup": "3.1.1",
+    "@react-decks/core": "workspace:*",
     "@vitejs/plugin-react": "6.3.0",
     "citty": "0.2.2",
     "get-port": "7.2.0",
     "gray-matter": "4.0.3",
     "picocolors": "1.1.1",
+    "rehype-stringify": "10.0.1",
     "remark-frontmatter": "5.0.0",
-    "remark-mdx-frontmatter": "6.0.0",
+    "remark-mdx": "3.1.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
     "tinyglobby": "0.2.17",
+    "unified": "11.0.5",
     "vite": "8.3.8",
     "zod": "4.6.7"
   },
