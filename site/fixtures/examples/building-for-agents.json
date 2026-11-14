@@ -1,0 +1,505 @@
+{
+  "title": "Building for agents",
+  "slides": 19,
+  "slideTitles": [
+    "Building for agents",
+    "My tools have two users: me and a coding agent.",
+    "I ship a change with seven tools I built.",
+    "Stacks briefs the agent and checks its work.",
+    "The Stacks CLI is written with Effect.",
+    "Stacks output differs for people and agents.",
+    "foreman runs each Codex task in its own worktree.",
+    "foreman is a short-lived CLI and a daemon.",
+    "Codex waits until Claude answers its question.",
+    "rr runs each agent's tests on its own machine.",
+    "StatGlass started as the rr monitor command.",
+    "Rust collects the data and TypeScript draws it.",
+    "The StatGlass UI also runs in a browser tab.",
+    "Agents read StatGlass history through a CLI.",
+    "OpenData sends text to the model, rows to the UI.",
+    "OpenChart validation reports which field is wrong.",
+    "A Decks hook blocks AI-sounding sentences.",
+    "Each tool has some of the same six habits.",
+    "The seven tools are at steamfield.io."
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 2,
+      "lead": "rr --pretty prints a summary for a person.",
+      "body": "One line per task with its host and time, then totals. Designing this view is developer experience, DX."
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 2,
+      "lead": "A coding agent receives every byte.",
+      "body": "The colour codes are part of the text, and each one uses space in the agent’s context."
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Without the flag, rr prints JSON events.",
+      "body": "The last event lists each failing test. Designing this output is agent experience, AX."
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 2,
+      "lead": "I built each tool for my own work.",
+      "body": "Most started inside OpenData, whose test suite is about 14,000 tests."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Six of the seven use TypeScript.",
+      "body": "rr is Go. StatGlass samples the system in Rust, and OpenData’s engine is Python."
+    },
+    {
+      "slide": 3,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Three get several slides tonight.",
+      "body": "Stacks, foreman and StatGlass, with the source code on screen."
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 3,
+      "lead": "One command writes the brief.",
+      "body": "It writes starter files, agent instructions and a 4,481-word BRIEF.md."
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 3,
+      "lead": "The agent’s prompt is two sentences.",
+      "body": "It names the brief and says the work is done when stacks verify passes."
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 3,
+      "lead": "The first verify run failed.",
+      "body": "Claude Code ran it 393 seconds in and 5 of 15 steps failed. The next run passed at 501 seconds."
+    },
+    {
+      "slide": 4,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Stacks refuses to verify edited checks.",
+      "body": "Stacks keeps a hash of the steps outside the project and refuses to run if one was edited."
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 5,
+      "lead": "Every run starts in three files.",
+      "body": "bin.ts imports from Node, main.ts maps errors to exit codes, and cli.ts builds the command tree."
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 5,
+      "lead": "Each command is one file.",
+      "body": "It declares its flags, calls the core, and lists its exit codes in the help text."
+    },
+    {
+      "slide": 5,
+      "beat": 2,
+      "beats": 5,
+      "lead": "A service class includes its test double.",
+      "body": "Host.layer wraps the real process and Host.memory is the fake the tests use."
+    },
+    {
+      "slide": 5,
+      "beat": 3,
+      "beats": 5,
+      "lead": "One function composes the layers.",
+      "body": "It adds config, output, logging and processes, and the tests call the same function."
+    },
+    {
+      "slide": 5,
+      "beat": 4,
+      "beats": 5,
+      "lead": "Each error has one row in a table.",
+      "body": "The row sets its exit code and whether a retry can work. A missing row fails the build."
+    },
+    {
+      "slide": 5,
+      "beat": 5,
+      "beats": 5,
+      "lead": "Tests replace a layer with a fake.",
+      "body": "This test swaps in an HTTP client that returns 503, then checks the JSON error."
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 3,
+      "lead": "On a terminal, verify prints colour.",
+      "body": "Stacks uses this format only when stdout is a terminal, no agent is detected and CI is unset."
+    },
+    {
+      "slide": 6,
+      "beat": 1,
+      "beats": 3,
+      "lead": "Run by an agent, verify prints plain text.",
+      "body": "Stacks finds an agent marker in the environment and prints no colour codes and no live step output."
+    },
+    {
+      "slide": 6,
+      "beat": 2,
+      "beats": 3,
+      "lead": "With --json, stdout is one object.",
+      "body": "The last line of stderr is an error envelope whose next field says what to do."
+    },
+    {
+      "slide": 6,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Each exit code has one meaning.",
+      "body": "5 means read the verify report, and 6 means ask a person."
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 4,
+      "lead": "Claude writes one contract per task.",
+      "body": "Each contract is a Markdown file. foreman reads its May change line for the paths the delegate may edit."
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 4,
+      "lead": "foreman creates a worktree and branch per delegate.",
+      "body": "The worktree is .claude/worktrees/<name> and the branch is foreman/<name>."
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 4,
+      "lead": "site-commands asked Claude a question.",
+      "body": "The daemon leaves the tool call open until Claude answers, and the other two delegates keep running."
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 4,
+      "lead": "Claude answered after 18 seconds.",
+      "body": "The answer is returned inside the same Codex turn, so the delegate continues with its context."
+    },
+    {
+      "slide": 7,
+      "beat": 4,
+      "beats": 4,
+      "lead": "Claude reviews each diff and commits it.",
+      "body": "foreman leaves the work uncommitted. Its digest lists every file changed outside May change."
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 3,
+      "lead": "The CLI exits and the daemon keeps running.",
+      "body": "The daemon supervises every run and exits after 30 idle minutes."
+    },
+    {
+      "slide": 8,
+      "beat": 1,
+      "beats": 3,
+      "lead": "The CLI and daemon use a Unix socket.",
+      "body": "Each message is one line of JSON. The CLI starts the daemon when the socket is missing."
+    },
+    {
+      "slide": 8,
+      "beat": 2,
+      "beats": 3,
+      "lead": "One codex app-server process runs every delegate.",
+      "body": "The daemon sends it JSON-RPC over stdio and routes replies by thread id."
+    },
+    {
+      "slide": 8,
+      "beat": 3,
+      "beats": 3,
+      "lead": "foreman checks the Codex protocol by hash.",
+      "body": "The hash covers 467 schema files from Codex 0.166.0. foreman doctor prints whether it still matches."
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 3,
+      "lead": "Codex asks by calling the ask_orchestrator tool.",
+      "body": "The daemon stores the request id and sends no response, so the Codex turn stays blocked."
+    },
+    {
+      "slide": 9,
+      "beat": 1,
+      "beats": 3,
+      "lead": "A background foreman wait exits with the question.",
+      "body": "Claude Code reports the finished background task to Claude, which reads the question from its output."
+    },
+    {
+      "slide": 9,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Claude's answer is returned as the tool result.",
+      "body": "After 15 minutes without an answer, the daemon returns a message telling Codex to continue."
+    },
+    {
+      "slide": 9,
+      "beat": 3,
+      "beats": 3,
+      "lead": "The timeout test advances a test clock.",
+      "body": "Effect's TestClock moves time by one second. A 117-line script replaces Codex in the tests."
+    },
+    {
+      "slide": 10,
+      "beat": 0,
+      "beats": 4,
+      "lead": "Each rr call is a separate process.",
+      "body": "The only state they share is a lock on each host. rr has no server."
+    },
+    {
+      "slide": 10,
+      "beat": 1,
+      "beats": 4,
+      "lead": "A parallel task locks every host.",
+      "body": "Its shards are tasks the config lists under parallel. rsync copies the files and SSH runs the command."
+    },
+    {
+      "slide": 10,
+      "beat": 2,
+      "beats": 4,
+      "lead": "A run waits when every host is locked.",
+      "body": "It retries every 2 seconds and prints a waiting event with the command that holds the lock."
+    },
+    {
+      "slide": 10,
+      "beat": 3,
+      "beats": 4,
+      "lead": "A retry locks the first free host.",
+      "body": "Each git worktree syncs to its own remote directory unless the config turns that off."
+    },
+    {
+      "slide": 10,
+      "beat": 4,
+      "beats": 4,
+      "lead": "The result event gives file and line.",
+      "body": "rr parses pytest, Go test, Jest and Vitest output and reports each failed test's file, line and message."
+    },
+    {
+      "slide": 11,
+      "beat": 0,
+      "beats": 2,
+      "lead": "rr monitor shows each host in a terminal.",
+      "body": "Each card has CPU, memory, latency and the command holding the host's lock, read over SSH."
+    },
+    {
+      "slide": 11,
+      "beat": 1,
+      "beats": 2,
+      "lead": "rr monitor keeps 600 samples per metric.",
+      "body": "That is 10 minutes at one sample a second, held in memory until rr monitor exits."
+    },
+    {
+      "slide": 11,
+      "beat": 2,
+      "beats": 2,
+      "lead": "StatGlass keeps up to 30 days.",
+      "body": "It is a menu bar app for Apple Silicon Macs that stores each host's history in SQLite."
+    },
+    {
+      "slide": 12,
+      "beat": 0,
+      "beats": 4,
+      "lead": "StatGlass is 58 percent Rust by lines.",
+      "body": "Rust has the samplers, the SQLite store, remote hosts and the menu bar item. The React UI is TypeScript."
+    },
+    {
+      "slide": 12,
+      "beat": 1,
+      "beats": 4,
+      "lead": "tauri-specta generates bindings.ts.",
+      "body": "It writes 92 commands and 10 events from the Rust source. A pre-push hook fails if the file is stale."
+    },
+    {
+      "slide": 12,
+      "beat": 2,
+      "beats": 4,
+      "lead": "Rust sends samples over a Tauri Channel.",
+      "body": "Each tick is one message whose values are an array, ordered by a layout sent earlier."
+    },
+    {
+      "slide": 12,
+      "beat": 3,
+      "beats": 4,
+      "lead": "Each tick runs one transform animation.",
+      "body": "d3 computes the path and React renders it as SVG. The animation slides the redrawn chart one slot."
+    },
+    {
+      "slide": 12,
+      "beat": 4,
+      "beats": 4,
+      "lead": "Idle CPU was 0.67 percent of one core.",
+      "body": "Rust draws the menu bar item. Measured once, menu bar only, on an M3 Max in October 2026."
+    },
+    {
+      "slide": 13,
+      "beat": 0,
+      "beats": 1,
+      "lead": "React code calls a Transport interface.",
+      "body": "One implementation calls Tauri and the other is a mock. A lint rule bans Tauri imports under src/app."
+    },
+    {
+      "slide": 13,
+      "beat": 1,
+      "beats": 1,
+      "lead": "The mock runs the app without Tauri.",
+      "body": "Vitest, Playwright, the browser dev server and the docs site demo all use it."
+    },
+    {
+      "slide": 14,
+      "beat": 0,
+      "beats": 2,
+      "lead": "The statglass CLI reads recorded history.",
+      "body": "now, history, events and top work on this Mac or on any remote host StatGlass mirrors."
+    },
+    {
+      "slide": 14,
+      "beat": 1,
+      "beats": 2,
+      "lead": "History output lists gaps in the samples.",
+      "body": "The gap line gives the time range and the cause. Errors come back as JSON with a next step."
+    },
+    {
+      "slide": 14,
+      "beat": 2,
+      "beats": 2,
+      "lead": "The CLI is written in Rust.",
+      "body": "The RFC estimates a compiled TypeScript binary at 55 to 60 MB, for a 36 MB app."
+    },
+    {
+      "slide": 15,
+      "beat": 0,
+      "beats": 3,
+      "lead": "The MCP server is TypeScript.",
+      "body": "It registers 14 tools and runs on Bun with Hono. The query engine is Python and DuckDB."
+    },
+    {
+      "slide": 15,
+      "beat": 1,
+      "beats": 3,
+      "lead": "The server’s instructions set the tool order.",
+      "body": "The order is search, then SQL, then chart. Search results already include column schemas."
+    },
+    {
+      "slide": 15,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Chart rows go to the interface only.",
+      "body": "The model reads the text. Up to 120 rows are in _meta, which the host shows only to the interface."
+    },
+    {
+      "slide": 15,
+      "beat": 3,
+      "beats": 3,
+      "lead": "The chart renders inside the chat.",
+      "body": "The interface is a React app. The host loads it in an iframe from the server's ui:// resource."
+    },
+    {
+      "slide": 16,
+      "beat": 0,
+      "beats": 3,
+      "lead": "A chart is a JSON spec.",
+      "body": "The spec names a mark and maps data columns to x and y. The engine computes the layout."
+    },
+    {
+      "slide": 16,
+      "beat": 1,
+      "beats": 3,
+      "lead": "The error names the misspelled field.",
+      "body": "It has a JSON Pointer path, an error code, and a suggestion with the closest column name."
+    },
+    {
+      "slide": 16,
+      "beat": 2,
+      "beats": 3,
+      "lead": "With the field corrected, the spec validates.",
+      "body": "validateSpec returns no errors and the Vue component draws the chart."
+    },
+    {
+      "slide": 16,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Drawing is a separate package from the engine.",
+      "body": "vanilla draws the engine's layout to the DOM. The React, Vue and Svelte packages wrap vanilla."
+    },
+    {
+      "slide": 17,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Each click seeks the timeline to a beat.",
+      "body": "The slide is a Vue component with a GSAP timeline. Stepping back plays the same tweens in reverse."
+    },
+    {
+      "slide": 17,
+      "beat": 1,
+      "beats": 2,
+      "lead": "The write hook enforces 5 lint patterns.",
+      "body": "The lint has 27 patterns. A write matching one of the 5 errors is refused with the pattern's id."
+    },
+    {
+      "slide": 17,
+      "beat": 2,
+      "beats": 2,
+      "lead": "This deck lists a source for each figure.",
+      "body": "Each row names the file or command that produces the figure."
+    },
+    {
+      "slide": 18,
+      "beat": 0,
+      "beats": 3,
+      "lead": "Six tools print JSON a program can parse.",
+      "body": "The same six also print the next step, as a field or a line of text."
+    },
+    {
+      "slide": 18,
+      "beat": 1,
+      "beats": 3,
+      "lead": "A command checks when work is finished.",
+      "body": "Stacks has verify, and Decks has check and lint. Three tools document one action per exit code."
+    },
+    {
+      "slide": 18,
+      "beat": 2,
+      "beats": 3,
+      "lead": "Agents run in parallel and read bundled docs.",
+      "body": "rr locks a host and foreman uses a worktree per task. Five tools ship their own guide or skill."
+    },
+    {
+      "slide": 18,
+      "beat": 3,
+      "beats": 3,
+      "lead": "Any CLI or library can adopt these habits.",
+      "body": "The six habits are output formats, exit codes, locks and bundled docs. None of them calls a model."
+    },
+    {
+      "slide": 19,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    }
+  ]
+}

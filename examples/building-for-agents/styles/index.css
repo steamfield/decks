@@ -1,0 +1,660 @@
+/* building-for-agents: "Night drive, on stage". Tokens are in tokens.css and
+   theme.json; DESIGN.md says what each one is for. The addon loads first. */
+@import './tokens.css';
+
+.od-slide.is-story {
+  font-family: var(--od-font-sans);
+  background: var(--od-canvas);
+  color: var(--od-text);
+}
+.od-slide.is-story.is-story-cover { background: var(--od-canvas-cover); }
+
+/* ── Headline: a claim, in Heros ── */
+.od-slide.is-story h2.od-story-head {
+  top: var(--sf-head-top);
+  left: var(--sf-margin-x);
+  width: var(--sf-head-width);
+  margin: var(--sf-zero);
+  font-size: var(--sf-head-size);
+  font-weight: var(--sf-head-weight) !important;
+  line-height: var(--sf-head-leading) !important;
+  letter-spacing: var(--sf-head-tracking);
+}
+
+/* ── Cover: chrome Orbitron title, one script line, Heros lede ── */
+.od-slide.is-story .od-cover-body {
+  max-width: var(--sf-cover-width);
+  /* The title and lede sit in the sky, above the ridge; the byline keeps the floor. */
+  margin-top: var(--sf-cover-top);
+  margin-bottom: auto;
+}
+.od-slide.is-story h1.od-title {
+  position: relative;
+  display: inline-block;
+  margin: var(--sf-zero);
+  font-family: var(--sf-font-display) !important;
+  font-size: var(--sf-cover-size);
+  font-weight: var(--sf-cover-weight) !important;
+  line-height: var(--sf-cover-leading) !important;
+  letter-spacing: var(--sf-cover-tracking);
+  text-transform: uppercase;
+}
+.od-slide.is-story .sf-chrome {
+  background: linear-gradient(
+    180deg,
+    var(--od-chrome-1) 0%,
+    var(--od-chrome-2) 22%,
+    var(--od-chrome-3) 46%,
+    var(--od-chrome-4) 50%,
+    var(--od-chrome-5) 53%,
+    var(--od-chrome-6) 70%,
+    var(--od-chrome-7) 92%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.od-slide.is-story .sf-script {
+  position: absolute;
+  right: var(--sf-script-right);
+  bottom: var(--sf-script-bottom);
+  font-family: var(--sf-font-script);
+  font-size: var(--sf-script-size);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  color: var(--od-pink);
+  text-shadow: var(--sf-glow-pink);
+  transform: rotate(var(--sf-script-tilt));
+}
+.od-slide.is-story .od-cover-lede {
+  max-width: var(--sf-lede-width);
+  margin: var(--sf-lede-gap) var(--sf-zero) var(--sf-zero);
+  font-size: var(--sf-body-size);
+  font-weight: var(--sf-body-weight);
+  line-height: var(--sf-body-leading) !important;
+  color: var(--od-text-secondary);
+}
+.od-slide.is-story .od-brand-name {
+  font-family: var(--sf-font-display);
+  font-size: var(--sf-small-size);
+  font-weight: var(--sf-plate-weight);
+  letter-spacing: var(--sf-plate-tracking);
+  text-transform: uppercase;
+}
+.od-slide.is-story .od-byline {
+  gap: var(--sf-byline-gap);
+  font-size: var(--sf-small-size);
+  color: var(--od-text-secondary);
+}
+.od-slide.is-story .od-dim { color: var(--od-text-faint); }
+
+/* The cover's picture, behind the cover frame. */
+.od-slide.is-story .sf-night-drive {
+  position: absolute;
+  inset: var(--sf-zero);
+  width: var(--sf-full);
+  height: var(--sf-full);
+}
+.od-slide.is-story .sf-sky-top { stop-color: var(--od-canvas); }
+.od-slide.is-story .sf-sky-mid { stop-color: var(--od-hero-mid); }
+.od-slide.is-story .sf-sky-haze { stop-color: var(--od-hero-haze); }
+.od-slide.is-story .sf-sun-1 { stop-color: var(--od-sun-yellow); }
+.od-slide.is-story .sf-sun-2 { stop-color: var(--od-sun-orange); }
+.od-slide.is-story .sf-sun-3 { stop-color: var(--od-sun-pink); }
+.od-slide.is-story .sf-sun-4 { stop-color: var(--od-sun-violet); }
+.od-slide.is-story .sf-sun-halo { stop-color: var(--od-sun-pink); }
+.od-slide.is-story .sf-star { fill: var(--od-text); }
+.od-slide.is-story .sf-ground { fill: var(--od-canvas); }
+.od-slide.is-story .sf-ridge-fill { fill: var(--od-canvas); }
+.od-slide.is-story .sf-ridge-line {
+  fill: none;
+  stroke: var(--od-hero-ridge);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.od-slide.is-story .sf-grid-line {
+  fill: none;
+  stroke: var(--od-hero-grid);
+  stroke-width: 1.5;
+}
+.od-slide.is-story .sf-horizon {
+  stroke: var(--od-hero-grid);
+  stroke-width: 2;
+}
+.od-slide.is-story .sf-fade-0 { stop-color: var(--od-canvas); stop-opacity: 0; }
+.od-slide.is-story .sf-fade-1 { stop-color: var(--od-canvas); stop-opacity: 1; }
+
+/* ── Card: the site's card surface, Heros copy ── */
+.od-slide.is-story :is(.od-story-card, .od-inkchip) {
+  border: var(--sf-hairline) solid var(--od-border-rule);
+  border-radius: var(--sf-radius-card);
+  background: var(--od-surface);
+  box-shadow: none;
+}
+.od-slide.is-story .od-story-card { padding: var(--sf-card-pad-y) var(--sf-card-pad-x); }
+.od-slide.is-story :is(.od-story-lead, .od-story-copy) {
+  font-size: var(--sf-body-size);
+  line-height: var(--sf-body-leading);
+}
+.od-slide.is-story .od-story-lead { font-weight: var(--sf-lead-weight); }
+.od-slide.is-story .od-story-copy {
+  margin-top: var(--sf-copy-gap);
+  font-weight: var(--sf-body-weight);
+  color: var(--od-text-secondary);
+}
+
+/* ── Beat rail: under the thread rail ── */
+.od-slide.is-story .od-story-foot {
+  left: var(--sf-margin-x);
+  bottom: var(--sf-beat-bottom);
+}
+.od-slide.is-story .od-beat.is-current { background: var(--od-pink); }
+
+/* ── Name plate: product icon, Orbitron name, language chip ── */
+.od-slide.is-story .sf-plate {
+  position: absolute;
+  top: var(--sf-head-top);
+  right: var(--sf-margin-x);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sf-plate-gap);
+}
+.od-slide.is-story .sf-plate-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-plate-gap);
+}
+.od-slide.is-story .sf-plate-icon { width: var(--sf-plate-icon); height: var(--sf-plate-icon); }
+.od-slide.is-story .sf-plate-name {
+  font-family: var(--sf-font-display);
+  font-size: var(--sf-plate-name);
+  font-weight: var(--sf-plate-weight);
+  letter-spacing: var(--sf-plate-tracking);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--od-text);
+}
+.od-slide.is-story .sf-lang {
+  display: inline-block;
+  padding: var(--sf-chip-pad-y) var(--sf-chip-pad-x);
+  border: var(--sf-hairline) solid var(--od-border-rule);
+  border-radius: var(--sf-radius-chip);
+  font-family: var(--od-font-mono);
+  font-size: var(--sf-chip-size);
+  line-height: 1.3;
+  color: var(--od-text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Evidence tags: the status word is printed on the object ── */
+.od-slide.is-story .sf-tag {
+  position: absolute;
+  display: inline-block;
+  padding: var(--sf-tag-pad-y) var(--sf-tag-pad-x);
+  border: var(--sf-hairline) solid currentColor;
+  border-radius: var(--sf-radius-chip);
+  font-family: var(--sf-font-pixel);
+  font-size: var(--sf-pixel-size);
+  line-height: var(--sf-pixel-leading);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--od-text-muted);
+}
+.od-slide.is-story .sf-tag.is-right { transform: translateX(-100%); }
+.od-slide.is-story .sf-tag.is-recorded { color: var(--od-amber); }
+.od-slide.is-story .sf-tag.is-schematic { border-style: dashed; }
+.od-slide.is-story .sf-tag.is-illustrative { border-style: dotted; }
+
+/* ── Thread rail: the seven products, in the order work flows ── */
+.od-slide.is-story .sf-rail {
+  position: absolute;
+  left: var(--sf-margin-x);
+  right: var(--sf-margin-x);
+  bottom: var(--sf-rail-bottom);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: var(--sf-hairline) solid var(--od-border);
+}
+.od-slide.is-story .sf-rail-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sf-rail-gap);
+  padding-top: var(--sf-rail-pad);
+  opacity: var(--sf-dim);
+}
+.od-slide.is-story .sf-rail-item.is-done { opacity: var(--sf-on); }
+.od-slide.is-story .sf-rail-item.is-current { opacity: var(--sf-on); }
+.od-slide.is-story .sf-rail-item.is-current::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--sf-hairline));
+  left: var(--sf-zero);
+  right: var(--sf-rail-gap);
+  height: var(--sf-marker);
+  background: var(--od-pink);
+}
+.od-slide.is-story .sf-rail-icon { width: var(--sf-rail-icon); height: var(--sf-rail-icon); flex: none; }
+.od-slide.is-story .sf-rail-text { display: flex; flex-direction: column; gap: calc(0.3 * var(--sw)); min-width: 0; }
+.od-slide.is-story .sf-rail-verb {
+  font-family: var(--sf-font-pixel);
+  font-size: var(--sf-pixel-size);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--od-text-muted);
+}
+.od-slide.is-story .sf-rail-item.is-current .sf-rail-verb { color: var(--od-amber); }
+.od-slide.is-story .sf-rail-name {
+  font-family: var(--sf-font-display);
+  font-size: var(--sf-rail-name);
+  font-weight: var(--sf-plate-weight);
+  letter-spacing: var(--sf-plate-tracking);
+  line-height: 1;
+  color: var(--od-text-secondary);
+  white-space: nowrap;
+}
+.od-slide.is-story .sf-rail-item.is-current .sf-rail-name { color: var(--od-text); }
+
+/* ── Pixel icons: one rect per pixel, colors from the theme ── */
+.od-slide.is-story .sf-px-p { fill: var(--od-pink); }
+.od-slide.is-story .sf-px-c { fill: var(--od-cyan); }
+.od-slide.is-story .sf-px-y { fill: var(--od-amber); }
+.od-slide.is-story .sf-px-v { fill: var(--od-violet); }
+.od-slide.is-story .sf-px-w { fill: var(--od-text); }
+
+/* ── SVG type, in viewBox units ── */
+.od-slide.is-story .sf-term {
+  font-family: var(--sf-font-term);
+  font-size: var(--sf-svg-term);
+  fill: var(--od-phosphor);
+}
+.od-slide.is-story .sf-mono {
+  font-family: var(--od-font-mono);
+  font-size: var(--sf-svg-mono);
+  fill: var(--od-text-secondary);
+}
+.od-slide.is-story .sf-mono.is-small { font-size: var(--sf-svg-mono-small); fill: var(--od-text-muted); }
+.od-slide.is-story .sf-name {
+  font-family: var(--od-font-sans);
+  font-size: var(--sf-svg-name);
+  font-weight: var(--sf-lead-weight);
+  fill: var(--od-text);
+}
+.od-slide.is-story .sf-pixel {
+  font-family: var(--sf-font-pixel);
+  font-size: var(--sf-svg-pixel);
+  text-transform: uppercase;
+  fill: var(--od-text-muted);
+}
+.od-slide.is-story .sf-pixel.is-small { font-size: var(--sf-svg-pixel-small); }
+.od-slide.is-story .sf-pixel.is-fig { fill: var(--od-amber); }
+
+/* ── Boxes in system diagrams ── */
+.od-slide.is-story .sf-box {
+  fill: var(--od-surface);
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-hairline);
+  rx: var(--sf-radius-card);
+}
+.od-slide.is-story .sf-box.is-well { fill: var(--od-well); }
+.od-slide.is-story .sf-box.is-lit { stroke: currentColor; stroke-width: var(--sf-marker); }
+.od-slide.is-story .sf-boundary {
+  fill: none;
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-hairline);
+  stroke-dasharray: 8 8;
+  rx: var(--sf-radius-card);
+}
+.od-slide.is-story .sf-wire {
+  fill: none;
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-marker);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── CRT frame: a recording plays on a monitor ── */
+.od-slide.is-story .sf-crt-bezel {
+  fill: var(--od-surface);
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-hairline);
+  rx: var(--sf-crt-radius-outer);
+}
+.od-slide.is-story .sf-crt-screen { fill: var(--od-well); rx: var(--sf-crt-radius-screen); }
+.od-slide.is-story .sf-crt-scanline { fill: var(--od-text-highlight); opacity: var(--sf-crt-scan); }
+
+/* Slide changes: a quick clear, then a settle, as in texas-2026. View
+   transition pseudo-elements belong to html, so a slide cannot scope them. */
+html[data-od-story]::view-transition-group(*),
+html[data-od-story]::view-transition-old(*),
+html[data-od-story]::view-transition-new(*) { animation-duration: var(--sf-vt-fade); }
+html[data-od-story]::view-transition { background: var(--od-canvas); }
+html[data-od-story][data-od-nav]::view-transition-old(root),
+html[data-od-story][data-od-nav]::view-transition-old(od-story-head) {
+  animation: od-vt-out var(--sf-vt-out) linear both;
+}
+html[data-od-story][data-od-nav]::view-transition-new(root),
+html[data-od-story][data-od-nav]::view-transition-new(od-story-head),
+html[data-od-story][data-od-nav]::view-transition-new(od-story-card-left):only-child,
+html[data-od-story][data-od-nav]::view-transition-new(od-story-card-right):only-child {
+  animation: od-vt-fade var(--sf-vt-fade) var(--sf-vt-ease) var(--sf-vt-delay) both;
+}
+html[data-od-story]::view-transition-old(od-story-card-left),
+html[data-od-story]::view-transition-new(od-story-card-left),
+html[data-od-story]::view-transition-old(od-story-card-right),
+html[data-od-story]::view-transition-new(od-story-card-right) { inset-block: auto 0; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-od-story]::view-transition-group(*),
+  html[data-od-story]::view-transition-old(*),
+  html[data-od-story]::view-transition-new(*) {
+    animation-duration: var(--sf-vt-reduced) !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+/* ── The tube ────────────────────────────────────────────────────────────
+   One CRT's glass over every slide (global-top.vue), and the barrel warp on
+   each slide's frame. Ported from steamfield.io's `.crt-overlay`. The heavy
+   tape tracking faults are not part of the deck. */
+.od-slide.is-story.sf-tube-host {
+  position: fixed;
+  inset: var(--sf-zero);
+  z-index: 60;
+  overflow: hidden;
+  background: none;
+  pointer-events: none;
+}
+.od-slide.is-story .sf-tube-defs { position: absolute; }
+.od-slide.is-story .sf-tube {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--od-fw);
+  height: var(--od-fh);
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  border-radius: var(--sf-tube-radius);
+  /* Black past the curved corners, and a dark falloff along the edges. */
+  box-shadow:
+    0 0 0 calc(6 * var(--sw)) black,
+    inset 0 0 var(--sf-tube-edge) rgb(0 0 0 / var(--sf-tube-edge-shade));
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(var(--sf-tube-line) - 1px),
+      rgb(0 0 0 / var(--sf-tube-scan)) calc(var(--sf-tube-line) - 1px) var(--sf-tube-line)
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgb(255 0 0 / var(--sf-tube-mask)) 0 1px,
+      rgb(0 255 0 / var(--sf-tube-mask)) 1px 2px,
+      rgb(0 0 255 / var(--sf-tube-mask)) 2px 3px
+    ),
+    radial-gradient(ellipse 70% 50% at 22% 0%, rgb(255 255 255 / var(--sf-tube-sheen)), transparent 70%),
+    radial-gradient(ellipse at center, transparent 58%, rgb(0 0 0 / var(--sf-tube-vignette)) 100%);
+}
+.od-slide.is-story .sf-tube-grain {
+  position: absolute;
+  inset: calc(-9.4 * var(--sw));
+  opacity: var(--sf-tube-grain);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+}
+.od-slide.is-story :is(.sf-tube-hum, .sf-tube-power) { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .od-slide.is-story .sf-tube-grain { animation: sf-tube-grain 1s steps(1) infinite; }
+  .od-slide.is-story .sf-tube-hum {
+    display: block;
+    position: absolute;
+    left: var(--sf-zero);
+    right: var(--sf-zero);
+    top: var(--sf-zero);
+    height: var(--sf-tube-hum-height);
+    background: linear-gradient(to bottom, transparent, rgb(255 255 255 / var(--sf-tube-hum)) 50%, transparent);
+    animation: sf-tube-hum var(--sf-tube-hum-duration) linear infinite;
+  }
+  .od-slide.is-story .sf-tube.is-power .sf-tube-power {
+    display: block;
+    position: absolute;
+    inset: var(--sf-zero);
+  }
+  .od-slide.is-story .sf-tube.is-power :is(.sf-tube-power-top, .sf-tube-power-bottom) {
+    position: absolute;
+    left: var(--sf-zero);
+    right: var(--sf-zero);
+    height: 50%;
+    background: black;
+    animation: sf-tube-power-open var(--sf-tube-power) var(--od-settle) both;
+  }
+  .od-slide.is-story .sf-tube.is-power .sf-tube-power-top { top: var(--sf-zero); transform-origin: top; }
+  .od-slide.is-story .sf-tube.is-power .sf-tube-power-bottom { bottom: var(--sf-zero); transform-origin: bottom; }
+  .od-slide.is-story .sf-tube.is-power .sf-tube-power-line {
+    position: absolute;
+    left: var(--sf-zero);
+    right: var(--sf-zero);
+    top: calc(50% - 1px);
+    height: 2px;
+    background: white;
+    box-shadow: 0 0 12px rgb(255 255 255 / 0.8);
+    animation: sf-tube-power-line var(--sf-tube-power) var(--od-settle) both;
+  }
+  .od-slide.is-story .sf-tube.is-power .sf-tube-power-wash {
+    position: absolute;
+    inset: var(--sf-zero);
+    background: white;
+    animation: sf-tube-power-wash var(--sf-tube-power) linear both;
+  }
+}
+/* Eight grain positions a second, in frame units. */
+@keyframes sf-tube-grain {
+  0% { transform: translate(0, 0); }
+  12.5% { transform: translate(calc(-3.6 * var(--sw)), calc(2.1 * var(--sw))); }
+  25% { transform: translate(calc(2.6 * var(--sw)), calc(-4.7 * var(--sw))); }
+  37.5% { transform: translate(calc(-6.2 * var(--sw)), calc(-1.6 * var(--sw))); }
+  50% { transform: translate(calc(4.7 * var(--sw)), calc(5.7 * var(--sw))); }
+  62.5% { transform: translate(calc(-1.6 * var(--sw)), calc(-7.3 * var(--sw))); }
+  75% { transform: translate(calc(7.3 * var(--sw)), calc(1 * var(--sw))); }
+  87.5% { transform: translate(calc(-5.2 * var(--sw)), calc(4.7 * var(--sw))); }
+}
+@keyframes sf-tube-hum {
+  from { transform: translateY(calc(-1 * var(--sf-tube-hum-height))); }
+  to { transform: translateY(var(--od-fh)); }
+}
+/* Power-on: the picture opens from a bright line at the middle of the tube. */
+@keyframes sf-tube-power-open {
+  0%, 15% { transform: scaleY(1); }
+  80%, 100% { transform: scaleY(0); }
+}
+@keyframes sf-tube-power-line {
+  0% { transform: scaleX(0); opacity: 1; }
+  15% { transform: scaleX(1); opacity: 1; }
+  80%, 100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes sf-tube-power-wash {
+  0%, 15% { opacity: 0; }
+  30% { opacity: var(--sf-tube-wash); }
+  100% { opacity: 0; }
+}
+
+/* The barrel warp: the slide's whole frame bends with the glass. The class is
+   set by global-top.vue once the filter exists and is sized, so a view with no
+   tube (presenter, export) never points at a missing filter. */
+html.sf-tube-on .od-slide.is-story:not(.sf-tube-host) .od-story-frame { filter: url(#sf-barrel); }
+
+/* Convergence fringe on neon and pixel type. Body, card and code text and the
+   cover's chrome title stay clean, as on the site. */
+.od-slide.is-story :is(.sf-tag, .sf-rail-verb, .sf-rail-name, .sf-plate-name, .od-brand-name) {
+  text-shadow: var(--sf-fringe);
+}
+.od-slide.is-story .sf-script { text-shadow: var(--sf-fringe), var(--sf-glow-pink); }
+.od-slide.is-story :is(.sf-pixel, .sf-term) {
+  filter: drop-shadow(var(--sf-fringe-size) 0 0 var(--sf-fringe-red))
+    drop-shadow(calc(-1 * var(--sf-fringe-size)) 0 0 var(--sf-fringe-cyan));
+}
+
+/* The cover's live scene: a canvas over the still picture, with the hero's
+   soft-light grain on top. */
+.od-slide.is-story .sf-night {
+  position: absolute;
+  inset: var(--sf-zero);
+}
+.od-slide.is-story .sf-night-canvas {
+  position: absolute;
+  inset: var(--sf-zero);
+  width: var(--sf-full);
+  height: var(--sf-full);
+  opacity: var(--sf-zero);
+  transition: opacity 650ms var(--od-settle);
+}
+.od-slide.is-story .sf-night.is-live .sf-night-canvas { opacity: var(--sf-on); }
+.od-slide.is-story .sf-night.is-live::after {
+  content: '';
+  position: absolute;
+  inset: var(--sf-zero);
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg%20width%3D%22192%22%20height%3D%22192%22%20viewBox%3D%220%200%20192%20192%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22n%22%20color-interpolation-filters%3D%22sRGB%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.72%22%20numOctaves%3D%223%22%20seed%3D%2211%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20type%3D%22saturate%22%20values%3D%220%22%2F%3E%3CfeComponentTransfer%3E%3CfeFuncR%20type%3D%22linear%22%20slope%3D%222.4%22%20intercept%3D%22-.7%22%2F%3E%3CfeFuncG%20type%3D%22linear%22%20slope%3D%222.4%22%20intercept%3D%22-.7%22%2F%3E%3CfeFuncB%20type%3D%22linear%22%20slope%3D%222.4%22%20intercept%3D%22-.7%22%2F%3E%3CfeFuncA%20type%3D%22linear%22%20slope%3D%220%22%20intercept%3D%221%22%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Cpath%20fill%3D%22white%22%20filter%3D%22url%28%23n%29%22%20d%3D%22M0%200h192v192H0z%22%2F%3E%3C%2Fsvg%3E") repeat;
+  background-size: calc(10 * var(--sw)) calc(10 * var(--sw));
+  mix-blend-mode: soft-light;
+  opacity: var(--sf-scene-grain);
+}
+
+/* ── Cover: the hero's composition ──
+   The title is centered over the sun with one script line across it, the
+   lede is terminal type with a prompt, the wordmark and a nav line sit at the
+   top, and the figure caption and byline sit at the bottom, as on the site. */
+.od-slide.is-story .od-cover-body {
+  max-width: none;
+  align-self: center;
+  text-align: center;
+  margin-top: var(--sf-cover-top);
+  margin-bottom: auto;
+}
+.od-slide.is-story h1.od-title { white-space: nowrap; }
+.od-slide.is-story .od-cover-lede {
+  max-width: var(--sf-lede-width);
+  margin: var(--sf-lede-gap) auto var(--sf-zero);
+  font-family: var(--sf-font-term);
+  font-size: var(--sf-lede-size);
+  line-height: 1.25 !important;
+  letter-spacing: 0.02em;
+  color: var(--od-text);
+}
+.od-slide.is-story .sf-prompt { color: var(--od-pink); }
+.od-slide.is-story .sf-cover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.od-slide.is-story .sf-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(0.5 * var(--sw));
+  font-family: var(--od-font-sans);
+  font-size: var(--sf-wordmark-size);
+  font-weight: var(--sf-lead-weight);
+  letter-spacing: -0.02em;
+  color: var(--od-text);
+}
+.od-slide.is-story .sf-wordmark-mark { width: var(--sf-wordmark-mark); height: var(--sf-wordmark-mark); }
+.od-slide.is-story .sf-cover-nav {
+  display: inline-flex;
+  gap: var(--sf-nav-gap);
+  font-family: var(--sf-font-term);
+  font-size: var(--sf-nav-size);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--od-text-secondary);
+}
+.od-slide.is-story .od-byline {
+  width: var(--sf-full);
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.od-slide.is-story .sf-fig {
+  max-width: var(--sf-fig-width);
+  font-family: var(--od-font-sans);
+  font-size: var(--sf-fig-size);
+  line-height: 1.4;
+  color: var(--od-text-secondary);
+}
+.od-slide.is-story .sf-fig-no {
+  margin-right: calc(0.4 * var(--sw));
+  font-family: var(--sf-font-pixel);
+  font-size: var(--sf-pixel-size);
+  text-transform: uppercase;
+  color: var(--od-amber);
+  text-shadow: var(--sf-fringe);
+}
+.od-slide.is-story .sf-cover-by {
+  display: inline-flex;
+  gap: var(--sf-nav-gap);
+  font-family: var(--sf-font-pixel);
+  font-size: var(--sf-pixel-size);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--od-amber);
+  text-shadow: var(--sf-fringe);
+}
+.od-slide.is-story .sf-cover-by .is-alt { color: var(--od-cyan); }
+
+/* ── Every slide sits in the hero's sky ──
+   The same night: deep plum at the top, the hero's middle sky, and a little
+   of its horizon haze at the bottom, where the thread rail runs. */
+.od-slide.is-story:not(.sf-tube-host),
+.od-slide.is-story.is-story-cover {
+  background: linear-gradient(
+    180deg,
+    var(--od-hero-ink) 0%,
+    color-mix(in srgb, var(--od-hero-mid) 78%, var(--od-hero-ink)) 62%,
+    color-mix(in srgb, var(--od-hero-haze) 42%, var(--od-hero-mid)) 100%
+  );
+}
+/* Surfaces let the sky through a little, like the site's header. */
+.od-slide.is-story :is(.od-story-card, .od-inkchip) {
+  background: color-mix(in srgb, var(--od-surface) 88%, transparent);
+}
+.od-slide.is-story .sf-box { fill: color-mix(in srgb, var(--od-surface) 86%, transparent); }
+.od-slide.is-story .sf-box.is-well { fill: color-mix(in srgb, var(--od-screen-black) 78%, transparent); }
+.od-slide.is-story .sf-crt-screen { fill: var(--od-screen-black); }
+
+/* ── Type: the hero's faces only ──
+   theme.json sets fonts.sans to VT323 and fonts.serif to Orbitron, so the
+   addon's own text follows. These rules set the sizes each face needs. */
+.od-slide.is-story h2.od-story-head {
+  font-family: var(--od-font-serif) !important;
+  text-shadow: none;
+}
+.od-slide.is-story .od-story-lead {
+  font-family: var(--od-font-serif);
+  font-size: var(--sf-lead-size);
+  font-weight: var(--sf-lead-weight);
+  letter-spacing: var(--sf-lead-tracking);
+  line-height: 1.25;
+}
+.od-slide.is-story .od-story-copy {
+  font-family: var(--od-font-sans);
+  font-size: var(--sf-body-size);
+  line-height: var(--sf-body-leading);
+  letter-spacing: var(--sf-body-tracking);
+  color: var(--od-text-secondary);
+}
+.od-slide.is-story .sf-name {
+  font-family: var(--od-font-serif);
+  font-weight: var(--sf-lead-weight);
+  letter-spacing: var(--sf-lead-tracking);
+}
+.od-slide.is-story .sf-fig {
+  font-family: var(--od-font-sans);
+  line-height: 1.05;
+  letter-spacing: var(--sf-body-tracking);
+}
+.od-slide.is-story .sf-wordmark { font-family: var(--sf-font-wordmark); }
+
+/* ── Product names keep their casing ──
+   rr, foreman and the rest are written the way the products write them, so
+   plates, tags and monitor bands are not forced to uppercase. Short pixel
+   labels that are plain words (rail verbs, figure numbers) stay uppercase. */
+.od-slide.is-story :is(.sf-plate-name, .sf-tag, .sf-pixel:not(.is-fig), .sf-rail-name) { text-transform: none; }
