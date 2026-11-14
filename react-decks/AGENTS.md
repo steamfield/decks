@@ -111,17 +111,27 @@ and fails only when behaviour breaks.
 | `core` | Unit: every function is pure | `unit` project. Inputs in, values and thrown errors out. |
 | `runtime`, `motion`, `kit` | Integration | `dom` project (jsdom). Render the real tree with a real store from a real manifest and real child components. |
 | `node` | Integration | `unit` project. Real files in a fresh directory under `.tmp/`, a real Vite server or build, a port the OS picks. |
-| A user workflow: arrow keys, two windows, reload, resize, transitions, PDF | E2E | Playwright against a fixture deck in `examples/`. |
+| A user workflow: arrow keys, two windows, reload, resize, transitions | E2E | Playwright against a fixture deck in `examples/`. |
 
 jsdom has no layout and no View Transitions; a behaviour that needs either is a Playwright
-test. Never test a component by stubbing what it depends on.
+test, never a hand-built fake of the browser. Never test a component by stubbing what it
+depends on.
+
+Each behaviour is asserted at one layer, the cheapest that can show it. Which file change
+causes a reload or a hot update is decided and tested in `node`; the browser suite keeps one
+hot-update and one reload workflow. A rule the memory hub can interleave is not forced again
+in two real windows. A branch only jsdom takes (a missing browser API) is not a behaviour.
 
 - Fake only time (Vitest fake timers, async APIs, real timers restored after) and
   randomness. Never `vi.mock` this workspace's code, a hook, a child component, `gsap` or the
   store. `createMemoryHub()` is the in-process `Transport`; it delivers asynchronously like
   BroadcastChannel, so drive it with fake timers and write races as explicit interleavings.
-- A browser API jsdom lacks (wake lock, fullscreen, `window.open`) is an environment
-  boundary: a test may install a small fake of it that records calls in a plain array.
+- A browser API jsdom lacks (wake lock, fullscreen, `window.open`, `matchMedia`,
+  `visibilityState`) is an environment boundary: a test may install a small fake of it that
+  records calls in a plain array, and restores it. View Transitions are not on this list.
+- Motion tests own gsap's clock: `motion.test-support.tsx` takes `gsap.updateRoot` off the
+  ticker and only `tick(seconds)` moves time, so values mid-tween are exact (`toBe`, no
+  tolerance).
 - No test-only method, flag or export in production code. Helpers live in the test file or a
   `*.test-support.ts` beside it.
 - Assert outcomes: return values and thrown errors; visible text, roles and accessible
@@ -134,8 +144,20 @@ test. Never test a component by stubbing what it depends on.
   locators and web-first assertions (`await expect(locator).toBeVisible()`).
 - Never sleep. Wait on a condition: `findBy*`, `waitFor` with an assertion, a locator, the
   URL, `window.__deck.settled()`.
+- Nothing may depend on how fast the machine is. No wall-clock comparison
+  (`performance.now()` deltas), no frame-count threshold, and no polling for a state that is
+  only true mid-animation: record it in the page (a MutationObserver log) and assert the log
+  after `settled()`, or pause and seek the animation. `vi.waitFor` defaults to one second:
+  a wait on the filesystem, a watcher or a server restart passes `{ timeout: 10_000 }`.
+- A "nothing else happened" assertion (no reload after an update) is made after a later
+  sentinel event, not at the instant the first event arrives.
+- In Playwright, arm the wait before the action that causes it
+  (`const loaded = page.waitForEvent("load")`, then write the file), and never
+  `page.evaluate` across a navigation. Close a Vite server with its own `close()`.
 - Each test builds and tears down its own manifest, store, hub and temp directory. Run a new
-  test file three times alone and once in the suite. A test that fails only in the suite is
+  test file three times alone and once in the suite; a new or changed Playwright spec with
+  `--repeat-each=5`. Do not edit the checkout while Playwright runs: its dev servers watch
+  the source. A test that fails only in the suite is
   diagnosed (skill: `references/flaky-tests.md`), never retried or delayed.
 - Name a test after the behaviour, as a sentence. A behaviour table is the test list: one
   test per row, plus the boundaries either side. Cover error paths. See a bug-fix test fail
@@ -143,7 +165,8 @@ test. Never test a component by stubbing what it depends on.
 
 Tests not to write, each of which was written here and removed:
 
-- An input the domain cannot produce (a round-trip for slide `1e21`).
+- An input the domain cannot produce (a round-trip for slide `1e21` or `MAX_SAFE_INTEGER`).
+- A test of test tooling longer than the rule it guards.
 - Scheduler internals (`expect(vi.getTimerCount()).toBe(0)`).
 - Clearing recorded evidence before asserting on it (`received.length = 0`).
 - Dozens of near-identical cases for one rule.
