@@ -617,7 +617,9 @@ import `@mdx-js/react` and there is no `MDXProvider`. In Phase 2 every view rend
 - A slide whose module has not loaded renders nothing until it has. When the browser is idle
   after the first render, every slide module is requested once. A slide whose module has
   already loaded renders in the same frame it is mounted in: jumping to any prefetched slide
-  shows no blank frame.
+  shows no blank frame. The choice is made once per mount: a host that mounted before its
+  module loaded keeps its Suspense wrapper for that mount, so the slide's local state is not
+  reset when the module arrives.
 - A slide whose module fails to load, or whose component throws, shows an error naming the
   slide id in place of that slide only; the rest of the deck keeps working, and the next
   mount of that slide tries the load again.
@@ -758,7 +760,7 @@ in `config.vite`.
 | A slide's frontmatter changes, or a slide file is added, removed or renamed | The manifest module is invalidated and the page reloads; slide and click survive because they are in the URL |
 | A file is added to or removed from `components/` | The components module is invalidated and the page reloads; no server restart |
 | `deck.config.ts` changes | The server restarts and the page recovers at the same slide and click |
-| A slide file is renamed | One reload, after both the removal and the addition have been seen; the position in the URL is not clamped by an intermediate state |
+| A slide file is renamed | One reload, after both the removal and the addition have been seen; the position in the URL is not clamped by an intermediate state. Structural changes are coalesced over a 100 ms quiet window; events further apart are separate changes |
 
 Before the first request Vite scans the runtime's entry and the deck's `components/*.tsx`
 for dependencies, so a cold start does not reload. A package imported directly in a slide's
