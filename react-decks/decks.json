@@ -6,5 +6,8 @@
   },
   "basic": {
     "dir": "examples/basic"
+  },
+  "motion": {
+    "dir": "examples/motion"
   }
 }

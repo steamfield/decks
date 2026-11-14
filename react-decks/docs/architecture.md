@@ -841,6 +841,152 @@ Decided at checkpoint 1 (`docs/spikes/parity.md` has the measurements):
   motion is `instant`, or on a jump of more than one beat; otherwise tween, retargeting from
   the visible position on a rapid second click. Killed on unmount.
 
+## 5.1 motion, Phase 3 surface: tokens, steps, timelines (Final)
+
+```ts
+import type { StepState } from "@react-decks/core";
+import type { DependencyList, ReactElement, ReactNode } from "react";
+
+/** The one gsap instance, with the motion eases registered and `ease.settle` as default. */
+export { gsap };
+
+/** Seconds. */
+export const duration: { readonly quick: 0.14; readonly base: 0.3; readonly slow: 0.6 };
+/** gsap ease names, registered with CustomEase. */
+export const ease: { readonly enter: "deckEnter"; readonly exit: "deckExit"; readonly settle: "deckSettle"; readonly draw: "deckDraw" };
+/** Seconds between items of a staggered group. */
+export const stagger: 0.06;
+
+/** "instant" when `<html data-deck-motion>` is `instant` or missing. Reads the DOM: call it
+ *  in an effect or a handler, never during render. */
+export function motionMode(): "live" | "instant";
+
+export type StepPreset = "fade" | "rise" | "drop" | "scale" | "blur" | "wipe";
+type StepElement = "div" | "span" | "li" | "p" | "g";
+
+/** The state of a step on the slide it is rendered in. Throws when `until <= at`. */
+export function useStepState(at: number, until?: number): StepState;
+
+export function Step(props: {
+  at: number; until?: number;
+  enter?: StepPreset; exit?: StepPreset;
+  as?: StepElement; className?: string; children?: ReactNode;
+}): ReactElement;
+
+/** One click per child: child `i` (from 0) is a `Step` at `from + i`. */
+export function Steps(props: { from: number; enter?: StepPreset; as?: "div" | "ul" | "ol"; className?: string; children?: ReactNode }): ReactElement;
+
+/** One click for the whole group; the children enter one after another, `stagger` apart. */
+export function Stagger(props: { at: number; until?: number; enter?: StepPreset; as?: "div" | "ul" | "ol"; className?: string; children?: ReactNode }): ReactElement;
+
+/** Reveals text piece by piece on one click. */
+export function TextReveal(props: { at: number; by?: "word" | "char"; enter?: StepPreset; children: string }): ReactElement;
+
+/** A marker stroke swept behind inline text from click `at`. */
+export function Highlight(props: { at: number; until?: number; children?: ReactNode }): ReactElement;
+
+/** A number that counts from `from` to `to` on click `at`. */
+export function CountUp(props: { at: number; from?: number; to: number; format?: (value: number) => string }): ReactElement;
+
+/** Draws the strokes of its SVG shape children on click `at`. Renders a `<g>`. */
+export function Draw(props: { at: number; until?: number; children?: ReactNode }): ReactElement;
+
+/** A stable object whose numeric fields gsap tweens; see below. */
+export function useTween<T extends Record<string, number>>(initial: T): T;
+
+/** A paused gsap timeline positioned by the slide's click; see below. */
+export function useTimeline(
+  build: (tl: gsap.core.Timeline, beat: (n: number) => void) => void,
+  deps?: DependencyList,
+): void;
+```
+
+### Tokens
+
+`motion.css`, imported by the package entry, defines on `:root`: `--deck-dur-quick: 140ms`,
+`--deck-dur-base: 300ms`, `--deck-dur-slow: 600ms`, `--deck-stagger: 60ms`,
+`--deck-ease-enter: cubic-bezier(.16,1,.3,1)`, `--deck-ease-exit: cubic-bezier(.7,0,.84,0)`,
+`--deck-ease-settle: cubic-bezier(.32,.72,0,1)`, `--deck-ease-draw: cubic-bezier(.65,0,.35,1)`.
+The JS `ease` names are the same four curves registered with `CustomEase`. Under
+`html[data-deck-motion="instant"]` the three durations and the stagger are `0ms`. A unit test
+reads `motion.css` and fails if a CSS value and its JS constant disagree. Theme overrides of
+these tokens arrive with themes in Phase 4; until then they are fixed.
+
+All of the package's CSS is in `@layer react-decks`.
+
+### Steps
+
+Every step primitive's root element carries `data-step-state` (`before`, `current`, `after`,
+`gone`, from core's `stepState` at the slide's click, read with `useSlide()`),
+`data-step-enter` and `data-step-exit` (the preset names; `exit` defaults to `fade`, `enter`
+to `fade`). In the `before` and `gone` states the element also has `aria-hidden="true"` and
+`inert`. Children are always rendered, so a step keeps its place in the layout while hidden.
+
+The motion is CSS only: `before` holds the enter preset's start pose, `current` and `after`
+hold the natural pose, `gone` holds the exit preset's end pose, with `opacity`, `transform`,
+`filter` and `clip-path` transitioning over `--deck-dur-base` with `--deck-ease-enter`
+(entering) or `--deck-ease-exit` (leaving). Going back a click is the same transition in
+reverse, and a slide rendered at any click with motion `instant` shows that click's poses.
+Start poses: `fade` opacity 0; `rise` opacity 0 and 24px down; `drop` opacity 0 and 24px up;
+`scale` opacity 0 and scale 0.92; `blur` opacity 0 and `blur(12px)`; `wipe`
+`clip-path: inset(0 100% 0 0)`. Hidden states use `visibility: hidden`, delayed until the
+transition has run.
+
+| Component | Behaviour |
+| --- | --- |
+| `Step` | As above, on an element chosen by `as` (default `div`). |
+| `Steps` | Wraps each child in a `Step` at `from + index` with the given `enter`. With `as="ul"` or `"ol"` each wrapper is an `li`; otherwise a `div`. |
+| `Stagger` | One step state for the group on the container; each child is wrapped in an element with `--step-index: <index>`, and its transition is delayed by `index * --deck-stagger` when entering. Leaving and going back are not staggered. |
+| `TextReveal` | Splits `children` on whitespace (`by="word"`, the default) or into characters. The root is a `span` with `aria-label` set to the whole text; each piece is an `aria-hidden` `span` with `--step-index`, staggered like `Stagger`. Whitespace between words is preserved. |
+| `Highlight` | A `mark` whose background (the `--deck-highlight` color, default a translucent `currentColor`) grows from zero to full width over `--deck-dur-slow` with `--deck-ease-draw` when its state is `current` or `after`. Its text is always visible; it is never `inert` or `aria-hidden`. |
+| `CountUp` | Shows `format(from)` (default `from` 0) before click `at` and `format(to)` from it. On the live transition from `before` to `current` in the `slide` context it tweens the value over `duration.slow` with `ease.settle`; going back, or motion `instant`, or any other context, shows the value for the state with no tween. Default `format` rounds to an integer and uses `Intl.NumberFormat`. The root is a `span` with `aria-label` of the final formatted value from click `at`. |
+| `Draw` | A `g` with the step attributes. Each direct child that is an SVG shape element (`path`, `line`, `polyline`, `polygon`, `circle`, `ellipse`, `rect`) gets `pathLength="1"`; CSS sets `stroke-dasharray: 1` and moves `stroke-dashoffset` from 1 (`before`, `gone`) to 0 over `--deck-dur-slow` with `--deck-ease-draw`. |
+
+A step outside a `SlideHost` throws through `useSlide()`.
+
+### `useTween`
+
+Returns the same object for the component's lifetime: a Proxy over a copy of `initial`.
+Setting one of the initial numeric fields to a different value schedules one notification on
+`gsap.ticker` (so the render lands in the frame gsap updated in) and the owning component
+re-renders through `useSyncExternalStore`. Several fields set in one tick cause one render.
+Nothing is scheduled while no field changes. Fields that were not in `initial` (gsap's own
+cache) never notify. The pending ticker callback is removed on unmount.
+
+### `useTimeline`
+
+Builds one paused timeline in a layout effect (child `useImperativeHandle` refs exist by
+then), calling `build(tl, beat)`; `beat(n)` adds the label `beat<n>` at the current end. The
+first call in `build` must be `beat(0)` and labels must increase by one; otherwise it throws,
+naming the label. The timeline is killed and rebuilt when `deps` change, and killed on
+unmount.
+
+After each build and whenever the slide's click, active flag or render context changes, the
+timeline is positioned at the label for the click (clamped to the last label):
+
+| Situation | Positioning |
+| --- | --- |
+| First positioning after a build | Seek. |
+| The slide is not active, or the context is not `slide`, or `motionMode()` is `instant` | Seek. |
+| The click moved by more than one | Seek. |
+| The click moved by one on the active slide | Tween to the label with `ease: "none"` (the tweens inside carry their own eases). |
+| A second move arrives while a tween is running | The running tween is killed; the new one starts from the visible position and takes at most the duration of one step. |
+
+### Behaviour that needs a browser test
+
+Against `examples/motion`, one slide per primitive and preset:
+
+| Situation | Outcome |
+| --- | --- |
+| Each preset slide at click 0, then after ArrowRight and settling | The step's computed opacity is 0 (or its clip hides it) before, and its pose is the natural one after. |
+| Forward one click, back one click, on every gallery slide | Computed opacity, transform, filter and clip-path of every step element equal their values before the forward click. |
+| Each gallery slide loaded directly at its last click with `data-deck-motion="instant"` | The same computed poses as arriving there by clicking with motion live and letting it settle. |
+| `Stagger` of four children, sampled mid-entry | The children's opacities are in non-increasing order from first to last, and not all equal. |
+| `CountUp` from 0 to 1200 | Shows 0, then values strictly between during the tween, then 1,200; back shows 0 at once. |
+| `useTimeline` slide: ArrowRight twice within 100 ms | Ends at the click-2 pose with no jump back to the click-0 pose on the way. |
+| `useTimeline` slide reloaded at `?clicks=2` | The click-2 pose in the first painted frame. |
+| `useTween` slide during a beat | The tweened attribute changes on every animation frame of the beat, and stops changing when it ends. |
+
 ## 6. node (Outline)
 
 - Vite plugins: `slides` (scan `slides/*.mdx`, frontmatter, drop `hide: true`, build the

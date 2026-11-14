@@ -35,6 +35,18 @@
         "@react-decks/node": "workspace:*",
       },
     },
+    "examples/motion": {
+      "name": "@react-decks/example-motion",
+      "dependencies": {
+        "@react-decks/motion": "workspace:*",
+        "@react-decks/runtime": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+      "devDependencies": {
+        "@react-decks/node": "workspace:*",
+      },
+    },
     "packages/core": {
       "name": "@react-decks/core",
     },
@@ -255,6 +267,8 @@
     "@react-decks/core": ["@react-decks/core@workspace:packages/core"],
 
     "@react-decks/example-basic": ["@react-decks/example-basic@workspace:examples/basic"],
+
+    "@react-decks/example-motion": ["@react-decks/example-motion@workspace:examples/motion"],
 
     "@react-decks/kit": ["@react-decks/kit@workspace:packages/kit"],
 
