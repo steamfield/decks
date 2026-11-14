@@ -1,0 +1,66 @@
+.key {
+  position: absolute;
+  left: calc(5.7 * var(--sw));
+  top: calc(34 * var(--sh));
+  display: flex;
+  flex-direction: column;
+  gap: calc(2.4 * var(--sh));
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: calc(1 * var(--sw));
+  font-size: calc(1.2 * var(--sw));
+  color: var(--od-text-secondary);
+}
+.swatch {
+  width: calc(1.1 * var(--sw));
+  height: calc(1.1 * var(--sw));
+  border-radius: 3px;
+}
+.rose {
+  background: var(--od-rose);
+}
+.amber {
+  background: var(--od-amber);
+}
+.violet {
+  background: var(--od-violet);
+}
+.slate {
+  background: var(--od-slate);
+}
+.target {
+  position: absolute;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: calc(0.52 * var(--sw));
+  background: transparent;
+  pointer-events: auto;
+  cursor: help;
+}
+.target.selected,
+.target:focus-visible {
+  border-color: var(--od-text);
+  outline: 2px solid var(--od-canvas);
+  outline-offset: 2px;
+}
+.tooltip {
+  position: absolute;
+  left: calc(5.7 * var(--sw));
+  top: calc(22 * var(--sh));
+  width: calc(38 * var(--sw));
+}
+.hint {
+  position: absolute;
+  left: calc(50 * var(--sw));
+  top: calc(78 * var(--sh));
+  font-size: calc(1 * var(--sw));
+  color: var(--od-text-muted);
+}
+@media print {
+  .targets,
+  .hint {
+    display: none;
+  }
+}

@@ -1,0 +1,26 @@
+.chart {
+  position: absolute;
+  pointer-events: auto;
+  top: calc(13 * var(--sh));
+  left: calc(44 * var(--lw));
+  right: calc(3 * var(--lw));
+  bottom: calc(7 * var(--sh));
+}
+.tooltip {
+  position: absolute;
+  left: calc(4 * var(--lw));
+  top: calc(22 * var(--sh));
+  width: calc(38 * var(--lw));
+}
+.hint {
+  position: absolute;
+  left: calc(46 * var(--lw));
+  bottom: calc(4 * var(--sh));
+  font-size: calc(1 * var(--sw));
+  color: var(--od-text-muted);
+}
+@media print {
+  .hint {
+    display: none;
+  }
+}

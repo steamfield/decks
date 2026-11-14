@@ -1,0 +1,265 @@
+.tooltip {
+  /* Values from the Slidev hover card, preserved for parity. */
+  --campus-good: #9acb95;
+  --campus-near: #f5b544;
+  --campus-crossed: #fb8b9c;
+  --campus-flat: #cbd5e1;
+  --campus-muted: #64748b;
+  box-sizing: border-box;
+  padding: calc(1.25 * var(--sw));
+  border: 1px solid var(--od-border);
+  border-radius: calc(0.65 * var(--sw));
+  background: var(--od-surface-raised);
+  color: var(--od-text);
+  font-size: calc(1.05 * var(--sw));
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  transform-origin: center left;
+}
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(1 * var(--sw));
+}
+.identity {
+  min-width: 0;
+}
+.name {
+  font-size: calc(1.4 * var(--sw));
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.year {
+  margin-top: calc(0.6 * var(--sh));
+  color: var(--od-text-muted);
+  font-size: calc(0.85 * var(--sw));
+}
+.year > span {
+  margin: 0 calc(0.2 * var(--sw));
+}
+.grade {
+  --grade-color: var(--od-slate);
+  flex-shrink: 0;
+  padding-left: calc(1 * var(--sw));
+  border-left: 1px solid var(--od-border);
+}
+.grade[data-grade="A"],
+.grade[data-grade="B"] {
+  --grade-color: var(--campus-good);
+}
+.grade[data-grade="D"] {
+  --grade-color: var(--campus-near);
+}
+.grade[data-grade="F"] {
+  --grade-color: var(--campus-crossed);
+}
+.gradeLabel {
+  display: block;
+  font-size: calc(0.75 * var(--sw));
+  color: var(--od-text-muted);
+}
+.grade > div {
+  display: flex;
+  align-items: baseline;
+  gap: calc(0.5 * var(--sw));
+}
+.grade strong {
+  font-size: calc(2 * var(--sw));
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--grade-color);
+}
+.gradeScore {
+  font-size: calc(1 * var(--sw));
+}
+.gradeScore > span {
+  color: var(--od-text-muted);
+  font-size: calc(0.8 * var(--sw));
+}
+.rates {
+  margin-top: calc(1.8 * var(--sh));
+  padding: calc(1.2 * var(--sh)) 0;
+  border-top: 1px solid var(--od-border);
+  border-bottom: 1px solid var(--od-border);
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: calc(0.7 * var(--sh));
+  font-size: calc(0.95 * var(--sw));
+}
+.change {
+  font-weight: 550;
+  color: var(--trend-color);
+}
+.tooltip [data-trend="up"] {
+  --trend-color: var(--campus-good);
+}
+.tooltip [data-trend="down"] {
+  --trend-color: var(--campus-crossed);
+}
+.tooltip [data-trend="flat"] {
+  --trend-color: var(--campus-flat);
+}
+.rateRow {
+  display: grid;
+  grid-template-columns: calc(6.1 * var(--sw)) 1fr calc(4.3 * var(--sw));
+  gap: calc(0.8 * var(--sw));
+  align-items: center;
+  padding: calc(0.35 * var(--sh)) 0;
+}
+.rateLabel {
+  color: var(--od-text-secondary);
+  font-size: calc(0.9 * var(--sw));
+}
+.rateRow > strong {
+  font-size: calc(1.15 * var(--sw));
+  font-weight: 550;
+  text-align: right;
+}
+.unit {
+  font-size: calc(0.9 * var(--sw));
+  color: var(--od-text-muted);
+}
+.rateTrack,
+.populationTrack {
+  display: block;
+  background: color-mix(in srgb, var(--od-text) 8%, transparent);
+  overflow: hidden;
+  border-radius: 2px;
+}
+.rateTrack {
+  height: calc(0.65 * var(--sh));
+}
+.rateTrack > span,
+.populationTrack > span {
+  display: block;
+  height: 100%;
+  background: var(--od-slate);
+}
+.populationTrack > span {
+  opacity: 0.65;
+}
+.rateRow[data-year="2026"] .rateTrack > span {
+  background: var(--trend-color);
+}
+.utilization {
+  margin-top: calc(1 * var(--sh));
+  padding-bottom: calc(0.8 * var(--sh));
+  border-bottom: 1px solid var(--od-border);
+}
+.utilizationYears {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(0.6 * var(--sw));
+  color: var(--od-text-secondary);
+  font-size: calc(0.95 * var(--sw));
+}
+.utilizationYears strong {
+  margin-left: calc(0.5 * var(--sw));
+  color: var(--od-text);
+  font-size: calc(1.15 * var(--sw));
+  font-weight: 550;
+}
+.utilizationEnrollment {
+  margin-top: calc(0.55 * var(--sh));
+  font-size: calc(0.85 * var(--sw));
+  color: var(--od-text-secondary);
+}
+.assumption {
+  margin-top: calc(0.35 * var(--sh));
+  font-size: calc(0.75 * var(--sw));
+  color: var(--od-text-muted);
+}
+.metrics {
+  margin: calc(0.7 * var(--sh)) 0 0;
+}
+.metricRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: calc(1 * var(--sw));
+  align-items: center;
+  padding: calc(0.85 * var(--sh)) 0;
+  border-bottom: 1px solid var(--od-border);
+}
+.metricRow dt {
+  color: var(--od-text-secondary);
+  font-size: calc(0.95 * var(--sw));
+}
+.metricRow dd {
+  margin: 0;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.valueUnit {
+  color: var(--od-text-muted);
+  font-size: calc(0.8 * var(--sw));
+  font-weight: 400;
+}
+.populationTrack {
+  grid-column: 1 / -1;
+  margin-top: calc(0.6 * var(--sh));
+  height: calc(0.3 * var(--sh));
+}
+.countRow {
+  --count-color: var(--od-slate);
+  border-bottom: 0;
+}
+.countRow[data-count="near"] {
+  --count-color: var(--campus-near);
+}
+.countRow[data-count="crossed"] {
+  --count-color: var(--campus-crossed);
+}
+.countRow dd {
+  display: flex;
+  align-items: center;
+  gap: calc(0.4 * var(--sw));
+}
+.countRow strong {
+  color: var(--count-color);
+  font-weight: 600;
+}
+.countSteps {
+  display: flex;
+  gap: calc(0.2 * var(--sw));
+  margin-right: calc(0.35 * var(--sw));
+}
+.countSteps i {
+  width: calc(0.7 * var(--sw));
+  height: calc(0.7 * var(--sw));
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--od-text) 22%, transparent);
+  border-radius: 2px;
+}
+.countSteps i.filled {
+  background: var(--count-color);
+  border-color: var(--count-color);
+}
+.note {
+  margin-top: calc(0.65 * var(--sh));
+  padding-left: calc(0.65 * var(--sw));
+  border-left: 2px solid var(--campus-muted);
+  color: var(--od-text-secondary);
+  font-size: calc(0.9 * var(--sw));
+}
+.inheritedNote {
+  border-color: var(--od-violet);
+}
+.method {
+  margin-top: calc(1.15 * var(--sh));
+  color: var(--od-text-muted);
+  font-size: calc(0.8 * var(--sw));
+  line-height: 1.4;
+}
+.method > div + div {
+  margin-top: calc(0.45 * var(--sh));
+}
+@media print {
+  .tooltip {
+    display: none;
+  }
+}
