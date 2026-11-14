@@ -1452,7 +1452,7 @@ force, absent otherwise. `all` makes every line `active`; `none` makes every lin
 Dimming is an opacity transition on the motion tokens, so it reverses on going back and is
 immediate when motion is `instant`. With `maxHeight`, when the step changes the first active
 line is brought into view by setting the block's own `scrollTop` (from the line's offset
-inside the block, which is unaffected by the canvas scale), never scrolling the page. Line numbers are CSS counters from `data-lines`; they are not selectable
+inside the block, which is unaffected by the canvas scale), never scrolling the page. Each numbered line carries `data-line-number`, shown through CSS `attr()`; the numbers are not selectable
 text. The block is `tabindex="0"` when it scrolls, so it is reachable by keyboard.
 
 Inline code is not highlighted. In the `print` context a block ignores `maxHeight` and shows
