@@ -74,7 +74,7 @@ The Slidev capture is 68 frames at 1920x1080 in
 `react-decks/`:
 
 ```sh
-node scripts/parity.mjs agents 4 5 --live s01-c0,s19-c0   # your slides
+node scripts/parity.mjs agents 4 5 --live s01-c0,s19-c0 --ready ".od-slide:not(.sf-tube-host) .od-story-frame"   # your slides
 ```
 
 A frame passes at 0.2% of pixels or fewer. Two Slidev captures of the same deck are identical

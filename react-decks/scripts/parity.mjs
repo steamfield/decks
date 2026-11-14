@@ -3,6 +3,8 @@
 //   node scripts/parity.mjs <alias>                 # every frame
 //   node scripts/parity.mjs <alias> 4 5             # slides 4 and 5
 //   node scripts/parity.mjs <alias> --live s01-c0   # frames with a live scene, judged by eye
+//   node scripts/parity.mjs <alias> --ready ".od-slide"   # what marks a slide as rendered
+//                                                          (default: a story frame)
 //
 // Run from react-decks/. Baselines are `bun run snap <slidev alias> .parity/<alias>` captures
 // at 1920x1080, found in the nearest `.parity/<alias>` directory above this one (override with
@@ -26,14 +28,20 @@ const LIMIT = 0.002;
 const args = process.argv.slice(2);
 const alias = args.shift();
 if (!alias) {
-  console.error("usage: node scripts/parity.mjs <alias> [slide...] [--live sNN-cK,...]");
+  console.error(
+    "usage: node scripts/parity.mjs <alias> [slide...] [--live sNN-cK,...] [--ready <selector>]",
+  );
   process.exit(2);
 }
 const live = new Set();
+// A layer (a CRT tube, a credit) can be in the slide host before the slide module renders.
+let ready = ".od-story-frame";
 const only = [];
 while (args.length) {
   const arg = args.shift();
-  if (arg === "--live") for (const name of (args.shift() ?? "").split(",")) live.add(`${name}.png`);
+  if (arg === "--ready") ready = args.shift() ?? ready;
+  else if (arg === "--live")
+    for (const name of (args.shift() ?? "").split(",")) live.add(`${name}.png`);
   else only.push(Number(arg));
 }
 
@@ -121,7 +129,7 @@ try {
     await page.goto(`${url}/${query}#/${slide}${click ? `?clicks=${click}` : ""}`);
     await page.reload();
     // The slide's host exists before its lazily loaded module has rendered.
-    await page.locator(`[data-deck-slide="${slide}"][data-deck-active] > *`).first().waitFor();
+    await page.locator(`[data-deck-slide="${slide}"][data-deck-active] ${ready}`).first().waitFor();
     await page.evaluate(async () => {
       await document.fonts.ready;
       await window.__deck.settled();
