@@ -1,4 +1,4 @@
-import { ink } from "@react-decks/kit";
+import { ink } from "@steamfield/decks/kit";
 
 export function InkChip({
   x,

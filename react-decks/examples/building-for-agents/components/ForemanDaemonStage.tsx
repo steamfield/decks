@@ -8,8 +8,8 @@ import {
   StoryStage,
   stagger,
   useStage,
-} from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   CODEX_ARGS,
   CODEX_COMMAND,

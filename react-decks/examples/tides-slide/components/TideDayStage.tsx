@@ -7,8 +7,8 @@ import {
   StoryStage,
   xScale as scale,
   useStage,
-} from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { useRef } from "react";
 import { DAYS_LABEL, HIGHS, HOURLY } from "../data/boston-days";
 import labels from "../data/tide-labels.json";

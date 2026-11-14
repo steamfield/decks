@@ -1,5 +1,14 @@
-import { clamp01, DRAW, DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import {
+  clamp01,
+  DRAW,
+  DUR,
+  ink,
+  SETTLE,
+  StoryCard,
+  StoryStage,
+  useStage,
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import source from "../../../../examples/building-for-agents/components/DecksStage.vue?raw";
 import {
   DENIAL,

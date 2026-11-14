@@ -6,8 +6,8 @@ import {
   type gsap,
   ink,
   xScale as scale,
-} from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { type Ref, useImperativeHandle } from "react";
 import { type Point, polylinePath } from "./line-path";
 

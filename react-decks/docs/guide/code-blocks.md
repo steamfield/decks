@@ -115,7 +115,7 @@ For CSS and tests, each line is a `span` with `data-line="<number>"`, and `data-
 
 ## `CodeBlock`
 
-`CodeBlock`, exported by `@react-decks/motion`, is the component a fenced block renders as. The framework maps the `pre` element to it for every slide. You do not write it by hand: its input is the highlighted markup and `data-*` attributes the compiler produces, not a string of code.
+`CodeBlock`, exported by `@steamfield/decks/motion`, is the component a fenced block renders as. The framework maps the `pre` element to it for every slide. You do not write it by hand: its input is the highlighted markup and `data-*` attributes the compiler produces, not a string of code.
 
 What it does:
 

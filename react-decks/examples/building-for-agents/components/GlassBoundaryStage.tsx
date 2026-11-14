@@ -1,5 +1,5 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { useId } from "react";
 import {
   CHART_START,

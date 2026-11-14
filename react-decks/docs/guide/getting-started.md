@@ -33,23 +33,13 @@ There is no `index.html` and no slide list to maintain. The framework generates 
 
 Other files and folders (`data/`, `scene/`, a `theme.json`) are yours. Import them from components or slides.
 
-A deck's `package.json` depends on the packages it imports. From `examples/basic/package.json`:
+Use Node 22.12 or later. In your project directory, install the package and its React peers:
 
-```json
-{
-  "dependencies": {
-    "@react-decks/motion": "workspace:*",
-    "@react-decks/runtime": "workspace:*",
-    "react": "19.3.1",
-    "react-dom": "19.3.1"
-  },
-  "devDependencies": {
-    "@react-decks/node": "workspace:*"
-  }
-}
+```bash
+bun add @steamfield/decks react react-dom
 ```
 
-Add `@react-decks/kit` when the deck uses it.
+With npm, use `npm install @steamfield/decks react react-dom`. The runtime, motion, kit and Node APIs ship in this one package; `/motion`, `/kit` and `/node` are import paths, not separate dependencies.
 
 ## How slide order works
 
@@ -59,11 +49,11 @@ A slide's id is its filename without `.mdx` (`02-steps`). Its number is its 1-ba
 
 ## Commands
 
-The packages are not published, so inside the `react-decks/` workspace the command is a script: `bun run decks <command>`. The `@react-decks/node` package declares the same program as the bin `decks`. Run it from the directory that holds `decks.json`.
+`@steamfield/decks` installs the `decks` command. Run it from the project directory that holds `decks.json`. Use `bunx decks` with Bun or `npx decks` with npm:
 
 ```bash
-bun run decks dev basic
-bun run decks build basic
+bunx decks dev hello
+bunx decks build hello
 ```
 
 ### `decks dev <deck> [--port <n>] [--open]`
@@ -128,82 +118,85 @@ The deck's name is the alias, or the directory's basename when you pass a path. 
 
 ## A minimal working deck
 
-Four files. Register the directory in `decks.json` or pass its path.
+Create these six files under `decks/hello/`, then register the directory in the project's `decks.json`:
+
+```json
+{"hello":{"dir":"decks/hello"}}
+```
 
 `deck.config.ts`:
 
 ```ts
-import { defineDeck } from "@react-decks/node";
+import { defineDeck } from "@steamfield/decks/node";
 
-export default defineDeck({
-  title: "My deck",
-});
+export default defineDeck({ title: "Hello" });
+```
+
+`setup.ts` installs the kit's default theme:
+
+```ts
+import { installTheme, resolveTheme } from "@steamfield/decks/kit";
+
+installTheme(resolveTheme());
+```
+
+`components/ImportedStep.tsx`:
+
+```tsx
+import { Step } from "@steamfield/decks/motion";
+
+export function ImportedStep() {
+  return <Step at={2}><p>Imported step appears.</p></Step>;
+}
 ```
 
 `slides/01-cover.mdx`:
 
 ```mdx
 ---
-title: Cover
+title: Hello
+clicks: 2
 ---
 
-<h1>My deck</h1>
+import { StoryCard } from "@steamfield/decks/kit";
 
-<p>Press the right arrow.</p>
+# Hello, decks.
 
-<Notes>
-Welcome everyone.
-</Notes>
+<Step at={1}><p>Provided step appears.</p></Step>
+
+<ImportedStep />
+
+<StoryCard lead="The kit loads too." />
 ```
 
-`slides/02-points.mdx`:
+`slides/02-end.mdx`:
 
 ```mdx
 ---
-title: Three points
+clicks: 1
 ---
 
-<h1>Three points</h1>
+import { StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 
-<Steps from={1}>
+export function Story() {
+  const { copy, clicks, beats } = useStage({
+    copy: [{ lead: "A story starts here." }, { lead: "The story advances." }],
+    beats: (_tl, beat) => { beat(0); beat(1); },
+  });
+  return <StoryStage beats={beats} click={clicks}
+    overlay={<h1 className="od-story-head">Ready to present.</h1>}
+    card={<StoryCard lead={copy.lead} />} />;
+}
 
-1. Frame the question.
-2. Show the evidence.
-3. Say what to do next.
-
-</Steps>
+<Story />
 ```
 
 `styles/index.css`:
 
 ```css
-:root {
-  color-scheme: dark;
-}
-
-body {
-  margin: 0;
-  background: #0b0d12;
-  color: #f2f4f8;
-  font-family: system-ui, sans-serif;
-}
-
-[data-deck-slide] {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  padding: 96px 120px;
-  font-size: calc(40px * var(--deck-text-scale, 1));
-}
-
-h1 {
-  margin: 0 0 48px;
-  font-size: calc(96px * var(--deck-text-scale, 1));
-}
+@import "@steamfield/decks/kit/styles.css";
 ```
 
-The framework ships no CSS reset and no typography, so the stylesheet sets the page background, the slide padding and the type sizes. Sizes are in canvas pixels (the slide is 1920x1080 before scaling), and every `font-size` is multiplied by `--deck-text-scale`; [canvas.md](canvas.md) explains both.
-
-`<Steps>` and `<Notes>` need no import. The second slide has three clicks, counted from the list, so there is no `clicks:` line to maintain.
+The kit stylesheet supplies Inter and its component styles. `<Step>` needs no import in MDX. The custom `ImportedStep` component imports the same motion API and becomes available in MDX by its named export. Set `clicks: 2` because the compiler cannot count the step inside that component's body. Press ArrowRight twice to reveal both steps, then once more to reach slide 2.
 
 Working decks to copy from: `examples/basic` (the smallest), `examples/motion` (one slide per motion component, transition and layout), `examples/tides-slide` and `examples/building-for-agents` (story decks on the kit).

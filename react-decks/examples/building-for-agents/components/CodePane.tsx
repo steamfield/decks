@@ -1,6 +1,6 @@
-import { DUR, STAGE } from "@react-decks/kit";
-import { gsap, motionMode } from "@react-decks/motion";
-import { useSlide } from "@react-decks/runtime";
+import { useSlide } from "@steamfield/decks";
+import { DUR, STAGE } from "@steamfield/decks/kit";
+import { gsap, motionMode } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Excerpt } from "../data/code/types";
 import styles from "./CodePane.module.css";

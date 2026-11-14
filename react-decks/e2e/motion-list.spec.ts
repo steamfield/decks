@@ -1,7 +1,7 @@
 import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { expect } from "@playwright/test";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 import { test } from "./fixtures/motion.fixture";
 
 test("The markdown Steps list reveals one top-level item on each click.", async ({ page }) => {

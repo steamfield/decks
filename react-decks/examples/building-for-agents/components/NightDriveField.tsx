@@ -1,6 +1,6 @@
-import { DUR, FILTER_IDS, filterUrl, SETTLE, TRACE, useStage } from "@react-decks/kit";
-import { gsap, motionMode, useTween } from "@react-decks/motion";
-import { useSlide } from "@react-decks/runtime";
+import { useSlide } from "@steamfield/decks";
+import { DUR, FILTER_IDS, filterUrl, SETTLE, TRACE, useStage } from "@steamfield/decks/kit";
+import { gsap, motionMode, useTween } from "@steamfield/decks/motion";
 import { useEffect, useId, useRef, useState } from "react";
 import { RIDGE, RIDGE_WINDOW } from "../data/01-cover";
 import { MARK_PATH, MARK_SIZE, SUNSET_STOPS } from "../data/brand";

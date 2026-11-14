@@ -9,7 +9,7 @@ test("Adding a Step in a running deck makes the new inferred click reachable.", 
 }) => {
   const file = join(editableDeck.dir, "slides/02-steps.mdx");
   const body = (await readFile(file, "utf8")).replace("clicks: 3\n", "");
-  const source = `${body}\nimport { Step } from "@react-decks/motion";\n\n<Step at={1}>Counted marker</Step>\n\n<SlideStatus />\n`;
+  const source = `${body}\nimport { Step } from "@steamfield/decks/motion";\n\n<Step at={1}>Counted marker</Step>\n\n<SlideStatus />\n`;
   await writeFile(file, source);
   await page.goto(`${editableDeck.url}#/2`);
   await expect(page.getByText("Slide 2 of 5, click 0 of 1, active", { exact: true })).toBeVisible();

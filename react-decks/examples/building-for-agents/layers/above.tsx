@@ -1,5 +1,5 @@
-import { motionMode } from "@react-decks/motion";
-import { useDeck, useSlide, useSlideScale } from "@react-decks/runtime";
+import { useDeck, useSlide, useSlideScale } from "@steamfield/decks";
+import { motionMode } from "@steamfield/decks/motion";
 import { type CSSProperties, useId, useLayoutEffect, useRef, useState } from "react";
 import { FRAME } from "../components/design";
 import { warpMapUrl, warpScale } from "../scene/warp";

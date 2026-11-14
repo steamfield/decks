@@ -1,7 +1,7 @@
 /* biome-ignore-all lint/complexity/noImportantStyles: these source overrides must outrank the kit's important base typography. */
 /* building-for-agents: "Night drive, on stage". Tokens are in tokens.css and
    theme.json; DESIGN.md says what each one is for. The addon loads first. */
-@import "@react-decks/kit/styles.css";
+@import "@steamfield/decks/kit/styles.css";
 @import "./tokens.css";
 
 .od-slide.is-story {

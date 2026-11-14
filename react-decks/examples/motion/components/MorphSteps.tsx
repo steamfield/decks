@@ -1,5 +1,5 @@
-import { Morph } from "@react-decks/motion";
-import { useSlide } from "@react-decks/runtime";
+import { useSlide } from "@steamfield/decks";
+import { Morph } from "@steamfield/decks/motion";
 
 export function MorphSteps() {
   const { clicks } = useSlide();

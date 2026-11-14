@@ -9,8 +9,8 @@ import {
   stagger,
   useStage,
   xScale,
-} from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   AGENT,
   BRIEF_WORDS,

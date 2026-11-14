@@ -21,7 +21,7 @@ test("Destroying a deck cancels its pending transition before a replacement deck
     join(editableDeck.dir, "lifecycle.tsx"),
     `
 import { createElement } from "react";
-import { mountDeck, type DeckSource } from "@react-decks/runtime";
+import { mountDeck, type DeckSource } from "@steamfield/decks";
 const source: DeckSource = {
   manifest: { name: "lifecycle", title: "Lifecycle", canvas: { width: 1920, height: 1080 },
     slides: [1, 2].map(no => ({ no, id: String(no), file: String(no) + ".mdx", title: "Lifecycle " + no, clicks: 0 })) },

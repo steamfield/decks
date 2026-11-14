@@ -22,20 +22,34 @@ export interface DevServer {
 }
 
 function config(deck: ResolvedDeck, plugins: Plugin[] = reactDecks(deck)): InlineConfig {
+  const require = createRequire(import.meta.url);
+  const sourceMotion = import.meta.url.endsWith(".ts")
+    ? require.resolve("@react-decks/motion")
+    : undefined;
+  const source = sourceMotion
+    ? {
+        runtime: createRequire(sourceMotion).resolve("@react-decks/runtime"),
+        motion: sourceMotion,
+        kit: require.resolve("@react-decks/kit"),
+      }
+    : undefined;
   return {
     configFile: false,
     root: deck.dir,
     plugins: [plugins, deck.config.vite?.plugins ?? []],
     resolve: {
       dedupe: ["react", "react-dom"],
-      ...(import.meta.url.endsWith(".ts")
+      ...(source
         ? {
             conditions: ["@steamfield/decks/source", ...defaultClientConditions],
             // Vite's CSS @import resolver ignores resolve.conditions.
             alias: [
+              { find: /^@steamfield\/decks$/, replacement: source.runtime },
+              { find: /^@steamfield\/decks\/motion$/, replacement: source.motion },
+              { find: /^@steamfield\/decks\/kit$/, replacement: source.kit },
               {
                 find: /^@steamfield\/decks\/kit\/styles\.css$/,
-                replacement: createRequire(import.meta.url).resolve("@react-decks/kit/styles.css"),
+                replacement: require.resolve("@react-decks/kit/styles.css"),
               },
             ],
           }
@@ -43,10 +57,14 @@ function config(deck: ResolvedDeck, plugins: Plugin[] = reactDecks(deck)): Inlin
     },
     // There is no on-disk HTML entry for Vite to crawl before the first request.
     optimizeDeps: {
-      entries: ["components/*.tsx"],
-      ...(import.meta.url.endsWith(".ts")
-        ? { exclude: [PUBLIC_SPECIFIERS.runtime, PUBLIC_SPECIFIERS.motion] }
-        : { include: [PUBLIC_SPECIFIERS.runtime, PUBLIC_SPECIFIERS.motion] }),
+      // Generated imports also need scanning when the deck has no motion components.
+      entries: ["components/*.tsx", ...(source ? Object.values(source) : [])],
+      ...(source
+        ? { include: Object.values(source) }
+        : {
+            // Prebundle every browser entry together so their shared chunks keep one runtime.
+            include: [PUBLIC_SPECIFIERS.runtime, PUBLIC_SPECIFIERS.motion, "@steamfield/decks/kit"],
+          }),
     },
   };
 }

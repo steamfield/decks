@@ -1,5 +1,13 @@
-import { DUR, SETTLE, StoryCard, StoryStage, stagger, TRACE, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import {
+  DUR,
+  SETTLE,
+  StoryCard,
+  StoryStage,
+  stagger,
+  TRACE,
+  useStage,
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   countWord,
   FEATURED,

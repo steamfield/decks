@@ -1,7 +1,7 @@
 import { cp, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { expect, type Page } from "@playwright/test";
-import { build, loadDeck } from "@react-decks/node";
+import { build, loadDeck } from "@steamfield/decks/node";
 import { preview } from "vite";
 import { test } from "./fixtures/deck.fixture";
 

@@ -1,15 +1,14 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 
 test("A deck renders inline and display math as KaTeX markup.", async ({ page }) => {
   await mkdir(resolve(".tmp"), { recursive: true });
   const dir = await mkdtemp(resolve(".tmp/mdx-math-"));
   try {
-    await mkdir(join(dir, "node_modules/@react-decks"), { recursive: true });
-    for (const name of ["runtime", "motion"])
-      await symlink(resolve("packages", name), join(dir, "node_modules/@react-decks", name), "dir");
+    await mkdir(join(dir, "node_modules/@steamfield"), { recursive: true });
+    await symlink(resolve("packages/decks"), join(dir, "node_modules/@steamfield/decks"), "dir");
     await mkdir(join(dir, "slides"));
     await writeFile(
       join(dir, "deck.config.ts"),

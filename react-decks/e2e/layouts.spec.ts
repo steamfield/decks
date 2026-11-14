@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { expect, type Locator } from "@playwright/test";
-import { build, loadDeck } from "@react-decks/node";
+import { build, loadDeck } from "@steamfield/decks/node";
 import { preview } from "vite";
 import { test as editableTest } from "./fixtures/deck.fixture";
 import { test } from "./fixtures/motion.fixture";

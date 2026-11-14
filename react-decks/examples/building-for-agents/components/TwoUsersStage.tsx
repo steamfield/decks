@@ -1,5 +1,5 @@
-import { DRAW, DUR, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DRAW, DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   EVENT_LINES,
   PRETTY_LINES,

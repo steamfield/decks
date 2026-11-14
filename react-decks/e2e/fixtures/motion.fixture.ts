@@ -1,5 +1,5 @@
 import { test as base, expect, type Page } from "@playwright/test";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 
 export const test = base.extend<object, { motionURL: string }>({
   motionURL: [

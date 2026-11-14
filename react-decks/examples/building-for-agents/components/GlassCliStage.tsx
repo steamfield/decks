@@ -1,5 +1,5 @@
-import { DUR, SETTLE, STAGE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DUR, SETTLE, STAGE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { Fragment } from "react";
 import { GAP_LINE, READ_COMMANDS, RETRY, RFC_SIZES, SESSION } from "../data/14-glass-cli";
 import { WHY_RUST } from "../data/code/14-glass-cli";

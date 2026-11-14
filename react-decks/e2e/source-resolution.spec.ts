@@ -1,7 +1,8 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
-import { cp, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { promisify } from "node:util";
 import { expect, type Page, test } from "@playwright/test";
 import { settled } from "./fixtures/kit.fixture";
 
@@ -22,11 +23,12 @@ async function open(page: Page, url: string, slide: string) {
 }
 
 async function serve(deck: string, use: (url: string) => Promise<void>) {
-  const child = spawn(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli.ts"), "dev", deck, "--port", "0"],
-    { stdio: ["ignore", "pipe", "pipe"] },
-  );
+  const env = { ...process.env };
+  delete env.NODE_OPTIONS;
+  const child = spawn("bun", ["run", "decks", "dev", deck, "--port", "0"], {
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
   const closed = once(child, "close");
   let stdout = "";
   let stderr = "";
@@ -49,7 +51,7 @@ async function serve(deck: string, use: (url: string) => Promise<void>) {
   }
 }
 
-test("The source CLI shares its runtime with the agents deck's private imports", async ({
+test("The source CLI shares its runtime with the agents deck's public imports", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -81,7 +83,10 @@ test("A public-only source deck loads motion and Inter without built package out
     await mkdir(join(dir, "slides"));
     await mkdir(join(dir, "styles"));
     await writeFile(join(dir, "package.json"), '{"type":"module"}');
-    await writeFile(join(dir, "deck.config.ts"), 'export default { title: "Public source" };');
+    await writeFile(
+      join(dir, "deck.config.ts"),
+      'import { defineDeck } from "@steamfield/decks/node"; export default defineDeck({ title: "Public source" });',
+    );
     await writeFile(
       join(dir, "slides/01-first.mdx"),
       'import { useDeck } from "@steamfield/decks";\nimport { Step } from "@steamfield/decks/motion";\n\nexport function Status() { return <p>Public slide {useDeck().slide}</p>; }\n\n<Step at={0}><h1>Public source deck</h1><Status /></Step>',
@@ -102,6 +107,41 @@ test("A public-only source deck loads motion and Inter without built package out
           );
         }),
       ).toBe(true);
+    });
+    const env = { ...process.env };
+    delete env.NODE_OPTIONS;
+    await promisify(execFile)("bun", ["run", "decks", "build", dir, "--out", join(dir, "site")], {
+      env,
+    });
+    expect(await readFile(join(dir, "site/index.html"), "utf8")).toContain("Public source");
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("Public and private motion imports share clicks in a source deck", async ({ page }) => {
+  await mkdir(resolve(".tmp"), { recursive: true });
+  const dir = await mkdtemp(resolve(".tmp/mixed-source-"));
+  try {
+    await mkdir(join(dir, "slides"));
+    await writeFile(join(dir, "deck.config.ts"), 'export default { title: "Mixed source" };');
+    await writeFile(
+      join(dir, "slides/01-mixed.mdx"),
+      'import { Step as PublicStep } from "@steamfield/decks/motion";\nimport { Step as PrivateStep } from "@react-decks/motion";\n\n# Both imports follow the slide.\n\n<PublicStep at={1}>Public reveal</PublicStep>\n\n<PrivateStep at={2}>Private reveal</PrivateStep>',
+    );
+    await serve(dir, async (url) => {
+      await open(page, url, "01-mixed");
+      await expect(
+        page.getByRole("heading", { name: "Both imports follow the slide." }),
+      ).toBeVisible();
+      await expect(page.getByText("Public reveal", { exact: true })).not.toBeVisible();
+      await expect(page.getByText("Private reveal", { exact: true })).not.toBeVisible();
+      await page.keyboard.press("ArrowRight");
+      await expect(page.getByText("Public reveal", { exact: true })).toBeVisible();
+      await expect(page.getByText("Private reveal", { exact: true })).not.toBeVisible();
+      await page.keyboard.press("ArrowRight");
+      await expect(page.getByText("Private reveal", { exact: true })).toBeVisible();
+      await expect(page).toHaveURL(/#\/1\?clicks=2$/);
     });
   } finally {
     await rm(dir, { recursive: true, force: true });

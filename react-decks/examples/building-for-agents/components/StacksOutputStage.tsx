@@ -1,5 +1,5 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DUR, ink, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import {
   AGENT_LINES,
   AGENT_MARKERS,

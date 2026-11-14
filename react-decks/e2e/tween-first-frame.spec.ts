@@ -21,8 +21,8 @@ test("An initial timeline seek paints its endpoint even during a costly mount", 
   await writeFile(
     join(editableDeck.dir, "first-frame.tsx"),
     `import { useLayoutEffect } from "react";
-import { mountDeck } from "@react-decks/runtime";
-import { useTimeline, useTween } from "@react-decks/motion";
+import { mountDeck } from "@steamfield/decks";
+import { useTimeline, useTween } from "@steamfield/decks/motion";
 function Scene() {
   const value = useTween({ x: 0 });
   useTimeline((tl, beat) => {

@@ -1,33 +1,28 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { dev, loadDeck } from "@react-decks/node";
+import { dev, loadDeck } from "@steamfield/decks/node";
 import { settled } from "./fixtures/kit.fixture";
 
 test("An OpenChart fills its counter-scaled host on a cold 1280x720 load", async ({ page }) => {
   await mkdir(resolve(".tmp"), { recursive: true });
   const dir = await mkdtemp(resolve(".tmp/kit-chart-"));
   try {
-    await mkdir(join(dir, "node_modules/@react-decks"), { recursive: true });
-    for (const name of ["node", "runtime", "motion", "kit"])
-      await symlink(
-        resolve(`packages/${name}`),
-        join(dir, `node_modules/@react-decks/${name}`),
-        "dir",
-      );
+    await mkdir(join(dir, "node_modules/@steamfield"), { recursive: true });
+    await symlink(resolve("packages/decks"), join(dir, "node_modules/@steamfield/decks"), "dir");
     for (const sub of ["slides", "components", "styles"]) await mkdir(join(dir, sub));
     await writeFile(join(dir, "package.json"), '{"private":true,"type":"module"}');
     await writeFile(join(dir, "deck.config.ts"), 'export default { title: "Chart geometry" };');
     await writeFile(
       join(dir, "setup.ts"),
-      'import { installTheme, resolveTheme } from "@react-decks/kit"; installTheme(resolveTheme());',
+      'import { installTheme, resolveTheme } from "@steamfield/decks/kit"; installTheme(resolveTheme());',
     );
-    await writeFile(join(dir, "styles/index.css"), '@import "@react-decks/kit/styles.css";');
+    await writeFile(join(dir, "styles/index.css"), '@import "@steamfield/decks/kit/styles.css";');
     await writeFile(join(dir, "slides/01-chart.mdx"), "<ChartProbe />");
     await writeFile(
       join(dir, "components/ChartProbe.tsx"),
       `
-import { OpenChart, scaleChartTheme, slideChartTheme, useFrameScale } from "@react-decks/kit";
+import { OpenChart, scaleChartTheme, slideChartTheme, useFrameScale } from "@steamfield/decks/kit";
 export function ChartProbe() {
  const scale = useFrameScale();
  return <section aria-label="Chart host" style={{ position: "absolute", inset: 100 }}><OpenChart spec={{

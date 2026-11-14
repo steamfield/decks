@@ -1,6 +1,15 @@
-import { DRAW, DUR, ink, SETTLE, STAGE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
-import { useSlide } from "@react-decks/runtime";
+import { useSlide } from "@steamfield/decks";
+import {
+  DRAW,
+  DUR,
+  ink,
+  SETTLE,
+  STAGE,
+  StoryCard,
+  StoryStage,
+  useStage,
+} from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef, useState } from "react";
 import {
   DEMO_ADDRESS,

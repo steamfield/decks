@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import { loadDeck, scanSlides } from "@react-decks/node";
+import { loadDeck, scanSlides } from "@steamfield/decks/node";
 
 export const gallery = await scanSlides(await loadDeck("examples/motion"));
 

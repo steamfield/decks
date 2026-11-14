@@ -1,5 +1,5 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@react-decks/kit";
-import { useTween } from "@react-decks/motion";
+import { DUR, ink, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
+import { useTween } from "@steamfield/decks/motion";
 import { countWord } from "../data/03-thread";
 import { HABITS, ROWS_PER_BEAT } from "../data/18-habits";
 import { PRODUCTS } from "../data/products";
