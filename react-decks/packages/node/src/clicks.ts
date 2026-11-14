@@ -1,6 +1,7 @@
 import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
+import { parseCodeOptions } from "./code-options";
 
 export const stepNames = new Set([
   "Step",
@@ -22,6 +23,7 @@ interface ClickNode {
   type: string;
   name?: unknown;
   value?: unknown;
+  meta?: string | null;
   attributes?: Element["attributes"];
   data?: unknown;
   children?: ClickNode[];
@@ -91,7 +93,7 @@ export function countClicks(
   source: string,
   file: string,
   previous = 0,
-  motionNames: ReadonlyMap<string, string> = new Map(),
+  motionNames: ReadonlyMap<string, string> = new Map(Array.from(stepNames, (name) => [name, name])),
 ): number {
   let tree: ReturnType<typeof parser.parse>;
   try {
@@ -149,6 +151,15 @@ export function countClicks(
   }
   let total = 0;
   const walk = (node: ClickNode): void => {
+    if (
+      (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+      node.name === "Notes"
+    )
+      return;
+    if (node.type === "code" && typeof node.value === "string") {
+      const { steps, at } = parseCodeOptions(node.meta ?? "", node.value.split("\n").length, file);
+      if (steps) total = Math.max(total, at + steps.length - 1);
+    }
     rejectExpressionSteps(node.data, file, names);
     rejectExpressionSteps(node.attributes, file, names);
     const element = node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement";

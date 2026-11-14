@@ -1,0 +1,16 @@
+---
+title: Follow the state through the store.
+---
+
+# Follow the state through the store.
+
+```ts {2|4-5|all} lines title="store.ts" maxHeight=500
+export function createStore() {
+  let count = 0;
+
+  const increment = () => count++;
+  const read = () => count;
+
+  return { increment, read };
+}
+```

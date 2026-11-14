@@ -34,7 +34,7 @@ h1 {
 p {
   margin: 0;
 }
-code {
+:not(pre) > code {
   color: var(--gallery-muted);
   font-size: 28px;
   line-height: 1.5;

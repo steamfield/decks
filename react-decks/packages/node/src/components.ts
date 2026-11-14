@@ -7,7 +7,7 @@ import { stepNames } from "./clicks";
 export async function componentsModule(dir: string) {
   const files = (await glob("components/*.tsx", { cwd: dir })).sort();
   const components = new Map<string, { file: string; value: string }>();
-  const motionNames = new Map<string, string>();
+  const motionNames = new Map(Array.from(stepNames, (name) => [name, name]));
   for (const [index, file] of files.entries()) {
     const parsed = parseSync(file, await readFile(join(dir, file), "utf8"));
     if (parsed.errors.length) throw new Error(`${file}: ${parsed.errors[0]?.message}`);
