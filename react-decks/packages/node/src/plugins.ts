@@ -3,15 +3,13 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import mdx from "@mdx-js/rollup";
 import react from "@vitejs/plugin-react";
-import matter from "gray-matter";
 import remarkFrontmatter from "remark-frontmatter";
-import { glob } from "tinyglobby";
 import { mergeConfig, normalizePath, type Plugin } from "vite";
 import { componentsModule } from "./components";
 import { loadDeck, type ResolvedDeck } from "./config";
 import { deckHtml, entryModule } from "./entry";
 import { removeNotes, renderNotes } from "./notes";
-import { buildManifest, scanSlides } from "./slides";
+import { buildManifest, readSlide, scanSlidesWithCounts } from "./slides";
 
 const prefix = "virtual:react-decks/";
 
@@ -24,12 +22,8 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
   const deckDir = normalizePath(deck.dir);
   const htmlFile = normalizePath(join(deck.dir, "index.html"));
   const configFile = normalizePath(join(deck.dir, "deck.config.ts"));
-  const metadata = new Map<string, string>();
-  const seedMetadata = async () => {
-    for (const file of await glob("slides/*.mdx", { cwd: deck.dir, absolute: true })) {
-      metadata.set(normalizePath(file), JSON.stringify(matter(await readFile(file, "utf8")).data));
-    }
-  };
+  let metadata = new Map<string, string>();
+  const totals = new Map<string, number>();
   const plugin: Plugin = {
     name: "react-decks",
     enforce: "pre",
@@ -56,9 +50,10 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
       if (id === `\0${prefix}entry`) return entryModule(current);
       if (id === `\0${prefix}components`) return componentsModule(deck.dir);
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;
-      const slides = await scanSlides(current);
+      const scanned = await scanSlidesWithCounts(current, totals);
+      const slides = scanned.slides;
       if (id === `\0${prefix}manifest`) {
-        await seedMetadata();
+        metadata = scanned.metadata;
         const loaders = slides
           .map(
             ({ meta }) =>
@@ -97,7 +92,8 @@ export const slides = Object.fromEntries([${loaders}]);`;
       const structural = (path: string) => {
         const file = normalizePath(path);
         if (normalizePath(dirname(file)) === `${deckDir}/slides` && file.endsWith(".mdx")) {
-          metadata.delete(file);
+          metadata.delete(file.slice(deckDir.length + 1));
+          totals.delete(file.slice(deckDir.length + 1));
           reload("manifest");
         }
         if (normalizePath(dirname(file)) === `${deckDir}/components` && file.endsWith(".tsx"))
@@ -143,7 +139,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
           next(error);
         }
       });
-      await seedMetadata();
+      metadata = (await scanSlidesWithCounts(current, totals)).metadata;
       configChanged(configFile);
     },
     closeBundle() {
@@ -154,6 +150,8 @@ export const slides = Object.fromEntries([${loaders}]);`;
       if (this.environment.name !== "client") return;
       const file = normalizePath(context.file);
       const parent = normalizePath(dirname(file));
+      if (parent === `${deckDir}/components` && file.endsWith(".tsx") && context.type === "update")
+        await componentsModule(deck.dir);
       if (
         context.type !== "update" &&
         ((parent === `${deckDir}/slides` && file.endsWith(".mdx")) ||
@@ -162,9 +160,15 @@ export const slides = Object.fromEntries([${loaders}]);`;
         return [];
       if (parent !== `${deckDir}/slides` || !file.endsWith(".mdx") || context.type !== "update")
         return;
-      const next = JSON.stringify(matter(await context.read()).data);
-      const previous = metadata.get(file);
-      metadata.set(file, next);
+      const key = file.slice(deckDir.length + 1);
+      const { clicks: total, fingerprint: next } = readSlide(
+        await context.read(),
+        file,
+        totals.get(key),
+      );
+      const previous = metadata.get(key);
+      metadata.set(key, next);
+      totals.set(key, total);
       const graph = this.environment.moduleGraph;
       const notes = graph.getModuleById(`\0${prefix}notes`);
       if (notes) graph.invalidateModule(notes);

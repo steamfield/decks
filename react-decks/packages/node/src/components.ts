@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { parseSync } from "oxc-parser";
 import { glob } from "tinyglobby";
+import { stepNames } from "./clicks";
 
 export async function componentsModule(dir: string): Promise<string> {
   const files = (await glob("components/*.tsx", { cwd: dir })).sort();
@@ -19,6 +20,8 @@ export async function componentsModule(dir: string): Promise<string> {
         const exported = entry.exportName.kind === "Default" ? "default" : entry.exportName.name;
         if (exported === null) continue;
         const name = exported === "default" ? basename(file, ".tsx") : exported;
+        if (stepNames.has(name) && entry.moduleRequest?.value !== "@react-decks/motion")
+          throw new Error(`${file}: ${name} may only be re-exported from @react-decks/motion`);
         const owner = components.get(name);
         if (owner && owner.file !== file)
           throw new Error(`Duplicate component ${name} in ${owner.file} and ${file}`);

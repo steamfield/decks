@@ -44,6 +44,47 @@ async function serve(files: Record<string, string> = {}) {
 const virtual = (name: string) => `/@id/__x00__virtual:react-decks/${name}`;
 
 describe("deck modules and HTML", () => {
+  it.each(["Step", "Steps", "Stagger", "TextReveal", "Highlight", "CountUp", "Draw"])(
+    "rejects a deck's own %s export even with explicit slide clicks",
+    async (name) => {
+      const { dir } = await fixture({
+        "slides/01-first.mdx": "---\nclicks: 2\n---\n# Slide",
+        "components/Own.tsx": `export function ${name}() { return null; }`,
+      });
+      await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
+        new RegExp(`components/Own\\.tsx.*${name}.*@react-decks/motion`),
+      );
+    },
+  );
+  it.each([
+    ["Step.tsx", "export default function Own() {}"],
+    ["Other.tsx", 'export { Badge as Step } from "./Badge";'],
+  ])("rejects a reserved component name provided by %s: %s", async (file, source) => {
+    const { dir } = await fixture({ [`components/${file}`]: source });
+    await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
+      new RegExp(`components/${file.replace(".", "\\.")}.*Step.*@react-decks/motion`),
+    );
+  });
+  it.each([
+    'export { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw } from "@react-decks/motion";',
+    'import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw } from "@react-decks/motion"; export { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw };',
+  ])(
+    "allows reserved names re-exported from motion without loading them on the server: %s",
+    async (source) => {
+      const app = await serve({
+        "components/Motion.tsx": source,
+      });
+      const code = await app.get(virtual("components"));
+      for (const name of ["Step", "Steps", "Stagger", "TextReveal", "Highlight", "CountUp", "Draw"])
+        expect(code).toContain(JSON.stringify(name));
+    },
+  );
+  it("fails a build in the slide compiler when an uncounted body does not parse", async () => {
+    const { dir } = await fixture({ "slides/01-first.mdx": "# Broken\n\n<Step at={3}>" });
+    await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
+      /01-first\.mdx/,
+    );
+  });
   it("serves manifest loaders and all frontmatter while hidden slides never compile", async () => {
     const app = await serve({
       "slides/02-hidden.mdx": "---\nhide: true\n---\n<broken",
@@ -320,6 +361,131 @@ describe("deck modules and HTML", () => {
 });
 
 describe("dev changes", () => {
+  it("keeps the last valid total when invalid frontmatter is removed during a syntax error", async () => {
+    const app = await serve({ "slides/01-first.mdx": "<Step at={4} />" });
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":4');
+    await app.get("/slides/01-first.mdx");
+    const invalid = app.messages.length;
+    await app.put("slides/01-first.mdx", "---\nclicks: -1\n---\n<Step at={4} />");
+    await vi.waitFor(() =>
+      expect(
+        app.messages
+          .slice(invalid)
+          .some(
+            (message) =>
+              message.includes('"type":"error"') || message.includes('"type":"full-reload"'),
+          ),
+      ).toBe(true),
+    );
+    await fetch(new URL(virtual("manifest"), app.url));
+    const repair = app.messages.length;
+    await app.put("slides/01-first.mdx", "<Step at={5}>");
+    await vi.waitFor(() =>
+      expect(
+        app.messages
+          .slice(repair)
+          .some(
+            (message) =>
+              message.includes('"type":"update"') || message.includes('"type":"full-reload"'),
+          ),
+      ).toBe(true),
+    );
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":4');
+  });
+  it("rejects a reserved name introduced by editing an existing component", async () => {
+    const app = await serve({ "components/Own.tsx": "export function Own() { return null; }" });
+    await app.get(virtual("components"));
+    await app.get("/components/Own.tsx");
+    const start = app.messages.length;
+    await app.put("components/Own.tsx", "export function Step() { return null; }");
+    await vi.waitFor(() =>
+      expect(
+        app.messages
+          .slice(start)
+          .some(
+            (message) =>
+              message.includes('"type":"error"') &&
+              /Own\.tsx.*Step.*@react-decks\/motion/.test(message),
+          ),
+      ).toBe(true),
+    );
+  });
+  it("reloads only when the inferred total changes and honours adding and removing an override", async () => {
+    const app = await serve({
+      "slides/01-first.mdx": "<Step at={1} />\n\n<Step at={3} until={4} />",
+    });
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":4');
+    await app.get("/slides/01-first.mdx");
+    const edit = async (body: string, reload: boolean, total: number) => {
+      const start = app.messages.length;
+      await app.put("slides/01-first.mdx", body);
+      await vi.waitFor(() =>
+        expect(
+          app.messages
+            .slice(start)
+            .some((message) =>
+              message.includes(reload ? '"type":"full-reload"' : '"type":"update"'),
+            ),
+        ).toBe(true),
+      );
+      expect(
+        app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+      ).toBe(reload);
+      expect(await app.get(virtual("manifest"))).toContain(`"clicks":${total}`);
+      await app.get("/slides/01-first.mdx");
+    };
+    await edit("---\nclicks: 2\n---\n<Step at={n} />", true, 2);
+    await edit("<Step at={1} />\n\n<Step at={3} until={4} />", true, 4);
+    await edit("<Step at={1} />\n\n<Step at={3} until={4} />\n\n<Step at={2} />", false, 4);
+    await edit(
+      "<Step at={1} />\n\n<Step at={3} until={4} />\n\n<Step at={2} />\n\n<Step at={5} />",
+      true,
+      5,
+    );
+  });
+  it("retains the last total through a parse error, a new manifest request and a repair", async () => {
+    const app = await serve({ "slides/01-first.mdx": "<Step at={3} />" });
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":3');
+    await app.get("/slides/01-first.mdx");
+    const start = app.messages.length;
+    await app.put("slides/01-first.mdx", "<Step at={4}>");
+    await vi.waitFor(() =>
+      expect(app.messages.slice(start).some((message) => message.includes('"type":"update"'))).toBe(
+        true,
+      ),
+    );
+    const broken = await fetch(new URL("/slides/01-first.mdx", app.url));
+    expect(broken.status).toBe(500);
+    expect(await broken.text()).toContain("01-first.mdx");
+    expect(
+      app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+    ).toBe(false);
+    // Frontmatter forces a fresh manifest load while the body is still incomplete.
+    await app.put("slides/01-first.mdx", "---\ntitle: Still editing\n---\n<Step at={4}>");
+    await vi.waitFor(() =>
+      expect(
+        app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+      ).toBe(true),
+    );
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":3');
+    const repair = app.messages.length;
+    await app.put("slides/01-first.mdx", "---\ntitle: Still editing\n---\n<Step at={4} />");
+    await vi.waitFor(() =>
+      expect(
+        app.messages.slice(repair).some((message) => message.includes('"type":"full-reload"')),
+      ).toBe(true),
+    );
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":4');
+  });
+  it("serves a broken cold-start slide with zero clicks while its neighbour remains available", async () => {
+    const app = await serve({
+      "slides/01-first.mdx": "<Step at={3}>",
+      "slides/02-good.mdx": "# Neighbour",
+    });
+    expect(await app.get(virtual("manifest"))).toContain('"clicks":0');
+    expect(await app.get("/slides/02-good.mdx")).toContain("Neighbour");
+    expect((await fetch(new URL("/slides/01-first.mdx", app.url))).status).toBe(500);
+  });
   it("reconciles a config save made while the server is starting", async () => {
     const app = await fixture({
       "release.txt": "Waiting",
@@ -468,8 +634,12 @@ export default { title: "Startup title", vite: { plugins: [{ name: "pause-startu
       "deck.config.ts",
       'export default {title:"Restarted deck",canvas:{width:800,height:600}}',
     );
-    await vi.waitFor(async () => expect(await app.get("/")).toContain("Restarted deck"));
-    expect(await app.get(virtual("manifest"))).toContain('"width":800');
+    // One save can reach the watcher as two events and restart twice, so a request made
+    // between them is reset: both assertions wait for the server to come back.
+    await vi.waitFor(async () => {
+      expect(await app.get("/")).toContain("Restarted deck");
+      expect(await app.get(virtual("manifest"))).toContain('"width":800');
+    });
   });
   it("serializes config saves during restart and serves the latest title", async () => {
     const app = await serve({ "release.txt": "Waiting" });

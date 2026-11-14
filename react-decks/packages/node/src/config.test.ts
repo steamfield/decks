@@ -57,6 +57,7 @@ describe("loadDeck", () => {
     ["width", '{title:"Deck", canvas:{width:0,height:10}}'],
     ["height", '{title:"Deck", canvas:{width:10,height:Infinity}}'],
     ["transition", '{title:"Deck", transition: 4}'],
+    ["transition", '{title:"Deck", transition: ""}'],
     ["htmlAttrs", '{title:"Deck", htmlAttrs:{lang:1}}'],
     ["vite", '{title:"Deck", vite: 1}'],
   ])("rejects invalid %s naming the config file and key", async (key, value) => {

@@ -3,6 +3,31 @@ import { join } from "node:path";
 import { expect } from "@playwright/test";
 import { test, waitForSlideModules } from "./deck.fixture";
 
+test("Adding a Step in a running deck makes the new inferred click reachable.", async ({
+  page,
+  editableDeck,
+}) => {
+  const file = join(editableDeck.dir, "slides/02-steps.mdx");
+  const body = (await readFile(file, "utf8")).replace("clicks: 3\n", "");
+  // Badge renders the marker until motion ships; the scanner reads the written Step name.
+  const source = `${body}\nimport { Badge as Step } from "../components/Badge";\n\n<Step at={1} label="Counted marker" />\n\n<SlideStatus />\n`;
+  await writeFile(file, source);
+  await page.goto(`${editableDeck.url}#/2`);
+  await expect(page.getByText("Slide 2 of 5, click 0 of 1, active", { exact: true })).toBeVisible();
+  await waitForSlideModules(page);
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=1`);
+  await page.evaluate(() => {
+    window.e2eDocument = "before counted edit";
+  });
+  await writeFile(file, `${source}\n<Step at={2} label="New counted marker" />\n`);
+  await expect(page.getByText("Slide 2 of 5, click 1 of 2, active", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => window.e2eDocument)).toBeUndefined();
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=2`);
+  await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
+});
+
 test("A slide body edit hot-updates without reloading or losing its click.", async ({
   page,
   editableDeck,

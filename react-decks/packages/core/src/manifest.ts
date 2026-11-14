@@ -10,6 +10,8 @@ export interface SlideMeta {
   readonly clicks: number;
   /** Name of the transition into the following slide; undefined uses the deck default. */
   readonly transition?: string;
+  /** True when a click on this slide commits through a view transition. */
+  readonly morphSteps?: boolean;
 }
 
 export interface CanvasSize {
@@ -22,11 +24,15 @@ export interface DeckManifest {
   readonly name: string;
   readonly title: string;
   readonly canvas: CanvasSize;
+  /** The deck's default slide transition; undefined means fade. */
+  readonly transition?: string;
   readonly slides: readonly SlideMeta[];
 }
 
 /** Throws an Error naming the first problem. Returns the same object when valid. */
 export function assertManifest(manifest: DeckManifest): DeckManifest {
+  if (manifest.transition !== undefined && !manifest.transition.length)
+    throw new Error("Manifest transition must not be empty");
   if (manifest.slides.length === 0) {
     throw new Error("Manifest has 0 slides");
   }
@@ -40,6 +46,10 @@ export function assertManifest(manifest: DeckManifest): DeckManifest {
       throw new Error(`Duplicate slide id: ${slide.id}`);
     }
     ids.add(slide.id);
+    if (slide.transition !== undefined && !slide.transition.length)
+      throw new Error(`Slide ${slide.id} has empty transition`);
+    if (slide.morphSteps !== undefined && typeof slide.morphSteps !== "boolean")
+      throw new Error(`Slide ${slide.id} has invalid morphSteps: ${slide.morphSteps}`);
     if (!Number.isInteger(slide.clicks) || slide.clicks < 0) {
       throw new Error(`Slide ${slide.id} has invalid clicks: ${slide.clicks}`);
     }

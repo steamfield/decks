@@ -19,7 +19,7 @@ describe("slide scanning and manifest", () => {
     expect(slides).toEqual([
       {
         meta: { no: 1, id: "02-a", file: "slides/02-a.mdx", title: "02-a", clicks: 0 },
-        frontmatter: { title: "02-a", clicks: 0, hide: false },
+        frontmatter: { title: "02-a", hide: false },
       },
       {
         meta: {
@@ -57,6 +57,9 @@ describe("slide scanning and manifest", () => {
     "hide: null",
     "transition: false",
     "transition: null",
+    'transition: ""',
+    "morphSteps: 1",
+    "morphSteps: null",
   ])("rejects %s naming file and key", async (value) => {
     const { dir } = await fixture({ "slides/01-first.mdx": `---\n${value}\n---\n# Invalid` });
     await expect(scanSlides(await loadDeck(dir))).rejects.toThrow(
@@ -69,6 +72,22 @@ describe("slide scanning and manifest", () => {
     await expect(scanSlides(deck)).rejects.toThrow("no visible slides");
     expect(() => buildManifest(deck, [])).toThrow("no visible slides");
   });
+  it.each([true, false])(
+    "preserves morphSteps %s and the deck default transition",
+    async (morphSteps) => {
+      const { dir } = await fixture({
+        "deck.config.ts": 'export default { title: "Transitions", transition: "slide" };',
+        "slides/01-first.mdx": `---\nmorphSteps: ${morphSteps}\ntransition: fade\n---\n# Slide`,
+      });
+      const deck = await loadDeck(dir);
+      const slides = await scanSlides(deck);
+      expect(slides[0]?.frontmatter).toMatchObject({ morphSteps, transition: "fade" });
+      expect(buildManifest(deck, slides)).toMatchObject({
+        transition: "slide",
+        slides: [{ clicks: 0, transition: "fade", morphSteps }],
+      });
+    },
+  );
   it("numbers the five visible basic fixture slides from 1 to 5", async () => {
     const slides = await scanSlides(await loadDeck("examples/basic"));
     expect(slides.map(({ meta }) => meta.no)).toEqual([1, 2, 3, 4, 5]);
