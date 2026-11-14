@@ -93,7 +93,7 @@ export function tokenizeLine(line: string, lang: Lang): Token[] {
       rest = rest.slice(w.length);
       continue;
     }
-    push(rest[0], "punct");
+    push(rest.charAt(0), "punct");
     rest = rest.slice(1);
   }
   return out;

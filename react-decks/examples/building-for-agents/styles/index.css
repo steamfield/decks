@@ -1,3 +1,4 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: these source overrides must outrank the kit's important base typography. */
 /* building-for-agents: "Night drive, on stage". Tokens are in tokens.css and
    theme.json; DESIGN.md says what each one is for. The addon loads first. */
 @import "@react-decks/kit/styles.css";
@@ -424,231 +425,46 @@
 
 /* Slide changes: a quick clear, then a settle, as in texas-2026. View
    transition pseudo-elements belong to html, so a slide cannot scope them. */
-html[data-od-story]::view-transition-group(*),
-html[data-od-story]::view-transition-old(*),
-html[data-od-story]::view-transition-new(*) {
+html[data-deck-transition="story"]::view-transition-group(*),
+html[data-deck-transition="story"]::view-transition-old(*),
+html[data-deck-transition="story"]::view-transition-new(*) {
   animation-duration: var(--sf-vt-fade);
 }
-html[data-od-story]::view-transition {
+html[data-deck-transition="story"]::view-transition {
   background: var(--od-canvas);
 }
-html[data-od-story][data-od-nav]::view-transition-old(root),
-html[data-od-story][data-od-nav]::view-transition-old(od-story-head) {
+html[data-deck-transition="story"][data-deck-nav]::view-transition-old(root),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-old(od-story-head) {
   animation: od-vt-out var(--sf-vt-out) linear both;
 }
-html[data-od-story][data-od-nav]::view-transition-new(root),
-html[data-od-story][data-od-nav]::view-transition-new(od-story-head),
-html[data-od-story][data-od-nav]::view-transition-new(od-story-card-left):only-child,
-html[data-od-story][data-od-nav]::view-transition-new(od-story-card-right):only-child {
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(root),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(od-story-head),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(
+  od-story-card-left
+):only-child,
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(
+  od-story-card-right
+):only-child {
   animation: od-vt-fade var(--sf-vt-fade) var(--sf-vt-ease) var(--sf-vt-delay) both;
 }
-html[data-od-story]::view-transition-old(od-story-card-left),
-html[data-od-story]::view-transition-new(od-story-card-left),
-html[data-od-story]::view-transition-old(od-story-card-right),
-html[data-od-story]::view-transition-new(od-story-card-right) {
+html[data-deck-transition="story"]::view-transition-old(od-story-card-left),
+html[data-deck-transition="story"]::view-transition-new(od-story-card-left),
+html[data-deck-transition="story"]::view-transition-old(od-story-card-right),
+html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
   inset-block: auto 0;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-od-story]::view-transition-group(*),
-  html[data-od-story]::view-transition-old(*),
-  html[data-od-story]::view-transition-new(*) {
+  html[data-deck-transition="story"]::view-transition-group(*),
+  html[data-deck-transition="story"]::view-transition-old(*),
+  html[data-deck-transition="story"]::view-transition-new(*) {
     animation-duration: var(--sf-vt-reduced) !important;
     animation-delay: 0ms !important;
   }
 }
 
-/* ── The tube ────────────────────────────────────────────────────────────
-   One CRT's glass over every slide (global-top.vue), and the barrel warp on
-   each slide's frame. Ported from steamfield.io's `.crt-overlay`. The heavy
-   tape tracking faults are not part of the deck. */
-.od-slide.is-story.sf-tube-host {
-  position: fixed;
-  inset: var(--sf-zero);
-  z-index: 60;
-  overflow: hidden;
-  background: none;
-  pointer-events: none;
-}
-.od-slide.is-story .sf-tube-defs {
-  position: absolute;
-}
-.od-slide.is-story .sf-tube {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--od-fw);
-  height: var(--od-fh);
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-  border-radius: var(--sf-tube-radius);
-  /* Black past the curved corners, and a dark falloff along the edges. */
-  box-shadow:
-    0 0 0 calc(6 * var(--sw)) black,
-    inset 0 0 var(--sf-tube-edge) rgb(0 0 0 / var(--sf-tube-edge-shade));
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0 calc(var(--sf-tube-line) - 1px),
-      rgb(0 0 0 / var(--sf-tube-scan)) calc(var(--sf-tube-line) - 1px) var(--sf-tube-line)
-    ),
-    repeating-linear-gradient(
-      to right,
-      rgb(255 0 0 / var(--sf-tube-mask)) 0 1px,
-      rgb(0 255 0 / var(--sf-tube-mask)) 1px 2px,
-      rgb(0 0 255 / var(--sf-tube-mask)) 2px 3px
-    ),
-    radial-gradient(
-      ellipse 70% 50% at 22% 0%,
-      rgb(255 255 255 / var(--sf-tube-sheen)),
-      transparent 70%
-    ),
-    radial-gradient(ellipse at center, transparent 58%, rgb(0 0 0 / var(--sf-tube-vignette)) 100%);
-}
-.od-slide.is-story .sf-tube-grain {
-  position: absolute;
-  inset: calc(-9.4 * var(--sw));
-  opacity: var(--sf-tube-grain);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
-}
-.od-slide.is-story :is(.sf-tube-hum, .sf-tube-power) {
-  display: none;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .od-slide.is-story .sf-tube-grain {
-    animation: sf-tube-grain 1s steps(1) infinite;
-  }
-  .od-slide.is-story .sf-tube-hum {
-    display: block;
-    position: absolute;
-    left: var(--sf-zero);
-    right: var(--sf-zero);
-    top: var(--sf-zero);
-    height: var(--sf-tube-hum-height);
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(255 255 255 / var(--sf-tube-hum)) 50%,
-      transparent
-    );
-    animation: sf-tube-hum var(--sf-tube-hum-duration) linear infinite;
-  }
-  .od-slide.is-story .sf-tube.is-power .sf-tube-power {
-    display: block;
-    position: absolute;
-    inset: var(--sf-zero);
-  }
-  .od-slide.is-story .sf-tube.is-power :is(.sf-tube-power-top, .sf-tube-power-bottom) {
-    position: absolute;
-    left: var(--sf-zero);
-    right: var(--sf-zero);
-    height: 50%;
-    background: black;
-    animation: sf-tube-power-open var(--sf-tube-power) var(--od-settle) both;
-  }
-  .od-slide.is-story .sf-tube.is-power .sf-tube-power-top {
-    top: var(--sf-zero);
-    transform-origin: top;
-  }
-  .od-slide.is-story .sf-tube.is-power .sf-tube-power-bottom {
-    bottom: var(--sf-zero);
-    transform-origin: bottom;
-  }
-  .od-slide.is-story .sf-tube.is-power .sf-tube-power-line {
-    position: absolute;
-    left: var(--sf-zero);
-    right: var(--sf-zero);
-    top: calc(50% - 1px);
-    height: 2px;
-    background: white;
-    box-shadow: 0 0 12px rgb(255 255 255 / 0.8);
-    animation: sf-tube-power-line var(--sf-tube-power) var(--od-settle) both;
-  }
-  .od-slide.is-story .sf-tube.is-power .sf-tube-power-wash {
-    position: absolute;
-    inset: var(--sf-zero);
-    background: white;
-    animation: sf-tube-power-wash var(--sf-tube-power) linear both;
-  }
-}
-/* Eight grain positions a second, in frame units. */
-@keyframes sf-tube-grain {
-  0% {
-    transform: translate(0, 0);
-  }
-  12.5% {
-    transform: translate(calc(-3.6 * var(--sw)), calc(2.1 * var(--sw)));
-  }
-  25% {
-    transform: translate(calc(2.6 * var(--sw)), calc(-4.7 * var(--sw)));
-  }
-  37.5% {
-    transform: translate(calc(-6.2 * var(--sw)), calc(-1.6 * var(--sw)));
-  }
-  50% {
-    transform: translate(calc(4.7 * var(--sw)), calc(5.7 * var(--sw)));
-  }
-  62.5% {
-    transform: translate(calc(-1.6 * var(--sw)), calc(-7.3 * var(--sw)));
-  }
-  75% {
-    transform: translate(calc(7.3 * var(--sw)), calc(1 * var(--sw)));
-  }
-  87.5% {
-    transform: translate(calc(-5.2 * var(--sw)), calc(4.7 * var(--sw)));
-  }
-}
-@keyframes sf-tube-hum {
-  from {
-    transform: translateY(calc(-1 * var(--sf-tube-hum-height)));
-  }
-  to {
-    transform: translateY(var(--od-fh));
-  }
-}
-/* Power-on: the picture opens from a bright line at the middle of the tube. */
-@keyframes sf-tube-power-open {
-  0%,
-  15% {
-    transform: scaleY(1);
-  }
-  80%,
-  100% {
-    transform: scaleY(0);
-  }
-}
-@keyframes sf-tube-power-line {
-  0% {
-    transform: scaleX(0);
-    opacity: 1;
-  }
-  15% {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-  80%,
-  100% {
-    transform: scaleX(1);
-    opacity: 0;
-  }
-}
-@keyframes sf-tube-power-wash {
-  0%,
-  15% {
-    opacity: 0;
-  }
-  30% {
-    opacity: var(--sf-tube-wash);
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* The barrel warp: the slide's whole frame bends with the glass. The class is
-   set by global-top.vue once the filter exists and is sized, so a view with no
-   tube (presenter, export) never points at a missing filter. */
-html.sf-tube-on .od-slide.is-story:not(.sf-tube-host) .od-story-frame {
-  filter: url(#sf-barrel);
+/* Each layer sets the filter on its own slide root after its SVG map is ready. */
+[data-deck-context="slide"] > .od-slide.is-story .od-story-frame {
+  filter: var(--sf-barrel-filter, none);
 }
 
 /* Convergence fringe on neon and pixel type. Body, card and code text and the

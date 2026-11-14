@@ -19,8 +19,8 @@
  *   in both (after a slide's section is merged) counts once.
  */
 
-import patternsTsv from "../../../packages/decks/lint/ai-rhetoric-patterns.tsv?raw";
-import denial from "../../../site/fixtures/hook-denial.json";
+import patternsTsv from "../../../../packages/decks/lint/ai-rhetoric-patterns.tsv?raw";
+import denial from "./fixtures/hook-denial.json";
 import type { TermLine } from "./types";
 
 /* ── The recorded denial ── */
@@ -35,6 +35,8 @@ const findings = denial.reason
   .filter((line) => /^stdin:\d+ \[/.test(line))
   .flatMap((line): TermLine[] => {
     const [hit, message] = line.split(" -> ");
+    if (hit === undefined || message === undefined)
+      throw new Error(`17-decks: malformed denial ${line}`);
     return [
       { text: hit, tone: "out" },
       { text: `  -> ${message}`, tone: "out" },
@@ -47,7 +49,7 @@ export const DENIAL: readonly TermLine[] = [
   { text: denial.line, tone: "muted" },
   { text: denial.hook, tone: "cmd" },
   { text: `decision: ${denial.decision}`, tone: "fail" },
-  { text: denial.reason[0], tone: "fail" },
+  ...denial.reason.slice(0, 1).map((text): TermLine => ({ text, tone: "fail" })),
   ...findings,
 ];
 
@@ -57,8 +59,7 @@ const patternRows = patternsTsv
   .split(/\r?\n/)
   .filter((line) => line.trim() && !line.startsWith("#"))
   .map((line) => line.split("\t"))
-  .filter(([id]) => id)
-  .map(([id, severity]) => ({ id, denied: severity === "error" }));
+  .flatMap(([id, severity]) => (id ? [{ id, denied: severity === "error" }] : []));
 
 /** One entry per pattern, in file order: its id and whether the hook denies it. */
 export const PATTERN_ROWS: readonly { id: string; denied: boolean }[] = patternRows;

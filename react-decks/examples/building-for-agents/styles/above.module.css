@@ -1,0 +1,192 @@
+/* ── The tube ────────────────────────────────────────────────────────────
+   One CRT's glass above each active slide. Ported from steamfield.io's `.crt-overlay`. The heavy
+   tape tracking faults are not part of the deck. */
+.host:global(.od-slide.is-story.sf-tube-host) {
+  position: absolute;
+  top: var(--sf-zero);
+  left: var(--sf-zero);
+  width: round(calc(100% * var(--sf-tube-scale)), 1px);
+  height: round(calc(100% * var(--sf-tube-scale)), 1px);
+  transform: scale(var(--sf-tube-counter-scale));
+  transform-origin: top left;
+  z-index: 60;
+  overflow: hidden;
+  background: none;
+  pointer-events: none;
+}
+.host :global(.sf-tube-defs) {
+  position: absolute;
+}
+.host :global(.sf-tube) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--od-fw);
+  height: var(--od-fh);
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  border-radius: var(--sf-tube-radius);
+  /* Black past the curved corners, and a dark falloff along the edges. */
+  box-shadow:
+    0 0 0 calc(6 * var(--sw)) black,
+    inset 0 0 var(--sf-tube-edge) rgb(0 0 0 / var(--sf-tube-edge-shade));
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(var(--sf-tube-line) - 1px),
+      rgb(0 0 0 / var(--sf-tube-scan)) calc(var(--sf-tube-line) - 1px) var(--sf-tube-line)
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgb(255 0 0 / var(--sf-tube-mask)) 0 1px,
+      rgb(0 255 0 / var(--sf-tube-mask)) 1px 2px,
+      rgb(0 0 255 / var(--sf-tube-mask)) 2px 3px
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 22% 0%,
+      rgb(255 255 255 / var(--sf-tube-sheen)),
+      transparent 70%
+    ),
+    radial-gradient(ellipse at center, transparent 58%, rgb(0 0 0 / var(--sf-tube-vignette)) 100%);
+}
+.host :global(.sf-tube-grain) {
+  position: absolute;
+  inset: calc(-9.4 * var(--sw));
+  opacity: var(--sf-tube-grain);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+}
+.host :is(:global(.sf-tube-hum), :global(.sf-tube-power)) {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .host.live :global(.sf-tube-grain) {
+    animation: sf-tube-grain 1s steps(1) infinite;
+  }
+  .host.live :global(.sf-tube-hum) {
+    display: block;
+    position: absolute;
+    left: var(--sf-zero);
+    right: var(--sf-zero);
+    top: var(--sf-zero);
+    height: var(--sf-tube-hum-height);
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(255 255 255 / var(--sf-tube-hum)) 50%,
+      transparent
+    );
+    animation: sf-tube-hum var(--sf-tube-hum-duration) linear infinite;
+  }
+  .host.live :global(.sf-tube.is-power) :global(.sf-tube-power) {
+    display: block;
+    position: absolute;
+    inset: var(--sf-zero);
+  }
+  .host.live
+    :global(.sf-tube.is-power)
+    :is(:global(.sf-tube-power-top), :global(.sf-tube-power-bottom)) {
+    position: absolute;
+    left: var(--sf-zero);
+    right: var(--sf-zero);
+    height: 50%;
+    background: black;
+    animation: sf-tube-power-open var(--sf-tube-power) var(--od-settle) both;
+  }
+  .host.live :global(.sf-tube.is-power) :global(.sf-tube-power-top) {
+    top: var(--sf-zero);
+    transform-origin: top;
+  }
+  .host.live :global(.sf-tube.is-power) :global(.sf-tube-power-bottom) {
+    bottom: var(--sf-zero);
+    transform-origin: bottom;
+  }
+  .host.live :global(.sf-tube.is-power) :global(.sf-tube-power-line) {
+    position: absolute;
+    left: var(--sf-zero);
+    right: var(--sf-zero);
+    top: calc(50% - 1px);
+    height: 2px;
+    background: white;
+    box-shadow: 0 0 12px rgb(255 255 255 / 0.8);
+    animation: sf-tube-power-line var(--sf-tube-power) var(--od-settle) both;
+  }
+  .host.live :global(.sf-tube.is-power) :global(.sf-tube-power-wash) {
+    position: absolute;
+    inset: var(--sf-zero);
+    background: white;
+    animation: sf-tube-power-wash var(--sf-tube-power) linear both;
+  }
+}
+/* Eight grain positions a second, in frame units. */
+@keyframes sf-tube-grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  12.5% {
+    transform: translate(calc(-3.6 * var(--sw)), calc(2.1 * var(--sw)));
+  }
+  25% {
+    transform: translate(calc(2.6 * var(--sw)), calc(-4.7 * var(--sw)));
+  }
+  37.5% {
+    transform: translate(calc(-6.2 * var(--sw)), calc(-1.6 * var(--sw)));
+  }
+  50% {
+    transform: translate(calc(4.7 * var(--sw)), calc(5.7 * var(--sw)));
+  }
+  62.5% {
+    transform: translate(calc(-1.6 * var(--sw)), calc(-7.3 * var(--sw)));
+  }
+  75% {
+    transform: translate(calc(7.3 * var(--sw)), calc(1 * var(--sw)));
+  }
+  87.5% {
+    transform: translate(calc(-5.2 * var(--sw)), calc(4.7 * var(--sw)));
+  }
+}
+@keyframes sf-tube-hum {
+  from {
+    transform: translateY(calc(-1 * var(--sf-tube-hum-height)));
+  }
+  to {
+    transform: translateY(var(--od-fh));
+  }
+}
+/* Power-on: the picture opens from a bright line at the middle of the tube. */
+@keyframes sf-tube-power-open {
+  0%,
+  15% {
+    transform: scaleY(1);
+  }
+  80%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+@keyframes sf-tube-power-line {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  15% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  80%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+@keyframes sf-tube-power-wash {
+  0%,
+  15% {
+    opacity: 0;
+  }
+  30% {
+    opacity: var(--sf-tube-wash);
+  }
+  100% {
+    opacity: 0;
+  }
+}

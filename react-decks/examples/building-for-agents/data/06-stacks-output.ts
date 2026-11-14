@@ -51,6 +51,7 @@ export const COLS = 45;
 
 const ELLIPSIS = "…";
 const gap: TermLine = { text: ELLIPSIS, tone: "muted" };
+// biome-ignore lint/suspicious/noControlCharactersInRegex: the recording contains ANSI SGR escapes.
 const SGR = /\u001b\[(\d+)m/g;
 
 /** A captured terminal line: its colour codes become a tone and leave the text. */
@@ -84,6 +85,8 @@ function piece(source: string, text: string): TermLine {
 }
 
 const [hHead, hInstall, hHooks, hLint, hDetail, hNext] = fixture.human.lines.map(fromTerminal);
+if (!hHead || !hInstall || !hHooks || !hLint || !hDetail || !hNext)
+  throw new Error("06-stacks-output: incomplete human recording");
 
 /** PERSON: the report as a terminal shows it. */
 export const PERSON_LINES: readonly TermLine[] = [
@@ -101,6 +104,8 @@ const [aStep1, aStep2] = fixture.agent.stderr;
 const [aHead, aLint, aDetail, aNext] = fixture.agent.stdout.map(
   (text): TermLine => ({ text, tone: "out" }),
 );
+if (aStep1 === undefined || aStep2 === undefined || !aHead || !aLint || !aDetail || !aNext)
+  throw new Error("06-stacks-output: incomplete agent recording");
 
 /** AGENT: the same report with an agent marker set. No colour codes were in the capture. */
 export const AGENT_LINES: readonly TermLine[] = [

@@ -1,0 +1,22 @@
+{
+  "hook": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/decks.sh\" hook lint",
+  "tool": "Write",
+  "file": "decks/my-talk/pages/01-cover.md",
+  "line": "<p class=\"od-lede\">At its core, the tide is a game-changer.</p>",
+  "decision": "deny",
+  "rules": ["banned-phrase", "ai-vocab"],
+  "reason": [
+    "BLOCKED: AI-rhetoric patterns found in prose.",
+    "",
+    "stdin:1 [banned-phrase] \"At its core, the tide is a game-changer.\" -> Banned AI-tell phrase. State the fact directly.",
+    "stdin:1 [ai-vocab] \"At its core, the tide is a game-changer.\" -> AI-marketing vocabulary. Plain words.",
+    "",
+    "Line numbers refer to the NEW text being written. Rewrite the flagged",
+    "phrasing (don't synonym-swap). A rewrite that keeps the same sentence",
+    "skeleton with new words still reads as AI; change the structure, or",
+    "just state the fact plainly. If a hit is a legitimate direct quote,",
+    "append the lint-allow marker to that exact line:",
+    "  md/vue: <!-- lint-allow: pattern-id -->",
+    "  ts: // lint-allow: pattern-id"
+  ]
+}
