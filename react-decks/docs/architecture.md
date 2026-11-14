@@ -662,8 +662,9 @@ export interface DeckState {
 
 export interface DeckStore {
   // ...the Phase 2 members, plus:
-  /** Switches view, optionally moving to `nav` (clamped) in the same step. One `pushState`.
-   *  Does nothing when neither the view nor the position would change. */
+  /** Switches view, optionally moving to `nav` (clamped) in the same step. One history write:
+   *  `pushState` when the slide changes, `replaceState` otherwise, so Back always steps the
+   *  talk and never returns to the overview. Does nothing when nothing would change. */
   setView(view: DeckView, nav?: NavState): void;
 }
 
@@ -688,11 +689,13 @@ stays a no-op in `overview` and `print`; the overview moves the talk only throug
 `location.pathname` with a trailing `index.html` removed, unless `BroadcastChannel` is
 missing, the location is `?decks-bridge` or `?embedded`, or the view at mount is `print`.
 The decision is made once at mount. With a transport, the store creates one
-`createSyncSession` for its lifetime, with a random id (`crypto.randomUUID()`) and
+`createSyncSession` for its lifetime, with a random id (`crypto.randomUUID()`, or 16 bytes
+from `crypto.getRandomValues` as hex where that is missing, as on plain HTTP) and
 `startedAt = performance.timeOrigin + performance.now()`.
 
 `current()` returns `{ nav, aspect }`, where `aspect` is `innerWidth / innerHeight` when the
-view is `play` and absent otherwise. Every publish sends the same shape, read at the moment
+view is `play`, and the store's `audienceAspect` (absent until known) in any other view, so a
+presenter's answer to a newcomer carries the room's aspect. Every publish sends the same shape, read at the moment
 of publishing.
 
 | Event | Store behaviour |
@@ -775,11 +778,15 @@ A scrollable grid with one button per slide, named "Slide 3: <title>", each show
 of the canvas's design ratio. The button for the store's current slide has
 `aria-current="true"`, and on entry it is focused and scrolled into view.
 
+In every view a navigation key is ignored when the event target is a button or inside one,
+so `Space` and `Enter` on a focused button do the button's own job.
+
 Arrow keys move focus: `ArrowRight` and `ArrowDown` to the next button, `ArrowLeft` and
 `ArrowUp` to the previous, `Home` and `End` to the first and last. Nothing is bound to
 `Enter` or `Space` globally; activating a button the native way (click, `Enter`, `Space`)
 calls `setView(home, { slide: no, click: 0 })`, except on the current slide's button, where
-it calls `setView(home)` and so keeps the click. Every slide is mounted; decks here have at
+it calls `setView(home)` and so keeps the click. The slide content inside each button is
+`inert`, so it adds no tab stops. Every slide is mounted; decks here have at
 most a few dozen slides and a stage outside the `slide` context renders one static frame.
 This is an accepted limit, not a place to add virtualization.
 
