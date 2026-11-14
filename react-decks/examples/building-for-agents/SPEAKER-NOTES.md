@@ -407,7 +407,7 @@ Source: data/sources/17-decks.md.
 
 ### Say
 
-Decks is the tool these slides are built with. It is an addon for Slidev, and each slide is a Vue component that drives a GSAP timeline. The code on the left is this slide's own source, read from its file when the deck was built. Each beat call marks a point on the timeline, and a click seeks to the next one. The three dots on the right are this slide's beats, and the ring is on the beat the timeline is at. Stepping back plays the same tweens in reverse, so every beat can be reached from either side.
+Decks is the tool these slides are built with. Each slide is a React component whose stage drives a GSAP timeline. The code on the left is this slide's own source, read from its file when the deck was built. Each beat call marks a point on the timeline, and a click seeks to the next one. The three dots on the right are this slide's beats, and the ring is on the beat the timeline is at. Stepping back plays the same tweens in reverse, so every beat can be reached from either side.
 
 **[click]** Decks also has a hook that runs before an agent writes a file. The terminal shows a recorded run of it. The input was a test sentence containing two stock phrases, and the hook denied the write and printed the two pattern ids. The lint has twenty-seven patterns. Five are errors, which the hook refuses, and twenty-two are warnings that appear only in the lint report.
 

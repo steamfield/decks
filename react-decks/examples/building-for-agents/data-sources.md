@@ -22,7 +22,7 @@ where each stage's author wrote them; this file is the merged copy the fact-chec
 | StatGlass language chip | Rust + TypeScript | `~/Projects/statglass`: `find crates src-tauri -name '*.rs' \| xargs cat \| wc -l` against `find src \( -name '*.ts' -o -name '*.tsx' \) \| xargs cat \| wc -l` |
 | OpenData language chip | TypeScript · Python engine | `~/Projects/opendata/mcp/package.json` (the MCP server) and `opendata/pyproject.toml` (the engine) |
 | OpenChart language chip | TypeScript | `~/Projects/openchart/packages/*/package.json` |
-| Decks language chip | TypeScript · Vue | this repo, `packages/decks/` |
+| Decks language chip | TypeScript · React | this repo, `packages/decks/` |
 | Pixel icons | 12x12, one per product | `~/Projects/steamfield/src/data/pixel-icons.ts` (steamfield commit 53a1a06), copied into `data/products.ts` |
 
 ## Slide 1: Cover
@@ -398,7 +398,7 @@ Everything on this slide is computed at build time from files in this repository
 
 | Figure | Value | Source |
 |---|---|---|
-| The code on beat 0 | this stage's `useStage` call | `components/DecksStage.vue`, the lines between its `excerpt:start` and `excerpt:end` comments, read with a `?raw` import of the file itself |
+| The code on beat 0 | this stage's `useStage` call | `components/DecksStage.tsx`, the lines between its `excerpt:start` and `excerpt:end` comments, read with a `?raw` import of the file itself |
 | DENIAL | the write, the hook command, `deny`, and the hook's lines | `site/fixtures/hook-denial.json`, imported directly. `site/scripts/capture-hook.mjs` wrote it by sending the write hook one planted line; `site/src/content-drift.test.ts` reruns the hook and fails if the answer changes. The pane's tag says "test input" |
 | DENIAL_RECORDED | 2026-11-02 | `git log -1 --format=%ad --date=short -- site/fixtures/hook-denial.json` (commit 09198b7). The fixture itself carries no date |
 | DENIAL_RULES | banned-phrase, ai-vocab | the fixture's `rules` |
@@ -406,7 +406,7 @@ Everything on this slide is computed at build time from files in this repository
 | DENIED | 5 | the rows whose severity is `error`: em-dash, banned-phrase, not-just-reveal, ai-vocab, inflated-significance. The file's header says the write hook denies an error row |
 | Notes: 22 warnings | 22 | PATTERNS minus DENIED |
 | SOURCED_FIGURES | computed at build | distinct table rows (header and separator rows left out) in `data-sources.md` and `data/sources/*.md`. It counts every table row, including claim rows and the banned-content table once that exists |
-| "a Vue component on a GSAP timeline" | claim | `packages/decks/story/easings.ts` exports `gsap`; `useStage` in `packages/decks/story/stage.ts` |
+| "a React component on a GSAP timeline" | claim | `packages/kit/src/stage.ts` builds the timeline with `gsap` from `@react-decks/motion`; `components/DecksStage.tsx` calls `useStage` |
 | Notes: the engine count in the outline against the derived one | 50,097 and 50,369 | `OUTLINE.md` line 545; `data/16-openchart.ts` PACKAGES |
 
 Left out: the outline's note that the drafting agent "was refused more than once". No denial was recorded during this build.

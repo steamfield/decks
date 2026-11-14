@@ -1,6 +1,6 @@
 import { clamp01, DRAW, DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@react-decks/kit";
 import { useTween } from "@react-decks/motion";
-import source from "../../../../examples/building-for-agents/components/DecksStage.vue?raw";
+import source from "./DecksStage.tsx?raw";
 import {
   DENIAL,
   DENIAL_RECORDED,
@@ -22,7 +22,7 @@ import { ThreadRail } from "./ThreadRail";
 const COPY = [
   {
     lead: "Each click seeks the timeline to a beat.",
-    body: "The slide is a Vue component with a GSAP timeline. Stepping back plays the same tweens in reverse.",
+    body: "The slide is a React component with a GSAP timeline. Stepping back plays the same tweens in reverse.",
   },
   {
     lead: `The write hook enforces ${DENIED} lint patterns.`,
@@ -34,18 +34,20 @@ const COPY = [
   },
 ];
 
-// Preserve the original quoted source, including its path and line numbers, for frame parity.
 const sourceLines = source.split("\n");
 const first = sourceLines.findIndex((line) => line.trim() === "// excerpt:start") + 1;
 const last = sourceLines.findIndex((line) => line.trim() === "// excerpt:end");
 const OWN_SOURCE: Excerpt = {
   repo: "this deck",
-  path: "components/DecksStage.vue",
+  path: "components/DecksStage.tsx",
   start: first + 1,
   end: last,
   commit: "the build you are watching",
   lang: "ts",
-  code: sourceLines.slice(first, last).join("\n"),
+  code: sourceLines
+    .slice(first, last)
+    .map((line) => line.slice(2))
+    .join("\n"),
 };
 
 const LEFT = { x: 110, y: 196, width: 900, height: 500 };
@@ -70,6 +72,7 @@ const NEUTRAL = ink("slate", 1);
 
 export function DecksStage() {
   const s = useTween({ at: OFF, count: OFF });
+  // excerpt:start
   const { clicks, copy, beats } = useStage({
     copy: COPY,
     beats: (tl, beat) => {
@@ -81,6 +84,7 @@ export function DecksStage() {
       beat(2);
     },
   });
+  // excerpt:end
   const cursorX = TRACK.x0 + (s.at * (TRACK.x1 - TRACK.x0)) / (COPY.length - 1);
   const denial = clamp01(s.at) * (ON - clamp01(s.at - 1) * (ON - DIM));
   const counter = clamp01(s.at - 1);

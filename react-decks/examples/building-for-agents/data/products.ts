@@ -155,7 +155,7 @@ export const PRODUCTS: readonly Product[] = [
     id: "decks",
     name: "Decks",
     verb: "Present",
-    lang: "TypeScript · Vue",
+    lang: "TypeScript · React",
     icon: [
       "............",
       "....vvvvvvvv",
