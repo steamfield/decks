@@ -24,3 +24,32 @@ export interface DeckManifest {
   readonly canvas: CanvasSize;
   readonly slides: readonly SlideMeta[];
 }
+
+/** Throws an Error naming the first problem. Returns the same object when valid. */
+export function assertManifest(manifest: DeckManifest): DeckManifest {
+  if (manifest.slides.length === 0) {
+    throw new Error("Manifest has 0 slides");
+  }
+
+  const ids = new Set<string>();
+  for (const [index, slide] of manifest.slides.entries()) {
+    if (slide.no !== index + 1) {
+      throw new Error(`Slide no ${slide.no} must be ${index + 1}`);
+    }
+    if (ids.has(slide.id)) {
+      throw new Error(`Duplicate slide id: ${slide.id}`);
+    }
+    ids.add(slide.id);
+    if (!Number.isInteger(slide.clicks) || slide.clicks < 0) {
+      throw new Error(`Slide ${slide.id} has invalid clicks: ${slide.clicks}`);
+    }
+  }
+
+  for (const dimension of ["width", "height"] as const) {
+    const value = manifest.canvas[dimension];
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new Error(`Canvas ${dimension} must be positive and finite: ${value}`);
+    }
+  }
+  return manifest;
+}
