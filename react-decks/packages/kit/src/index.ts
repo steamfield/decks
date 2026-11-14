@@ -21,10 +21,15 @@ export {
   unitCellHeight,
 } from "./grid";
 export { hash, hashRange, hashSigned } from "./hash";
+export { InkCardRect } from "./ink-card-rect";
+export { InkChip } from "./ink-chip";
+export { type GrowHandle, InkNumber } from "./ink-number";
+export { InkRule, type RuleHandle } from "./ink-rule";
 export { inkStyle, polylinePath, STORY_STYLE, STROKE } from "./ink-style";
 export { easeHeight, entrance, fadeIn, fadeOutInPlace, RISE, riseIn } from "./motion";
 export { OdByline } from "./od-byline";
 export { OdCoverHead } from "./od-cover-head";
+export { OdEyebrow } from "./od-eyebrow";
 export { OdQrCard } from "./od-qr-card";
 export { OpenChart } from "./open-chart";
 export { CATEGORICAL_COLORS } from "./palette";

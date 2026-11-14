@@ -1,0 +1,13 @@
+.od-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: calc(0.75 * var(--sw, 1cqw));
+  margin-bottom: calc(1.416667 * var(--sw, 1cqw));
+}
+.od-eyebrow-row > .od-eyebrow {
+  font-size: calc(calc(0.816667 * var(--sw, 1cqw)) * var(--deck-text-scale, 1));
+}
+.od-eyebrow-row > .od-eyebrow-rule {
+  width: calc(2.083333 * var(--sw, 1cqw));
+  height: calc(0.104167 * var(--sw, 1cqw));
+}

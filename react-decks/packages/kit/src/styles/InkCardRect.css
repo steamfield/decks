@@ -1,0 +1,6 @@
+.od-ink-card-rect:is(.is-lit, .is-unlit) > .od-card-glow {
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
+.od-ink-card-rect:is(.is-lit, .is-unlit) > .od-card-stroke {
+  transition: stroke-opacity var(--od-dur-card) var(--od-settle);
+}

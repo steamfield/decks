@@ -1,0 +1,62 @@
+.od-inkchip {
+  position: absolute;
+  padding: calc(0.4 * var(--sw)) calc(0.7 * var(--sw));
+  border: var(--od-hairline, calc(0.0520833 * var(--sw))) solid var(--od-border);
+  border-radius: calc(0.3125 * var(--sw));
+  background:
+    radial-gradient(
+      120% 140% at 0% 0%,
+      color-mix(in srgb, var(--od-chip-ink) 14%, transparent),
+      transparent 70%
+    ),
+    color-mix(in srgb, var(--od-surface) 92%, transparent);
+  color: var(--od-text);
+  font-family: var(--od-font-sans);
+  font-size: calc(0.9 * var(--sw));
+  font-weight: 590;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: top var(--od-dur-card) var(--od-settle);
+}
+.od-inkchip.is-wide {
+  max-width: calc(16 * var(--sw));
+  padding: calc(0.6 * var(--sw)) calc(0.9 * var(--sw));
+  border-radius: calc(0.416667 * var(--sw));
+  font-size: calc(1.1 * var(--sw));
+  line-height: 1.3;
+  white-space: normal;
+}
+.od-inkchip.is-link {
+  padding: calc(0.55 * var(--sw)) calc(1 * var(--sw));
+  border: var(--od-hairline, calc(0.0520833 * var(--sw))) solid
+    color-mix(in srgb, var(--od-chip-ink) 45%, var(--od-border));
+  border-radius: calc(0.416667 * var(--sw));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--od-chip-ink) 26%, transparent) 0%,
+      color-mix(in srgb, var(--od-chip-ink) 6%, transparent) 60%,
+      transparent 100%
+    ),
+    var(--od-surface);
+  color: var(--od-text);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--od-dur-card) var(--od-settle),
+    background var(--od-dur-card) var(--od-settle);
+}
+.od-inkchip.is-link:hover,
+.od-inkchip.is-link:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--od-chip-ink) 80%, var(--od-border));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--od-chip-ink) 38%, transparent) 0%,
+      color-mix(in srgb, var(--od-chip-ink) 12%, transparent) 60%,
+      transparent 100%
+    ),
+    var(--od-surface);
+}
