@@ -752,7 +752,9 @@ Keys added to the Phase 2 table:
 | `p` | In the play view, when not embedded: opens the presenter window. |
 | `f` | In every view: toggles fullscreen on `document.documentElement`. |
 
-The presenter window: `const w = window.open("", "react-decks-presenter:" + channelId)`. If
+The presenter window: `const w = window.open("", "react-decks-presenter:" + channelId,
+"popup,width=1280,height=800")`. The `popup` feature asks the browser for a separate window
+and not a tab, so the presenter reads as a second surface and can be moved to another screen. If
 `w.location.href` is `about:blank`, set it to the current URL with the hash formatted for the
 presenter view at the current position. Then `w.focus()`. An existing presenter is focused
 and not navigated. If `window.open` returns null (a popup blocker), nothing happens.

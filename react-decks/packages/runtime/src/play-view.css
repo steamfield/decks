@@ -11,17 +11,19 @@
     overflow: hidden;
   }
 
-  /* Every mounted slide fills the frame, so the hidden neighbours cost no layout. */
-  #deck-frame {
+  /* A slide fills its frame in every view: the play view, the presenter's two boxes and each
+     overview tile. A slide whose content is sized as a share of its parent (height: 100%)
+     would otherwise collapse to nothing outside the play view. */
+  .rd-frame {
     position: relative;
   }
 
-  #deck-frame > [data-deck-slide] {
+  .rd-frame > [data-deck-slide] {
     position: absolute;
     inset: 0;
   }
 
-  #deck-frame > [data-deck-slide][hidden] {
+  .rd-frame > [data-deck-slide][hidden] {
     display: none !important;
   }
 }

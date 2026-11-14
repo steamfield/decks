@@ -63,7 +63,27 @@ export default function Above() {
     };
   }, [on]);
 
+  // The window in canvas px. It is the frame at 16:9 and larger on one axis otherwise.
+  const [size, setSize] = useState<{ width: number; height: number }>(FRAME);
+  useLayoutEffect(() => {
+    const el = host.current;
+    if (!on || !el || scale <= 0) return;
+    const measure = () =>
+      setSize({
+        width: Math.max(FRAME.width, el.offsetWidth / scale),
+        height: Math.max(FRAME.height, el.offsetHeight / scale),
+      });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [on, scale]);
+
   if (!on || scale <= 0) return null;
+  // The warp covers the window, not only the frame, so a scene that bleeds past the frame is
+  // not cut off at the frame's edge.
+  const bleedX = (size.width - FRAME.width) / 2;
+  const bleedY = (size.height - FRAME.height) / 2;
   const style: CSSProperties & Record<`--${string}`, string> = {
     "--od-fw": `${FRAME.width * scale}px`,
     "--od-fh": `${FRAME.height * scale}px`,
@@ -79,20 +99,27 @@ export default function Above() {
     >
       <svg className="sf-tube-defs" width="0" height="0" aria-hidden="true">
         <defs>
-          <filter id={id} x="0" y="0" width="1" height="1" colorInterpolationFilters="sRGB">
+          <filter
+            id={id}
+            x={-bleedX / FRAME.width}
+            y={-bleedY / FRAME.height}
+            width={size.width / FRAME.width}
+            height={size.height / FRAME.height}
+            colorInterpolationFilters="sRGB"
+          >
             <feImage
               href={map || undefined}
-              x="0"
-              y="0"
-              width={FRAME.width}
-              height={FRAME.height}
+              x={-bleedX}
+              y={-bleedY}
+              width={size.width}
+              height={size.height}
               preserveAspectRatio="none"
               result="map"
             />
             <feDisplacementMap
               in="SourceGraphic"
               in2="map"
-              scale={warpScale(FRAME.width)}
+              scale={warpScale(size.width)}
               xChannelSelector="R"
               yChannelSelector="G"
             />

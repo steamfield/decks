@@ -482,9 +482,15 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
 
 /* The cover's live scene: a canvas over the still picture, with the hero's
    soft-light grain on top. */
+/* The scene is the smallest 16:9 box that covers the window, centred on the frame, so a
+   16:10, 4:3 or ultrawide screen is filled edge to edge and the type stays in the frame. */
 .od-slide.is-story .sf-night {
   position: absolute;
-  inset: var(--sf-zero);
+  left: 50%;
+  top: 50%;
+  width: max(100cqw, 177.7778cqh);
+  height: max(100cqh, 56.25cqw);
+  transform: translate(-50%, -50%);
 }
 .od-slide.is-story .sf-night-canvas {
   position: absolute;

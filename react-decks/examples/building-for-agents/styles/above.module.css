@@ -18,12 +18,10 @@
   position: absolute;
 }
 .host :global(.sf-tube) {
+  /* The glass covers the whole window, whatever its shape; the picture keeps its 16:9 frame
+     inside it, so a 16:10 or 4:3 screen shows more background and no black bars. */
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--od-fw);
-  height: var(--od-fh);
-  transform: translate(-50%, -50%);
+  inset: var(--sf-zero);
   overflow: hidden;
   border-radius: var(--sf-tube-radius);
   /* Black past the curved corners, and a dark falloff along the edges. */

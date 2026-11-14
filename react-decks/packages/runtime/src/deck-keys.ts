@@ -42,7 +42,13 @@ export function useDeckKeys() {
           source.manifest.name,
           window.location.pathname.replace(/index\.html$/, ""),
         );
-        const presenter = window.open("", `react-decks-presenter:${channel}`);
+        // "popup" asks for a window of its own, not a tab, so it is plainly a second surface
+        // driving this one and can be dragged to the speaker's screen.
+        const presenter = window.open(
+          "",
+          `react-decks-presenter:${channel}`,
+          "popup,width=1280,height=800",
+        );
         // A blocked popup is intentionally silent; the deck remains usable in this window.
         if (!presenter) return;
         if (presenter.location.href === "about:blank") {

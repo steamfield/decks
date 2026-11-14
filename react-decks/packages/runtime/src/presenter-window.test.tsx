@@ -13,7 +13,7 @@ it("Space on Reset timer uses native button activation and never advances the ta
   expect(screen.getByLabelText("Elapsed time")).toHaveTextContent("00:00");
 });
 
-it("p opens a named presenter at this URL and position and focuses it", async () => {
+it("p opens a named presenter window, not a tab, at this URL and position and focuses it", async () => {
   const events: string[] = [];
   const popup = {
     location: { href: "about:blank" },
@@ -21,13 +21,16 @@ it("p opens a named presenter at this URL and position and focuses it", async ()
       events.push("focus");
     },
   };
-  install(window, "open", (url: string, name: string) => {
-    events.push(`${url}|${name}`);
+  install(window, "open", (url: string, name: string, features: string) => {
+    events.push(`${url}|${name}|${features}`);
     return popup;
   });
   setup("?custom=kept#/2?clicks=2");
   await userEvent.setup().keyboard("p");
-  expect(events).toEqual(["|react-decks-presenter:react-decks:fixture:/", "focus"]);
+  expect(events).toEqual([
+    "|react-decks-presenter:react-decks:fixture:/|popup,width=1280,height=800",
+    "focus",
+  ]);
   expect(popup.location.href).toBe(`${window.location.origin}/?custom=kept#/presenter/2?clicks=2`);
 });
 
