@@ -1,0 +1,20 @@
+.mg-card {
+  fill: none;
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-hairline);
+  rx: var(--sf-radius-control);
+}
+.mg-rule {
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-hairline);
+}
+rect:global(.sf-box).mg-glass {
+  rx: calc(var(--sf-radius-card) * 2);
+}
+.mg-area {
+  fill-opacity: var(--sf-faint);
+}
+.mg-track {
+  fill: var(--od-border-rule);
+  opacity: var(--sf-dim);
+}
