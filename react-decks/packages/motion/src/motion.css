@@ -1,0 +1,128 @@
+@layer react-decks {
+  .rd-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  :root {
+    --deck-dur-quick: 140ms;
+    --deck-dur-base: 300ms;
+    --deck-dur-slow: 600ms;
+    --deck-stagger: 60ms;
+    --deck-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+    --deck-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+    --deck-ease-settle: cubic-bezier(0.32, 0.72, 0, 1);
+    --deck-ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  html[data-deck-motion="instant"] {
+    --deck-dur-quick: 0ms;
+    --deck-dur-base: 0ms;
+    --deck-dur-slow: 0ms;
+    --deck-stagger: 0ms;
+  }
+
+  [data-step-state] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    clip-path: none;
+    visibility: visible;
+    transition-property: opacity, transform, filter, clip-path, visibility;
+    transition-duration: var(--deck-dur-base);
+    transition-timing-function: var(--deck-ease-enter);
+    transition-delay: calc(var(--step-index, 0) * var(--deck-stagger));
+  }
+
+  [data-step-state="before"],
+  [data-step-state="gone"] {
+    visibility: hidden;
+    transition-timing-function: var(--deck-ease-exit);
+    transition-delay: 0ms, 0ms, 0ms, 0ms, var(--deck-dur-base);
+  }
+
+  [data-step-enter="wipe"],
+  [data-step-exit="wipe"] {
+    clip-path: inset(0 0 0 0);
+  }
+
+  [data-step-state="before"][data-step-enter="fade"],
+  [data-step-state="gone"][data-step-exit="fade"] {
+    opacity: 0;
+  }
+  [data-step-state="before"][data-step-enter="rise"],
+  [data-step-state="gone"][data-step-exit="rise"] {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  [data-step-state="before"][data-step-enter="drop"],
+  [data-step-state="gone"][data-step-exit="drop"] {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  [data-step-state="before"][data-step-enter="scale"],
+  [data-step-state="gone"][data-step-exit="scale"] {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  [data-step-state="before"][data-step-enter="blur"],
+  [data-step-state="gone"][data-step-exit="blur"] {
+    opacity: 0;
+    filter: blur(12px);
+  }
+  [data-step-state="before"][data-step-enter="wipe"],
+  [data-step-state="gone"][data-step-exit="wipe"] {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  mark[data-step-state][data-step-enter] {
+    opacity: 1;
+  }
+  mark[data-step-state] {
+    visibility: visible;
+    color: inherit;
+    background:
+      linear-gradient(
+        var(--deck-highlight, color-mix(in srgb, currentColor 25%, transparent)),
+        var(--deck-highlight, color-mix(in srgb, currentColor 25%, transparent))
+      )
+      left / 0% 100% no-repeat;
+    transition: background-size var(--deck-dur-slow) var(--deck-ease-draw);
+  }
+  mark[data-step-state="current"],
+  mark[data-step-state="after"] {
+    background-size: 100% 100%;
+  }
+
+  .rd-draw[data-step-state] {
+    opacity: 1;
+    transition-duration: var(--deck-dur-slow);
+  }
+  .rd-draw[data-step-state="before"],
+  .rd-draw[data-step-state="gone"] {
+    transition-delay: 0ms, 0ms, 0ms, 0ms, var(--deck-dur-slow);
+  }
+  .rd-draw[data-step-state] > [pathLength="1"] {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset var(--deck-dur-slow) var(--deck-ease-draw);
+  }
+  .rd-draw[data-step-state="before"] > [pathLength="1"],
+  .rd-draw[data-step-state="gone"] > [pathLength="1"] {
+    stroke-dashoffset: 1;
+  }
+
+  [data-deck-context]:not([data-deck-context="slide"]) [data-step-state] {
+    transition-duration: 0ms;
+    transition-delay: 0ms;
+  }
+  [data-deck-context]:not([data-deck-context="slide"]) .rd-draw[data-step-state] > * {
+    transition-duration: 0ms;
+  }
+}
