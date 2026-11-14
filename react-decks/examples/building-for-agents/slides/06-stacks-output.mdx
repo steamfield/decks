@@ -8,20 +8,28 @@ clicks: 3
 <StacksOutputStage />
 
 <Notes>
-ABOUT THIS SLIDE
-Three recordings of the same failed stacks verify, made on November 13 with stacks 0.7.0 in a scratch project that had not been built: on a terminal, with an agent marker in the environment, and with the JSON flag. The tiles on the last beat are the exit table from the CLI's output reference.
-Source: data/sources/06-stacks-output.md.
+OPENING
+- A failed stacks verify on my terminal.
+- Passed steps green, failed pink, broken lines under each failure, last line says what to do next.
+- Printed only when stdout is a terminal, no agent is detected, CI is not set.
 
-SAY (opening)
-This is a failed stacks verify on my terminal. Passed steps are green and failed steps are pink, each failed step is followed by the lines that broke, and the last line says what to do next. Stacks prints this format only when stdout is a terminal, no agent is detected and CI is not set.
+[click] CLICK 1
+- Same command with CLAUDECODE set, the variable Claude Code puts in the environment.
+- No colour codes. Stderr gets one short line as each step starts, in place of the step's live output.
+- Picked without a flag: it checks each agent's env vars and AI_AGENT, the cross-agent convention.
+- Also used when stdout is a pipe or CI is set.
 
-[click] This is the same command with CLAUDECODE set, which is the variable Claude Code puts in the environment. The report has no colour codes, and stderr gets one short line as each step starts in place of the step's live output. Stacks picks this format without a flag, by checking the environment for the variables each agent sets and for AI_AGENT, the cross-agent convention. It also prints this format when stdout is a pipe or CI is set.
+[click] CLICK 2
+- With the JSON flag, stdout is one JSON object. stacks schema prints its schema.
+- On failure the last stderr line is an error envelope: tag, message, retryable, next.
+- Next is a sentence for the caller. For verify: fix the code or config, leave the steps alone.
 
-[click] With the JSON flag, stdout is one JSON object, and stacks schema prints the JSON Schema for it. When the command fails, the last line of stderr is an error envelope with a tag, a message, a retryable flag and a next field. The next field is a sentence for the caller. For a failed verify it says to fix the code or config the steps exercise and to leave the steps alone.
-
-[click] Each exit code has one meaning, and the table is in the docs. 2 means fix the input, 4 means retry later, 5 means read the verify report on stdout, and 6 means ask a person. An agent can branch on the number without parsing the text, and the docs say a published code never changes meaning.
+[click] CLICK 3
+- Each exit code means one thing. The table is in the docs.
+- 2 fix the input. 4 retry later. 5 read the verify report on stdout. 6 ask a person.
+- An agent branches on the number. A published code never changes meaning.
 
 IF ASKED
-Why not always print JSON? People run these commands too. All three formats are rendered from the same result value.
-What exits 6? A write the CLI refuses, a failed update, or an agent passing the flag that accepts changed verify steps.
+- Why not always JSON? People run these too. All three formats render from one result value.
+- What exits 6? A refused write, a failed update, or an agent passing the accept-changes flag.
 </Notes>
