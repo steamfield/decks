@@ -14,7 +14,8 @@
     "check": "bun run lint && bun run typecheck && bun run test && bun run test:e2e",
     "check:isolated": "node scripts/check-isolated.mjs",
     "decks": "NODE_OPTIONS=--conditions=@steamfield/decks/source tsx packages/node/src/cli.ts",
-    "test:e2e": "NODE_OPTIONS=--conditions=@steamfield/decks/source playwright test"
+    "test:e2e": "NODE_OPTIONS=--conditions=@steamfield/decks/source playwright test",
+    "release:prepare": "node scripts/release-prepare.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.7",
