@@ -724,7 +724,7 @@ merged last.
 `build` writes a static site to `outDir` that works from any `base` and from `file:`-relative
 hosting under that base; hash routing needs no server rewrites.
 
-CLI (`packages/node/src/cli.ts`, built with `citty`, run with `node`):
+CLI (`packages/node/src/cli.ts`, built with `citty`, run with `tsx`, which runs on Node):
 
 ```
 decks dev <deck> [--port <n>] [--open]
