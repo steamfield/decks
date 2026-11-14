@@ -126,14 +126,17 @@ it("reports every slide sharing a numeric prefix, including hidden slides", asyn
   expect(result.stderr).toContain("q3: slide name: decks/quarterly/slides/01-other.mdx");
 });
 
-it("skips the unfinished prose checker with one note instead of crashing", async () => {
-  const dir = await project(valid);
+it("passes a clean deck and fails on an error-level prose hit", async () => {
+  const clean = await run(await project(valid));
+  expect(clean.code, clean.stderr).toBe(0);
+  expect(clean.stdout).toBe("All decks check out.\n");
+  const dir = await project({
+    ...valid,
+    "decks/quarterly/slides/02-core.mdx": "# At its core, the pipeline is fast.",
+  });
   const result = await run(dir);
-  expect(result.code, result.stderr).toBe(0);
-  expect(result.stderr).toBe("");
-  expect(result.stdout).toBe(
-    "Skipped prose check: decks lint is not implemented yet.\nAll decks check out.\n",
-  );
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("1 error-level prose hit(s); run `decks lint` for all hits.");
 });
 
 it("checks a valid registry while normalizing directory paths and ignoring non-slide files", async () => {

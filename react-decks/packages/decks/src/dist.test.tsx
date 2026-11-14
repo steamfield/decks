@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { execFile } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -77,6 +77,32 @@ it("ships compiled entry points, bundled declarations, executable CLI, styles an
     0,
   );
   expect(await readFile(resolve("packages/decks/docs/README.md"), "utf8")).not.toBe("");
+  expect(await readFile(join(dist, "lint/ai-rhetoric-patterns.tsv"), "utf8")).toBe(
+    await readFile(resolve("packages/node/lint/ai-rhetoric-patterns.tsv"), "utf8"),
+  );
+});
+
+it("uses the shipped lint patterns and prompt reminder under plain Node", async () => {
+  await mkdir(resolve(".tmp"), { recursive: true });
+  const dir = await mkdtemp(resolve(".tmp/published-lint-"));
+  onTestFinished(() => rm(dir, { recursive: true, force: true }));
+  const cli = resolve("packages/decks/dist/cli.js");
+  const lint = spawnSync("node", [cli, "lint", "--stdin"], {
+    cwd: dir,
+    input: "It's not just a chart, it's a story.",
+    encoding: "utf8",
+  });
+  if (lint.error) throw lint.error;
+  expect(lint.status, lint.stderr).toBe(1);
+  expect(lint.stdout).toContain("stdin:1:1  error  not-just-reveal");
+  const prompt = spawnSync("node", [cli, "hook", "prompt"], {
+    cwd: dir,
+    input: JSON.stringify({ prompt: "write a deck" }),
+    encoding: "utf8",
+  });
+  if (prompt.error) throw prompt.error;
+  expect(prompt.status, prompt.stderr).toBe(0);
+  expect(JSON.parse(prompt.stdout).hookSpecificOutput.additionalContext).toContain("slides/*.mdx");
 });
 
 it("builds public motion imports and the kit stylesheet with working font URLs under Node", async () => {

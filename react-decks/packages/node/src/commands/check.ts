@@ -57,9 +57,11 @@ export const check = defineCommand({
         );
         continue;
       }
-      present.push(deck);
       try {
-        await scanSlidesWithCounts(await loadDeck(deck.dir, deck.alias), new Map());
+        const loaded = await loadDeck(deck.dir, deck.alias);
+        // Only a deck whose config loads can be linted; a broken one is already reported.
+        present.push(deck);
+        await scanSlidesWithCounts(loaded, new Map());
       } catch (cause) {
         if (!(cause instanceof DeckError)) throw cause;
         if (
@@ -80,15 +82,9 @@ export const check = defineCommand({
           problems.push(`${deck.alias}: slide name: ${join(deck.dir, file)}`);
       }
     }
-    try {
-      const { errors } = await lintDecks(present, { errorsOnly: true });
-      if (errors)
-        problems.push(`${errors} error-level prose hit(s); run \`decks lint\` for all hits.`);
-    } catch (cause) {
-      if (!(cause instanceof DeckError) || cause.message !== "decks lint is not implemented yet.")
-        throw cause;
-      console.log("Skipped prose check: decks lint is not implemented yet.");
-    }
+    const { errors } = await lintDecks(present, { errorsOnly: true });
+    if (errors)
+      problems.push(`${errors} error-level prose hit(s); run \`decks lint\` for all hits.`);
     for (const problem of problems) console.error(problem);
     if (problems.length) process.exitCode = 1;
     else console.log("All decks check out.");

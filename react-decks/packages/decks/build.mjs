@@ -41,6 +41,9 @@ await cp(
   new URL("dist/templates/", import.meta.url),
   { recursive: true },
 );
+await cp(new URL("../node/lint/", import.meta.url), new URL("dist/lint/", import.meta.url), {
+  recursive: true,
+});
 await rm(new URL("docs/", import.meta.url), { recursive: true, force: true });
 await cp(new URL("../../docs/guide/", import.meta.url), new URL("docs/", import.meta.url), {
   recursive: true,
