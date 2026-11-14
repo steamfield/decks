@@ -96,16 +96,21 @@ it.each(["presenter", "preview", "overview", "print"] as const)(
 );
 
 it.each(["play", "presenter", "overview", "print"] as const)(
-  "Deck sets html attributes and renders PlayView for %s",
+  "Deck sets html attributes and renders the selected view for %s",
   async (view) => {
     setup(view === "play" ? "#/1" : view === "presenter" ? "#/presenter/1" : `#/${view}`);
     expect(
-      await screen.findByRole("status", {
-        name: `Deck 1/5 click 0/0 view ${view} print ${view === "print"}`,
-      }),
-    ).toBeVisible();
+      (
+        await screen.findAllByRole("status", {
+          name: `Deck 1/5 click 0/0 view ${view} print ${view === "print"}`,
+        })
+      ).length,
+    ).toBeGreaterThan(0);
     expect(document.documentElement).toHaveAttribute("data-deck-view", view);
-    expect(document.documentElement).toHaveAttribute("data-deck-motion", "live");
+    expect(document.documentElement).toHaveAttribute(
+      "data-deck-motion",
+      view === "play" ? "live" : "instant",
+    );
   },
 );
 

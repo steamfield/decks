@@ -19,14 +19,15 @@ export function parseLocation(hash: string, search: string): DeckLocation {
     embedded: embedded !== null && embedded !== "0" && embedded !== "false",
     bridge: bridge !== null && bridge !== "0" && bridge !== "false",
   };
-  if (path === "#/overview" || path === "#/print") {
-    return { view: path === "#/overview" ? "overview" : "print", slide: 1, click: 0, ...flags };
+  if (path === "#/print") {
+    return { view: "print", slide: 1, click: 0, ...flags };
   }
   const play = /^#\/(\d+)$/.exec(path);
   const presenter = /^#\/presenter(?:\/(\d+))?$/.exec(path);
-  const slide = Number(play?.[1] ?? presenter?.[1] ?? 1);
+  const overview = /^#\/overview(?:\/(\d+))?$/.exec(path);
+  const slide = Number(play?.[1] ?? presenter?.[1] ?? overview?.[1] ?? 1);
   if (
-    (!play && !presenter && path !== "" && path !== "#" && path !== "#/") ||
+    (!play && !presenter && !overview && path !== "" && path !== "#" && path !== "#/") ||
     !Number.isSafeInteger(slide)
   ) {
     return { view: "play", slide: 1, click: 0, ...flags };
@@ -34,7 +35,7 @@ export function parseLocation(hash: string, search: string): DeckLocation {
   const rawClicks = hashParams.get("clicks") ?? "";
   const clicks = /^\d+$/.test(rawClicks) ? Number(rawClicks) : 0;
   return {
-    view: presenter ? "presenter" : "play",
+    view: presenter ? "presenter" : overview ? "overview" : "play",
     slide,
     click: Number.isSafeInteger(clicks) ? clicks : 0,
     ...flags,
@@ -42,10 +43,10 @@ export function parseLocation(hash: string, search: string): DeckLocation {
 }
 
 export function formatHash(location: Pick<DeckLocation, "view" | "slide" | "click">): string {
-  if (location.view === "overview" || location.view === "print") {
+  if (location.view === "print") {
     return `#/${location.view}`;
   }
-  const prefix = location.view === "presenter" ? "#/presenter/" : "#/";
+  const prefix = location.view === "play" ? "#/" : `#/${location.view}/`;
   const clicks = location.click === 0 ? "" : `?clicks=${location.click}`;
   return `${prefix}${location.slide}${clicks}`;
 }

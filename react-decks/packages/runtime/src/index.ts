@@ -1,5 +1,6 @@
 // React client: the deck store, hooks, the adaptive canvas and the views.
 
+export { createBroadcastTransport } from "./broadcast-transport";
 export { Deck } from "./deck";
 export {
   type DeckApi,
@@ -11,7 +12,9 @@ export {
 } from "./hooks";
 export { mountDeck } from "./mount";
 export { Notes } from "./notes";
+export { OverviewView } from "./overview-view";
 export { PlayView } from "./play-view";
+export { PresenterView } from "./presenter-view";
 export { SlideFrame } from "./slide-frame";
 export { SlideHost } from "./slide-host";
 export type { DeckSource, NoteHtml, SlideLoader } from "./source";
