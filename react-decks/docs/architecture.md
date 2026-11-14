@@ -706,7 +706,7 @@ export interface DevServer {
   readonly url: string;
   close(): Promise<void>;
 }
-/** `port` 0 or undefined picks a free port starting at 3030. */
+/** `port` undefined picks a free port starting at 3030; 0 lets the OS pick any free port. */
 export function dev(deck: ResolvedDeck, options?: { port?: number; open?: boolean }): Promise<DevServer>;
 
 export function build(deck: ResolvedDeck, options: { outDir: string; base?: string }): Promise<void>;
