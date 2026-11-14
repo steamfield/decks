@@ -15,7 +15,7 @@
 .sf-code-label {
   margin-bottom: calc(0.7 * var(--sw));
   font-family: var(--od-font-mono);
-  font-size: calc(0.9375 * var(--sw));
+  font-size: calc(calc(0.9375 * var(--sw)) * var(--deck-text-scale, 1));
   color: var(--od-text-muted);
   white-space: nowrap;
   overflow: hidden;

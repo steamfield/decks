@@ -13,7 +13,7 @@
     color-mix(in srgb, var(--od-surface) 92%, transparent);
   color: var(--od-text);
   font-family: var(--od-font-sans);
-  font-size: calc(0.9 * var(--sw));
+  font-size: calc(calc(0.9 * var(--sw)) * var(--deck-text-scale, 1));
   font-weight: 590;
   letter-spacing: -0.012em;
   white-space: nowrap;
@@ -29,7 +29,7 @@ html[data-deck-motion="instant"] .od-inkchip {
   max-width: calc(16 * var(--sw));
   padding: calc(0.6 * var(--sw)) calc(0.9 * var(--sw));
   border-radius: 8px;
-  font-size: calc(1.1 * var(--sw));
+  font-size: calc(calc(1.1 * var(--sw)) * var(--deck-text-scale, 1));
   line-height: 1.3;
   white-space: normal;
 }

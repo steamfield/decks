@@ -1,6 +1,6 @@
 .od-part-note {
   font-family: var(--od-font-sans);
-  font-size: var(--sf-svg-term);
+  font-size: calc(var(--sf-svg-term) * var(--deck-text-scale, 1));
   fill: var(--od-text-secondary);
 }
 

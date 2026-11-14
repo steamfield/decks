@@ -46,7 +46,7 @@
 
 /* @slidev/client/styles/layouts-base.css: more specific than .od-h2/.od-bullets. */
 [data-deck-slide] h2 {
-  font-size: 1.875rem;
+  font-size: calc(1.875rem * var(--deck-text-scale, 1));
   line-height: 2.25rem;
 }
 [data-deck-slide] li {
@@ -66,13 +66,13 @@
 }
 
 [data-deck-slide] h1 {
-  font-size: 2.25rem;
+  font-size: calc(2.25rem * var(--deck-text-scale, 1));
   line-height: 2.5rem;
   margin-left: -0.05em;
   margin-right: 0;
   margin-bottom: 1rem;
 }
 [data-deck-slide] h3 {
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--deck-text-scale, 1));
   line-height: 2rem;
 }

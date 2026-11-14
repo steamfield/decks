@@ -1,6 +1,6 @@
 .rr-cap {
   font-family: var(--od-font-sans);
-  font-size: 28px;
+  font-size: calc(28px * var(--deck-text-scale, 1));
   fill: var(--od-text-muted);
 }
 .rr-bold {

@@ -2,7 +2,7 @@
   position: absolute;
   right: calc(5.7 * var(--lw));
   bottom: calc(4.4 * var(--sh));
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--deck-text-scale, 1));
   color: var(--od-text-faint);
   text-decoration: none;
   border-bottom: 1px solid var(--od-border);

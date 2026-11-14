@@ -19,7 +19,7 @@
   left: var(--sf-margin-x);
   width: var(--sf-head-width);
   margin: var(--sf-zero);
-  font-size: var(--sf-head-size);
+  font-size: calc(var(--sf-head-size) * var(--deck-text-scale, 1));
   font-weight: var(--sf-head-weight) !important;
   line-height: var(--sf-head-leading) !important;
   letter-spacing: var(--sf-head-tracking);
@@ -37,7 +37,7 @@
   display: inline-block;
   margin: var(--sf-zero);
   font-family: var(--sf-font-display) !important;
-  font-size: var(--sf-cover-size);
+  font-size: calc(var(--sf-cover-size) * var(--deck-text-scale, 1));
   font-weight: var(--sf-cover-weight) !important;
   line-height: var(--sf-cover-leading) !important;
   letter-spacing: var(--sf-cover-tracking);
@@ -63,7 +63,7 @@
   right: var(--sf-script-right);
   bottom: var(--sf-script-bottom);
   font-family: var(--sf-font-script);
-  font-size: var(--sf-script-size);
+  font-size: calc(var(--sf-script-size) * var(--deck-text-scale, 1));
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0;
@@ -76,21 +76,21 @@
 .od-slide.is-story .od-cover-lede {
   max-width: var(--sf-lede-width);
   margin: var(--sf-lede-gap) var(--sf-zero) var(--sf-zero);
-  font-size: var(--sf-body-size);
+  font-size: calc(var(--sf-body-size) * var(--deck-text-scale, 1));
   font-weight: var(--sf-body-weight);
   line-height: var(--sf-body-leading) !important;
   color: var(--od-text-secondary);
 }
 .od-slide.is-story .od-brand-name {
   font-family: var(--sf-font-display);
-  font-size: var(--sf-small-size);
+  font-size: calc(var(--sf-small-size) * var(--deck-text-scale, 1));
   font-weight: var(--sf-plate-weight);
   letter-spacing: var(--sf-plate-tracking);
   text-transform: uppercase;
 }
 .od-slide.is-story .od-byline {
   gap: var(--sf-byline-gap);
-  font-size: var(--sf-small-size);
+  font-size: calc(var(--sf-small-size) * var(--deck-text-scale, 1));
   color: var(--od-text-secondary);
 }
 .od-slide.is-story .od-dim {
@@ -172,7 +172,7 @@
   padding: var(--sf-card-pad-y) var(--sf-card-pad-x);
 }
 .od-slide.is-story :is(.od-story-lead, .od-story-copy) {
-  font-size: var(--sf-body-size);
+  font-size: calc(var(--sf-body-size) * var(--deck-text-scale, 1));
   line-height: var(--sf-body-leading);
 }
 .od-slide.is-story .od-story-lead {
@@ -214,7 +214,7 @@
 }
 .od-slide.is-story .sf-plate-name {
   font-family: var(--sf-font-display);
-  font-size: var(--sf-plate-name);
+  font-size: calc(var(--sf-plate-name) * var(--deck-text-scale, 1));
   font-weight: var(--sf-plate-weight);
   letter-spacing: var(--sf-plate-tracking);
   line-height: 1;
@@ -227,7 +227,7 @@
   border: var(--sf-hairline) solid var(--od-border-rule);
   border-radius: var(--sf-radius-chip);
   font-family: var(--od-font-mono);
-  font-size: var(--sf-chip-size);
+  font-size: calc(var(--sf-chip-size) * var(--deck-text-scale, 1));
   line-height: 1.3;
   color: var(--od-text-secondary);
   white-space: nowrap;
@@ -241,7 +241,7 @@
   border: var(--sf-hairline) solid currentColor;
   border-radius: var(--sf-radius-chip);
   font-family: var(--sf-font-pixel);
-  font-size: var(--sf-pixel-size);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
   line-height: var(--sf-pixel-leading);
   text-transform: uppercase;
   white-space: nowrap;
@@ -306,7 +306,7 @@
 }
 .od-slide.is-story .sf-rail-verb {
   font-family: var(--sf-font-pixel);
-  font-size: var(--sf-pixel-size);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
   line-height: 1;
   text-transform: uppercase;
   color: var(--od-text-muted);
@@ -316,7 +316,7 @@
 }
 .od-slide.is-story .sf-rail-name {
   font-family: var(--sf-font-display);
-  font-size: var(--sf-rail-name);
+  font-size: calc(var(--sf-rail-name) * var(--deck-text-scale, 1));
   font-weight: var(--sf-plate-weight);
   letter-spacing: var(--sf-plate-tracking);
   line-height: 1;
@@ -347,32 +347,32 @@
 /* ── SVG type, in viewBox units ── */
 .od-slide.is-story .sf-term {
   font-family: var(--sf-font-term);
-  font-size: var(--sf-svg-term);
+  font-size: calc(var(--sf-svg-term) * var(--deck-text-scale, 1));
   fill: var(--od-phosphor);
 }
 .od-slide.is-story .sf-mono {
   font-family: var(--od-font-mono);
-  font-size: var(--sf-svg-mono);
+  font-size: calc(var(--sf-svg-mono) * var(--deck-text-scale, 1));
   fill: var(--od-text-secondary);
 }
 .od-slide.is-story .sf-mono.is-small {
-  font-size: var(--sf-svg-mono-small);
+  font-size: calc(var(--sf-svg-mono-small) * var(--deck-text-scale, 1));
   fill: var(--od-text-muted);
 }
 .od-slide.is-story .sf-name {
   font-family: var(--od-font-sans);
-  font-size: var(--sf-svg-name);
+  font-size: calc(var(--sf-svg-name) * var(--deck-text-scale, 1));
   font-weight: var(--sf-lead-weight);
   fill: var(--od-text);
 }
 .od-slide.is-story .sf-pixel {
   font-family: var(--sf-font-pixel);
-  font-size: var(--sf-svg-pixel);
+  font-size: calc(var(--sf-svg-pixel) * var(--deck-text-scale, 1));
   text-transform: uppercase;
   fill: var(--od-text-muted);
 }
 .od-slide.is-story .sf-pixel.is-small {
-  font-size: var(--sf-svg-pixel-small);
+  font-size: calc(var(--sf-svg-pixel-small) * var(--deck-text-scale, 1));
 }
 .od-slide.is-story .sf-pixel.is-fig {
   fill: var(--od-amber);
@@ -533,7 +533,7 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
   max-width: var(--sf-lede-width);
   margin: var(--sf-lede-gap) auto var(--sf-zero);
   font-family: var(--sf-font-term);
-  font-size: var(--sf-lede-size);
+  font-size: calc(var(--sf-lede-size) * var(--deck-text-scale, 1));
   line-height: 1.25 !important;
   letter-spacing: 0.02em;
   color: var(--od-text);
@@ -551,7 +551,7 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
   align-items: center;
   gap: calc(0.5 * var(--sw));
   font-family: var(--od-font-sans);
-  font-size: var(--sf-wordmark-size);
+  font-size: calc(var(--sf-wordmark-size) * var(--deck-text-scale, 1));
   font-weight: var(--sf-lead-weight);
   letter-spacing: -0.02em;
   color: var(--od-text);
@@ -564,7 +564,7 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
   display: inline-flex;
   gap: var(--sf-nav-gap);
   font-family: var(--sf-font-term);
-  font-size: var(--sf-nav-size);
+  font-size: calc(var(--sf-nav-size) * var(--deck-text-scale, 1));
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--od-text-secondary);
@@ -577,14 +577,14 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
 .od-slide.is-story .sf-fig {
   max-width: var(--sf-fig-width);
   font-family: var(--od-font-sans);
-  font-size: var(--sf-fig-size);
+  font-size: calc(var(--sf-fig-size) * var(--deck-text-scale, 1));
   line-height: 1.4;
   color: var(--od-text-secondary);
 }
 .od-slide.is-story .sf-fig-no {
   margin-right: calc(0.4 * var(--sw));
   font-family: var(--sf-font-pixel);
-  font-size: var(--sf-pixel-size);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
   text-transform: uppercase;
   color: var(--od-amber);
   text-shadow: var(--sf-fringe);
@@ -593,7 +593,7 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
   display: inline-flex;
   gap: var(--sf-nav-gap);
   font-family: var(--sf-font-pixel);
-  font-size: var(--sf-pixel-size);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--od-amber);
@@ -638,14 +638,14 @@ html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
 }
 .od-slide.is-story .od-story-lead {
   font-family: var(--od-font-serif);
-  font-size: var(--sf-lead-size);
+  font-size: calc(var(--sf-lead-size) * var(--deck-text-scale, 1));
   font-weight: var(--sf-lead-weight);
   letter-spacing: var(--sf-lead-tracking);
   line-height: 1.25;
 }
 .od-slide.is-story .od-story-copy {
   font-family: var(--od-font-sans);
-  font-size: var(--sf-body-size);
+  font-size: calc(var(--sf-body-size) * var(--deck-text-scale, 1));
   line-height: var(--sf-body-leading);
   letter-spacing: var(--sf-body-tracking);
   color: var(--od-text-secondary);

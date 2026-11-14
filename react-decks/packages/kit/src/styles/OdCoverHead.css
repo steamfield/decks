@@ -4,7 +4,7 @@
   justify-content: space-between;
 }
 .od-cover-url {
-  font-size: 1rem;
+  font-size: calc(1rem * var(--deck-text-scale, 1));
   color: var(--od-text-dim);
   letter-spacing: 0.02em;
 }

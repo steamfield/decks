@@ -25,7 +25,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 15px;
+    font-size: calc(15px * var(--deck-text-scale, 1));
     line-height: 1;
     color: inherit;
     opacity: 0.5;

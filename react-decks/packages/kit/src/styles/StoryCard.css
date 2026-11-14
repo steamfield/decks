@@ -4,7 +4,7 @@
 .od-story-lead {
   margin: 0;
   /* Frame units, so the card keeps its proportion to the stage. 23.2px at 1920. */
-  font-size: calc(1.2084 * var(--sw));
+  font-size: calc(calc(1.2084 * var(--sw)) * var(--deck-text-scale, 1));
   font-weight: 590;
   line-height: 1.35;
   letter-spacing: -0.016em;
@@ -12,7 +12,7 @@
 }
 .od-story-copy {
   margin: calc(0.5833 * var(--sw)) 0 0;
-  font-size: calc(1.2084 * var(--sw));
+  font-size: calc(calc(1.2084 * var(--sw)) * var(--deck-text-scale, 1));
   font-weight: 400;
   line-height: 1.5;
   color: var(--od-text-muted);

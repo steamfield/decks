@@ -1,11 +1,11 @@
 .dk-count {
   font-family: var(--sf-font-pixel);
-  font-size: 84px;
+  font-size: calc(84px * var(--deck-text-scale, 1));
   text-shadow: var(--sf-fringe);
 }
 
 .dk-count-label {
   font-family: var(--od-font-sans);
-  font-size: var(--sf-svg-term);
+  font-size: calc(var(--sf-svg-term) * var(--deck-text-scale, 1));
   fill: var(--od-text-secondary);
 }

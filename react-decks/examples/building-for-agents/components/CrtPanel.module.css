@@ -31,7 +31,7 @@
   top: calc(0.9 * var(--sw));
   right: calc(1.1 * var(--sw));
   font-family: var(--sf-font-pixel);
-  font-size: var(--sf-pixel-size);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
   text-transform: uppercase;
   color: var(--od-text-muted);
   text-shadow: var(--sf-fringe);
@@ -47,7 +47,7 @@
   gap: calc(1 * var(--sw));
   padding: calc(0.55 * var(--sw)) calc(0.4 * var(--sw)) 0;
   font-family: var(--sf-font-pixel);
-  font-size: calc(0.6771 * var(--sw));
+  font-size: calc(calc(0.6771 * var(--sw)) * var(--deck-text-scale, 1));
   line-height: 1.5;
   white-space: nowrap;
   color: var(--od-text-muted);

@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { SlideScaleContext, useDeckContext } from "./hooks";
+import { useTextScale } from "./text-scale";
 
 export function SlideFrame({
   main,
@@ -18,6 +19,7 @@ export function SlideFrame({
 }): ReactElement {
   const { source } = useDeckContext();
   const { width, height } = source.manifest.canvas;
+  const textScale = useTextScale(source.manifest.name);
   const frame = useRef<HTMLDivElement>(null);
   const [container, setContainer] = useState({ width: 0, height: 0 });
   const fit = fitCanvas(container.width, container.height, width, height);
@@ -40,7 +42,7 @@ export function SlideFrame({
     "--deck-w": fit.width,
     "--deck-h": fit.height,
     "--deck-scale": fit.scale,
-    "--deck-text-scale": 1,
+    "--deck-text-scale": textScale,
   };
   return (
     <div ref={frame} className="rd-frame" id={main ? "deck-frame" : undefined} style={style}>

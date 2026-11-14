@@ -501,7 +501,16 @@ slide's rendered output at compile time and collected into the notes module. Mor
   `settled()` resolves when no finite animation from `document.getAnimations()` is running,
   no probe reports busy and no transition is pending.
 - `embed.ts`: the `decks:*` postMessage protocol.
-- `viewer.ts`: pinch zoom, pan, reset, and text sizing through `--deck-text-scale`.
+- `viewer.ts`: pinch zoom, pan and reset (not built yet).
+- `text-scale.ts`: text sizing. In the play and presenter views Cmd/Ctrl with `+` or `=` makes
+  slide text 1.1 times larger, with `-` 1.1 times smaller, and with `0` restores the authored
+  size, between 0.5 and 2.5; the browser's own zoom is prevented, since it would not change a
+  fitted canvas. The value is kept in `localStorage` under the sync channel id, so every window
+  of the deck follows through the `storage` event and a reload keeps it. Every `SlideFrame`
+  sets it as `--deck-text-scale`. It reaches a slide only through CSS that multiplies by it:
+  every `font-size` in the framework's, the kit's and a deck's slide CSS is written
+  `calc(<size> * var(--deck-text-scale, 1))`. Boxes do not grow, so a tightly composed slide
+  overflows after a step or two; a layout in flex or grid absorbs more.
 - `PresenterView`, `OverviewView`, `PrintView`, keyboard map, wake lock, idle cursor, `Notes`.
 
 ## 4.1 runtime, Phase 2 surface (Final)

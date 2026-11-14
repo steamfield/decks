@@ -4,7 +4,7 @@
 .sf-tree-root {
   margin-bottom: calc(0.5 * var(--sw));
   font-family: var(--od-font-mono);
-  font-size: calc(0.9375 * var(--sw));
+  font-size: calc(calc(0.9375 * var(--sw)) * var(--deck-text-scale, 1));
   color: var(--od-text-muted);
 }
 .sf-tree-row {
@@ -25,7 +25,7 @@
 }
 .sf-tree-label {
   font-family: var(--od-font-mono);
-  font-size: calc(1.1458 * var(--sw));
+  font-size: calc(calc(1.1458 * var(--sw)) * var(--deck-text-scale, 1));
   color: var(--od-text-secondary);
 }
 .sf-tree-row:global(.is-on) .sf-tree-label {
@@ -33,7 +33,7 @@
 }
 .sf-tree-note {
   font-family: var(--od-font-sans);
-  font-size: calc(1.3542 * var(--sw));
+  font-size: calc(calc(1.3542 * var(--sw)) * var(--deck-text-scale, 1));
   line-height: 1;
   color: var(--od-text-muted);
   overflow: hidden;

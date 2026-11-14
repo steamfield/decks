@@ -22,9 +22,9 @@
   display: block;
 }
 .od-qr-label {
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--deck-text-scale, 1));
 }
 .od-qr-sublabel {
-  font-size: 0.9rem;
+  font-size: calc(0.9rem * var(--deck-text-scale, 1));
   color: var(--od-text-faint);
 }

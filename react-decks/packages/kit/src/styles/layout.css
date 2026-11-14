@@ -136,7 +136,7 @@
 }
 .od-section-num {
   font-family: var(--od-font-sans);
-  font-size: 1.3rem;
+  font-size: calc(1.3rem * var(--deck-text-scale, 1));
   font-weight: 500;
   color: var(--od-cyan);
   margin-bottom: 1.4rem;

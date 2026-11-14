@@ -2,6 +2,7 @@ import { formatHash, type NavAction, parseLocation, syncChannelId } from "@react
 import { useEffect } from "react";
 import { defaultKeybindingsHandlerIgnore, type KeybindingsMap, tinykeys } from "tinykeys";
 import { useDeckContext, useDeckSelector, usePresentation } from "./hooks";
+import { stepTextScale } from "./text-scale";
 
 export function useDeckKeys() {
   const { source, store } = useDeckContext();
@@ -60,6 +61,18 @@ export function useDeckKeys() {
       },
     };
     if (view === "play" || view === "presenter") {
+      // The canvas is scaled to fit, so the browser's own zoom would not change slide text.
+      // These keys take its place: larger, smaller, and back to the authored size.
+      const size = (direction: 1 | 0 | -1) => (event: KeyboardEvent) => {
+        event.preventDefault();
+        stepTextScale(source.manifest.name, direction);
+      };
+      // Both modifiers on every platform, so the keys do not depend on platform detection.
+      for (const mod of ["Meta", "Control"]) {
+        for (const key of ["Equal", "Shift+Equal", "NumpadAdd"]) keys[`${mod}+${key}`] = size(1);
+        for (const key of ["Minus", "NumpadSubtract"]) keys[`${mod}+${key}`] = size(-1);
+        keys[`${mod}+Digit0`] = size(0);
+      }
       Object.assign(keys, {
         ArrowRight: bind({ type: "next" }),
         Space: bind({ type: "next" }),

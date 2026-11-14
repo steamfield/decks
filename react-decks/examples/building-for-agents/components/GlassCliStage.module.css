@@ -10,7 +10,7 @@
 .glass-quote-label {
   margin-bottom: calc(0.9 * var(--sw));
   font-family: var(--sf-font-pixel);
-  font-size: var(--sf-pixel-size);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
   line-height: var(--sf-pixel-leading);
   text-transform: uppercase;
   color: var(--od-amber);
@@ -19,7 +19,7 @@
 .glass-quote-text {
   display: block;
   font-family: var(--od-font-sans);
-  font-size: calc(1.5625 * var(--sw));
+  font-size: calc(calc(1.5625 * var(--sw)) * var(--deck-text-scale, 1));
   line-height: 1.12;
   color: var(--od-text);
 }
@@ -27,13 +27,13 @@
   padding: var(--sf-zero);
   background: none;
   font-family: var(--od-font-mono);
-  font-size: calc(1.09375 * var(--sw));
+  font-size: calc(calc(1.09375 * var(--sw)) * var(--deck-text-scale, 1));
   color: var(--od-cyan);
 }
 .glass-quote-source {
   margin-top: calc(1 * var(--sw));
   font-family: var(--od-font-mono);
-  font-size: calc(0.9375 * var(--sw));
+  font-size: calc(calc(0.9375 * var(--sw)) * var(--deck-text-scale, 1));
   line-height: 1.45;
   color: var(--od-text-muted);
 }

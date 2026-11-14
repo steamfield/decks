@@ -11,7 +11,7 @@
   box-sizing: border-box;
   padding: calc(0.9 * var(--sw)) calc(1.2 * var(--sw)) 0;
   font-family: var(--od-font-mono);
-  font-size: calc(0.9375 * var(--sw));
+  font-size: calc(calc(0.9375 * var(--sw)) * var(--deck-text-scale, 1));
   color: var(--od-text-muted);
   white-space: nowrap;
   pointer-events: none;
@@ -45,14 +45,14 @@
 
 .oc-verdict-head {
   font-family: var(--od-font-mono);
-  font-size: calc(1.25 * var(--sw));
+  font-size: calc(calc(1.25 * var(--sw)) * var(--deck-text-scale, 1));
   color: var(--od-text);
 }
 
 .oc-verdict-run {
   margin-top: calc(0.5 * var(--sw));
   font-family: var(--sf-font-pixel);
-  font-size: calc(0.6771 * var(--sw));
+  font-size: calc(calc(0.6771 * var(--sw)) * var(--deck-text-scale, 1));
   line-height: var(--sf-pixel-leading);
   text-transform: uppercase;
   color: var(--od-text-muted);
@@ -64,7 +64,7 @@
 
 .oc-verdict-rows dt {
   font-family: var(--sf-font-pixel);
-  font-size: calc(0.6771 * var(--sw));
+  font-size: calc(calc(0.6771 * var(--sw)) * var(--deck-text-scale, 1));
   text-transform: uppercase;
   color: var(--od-text-muted);
 }
@@ -72,14 +72,14 @@
 .oc-verdict-rows dd {
   margin: calc(0.25 * var(--sw)) 0 calc(0.8 * var(--sw));
   font-family: var(--od-font-mono);
-  font-size: calc(1.09375 * var(--sw));
+  font-size: calc(calc(1.09375 * var(--sw)) * var(--deck-text-scale, 1));
   color: var(--od-text);
   overflow-wrap: anywhere;
 }
 
 .oc-verdict-rows dd:global(.is-prose) {
   font-family: var(--od-font-sans);
-  font-size: calc(1.40625 * var(--sw));
+  font-size: calc(calc(1.40625 * var(--sw)) * var(--deck-text-scale, 1));
   line-height: 1.1;
   color: var(--od-text-secondary);
 }
