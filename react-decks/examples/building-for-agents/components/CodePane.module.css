@@ -1,0 +1,57 @@
+.sf-code {
+  position: absolute;
+  overflow: hidden;
+  border: var(--sf-hairline) solid var(--od-border-rule);
+  border-radius: var(--sf-radius-card);
+  background: color-mix(in srgb, var(--od-screen-black) 82%, transparent);
+}
+.sf-code-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: calc(0.9 * var(--sw)) calc(1.2 * var(--sw));
+}
+.sf-code-label {
+  margin-bottom: calc(0.7 * var(--sw));
+  font-family: var(--od-font-mono);
+  font-size: calc(0.9375 * var(--sw));
+  color: var(--od-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sf-code-body {
+  margin: 0;
+  padding: 0;
+  background: none;
+  font-family: var(--od-font-mono);
+  line-height: 1.42;
+  color: var(--od-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sf-code-line {
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
+.sf-code-line:global(.is-cold) {
+  opacity: var(--sf-dim);
+}
+.sf-tok-keyword {
+  color: var(--od-pink);
+}
+.sf-tok-string {
+  color: var(--od-amber-soft);
+}
+.sf-tok-comment {
+  color: var(--od-text-faint);
+  font-style: italic;
+}
+.sf-tok-number {
+  color: var(--od-cyan);
+}
+.sf-tok-type {
+  color: var(--od-cyan-bright);
+}
+.sf-tok-punct {
+  color: var(--od-text-secondary);
+}

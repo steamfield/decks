@@ -1,0 +1,41 @@
+.sf-tree {
+  position: absolute;
+}
+.sf-tree-root {
+  margin-bottom: calc(0.5 * var(--sw));
+  font-family: var(--od-font-mono);
+  font-size: calc(0.9375 * var(--sw));
+  color: var(--od-text-muted);
+}
+.sf-tree-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: calc(0.9 * var(--sw));
+  border-left: var(--sf-marker) solid transparent;
+  white-space: nowrap;
+  transition:
+    opacity var(--od-dur-card) var(--od-settle),
+    border-color var(--od-dur-card) var(--od-settle),
+    background-color var(--od-dur-card) var(--od-settle);
+}
+.sf-tree-row:global(.is-focus) {
+  border-left-color: var(--od-pink);
+  background: color-mix(in srgb, var(--od-pink) 12%, transparent);
+}
+.sf-tree-label {
+  font-family: var(--od-font-mono);
+  font-size: calc(1.1458 * var(--sw));
+  color: var(--od-text-secondary);
+}
+.sf-tree-row:global(.is-on) .sf-tree-label {
+  color: var(--od-text);
+}
+.sf-tree-note {
+  font-family: var(--od-font-sans);
+  font-size: calc(1.3542 * var(--sw));
+  line-height: 1;
+  color: var(--od-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
