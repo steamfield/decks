@@ -12,5 +12,8 @@
   },
   "agents": {
     "dir": "examples/building-for-agents"
+  },
+  "tides-slide": {
+    "dir": "examples/tides-slide"
   }
 }

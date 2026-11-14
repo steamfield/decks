@@ -14,10 +14,13 @@
         "@testing-library/react": "16.3.3",
         "@testing-library/user-event": "14.6.10",
         "@types/node": "26.6.6",
+        "@types/pngjs": "6.0.5",
         "@types/react": "19.3.0",
         "@types/react-dom": "19.3.0",
         "jsdom": "31.0.1",
         "oxc-parser": "0.158.0",
+        "pixelmatch": "7.1.0",
+        "pngjs": "7.0.0",
         "react": "19.3.1",
         "react-dom": "19.3.1",
         "rehype-katex": "7.0.1",
@@ -65,6 +68,19 @@
     "examples/motion": {
       "name": "@react-decks/example-motion",
       "dependencies": {
+        "@react-decks/motion": "workspace:*",
+        "@react-decks/runtime": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+      "devDependencies": {
+        "@react-decks/node": "workspace:*",
+      },
+    },
+    "examples/tides-slide": {
+      "name": "@react-decks/example-tides-slide",
+      "dependencies": {
+        "@react-decks/kit": "workspace:*",
         "@react-decks/motion": "workspace:*",
         "@react-decks/runtime": "workspace:*",
         "react": "19.3.1",
@@ -331,6 +347,8 @@
 
     "@react-decks/example-motion": ["@react-decks/example-motion@workspace:examples/motion"],
 
+    "@react-decks/example-tides-slide": ["@react-decks/example-tides-slide@workspace:examples/tides-slide"],
+
     "@react-decks/kit": ["@react-decks/kit@workspace:packages/kit"],
 
     "@react-decks/motion": ["@react-decks/motion@workspace:packages/motion"],
@@ -480,6 +498,8 @@
     "@types/ms": ["@types/ms@2.1.0", "", {}, "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="],
 
     "@types/node": ["@types/node@26.6.6", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog=="],
+
+    "@types/pngjs": ["@types/pngjs@6.0.5", "", { "dependencies": { "@types/node": "*" } }, "sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ=="],
 
     "@types/react": ["@types/react@19.3.0", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg=="],
 
@@ -895,9 +915,13 @@
 
     "picomatch": ["picomatch@4.0.7", "", {}, "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA=="],
 
+    "pixelmatch": ["pixelmatch@7.1.0", "", { "dependencies": { "pngjs": "^7.0.0" }, "bin": { "pixelmatch": "bin/pixelmatch" } }, "sha512-1wrVzJ2STrpmONHKBy228LM1b84msXDUoAzVEl0R8Mz4Ce6EPr+IVtxm8+yvrqLYMHswREkjYFaMxnyGnaY3Ng=="],
+
     "playwright": ["playwright@1.65.1", "", { "dependencies": { "playwright-core": "1.65.1" }, "bin": { "playwright": "cli.js" } }, "sha512-vJ1FuoOrNwOKHUIVEvSt3jT1L+wjjDpwhwIstKtfvTh8XIG4FG4bIFuvNdMxi81LGfAhUgUZleVFaOLY4RIUUw=="],
 
     "playwright-core": ["playwright-core@1.65.1", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-hqPpz7blSMPxWVdoeE1yiBSzXsKiVOd2k+kjCvmUywD2GPO2Dd9HfcWnq9NN0GHbNZDFgZ9JfBFr+X5/BLo0qw=="],
+
+    "pngjs": ["pngjs@7.0.0", "", {}, "sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow=="],
 
     "postcss": ["postcss@8.5.33", "", { "dependencies": { "nanoid": "^3.3.20", "picocolors": "^1.1.1", "source-map-js": "^1.2.2" } }, "sha512-RVHEU9/Pp1Fnjr/MpAJsZoADukCKhfIi15OunEYiGktIkYLkPVvC1sioWolGDS7XByMTx9m/IGbro0Js13zhnQ=="],
 
