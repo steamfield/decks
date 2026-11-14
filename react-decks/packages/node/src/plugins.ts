@@ -1,6 +1,7 @@
 import { once } from "node:events";
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import mdx from "@mdx-js/rollup";
 import react from "@vitejs/plugin-react";
 import remarkFrontmatter from "remark-frontmatter";
@@ -23,6 +24,15 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
   const deckDir = normalizePath(deck.dir);
   const htmlFile = normalizePath(join(deck.dir, "index.html"));
   const configFile = normalizePath(join(deck.dir, "deck.config.ts"));
+  const readConfig = async () => {
+    let source = await readFile(configFile, "utf8");
+    // Editors can emit just one event for a truncate followed by a write.
+    for (let attempt = 0; !source && attempt < 10; attempt++) {
+      await delay(10);
+      source = await readFile(configFile, "utf8");
+    }
+    return source;
+  };
   let metadata = new Map<string, string>();
   let componentsCode: string | undefined;
   let motionNames: ReadonlyMap<string, string> = new Map();
@@ -46,7 +56,7 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
     name: "react-decks",
     enforce: "pre",
     async config(inline, { command }) {
-      if (command === "serve") configSource ??= await readFile(configFile, "utf8");
+      if (command === "serve") configSource ??= await readConfig();
       return mergeConfig(
         mergeConfig(
           { root: deckDir, publicDir: normalizePath(join(deck.dir, "public")) },
@@ -87,7 +97,11 @@ export const slides = Object.fromEntries([${loaders}]);`;
       const notes: [string, { click: number; html: string }[]][] = [];
       for (const { meta } of slides) {
         const file = normalizePath(join(deck.dir, meta.file));
-        const segments = await renderNotes(await readFile(file, "utf8"), file);
+        const segments = await renderNotes(
+          await readFile(file, "utf8"),
+          file,
+          current.config.mdx?.remarkPlugins,
+        );
         if (segments !== undefined) notes.push([meta.id, segments]);
       }
       return `export const notes = Object.fromEntries(${JSON.stringify(notes)});`;
@@ -115,10 +129,18 @@ export const slides = Object.fromEntries([${loaders}]);`;
               await once(server.httpServer, "listening");
             // Re-read after restart too: a save can arrive while the watcher is closed.
             for (;;) {
-              const source = await readFile(configFile, "utf8");
+              const source = await readConfig();
               if (source === configSource) return;
               configSource = source;
-              current = await loadDeck(deck.dir, deck.name);
+              try {
+                current = await loadDeck(deck.dir, deck.name);
+              } catch (cause) {
+                const latest = await readConfig();
+                if (latest === source) throw cause;
+                configSource = latest;
+                current = await loadDeck(deck.dir, deck.name);
+              }
+              plugins[1] = compiler();
               server.config.inlineConfig.plugins = [plugins, current.config.vite?.plugins ?? []];
               await server.restart();
             }
@@ -192,6 +214,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
         file,
         totals.get(key),
         motionNames,
+        current.config.mdx?.remarkPlugins,
       );
       const previous = metadata.get(key);
       metadata.set(key, next);
@@ -207,10 +230,18 @@ export const slides = Object.fromEntries([${loaders}]);`;
     },
   };
   // MDX returns Rollup's Plugin type; Vite 8 uses Rolldown's narrower source-map type.
-  const compiler = {
-    ...mdx({ remarkPlugins: [remarkFrontmatter, removeNotes], rehypePlugins: [codeBlocks] }),
-    enforce: "pre",
-  } as Plugin;
-  const plugins = [plugin, compiler, ...react({ include: /\.(mdx|jsx|tsx)$/ })];
+  const compiler = () =>
+    ({
+      ...mdx({
+        remarkPlugins: [
+          remarkFrontmatter,
+          removeNotes,
+          ...(current.config.mdx?.remarkPlugins ?? []),
+        ],
+        rehypePlugins: [...(current.config.mdx?.rehypePlugins ?? []), codeBlocks],
+      }),
+      enforce: "pre",
+    }) as Plugin;
+  const plugins = [plugin, compiler(), ...react({ include: /\.(mdx|jsx|tsx)$/ })];
   return plugins;
 }

@@ -4,7 +4,7 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import { unified } from "unified";
+import { type PluggableList, unified } from "unified";
 
 interface NotesNode {
   type: string;
@@ -23,11 +23,12 @@ const renderer = unified().use(remarkParse).use(remarkRehype).use(rehypeStringif
 export async function renderNotes(
   source: string,
   file: string,
+  remarkPlugins: PluggableList = [],
 ): Promise<{ click: number; html: string }[] | undefined> {
   const notes: NotesNode[] = [];
   let tree: NotesNode;
   try {
-    tree = parser.parse(source);
+    tree = parser().use(remarkPlugins).parse(source);
   } catch (cause) {
     throw new Error(`${file}: ${cause instanceof Error ? cause.message : String(cause)}`, {
       cause,
