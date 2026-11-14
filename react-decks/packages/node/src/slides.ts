@@ -7,7 +7,7 @@ import { z } from "zod";
 import { countClicks } from "./clicks";
 import { componentsModule } from "./components";
 import type { ResolvedDeck } from "./config";
-import { DeckError, displayPath, validationError } from "./errors";
+import { compileError, DeckError, displayPath, validationError } from "./errors";
 import { readSource } from "./read-source";
 
 export interface ScannedSlide {
@@ -112,12 +112,7 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
       });
     } catch (cause) {
       if (cause instanceof DeckError) throw cause;
-      throw new DeckError(
-        cause instanceof Error ? cause.message : String(cause),
-        join(deck.dir, file),
-        undefined,
-        { cause },
-      );
+      throw compileError(cause, join(deck.dir, file));
     }
   }
   if (!slides.length)

@@ -47,24 +47,38 @@ export async function dev(
 ): Promise<DevServer> {
   const port = options?.port ?? (await getPort({ port: portNumbers(3030, 65535) }));
   const lifecycle = createDeckPlugins(deck);
-  const server = await createServer({
-    ...config(deck, lifecycle.plugins),
-    server: { port, strictPort: options?.port !== undefined, open: options?.open ?? false },
-  });
+  let server: Awaited<ReturnType<typeof createServer>> | undefined;
   try {
+    server = await createServer({
+      ...config(deck, [
+        {
+          name: "react-decks:server-lifecycle",
+          enforce: "pre",
+          configureServer: {
+            order: "pre",
+            handler(created) {
+              server ??= created;
+            },
+          },
+        },
+        ...lifecycle.plugins,
+      ]),
+      server: { port, strictPort: options?.port !== undefined, open: options?.open ?? false },
+    });
     await server.listen();
     const url = server.resolvedUrls?.local[0];
     if (!url) throw new Error(`${deck.dir}: Vite did not provide a local URL`);
+    const running = server;
     return {
       url,
       close: async () => {
         await lifecycle.stop();
-        await server.close();
+        await running.close();
       },
     };
   } catch (error) {
     await lifecycle.stop();
-    await server.close();
+    await server?.close();
     if (error instanceof Error && error.message.includes(`Port ${port} is already in use`))
       throw new DeckError(
         `port ${port} is already in use. Stop what is using it or pass a different --port.`,

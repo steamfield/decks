@@ -57,6 +57,7 @@ export function SlideHost({
       <SlideContext value={value}>
         <ErrorBoundary
           resetKeys={[module, Component, resetClick]}
+          onReset={() => setComponentStack(undefined)}
           onError={(_error, info) => setComponentStack(info.componentStack)}
           fallbackRender={({ error }) => (
             <>

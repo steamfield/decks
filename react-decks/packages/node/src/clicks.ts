@@ -121,8 +121,16 @@ export function countClicks(
   let tree: ReturnType<typeof parser.parse>;
   try {
     tree = parser().use(remarkPlugins).parse(source);
-  } catch {
-    return previous;
+  } catch (cause) {
+    if (
+      cause instanceof Error &&
+      "source" in cause &&
+      typeof cause.source === "string" &&
+      "ruleId" in cause &&
+      typeof cause.ruleId === "string"
+    )
+      return previous;
+    throw cause;
   }
   const names = new Map(motionNames);
   for (const node of tree.children) {
