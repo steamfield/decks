@@ -16,7 +16,7 @@
  *
  * Goes in a StoryCover `#field` slot, or behind any cover-style stage.
  */
-import { computed, onBeforeUnmount, onMounted, reactive, ref, unref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, unref, watch } from 'vue'
 import { useSlideContext } from '@slidev/client'
 import {
   DUR,
@@ -66,6 +66,9 @@ const inSlideView = unref($renderContext) === 'slide'
 type Mode = 'still' | 'pending' | 'live'
 const canvas = ref<HTMLCanvasElement | null>(null)
 const mode = ref<Mode>('still')
+/** Bumped per attempt: releasing the scene loses the canvas's WebGL context for
+    good, so every start gets a new canvas element. */
+const canvasKey = ref(0)
 const LIVE_TIMEOUT_MS = 3000
 let live: { dispose(): void } | null = null
 let liveFailed = false
@@ -90,8 +93,11 @@ function stopLive(): void {
 }
 
 async function startLive(): Promise<void> {
-  if (!canRunLive() || !canvas.value || live) return
+  if (!canRunLive() || live) return
   const mine = ++attempt
+  canvasKey.value++
+  await nextTick()
+  if (mine !== attempt || !canvas.value) return
   mode.value = 'pending'
   fallback = setTimeout(() => {
     if (mine !== attempt || mode.value === 'live') return
@@ -192,7 +198,7 @@ const label = `Night drive: the Steamfield mark as a setting sun over a ridgelin
 
 <template>
   <div class="sf-night" :class="{ 'is-live': mode === 'live' }">
-  <canvas ref="canvas" class="sf-night-canvas" aria-hidden="true" />
+  <canvas :key="canvasKey" ref="canvas" class="sf-night-canvas" aria-hidden="true" />
   <svg class="sf-night-drive" :viewBox="FRAME.viewBox" preserveAspectRatio="xMidYMid slice" role="img" :aria-label="label">
     <defs>
       <linearGradient id="sf-sky" x1="0" y1="0" x2="0" y2="1">
