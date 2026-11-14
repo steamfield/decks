@@ -1313,7 +1313,7 @@ uses `<Step at={2}>` does not also maintain a number:
 | --- | --- |
 | `Step`, `Stagger`, `Highlight`, `Draw` with `at` and optional `until` | `until` if present, else `at` |
 | `TextReveal`, `CountUp` with `at` | `at` |
-| `Steps` with `from` and `k` JSX element children, or whose only child is a markdown list of `k` top-level items | `from + k - 1` (nothing when `k` is 0) |
+| `Steps` with `from` and `k` JSX element children, or whose only child is a list (markdown, or a JSX `ul`/`ol`) of `k` top-level items | `from + k - 1` (nothing when `k` is 0) |
 
 The total is the largest contribution, or 0. The count runs on the MDX syntax tree
 (`remark-parse` + `remark-mdx`, already installed), after `hide` is checked, so a hidden
@@ -1328,6 +1328,8 @@ slide's body is never parsed.
   file and saying how to fix it, except a markdown list as the only child. MDX wraps inline
   JSX written on consecutive lines in one paragraph, so `<li>` elements on adjacent lines are
   this error: each child goes in its own block, or the items are written as a markdown list.
+- A spread attribute on a counted element (`<Step {...props}>`) is an error naming the file
+  and the element, since it could override `at`.
 - A counted name that appears inside a JavaScript expression in the slide (`{cond && <Step
   at={1} />}`, a `.map()`), where it cannot be counted, is an error naming the file.
 - None of these errors is raised when the slide sets `clicks:`; the number is then the
