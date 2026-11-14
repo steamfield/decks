@@ -129,9 +129,6 @@ Codex reads this file, the skills under `.agents/skills/` (symlinks into `.claud
 | `.claude/rules/story-stage.md` | `{examples,decks}/*/components/*Stage.vue`, `{examples,decks}/*/styles/*.css`, `packages/decks/story/**`, the addon's `Story*`/`Ink*`/`Unit*`/`CodeInk*`/`RowStrip*`/`Graph3D*` components and `styles/story-*.css` |
 | `.claude/rules/deck-data.md` | `{examples,decks}/*/data/*.ts`, `{examples,decks}/*/data-sources.md` |
 | `.claude/rules/project-glossary.md` | `{examples,decks}/*/pages/*.md`, `{examples,decks}/*/components/*.vue` |
-| `.claude/rules/react-decks/architecture.md` | everything under `react-decks/` |
-| `.claude/rules/react-decks/testing.md` | everything under `react-decks/` |
-| `.claude/rules/react-decks/react.md` | `react-decks/packages/{runtime,motion,kit}/**`, `react-decks/examples/**` |
 
 A Codex run started by `foreman` or `codex-delegate` also reads "For the delegate" in `.claude/delegate.md`: worktree setup, screenshots without an assigned port, and the gate.
 
@@ -141,7 +138,7 @@ The hooks only run once trusted: open `codex` in the main checkout, run `/hooks`
 
 ### react-decks
 
-`react-decks/` is a React slide framework being built to replace Slidev here (RFC 0007). It is its own bun workspace with its own `AGENTS.md`, which Codex loads only when working inside that directory, so the routing is repeated here: before editing anything under `react-decks/`, read `react-decks/AGENTS.md`, `react-decks/docs/architecture.md`, and the three `.claude/rules/react-decks/` rules in the table above, and load the `ce:architecting-systems` and `ce:writing-tests` skills. Three habits matter most there, and `react-decks/AGENTS.md` ("Proportion") spells them out: build what the contract's acceptance asks for and stop; ask before using an unstable API or keeping a workaround; and try to break the spec before implementing it, reporting what you find. Its gate is `bun run --cwd react-decks check`; a worktree needs `bun install --cwd react-decks` first. The deck prose rules and hooks above do not apply to framework code. Delegated runs also read the react-decks part of `.claude/delegate.md`.
+`react-decks/` is a React slide framework being built to replace Slidev here (RFC 0007). It is its own bun workspace, and `react-decks/AGENTS.md` is its whole rulebook: package boundaries, proportion, testing and React conventions. Codex scopes instructions by directory and loads that file automatically only when started inside `react-decks/`, so when you are started at the repo root, read `react-decks/AGENTS.md` and `react-decks/docs/architecture.md` before editing anything under `react-decks/`. Three habits matter most there: build what the contract's acceptance asks for and stop; ask before using an unstable API or keeping a workaround; and replay the contract's QA situations against the spec before implementing it, reporting what you find. The gate is `bun run --cwd react-decks check`; a worktree needs `bun install --cwd react-decks` first. The deck prose rules and hooks in this file do not apply to framework code. Delegated runs also read the react-decks part of `.claude/delegate.md`.
 
 ### Generated copies
 

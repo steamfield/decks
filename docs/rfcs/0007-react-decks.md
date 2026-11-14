@@ -68,8 +68,8 @@ dark toggle, a notes editor, layouts, a letterboxing canvas mode.
 
 ## Scope
 
-New: `react-decks/`, `.claude/rules/react-decks/`, `.claude/delegate/`, the react-decks
-sections of `AGENTS.md` and `.claude/delegate.md`, `.agents/rules/react-decks-*.md`. The
+New: `react-decks/`, `.claude/delegate/`, the react-decks
+sections of `AGENTS.md` and `.claude/delegate.md`, The
 Slidev path under `packages/decks/` and `examples/` keeps working until the swap; phases 8
 to 10 extend `packages/decks/lint/` and `packages/decks/scripts/` without removing Slidev
 support.

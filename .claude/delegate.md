@@ -129,7 +129,13 @@ above. The hook-trust and worktree notes above still apply.
 
 ### For the orchestrator
 
-- Contracts come from `.claude/delegate/react-decks-contract.md`. Copy the signatures and
+- Guidance for Codex lives in `react-decks/AGENTS.md`, not in `.claude/rules/`: Codex scopes
+  instructions by directory and has no path-glob rules. After each run, add what its diff and
+  hand-off taught you to that file's Proportion or Testing section (keep it under 14 KB) and
+  note it in `react-decks/docs/delegation-log.md`.
+- Contracts come from `.claude/delegate/react-decks-contract.md`. Fill its QA section with
+  three to five concrete situations a user would hit; runs find spec flaws by replaying
+  those, not from a general instruction to be careful. Copy the signatures and
   behaviour tables a run needs out of `react-decks/docs/architecture.md` into the contract's
   Interface section; a run implements what its contract says.
 - Setup: `foreman start <name> --new-worktree --from react-decks --setup "bun install && bun install --cwd react-decks" ...`.
@@ -144,9 +150,8 @@ above. The hook-trust and worktree notes above still apply.
 
 ### For the delegate
 
-- Read `react-decks/AGENTS.md`, `react-decks/docs/architecture.md` and the three rules under
-  `.claude/rules/react-decks/` before the first edit. Load `ce:architecting-systems` and
-  `ce:writing-tests`.
+- Read `react-decks/AGENTS.md` (the whole rulebook) and `react-decks/docs/architecture.md`
+  before the first edit. Load `ce:architecting-systems` and `ce:writing-tests`.
 - If `react-decks/node_modules/` is missing, run `bun install --cwd react-decks`.
 - Iterate on the scoped test command in your contract, then `bun run --cwd react-decks lint`
   and `bun run --cwd react-decks typecheck`. Run each new test file three times alone, then

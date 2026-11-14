@@ -12,11 +12,8 @@ Codex loads AGENTS.md itself. List under Read first only what this task needs. -
 
 ## Read first
 
-- `react-decks/AGENTS.md`
+- `react-decks/AGENTS.md`: the whole rulebook (boundaries, proportion, testing, React).
 - `react-decks/docs/architecture.md`, sections {N}
-- `.claude/rules/react-decks/architecture.md`
-- `.claude/rules/react-decks/testing.md`
-- {`.claude/rules/react-decks/react.md` for runtime, motion, kit or examples work}
 - {Existing files whose behaviour is being ported, with line ranges.}
 
 Read anything else when the work reaches it, not up front.
@@ -35,9 +32,10 @@ exist in `src/index.ts`; implement them, do not rename or add to them.}
 
 ## Before you code
 
-Read the Proportion section of `react-decks/AGENTS.md`. Then spend a few minutes trying to
-break the spec, not the code: walk the behaviour above through what a real user does, and
-for anything with more than one actor step through the interleavings. Keep the list; it goes
+Spend a few minutes trying to break the spec, not the code. Replay each situation in the
+QA paragraph of Acceptance against the behaviour specified above, by hand, writing the
+sequence of events and the result. For anything with more than one actor, also step through
+the interleavings listed under Proportion in `react-decks/AGENTS.md`. Keep the list; it goes
 in the hand-off as "Spec concerns". If a concern means the feature would not work as a user
 expects, ask the orchestrator before implementing.
 
@@ -70,8 +68,10 @@ Run each new test file three times on its own, then `bun run --cwd react-decks t
 Do not run `check:isolated`; the orchestrator does. Report unrelated failures without
 weakening or skipping tests.
 
-Then QA as the first user: {what to exercise by hand, or "nothing new to run: this is a
-library module; QA is reading each exported function's behaviour against the table"}.
+Then QA as the first user. Replay these situations and record what happened in each:
+{three to five concrete situations a user would hit, written as actions: "open the presenter
+window mid-talk", "reload the audience window", "press next twice quickly". For a library
+module with nothing to run, replay them by hand against the code.}
 
 ## Do not
 
@@ -100,7 +100,7 @@ write `<review-directory>/prompt.md` containing:
 
 "Review uncommitted changes and new files in {ABSOLUTE WORKTREE PATH} against base
 react-decks. Read the contract at {ABSOLUTE CONTRACT PATH} first, then
-react-decks/docs/architecture.md and the rules in .claude/rules/react-decks/. Your sandbox is
+react-decks/docs/architecture.md and react-decks/AGENTS.md. Your sandbox is
 read-only; don't run tests or edit files. The author already ran the checks. Report every
 real defect with a file:line reference: behaviour that differs from the contract's tables,
 missing edge cases, tests that cannot fail or assert implementation details, boundary
