@@ -1335,9 +1335,9 @@ author did not write it (the existing expectation in `slides.test.ts` changes ac
 
 In dev, the manifest is invalidated when a slide's frontmatter or its counted total changes.
 A body edit that changes the total therefore reloads the manifest; one that does not still
-hot-updates only that slide. If a body stops parsing mid-edit, the count keeps the slide's
-last total and the slide's own compile reports the error; at build, or on the first scan, a
-body that does not parse is an error naming the file.
+hot-updates only that slide. A body that does not parse never makes the count fail: it keeps
+the slide's last total if the server has one, else 0, and the slide's own compile reports
+the error, so one broken slide leaves its neighbours working even on a cold start.
 
 Frontmatter `morphSteps: true` becomes `SlideMeta.morphSteps`; anything but a boolean is an
 error naming the file, as is an empty `transition`. `deck.config.ts`'s `transition` becomes
