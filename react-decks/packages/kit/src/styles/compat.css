@@ -1,0 +1,78 @@
+/* @slidev/client/styles/index.ts imports @unocss/reset/tailwind.css. */
+:where([data-deck-slide]),
+:where([data-deck-slide]) *,
+:where([data-deck-slide])::before,
+:where([data-deck-slide]) *::before,
+:where([data-deck-slide])::after,
+:where([data-deck-slide]) *::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+}
+:where([data-deck-slide]) {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+}
+:where([data-deck-slide]) {
+  margin: 0;
+  line-height: inherit;
+}
+:where([data-deck-slide]) h1,
+:where([data-deck-slide]) h2,
+:where([data-deck-slide]) h3,
+:where([data-deck-slide]) p,
+:where([data-deck-slide]) ul {
+  margin: 0;
+}
+:where([data-deck-slide]) h1,
+:where([data-deck-slide]) h2,
+:where([data-deck-slide]) h3 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+:where([data-deck-slide]) ul {
+  list-style: none;
+  padding: 0;
+}
+:where([data-deck-slide]) a {
+  color: inherit;
+  text-decoration: inherit;
+}
+:where([data-deck-slide]) svg {
+  display: block;
+  vertical-align: middle;
+}
+
+/* @slidev/client/styles/layouts-base.css: more specific than .od-h2/.od-bullets. */
+[data-deck-slide] h2 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+[data-deck-slide] li {
+  margin-left: 1.1em;
+  margin-right: 0;
+  padding-left: 0.2em;
+  padding-right: 0;
+  line-height: 1.8em;
+}
+[data-deck-slide] a {
+  border-bottom: 1px dashed currentColor;
+}
+
+/* slidev-theme-the-unnamed/styles/layout.css. */
+[data-deck-slide] a:hover {
+  color: inherit;
+}
+
+[data-deck-slide] h1 {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  margin-left: -0.05em;
+  margin-right: 0;
+  margin-bottom: 1rem;
+}
+[data-deck-slide] h3 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}

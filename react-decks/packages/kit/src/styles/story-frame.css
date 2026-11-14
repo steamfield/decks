@@ -1,0 +1,176 @@
+/* ── Story slides: the frame ──────────────────────────────────────────────
+   The slide level chrome of a story slide: the 16:9 box every layer shares,
+   the frame units and duration mirrors declared on it, the cover layout, the
+   headline, and the cross slide hand off. The marks that sit inside the frame
+   are in story-marks.css, which loads straight after this file.
+
+   Every rule here is scoped under `.od-slide.is-story`, because the shared
+   addon stylesheet ships to every deck and nothing in this file should reach
+   a conventional slide.
+
+   Two exceptions live at the bottom and cannot be scoped, because the browser
+   owns the elements: the `::view-transition-*` pseudo elements (document
+   level by definition) and their keyframes. Their duration and easing mirror
+   `DUR.morph` and `SETTLE_CSS` in `packages/decks/story/easings.ts`; if either moves,
+   move both.
+   ------------------------------------------------------------------------ */
+
+.od-slide.is-story {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+
+  /* The largest 16:9 box that fits the viewport. Ink is drawn in a 1920x1080
+     viewBox and the overlay is laid out in CSS, and the two only coincide if
+     the box holding them has the viewBox's aspect ratio. When the slide itself
+     was the box, any viewport that was not 16:9 made `xMidYMid slice` crop the
+     ink: fullscreen on a 16:10 laptop cut everything past viewBox x=1824,
+     which is where this deck draws. Both layers live in this frame instead, so
+     nothing is ever cropped and ink lands on overlay at any aspect ratio. */
+  --od-fw: min(100cqw, 177.7778cqh);
+  --od-fh: min(100cqh, 56.25cqw);
+
+  /* One percent of the frame, for everything inside it. These replace cqw and
+     cqh: a viewport unit inside the frame drifts from the ink the moment the
+     window stops being 16:9. 1 --sw is 19.2 viewBox units, 1 --sh is 10.8. */
+  --sw: calc(var(--od-fw) / 100);
+  --sh: calc(var(--od-fh) / 100);
+  /* Horizontal layout can expand independently of type and SVG geometry. */
+  --lw: calc(var(--od-fw) / 100);
+  /* Half the letterbox band: how far a layer that is meant to cover the whole
+     window (a full bleed map, say) has to reach past the frame on each side.
+     Everything laid out inside the frame still uses --sw/--sh. */
+  --od-bleed-x: calc((100cqw - var(--od-fw)) / 2);
+  /* Mirrors of the TS duration table, for the handful of transitions that
+     stay in CSS. Keep in sync with DUR in packages/decks/story/easings.ts. */
+  --od-dur-card: 300ms;
+  --od-dur-opacity: 140ms;
+  --od-settle: cubic-bezier(0.32, 0.72, 0, 1);
+  --od-draw: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Cover variant: the stage carries the ink, the glow stays. */
+.od-slide.is-story.is-story-cover {
+  background:
+    radial-gradient(
+      57cqw 70cqh at 86% 12%,
+      rgba(var(--od-glow-primary-rgb), 0.1),
+      rgba(var(--od-glow-primary-rgb), 0) 55%
+    ),
+    radial-gradient(
+      43cqw 57cqh at 8% 102%,
+      rgba(var(--od-glow-secondary-rgb), 0.07),
+      rgba(var(--od-glow-secondary-rgb), 0) 55%
+    ),
+    var(--od-canvas-cover);
+}
+
+/* The 16:9 box the stage svg and the overlay share. */
+.od-slide.is-story .od-story-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--od-fw);
+  height: var(--od-fh);
+  transform: translate(-50%, -50%);
+}
+
+/* Reflowable HTML and chart containers use the window width, capped at 12:5
+   on ultrawide displays. Type stays tied to the fitted frame height so it
+   cannot crowd the vertical layout. Fixed-coordinate SVG scenes opt out. */
+.od-slide.is-story.is-fluid {
+  --od-fw: min(100cqw, 240cqh);
+  --sw: calc(min(var(--od-fw), var(--od-fh) * 16 / 9) / 100);
+  --lw: calc(var(--od-fw) / 100);
+}
+
+/* ── Stage ── */
+.od-slide.is-story .od-stage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* A second full bleed svg layer, for ink that has to sit on an element with a
+   CSS box (anything carrying a view-transition-name). */
+.od-slide.is-story .od-stage-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.od-slide.is-story .od-stage-layer > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Cover chrome: the one story overlay that is a flow layout rather than a set
+   of absolutely placed pieces. */
+.od-slide.is-story .od-cover-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(8.1 * var(--sh)) calc(5.7 * var(--lw));
+}
+
+/* A cover frame with no byline row (the close) has two children, and
+   space-between would drop the title to the floor. This centers the middle
+   block in the space left over, which is where a three-row frame puts it,
+   without an empty element standing in as a spacer. */
+.od-slide.is-story .od-cover-frame > .od-cover-center {
+  margin-block: auto;
+}
+
+/* The body block: eyebrow, title, lede. Narrower than the frame so a title
+   wraps where it reads best. */
+.od-slide.is-story .od-cover-body {
+  max-width: calc(64 * var(--lw));
+}
+
+/* The one sentence under a cover title. */
+.od-slide.is-story .od-cover-lede {
+  margin: 1.7rem 0 0;
+  max-width: calc(52 * var(--lw));
+}
+
+/* ── Headline: fixed top left, never moves within a slide ──
+   A fixed width rather than a max-width. A shrink-to-fit box changes width
+   with its text, so the named view-transition group morphed between two
+   different boxes and scaled both headline snapshots on every slide change.
+   With one width on both sides only the height can differ. */
+.od-slide.is-story .od-story-head {
+  position: absolute;
+  top: calc(6.2 * var(--sh));
+  left: calc(5.7 * var(--lw));
+  margin: 0;
+  width: calc(64 * var(--lw));
+  /* Frame units, not rem: rem holds still while the frame shrinks, so on a
+     1280px laptop the headline wrapped into the stage. 46.4px at 1920. */
+  font-size: calc(2.4167 * var(--sw));
+  font-weight: 510;
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  color: var(--od-text);
+}
+/* The headline and the cover title set in `fonts.serif`, which is the sans
+   unless the deck's theme.json says otherwise. The !important answers the
+   `.slidev-layout h1, h2` rule in base.css, which pins headings to the sans. */
+.od-slide.is-story .od-story-head,
+.od-slide.is-story .od-title {
+  font-family: var(--od-font-serif) !important;
+}
+/* One line at the full width of the frame, for a stage that needs the height
+   a wrapped headline would take. */
+.od-slide.is-story .od-story-head.is-wide {
+  width: calc(88 * var(--lw));
+  white-space: nowrap;
+}

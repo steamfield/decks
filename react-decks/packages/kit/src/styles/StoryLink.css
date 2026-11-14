@@ -1,0 +1,13 @@
+.od-slide.is-story .od-story-link {
+  position: absolute;
+  right: calc(5.7 * var(--lw));
+  bottom: calc(4.4 * var(--sh));
+  font-size: 0.95rem;
+  color: var(--od-text-faint);
+  text-decoration: none;
+  border-bottom: 1px solid var(--od-border);
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
+.od-story-link:hover {
+  color: var(--od-text-muted);
+}
