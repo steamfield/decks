@@ -368,6 +368,44 @@ Kit CSS, deck CSS, tests and tooling select on these and nothing else from the f
 Framework UI classes are prefixed `rd-` and live in `@layer react-decks`. The framework ships
 no CSS reset.
 
+## 3.1 Deck layout (Final)
+
+```
+<deck>/
+  deck.config.ts      export default defineDeck({ ... })
+  package.json        depends on @react-decks/runtime; dev-depends on @react-decks/node
+  slides/*.mdx        one file per slide, ordered by filename
+  components/*.tsx    optional; provided to every slide without an import
+  styles/index.css    optional; loaded once, after framework styles
+  public/             optional; served at the site root
+```
+
+There is no `index.html` and no slide manifest file in a deck. `examples/basic` is the
+reference.
+
+Slides are every `.mdx` file directly under `slides/`, sorted by filename compared as plain
+strings (`"02-a" < "10-b"`). A slide's `id` is its filename without `.mdx`. Frontmatter:
+
+| Key | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `title` | string | the slide's `id` | shown in overview, PDF outline and embed metadata |
+| `clicks` | integer >= 0 | 0 | number of clicks after the initial state |
+| `hide` | boolean | false | when true the slide is dropped before numbering and never compiled into the deck |
+| `transition` | string | none | transition into the following slide |
+
+Any other key is kept and reaches the slide through `useSlide().frontmatter`. A `clicks` that
+is not a non-negative integer, a `title` or `transition` that is not a string, or a `hide`
+that is not a boolean is an error naming the file and the key. A deck with no visible slide is
+an error.
+
+A component file under `components/` provides each of its named exports, and its default
+export under the file's basename, to MDX under that name. Two files exporting the same name
+is an error naming both files. Subdirectories are not scanned.
+
+`<Notes>...</Notes>` in a slide holds speaker notes as markdown. It is removed from the
+slide's rendered output at compile time and collected into the notes module. More than one
+`<Notes>` in a slide is an error naming the file.
+
 ## 4. runtime (Outline)
 
 - Store: `createDeckStore(manifest, locationAdapter, transport?)`, a zustand vanilla store
@@ -391,6 +429,145 @@ no CSS reset.
 - `embed.ts`: the `decks:*` postMessage protocol.
 - `viewer.ts`: pinch zoom, pan, reset, and text sizing through `--deck-text-scale`.
 - `PresenterView`, `OverviewView`, `PrintView`, keyboard map, wake lock, idle cursor, `Notes`.
+
+## 4.1 runtime, Phase 2 surface (Final)
+
+```ts
+import type { MDXComponents } from "mdx/types";
+import type { ComponentType, ReactElement, ReactNode } from "react";
+import type { DeckManifest, DeckView, NavAction, NavState, SlideMeta } from "@react-decks/core";
+
+export type SlideLoader = () => Promise<{ default: ComponentType<{ components?: MDXComponents }> }>;
+
+/** Everything the generated entry hands to the runtime. */
+export interface DeckSource {
+  readonly manifest: DeckManifest;
+  /** Keyed by slide id. */
+  readonly slides: Readonly<Record<string, SlideLoader>>;
+  /** Keyed by slide id. */
+  readonly frontmatter: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+  readonly components: MDXComponents;
+  /** Notes HTML keyed by slide id; loaded only by views that show notes. */
+  readonly loadNotes?: () => Promise<Readonly<Record<string, string>>>;
+}
+
+export interface DeckState {
+  readonly nav: NavState;
+  readonly view: DeckView;
+  readonly embedded: boolean;
+  readonly bridge: boolean;
+}
+
+export interface DeckStore {
+  getState(): DeckState;
+  subscribe(listener: () => void): () => void;
+  dispatch(action: NavAction): void;
+  /** Removes the window listeners. */
+  destroy(): void;
+}
+
+/** Binds to `window.location` and `window.history`. */
+export function createDeckStore(manifest: DeckManifest): DeckStore;
+
+export function Deck(props: { source: DeckSource; store: DeckStore }): ReactElement;
+
+/** Creates a store, renders `Deck` into `root` (default `#deck-root`), returns an unmount function. */
+export function mountDeck(source: DeckSource, root?: HTMLElement): () => void;
+
+export interface DeckApi {
+  readonly slide: number;
+  readonly total: number;
+  readonly clicks: number;
+  readonly clicksTotal: number;
+  readonly slides: readonly SlideMeta[];
+  readonly view: DeckView;
+  readonly isPrint: boolean;
+  next(): void;
+  prev(): void;
+  nextSlide(): void;
+  prevSlide(): void;
+  go(slide: number, click?: number): void;
+}
+export function useDeck(): DeckApi;
+
+export type RenderContext = "slide" | "presenter" | "preview" | "overview" | "print";
+
+export interface SlideApi {
+  readonly no: number;
+  readonly id: string;
+  /** The click this instance of the slide renders at. */
+  readonly clicks: number;
+  readonly clicksTotal: number;
+  /** True only for the current slide in the play view. */
+  readonly isActive: boolean;
+  readonly renderContext: RenderContext;
+  readonly frontmatter: Readonly<Record<string, unknown>>;
+}
+export function useSlide(): SlideApi;
+
+/** The scale the nearest SlideFrame applies; 1 outside a frame. */
+export function useSlideScale(): number;
+
+/** The adaptive canvas. `main` marks the one frame that owns `#deck-frame`. */
+export function SlideFrame(props: { main?: boolean; children: ReactNode }): ReactElement;
+
+/** One slide in a slide context. `clicks` defaults to `clicksForSlide` for the deck's position. */
+export function SlideHost(props: { no: number; context: RenderContext; clicks?: number }): ReactElement;
+
+export function PlayView(): ReactElement;
+
+/** Speaker notes. The compiler removes it from slides; rendering it yields nothing. */
+export function Notes(props: { children?: ReactNode }): null;
+```
+
+The store is a zustand vanilla store internally; `DeckStore` is the surface the rest of the
+runtime and the tests use.
+
+| Event | Store behaviour |
+| --- | --- |
+| Created | Parses `location.hash` and `location.search`, clamps with `clampNav`. If the hash is not the canonical `formatHash` of that state, rewrites it with `history.replaceState`. |
+| `dispatch`, state unchanged | Nothing: no history entry, no notification. |
+| `dispatch`, only the click changed | State updates, hash rewritten with `replaceState`, subscribers notified once. |
+| `dispatch`, the slide changed | State updates, hash written with `pushState`, subscribers notified once. |
+| `hashchange` or `popstate` (edited URL, back, forward) | Re-parses and clamps; state updates and subscribers are notified if it differs; a non-canonical hash is rewritten with `replaceState`. |
+| Any write | `location.search` is preserved. |
+| `destroy` | Listeners removed; later URL changes do not notify. |
+
+`useDeck` and `useSlide` throw an `Error` naming the missing provider when used outside
+`Deck` or outside a `SlideHost`.
+
+`Deck` sets `data-deck-view` and `data-deck-motion="live"` on `<html>`, provides the source and
+store, wraps slides in `MDXProvider` with `source.components`, and renders the view for
+`DeckState.view`. In Phase 2 every view renders `PlayView`.
+
+`PlayView`:
+
+- Mounts a `SlideHost` with context `slide` for the current slide and for the slides directly
+  before and after it, inside one `SlideFrame main`. Slides further away are not mounted.
+- Each slide root is an element with `data-deck-slide` and `data-deck-context` (section 3).
+  The current one has `data-deck-active`; the others have the `hidden` attribute.
+- A slide whose module has not loaded renders nothing until it has. When the browser is idle
+  after the first render, every slide module is requested once so later navigation does not
+  wait.
+- Keys, bound with `tinykeys` on `window`:
+
+| Key | Action |
+| --- | --- |
+| `ArrowRight`, `Space`, `PageDown` | `next` |
+| `ArrowLeft`, `Shift+Space`, `PageUp` | `prev` |
+| `ArrowDown` | `nextSlide` |
+| `ArrowUp` | `prevSlide` |
+| `Home` | `go(1)` |
+| `End` | `go(total)` |
+
+  A key is ignored when the event target is an `input`, `textarea`, `select` or
+  contenteditable element.
+
+`SlideFrame` measures its parent with `ResizeObserver`, applies `fitCanvas` with the
+manifest's canvas, sizes its content to the logical width and height in px, transform-scales
+it from the top left, makes it a CSS size container, and sets `--deck-w`, `--deck-h` and
+`--deck-scale` (unitless numbers) on it. Where `ResizeObserver` does not exist it renders at
+the design size with scale 1.
 
 ## 5. motion (Outline)
 
@@ -416,6 +593,108 @@ no CSS reset.
 - `defineDeck` and `defineTheme` config, validated at load.
 - CLI `decks`: `dev`, `build`, `export`, `new`, `list`, `check`, `lint`, `fact-extract`,
   `review-prose`, `shot`, `snap`, `snap:diff`, `film`, `motion-check`, `init`, `hook`.
+
+## 6.1 node, Phase 2 surface (Final)
+
+```ts
+import type { DeckManifest, SlideMeta } from "@react-decks/core";
+import type { Plugin, UserConfig } from "vite";
+
+export interface DeckConfig {
+  readonly title: string;
+  readonly author?: string;
+  readonly info?: string;
+  /** Default { width: 1920, height: 1080 }. */
+  readonly canvas?: { readonly width: number; readonly height: number };
+  /** Default transition between slides. */
+  readonly transition?: string;
+  /** Attributes set on <html>. */
+  readonly htmlAttrs?: Readonly<Record<string, string>>;
+  /** Merged into the Vite config; how a deck adds Tailwind or other plugins. */
+  readonly vite?: UserConfig;
+}
+
+/** Identity function that gives `deck.config.ts` its types. */
+export function defineDeck(config: DeckConfig): DeckConfig;
+
+export interface ResolvedDeck {
+  /** Registry alias, or the directory's basename. */
+  readonly name: string;
+  /** Absolute path of the deck directory. */
+  readonly dir: string;
+  readonly config: DeckConfig & { readonly canvas: { readonly width: number; readonly height: number } };
+}
+
+/** Loads and validates `<dir>/deck.config.ts`. Throws an Error naming the file and the problem. */
+export function loadDeck(dir: string, name?: string): Promise<ResolvedDeck>;
+
+export interface ScannedSlide {
+  readonly meta: SlideMeta;
+  readonly frontmatter: Readonly<Record<string, unknown>>;
+}
+
+/** Reads `slides/*.mdx` per section 3.1: sorted, hidden slides dropped, numbered from 1. */
+export function scanSlides(deck: ResolvedDeck): Promise<readonly ScannedSlide[]>;
+
+export function buildManifest(deck: ResolvedDeck, slides: readonly ScannedSlide[]): DeckManifest;
+
+/** The Vite plugins that turn a deck directory into an app. */
+export function reactDecks(deck: ResolvedDeck): Plugin[];
+
+export interface DevServer {
+  readonly url: string;
+  close(): Promise<void>;
+}
+/** `port` 0 or undefined picks a free port starting at 3030. */
+export function dev(deck: ResolvedDeck, options?: { port?: number; open?: boolean }): Promise<DevServer>;
+
+export function build(deck: ResolvedDeck, options: { outDir: string; base?: string }): Promise<void>;
+```
+
+Config is loaded with Vite's `loadConfigFromFile` and validated with zod. Unknown keys are
+an error naming the key.
+
+Modules the plugins serve:
+
+| Id | Exports |
+| --- | --- |
+| `virtual:react-decks/manifest` | `manifest: DeckManifest`; `slides: Record<id, () => import(<slide file>)>`; `frontmatter: Record<id, Record<string, unknown>>` |
+| `virtual:react-decks/components` | `components: Record<name, Component>` built per section 3.1 |
+| `virtual:react-decks/notes` | `notes: Record<id, string>`: each slide's `<Notes>` content rendered from markdown to HTML; slides without notes are absent |
+| `virtual:react-decks/entry` | no exports; imports the three above (notes lazily, as `loadNotes`), the deck's `styles/index.css` when it exists, and calls `mountDeck` from `@react-decks/runtime` |
+
+The served HTML has `<html>` carrying `config.htmlAttrs`, a `<title>` from `config.title`,
+`<meta name="author">` when set, `<meta name="decks:entry" content="<absolute deck dir>">`,
+`<meta name="decks:name" content="<name>">`, `<div id="deck-root">`, and a module script for
+the entry. No `index.html` is written into the deck directory, in dev or in build.
+
+Slide `.mdx` files compile through `@mdx-js/rollup` with `remark-frontmatter` (frontmatter is
+not rendered) and a remark plugin that removes `<Notes>`. JSX and Fast Refresh come from
+`@vitejs/plugin-react`. The deck's `public/` is Vite's public directory. `config.vite` is
+merged last.
+
+| Change while `dev` runs | Result in the browser |
+| --- | --- |
+| A slide's body is edited | That slide hot-updates; no full reload |
+| A slide's frontmatter changes, or a slide file is added, removed or renamed | The manifest module is invalidated and the page reloads; slide and click survive because they are in the URL |
+| A file is added to or removed from `components/` | The components module is invalidated and the page reloads; no server restart |
+| `deck.config.ts` changes | The server restarts |
+
+`build` writes a static site to `outDir` that works from any `base` and from `file:`-relative
+hosting under that base; hash routing needs no server rewrites.
+
+CLI (`packages/node/src/cli.ts`, built with `citty`, run with `node`):
+
+```
+decks dev <deck> [--port <n>] [--open]
+decks build <deck> [--out <dir>] [--base <path>]
+```
+
+`<deck>` is an alias in `./decks.json` (`{ "<alias>": { "dir": "<path>" } }`, keys starting
+with `_` are config) or a path to a deck directory. `dev` prints the URL it serves.
+`build` defaults `--out` to `decks.json`'s `_config.outDir` with `{name}` replaced, and
+`--base` to `_config.base`. An unknown alias or a directory without `deck.config.ts` exits 1
+with a message naming it.
 
 ## 7. kit (Outline)
 

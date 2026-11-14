@@ -1,1 +1,10 @@
-{ "_config": { "decksDir": "examples", "outDir": "dist/{name}", "base": "/" } }
+{
+  "_config": {
+    "decksDir": "examples",
+    "outDir": "dist/{name}",
+    "base": "/"
+  },
+  "basic": {
+    "dir": "examples/basic"
+  }
+}

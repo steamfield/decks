@@ -6,10 +6,17 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@react-decks/core": "workspace:*"
+    "@react-decks/core": "workspace:*",
+    "@mdx-js/react": "3.1.1",
+    "clsx": "2.1.1",
+    "tinykeys": "4.0.1",
+    "zustand": "5.1.0"
   },
   "peerDependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/mdx": "2.0.14"
   }
 }

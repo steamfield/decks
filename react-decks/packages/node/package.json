@@ -6,6 +6,20 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@react-decks/core": "workspace:*"
+    "@react-decks/core": "workspace:*",
+    "@mdx-js/rollup": "3.1.1",
+    "@vitejs/plugin-react": "6.3.0",
+    "citty": "0.2.2",
+    "get-port": "7.2.0",
+    "gray-matter": "4.0.3",
+    "picocolors": "1.1.1",
+    "remark-frontmatter": "5.0.0",
+    "remark-mdx-frontmatter": "6.0.0",
+    "tinyglobby": "0.2.17",
+    "vite": "8.3.8",
+    "zod": "4.6.7"
+  },
+  "bin": {
+    "decks": "./src/cli.ts"
   }
 }
