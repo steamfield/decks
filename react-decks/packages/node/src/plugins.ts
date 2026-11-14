@@ -9,6 +9,7 @@ import { codeBlocks } from "./code-blocks";
 import { componentsModule } from "./components";
 import { loadDeck, type ResolvedDeck } from "./config";
 import { deckHtml, entryModule } from "./entry";
+import { layersModule } from "./layers";
 import { removeNotes, renderNotes } from "./notes";
 import { buildManifest, readSlide, scanSlidesWithCounts } from "./slides";
 
@@ -67,6 +68,7 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
       if (normalizePath(id) === htmlFile) return deckHtml(current, false);
       if (id === `\0${prefix}entry`) return entryModule(current);
       if (id === `\0${prefix}components`) return (await componentsModule(deck.dir)).code;
+      if (id === `\0${prefix}layers`) return layersModule(deck.dir);
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;
       const scanned = await scanSlidesWithCounts(current, totals);
       const slides = scanned.slides;
@@ -104,6 +106,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
           reload(server, "components");
           reload(server, "manifest");
         }
+        if (file.startsWith(`${deckDir}/layers/`)) reload(server, "layers");
       };
       server.watcher.on("add", structural);
       server.watcher.on("unlink", structural);
@@ -146,6 +149,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
         }
       });
       const scanned = await scanSlidesWithCounts(current, totals);
+      await layersModule(deck.dir);
       metadata = scanned.metadata;
       componentsCode = scanned.componentsCode;
       motionNames = scanned.motionNames;
@@ -159,6 +163,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
       if (this.environment.name !== "client") return;
       const file = normalizePath(context.file);
       const parent = normalizePath(dirname(file));
+      if (file.startsWith(`${deckDir}/layers/`) && context.type !== "update") return [];
       if (
         parent === `${deckDir}/components` &&
         file.endsWith(".tsx") &&

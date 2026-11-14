@@ -10,6 +10,7 @@ export {
   useSlide,
   useSlideScale,
 } from "./hooks";
+export { Center, Cover, ImageSide, Section, TwoCol } from "./layouts";
 export { mountDeck } from "./mount";
 export { Notes } from "./notes";
 export { OverviewView } from "./overview-view";

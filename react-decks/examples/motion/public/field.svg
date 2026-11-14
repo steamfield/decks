@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1080" viewBox="0 0 960 1080">
+  <title>Paths converge around a circle.</title>
+  <rect width="960" height="1080" fill="oklch(0.23 0.024 255)"/>
+  <g fill="none" stroke="oklch(0.84 0.15 167)" stroke-width="3">
+    <path d="M-120 100Q780 80 520 540T1080 980"/>
+    <path d="M-120 180Q700 160 520 540T1080 900"/>
+    <path d="M-120 260Q620 240 520 540T1080 820"/>
+    <path d="M-120 340Q540 320 520 540T1080 740"/>
+    <path d="M-120 420Q460 400 520 540T1080 660"/>
+    <path d="M-120 500Q380 480 520 540T1080 580"/>
+  </g>
+  <circle cx="520" cy="540" r="92" fill="oklch(0.83 0.15 75)"/>
+</svg>

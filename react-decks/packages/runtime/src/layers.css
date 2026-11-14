@@ -1,0 +1,17 @@
+@layer react-decks {
+  [data-deck-slide] {
+    position: relative;
+    isolation: isolate;
+  }
+  [data-deck-layer] {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  [data-deck-layer="below"] {
+    z-index: -1;
+  }
+  [data-deck-layer="above"] {
+    z-index: 1;
+  }
+}

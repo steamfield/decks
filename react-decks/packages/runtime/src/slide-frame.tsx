@@ -43,7 +43,7 @@ export function SlideFrame({
     "--deck-text-scale": 1,
   };
   return (
-    <div ref={frame} id={main ? "deck-frame" : undefined} style={style}>
+    <div ref={frame} className="rd-frame" id={main ? "deck-frame" : undefined} style={style}>
       <SlideScaleContext value={fit.scale}>{children}</SlideScaleContext>
     </div>
   );

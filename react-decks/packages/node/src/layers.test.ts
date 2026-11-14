@@ -1,0 +1,90 @@
+import { rm } from "node:fs/promises";
+import { join } from "node:path";
+import { createServer } from "vite";
+import { expect, it, onTestFinished, vi } from "vitest";
+import { fixture } from "./deck.test-support";
+import { loadDeck, reactDecks, scanSlides } from "./index";
+
+async function serve(files: Record<string, string> = {}) {
+  const deck = await fixture(onTestFinished, files);
+  const server = await createServer({
+    configFile: false,
+    plugins: reactDecks(await loadDeck(deck.dir)),
+    server: { port: 0 },
+    logLevel: "silent",
+  });
+  onTestFinished(() => server.close());
+  await server.listen();
+  const url = server.resolvedUrls?.local[0];
+  if (!url) throw new Error("Missing Vite URL");
+  await vi.waitFor(
+    () => expect(server.watcher.getWatched()[join(deck.dir, "slides")]).toContain("01-first.mdx"),
+    { timeout: 10_000 },
+  );
+  const get = async (name: string) => {
+    const response = await fetch(new URL(`/@id/__x00__virtual:react-decks/${name}`, url));
+    const text = await response.text();
+    expect(response.status, text).toBe(200);
+    return text;
+  };
+  return { ...deck, server, get };
+}
+
+it("serves absent layers and each default layer export through the virtual module", async () => {
+  const app = await serve();
+  expect((await app.server.ssrLoadModule("virtual:react-decks/layers")).layers).toEqual({});
+  const both = await serve({
+    "layers/above.tsx": 'export default function Above() { return "Above"; }',
+    "layers/below.tsx": 'export default function Below() { return "Below"; }',
+  });
+  const { layers } = await both.server.ssrLoadModule("virtual:react-decks/layers");
+  expect(layers.above()).toBe("Above");
+  expect(layers.below()).toBe("Below");
+});
+
+it.each(["extra.tsx", "nested/above.tsx", ".hidden"])(
+  "rejects unexpected layer file %s naming it",
+  async (name) => {
+    await expect(
+      serve({ [`layers/${name}`]: "export default function Extra() {}" }),
+    ).rejects.toThrow(`layers/${name}`);
+  },
+);
+
+it.each(["true", "both", "3", "[above]", "null"])(
+  "rejects layers: %s frontmatter naming the file and key",
+  async (value) => {
+    const { dir } = await fixture(onTestFinished, {
+      "slides/01-first.mdx": `---\nlayers: ${value}\n---\n# Slide`,
+    });
+    await expect(scanSlides(await loadDeck(dir))).rejects.toThrow(
+      /slides\/01-first\.mdx:[\s\S]*layers/,
+    );
+  },
+);
+
+it("counts motion children inside an overridden layout normally", async () => {
+  const app = await serve({
+    "components/Center.tsx": "export default function Center() { return null; }",
+    "slides/01-first.mdx": "<Center><Step at={1}>A beat</Step></Center>",
+  });
+  expect((await scanSlides(await loadDeck(app.dir)))[0]?.meta.clicks).toBe(1);
+});
+
+it("adds edits and removes a layer without restarting the dev server", async () => {
+  const app = await serve();
+  await app.get("layers");
+  await app.put("layers/below.tsx", 'export default function Below() { return "Added"; }');
+  await vi.waitFor(async () => expect(await app.get("layers")).toContain("below.tsx"), {
+    timeout: 10_000,
+  });
+  const layer = async () =>
+    (await fetch(new URL("/layers/below.tsx", app.server.resolvedUrls?.local[0]))).text();
+  expect(await layer()).toContain("Added");
+  await app.put("layers/below.tsx", 'export default function Below() { return "Edited"; }');
+  await vi.waitFor(async () => expect(await layer()).toContain("Edited"), { timeout: 10_000 });
+  await rm(join(app.dir, "layers/below.tsx"));
+  await vi.waitFor(async () => expect(await app.get("layers")).not.toContain("below.tsx"), {
+    timeout: 10_000,
+  });
+});

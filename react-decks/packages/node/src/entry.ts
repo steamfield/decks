@@ -3,13 +3,14 @@ import { join } from "node:path";
 import type { ResolvedDeck } from "./config";
 
 export function entryModule(deck: ResolvedDeck): string {
-  return `import { mountDeck } from "@react-decks/runtime";
+  return `import { mountDeck, Center, Cover, Section, TwoCol, ImageSide } from "@react-decks/runtime";
 import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock } from "@react-decks/motion";
 import { manifest, slides, frontmatter } from "virtual:react-decks/manifest";
 import { components } from "virtual:react-decks/components";
+import { layers } from "virtual:react-decks/layers";
 ${existsSync(join(deck.dir, "styles/index.css")) ? 'import "/styles/index.css";' : ""}
-mountDeck({ manifest, slides, frontmatter,
-  components: { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, pre: CodeBlock, ...components },
+mountDeck({ manifest, slides, frontmatter, layers,
+  components: { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, pre: CodeBlock, Center, Cover, Section, TwoCol, ImageSide, ...components },
   loadNotes: () => import("virtual:react-decks/notes").then(module => module.notes)
 });`;
 }
