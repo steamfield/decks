@@ -1,0 +1,24 @@
+{
+  "name": "@react-decks/example-building-for-agents",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@fontsource-variable/orbitron": "5.3.0",
+    "@fontsource/mr-dafoe": "5.3.0",
+    "@fontsource/press-start-2p": "5.3.0",
+    "@fontsource/vt323": "5.3.0",
+    "@opendata-ai/openchart-engine": "9.0.0",
+    "@react-decks/kit": "workspace:*",
+    "@react-decks/motion": "workspace:*",
+    "@react-decks/runtime": "workspace:*",
+    "postprocessing": "6.39.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@react-decks/node": "workspace:*",
+    "@types/three": "0.185.0"
+  }
+}
