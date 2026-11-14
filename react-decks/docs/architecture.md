@@ -8,6 +8,10 @@ builds it.
 Only the orchestrator edits this file, any `package.json`, and each package's
 `src/index.ts` export list.
 
+Something described here that the code does not have yet is marked **Not built yet (planned
+for 1.0.0-rc)**; `plans/build-react-decks-rc.md` at the repo root has the order. Things that
+are neither built nor planned for the rc are listed in section 8, "Deferred".
+
 ## 1. Packages and the dependency rule (Final)
 
 ```
@@ -24,6 +28,13 @@ kit -> motion -> runtime -> core <- node
 
 Cross-package imports use the bare package name. A relative import never leaves its package.
 `tests/boundaries.test.ts` and `biome.json` enforce this.
+
+All five packages are private workspaces consumed as TypeScript source: each `package.json`
+exports `./src/index.ts`, the kit also exports `./styles.css`, and `node`'s `bin` is
+`src/cli.ts`, run through `tsx`. Not built yet (planned for 1.0.0-rc): one published package,
+`@steamfield/decks`, that bundles them into compiled JS and `.d.ts` with subpath exports `.`,
+`/motion`, `/kit`, `/kit/styles.css` and `/node`, and a `decks` bin that runs under plain
+Node. The five source packages and the dependency rule above stay as they are.
 
 Inside a package, files are grouped by feature, one file per concept, with its test beside
 it (`navigation.ts`, `navigation.test.ts`). There is no `utils/` or `shared/` directory. A
@@ -47,25 +58,32 @@ than hand-written code asks for it by name.
 | Deck store | zustand vanilla store behind the `DeckStore` surface; hooks subscribe with React's `useSyncExternalStore` and a selector | `runtime` |
 | Error boundary around each slide | `react-error-boundary` | `runtime` |
 | Keyboard shortcuts | `tinykeys` | `runtime` |
-| Pinch, wheel and drag for the viewer | `@use-gesture/react` | `runtime` |
-| Class name composition | `clsx` | `runtime`, `motion`, `kit` |
-| Timelines, text splitting, SVG drawing, count-up | `gsap` with `@gsap/react`, `SplitText`, `DrawSVGPlugin` | `motion` |
+| Class name composition | `clsx` (declared; nothing imports it yet) | `runtime` |
+| Timelines, custom eases, count-up | `gsap` with `CustomEase`. `@gsap/react` is declared in `motion` and not imported. Text splitting uses `Intl.Segmenter` and SVG drawing uses `pathLength` with CSS (section 5.1), so `SplitText` and `DrawSVGPlugin` are not used | `motion`, `kit` |
 | MDX compile | `@mdx-js/rollup` | `node` |
-| Frontmatter | `remark-frontmatter` + `remark-mdx-frontmatter` in the MDX pipeline; `gray-matter` when only metadata is read | `node` |
+| Parsing MDX outside the compiler (click counts, notes) | `unified` + `remark-parse` + `remark-mdx` | `node` |
+| Frontmatter | `remark-frontmatter` in the MDX pipeline (it keeps frontmatter out of the rendered slide); `gray-matter` reads the metadata | `node` |
 | Markdown in notes to HTML | `remark-rehype` + `rehype-stringify` | `node` |
+| Code highlighting | `shiki` + `@shikijs/rehype` (section 6.3) | `node` |
 | Loading `deck.config.ts` | `jiti` | `node` |
 | Config validation | `zod` | `node` |
 | Reading a component file's export names | `oxc-parser` | `node` |
-| CLI commands and flags | `citty` | `node` |
-| Terminal colour and prompts | `picocolors`, `@clack/prompts` | `node` |
+| CLI commands and flags | `citty`, with `node:util`'s `parseArgs` to reject unknown options | `node` |
+| Terminal colour | `picocolors` | `node` |
 | Free port | `get-port` | `node` |
 | File globbing | `tinyglobby` | `node` |
-| Browser automation, PDF | `playwright`, `pdf-lib` | `node` |
-| Image diff and contact sheets | `pixelmatch` + `pngjs`, `sharp` | `node` |
 | Dev server, HMR, file watching, React refresh | `vite`, `@vitejs/plugin-react` | `node` |
-| Fonts | `@fontsource*` packages | decks, `kit` |
-| Charts | `@opendata-ai/openchart-react` | `kit` |
+| Image diff for parity checks | `pixelmatch` + `pngjs` | workspace dev |
+| Fonts | `@fontsource*` packages in decks. The kit ships Inter as woff2 files in `styles/fonts/`, taken from `@fontsource-variable/inter`, with no dependency | decks, `kit` |
+| Charts | `@opendata-ai/openchart-react` and `@opendata-ai/openchart-core` | `kit` |
+| Story scales | `d3-scale` | `kit` |
+| QR codes | `uqr` | `kit` |
 | Tests | `vitest`, `@testing-library/react`, `user-event`, `jest-dom`, `@playwright/test` (`toHaveScreenshot` for pixel checks) | workspace |
+
+Not built yet (planned for 1.0.0-rc), with libraries not installed yet: browser automation
+and PDF for `decks export` and `decks shot` (`playwright`, `pdf-lib`), and prompts for
+`decks new` and `decks init` (`@clack/prompts`). The pinch-zoom viewer (`@use-gesture/react`)
+and contact sheets (`sharp`) are deferred (section 8).
 
 Written here on purpose: the navigation reducer, hash codec, notes segmentation, sync
 protocol and canvas fit in `core` (each is a few dozen lines of deck-specific rules), and the
@@ -427,11 +445,18 @@ Kit CSS, deck CSS, tests and tooling select on these and nothing else from the f
 | `data-deck-transition` | `<html>`, during a transition | a slide transition name, or `step` |
 | `#deck-root` | the React mount node | |
 | `#deck-frame` | the scaled canvas element of the main view | sets `--deck-w`, `--deck-h`, `--deck-scale`, `--deck-text-scale` |
-| `#deck-print` | the print container | |
+| `#deck-print` | the print container. Not built yet (planned for 1.0.0-rc, with the print view) | |
 | `data-step-state` | each step primitive's element | `before`, `current`, `after`, `gone` |
-| `data-deck-layer` | a layer's element inside a slide root | `above`, `below` |
+| `data-step-enter`, `data-step-exit` | the same element | the preset names (section 5.1) |
+| `data-deck-layer` | a layer's element inside a slide root | `above`, `below`, `credit` |
+| `data-deck-credit` | a slide root that shows the credit (section 6.5) | |
 | `data-deck-layout` | a layout component's element | `center`, `cover`, `section`, `two-col`, `image-side` |
 | `data-line`, `data-line-state` | a line of a code block | the line number; `active`, `dim` |
+| `data-line-number` | a numbered line of a code block | the number shown |
+
+The `print` values exist in the types and the hash codec: `#/print` sets
+`data-deck-view="print"`, but no view renders slides in the `print` context yet, and the play
+view is shown. The print view is not built yet (planned for 1.0.0-rc).
 
 Framework UI classes are prefixed `rd-` and live in `@layer react-decks`. The framework ships
 no CSS reset.
@@ -441,11 +466,15 @@ no CSS reset.
 ```
 <deck>/
   deck.config.ts      export default defineDeck({ ... })
-  package.json        depends on @react-decks/runtime and @react-decks/motion; dev-depends on @react-decks/node
+  package.json        depends on @react-decks/runtime and @react-decks/motion (and @react-decks/kit
+                      when it uses the kit); dev-depends on @react-decks/node
   slides/*.mdx        one file per slide, ordered by filename
   components/*.tsx    optional; provided to every slide without an import
   layers/above.tsx    optional; drawn over every slide (section 6.5)
   layers/below.tsx    optional; drawn under every slide
+  layers/credit.tsx   optional; replaces the built-in credit (section 6.5)
+  setup.ts            optional; imported first, before any component (section 7.1)
+  theme.json          optional; a kit deck's theme overrides, read by its setup.ts (section 7.1)
   styles/index.css    optional; loaded once, after framework styles
   public/             optional; served at the site root
 ```
@@ -458,7 +487,7 @@ strings (`"02-a" < "10-b"`). A slide's `id` is its filename without `.mdx`. Fron
 
 | Key | Type | Default | Meaning |
 | --- | --- | --- | --- |
-| `title` | string | the slide's `id` | shown in overview, PDF outline and embed metadata |
+| `title` | string | the slide's `id` | shown in the overview; the PDF outline and embed metadata will use it (not built yet, planned for 1.0.0-rc) |
 | `clicks` | integer >= 0 | counted (section 6.2) | number of clicks after the initial state |
 | `morphSteps` | boolean | false | clicks on this slide commit through a view transition (section 4.3) |
 | `hide` | boolean | false | when true the slide is dropped before numbering and never compiled into the deck |
@@ -482,36 +511,46 @@ slide's rendered output at compile time and collected into the notes module. Mor
 
 ## 4. runtime (Outline)
 
-- Store: `createDeckStore(manifest, locationAdapter, transport?)`, a zustand vanilla store
-  whose only reducer is core's `navigate`; components read it through selector hooks. The URL hash is the source of truth: clicks are written with
-  `replaceState`, slide changes with `pushState`.
-- Hooks: `useDeck()` returns `{ slide, total, clicks, clicksTotal, slides, view, isPrint,
-  next, prev, nextSlide, prevSlide, go }`. `useSlide()` returns `{ no, clicks, clicksTotal,
-  isActive, renderContext, frontmatter }`. `useSlideScale()` returns the canvas scale.
+- Store (`store.ts`): `createDeckStore(manifest, options?: { transport?, present? })`, a
+  zustand vanilla store whose only reducer is core's `navigate`; components read it through
+  selector hooks. The URL hash is the source of truth: clicks are written with
+  `replaceState`, slide changes with `pushState`. Sections 4.1 to 4.3 have the surface.
+- Hooks (`hooks.ts`): `useDeck()` returns `{ slide, total, clicks, clicksTotal, slides, view,
+  isPrint, embedded, next, prev, nextSlide, prevSlide, go }`. `useSlide()` returns `{ no, id,
+  clicks, clicksTotal, isActive, renderContext, frontmatter }`. `useSlideScale()` returns the
+  canvas scale.
 - `SlideFrame` applies `fitCanvas`. `SlideHost` mounts one slide inside a slide context, so
-  previews and print render a slide at any click without touching the URL.
-- `PlayView` mounts the current, previous and next slide. Inactive slides are `display: none`.
-  Every slide module is prefetched when the browser is idle, without mounting.
-- `transition.ts` owns view-transition state: `runTransition(commit, kind)`,
-  `transitionInFlight()`. Slide changes transition; a click transitions
-  only on a slide with `morphSteps` (section 4.3).
-- Registries, because runtime cannot import the packages above it:
-  `registerSettleProbe(isBusy: () => boolean)` and
-  `registerCaptionProvider(read: (slideRoot: Element) => { lead: string; body: string } | null)`.
-  `settled()` resolves when no finite animation from `document.getAnimations()` is running,
-  no probe reports busy and no transition is pending.
-- `embed.ts`: the `decks:*` postMessage protocol.
-- `viewer.ts`: pinch zoom, pan and reset (not built yet).
+  previews render a slide at any click without touching the URL; it also renders the slide's
+  layers and credit (section 6.5).
+- `PlayView` mounts the current, previous and next slide. Inactive slides have the `hidden`
+  attribute. Every slide module is prefetched when the browser is idle, without mounting.
+- `transition.ts` owns view-transition state: `createPresenter(source)` (the `present`
+  option `mountDeck` passes), `runTransition`, `transitionInFlight()`, `transitionName`.
+  Slide changes transition; a click transitions only on a slide with `morphSteps`
+  (section 4.3).
+- One registry, because runtime cannot import the packages above it:
+  `registerSettleProbe(isBusy: () => boolean)` (`settle.ts`). `settled()` resolves when no
+  finite animation from `document.getAnimations()` is running, no probe reports busy and no
+  transition is pending. `motion` and the kit's `OpenChart` register probes.
+- `broadcast-transport.ts`: `createBroadcastTransport(channelId)` (section 4.2).
+- `deck-keys.ts`: the keyboard map. `deck-attention.ts`: wake lock and idle cursor.
 - `text-scale.ts`: text sizing. In the play and presenter views Cmd/Ctrl with `+` or `=` makes
   slide text 1.1 times larger, with `-` 1.1 times smaller, and with `0` restores the authored
   size, between 0.5 and 2.5; the browser's own zoom is prevented, since it would not change a
-  fitted canvas. The value is kept in `localStorage` under the sync channel id, so every window
-  of the deck follows through the `storage` event and a reload keeps it. Every `SlideFrame`
-  sets it as `--deck-text-scale`. It reaches a slide only through CSS that multiplies by it:
-  every `font-size` in the framework's, the kit's and a deck's slide CSS is written
+  fitted canvas. The value is kept in `localStorage` under
+  `react-decks:text-scale:<sync channel id>`, so every window of the deck follows through the
+  `storage` event and a reload keeps it. Every `SlideFrame` sets it as `--deck-text-scale`. It
+  reaches a slide only through CSS that multiplies by it: every `font-size` in the
+  framework's, the kit's and a deck's slide CSS is written
   `calc(<size> * var(--deck-text-scale, 1))`. Boxes do not grow, so a tightly composed slide
   overflows after a step or two; a layout in flex or grid absorbs more.
-- `PresenterView`, `OverviewView`, `PrintView`, keyboard map, wake lock, idle cursor, `Notes`.
+- Views and components: `PlayView`, `PresenterView`, `OverviewView`, `Notes`, `DeckCredit`
+  (`deck-credit.tsx`, not exported), and the layouts of section 4.4 (`layouts.tsx`).
+- Not built yet (planned for 1.0.0-rc): `PrintView`, rendering the slides in the `print`
+  context for `decks export`; and the embed protocol, `decks:*` postMessage between a page
+  and a deck opened with `?decks-bridge`, ported from the site's `DeckPlayer`. Today
+  `?decks-bridge` and `?embedded` are parsed and turn sync off, `?embedded` also disables
+  `p` and is reported by `useDeck().embedded`; there is no bridge yet.
 
 ## 4.1 runtime, Phase 2 surface (Final)
 
@@ -530,6 +569,8 @@ export interface DeckSource {
   /** Keyed by slide id. */
   readonly frontmatter: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   readonly components: MDXComponents;
+  /** The deck's layers (section 6.5). `credit: false` removes the built-in credit. */
+  readonly layers?: { above?: ComponentType; below?: ComponentType; credit?: ComponentType | false };
   /** Rendered notes keyed by slide id, one entry per segment; loaded only by views that show notes. */
   readonly loadNotes?: () => Promise<Readonly<Record<string, readonly NoteHtml[]>>>;
 }
@@ -745,8 +786,8 @@ Accepted limits:
 
 ### Views and keys
 
-`Deck` renders `PlayView`, `PresenterView` or `OverviewView` by `DeckState.view` (print comes
-in Phase 5 and renders `PlayView` until then) and sets `data-deck-motion` to `live` in the
+`Deck` renders `PlayView`, `PresenterView` or `OverviewView` by `DeckState.view` (the print
+view is not built yet, planned for 1.0.0-rc; `print` renders `PlayView` until then) and sets `data-deck-motion` to `live` in the
 play view and `instant` in every other view. `Deck` keeps two things in memory above the
 view switch: the timer (below) and the home view, the last of `play` and `presenter` shown.
 When the view at mount is `overview`, the home view is `presenter` if `window.name` starts
@@ -870,7 +911,8 @@ declare global {
 `Deck` sets `data-deck-motion` to `instant` when the view is not `play`, or
 `(prefers-reduced-motion: reduce)` matches (followed live; where `matchMedia` is missing, as
 in jsdom, it counts as not matching), or the page's search string has
-`motion=instant` (what `shot`, `snap` and print use). Otherwise `live`.
+`motion=instant` (what the parity script uses today, and what `shot` and print will use;
+both are not built yet, planned for 1.0.0-rc). Otherwise `live`.
 
 ### Presented and logical state
 
@@ -968,7 +1010,9 @@ change is waiting to be applied, no registered probe reports busy, and no animat
 `document.getAnimations()` is running with a finite end (an animation with infinite
 iterations or infinite duration is ignored, so a looping logo does not block it). It never
 rejects. After a change made in another window, wait for the URL first: the message may not
-have arrived yet. Tests, `shot`, `snap` and export wait on it instead of sleeping.
+have arrived yet. Tests and the parity script wait on it instead of sleeping, and `shot` and
+`export` will (not built yet, planned for 1.0.0-rc). Accepted limit for now: it does not
+count a slide module that is still loading.
 
 ### Behaviour that needs a browser test
 
@@ -992,14 +1036,18 @@ have arrived yet. Tests, `shot`, `snap` and export wait on it instead of sleepin
 
 ## 5. motion (Outline)
 
-- Tokens: `motion.duration.{quick,base,slow}`, `motion.ease.{enter,exit,settle,draw}`,
-  `motion.stagger`, as `--deck-dur-*` / `--deck-ease-*` and JS constants. `instant` motion
-  zeroes them.
-- Step primitives on `stepState`: `Step`, `Stagger`, `TextReveal`, `Draw`, `CountUp`,
-  `Highlight`, with a closed preset set (`fade`, `rise`, `scale`, `blur`, `wipe`, `draw`).
-- `Morph`: assigns a `view-transition-name` while its slide is active.
-- `useTimeline((tl, beat) => void)`: a gsap timeline with one label per click; plays forward,
-  reverses backward, jumps when motion is `instant`. Owns gsap setup.
+- Tokens (`tokens.ts`, `motion.css`): `duration.{quick,base,slow}`,
+  `ease.{enter,exit,settle,draw}` and `stagger`, as `--deck-dur-*` / `--deck-ease-*` /
+  `--deck-stagger` and JS constants, plus `motionMode()` and the shared `gsap`. `instant`
+  motion zeroes them.
+- Step primitives on `stepState` (`steps.tsx`, `count-up.tsx`): `Step`, `Steps`, `Stagger`,
+  `TextReveal`, `Draw`, `CountUp`, `Highlight`, and `useStepState`, with a closed preset set
+  (`fade`, `rise`, `drop`, `scale`, `blur`, `wipe`).
+- `Morph`: assigns a `view-transition-name` while its slide is active (section 5.2).
+- `CodeBlock`: what a fenced code block renders as (section 6.3).
+- `useTimeline((tl, beat) => void, deps?)`: a gsap timeline with one label per click; plays
+  forward, reverses backward, jumps when motion is `instant`.
+- `settle.ts`: the settle probe the package registers on import (section 5.2).
 - `useTween(initial)`: a stable object gsap can tween; the owning component re-renders once
   per animation frame while it changes.
 
@@ -1084,8 +1132,8 @@ export function useTimeline(
 `--deck-ease-settle: cubic-bezier(.32,.72,0,1)`, `--deck-ease-draw: cubic-bezier(.65,0,.35,1)`.
 The JS `ease` names are the same four curves registered with `CustomEase`. Under
 `html[data-deck-motion="instant"]` the three durations and the stagger are `0ms`. A unit test
-(`tests/motion-tokens.test.ts`, in the Node project) reads `motion.css` and fails if a CSS value and its JS constant disagree. Theme overrides of
-these tokens arrive with themes in Phase 4; until then they are fixed.
+(`tests/motion-tokens.test.ts`, in the Node project) reads `motion.css` and fails if a CSS value and its JS constant disagree. The kit's
+theme does not override these tokens; they are fixed.
 
 All of the package's CSS is in `@layer react-decks`.
 
@@ -1205,15 +1253,23 @@ with `morphSteps: true`):
 
 ## 6. node (Outline)
 
-- Vite plugins: `slides` (scan `slides/*.mdx`, frontmatter, drop `hide: true`, build the
-  manifest and notes modules), `mdx` (lift `<Notes>`), `components` (deck and theme
-  components provided to MDX), `theme`, `entry` (generated `index.html`).
-- Virtual modules: `virtual:react-decks/manifest`, `virtual:react-decks/notes`,
-  `virtual:react-decks/components`, `virtual:react-decks/theme`,
-  `virtual:react-decks/theme.css`.
-- `defineDeck` and `defineTheme` config, validated at load.
-- CLI `decks`: `dev`, `build`, `export`, `new`, `list`, `check`, `lint`, `fact-extract`,
-  `review-prose`, `shot`, `snap`, `snap:diff`, `film`, `motion-check`, `init`, `hook`.
+- Vite plugins (`plugins.ts`; `reactDecks(deck)` returns them): one `react-decks` plugin
+  that scans `slides/*.mdx` (`slides.ts`), counts clicks (`clicks.ts`), checks components
+  (`components.ts`, `component-check.ts`), reads layers (`layers.ts`), renders notes
+  (`notes.ts`), serves the virtual modules and the generated HTML (`entry.ts`), and reports
+  errors (`errors.ts`, `error-reporting.ts`); the `@mdx-js/rollup` compiler with
+  `remark-frontmatter`, `<Notes>` removal and code highlighting (`code-blocks.ts`,
+  `code-options.ts`); and `@vitejs/plugin-react`. `server.ts` has `dev` and `build`.
+- Virtual modules: `virtual:react-decks/manifest`, `virtual:react-decks/components`,
+  `virtual:react-decks/layers`, `virtual:react-decks/notes`, `virtual:react-decks/entry`
+  (section 6.1). There is no theme module: a kit deck installs its theme in `setup.ts`
+  (section 7.1).
+- `defineDeck` config, loaded with `jiti` and validated with zod at load (`config.ts`).
+- CLI `decks` (`cli.ts`): `dev` and `build` (section 6.1). Not built yet (planned for
+  1.0.0-rc): `new` (conventional and story templates; writes `info`), `check`, `lint`,
+  `hook` (`lint` and `prompt`), `init` (the agent setup), `export` (PDF through the print
+  view), and `shot` (screenshots, also used to generate `public/og.png` at build when the deck
+  has none). The rest of the Slidev runner's commands are deferred (section 8).
 
 ## 6.1 node, Phase 2 surface (Final)
 
@@ -1225,6 +1281,8 @@ export interface DeckConfig {
   readonly title: string;
   readonly author?: string;
   readonly info?: string;
+  /** Where the built deck is published; an absolute URL. Fills `og:url` and `og:image`. */
+  readonly url?: string;
   /** Default { width: 1920, height: 1080 }. */
   readonly canvas?: { readonly width: number; readonly height: number };
   /** Default transition between slides. */
@@ -1245,7 +1303,10 @@ export interface ResolvedDeck {
   readonly name: string;
   /** Absolute path of the deck directory. */
   readonly dir: string;
-  readonly config: DeckConfig & { readonly canvas: { readonly width: number; readonly height: number } };
+  readonly config: DeckConfig & {
+    readonly canvas: { readonly width: number; readonly height: number };
+    readonly credit: boolean;
+  };
 }
 
 /** Loads and validates `<dir>/deck.config.ts`. Throws an Error naming the file and the problem. */
@@ -1285,14 +1346,16 @@ Modules the plugins serve:
 | `virtual:react-decks/manifest` | `manifest: DeckManifest`; `slides: Record<id, () => import(<slide file>)>`; `frontmatter: Record<id, Record<string, unknown>>` |
 | `virtual:react-decks/components` | `components: Record<name, Component>` built per section 3.1. Export names are read from each file when the module is generated, so a duplicate name fails `dev` and `build` with the error, not the browser |
 | `virtual:react-decks/notes` | `notes: Record<id, { click: number; html: string }[]>`: each slide's `<Notes>` markdown split with core's `segmentNotes` and each segment rendered to HTML; slides without notes are absent |
-| `virtual:react-decks/entry` | no exports; imports the three above (notes lazily, as `loadNotes`), the deck's `styles/index.css` when it exists, and calls `mountDeck` from `@react-decks/runtime` |
+| `virtual:react-decks/layers` | `layers: { above?, below?, credit? }` (section 6.5) |
+| `virtual:react-decks/entry` | no exports; imports the deck's `setup.ts` first when it exists (section 7.1), the motion and layout components (sections 6.3 and 4.4), the deck's `styles/index.css` when it exists, and the manifest, components and layers modules (notes lazily, as `loadNotes`), and calls `mountDeck` from `@react-decks/runtime` |
 
 The served HTML also carries what a browser tab and a shared link show: a viewport meta, an
 icon (`public/favicon.svg`, `.png` or `.ico` if the deck has one, otherwise the Decks mark as
 a data URL), `description` and `og:description` from `config.info`, `og:title`, `og:type`,
 and `twitter:card`. With `config.url` (where the built deck is published) it adds `og:url`,
 and if the deck has `public/og.png` or `og.jpg`, an absolute `og:image` and the large card.
-Nothing generates the preview image yet.
+Not built yet (planned for 1.0.0-rc): `build` generating `og.png` from slide 1 at 1200x630
+with `shot` when the deck supplies none. Until then a deck supplies the file.
 
 The served HTML has `<html>` carrying `config.htmlAttrs`, a `<title>` from `config.title`,
 `<meta name="author">` when set, `<meta name="decks:name" content="<name>">`, in dev only
@@ -1338,10 +1401,16 @@ decks dev <deck> [--port <n>] [--open]
 decks build <deck> [--out <dir>] [--base <path>]
 ```
 
+These are the only two commands; anything else prints usage and exits 1 (section 6.6). The
+planned commands are in section 6.
+
 `<deck>` is an alias in `./decks.json` (`{ "<alias>": { "dir": "<path>" } }`, keys starting
 with `_` are config) or a path to a deck directory. `dev` prints the URL it serves.
 `build` defaults `--out` to `decks.json`'s `_config.outDir` with `{name}` replaced (default
-`dist/{name}`), and `--base` to `_config.base` (default `./`). A `--port` that is not a whole
+`dist/{name}`), and `--base` to `_config.base` (default `./`). Because the CLI always passes
+a base, a `base` in a deck's `config.vite` never applies to `decks build` (a known gap, to be
+fixed with the published package). `_config.decksDir` is in `react-decks/decks.json` but the
+CLI does not read it. A `--port` that is not a whole
 number, and a malformed `decks.json`, exit 1 with a message naming the value or the file. An unknown alias or a directory without `deck.config.ts` exits 1
 with a message naming it.
 
@@ -1721,6 +1790,12 @@ message in the table). Member names (`<motion.div>`) and lowercase elements are 
 The port of `packages/decks`: theme tokens, global `od-*` styles, `compat.css`, the story
 engine on `@react-decks/motion`, and the `Od*`, `Ink*`, `Unit*`, `Story*` components.
 
+Built: the first slice (section 7.1). Not built yet (planned for 1.0.0-rc, for the three
+decks still to port): `InkNumber`, `InkChip`, `InkRule`, `InkCardRect`, `OdEyebrow`,
+`InkLine`, `InkBars`/`InkBarRow`, `InkTimeline`/`InkTimelineCursor`, `UnitGrid`/
+`UnitGridItem`, `InkPing`, `InkStep`, `CodeInk` and `Graph3D`, and the story modules they
+need. The rest of the addon's components are not planned.
+
 Decided at checkpoint 1 (`docs/spikes/parity.md`):
 
 - Units. Inside a slide, `vw` and `vh` become `cqw` and `cqh` (the frame is a size
@@ -1757,7 +1832,8 @@ Decided at checkpoint 1 (`docs/spikes/parity.md`):
 The first real deck to move is `building-for-agents` (a 19-slide story deck with its own
 design system). This slice is exactly what it uses from the Slidev addon
 (`packages/decks`); the `Ink*` and `Unit*` marks, `Graph3D`, `CodeInk`, `RowStrip`, the
-conventional `Od*` chrome and the viewer come later.
+conventional `Od*` chrome and the viewer are not in it. Section 7 lists which of those are
+planned for 1.0.0-rc; the viewer is deferred (section 8).
 
 ### Deck setup file
 
@@ -1779,9 +1855,11 @@ export function theme(): Theme;
 export function ink(hue: Hue, step: 1 | 2 | 3 | 4): string;
 ```
 
-`resolve.ts` and `default.json` are the addon's, unchanged in behaviour (objects merge,
-arrays replace, `{group.token}` aliases resolve after the merge); its tests come with it. A
-deck's `setup.ts` is `installTheme(resolveTheme(deckThemeJson))`. Installing replaces the
+`theme-resolve.ts` and `theme-default.json` are the addon's `resolve.ts` and `default.json`,
+unchanged in behaviour (objects merge, arrays replace, `{group.token}` aliases resolve after
+the merge); its tests come with it (`theme-resolve.test.ts`). The kit also exports the
+`Theme` and `Hue` types. A deck's `setup.ts` is `installTheme(resolveTheme(deckThemeJson))`,
+or `installTheme(resolveTheme())` for the default theme. Installing replaces the
 previous style element, so it is safe to run again. Custom-property names are the addon's
 (`--od-canvas`, `--od-text`, `--od-cyan`, `--od-glow-*-rgb`, `--od-font-*`, `--od-radius`,
 ...), so deck CSS written against them is unchanged.
@@ -1792,16 +1870,20 @@ Exported from `@react-decks/kit`, same names and meanings as `slidev-addon-decks
 
 - `DUR` (the duration table, seconds), `SETTLE`, `DRAW`, `TRACE` (gsap ease names registered
   on the motion package's `gsap`), `SETTLE_CSS`, `DRAW_CSS`, `TRACE_CSS`, `easedStagger`.
-- `STAGE` (the 1920x1080 stage box), `clamp01`, `xScale`, `yScale`,
-  `filterUrl` and the filter definitions `StoryStage` renders.
-- `useStage({ copy, enter, beats })`: returns `{ clicks, isActive, playCount, copy, beats }`.
-  `beats` is `copy.length`; `copy` is the entry for the current click, clamped. The beat
-  script runs on the motion package's `useTimeline`. `enter` is a one-shot timeline: outside
-  the `slide` context, or when motion is `instant`, or when the slide is entered on a later
-  click, it shows its end state; while the slide is not active it holds at zero; on arrival
-  at click 0 it plays once the slide transition has finished (after `settled`-style
-  completion of the view transition, never during it). Returning to click 0 within one
-  visit does not replay it.
+- `STAGE` (the 1920x1080 stage box), `clamp01`, `xScale`, `yScale` (on `d3-scale`),
+  `stagger(progress, i, n, step)` (the addon's per-item progress helper, not the motion
+  package's `stagger` constant), `filterUrl`, `FILTER_IDS` and the filter definitions
+  `StoryStage` renders.
+- `useStage({ copy, enter?, beats })`, where `copy` is an array of `{ lead, body? }`, `enter`
+  is `(tl) => void` and `beats` is `(tl, beat) => void`: returns `{ clicks, isActive,
+  playCount, shown, copy, beats }` (the `useScriptedDemo` fields, then the stage's).
+  `beats` is `copy.length`; `copy` is the entry for the current click, clamped; an empty
+  `copy` throws. The beat script runs on the motion package's `useTimeline`. `enter` is a
+  one-shot timeline: outside the `slide` context, or when motion is `instant`, or when the
+  slide is entered on a later click, it shows its end state; while the slide is not active
+  it holds at zero; on arrival at click 0 it plays once the slide transition has finished
+  (when `<html>` loses `data-deck-transition`, never during it). Returning to click 0 within
+  one visit does not replay it.
 - `useScriptedDemo()`: `{ clicks, shown(at), playCount, isActive }`; `playCount` increases
   each time the slide becomes active.
 - `useFrameScale()`: `useSlideScale()`. It exists for values handed to OpenChart, which is
@@ -1813,11 +1895,15 @@ A stage's state object is `useTween({ ... })` where the Vue stage had `reactive(
 ### Components
 
 `StoryStage` (the fitted 16:9 frame: `stage` svg, `overlay`, `card`, `background` as props
-holding nodes; `beats`, `click`, `fluid`, `enterAfterTransition`), `StoryLayer`,
-`StoryCard` (`anchor`, `hue`, `lead`, `body`; its outgoing-copy overlap and height easing
-are ported, not dropped), `StoryCover` (`field`, `head`, `title`, `lede`, `byline`,
-`eyebrow`, `aside`, `background`, `center`), `StoryLink`, `OdQrCard` (`uqr`), `OdByline`,
-`OdCoverHead`, and `OpenChart`.
+holding nodes; `beats`, `click`, `fluid`, `enterAfterTransition`, `className`),
+`StoryLayer` (`children`, `className`), `StoryCard` (`lead`, `body`, `anchor` `"left"` or
+`"right"`, `hue`; its outgoing-copy overlap and height easing are ported, not dropped),
+`StoryCover` (`field`, `head`, `title`, `lede`, `byline`, `eyebrow`, `aside`, `background`,
+`center`, `url`, `brand`, `enterAfterTransition`, `children`; with no `head`, a `url` or
+`brand` renders `OdCoverHead`), `StoryLink` (`href`, `label`, `opacity`), `OdQrCard` (`url`,
+`image`, `label`, `sublabel`, `ariaLabel`; the code is drawn with `uqr`), `OdByline`
+(`children`, `className`), `OdCoverHead` (`url`, `className`), and `OpenChart` (`spec`,
+`onMarkHover`, `onMarkLeave`).
 
 Named slots become props that take nodes. Scoped styles become CSS Modules, or stay global
 where the class is part of the `od-*` vocabulary deck CSS selects on (`od-story-head`,
@@ -1834,12 +1920,14 @@ from the kit and read the active theme.
 
 ### Styles
 
-`@react-decks/kit/styles.css`: the addon's `base`, `layout`, `components`, `stats`,
-`story-frame` and `story-marks` sheets with `vw`/`vh` as `cqw`/`cqh`, `--sw`/`--sh` from the
+`@react-decks/kit/styles.css` (`src/styles/index.css`): the self-hosted Inter faces
+(`fonts.css`), each component's sheet, and the addon's `base`, `layout`, `components`,
+`stats`, `story-frame` and `story-marks` sheets with `vw`/`vh` as `cqw`/`cqh`, `--sw`/`--sh` from the
 frame container (section 7's units rule), Slidev's full-screen overrides removed, and
 `.slidev-layout` selectors mapped to `[data-deck-slide]`; plus `compat.css` (section 7).
 The story decks' cross-slide rules (`html[data-od-story]::view-transition-*`, the named
-head and card groups, direction variants) are ported onto `html[data-deck-transition="story"]`:
+head and card groups, direction variants) are ported, in `story-transition.css`, onto
+`html[data-deck-transition="story"]`:
 a deck sets `transition: "story"` and gets the addon's cross-fade with the head and card
 holding their places. A deck imports the stylesheet from its `styles/index.css`.
 
@@ -1858,3 +1946,16 @@ spike), compared against the Slidev frames in `examples/tides-slide/baseline/`.
 | The cover | Its three rows are present and the deck's `theme.json` colors apply. |
 | An `OpenChart` in a 1280x720 window, cold | The chart's svg fills its host (within a pixel). |
 
+## 8. Deferred
+
+Neither built nor planned for 1.0.0-rc. Earlier drafts of this file named them; a contract
+that needs one adds it back to the section it belongs to first.
+
+- `registerCaptionProvider`: a runtime registry for reading a slide's caption. No code uses
+  it.
+- `defineTheme` and a theme Vite plugin with `virtual:react-decks/theme` and `theme.css`
+  modules. A kit deck installs its theme at runtime from `setup.ts` instead (section 7.1).
+- The viewer (`viewer.ts`): pinch zoom, pan and reset, on `@use-gesture/react`.
+- CLI commands from the Slidev runner: `list`, `fact-extract`, `review-prose`, `snap`,
+  `snap:diff` (with `sharp` contact sheets), `film`, `motion-check`. The rc plan keeps `list`,
+  `snap`, `fact-extract` and `review-prose` deferred unless the agent tooling needs them.
