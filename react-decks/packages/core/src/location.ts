@@ -41,11 +41,11 @@ export function parseLocation(hash: string, search: string): DeckLocation {
   };
 }
 
-export function formatHash(deckLocation: Pick<DeckLocation, "view" | "slide" | "click">): string {
-  if (deckLocation.view === "overview" || deckLocation.view === "print") {
-    return `#/${deckLocation.view}`;
+export function formatHash(location: Pick<DeckLocation, "view" | "slide" | "click">): string {
+  if (location.view === "overview" || location.view === "print") {
+    return `#/${location.view}`;
   }
-  const prefix = deckLocation.view === "presenter" ? "#/presenter/" : "#/";
-  const clicks = deckLocation.click === 0 ? "" : `?clicks=${deckLocation.click}`;
-  return `${prefix}${deckLocation.slide}${clicks}`;
+  const prefix = location.view === "presenter" ? "#/presenter/" : "#/";
+  const clicks = location.click === 0 ? "" : `?clicks=${location.click}`;
+  return `${prefix}${location.slide}${clicks}`;
 }
