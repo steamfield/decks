@@ -21,6 +21,7 @@ export {
   unitCellHeight,
 } from "./grid";
 export { hash, hashRange, hashSigned } from "./hash";
+export { InkPing } from "./ink-ping";
 export { inkStyle, polylinePath, STORY_STYLE, STROKE } from "./ink-style";
 export { easeHeight, entrance, fadeIn, fadeOutInPlace, RISE, riseIn } from "./motion";
 export { OdByline } from "./od-byline";
@@ -43,3 +44,4 @@ export { STAGE, StoryStage } from "./story-stage";
 export { ink, installTheme, resolveTheme, theme } from "./theme";
 export type { Hue, Theme } from "./theme-resolve";
 export { prefersReducedMotion, resolvePosition } from "./timeline";
+export { UnitGrid, type UnitGridHandle } from "./unit-grid";
