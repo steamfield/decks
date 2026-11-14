@@ -1,0 +1,11 @@
+{
+  "name": "steamfield",
+  "owner": { "name": "Steamfield" },
+  "plugins": [
+    {
+      "name": "decks",
+      "source": "./plugins/decks",
+      "description": "Author React and MDX decks with Decks skills, an agent, and prose hooks."
+    }
+  ]
+}

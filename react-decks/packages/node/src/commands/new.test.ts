@@ -212,7 +212,8 @@ it("prints a shell-safe next command for an alias containing spaces and quotes",
 
 it("ships templates, typechecks them and builds both scaffolds with the real Vite pipeline", async () => {
   const execute = promisify(execFile);
-  const dir = await project();
+  const dir = join(await project(), "react-decks");
+  await mkdir(dir);
   for (const path of ["package.json", "bun.lock", "tsconfig.json", "packages", "docs/guide"]) {
     await mkdir(dirname(join(dir, path)), { recursive: true });
     await cp(resolve(path), join(dir, path), {
@@ -220,6 +221,9 @@ it("ships templates, typechecks them and builds both scaffolds with the real Vit
       filter: (source) => !["node_modules", "dist", "docs"].includes(basename(source)),
     });
   }
+  await cp(resolve("../plugins/decks/skills"), resolve(dir, "../plugins/decks/skills"), {
+    recursive: true,
+  });
   await execute("bun", ["install", "--offline", "--frozen-lockfile"], { cwd: dir });
   await execute("node", ["build.mjs"], { cwd: join(dir, "packages/decks") });
   const dist = join(dir, "packages/decks/dist");
