@@ -1,0 +1,59 @@
+/* The overlay is unpadded on purpose: everything inside it positions itself
+   absolutely, so a full bleed child can use inset: 0 and actually get the
+   whole frame. */
+.od-stage-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.od-stage-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Let text receive selection without a full-frame overlay blocking charts. */
+.od-stage-overlay
+  :is(
+    :is(h1, h2, h3, p, span, a, li, dt, dd, td, th, .od-story-card, .od-bignum, div:not(:has(*)))
+  ) {
+  pointer-events: auto;
+}
+
+/* ── Beat rail ── */
+.od-story-foot {
+  position: absolute;
+  left: calc(5.7 * var(--lw));
+  bottom: calc(3.6 * var(--sh));
+  display: flex;
+  align-items: center;
+  gap: calc(0.55 * var(--sw));
+}
+.od-beat {
+  display: block;
+  width: calc(2.1 * var(--sw));
+  height: 2px;
+  border-radius: 1px;
+  background: var(--od-text-dim);
+  opacity: 0.55;
+  transition:
+    background-color var(--od-dur-card) var(--od-settle),
+    opacity var(--od-dur-card) var(--od-settle),
+    width var(--od-dur-card) var(--od-settle);
+}
+.od-beat.is-done {
+  background: var(--od-text-muted);
+  opacity: 0.85;
+}
+.od-beat.is-current {
+  width: calc(3.2 * var(--sw));
+  background: var(--od-cyan-bright);
+  opacity: 1;
+}
+
+html[data-deck-motion="instant"] .od-beat,
+[data-deck-context]:not([data-deck-context="slide"]) .od-beat {
+  transition: none;
+}

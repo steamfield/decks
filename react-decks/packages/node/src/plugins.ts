@@ -111,6 +111,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
     async configureServer(server) {
       const structural = (path: string) => {
         const file = normalizePath(path);
+        if (file === `${deckDir}/setup.ts`) reload(server, "entry");
         if (normalizePath(dirname(file)) === `${deckDir}/slides` && file.endsWith(".mdx")) {
           metadata.delete(file.slice(deckDir.length + 1));
           totals.delete(file.slice(deckDir.length + 1));
@@ -184,6 +185,10 @@ export const slides = Object.fromEntries([${loaders}]);`;
     async hotUpdate(context) {
       if (this.environment.name !== "client") return;
       const file = normalizePath(context.file);
+      if (file === `${deckDir}/setup.ts`) {
+        reload(context.server, "entry");
+        return [];
+      }
       const parent = normalizePath(dirname(file));
       if (file.startsWith(`${deckDir}/layers/`) && context.type !== "update") return [];
       if (

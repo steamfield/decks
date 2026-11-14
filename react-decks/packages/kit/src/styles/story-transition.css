@@ -1,0 +1,182 @@
+/* Snapshot drift exposes the document canvas; keep it in the deck's ink. */
+html[data-deck-transition="story"] {
+  background-color: var(--od-canvas);
+}
+html[data-deck-transition="story"]::view-transition-old(*),
+html[data-deck-transition="story"]::view-transition-new(*) {
+  mix-blend-mode: plus-lighter;
+}
+
+/* ── Cross slide hand off ────────────────────────────────────────────────
+   Names are assigned only when the stage says it is rendering the real slide
+   (`vt-on`, set from $renderContext), and nulled again under the presenter
+   and the print container, so a duplicated name can never abort a
+   transition. Only adjacent slides ever share a name.
+
+   Box-shaped morph targets get an opaque background, because a transparent
+   snapshot cross-fades against whatever happens to be behind it. The two ink
+   layers stay transparent on purpose: both sides of their morph sit on the
+   same canvas, so an opaque box would hide the stage underneath. */
+.od-slide.is-story.vt-on .od-story-head {
+  view-transition-name: od-story-head;
+}
+.od-slide.is-story.vt-on .od-story-card.anchor-left {
+  view-transition-name: od-story-card-left;
+}
+.od-slide.is-story.vt-on .od-story-card.anchor-right {
+  view-transition-name: od-story-card-right;
+}
+.od-slide.is-story.vt-on .vt-drift-line {
+  view-transition-name: od-drift-line;
+}
+.od-slide.is-story.vt-on .vt-clean-row {
+  view-transition-name: od-clean-row;
+  background-color: var(--od-surface);
+}
+.od-slide.is-story.vt-on .vt-seed-square {
+  view-transition-name: od-seed-square;
+  background-color: var(--od-surface);
+}
+.od-slide.is-story.vt-on .vt-baseline {
+  view-transition-name: od-baseline;
+}
+.od-slide.is-story.vt-on .vt-campus-grid {
+  view-transition-name: od-campus-grid;
+}
+.od-slide.is-story.vt-on .vt-power-board {
+  view-transition-name: od-power-board;
+}
+.od-slide.is-story.vt-on .vt-campus-pair {
+  view-transition-name: od-campus-pair;
+}
+.od-slide.is-story.vt-on .vt-qr-frame {
+  view-transition-name: od-qr-frame;
+  background-color: var(--od-qr-white);
+}
+
+/* Document level: the morph itself. 600ms is DUR.morph, 240ms is DUR.draw,
+   the curves are SETTLE_CSS and DRAW_CSS. All mirror packages/decks/story/easings.ts.
+
+   The rules are scoped to `html[data-deck-transition="story"]`, which a deck sets through
+   `htmlAttrs` in its headmatter. This stylesheet ships with the addon to
+   every deck, and a conventional deck that later turns on view transitions
+   must not inherit this pacing by accident.
+
+   Named groups (the hand offs above) travel on SETTLE over the morph
+   duration. The root, which is everything else, cross fades over the same
+   duration and curve on both sides, so the two opacities always sum to one
+   under the browser's plus-lighter blend and the frame never dips toward
+   black, while the new frame settles in from a short drift, downward going
+   forward and upward going back. The drift is the one length in this file
+   written in vh: --sw and --sh are declared on .od-slide.is-story, and a
+   ::view-transition pseudo element is a child of the document root, so a
+   frame unit resolves to nothing here. Both keyframes use the literal. The
+   direction is stamped on <html> by packages/decks/setup/main.ts before the snapshot.
+
+   The headline and the prose card carry names of their own. Between two
+   story slides they cross fade in place; entering from a slide without one
+   (`:only-child`, no old image) they rise in like the root, the card one
+   stagger after the headline (280ms is two DUR.opacity beats). */
+html[data-deck-transition="story"]::view-transition-group(*) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+html[data-deck-transition="story"]::view-transition-old(*),
+html[data-deck-transition="story"]::view-transition-new(*) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+html[data-deck-transition="story"]::view-transition-old(root) {
+  animation: od-vt-out 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+html[data-deck-transition="story"]::view-transition-new(root) {
+  animation: od-vt-in 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+html[data-deck-transition="story"][data-deck-nav="backward"]::view-transition-new(root) {
+  animation-name: od-vt-in-back;
+}
+html[data-deck-transition="story"]::view-transition-new(od-story-head):only-child,
+html[data-deck-transition="story"]::view-transition-new(od-story-card-left):only-child,
+html[data-deck-transition="story"]::view-transition-new(od-story-card-right):only-child {
+  animation: od-vt-in 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+html[data-deck-transition="story"][data-deck-nav="backward"]::view-transition-new(
+  od-story-head
+):only-child,
+html[data-deck-transition="story"][data-deck-nav="backward"]::view-transition-new(
+  od-story-card-left
+):only-child,
+html[data-deck-transition="story"][data-deck-nav="backward"]::view-transition-new(
+  od-story-card-right
+):only-child {
+  animation-name: od-vt-in-back;
+}
+html[data-deck-transition="story"]::view-transition-new(od-story-card-left):only-child,
+html[data-deck-transition="story"]::view-transition-new(od-story-card-right):only-child {
+  animation-delay: 280ms;
+}
+html[data-deck-transition="story"]::view-transition-old(od-story-head):only-child,
+html[data-deck-transition="story"]::view-transition-old(od-story-card-left):only-child,
+html[data-deck-transition="story"]::view-transition-old(od-story-card-right):only-child {
+  animation: od-vt-out 600ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes od-vt-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes od-vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.4vh);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes od-vt-in-back {
+  from {
+    opacity: 0;
+    transform: translateY(-1.4vh);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes od-vt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Reduced motion: keep the narrative sweeps, drop the drift ── */
+@media (prefers-reduced-motion: reduce) {
+  /* A running keyframe outranks a plain declaration, so the drift is
+     removed by swapping the keyframe, at the specificity of the back rule. */
+  html[data-deck-transition="story"][data-deck-nav]::view-transition-old(root),
+  html[data-deck-transition="story"][data-deck-nav]::view-transition-new(root),
+  html[data-deck-transition="story"]::view-transition-old(root),
+  html[data-deck-transition="story"]::view-transition-new(root),
+  html[data-deck-transition="story"][data-deck-nav]::view-transition-new(od-story-head):only-child,
+  html[data-deck-transition="story"][data-deck-nav]::view-transition-new(
+    od-story-card-left
+  ):only-child,
+  html[data-deck-transition="story"][data-deck-nav]::view-transition-new(
+    od-story-card-right
+  ):only-child,
+  html[data-deck-transition="story"]::view-transition-new(od-story-head):only-child,
+  html[data-deck-transition="story"]::view-transition-new(od-story-card-left):only-child,
+  html[data-deck-transition="story"]::view-transition-new(od-story-card-right):only-child {
+    animation-name: od-vt-fade;
+    animation-duration: 140ms;
+    animation-delay: 0ms;
+  }
+}
