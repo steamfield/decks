@@ -487,7 +487,7 @@ slide's rendered output at compile time and collected into the notes module. Mor
 - `PlayView` mounts the current, previous and next slide. Inactive slides are `display: none`.
   Every slide module is prefetched when the browser is idle, without mounting.
 - `transition.ts` owns view-transition state: `runTransition(commit, kind)`,
-  `transitionInFlight()`, `afterTransition()`. Slide changes transition; a click transitions
+  `transitionInFlight()`. Slide changes transition; a click transitions
   only on a slide with `morphSteps` (section 4.3).
 - Registries, because runtime cannot import the packages above it:
   `registerSettleProbe(isBusy: () => boolean)` and
