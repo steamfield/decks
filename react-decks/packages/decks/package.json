@@ -76,7 +76,21 @@
   },
   "peerDependencies": {
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "3d-force-graph": ">=1.80.1",
+    "three": ">=0.185.1 <1",
+    "three-spritetext": ">=1.10.0"
+  },
+  "peerDependenciesMeta": {
+    "3d-force-graph": {
+      "optional": true
+    },
+    "three": {
+      "optional": true
+    },
+    "three-spritetext": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@react-decks/core": "workspace:*",
