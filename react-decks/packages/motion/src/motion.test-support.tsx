@@ -84,8 +84,10 @@ export async function setupMotion(
 
 export async function tick(seconds = 0) {
   await act(async () => {
-    if (seconds) gsap.globalTimeline.time(gsap.globalTimeline.time() + seconds);
+    // The ticker adds real elapsed time, so set the exact target after it, not before.
+    const target = gsap.globalTimeline.time() + seconds;
     gsap.ticker.tick();
+    if (seconds) gsap.globalTimeline.time(target);
     await Promise.resolve();
   });
 }

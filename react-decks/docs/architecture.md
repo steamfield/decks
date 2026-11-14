@@ -929,8 +929,9 @@ cannot import the motion package.
 | `zoom` | Old scales up to 1.08 and fades, new scales from 0.94 and fades in, reversed when `backward`, over `--deck-dur-slow`. |
 | `step` | The old root snapshot is hidden (`display: none`) and the new root has `animation: none`, so the live slide shows through with its steps' own CSS transitions. Leaving both root snapshots visible would add them together (the browser blends them `plus-lighter`). |
 
-`fade` sets `mix-blend-mode: normal` on both root snapshots so the cross-fade does not
-brighten mid-way. For every name, a named group (`::view-transition-group(*)` other than `root`) moves and
+`fade` and `zoom` keep `mix-blend-mode: plus-lighter` on both root snapshots, the blend a
+simultaneous fade-out and fade-in need to sum to full opacity, and the root group itself
+does not animate. For every name, a named group (`::view-transition-group(*)` other than `root`) moves and
 resizes over `--deck-dur-slow` with `--deck-ease-settle`, so an element with the same
 `view-transition-name` before and after glides to its new place under any preset. A deck
 defines its own transition by naming it in frontmatter and writing CSS against
