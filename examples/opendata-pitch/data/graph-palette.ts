@@ -11,25 +11,32 @@
  * renderer walks the node list in. It is a match on the same input rather than
  * a guarantee about openchart's internal scale.
  */
-import { CATEGORICAL_COLORS } from 'slidev-addon-decks/story'
-import { graphNodes } from './graph-data'
+import { CATEGORICAL_COLORS } from "@steamfield/decks/kit";
+import { graphNodes } from "./graph-data";
 
-export { CATEGORICAL_COLORS }
+export { CATEGORICAL_COLORS };
 
 /** Categories in order of first appearance in the snapshot. */
 export const categoryOrder: string[] = (() => {
-  const seen: string[] = []
+  const seen: string[] = [];
   for (const node of graphNodes) {
-    const category = node.category || 'Other'
-    if (!seen.includes(category)) seen.push(category)
+    const category = node.category || "Other";
+    if (!seen.includes(category)) seen.push(category);
   }
-  return seen
-})()
+  return seen;
+})();
 
 export const categoryColor: Record<string, string> = Object.fromEntries(
-  categoryOrder.map((category, i) => [category, CATEGORICAL_COLORS[i % CATEGORICAL_COLORS.length]]),
-)
+  categoryOrder.map((category, i) => {
+    const color = CATEGORICAL_COLORS[i % CATEGORICAL_COLORS.length];
+    if (color === undefined) throw new Error(`category ${category} has no palette color`);
+    return [category, color];
+  }),
+);
 
 export function colorForCategory(category?: string): string {
-  return categoryColor[category || 'Other'] ?? CATEGORICAL_COLORS[CATEGORICAL_COLORS.length - 1]
+  const color =
+    categoryColor[category || "Other"] ?? CATEGORICAL_COLORS[CATEGORICAL_COLORS.length - 1];
+  if (color === undefined) throw new Error(`category ${category} has no palette color`);
+  return color;
 }

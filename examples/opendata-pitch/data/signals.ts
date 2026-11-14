@@ -9,16 +9,16 @@
  * rounded down. data-sources.md carries the FLAG to confirm the current Reddit
  * totals before presenting.
  */
-export const REACH_FIGURE = '1 Million +'
-export const REACH_LABEL = 'reads of data stories built on the catalog'
+export const REACH_FIGURE = "1 Million +";
+export const REACH_LABEL = "reads of data stories built on the catalog";
 
 /**
  * The conversations the reach opened. Agencies by role, everyone else by
  * kind: the deck never names an enterprise, and none of these is a customer.
  */
 export const CONVERSATIONS = [
-  { who: 'A state education agency', tag: 'discovery' },
-  { who: 'A state finance office', tag: 'discovery' },
-  { who: 'Newsrooms and journalists', tag: 'discovery' },
-  { who: 'Enterprises', tag: 'private instance asks' },
-]
+  { who: "A state education agency", tag: "discovery" },
+  { who: "A state finance office", tag: "discovery" },
+  { who: "Newsrooms and journalists", tag: "discovery" },
+  { who: "Enterprises", tag: "private instance asks" },
+];

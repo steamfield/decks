@@ -1,20 +1,44 @@
-import vue from '@vitejs/plugin-vue'
-import { configDefaults, defineConfig } from 'vitest/config'
+import { defineConfig } from "vitest/config";
 
-// The vue plugin is here so deck-local .vue components can be imported in
-// tests. `include` finds every deck's own tests (examples/ and decks/) without
-// a script edit, and leaves out packages/decks/agent/, whose exemplars/ is a
-// rendered copy of two example decks, tests included. The exclude keeps agent
-// worktrees (.claude/worktrees/<run>/ is a full checkout) out of this
-// checkout's run.
 export default defineConfig({
-  plugins: [vue()],
   test: {
-    include: [
-      'packages/decks/{story,scripts,theme,lint}/**/*.test.ts',
-      'examples/*/**/*.test.ts',
-      'decks/*/**/*.test.ts',
+    projects: [
+      {
+        test: {
+          name: "unit",
+          environment: "node",
+          // Node tests start real Vite servers and builds. The first test in a file pays for
+          // loading the compiler and highlighter, which took over five seconds on the slower
+          // cluster hosts; the limit bounds a hang, it is not an assertion.
+          testTimeout: 30_000,
+          include: [
+            "packages/{core,node,decks}/src/**/*.test.{ts,tsx}",
+            "tests/**/*.test.{ts,tsx}",
+          ],
+        },
+      },
+      {
+        test: {
+          name: "dom",
+          environment: "jsdom",
+          setupFiles: ["./vitest.setup.ts"],
+          include: ["packages/{runtime,motion,kit}/src/**/*.test.{ts,tsx}"],
+        },
+      },
+      {
+        // An example deck's own checks against the kit. Data provenance tests that read other
+        // repositories (building-for-agents/data) are run by hand, not in the gate.
+        // Decks import the public package names, which resolve to source here.
+        resolve: { conditions: ["@steamfield/decks/source"] },
+        ssr: { resolve: { conditions: ["@steamfield/decks/source"] } },
+        test: {
+          name: "examples",
+          environment: "node",
+          setupFiles: ["./vitest.setup.ts"],
+          testTimeout: 30_000,
+          include: ["examples/*/styles/*.test.{ts,tsx}"],
+        },
+      },
     ],
-    exclude: [...configDefaults.exclude, '.claude/worktrees/**'],
   },
-})
+});

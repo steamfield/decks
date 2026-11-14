@@ -15,14 +15,14 @@
  */
 export const QR_FRAME_VARS = {
   /** Distance from the right of the stage to the frame's right edge. */
-  '--od-qr-gutter': 'calc(5.7 * var(--sw))',
+  "--od-qr-gutter": "calc(5.7 * var(--sw))",
   /** Distance from the top of the stage to the frame's top edge. */
-  '--od-qr-top': 'calc(14 * var(--sh))',
+  "--od-qr-top": "calc(14 * var(--sh))",
   /**
    * Rendered width of slide 9's white square, which is `OdQrCard`'s own frame
    * width. Square, so this is its height too.
    */
-  '--od-qr-size': '240px',
+  "--od-qr-size": "240px",
   /** Slide 8's seed: small enough to read as a seed rather than a blank panel. */
-  '--od-qr-seed': '44px',
-} as const
+  "--od-qr-seed": "44px",
+} as const;

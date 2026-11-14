@@ -2,14 +2,14 @@
  * Slide 5: the Stacks repo tour's code. Read 2026-11-13 from
  * ~/Projects/stacks at commit a952e96. Checked by excerpts.test.ts.
  */
-import type { Excerpt } from './types'
+import type { Excerpt } from "./types";
 
-const base = { repo: 'stacks', commit: 'a952e96', lang: 'ts' } as const
+const base = { repo: "stacks", commit: "a952e96", lang: "ts" } as const;
 
 /** A whole command: flags (none here), a thin handler, its help text. */
 export const RUNS_COMMAND: Excerpt = {
   ...base,
-  path: 'packages/cli/src/commands/runs.ts',
+  path: "packages/cli/src/commands/runs.ts",
   start: 8,
   end: 25,
   code: `export const runsCommand = Command.make("runs", {}, () =>
@@ -22,12 +22,12 @@ export const RUNS_COMMAND: Excerpt = {
   Command.withShortDescription("Show this project's verify history and timings."),
   // …
 );`,
-}
+};
 
 /** A service class that carries its real layer and its test double. */
 export const HOST_SERVICE: Excerpt = {
   ...base,
-  path: 'packages/cli/src/services/host.ts',
+  path: "packages/cli/src/services/host.ts",
   start: 29,
   end: 49,
   code: `export class Host extends Context.Service<Host, HostInfo>()("stacks/Host") {
@@ -43,12 +43,12 @@ export const HOST_SERVICE: Excerpt = {
       ...overrides,
     });
 }`,
-}
+};
 
 /** The one place the application's layers are composed. */
 export const APP_LAYER: Excerpt = {
   ...base,
-  path: 'packages/cli/src/runtime.ts',
+  path: "packages/cli/src/runtime.ts",
   start: 11,
   end: 19,
   code: `export const AppLayer = (
@@ -60,12 +60,12 @@ export const APP_LAYER: Excerpt = {
     Layer.provideMerge(output),
     Layer.provideMerge(env === undefined ? AppConfig.layer(build) : AppConfig.memory(env, build)),
   );`,
-}
+};
 
 /** One row per error: exit code, retryable, keeps its report. */
 export const ERROR_TABLE: Excerpt = {
   ...base,
-  path: 'packages/cli/src/errors.ts',
+  path: "packages/cli/src/errors.ts",
   start: 425,
   end: 443,
   code: `export const errorTable = {
@@ -80,12 +80,12 @@ export const ERROR_TABLE: Excerpt = {
   Interrupted: { exit: 130, retryable: false, keepsResult: false },
   // …
 } as const satisfies Record<AppError["_tag"], ErrorSpec> & Record<typeof ErrorTag.Type, ErrorSpec>;`,
-}
+};
 
 /** A test that swaps the HttpClient layer and asserts the exact envelope. */
 export const LAYER_TEST: Excerpt = {
   ...base,
-  path: 'packages/cli/tests/update.test.ts',
+  path: "packages/cli/tests/update.test.ts",
   start: 250,
   end: 279,
   code: `const client = HttpClient.make((request, url, signal) => {
@@ -105,4 +105,4 @@ expect(failure(result, 4)).toEqual({
   next: "wait a moment, then run the same command again.",
   // …
 });`,
-}
+};

@@ -1,5 +1,5 @@
-@import '@fontsource-variable/source-serif-4';
-@import '@fontsource-variable/public-sans';
+@import "@fontsource-variable/source-serif-4";
+@import "@fontsource-variable/public-sans";
 
 /* Document timing: mirrors of DUR.color, DUR.opacity and SETTLE_CSS.
    css-mirror.test.ts guards the addon's CSS only. Root scope is required for

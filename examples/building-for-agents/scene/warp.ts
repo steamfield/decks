@@ -11,40 +11,40 @@
 // image serves every frame size and only `scale` changes on resize.
 
 /** Displacement at the frame's corners, in units of a 1920-wide frame. */
-export const TUBE_WARP = 8
+export const TUBE_WARP = 8;
 
 /** The map's own size. The warp is smooth, so a small image interpolates well. */
-const MAP = { width: 256, height: 144 } as const
+const MAP = { width: 256, height: 144 } as const;
 
 /** A data URL of the displacement map, for an feImage. */
 export function warpMapUrl(): string {
-  const canvas = document.createElement('canvas')
-  canvas.width = MAP.width
-  canvas.height = MAP.height
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('warp: no 2d context for the displacement map')
-  const image = ctx.createImageData(MAP.width, MAP.height)
-  const hx = (MAP.width - 1) / 2
-  const hy = (MAP.height - 1) / 2
-  const corner = Math.hypot(hx, hy)
+  const canvas = document.createElement("canvas");
+  canvas.width = MAP.width;
+  canvas.height = MAP.height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("warp: no 2d context for the displacement map");
+  const image = ctx.createImageData(MAP.width, MAP.height);
+  const hx = (MAP.width - 1) / 2;
+  const hy = (MAP.height - 1) / 2;
+  const corner = Math.hypot(hx, hy);
   for (let y = 0; y < MAP.height; y++) {
     for (let x = 0; x < MAP.width; x++) {
-      const dx = x - hx
-      const dy = y - hy
+      const dx = x - hx;
+      const dy = y - hy;
       // Offset as a share of `amount`: -1..1, reaching 1 in magnitude at a corner.
-      const k = (dx * dx + dy * dy) / corner ** 3
-      const i = (y * MAP.width + x) * 4
-      image.data[i] = Math.round(255 * (0.5 + (dx * k) / 2))
-      image.data[i + 1] = Math.round(255 * (0.5 + (dy * k) / 2))
-      image.data[i + 2] = 128
-      image.data[i + 3] = 255
+      const k = (dx * dx + dy * dy) / corner ** 3;
+      const i = (y * MAP.width + x) * 4;
+      image.data[i] = Math.round(255 * (0.5 + (dx * k) / 2));
+      image.data[i + 1] = Math.round(255 * (0.5 + (dy * k) / 2));
+      image.data[i + 2] = 128;
+      image.data[i + 3] = 255;
     }
   }
-  ctx.putImageData(image, 0, 0)
-  return canvas.toDataURL('image/png')
+  ctx.putImageData(image, 0, 0);
+  return canvas.toDataURL("image/png");
 }
 
 /** The filter's `scale` for a frame this many CSS pixels wide. */
 export function warpScale(frameWidth: number): number {
-  return (2 * TUBE_WARP * frameWidth) / 1920
+  return (2 * TUBE_WARP * frameWidth) / 1920;
 }

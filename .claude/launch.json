@@ -4,7 +4,7 @@
     {
       "name": "react-decks-basic",
       "runtimeExecutable": "bun",
-      "runtimeArgs": ["run", "--cwd", "react-decks", "decks", "dev", "basic", "--port", "3477"],
+      "runtimeArgs": ["run", "decks", "dev", "basic", "--port", "3477"],
       "port": 3477
     }
   ]

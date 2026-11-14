@@ -16,28 +16,28 @@
  * from the component, because `tsc` does not read `.vue` files.
  */
 export interface FileSheet {
-  id: string
-  category?: string
+  id: string;
+  category?: string;
 }
 
-export const FIRST_FILE_YEAR = 1997
-export const LAST_FILE_YEAR = 2025
+export const FIRST_FILE_YEAR = 1997;
+export const LAST_FILE_YEAR = 2025;
 
 export const FILE_YEARS: number[] = Array.from(
   { length: LAST_FILE_YEAR - FIRST_FILE_YEAR + 1 },
   (_, i) => FIRST_FILE_YEAR + i,
-)
+);
 
-export const FILE_COUNT = FILE_YEARS.length
+export const FILE_COUNT = FILE_YEARS.length;
 
 /** One sheet per annual file. */
 export const FILE_SHEETS: FileSheet[] = FILE_YEARS.map((year) => ({
   id: `isbe-${year}`,
   category: String(year),
-}))
+}));
 
 /** Fields per row in the raw file, spoken as "about 7,691". */
-export const RAW_FIELD_COUNT = 7691
+export const RAW_FIELD_COUNT = 7691;
 
 /**
  * Six rows, each cut short with an ellipsis: the real row runs to about
@@ -51,25 +51,25 @@ export const RAW_FIELD_COUNT = 7691
  * transcription. The label on stage says shape only for the same reason.
  */
 export const RAW_ROWS = [
-  '150162990250001;… ELEM;AURORA;89.4;;;12.1;;;;41522;;;;;7.2;;;;0;;;;;;;3;;;;;;;;;;;;;;;;;;;;;;;;18.6;;;;;;2;;;;;;;;;;;;;;;91.2;;;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …',
-  '150162990252003;… ELEM;AURORA;91.7;;;9.8;;;;43108;;;;;6.5;;;;0;;;;;;;2;;;;;;;;;;;;;;;;;;;;;;;;21.4;;;;;;1;;;;;;;;;;;;;;;88.7;;;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …',
-  '150162990252007;… HS;AURORA;93.2;;;14.6;;;;58974;;;;;11.3;;;;1;;;;;;;4;;;;;;;;;;;;;;;;;;;;;;;;24.9;;;;;;3;;;;;;;;;;;;;;;94.1;;;;;;;;;;;;;;;;;;;;;;2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …',
-  '150162990252011;… ELEM;AURORA;87.5;;;16.2;;;;39860;;;;;9.4;;;;0;;;;;;;5;;;;;;;;;;;;;;;;;;;;;;;;19.8;;;;;;2;;;;;;;;;;;;;;;85.3;;;;;;;;;;;;;;;;;;;;;;1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …',
-  '150162990252026;… MS;AURORA;90.1;;;11.7;;;;46215;;;;;8.1;;;;0;;;;;;;1;;;;;;;;;;;;;;;;;;;;;;;;22.7;;;;;;4;;;;;;;;;;;;;;;89.6;;;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …',
-  '150162990252034;… HS;AURORA;94.8;;;13.3;;;;61402;;;;;12.6;;;;2;;;;;;;3;;;;;;;;;;;;;;;;;;;;;;;;26.1;;;;;;1;;;;;;;;;;;;;;;92.4;;;;;;;;;;;;;;;;;;;;;;3;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …',
-]
+  "150162990250001;… ELEM;AURORA;89.4;;;12.1;;;;41522;;;;;7.2;;;;0;;;;;;;3;;;;;;;;;;;;;;;;;;;;;;;;18.6;;;;;;2;;;;;;;;;;;;;;;91.2;;;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …",
+  "150162990252003;… ELEM;AURORA;91.7;;;9.8;;;;43108;;;;;6.5;;;;0;;;;;;;2;;;;;;;;;;;;;;;;;;;;;;;;21.4;;;;;;1;;;;;;;;;;;;;;;88.7;;;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …",
+  "150162990252007;… HS;AURORA;93.2;;;14.6;;;;58974;;;;;11.3;;;;1;;;;;;;4;;;;;;;;;;;;;;;;;;;;;;;;24.9;;;;;;3;;;;;;;;;;;;;;;94.1;;;;;;;;;;;;;;;;;;;;;;2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …",
+  "150162990252011;… ELEM;AURORA;87.5;;;16.2;;;;39860;;;;;9.4;;;;0;;;;;;;5;;;;;;;;;;;;;;;;;;;;;;;;19.8;;;;;;2;;;;;;;;;;;;;;;85.3;;;;;;;;;;;;;;;;;;;;;;1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …",
+  "150162990252026;… MS;AURORA;90.1;;;11.7;;;;46215;;;;;8.1;;;;0;;;;;;;1;;;;;;;;;;;;;;;;;;;;;;;;22.7;;;;;;4;;;;;;;;;;;;;;;89.6;;;;;;;;;;;;;;;;;;;;;;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …",
+  "150162990252034;… HS;AURORA;94.8;;;13.3;;;;61402;;;;;12.6;;;;2;;;;;;;3;;;;;;;;;;;;;;;;;;;;;;;;26.1;;;;;;1;;;;;;;;;;;;;;;92.4;;;;;;;;;;;;;;;;;;;;;;3;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; …",
+];
 
-export const RAW_LABEL = `rc25.txt · row shape only · ${RAW_FIELD_COUNT.toLocaleString('en-US')} fields each · no header`
+export const RAW_LABEL = `rc25.txt · row shape only · ${RAW_FIELD_COUNT.toLocaleString("en-US")} fields each · no header`;
 
 /** A real query shape against the published dataset. */
 export const RECONCILED_SQL = [
-  'SELECT year, school_name, teacher_avg_salary',
+  "SELECT year, school_name, teacher_avg_salary",
   'FROM "isbe/report-card:all"',
   "WHERE city = 'AURORA'",
-  'ORDER BY year',
-]
+  "ORDER BY year",
+];
 
-export const SQL_LABEL = `one query · ${FILE_COUNT} years · ${FILE_COUNT} files reconciled`
+export const SQL_LABEL = `one query · ${FILE_COUNT} years · ${FILE_COUNT} files reconciled`;
 
 /**
  * The same query, open in the workbench and already run. Built from
@@ -79,14 +79,14 @@ export const SQL_LABEL = `one query · ${FILE_COUNT} years · ${FILE_COUNT} file
  * upsell rather than on the editor.
  */
 export const RECONCILED_SQL_URL = `https://tryopendata.ai/sandbox?sql=${encodeURIComponent(
-  RECONCILED_SQL.join('\n'),
-)}&autorun=1`
+  RECONCILED_SQL.join("\n"),
+)}&autorun=1`;
 
 /** The published dataset the files become. */
-export const DATASET_NAME = 'isbe/report-card'
+export const DATASET_NAME = "isbe/report-card";
 
 /** Its page in the product. The card on slide 3 opens this in a new tab. */
-export const DATASET_URL = `https://tryopendata.ai/datasets/${DATASET_NAME}`
+export const DATASET_URL = `https://tryopendata.ai/datasets/${DATASET_NAME}`;
 
 /**
  * The card's meta line. Slide 3 counts the files up as they land, slide 4
@@ -94,9 +94,9 @@ export const DATASET_URL = `https://tryopendata.ai/datasets/${DATASET_NAME}`
  * the format string out.
  */
 export const datasetMeta = (files: number = FILE_COUNT): string =>
-  `${files} files · ${FIRST_FILE_YEAR} to ${LAST_FILE_YEAR} · one schema`
+  `${files} files · ${FIRST_FILE_YEAR} to ${LAST_FILE_YEAR} · one schema`;
 
-export const DATASET_META = datasetMeta()
+export const DATASET_META = datasetMeta();
 
 /**
  * Where the dataset card sits, as percentages of the stage. Slides 3 and 4
@@ -108,4 +108,4 @@ export const DATASET_META = datasetMeta()
  * card: on slide 3's second beat the query stands opposite it in the right
  * column, so the two read as one row.
  */
-export const DATASET_CARD_BOX = { left: 5.7, top: 29.5, width: 36, height: 13 }
+export const DATASET_CARD_BOX = { left: 5.7, top: 29.5, width: 36, height: 13 };

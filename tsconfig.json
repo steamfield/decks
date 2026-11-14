@@ -2,21 +2,24 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "preserve",
     "strict": true,
-    "esModuleInterop": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "moduleResolution": "bundler",
+    "customConditions": ["@steamfield/decks/source"],
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "types": ["node", "react", "react-dom"]
   },
   "include": [
-    "packages/decks/**/*.ts",
-    "packages/decks/**/*.mts",
-    "examples/*/components/**/*.ts",
-    "examples/*/data/**/*.ts",
-    "examples/*/setup/**/*.ts",
-    "decks/*/components/**/*.ts",
-    "decks/*/data/**/*.ts",
-    "decks/*/setup/**/*.ts"
+    "packages/*/src",
+    "tests",
+    "examples",
+    "e2e",
+    "playwright.config.ts",
+    "vitest.setup.ts",
+    "vitest.config.ts"
   ]
 }

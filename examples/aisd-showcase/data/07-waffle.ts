@@ -34,52 +34,72 @@
  * C or better; 3 / 31 / 81 before that, a 2024-25 blog figure TEA's ratings
  * do not support.
  */
-import { campuses } from './campuses'
+import { campuses } from "./campuses";
 
 export const waffleCounts = {
   chronic: 2,
   atFour: 9,
   dfOther: 20,
   other: 71,
-}
+};
 
 /** Open campuses rated D or F in 2025-26 (chronic + own-record D/F at four + dfOther). */
-export const waffleOpenDf = 25
+export const waffleOpenDf = 25;
 /** Of those 25, D or F in each of 2023-24, 2024-25 and 2025-26. */
-export const waffleOpenDfThreeYears = 20
+export const waffleOpenDfThreeYears = 20;
 
 const priorityIds = [
-  '227901046', '227901053', '227901055', '227901160', '227901129',
-  '227901059', '227901186', '227901176', '227901044', '227901105', '227901174',
-]
-export type WaffleTier = 'chronic' | 'atFour' | 'dfOther' | 'other'
+  "227901046",
+  "227901053",
+  "227901055",
+  "227901160",
+  "227901129",
+  "227901059",
+  "227901186",
+  "227901176",
+  "227901044",
+  "227901105",
+  "227901174",
+];
+export type WaffleTier = "chronic" | "atFour" | "dfOther" | "other";
 export const waffleCampuses = campuses
-  .filter(campus => !campus.closed)
-  .map(campus => {
-    const tier: WaffleTier = campus.consecutiveFs >= 5 ? 'chronic'
-      : campus.consecutiveFs === 4 ? 'atFour'
-      : ['D', 'F'].includes(campus.rating) ? 'dfOther' : 'other'
-    return { ...campus, tier }
+  .filter((campus) => !campus.closed)
+  .map((campus) => {
+    const tier: WaffleTier =
+      campus.consecutiveFs >= 5
+        ? "chronic"
+        : campus.consecutiveFs === 4
+          ? "atFour"
+          : ["D", "F"].includes(campus.rating)
+            ? "dfOther"
+            : "other";
+    return { ...campus, tier };
   })
   .sort((a, b) => {
-    const tiers = ['chronic', 'atFour', 'dfOther', 'other']
-    return tiers.indexOf(a.tier) - tiers.indexOf(b.tier)
-      || (priorityIds.indexOf(a.campusNumber) - priorityIds.indexOf(b.campusNumber))
-      || a.campus.localeCompare(b.campus)
-  })
+    const tiers = ["chronic", "atFour", "dfOther", "other"];
+    return (
+      tiers.indexOf(a.tier) - tiers.indexOf(b.tier) ||
+      priorityIds.indexOf(a.campusNumber) - priorityIds.indexOf(b.campusNumber) ||
+      a.campus.localeCompare(b.campus)
+    );
+  });
 
 /** Inherited histories stay visibly separate from a receiver's own grade. */
 export function waffleBaseGroup(campus: (typeof waffleCampuses)[number]) {
-  return campus.tier === 'chronic' ? 'chronic'
-    : campus.inheritedFrom ? 'inherited'
-    : ['D', 'F'].includes(campus.rating) ? 'dfOther' : 'other'
+  return campus.tier === "chronic"
+    ? "chronic"
+    : campus.inheritedFrom
+      ? "inherited"
+      : ["D", "F"].includes(campus.rating)
+        ? "dfOther"
+        : "other";
 }
 
 /** Match the visible legend: rating groups first, inherited-count tiers last. */
 export function waffleDisplayCampuses(showInheritedCounts: boolean) {
-  if (showInheritedCounts) return waffleCampuses
-  const groups = ['chronic', 'dfOther', 'inherited', 'other']
-  return [...waffleCampuses].sort((a, b) =>
-    groups.indexOf(waffleBaseGroup(a)) - groups.indexOf(waffleBaseGroup(b)),
-  )
+  if (showInheritedCounts) return waffleCampuses;
+  const groups = ["chronic", "dfOther", "inherited", "other"];
+  return [...waffleCampuses].sort(
+    (a, b) => groups.indexOf(waffleBaseGroup(a)) - groups.indexOf(waffleBaseGroup(b)),
+  );
 }

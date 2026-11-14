@@ -11,8 +11,9 @@
 // mistracking. No noise bars, no rolls, parks or flutters, no torn picture,
 // no crash burst. The site's fault schedule (src/lib/tape-faults.ts) is not
 // ported at all, so nothing here can draw a bar.
-import { Uniform, Vector2 } from 'three'
-import { BlendFunction, Effect, EffectAttribute } from 'postprocessing'
+
+import { BlendFunction, Effect, EffectAttribute } from "postprocessing";
+import { Uniform, Vector2 } from "three";
 
 const tapeShader = /* glsl */ `
   uniform float tapeTime;
@@ -199,21 +200,21 @@ const tapeShader = /* glsl */ `
     }
     outputColor = vec4(color, inputColor.a);
   }
-`
+`;
 
 /** Tape playback before CRT bloom: tape character, chroma bleed, rare dropouts. */
 export function createTape() {
-  return new Effect('Tape', tapeShader, {
+  return new Effect("Tape", tapeShader, {
     blendFunction: BlendFunction.NORMAL,
     attributes: EffectAttribute.CONVOLUTION,
     uniforms: new Map<string, Uniform>([
-      ['tapeTime', new Uniform(0)],
-      ['tapeClock', new Uniform(0)],
-      ['tapeLine', new Uniform(3)],
-      ['tapeSize', new Uniform(new Vector2(1, 1))],
-      ['tapeAmount', new Uniform(1)],
-      ['chromaAmount', new Uniform(1)],
-      ['tapeTexture', new Uniform(1)],
+      ["tapeTime", new Uniform(0)],
+      ["tapeClock", new Uniform(0)],
+      ["tapeLine", new Uniform(3)],
+      ["tapeSize", new Uniform(new Vector2(1, 1))],
+      ["tapeAmount", new Uniform(1)],
+      ["chromaAmount", new Uniform(1)],
+      ["tapeTexture", new Uniform(1)],
     ]),
-  })
+  });
 }

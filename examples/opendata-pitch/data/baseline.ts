@@ -13,7 +13,7 @@
  * middle of whatever box the chart occupies, and that box has to clear both
  * the headline above it and the prose card below it.
  */
-export const BASELINE_Y = 480
+export const BASELINE_Y = 480;
 
 /**
  * The district bars slide hangs ten rows off its rule, so at 480 the block
@@ -22,10 +22,10 @@ export const BASELINE_Y = 480
  * do not draw the rule (it read as a stray line under their stacks), so it
  * fades out here and comes back on the model slide at BASELINE_Y.
  */
-export const BARS_BASELINE_Y = 380
+export const BARS_BASELINE_Y = 380;
 
 /**
  * Left and right ends of the rule, in stage viewBox units. Also the right
  * column every story slide lays its figure in, whether or not it draws the rule.
  */
-export const BASELINE_X: [number, number] = [1080, 1860]
+export const BASELINE_X: [number, number] = [1080, 1860];

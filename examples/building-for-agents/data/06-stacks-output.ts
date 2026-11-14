@@ -36,56 +36,61 @@
  * AGENT_MARKERS: src/config.ts lines 62 to 73, `AgentMarkers`. The slide
  *   prints one marker per agent plus the cross-agent AI_AGENT.
  */
-import type { TermLine } from './types'
-import { cut } from './02-two-users'
-import fixture from './fixtures/06-stacks-verify.json'
 
-export const RECORDED = fixture.recorded
-export const CLI = fixture.cli
+import { cut } from "./02-two-users";
+import fixture from "./fixtures/06-stacks-verify.json";
+import type { TermLine } from "./types";
+
+export const RECORDED = fixture.recorded;
+export const CLI = fixture.cli;
 /** The exit status of all three runs. */
-export const VERIFY_EXIT = fixture.human.exit
+export const VERIFY_EXIT = fixture.human.exit;
 
 /** Characters per row in a pane on this slide, at the 26px terminal size. */
-export const COLS = 45
+export const COLS = 45;
 
-const ELLIPSIS = '…'
-const gap: TermLine = { text: ELLIPSIS, tone: 'muted' }
-const SGR = /\u001b\[(\d+)m/g
+const ELLIPSIS = "…";
+const gap: TermLine = { text: ELLIPSIS, tone: "muted" };
+// biome-ignore lint/suspicious/noControlCharactersInRegex: the recording contains ANSI SGR escapes.
+const SGR = /\u001b\[(\d+)m/g;
 
 /** A captured terminal line: its colour codes become a tone and leave the text. */
 function fromTerminal(raw: string): TermLine {
-  const codes = [...raw.matchAll(SGR)].map((m) => m[1])
-  const tone = codes.includes('32') ? 'ok' : codes.includes('31') ? 'fail' : 'out'
-  return { text: raw.replace(SGR, ''), tone }
+  const codes = [...raw.matchAll(SGR)].map((m) => m[1]);
+  const tone = codes.includes("32") ? "ok" : codes.includes("31") ? "fail" : "out";
+  return { text: raw.replace(SGR, ""), tone };
 }
 
 /** Wrap between words at `cols`, as a browser wraps a paragraph. */
 function wordWrap(text: string, cols: number): string[] {
-  const rows: string[] = []
-  let row = ''
-  for (const word of text.split(' ')) {
+  const rows: string[] = [];
+  let row = "";
+  for (const word of text.split(" ")) {
     if (row && row.length + 1 + word.length > cols) {
-      rows.push(row)
-      row = word
-    } else row = row ? `${row} ${word}` : word
+      rows.push(row);
+      row = word;
+    } else row = row ? `${row} ${word}` : word;
   }
-  return [...rows, row]
+  return [...rows, row];
 }
 
-const wrapped = (line: TermLine): TermLine[] => wordWrap(line.text, COLS).map((text) => ({ ...line, text }))
-const clipped = (line: TermLine): TermLine => ({ ...line, text: cut(line.text, COLS) })
+const wrapped = (line: TermLine): TermLine[] =>
+  wordWrap(line.text, COLS).map((text) => ({ ...line, text }));
+const clipped = (line: TermLine): TermLine => ({ ...line, text: cut(line.text, COLS) });
 
 /** A row of JSON, checked against the capture it is said to come from. */
 function piece(source: string, text: string): TermLine {
-  if (!source.includes(text)) throw new Error(`06-stacks-output: "${text}" is not in the capture`)
-  return { text, tone: 'out' }
+  if (!source.includes(text)) throw new Error(`06-stacks-output: "${text}" is not in the capture`);
+  return { text, tone: "out" };
 }
 
-const [hHead, hInstall, hHooks, hLint, hDetail, hNext] = fixture.human.lines.map(fromTerminal)
+const [hHead, hInstall, hHooks, hLint, hDetail, hNext] = fixture.human.lines.map(fromTerminal);
+if (!hHead || !hInstall || !hHooks || !hLint || !hDetail || !hNext)
+  throw new Error("06-stacks-output: incomplete human recording");
 
 /** PERSON: the report as a terminal shows it. */
 export const PERSON_LINES: readonly TermLine[] = [
-  { text: fixture.human.command, tone: 'cmd' },
+  { text: fixture.human.command, tone: "cmd" },
   ...wrapped(hHead),
   clipped(hInstall),
   clipped(hHooks),
@@ -93,35 +98,39 @@ export const PERSON_LINES: readonly TermLine[] = [
   hDetail,
   gap,
   ...wrapped(hNext),
-]
+];
 
-const [aStep1, aStep2] = fixture.agent.stderr
-const [aHead, aLint, aDetail, aNext] = fixture.agent.stdout.map((text): TermLine => ({ text, tone: 'out' }))
+const [aStep1, aStep2] = fixture.agent.stderr;
+const [aHead, aLint, aDetail, aNext] = fixture.agent.stdout.map(
+  (text): TermLine => ({ text, tone: "out" }),
+);
+if (aStep1 === undefined || aStep2 === undefined || !aHead || !aLint || !aDetail || !aNext)
+  throw new Error("06-stacks-output: incomplete agent recording");
 
 /** AGENT: the same report with an agent marker set. No colour codes were in the capture. */
 export const AGENT_LINES: readonly TermLine[] = [
-  { text: fixture.agent.command, tone: 'cmd' },
-  { text: aStep1, tone: 'out' },
-  { text: aStep2, tone: 'out' },
+  { text: fixture.agent.command, tone: "cmd" },
+  { text: aStep1, tone: "out" },
+  { text: aStep2, tone: "out" },
   gap,
   ...wrapped(aHead),
   clipped(aLint),
   aDetail,
   gap,
   ...wrapped(aNext),
-]
+];
 
-const out = fixture.json.stdoutHead
-const envelope = fixture.json.stderrLast
+const out = fixture.json.stdoutHead;
+const envelope = fixture.json.stderrLast;
 const next = [
   piece(envelope, '"next":"fix the code or config these steps '),
-  piece(envelope, 'exercise, not the steps, then run stacks '),
+  piece(envelope, "exercise, not the steps, then run stacks "),
   piece(envelope, 'verify again.",'),
-]
+];
 
 /** SCRIPT: the result object on stdout, then the error envelope that ends stderr. */
 export const SCRIPT_LINES: readonly TermLine[] = [
-  { text: fixture.json.command, tone: 'cmd' },
+  { text: fixture.json.command, tone: "cmd" },
   piece(out, '{"outcome":"failed","scope":"full","steps":['),
   gap,
   piece(envelope, '{"error":{"tag":"VerifyFailed","message":'),
@@ -129,30 +138,36 @@ export const SCRIPT_LINES: readonly TermLine[] = [
   ...next,
   piece(envelope, '"details":{"failed":[{"name":"lint",'),
   gap,
-]
+];
 /** Rows of SCRIPT_LINES that hold the envelope's `next` field. */
-export const NEXT_ROWS: readonly number[] = next.map((line) => SCRIPT_LINES.indexOf(line))
+export const NEXT_ROWS: readonly number[] = next.map((line) => SCRIPT_LINES.indexOf(line));
 
 /** One marker per agent, in the order config.ts checks them, then the cross-agent one. */
-export const AGENT_MARKERS = ['CLAUDECODE', 'CODEX_SANDBOX', 'OPENCODE', 'CURSOR_AGENT', 'AI_AGENT'] as const
+export const AGENT_MARKERS = [
+  "CLAUDECODE",
+  "CODEX_SANDBOX",
+  "OPENCODE",
+  "CURSOR_AGENT",
+  "AI_AGENT",
+] as const;
 
 export interface ExitCode {
-  code: number
+  code: number;
   /** The opening words of the "Next action" cell in output.md's exit table. */
-  action: string
+  action: string;
 }
 
 /** Every row of the exit table, in its order. */
 export const EXIT_CODES: readonly ExitCode[] = [
-  { code: 0, action: 'Success' },
-  { code: 1, action: 'A bug in stacks' },
-  { code: 2, action: 'Fix the input' },
-  { code: 3, action: 'Fix the configuration' },
-  { code: 4, action: 'Retry later' },
-  { code: 5, action: 'Read the verify report' },
-  { code: 6, action: 'Ask a person' },
-  { code: 130, action: 'The run was stopped' },
-]
+  { code: 0, action: "Success" },
+  { code: 1, action: "A bug in stacks" },
+  { code: 2, action: "Fix the input" },
+  { code: 3, action: "Fix the configuration" },
+  { code: 4, action: "Retry later" },
+  { code: 5, action: "Read the verify report" },
+  { code: 6, action: "Ask a person" },
+  { code: 130, action: "The run was stopped" },
+];
 /** The two codes the last beat is about: a failed verify, and a refused step. */
-export const READ_REPORT = 5
-export const ASK_PERSON = 6
+export const READ_REPORT = 5;
+export const ASK_PERSON = 6;

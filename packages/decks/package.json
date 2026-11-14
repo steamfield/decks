@@ -1,80 +1,91 @@
 {
-  "name": "slidev-addon-decks",
-  "version": "0.1.0",
-  "description": "Slidev addon: story engine, ink marks, OpenChart wrapper, layout CSS, and a deck runner.",
-  "license": "Apache-2.0",
+  "name": "@steamfield/decks",
+  "version": "1.0.0-rc.0",
   "type": "module",
-  "keywords": [
-    "slidev-addon",
-    "slidev"
-  ],
   "engines": {
-    "slidev": ">=52"
+    "node": ">=22.12.0"
   },
   "exports": {
-    "./package.json": "./package.json",
-    "./story": "./story/index.ts",
-    "./chart-theme": "./chart-theme.ts",
-    "./composables/*": "./composables/*.ts",
-    "./theme": "./theme/index.ts"
-  },
-  "imports": {
-    "#decks/theme": "./theme/default.ts"
+    ".": {
+      "@steamfield/decks/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./motion": {
+      "@steamfield/decks/source": "./src/motion.ts",
+      "types": "./dist/motion.d.ts",
+      "default": "./dist/motion.js"
+    },
+    "./kit": {
+      "@steamfield/decks/source": "./src/kit.ts",
+      "types": "./dist/kit.d.ts",
+      "default": "./dist/kit.js"
+    },
+    "./node": {
+      "@steamfield/decks/source": "./src/node.ts",
+      "types": "./dist/node.d.ts",
+      "default": "./dist/node.js"
+    },
+    "./kit/styles.css": {
+      "@steamfield/decks/source": "./src/kit/styles.css",
+      "default": "./dist/kit/styles.css"
+    }
   },
   "bin": {
-    "decks": "./scripts/deck.mjs"
+    "decks": "./dist/cli.js"
   },
   "files": [
-    "LICENSE",
-    "chart-theme.ts",
-    "vite.config.mts",
-    "components",
-    "composables",
-    "global-bottom.vue",
-    "public",
-    "setup",
-    "theme",
-    "!theme/*.test.ts",
-    "styles",
-    "story",
-    "!story/*.test.ts",
-    "!story/test-decks.ts",
-    "viewer",
-    "templates",
-    "lint",
-    "!lint/*.test.*",
-    "agent",
-    "!agent/INVENTORY.md",
-    "scripts",
-    "!scripts/*.test.ts",
-    "!scripts/embed-check.mjs",
-    "!scripts/render-agent.mjs",
-    "!scripts/render-agent.d.mts",
-    "!scripts/tarball-e2e.mjs",
-    "!scripts/viewer-browser.mjs"
+    "dist",
+    "docs",
+    "README.md"
   ],
+  "scripts": {
+    "build": "node build.mjs"
+  },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.3.0",
+    "3d-force-graph": "1.80.1",
+    "@mdx-js/rollup": "3.1.1",
     "@opendata-ai/openchart-core": "9.0.0",
-    "@opendata-ai/openchart-vue": "9.0.0",
-    "d3-scale": "^4.0.2",
-    "gsap": "^3.15.0",
-    "uqr": "^0.1.3"
+    "@opendata-ai/openchart-react": "9.0.0",
+    "@shikijs/rehype": "4.6.0",
+    "@types/d3-scale": "4.0.9",
+    "@types/mdx": "2.0.14",
+    "@vitejs/plugin-react": "6.3.0",
+    "citty": "0.2.2",
+    "d3-scale": "4.0.2",
+    "get-port": "7.2.0",
+    "gray-matter": "4.0.3",
+    "gsap": "3.15.1",
+    "jiti": "2.7.0",
+    "oxc-parser": "0.158.0",
+    "picocolors": "1.1.1",
+    "playwright-core": "1.65.1",
+    "react-error-boundary": "6.1.6",
+    "rehype-stringify": "10.0.1",
+    "remark-frontmatter": "5.0.0",
+    "remark-mdx": "3.1.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "shiki": "4.6.0",
+    "three": "0.185.1",
+    "three-spritetext": "1.10.0",
+    "tinyglobby": "0.2.17",
+    "tinykeys": "4.0.1",
+    "unified": "11.0.5",
+    "uqr": "0.1.3",
+    "vite": "8.3.8",
+    "zod": "4.6.7",
+    "zustand": "5.1.0"
   },
   "peerDependencies": {
-    "pixelmatch": ">=6",
-    "playwright-chromium": ">=1.40",
-    "pngjs": ">=7"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
-  "peerDependenciesMeta": {
-    "pixelmatch": {
-      "optional": true
-    },
-    "playwright-chromium": {
-      "optional": true
-    },
-    "pngjs": {
-      "optional": true
-    }
+  "devDependencies": {
+    "@react-decks/core": "workspace:*",
+    "@react-decks/runtime": "workspace:*",
+    "@react-decks/motion": "workspace:*",
+    "@react-decks/node": "workspace:*",
+    "@react-decks/kit": "workspace:*"
   }
 }

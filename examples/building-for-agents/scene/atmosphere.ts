@@ -1,15 +1,9 @@
 // Copied unchanged from ~/Projects/steamfield/src/scripts/night-drive/atmosphere.ts
 // (steamfield commit 53a1a06, 2026-11-13): the ground haze and the sun rays.
 // @ts-nocheck
-import {
-  Color,
-  Uniform,
-  Vector2,
-  type Texture,
-  type Camera,
-  type Mesh,
-} from "three";
+
 import { BlendFunction, Effect, GodRaysEffect } from "postprocessing";
+import { type Camera, type Color, type Mesh, type Texture, Uniform, Vector2 } from "three";
 
 // Screen-height coordinates describe a continuous, shallow layer at the foot
 // of the range. No billboards: density dies smoothly above and below it.
@@ -49,12 +43,7 @@ const hazeShader = /* glsl */ `
   }
 `;
 
-export function createGroundHaze(
-  orange: Color,
-  pink: Color,
-  rays: Texture,
-  horizon: number,
-) {
+export function createGroundHaze(orange: Color, pink: Color, rays: Texture, horizon: number) {
   return new Effect("GroundHaze", hazeShader, {
     blendFunction: BlendFunction.NORMAL,
     uniforms: new Map<string, Uniform>([
@@ -86,10 +75,7 @@ export class SunRaysEffect extends GodRaysEffect {
       // Pre-blurring the source erases the real ridge's narrow valleys.
       blur: false,
     });
-    this.uniforms.set(
-      "raySun",
-      new Uniform(this.godRaysMaterial.lightPosition),
-    );
+    this.uniforms.set("raySun", new Uniform(this.godRaysMaterial.lightPosition));
     this.uniforms.set("rayAspect", new Uniform(1));
     this.uniforms.set("rayRadius", new Uniform(0.1));
     this.setFragmentShader(/* glsl */ `

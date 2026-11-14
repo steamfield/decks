@@ -1,11 +1,14 @@
-@import './tokens.css';
+@import "@steamfield/decks/kit/styles.css";
+@import "./tokens.css";
 
 .od-slide.is-story {
   font-family: var(--od-font-sans);
   background: var(--od-canvas);
   color: var(--od-text);
 }
-.od-slide.is-story.is-story-cover { background: var(--od-canvas-cover); }
+.od-slide.is-story.is-story-cover {
+  background: var(--od-canvas-cover);
+}
 .od-slide.is-story h2.od-story-head,
 .od-slide.is-story h1.od-title {
   font-family: var(--od-font-serif) !important;
@@ -20,9 +23,15 @@
   left: var(--tx-margin-x);
   width: var(--tx-head-width);
 }
-.od-slide.is-story h1.od-title { font-size: var(--tx-cover-size); }
-.od-slide.is-story .od-cover-frame { padding: var(--tx-margin-y) var(--tx-margin-x); }
-.od-slide.is-story .od-cover-body { max-width: var(--tx-cover-width); }
+.od-slide.is-story h1.od-title {
+  font-size: var(--tx-cover-size);
+}
+.od-slide.is-story .od-cover-frame {
+  padding: var(--tx-margin-y) var(--tx-margin-x);
+}
+.od-slide.is-story .od-cover-body {
+  max-width: var(--tx-cover-width);
+}
 .od-slide.is-story .od-cover-lede {
   max-width: var(--tx-lede-width);
   margin: var(--tx-lede-gap) var(--tx-zero) var(--tx-zero);
@@ -42,7 +51,9 @@
   font-size: var(--tx-small-size);
   color: var(--od-text-muted);
 }
-.od-slide.is-story .od-dim { color: var(--od-text-faint); }
+.od-slide.is-story .od-dim {
+  color: var(--od-text-faint);
+}
 
 /* Shared card surface: a flat board with a chalk hairline. */
 .od-slide.is-story :is(.od-story-card, .od-inkchip, .od-rowstrip, .od-dataset-card) {
@@ -56,14 +67,20 @@
   padding: var(--tx-card-pad);
   bottom: var(--tx-card-bottom);
 }
-.od-slide.is-story .od-story-card.anchor-left { left: var(--tx-margin-x); }
-.od-slide.is-story .od-story-card.anchor-right { right: var(--tx-margin-x); }
+.od-slide.is-story .od-story-card.anchor-left {
+  left: var(--tx-margin-x);
+}
+.od-slide.is-story .od-story-card.anchor-right {
+  right: var(--tx-margin-x);
+}
 .od-slide.is-story :is(.od-story-lead, .od-story-copy) {
   font-size: var(--tx-body-size);
   line-height: var(--tx-body-leading);
   letter-spacing: var(--tx-body-tracking);
 }
-.od-slide.is-story .od-story-lead { font-weight: var(--tx-lead-weight); }
+.od-slide.is-story .od-story-lead {
+  font-weight: var(--tx-lead-weight);
+}
 .od-slide.is-story .od-story-copy {
   margin-top: var(--tx-copy-gap);
   font-weight: var(--tx-body-weight);
@@ -94,7 +111,16 @@
 }
 
 /* SVG type uses the same hierarchy without inheriting a frame-scaled size. */
-.od-slide.is-story :is(.od-stage-name, .od-stage-note, .od-stage-tag, .od-stage-value, .tx-field-label, .tx-office-status, .tx-risk-label) {
+.od-slide.is-story
+  :is(
+    .od-stage-name,
+    .od-stage-note,
+    .od-stage-tag,
+    .od-stage-value,
+    .tx-field-label,
+    .tx-office-status,
+    .tx-risk-label
+  ) {
   font-family: var(--od-font-sans);
   font-weight: var(--tx-body-weight);
   letter-spacing: var(--tx-body-tracking);
@@ -104,10 +130,18 @@
   font-weight: var(--tx-label-weight);
   fill: var(--od-text);
 }
-.od-slide.is-story :is(.od-stage-note, .tx-office-status, .tx-risk-label) { font-size: var(--tx-svg-note); }
-.od-slide.is-story :is(.od-stage-note, .tx-office-status) { fill: var(--od-text-muted); }
-.od-slide.is-story .od-stage-tag { font-size: var(--tx-svg-tag); }
-.od-slide.is-story .od-stage-value { font-size: var(--tx-svg-value); }
+.od-slide.is-story :is(.od-stage-note, .tx-office-status, .tx-risk-label) {
+  font-size: var(--tx-svg-note);
+}
+.od-slide.is-story :is(.od-stage-note, .tx-office-status) {
+  fill: var(--od-text-muted);
+}
+.od-slide.is-story .od-stage-tag {
+  font-size: var(--tx-svg-tag);
+}
+.od-slide.is-story .od-stage-value {
+  font-size: var(--tx-svg-value);
+}
 .od-slide.is-story .tx-office-box {
   fill: var(--od-surface);
   stroke: var(--od-border);
@@ -128,8 +162,12 @@
   fill: none;
   stroke-width: var(--tx-hairline);
 }
-.od-slide.is-story :is(.tx-pending-box, .tx-risk-label) { color: var(--od-amber); }
-.od-slide.is-story .tx-risk-label { fill: currentColor; }
+.od-slide.is-story :is(.tx-pending-box, .tx-risk-label) {
+  color: var(--od-amber);
+}
+.od-slide.is-story .tx-risk-label {
+  fill: currentColor;
+}
 .od-slide.is-story .tx-pending-box {
   fill: var(--od-surface);
   stroke: currentColor;
@@ -171,9 +209,16 @@
   line-height: var(--tx-label-leading);
   color: var(--od-text-muted);
 }
-.od-slide.is-story .tx-tag.is-pending { color: var(--od-amber); border-style: dashed; }
-.od-slide.is-story .tx-tag.is-reported { color: var(--od-text-secondary); }
-.od-slide.is-story .tx-tag.is-scenario { border-style: dotted; }
+.od-slide.is-story .tx-tag.is-pending {
+  color: var(--od-amber);
+  border-style: dashed;
+}
+.od-slide.is-story .tx-tag.is-reported {
+  color: var(--od-text-secondary);
+}
+.od-slide.is-story .tx-tag.is-scenario {
+  border-style: dotted;
+}
 .od-slide.is-story .tx-sample-caption {
   position: absolute;
   bottom: var(--tx-rail-bottom);
@@ -196,54 +241,78 @@
   background: var(--od-text-faint);
   opacity: var(--tx-dim);
 }
-.od-slide.is-story .od-beat.is-done { background: var(--od-text-muted); opacity: var(--tx-on); }
-.od-slide.is-story .od-beat.is-current { width: var(--tx-rail-current); background: var(--od-cyan); }
+.od-slide.is-story .od-beat.is-done {
+  background: var(--od-text-muted);
+  opacity: var(--tx-on);
+}
+.od-slide.is-story .od-beat.is-current {
+  width: var(--tx-rail-current);
+  background: var(--od-cyan);
+}
 
 /* Suppress the addon's clean-ink filters, including pings on later slides. */
-.od-slide.is-story .od-card-glow { display: none; }
-.od-slide.is-story g:has(> .od-card-stroke) > rect { rx: var(--tx-radius-card); }
+.od-slide.is-story .od-card-glow {
+  display: none;
+}
+.od-slide.is-story g:has(> .od-card-stroke) > rect {
+  rx: var(--tx-radius-card);
+}
 .od-slide.is-story .od-card-stroke {
   stroke-width: var(--tx-hairline);
   stroke-opacity: var(--tx-hairline-opacity);
 }
-.od-slide.is-story :is([filter], .od-ink-ping *) { filter: none !important; }
-.od-slide.is-story :is(.od-ink-ping circle, .od-ink-ping rect) { stroke-width: var(--tx-hairline); }
+.od-slide.is-story :is([filter], .od-ink-ping *) {
+  filter: none !important;
+}
+.od-slide.is-story :is(.od-ink-ping circle, .od-ink-ping rect) {
+  stroke-width: var(--tx-hairline);
+}
 
 /* This stylesheet is loaded only by texas-2026. VT pseudo-elements belong
    to html, so a slide ancestor cannot scope them. No custom VT names. */
-html[data-od-story]::view-transition-group(*),
-html[data-od-story]::view-transition-old(*),
-html[data-od-story]::view-transition-new(*) { animation-duration: var(--tx-vt-fade); }
+html[data-deck-transition="story"]::view-transition-group(*),
+html[data-deck-transition="story"]::view-transition-old(*),
+html[data-deck-transition="story"]::view-transition-new(*) {
+  animation-duration: var(--tx-vt-fade);
+}
 /* A slide change is a quick clear, then a settle. The outgoing stage and
    headline fade out first and the incoming ones fade up behind them, so two
    diagrams or two headlines never sit double-exposed. The canvas shows in
    between. The card is left on the browser's cross-fade: its surface holds
    still while the copy changes, which carries the eye across the cut. */
-html[data-od-story]::view-transition { background: var(--od-canvas); }
-html[data-od-story][data-od-nav]::view-transition-old(root),
-html[data-od-story][data-od-nav]::view-transition-old(od-story-head),
-html[data-od-story][data-od-nav]::view-transition-old(od-power-board),
-html[data-od-story][data-od-nav]::view-transition-old(od-campus-pair) {
+html[data-deck-transition="story"]::view-transition {
+  background: var(--od-canvas);
+}
+html[data-deck-transition="story"][data-deck-nav]::view-transition-old(root),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-old(od-story-head),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-old(od-power-board),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-old(od-campus-pair) {
   animation: od-vt-out var(--tx-vt-out) linear both;
 }
-html[data-od-story][data-od-nav]::view-transition-new(root),
-html[data-od-story][data-od-nav]::view-transition-new(od-story-head),
-html[data-od-story][data-od-nav]::view-transition-new(od-power-board),
-html[data-od-story][data-od-nav]::view-transition-new(od-campus-pair),
-html[data-od-story][data-od-nav]::view-transition-new(od-story-card-left):only-child,
-html[data-od-story][data-od-nav]::view-transition-new(od-story-card-right):only-child {
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(root),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(od-story-head),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(od-power-board),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(od-campus-pair),
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(
+  od-story-card-left
+):only-child,
+html[data-deck-transition="story"][data-deck-nav]::view-transition-new(
+  od-story-card-right
+):only-child {
   animation: od-vt-fade var(--tx-vt-fade) var(--tx-vt-ease) var(--tx-vt-delay) both;
 }
 /* The card is bottom anchored and its height follows its copy. Pinning both
    snapshots to the bottom of the morphing group keeps the lower edge still. */
-html[data-od-story]::view-transition-old(od-story-card-left),
-html[data-od-story]::view-transition-new(od-story-card-left),
-html[data-od-story]::view-transition-old(od-story-card-right),
-html[data-od-story]::view-transition-new(od-story-card-right) { inset-block: auto 0; }
+html[data-deck-transition="story"]::view-transition-old(od-story-card-left),
+html[data-deck-transition="story"]::view-transition-new(od-story-card-left),
+html[data-deck-transition="story"]::view-transition-old(od-story-card-right),
+html[data-deck-transition="story"]::view-transition-new(od-story-card-right) {
+  inset-block: auto 0;
+}
 @media (prefers-reduced-motion: reduce) {
-  html[data-od-story]::view-transition-group(*),
-  html[data-od-story]::view-transition-old(*),
-  html[data-od-story]::view-transition-new(*) {
+  html[data-deck-transition="story"]::view-transition-group(*),
+  html[data-deck-transition="story"]::view-transition-old(*),
+  html[data-deck-transition="story"]::view-transition-new(*) {
     animation-duration: var(--tx-vt-reduced) !important;
     animation-delay: 0ms !important;
   }

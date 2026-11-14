@@ -20,9 +20,9 @@ function run() {
   try {
     entry = require.resolve("@steamfield/decks");
   } catch (cause) {
-    const installed = require.resolve.paths("@steamfield/decks")?.some((dir) =>
-      existsSync(join(dir, "@steamfield/decks")),
-    );
+    const installed = require.resolve
+      .paths("@steamfield/decks")
+      ?.some((dir) => existsSync(join(dir, "@steamfield/decks")));
     if (cause.code === "MODULE_NOT_FOUND" && !installed) return;
     throw cause;
   }

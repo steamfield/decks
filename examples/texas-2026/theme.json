@@ -41,20 +41,34 @@
     "emerald": "{surfaces.surface-raised}",
     "rose": "{surfaces.surface-raised}"
   },
-  "categorical": ["{ramps.cyan.2}", "{ramps.slate.3}", "{ramps.amber.2}", "{ramps.emerald.2}", "{ramps.slate.2}", "{ramps.emerald.3}"],
+  "categorical": [
+    "{ramps.cyan.2}",
+    "{ramps.slate.3}",
+    "{ramps.amber.2}",
+    "{ramps.emerald.2}",
+    "{ramps.slate.2}",
+    "{ramps.emerald.3}"
+  ],
   "fonts": {
     "sans": "'Public Sans Variable', sans-serif",
     "serif": "'Source Serif 4 Variable', serif",
     "mono": "{fonts.sans}"
   },
   "chart": {
-    "text": "{text.muted}", "gridline": "{borders.subtle}", "axis": "{borders.axis}",
-    "eyebrow": "{ramps.cyan.2}", "title": "{text.primary}", "subtitle": "{text.secondary}",
-    "source": "{text.muted}", "graph-label": "{text.secondary}"
+    "text": "{text.muted}",
+    "gridline": "{borders.subtle}",
+    "axis": "{borders.axis}",
+    "eyebrow": "{ramps.cyan.2}",
+    "title": "{text.primary}",
+    "subtitle": "{text.secondary}",
+    "source": "{text.muted}",
+    "graph-label": "{text.secondary}"
   },
   "qr-white": "{text.primary}",
   "brand": {
-    "name": "Texas schools after the election", "url": null, "logo": null,
+    "name": "Texas schools after the election",
+    "url": null,
+    "logo": null,
     "wordmark-gradient": "linear-gradient(95deg, {ramps.slate.4}, {ramps.cyan.4})"
   }
 }

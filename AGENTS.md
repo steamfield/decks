@@ -1,145 +1,226 @@
 # Decks
 
-This file provides guidance to coding agents (Claude Code, Antigravity, Codex) working in this repo.
+This file is the rulebook for every coding agent working in this repo (Claude Code, Codex,
+Antigravity). Codex loads it from the repo root; Claude Code reads it through `CLAUDE.md`.
 
 ## What this is
 
-Decks is a Slidev addon and deck runner for data-storytelling presentations, published as one npm package, `slidev-addon-decks` (bin `decks`). This repo is a bun workspace holding that package, four example decks, and a `decks/` directory where new decks are scaffolded.
-
-A deck is either **conventional** (bullets, tables, charts) or a **story** deck (one pinned visualization per slide, beats on arrow keys, prose inside the stage component rather than the page). `examples/agent-experience` and `examples/opendata-pitch` are the respective references.
-
-## Structure
+Decks is a React slide framework for animated, data-storytelling presentations, published as
+one npm package, `@steamfield/decks` (bin `decks`). It replaced a Slidev addon
+(`slidev-addon-decks`); the last Slidev state is the git tag `slidev-final`.
 
 ```
-package.json          # workspace root: Slidev, the theme, runner scripts
-decks.json            # deck registry: _config + alias -> entry, slug, animated flag
-packages/decks/       # the addon (npm: slidev-addon-decks)
-  components/         # Od* chrome, OpenChart, Story*, Ink* marks (auto-imported in every deck)
-  story/              # the story engine (import from slidev-addon-decks/story) + guard tests
-  theme/              # default.json (the one theme source), resolver, contrast test
-  styles/             # base, layout, components, stats, story-frame, story-marks
-  scripts/            # deck.mjs (the `decks` bin) + init, hook, lint, shot, snap, review-prose, fact-extract, render-agent
-  lint/               # scan.mjs and ai-rhetoric-patterns.tsv (the pattern list)
-  agent/              # what `decks init` installs: rendered templates, instructions.md, exemplars/, INVENTORY.md
-  templates/          # what `decks new` scaffolds
-examples/             # shipped decks: opendata-pitch, agent-experience, od-templates, od-story-templates
-decks/                # your decks (`bun run new` writes here)
-tools/                # content-lint.sh and content-fact-extract.mjs (wrappers over `decks`)
-<deck>/
-  slides.md           # headmatter + src: manifest
-  pages/NN-slug.md    # one file per slide
-  components/         # deck-local Vue components (auto-imported for that deck)
-  data/               # provenance-commented figures and scripted-demo fixtures, one module per slide
-  styles/             # deck-local CSS: Slidev auto-loads styles/index.css
-  theme.json          # optional: partial override of packages/decks/theme/default.json
-  data-sources.md     # slide -> source query map (data-driven decks)
+packages/{core,runtime,motion,node,kit}   the framework, private workspaces (@react-decks/*)
+packages/decks/                           the published package: bundles the five, subpath exports
+examples/                                 decks: building-for-agents, opendata-pitch, aisd-showcase,
+                                          texas-2026, and the basic, motion and tides-slide fixtures
+plugins/decks/                            the Claude Code plugin (skills, agent, hooks); marketplace
+                                          at .claude-plugin/marketplace.json
+site/                                     decks.steamfield.io (Astro); its own AGENTS.md
+docs/                                     architecture.md (the design), guide/ (user docs, shipped
+                                          in the package), rfcs/, delegation-log.md
+e2e/, tests/, scripts/                    browser tests, repo-wide tests, tooling
 ```
 
-Slidev resolves `components/`, `public/`, and `setup/` relative to the deck's `slides.md`. Cross-deck code lives in the addon, enabled per deck with headmatter `addons: ["slidev-addon-decks"]`.
+Writing or revising a deck follows the plugin's skills, which this repo uses directly
+(`.claude/skills` and `.agents/skills` link to `plugins/decks/skills`): start with
+`working-with-decks`, then `building-a-deck`; slide prose follows `writing-slides`, and a
+figure on a slide follows `deck-data`. The prose hooks in `.claude/settings.json` deny
+error-level AI-rhetoric patterns in deck prose as it is written. Framework code follows the
+rest of this file.
+
+`docs/architecture.md` is the design. A section marked Final is a contract: implement it as
+written, and ask before deviating. Load the `ce:architecting-systems` skill before adding or
+moving a module and `ce:writing-tests` (with its TypeScript and waiting references) before
+writing a test. This file wins where a skill differs.
+
+## Packages
+
+```
+kit -> motion -> runtime -> core <- node
+```
+
+| Package | What it is | Environment |
+| --- | --- | --- |
+| `packages/core` | Pure deck logic: navigation, clicks, URL codec, notes, sync, canvas fit | none |
+| `packages/runtime` | React client: store, hooks, canvas, views, transitions | browser |
+| `packages/motion` | Motion tokens, step primitives, timelines | browser |
+| `packages/node` | Vite plugins, the `decks` CLI, export, tooling | Node |
+| `packages/kit` | The ported addon: components, story engine, theme | browser |
+
+- `core` is pure: no React, no DOM or Node globals, no imports from other packages. What it
+  needs from the environment, the caller passes in. `setTimeout`, `clearTimeout` and
+  `URLSearchParams` are the exceptions.
+- `runtime` never imports `motion` or `kit`; it exposes registries they call into.
+- Browser packages never import `node:*` or `@react-decks/node`. `node` never imports React.
+- Cross-package imports use the bare name (`@react-decks/core`): no subpaths, no relative
+  path out of a package.
+- A package's public API is its `src/index.ts`. Everything else is private.
+
+`tests/boundaries.test.ts`, Biome and the type checker enforce this. Never edit them to make
+an import pass.
 
 ## Commands
 
-Run from the repo root:
-
 ```bash
-bun run dev <alias> [--no-open]  # dev server (port 3030, or the next free one)
-bun run build <alias>          # static build to dist/<name> (decks.json _config.outDir)
-bun run export <alias>         # PDF export (flags picked per deck from decks.json)
-bun run new <alias> <dir> [--story] [--author "Name"] [--brand "Name"] [--url example.com]
-                               # scaffold decks/<dir> (conventional or story) + register it
-bun run list                   # registered decks
-bun run check                  # orphaned/missing pages vs src: manifests, alias/name collisions, plus error-level lint hits
-bun run build:all              # build every registered deck except `skipAll` ones; runs check first
-bun run typecheck              # tsc over .ts only; a stage's .vue script is not read
-bun run test                   # unit suites, story guards, theme contrast, story-card COPY lint
-bun run lint                   # AI-rhetoric lint over deck pages, slides.md, components and story-stage COPY
-bun run fact-extract <alias>   # every figure in a deck, for the fact-check
-bun run review-prose <alias>   # prompt for a prose review by a model that did not write the deck (stdout)
-bun run test:hooks             # tests for the two hooks (`decks hook`) and their Claude Code and Codex wiring
-bun run render:agent           # render .claude/ into packages/decks/agent/ (what `decks init` installs)
-bun run test:tarball           # pack the package; run init, lint, check and the hooks in scratch projects
-bun run shot <alias> <n> [clicks] [--port N]   # headless screenshots of slide n at each click
-bun run snap <alias> [dir] [--port N]          # whole-deck screenshot walk
-bun run snap:diff <a> <b>      # per-frame pixel diff between two snap walks
+bun install                          # once per checkout or worktree
+bun run lint                         # biome
+bun run typecheck                    # tsc
+bun run test [path]                  # vitest (unit, dom, examples projects)
+bun run test:e2e [spec]              # playwright
+bun run check                        # the gate: lint, typecheck, test, test:e2e
+bun run check:isolated               # the gate in a copy outside the repo
+bun run test:tarball                 # pack @steamfield/decks, install it outside the repo, build and serve a deck
+bun run decks dev|build|new|check|lint|export|shot|init <deck>   # the CLI, from source
+node scripts/parity.mjs <alias>      # compare a ported deck with its Slidev baseline in .parity/
 ```
 
-**Restart the dev server after adding a component file.** Slidev's auto-import
-list and Vite's resolution cache are built at startup, so a `.vue` added under
-`packages/decks/components/` or `<deck>/components/` (or a new
-`packages/decks/story/*.ts` module that failed to resolve once) renders as an
-empty slot with `Failed to resolve component` in the console until `bun run dev`
-restarts. It looks like a bug in the new component; it is not. `bun run shot`
-prints that console line so the cause is visible without opening the browser.
-This rule lives here only; the story-authoring detail
-(`.claude/rules/story-stage.md`) and the skill both point back to this
-paragraph rather than restating it.
+`rr rd-test`, `rr rd-e2e` and `rr rd-check` run the same on the hosts in `.rr.yaml`; sync a
+committed tree.
 
-`shot` and `snap` start a dev server for the deck on a free port and stop it
-after, so parallel runs in separate worktrees don't collide. To shoot after
-every edit, start one server with `bun run dev <alias> --no-open --port N` and
-pass `--port N`; both check that the server there is this deck's, from this
-checkout. A command given the deck's `name` where it takes the alias exits
-with the alias to use.
+## Files only the orchestrator edits
 
-Set `"animated": true` in `decks.json` when the deck uses OpenChart or scripted demos (it switches export from `--with-clicks --with-toc` to `--with-clicks --wait 1500`); `--story` sets it for you.
+`docs/`, every `package.json`, every `packages/*/src/index.ts` unless the contract says
+otherwise, `biome.json`, every `tsconfig.json`, `vitest.config.ts`, `decks.json`, this file.
+Need a new export? Give the exact line in the hand-off. Need a dependency? Ask.
 
-## Theme
+## Proportion
 
-`packages/decks/theme/default.json` is the single theme source. A deck's own `theme.json` next to its `slides.md` overrides it partially: objects merge key by key, arrays (`ramps`, `categorical`) are replaced whole, and `{group.token}` / `{ramps.<hue>.<1-4>}` aliases resolve after the merge. The six hue slots (cyan, amber, rose, emerald, violet, slate) are recolored, never renamed; each ramp is four `#rrggbb` steps getting lighter, step 1 at least 3:1 against `surfaces.canvas`. Themes stay dark. `brand` sets the cover and footer name, URL and logo (`null` for none). Edits live-reload in dev. Deck code reads colors through `slidev-addon-decks/theme` or `ink()`, CSS through the `--od-*` vars, never hex literals. Full detail: "Theme and tokens" in `.claude/rules/deck-patterns.md`; worked example: `examples/od-templates/theme.json`.
+These come from mistakes made here. They outrank a wish to be thorough.
 
-## Conventions
+- Build what the contract's acceptance asks for and stop. Hardening beyond it is a note
+  under "Look closer at", not code.
+- Generic infrastructure passing about 150 lines means stop and ask: there is probably a
+  library, or the task is bigger than the contract thought.
+- Never import an API whose path or docs call it unstable, experimental, internal or private.
+- If something only works with a workaround (a custom resolver, an alias, a cast, a copied
+  type), the design is probably wrong. Ask before keeping it.
+- A finding from your own review that asks for more than the contract does goes to the
+  orchestrator. Do not expand scope to satisfy it.
+- When a case turns out to be uncovered, ask whether it should exist before supporting it.
+  Forbidding a file type, an input or a state is usually cheaper than handling it.
+- The spec can be wrong. Replay the contract's QA situations against the spec before you
+  code, and for anything with several actors (windows, tabs, timers, client and server) step
+  through the interleavings: both start at once, one restarts, a third joins mid-change, a
+  message arrives late. Report what you find as "Spec concerns". If a flaw would make the
+  feature not work for a user, ask before implementing.
+- Ask once, completely. One question carries everything you need decided, each with the
+  answer you recommend. A run waits idle while a question is open.
 
-Slide architecture, layout classes, typography, chart specs for the 1920x1080 canvas, the theme, and the conventional headmatter template all live in `.claude/rules/deck-patterns.md`, which auto-attaches when you edit files under `examples/`, `decks/` or `packages/decks/`. Authoring a story stage component is `.claude/rules/story-stage.md`; the story engine's library reference (import root, `useStage` API, lifecycle, component list) is `packages/decks/story/README.md`. The data contract (`data/*.ts` provenance, `data-sources.md` skeleton) is `.claude/rules/deck-data.md`. The end-to-end build workflow (scaffold, provenance, verification chain, definition of done) is `.claude/skills/building-a-deck/SKILL.md`. Read these before authoring slides rather than inferring patterns from an existing deck.
+## Structure
 
-Terminology for data-driven decks (column names translated to prose) goes in `.claude/rules/project-glossary.md`, which starts empty.
+- Group by feature, one concept per file, its test beside it (`navigation.ts`,
+  `navigation.test.ts`). No `utils/`, `shared/`, `helpers/`, `types/` or `constants/`.
+- No interface, factory, options object or generic parameter until a second real caller
+  needs it. No options nobody asked for. Three similar lines beat a helper.
+- Named exports only, except where a tool requires a default (Vite config, MDX).
+- Throw an `Error` whose message names the offending value. Never swallow one.
+- Comments say why, when it is not obvious. None restates the code.
+- Tests, CSS and tooling select on the DOM contract in architecture section 3
+  (`data-deck-slide`, `data-deck-view`, ...). Do not add a hook without asking.
 
-The `od-` prefix on CSS vars, classes and `data-od-*` attributes is a legacy name kept on purpose; don't rename it.
+## Libraries before hand-written code
 
-## Data provenance
+Use the library architecture section 1.1 names for a concern, an installed dependency, or a
+browser or Node built-in, before writing generic infrastructure (argument parsing, gesture
+math, a store, a glob walker, text splitting, an escaper). If a maintained, typed,
+single-purpose library would fit and is not installed, ask for it by name. Do not hand-roll
+around asking, and do not ask to save five lines. `core` stays dependency-free.
 
-Decks with data-driven charts maintain `<deck>/data-sources.md` mapping slide numbers to the queries behind each number. This is the fact-check input. Never put a figure on a slide that isn't traceable to a query in that file, a `data/*.ts` constant, or a `FLAG: author-reported` row. The `fact-checking-a-deck` skill runs the check.
+## Testing
 
-## Writing slides
+Test what a user or caller can observe, with real dependencies, so a test survives a refactor
+and fails only when behaviour breaks.
 
-Read `.claude/rules/deck-writing.md` before writing or revising any slide text. Slide prose is not article prose in miniature. The rules that trip people coming from articles: a headline is a claim ending in a period rather than a topic label, three single-sentence bullets is the ceiling, there are no paragraphs anywhere, and a normal conventional slide runs about 70 visible words (`agent-experience` is the exemplar deck; a story card's budget is eight/twenty words instead, per `.claude/rules/story-stage.md`).
+| Code | Kind | How |
+| --- | --- | --- |
+| `core` | Unit: every function is pure | `unit` project. Inputs in, values and thrown errors out. |
+| `runtime`, `motion`, `kit` | Integration | `dom` project (jsdom). Render the real tree with a real store from a real manifest and real child components. |
+| `node` | Integration | `unit` project. Real files in a fresh directory under `.tmp/`, a real Vite server or build, a port the OS picks. |
+| A user workflow: arrow keys, two windows, reload, resize, transitions | E2E | Playwright against a fixture deck in `examples/`. |
 
-The anti-slop pattern set is `packages/decks/lint/ai-rhetoric-patterns.tsv`; `.claude/rules/prose-patterns.md` is the longer catalog behind it. `bun run lint` scans each deck's `pages/*.md`, `slides.md`, and `components/*.vue`; it also scans story-card `COPY`; and in Claude Code and Codex a write hook blocks error-level patterns as they are written.
+jsdom has no layout and no View Transitions; a behaviour that needs either is a Playwright
+test, never a hand-built fake of the browser. Never test a component by stubbing what it
+depends on. The dom project does not process CSS either: a prop that only changes styling is
+checked in a browser. A port keeps the source's mechanism (an inline style stays an inline
+style), because the kit guards in `tests/` police those mechanisms.
 
-## Agent ops
+Each behaviour is asserted at one layer, the cheapest that can show it. Which file change
+causes a reload or a hot update is decided and tested in `node`; the browser suite keeps one
+hot-update and one reload workflow. A rule the memory hub can interleave is not forced again
+in two real windows. A branch only jsdom takes (a missing browser API) is not a behaviour.
 
-Claude Code is the primary agent. Its config is `.claude/`:
+- Fake only time (Vitest fake timers, async APIs, real timers restored after) and
+  randomness. Never `vi.mock` this workspace's code, a hook, a child component, `gsap` or the
+  store. `createMemoryHub()` is the in-process `Transport`; it delivers asynchronously like
+  BroadcastChannel, so drive it with fake timers and write races as explicit interleavings.
+- A browser API jsdom lacks (wake lock, fullscreen, `window.open`, `matchMedia`,
+  `visibilityState`) is an environment boundary: a test may install a small fake of it that
+  records calls in a plain array, and restores it. View Transitions are not on this list.
+- Motion tests own gsap's clock: `motion.test-support.tsx` takes `gsap.updateRoot` off the
+  ticker and only `tick(seconds)` moves time, so values mid-tween are exact (`toBe`, no
+  tolerance).
+- No test-only method, flag or export in production code. Helpers live in the test file or a
+  `*.test-support.ts` beside it.
+- Assert outcomes: return values and thrown errors; visible text, roles and accessible
+  names; files written and HTML served; the URL. Never that a spy was called, never a CSS
+  class, component state or a markup snapshot. For a callback API, record what it received
+  in a plain array and assert on the array.
+- Query by role, then label, then text. `findBy*` for async, `queryBy*` only for absence.
+  No `getByTestId` or CSS selectors, except in a test whose subject is the DOM contract.
+- Drive components with `@testing-library/user-event`. In Playwright use role and text
+  locators and web-first assertions (`await expect(locator).toBeVisible()`).
+- Never sleep. Wait on a condition: `findBy*`, `waitFor` with an assertion, a locator, the
+  URL, `window.__deck.settled()`.
+- Nothing may depend on how fast the machine is. No wall-clock comparison
+  (`performance.now()` deltas), no frame-count threshold, and no polling for a state that is
+  only true mid-animation: record it in the page (a MutationObserver log) and assert the log
+  after `settled()`, or pause and seek the animation. `vi.waitFor` defaults to one second:
+  a wait on the filesystem, a watcher or a server restart passes `{ timeout: 10_000 }`.
+- A "nothing else happened" assertion (no reload after an update) is made after a later
+  sentinel event, not at the instant the first event arrives.
+- In Playwright, arm the wait before the action that causes it
+  (`const loaded = page.waitForEvent("load")`, then write the file), and never
+  `page.evaluate` across a navigation. Close a Vite server with its own `close()`.
+- Each test builds and tears down its own manifest, store, hub and temp directory. Run a new
+  test file three times alone and once in the suite; a new or changed Playwright spec with
+  `--repeat-each=5`. Do not edit the checkout while Playwright runs: its dev servers watch
+  the source. A test that fails only in the suite is
+  diagnosed (skill: `references/flaky-tests.md`), never retried or delayed.
+- A test file covers one feature and stays under 300 lines, so an agent working on that
+  feature loads only its tests: `plugins.test.ts` is not a place, `slide-hmr.test.ts` and
+  `config-restart.test.ts` are. Split by behaviour area, name the file after it, and keep
+  shared setup in one `*.test-support.ts` per package. In `e2e/`, one spec per workflow
+  area with fixtures in `e2e/fixtures/`. `tests/test-files.test.ts` enforces the limit.
+- Name a test after the behaviour, as a sentence. A behaviour table is the test list: one
+  test per row, plus the boundaries either side. Cover error paths. See a bug-fix test fail
+  before the fix. Never weaken, skip or delete a test to get green.
 
-- `agents/deck-author.md`: builds or revises one deck per session.
-- `skills/building-a-deck/`, `skills/fact-checking-a-deck/`, and `skills/openchart/` (the OpenChart spec reference, vendored from tryopendata/skills at the OpenChart version the decks use; see its `VENDORED.md`).
-- `rules/`: the files named above; each attaches by path.
-- Hooks are Node: `node packages/decks/scripts/deck.mjs hook lint` (PreToolUse: denies error-level AI-rhetoric patterns in deck prose; refuses the write if the scanner can't run) and `hook prompt` (adds the deck-writing reminder when a prompt asks to write or revise a deck). They need no `jq`. Wired in `.claude/settings.json` (Edit/Write/MultiEdit) and `.codex/hooks.json` (`apply_patch`, which the hook parses per file); `hooks/*.sh` are thin wrappers kept for old paths; tested by `bun run test:hooks`.
-- `decks init` installs this setup into user projects from `packages/decks/agent/`, which is rendered from `.claude/`. When a `.claude/` rule, skill or agent changes, run `bun run render:agent` (the drift test in `bun run test` fails otherwise).
+Tests not to write, each of which was written here and removed:
 
-Follow-up infrastructure and tooling proposals are tracked as RFCs in `docs/rfcs/` (index: `docs/rfcs/README.md`). When building a deck exposes a gap in the shared tooling, add or extend an RFC there rather than fixing it ad hoc in the deck.
+- An input the domain cannot produce (a round-trip for slide `1e21` or `MAX_SAFE_INTEGER`).
+- A test of test tooling longer than the rule it guards.
+- Scheduler internals (`expect(vi.getTimerCount()).toBe(0)`).
+- Clearing recorded evidence before asserting on it (`received.length = 0`).
+- Dozens of near-identical cases for one rule.
+- A multi-actor scenario that only runs the orderly sequence.
 
-### Codex
+## React
 
-Codex reads this file, the skills under `.agents/skills/` (symlinks into `.claude/skills/`), the `deck-author` agent in `.codex/agents/deck-author.toml`, and the hooks in `.codex/hooks.json`. It does not load `.claude/rules/` on its own, so before editing a file, read every rule that covers it:
+Applies to `runtime`, `motion`, `kit` and `examples`.
 
-| Rule | Covers |
-| --- | --- |
-| `.claude/rules/deck-writing.md` | `{examples,decks}/*/pages/*.md`, `*/slides.md`, `*/components/*.vue` |
-| `.claude/rules/prose-patterns.md` | everything under `examples/` and `decks/` (`deck-writing.md` overrides it where they disagree) |
-| `.claude/rules/deck-patterns.md` | everything under `examples/`, `decks/` and `packages/decks/` |
-| `.claude/rules/story-stage.md` | `{examples,decks}/*/components/*Stage.vue`, `{examples,decks}/*/styles/*.css`, `packages/decks/story/**`, the addon's `Story*`/`Ink*`/`Unit*`/`CodeInk*`/`RowStrip*`/`Graph3D*` components and `styles/story-*.css` |
-| `.claude/rules/deck-data.md` | `{examples,decks}/*/data/*.ts`, `{examples,decks}/*/data-sources.md` |
-| `.claude/rules/project-glossary.md` | `{examples,decks}/*/pages/*.md`, `{examples,decks}/*/components/*.vue` |
-
-A Codex run started by `foreman` or `codex-delegate` also reads "For the delegate" in `.claude/delegate.md`: worktree setup, screenshots without an assigned port, and the gate.
-
-Building or revising a deck starts with the `building-a-deck` skill; any chart spec also loads `openchart`; a fact-check runs `fact-checking-a-deck`. The skill names Claude Code tools (Read, Edit, subagents); use the Codex equivalent.
-
-The hooks only run once trusted: open `codex` in the main checkout, run `/hooks`, and approve the project hooks (re-approve after `.codex/hooks.json` changes). `foreman doctor` reports whether they are trusted, and foreman worktrees under `.claude/worktrees/` inherit the approval. A worktree needs `bun install` before any `bun run` command works. A hook deny means rewrite the prose; never route the write around it (a shell heredoc or script skips the hook, and `bun run lint` will fail the deck later anyway).
-
-### react-decks
-
-`react-decks/` is a React slide framework being built to replace Slidev here (RFC 0007). It is its own bun workspace, and `react-decks/AGENTS.md` is its whole rulebook: package boundaries, proportion, testing and React conventions. Codex scopes instructions by directory and loads that file automatically only when started inside `react-decks/`, so when you are started at the repo root, read `react-decks/AGENTS.md` and `react-decks/docs/architecture.md` before editing anything under `react-decks/`. Three habits matter most there: build what the contract's acceptance asks for and stop; ask before using an unstable API or keeping a workaround; and replay the contract's QA situations against the spec before implementing it, reporting what you find. The gate is `bun run --cwd react-decks check`; a worktree needs `bun install --cwd react-decks` first. The deck prose rules and hooks in this file do not apply to framework code. Delegated runs also read the react-decks part of `.claude/delegate.md`.
-
-### Generated copies
-
-Antigravity reads `.agents/rules/` (the rules with Antigravity glob frontmatter); Codex reads `.codex/agents/deck-author.toml`. Both were generated once from `.claude/`; when you change a rule or the agent, update the matching copy in the same commit. Never edit only the copy.
+- React 19 function components in TypeScript. No `React.FC`, no default-exported components.
+- Deck state lives in the zustand store from `createDeckStore`, read through `useDeck()` and
+  `useSlide()` with selectors. No second state library, no context that re-renders the tree
+  on every click. The URL hash is the source of truth; never keep a second copy in state.
+- No `useEffect` to derive state: compute it in render. An effect synchronizes with
+  something outside React and returns its cleanup. Read the DOM in `useLayoutEffect` or a
+  handler, never in render.
+- A slide can render in five contexts at once (`slide`, `presenter`, `preview`, `overview`,
+  `print`). A component never assumes it is the only instance, never uses a global id, never
+  touches `window.location`. Outside the `slide` context, or when motion is `instant`, it
+  renders the end state for its click with no animation and no WebGL.
+- Styles: a co-located CSS Module for local rules; global classes only where the DOM
+  contract or the kit's `od-*` vocabulary names them. No hex colors or raw durations: use
+  theme and motion tokens.
+- No `any`, no non-null `!`, no `as` cast except at a validated boundary.

@@ -1,3 +1,5 @@
+@import "@steamfield/decks/kit/styles.css";
+
 /* opendata-pitch deck styles. Everything else comes from the shared addon
    (`addons: ["slidev-addon-decks"]`), which loads before this file.
 

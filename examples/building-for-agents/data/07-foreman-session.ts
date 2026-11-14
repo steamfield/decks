@@ -27,124 +27,143 @@
  * (`createdAt` 09:47:40 against 09:24:19 and 09:24:25 UTC), which is why the
  * tag says the timeline is shortened.
  */
-import fixture from './fixtures/07-foreman-session.json'
+import fixture from "./fixtures/07-foreman-session.json";
 
-export type SessionState = 'queued' | 'starting' | 'running' | 'waiting' | 'done' | 'archived'
+export type SessionState = "queued" | "starting" | "running" | "waiting" | "done" | "archived";
 export type Activity =
-  | { kind: 'command'; command: string; exitCode: number | null }
-  | { kind: 'files'; paths: string[] }
+  | { kind: "command"; command: string; exitCode: number | null }
+  | { kind: "files"; paths: string[] };
 export interface Delegate {
-  name: string
-  model: string
-  work: string
-  branch: string
-  contract: string
+  name: string;
+  model: string;
+  work: string;
+  branch: string;
+  contract: string;
   /** The contract's `- May change:` line, backticks removed. */
-  mayChange: string
-  start: number
-  done: number
-  activity: { at: number; event: Activity }[]
+  mayChange: string;
+  start: number;
+  done: number;
+  activity: { at: number; event: Activity }[];
 }
 export interface SessionStep {
-  at: number
-  title: string
+  at: number;
+  title: string;
 }
-export type Endpoint = 'claude' | 'daemon' | number
+export type Endpoint = "claude" | "daemon" | number;
 export interface Packet {
-  from: Endpoint
-  to: Endpoint
-  label: string
-  at: number
-  attention: boolean
+  from: Endpoint;
+  to: Endpoint;
+  label: string;
+  at: number;
+  attention: boolean;
 }
 export interface Session {
-  delegates: Delegate[]
-  steps: SessionStep[]
-  packets: Packet[]
-  question: { id: string; text: string; answer: string; run: string; askedMs: number; answeredMs: number }
-  duration: number
-  stillAt: number
+  delegates: Delegate[];
+  steps: SessionStep[];
+  packets: Packet[];
+  question: {
+    id: string;
+    text: string;
+    answer: string;
+    run: string;
+    askedMs: number;
+    answeredMs: number;
+  };
+  duration: number;
+  stillAt: number;
 }
 export interface DelegateScene {
-  state: SessionState
-  turn: number
-  commands: number
-  files: number
-  latest?: Activity
+  state: SessionState;
+  turn: number;
+  commands: number;
+  files: number;
+  latest?: Activity;
 }
 export interface Scene {
-  step: number
-  held: boolean
+  step: number;
+  held: boolean;
   /** Claude is doing something rather than idling on a background wait. */
-  claudeActive: boolean
-  delegates: DelegateScene[]
-  packets: (Packet & { progress: number })[]
+  claudeActive: boolean;
+  delegates: DelegateScene[];
+  packets: (Packet & { progress: number })[];
 }
 
 /* Timeline constants, in the model's milliseconds: session.ts lines 61 to 66. */
-export const QUESTION = 16_500
-export const ANSWER = 22_000
-const FOLLOWUP = 38_000
-const FOLLOWUP_DONE = 41_500
-const ARCHIVE = 48_500
-export const FLIGHT = 1500
+export const QUESTION = 16_500;
+export const ANSWER = 22_000;
+const FOLLOWUP = 38_000;
+const FOLLOWUP_DONE = 41_500;
+const ARCHIVE = 48_500;
+export const FLIGHT = 1500;
 
-export const SESSION = fixture as Session
+for (const delegate of fixture.delegates) {
+  for (const { event } of delegate.activity) {
+    if (event.kind !== "command" && event.kind !== "files")
+      throw new Error(`07-foreman-session: unknown activity ${event.kind}`);
+  }
+}
+for (const packet of fixture.packets) {
+  for (const endpoint of [packet.from, packet.to]) {
+    if (typeof endpoint !== "number" && endpoint !== "claude" && endpoint !== "daemon")
+      throw new Error(`07-foreman-session: unknown endpoint ${endpoint}`);
+  }
+}
+export const SESSION = fixture as Session;
 
 export function stepAt(session: Session, t: number): number {
   return Math.max(
     0,
     session.steps.findLastIndex((step) => step.at <= t),
-  )
+  );
 }
 
 export function sceneAt(session: Session, time: number): Scene {
-  const t = Math.max(0, Math.min(session.duration, time))
-  const held = t >= QUESTION && t < ANSWER
+  const t = Math.max(0, Math.min(session.duration, time));
+  const held = t >= QUESTION && t < ANSWER;
   const delegates = session.delegates.map((d, i): DelegateScene => {
-    const followup = i === 0 && t >= FOLLOWUP
+    const followup = i === 0 && t >= FOLLOWUP;
     const state: SessionState =
       t >= ARCHIVE
-        ? 'archived'
+        ? "archived"
         : t < d.start
-          ? 'queued'
+          ? "queued"
           : t < d.start + 2000
-            ? 'starting'
+            ? "starting"
             : held && i === 1
-              ? 'waiting'
+              ? "waiting"
               : followup
                 ? t < FOLLOWUP_DONE
-                  ? 'running'
-                  : 'done'
+                  ? "running"
+                  : "done"
                 : t >= d.done
-                  ? 'done'
-                  : 'running'
-    const seen = d.activity.filter((a) => a.at <= t)
+                  ? "done"
+                  : "running";
+    const seen = d.activity.filter((a) => a.at <= t);
     return {
       state,
       turn: t < d.start ? 0 : followup ? 2 : 1,
-      commands: seen.filter((a) => a.event.kind === 'command').length,
-      files: new Set(seen.flatMap((a) => (a.event.kind === 'files' ? a.event.paths : []))).size,
+      commands: seen.filter((a) => a.event.kind === "command").length,
+      files: new Set(seen.flatMap((a) => (a.event.kind === "files" ? a.event.paths : []))).size,
       latest: seen.at(-1)?.event,
-    }
-  })
+    };
+  });
   const packets = session.packets
     .filter((p) => t >= p.at && t < p.at + FLIGHT)
-    .map((p) => ({ ...p, progress: (t - p.at) / FLIGHT }))
+    .map((p) => ({ ...p, progress: (t - p.at) / FLIGHT }));
   if (t >= 11_000 && !packets.length)
     delegates.forEach((d, i) => {
-      if (d.state === 'running')
+      if (d.state === "running")
         packets.push({
           from: i,
-          to: 'daemon',
-          label: 'events',
+          to: "daemon",
+          label: "events",
           attention: false,
           at: t,
           progress: ((t + i * 500) % 2400) / 2400,
-        })
-    })
-  const step = stepAt(session, t)
-  return { step, held, claudeActive: step !== 2, delegates, packets }
+        });
+    });
+  const step = stepAt(session, t);
+  return { step, held, claudeActive: step !== 2, delegates, packets };
 }
 
 /**
@@ -153,44 +172,48 @@ export function sceneAt(session: Session, time: number): Scene {
  * wait has returned to Claude; until then Claude is still idle.
  */
 export function claudeStatus(session: Session, t: number): string {
-  const step = stepAt(session, t)
-  if (step === 3 && t < QUESTION + 2 * FLIGHT) return 'Idle: wait --all in background'
+  const step = stepAt(session, t);
+  if (step === 3 && t < QUESTION + 2 * FLIGHT) return "Idle: wait --all in background";
   return (
     [
-      'Writing contracts',
-      'Starting delegates',
-      'Idle: wait --all in background',
+      "Writing contracts",
+      "Starting delegates",
+      "Idle: wait --all in background",
       `Reading question ${session.question.id}`,
-      'Answered, waiting again',
-      'Steering site-e2e',
-      'Reviewing site-console',
-      'Follow-up to site-console',
-      'Reviewing the last two diffs',
-      'Archiving merged branches',
-    ][step] ?? ''
-  )
+      "Answered, waiting again",
+      "Steering site-e2e",
+      "Reviewing site-console",
+      "Follow-up to site-console",
+      "Reviewing the last two diffs",
+      "Archiving merged branches",
+    ][step] ?? ""
+  );
 }
 
 /* ── Figures ── */
 
 /** The runs' `createdAt` date (all three: 2026-11-06, UTC), from the fixture's `runs`. */
-export const RECORDED = fixture.runs[0].createdAt.slice(0, 10)
+const firstRun = fixture.runs[0];
+if (!firstRun) throw new Error("07-foreman-session: no recorded runs");
+export const RECORDED = firstRun.createdAt.slice(0, 10);
 /** Delegates in the session: the three lanes index.astro passes to `buildSession`. */
-export const DELEGATES = SESSION.delegates.length
+export const DELEGATES = SESSION.delegates.length;
 /**
  * Seconds from question q1 asked to answered in site-commands: `questions[].t`
  * 31,410 ms and 49,673 ms in site/fixtures/runs/site-commands.json, rounded.
  */
-export const ANSWER_DELAY_S = Math.round((SESSION.question.answeredMs - SESSION.question.askedMs) / 1000)
+export const ANSWER_DELAY_S = Math.round(
+  (SESSION.question.answeredMs - SESSION.question.askedMs) / 1000,
+);
 
 /**
  * Where foreman puts a delegate: ~/Projects/claude-codex/src/core/managed-worktree.ts
  * lines 117 and 118 (`path.join(main, ".claude/worktrees", name)` and
  * `foreman/${name}`), commit 9413fa8.
  */
-export const WORKTREE_DIR = '.claude/worktrees'
-export const BRANCH_PREFIX = 'foreman/'
-export const worktreeOf = (name: string) => `${WORKTREE_DIR}/${name}`
+export const WORKTREE_DIR = ".claude/worktrees";
+export const BRANCH_PREFIX = "foreman/";
+export const worktreeOf = (name: string) => `${WORKTREE_DIR}/${name}`;
 
 /** The still moment each beat tweens `t` to, in the model's milliseconds. */
 export const STILLS = [
@@ -199,24 +222,27 @@ export const STILLS = [
   QUESTION + FLIGHT, // the ask has reached the daemon and gone no further
   ANSWER + 2 * FLIGHT + 500, // the answer has reached the delegate
   ARCHIVE - 10, // every delegate done, the last result back with Claude
-] as const
+] as const;
 
 /** Cut to `max` characters with an ellipsis. */
-export const short = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1)}…` : text)
+export const short = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max - 1)}…` : text;
 
 /** Greedy word wrap to `width` characters, at most `lines` lines, ending in an ellipsis when cut. */
 export function wrap(text: string, width: number, lines: number): string[] {
-  const out: string[] = []
-  let line = ''
+  const out: string[] = [];
+  let line = "";
   for (const word of text.split(/\s+/)) {
     if (line && line.length + 1 + word.length > width) {
-      out.push(line)
-      line = word
-    } else line = line ? `${line} ${word}` : word
+      out.push(line);
+      line = word;
+    } else line = line ? `${line} ${word}` : word;
   }
-  if (line) out.push(line)
-  if (out.length <= lines) return out
-  const kept = out.slice(0, lines)
-  kept[lines - 1] = `${kept[lines - 1].slice(0, width - 1)}…`
-  return kept
+  if (line) out.push(line);
+  if (out.length <= lines) return out;
+  const kept = out.slice(0, lines);
+  const last = kept[lines - 1];
+  if (last === undefined) throw new Error(`wrap: invalid line count ${lines}`);
+  kept[lines - 1] = `${last.slice(0, width - 1)}…`;
+  return kept;
 }

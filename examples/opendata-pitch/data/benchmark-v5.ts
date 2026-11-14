@@ -57,31 +57,31 @@
  * rows so the counts that depend on it can be derived rather than typed.
  */
 
-export type Grade = 'CORRECT' | 'INCORRECT' | 'NOT_ATTEMPTED'
+export type Grade = "CORRECT" | "INCORRECT" | "NOT_ATTEMPTED";
 
 export interface Outcome {
-  id: string
-  difficulty: 'easy' | 'medium' | 'hard'
+  id: string;
+  difficulty: "easy" | "medium" | "hard";
   /** One of the nine rewritten for v5. */
-  rewritten: boolean
-  web: Grade
-  mcp: Grade
-  webS: number
-  mcpS: number
+  rewritten: boolean;
+  web: Grade;
+  mcp: Grade;
+  webS: number;
+  mcpS: number;
   /** Tool calls the web arm made in that chat, and how many were sandbox commands. */
-  webTools: number
-  webSandbox: number
-  webSearch: number
+  webTools: number;
+  webSandbox: number;
+  webSearch: number;
   /**
    * Tool calls the connector arm made, and the same three splits as the web
    * arm: OpenData calls, sandbox commands, web searches. The last two are zero
    * on every v5 row, which is the finding rather than an assumption, so they
    * are carried as columns and summed like the rest.
    */
-  mcpTools: number
-  mcpOpenData: number
-  mcpSandbox: number
-  mcpSearch: number
+  mcpTools: number;
+  mcpOpenData: number;
+  mcpSandbox: number;
+  mcpSearch: number;
 }
 
 /**
@@ -120,7 +120,7 @@ p1-027   medium  .  C C     32.2    17.2    4    0    4    3    2    0    0
 p1-028   medium  .  X C     11.0    17.7    1    0    1    3    2    0    0
 p1-029   easy    .  X C     39.9    32.6    7    0    5    6    1    0    3
 p1-030   easy    .  C C     10.3    23.7    1    0    1    4    2    0    0
-`
+`;
 
 /**
  * Bank v4.1: the bank neither arm was iterated against, run before the hard
@@ -158,22 +158,30 @@ p1-027   medium  .  C C     32.2    17.2    4    0    4    3    2    0    0
 p1-028   medium  .  X C     11.0    17.7    1    0    1    3    2    0    0
 p1-029   easy    .  X C     39.9    32.6    7    0    5    6    1    0    3
 p1-030   easy    .  C C     10.3    23.7    1    0    1    4    2    0    0
-`
+`;
 
-const GRADES: Record<string, Grade> = { C: 'CORRECT', X: 'INCORRECT', N: 'NOT_ATTEMPTED' }
+const GRADES: Record<string, Grade> = { C: "CORRECT", X: "INCORRECT", N: "NOT_ATTEMPTED" };
+
+function grade(code: string | undefined, line: string): Grade {
+  const g = code === undefined ? undefined : GRADES[code];
+  if (g === undefined) throw new Error(`benchmark row ${line} has unknown grade ${code}`);
+  return g;
+}
 
 function parse(table: string): Outcome[] {
   return table
     .trim()
-    .split('\n')
+    .split("\n")
     .map((line) => {
-      const f = line.trim().split(/\s+/)
+      const f = line.trim().split(/\s+/);
+      const id = f[0];
+      if (id === undefined) throw new Error(`benchmark row ${line} has no id`);
       return {
-        id: f[0],
-        difficulty: f[1] as Outcome['difficulty'],
-        rewritten: f[2] === '*',
-        web: GRADES[f[3]],
-        mcp: GRADES[f[4]],
+        id,
+        difficulty: f[1] as Outcome["difficulty"],
+        rewritten: f[2] === "*",
+        web: grade(f[3], line),
+        mcp: grade(f[4], line),
         webS: Number(f[5]),
         mcpS: Number(f[6]),
         webTools: Number(f[7]),
@@ -183,82 +191,87 @@ function parse(table: string): Outcome[] {
         mcpOpenData: Number(f[11]),
         mcpSandbox: Number(f[12]),
         mcpSearch: Number(f[13]),
-      }
-    })
+      };
+    });
 }
 
 /** Thirty rows, bank v5. */
-export const OUTCOMES: Outcome[] = parse(V5_TABLE)
+export const OUTCOMES: Outcome[] = parse(V5_TABLE);
 
 /** Thirty rows, bank v4.1. */
-export const V41_OUTCOMES: Outcome[] = parse(V41_TABLE)
+export const V41_OUTCOMES: Outcome[] = parse(V41_TABLE);
 
 /**
  * The v5 protocol cap: a chat was abandoned once it passed ten minutes. A few
  * capped chats carry a larger wall clock because the tab was left to finish,
  * so the cap is the threshold to count against, not the tail.
  */
-export const CAP_S = 600
+export const CAP_S = 600;
 
 /* ── Derived figures. Nothing below is typed; every value is read off the rows. ── */
 
-const correct = (rows: Outcome[], arm: 'web' | 'mcp') =>
-  rows.filter((row) => row[arm] === 'CORRECT').length
+const correct = (rows: Outcome[], arm: "web" | "mcp") =>
+  rows.filter((row) => row[arm] === "CORRECT").length;
 
 const total = (rows: Outcome[], field: keyof Outcome) =>
-  rows.reduce((sum, row) => sum + (row[field] as number), 0)
+  rows.reduce((sum, row) => sum + (row[field] as number), 0);
 
 function median(values: number[]): number {
-  const sorted = [...values].sort((a, b) => a - b)
-  const mid = Math.floor(sorted.length / 2)
-  return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const hi = sorted[mid];
+  const lo = sorted[mid - 1];
+  if (hi === undefined) throw new Error("median of an empty list");
+  if (sorted.length % 2 === 1) return hi;
+  if (lo === undefined) throw new Error("median has no lower middle value");
+  return (lo + hi) / 2;
 }
 
 /** Questions in the bank. */
-export const N = OUTCOMES.length
-export const WEB_CORRECT = correct(OUTCOMES, 'web')
-export const MCP_CORRECT = correct(OUTCOMES, 'mcp')
+export const N = OUTCOMES.length;
+export const WEB_CORRECT = correct(OUTCOMES, "web");
+export const MCP_CORRECT = correct(OUTCOMES, "mcp");
 
 /* ── Time: how long the thirty chats took, per arm ── */
 
 /** Median seconds from the first human message to the last assistant block. */
-export const WEB_MEDIAN_S = Math.round(median(OUTCOMES.map((row) => row.webS)))
-export const MCP_MEDIAN_S = Math.round(median(OUTCOMES.map((row) => row.mcpS)))
+export const WEB_MEDIAN_S = Math.round(median(OUTCOMES.map((row) => row.webS)));
+export const MCP_MEDIAN_S = Math.round(median(OUTCOMES.map((row) => row.mcpS)));
 
 /** Total chat time across all thirty, in whole minutes. */
-export const WEB_TOTAL_MIN = Math.round(total(OUTCOMES, 'webS') / 60)
-export const MCP_TOTAL_MIN = Math.round(total(OUTCOMES, 'mcpS') / 60)
+export const WEB_TOTAL_MIN = Math.round(total(OUTCOMES, "webS") / 60);
+export const MCP_TOTAL_MIN = Math.round(total(OUTCOMES, "mcpS") / 60);
 
 /* ── Effort: what the two arms did with that time ── */
 
-export const WEB_TOOL_CALLS = total(OUTCOMES, 'webTools')
-export const MCP_TOOL_CALLS = total(OUTCOMES, 'mcpTools')
-export const WEB_SANDBOX_CALLS = total(OUTCOMES, 'webSandbox')
-export const MCP_SANDBOX_CALLS = total(OUTCOMES, 'mcpSandbox')
-export const WEB_SEARCHES = total(OUTCOMES, 'webSearch')
-export const MCP_SEARCHES = total(OUTCOMES, 'mcpSearch')
-export const MCP_OPENDATA_CALLS = total(OUTCOMES, 'mcpOpenData')
+export const WEB_TOOL_CALLS = total(OUTCOMES, "webTools");
+export const MCP_TOOL_CALLS = total(OUTCOMES, "mcpTools");
+export const WEB_SANDBOX_CALLS = total(OUTCOMES, "webSandbox");
+export const MCP_SANDBOX_CALLS = total(OUTCOMES, "mcpSandbox");
+export const WEB_SEARCHES = total(OUTCOMES, "webSearch");
+export const MCP_SEARCHES = total(OUTCOMES, "mcpSearch");
+export const MCP_OPENDATA_CALLS = total(OUTCOMES, "mcpOpenData");
 /** Structural, not measured: the web arm ran with no connector attached. */
-export const WEB_OPENDATA_CALLS = 0
+export const WEB_OPENDATA_CALLS = 0;
 
 /** Chats in which the web arm spun up a sandbox at all. */
-export const WEB_SANDBOX_CHATS = OUTCOMES.filter((row) => row.webSandbox > 0).length
+export const WEB_SANDBOX_CHATS = OUTCOMES.filter((row) => row.webSandbox > 0).length;
 
 /** Chats the web arm ended without producing a figure at all. */
-export const WEB_NO_ANSWER = OUTCOMES.filter((row) => row.web === 'NOT_ATTEMPTED').length
+export const WEB_NO_ANSWER = OUTCOMES.filter((row) => row.web === "NOT_ATTEMPTED").length;
 
 /** Web chats that ran past the ten minute cap. */
-export const WEB_CAP_HITS = OUTCOMES.filter((row) => row.webS >= CAP_S).length
-export const MCP_CAP_HITS = OUTCOMES.filter((row) => row.mcpS >= CAP_S).length
+export const WEB_CAP_HITS = OUTCOMES.filter((row) => row.webS >= CAP_S).length;
+export const MCP_CAP_HITS = OUTCOMES.filter((row) => row.mcpS >= CAP_S).length;
 
 /* ── The nine rewritten for v5. Not on the slide; kept for the page and Q&A ── */
 
-const NINE = OUTCOMES.filter((row) => row.rewritten)
-export const NINE_N = NINE.length
-export const NINE_WEB = correct(NINE, 'web')
-export const NINE_MCP = correct(NINE, 'mcp')
-export const NINE_MEDIAN_WEB_S = Math.round(median(NINE.map((row) => row.webS)))
-export const NINE_MEDIAN_MCP_S = Math.round(median(NINE.map((row) => row.mcpS)))
+const NINE = OUTCOMES.filter((row) => row.rewritten);
+export const NINE_N = NINE.length;
+export const NINE_WEB = correct(NINE, "web");
+export const NINE_MCP = correct(NINE, "mcp");
+export const NINE_MEDIAN_WEB_S = Math.round(median(NINE.map((row) => row.webS)));
+export const NINE_MEDIAN_MCP_S = Math.round(median(NINE.map((row) => row.mcpS)));
 
 /* ── Bank v4.1: never iterated against either arm, and no cap in force ── */
 
@@ -271,11 +284,11 @@ export const NINE_MEDIAN_MCP_S = Math.round(median(NINE.map((row) => row.mcpS)))
  * `data-sources.md` under "Slide 6d" carries the same numbers in prose.
  */
 
-export const V41_WEB_CORRECT = correct(V41_OUTCOMES, 'web')
-export const V41_MCP_CORRECT = correct(V41_OUTCOMES, 'mcp')
+export const V41_WEB_CORRECT = correct(V41_OUTCOMES, "web");
+export const V41_MCP_CORRECT = correct(V41_OUTCOMES, "mcp");
 
-const V41_BOTH_RIGHT = V41_OUTCOMES.filter((row) => row.web === 'CORRECT' && row.mcp === 'CORRECT')
-export const V41_BOTH_RIGHT_N = V41_BOTH_RIGHT.length
+const V41_BOTH_RIGHT = V41_OUTCOMES.filter((row) => row.web === "CORRECT" && row.mcp === "CORRECT");
+export const V41_BOTH_RIGHT_N = V41_BOTH_RIGHT.length;
 
 /**
  * The one ratio the report clears for a slide, and it is speed rather than
@@ -287,7 +300,7 @@ export const V41_BOTH_RIGHT_N = V41_BOTH_RIGHT.length
  * Phase 1 report, "Time and effort".
  */
 export const V41_FASTER =
-  Math.round(median(V41_BOTH_RIGHT.map((row) => row.webS / row.mcpS)) * 10) / 10
+  Math.round(median(V41_BOTH_RIGHT.map((row) => row.webS / row.mcpS)) * 10) / 10;
 
 /* ── Phase 0: the same question shape through a bare API agent ─────────────
  *
@@ -355,53 +368,55 @@ p0-027   X C X   0.00090   0.12740   0.00312
 p0-028   X C C   0.00011   0.03641   0.00134
 p0-029   C N C   0.00073   0.23507   0.00345
 p0-030   X X N   0.00007   0.01449   0.01875
-`
+`;
 
 interface Phase0Row {
-  id: string
-  grade: { none: Grade; web: Grade; mcp: Grade }
-  cost: { none: number; web: number; mcp: number }
+  id: string;
+  grade: { none: Grade; web: Grade; mcp: Grade };
+  cost: { none: number; web: number; mcp: number };
 }
 
-export type Phase0Arm = 'none' | 'web' | 'mcp'
+export type Phase0Arm = "none" | "web" | "mcp";
 
 export const PHASE0_ROWS: Phase0Row[] = PHASE0_TABLE.trim()
-  .split('\n')
+  .split("\n")
   .map((line) => {
-    const f = line.trim().split(/\s+/)
+    const f = line.trim().split(/\s+/);
+    const id = f[0];
+    if (id === undefined) throw new Error(`phase 0 row ${line} has no id`);
     return {
-      id: f[0],
-      grade: { none: GRADES[f[1]], web: GRADES[f[2]], mcp: GRADES[f[3]] },
+      id,
+      grade: { none: grade(f[1], line), web: grade(f[2], line), mcp: grade(f[3], line) },
       cost: { none: Number(f[4]), web: Number(f[5]), mcp: Number(f[6]) },
-    }
-  })
+    };
+  });
 
-export const PHASE0_N = PHASE0_ROWS.length
+export const PHASE0_N = PHASE0_ROWS.length;
 
 const phase0Correct = (arm: Phase0Arm) =>
-  PHASE0_ROWS.filter((row) => row.grade[arm] === 'CORRECT').length
-const phase0Cost = (arm: Phase0Arm) => PHASE0_ROWS.reduce((sum, row) => sum + row.cost[arm], 0)
+  PHASE0_ROWS.filter((row) => row.grade[arm] === "CORRECT").length;
+const phase0Cost = (arm: Phase0Arm) => PHASE0_ROWS.reduce((sum, row) => sum + row.cost[arm], 0);
 
 /** Correct of 30 per arm, hand grade: 5, 8 and 21. */
 export const PHASE0_CORRECT: Record<Phase0Arm, number> = {
-  none: phase0Correct('none'),
-  web: phase0Correct('web'),
-  mcp: phase0Correct('mcp'),
-}
+  none: phase0Correct("none"),
+  web: phase0Correct("web"),
+  mcp: phase0Correct("mcp"),
+};
 
 /** Real OpenRouter spend for the 30 chats, per arm, in dollars. */
 export const PHASE0_COST: Record<Phase0Arm, number> = {
-  none: phase0Cost('none'),
-  web: phase0Cost('web'),
-  mcp: phase0Cost('mcp'),
-}
+  none: phase0Cost("none"),
+  web: phase0Cost("web"),
+  mcp: phase0Cost("mcp"),
+};
 
 /** Dollars of model spend per correct answer, per arm. */
 export const PHASE0_PER_CORRECT: Record<Phase0Arm, number> = {
-  none: phase0Cost('none') / phase0Correct('none'),
-  web: phase0Cost('web') / phase0Correct('web'),
-  mcp: phase0Cost('mcp') / phase0Correct('mcp'),
-}
+  none: phase0Cost("none") / phase0Correct("none"),
+  web: phase0Cost("web") / phase0Correct("web"),
+  mcp: phase0Cost("mcp") / phase0Correct("mcp"),
+};
 
 /**
  * A dollar figure at the precision it can carry: the web arm's 0.447 reads as
@@ -410,11 +425,11 @@ export const PHASE0_PER_CORRECT: Record<Phase0Arm, number> = {
  * cheap model supports.
  */
 export function phase0Dollars(value: number): string {
-  return value >= 0.1 ? value.toFixed(2) : value.toFixed(3)
+  return value >= 0.1 ? value.toFixed(2) : value.toFixed(3);
 }
 
 /** The model and harness the Phase 0 figures come from, for the stage label. */
-export const PHASE0_MODEL = 'DeepSeek V4 Flash'
+export const PHASE0_MODEL = "DeepSeek V4 Flash";
 
 /** The public write-up of this run, linked at the bottom of the slide. */
-export const BENCHMARK_URL = 'https://tryopendata.ai/benchmarks/claude-sonnet-5-opendata-connector'
+export const BENCHMARK_URL = "https://tryopendata.ai/benchmarks/claude-sonnet-5-opendata-connector";

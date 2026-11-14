@@ -14,25 +14,30 @@
  * The two implementations: src/core/transport/contracts.ts lines 1 to 9.
  */
 
-export const DEMO_ORIGIN = 'https://statglass.steamfield.io'
-export const DEMO_SCENARIO = 'multi-host'
-export const DEMO_PATH = `/demo/index.html?window=dashboard&scenario=${DEMO_SCENARIO}`
-export const DEMO_URL = `${DEMO_ORIGIN}${DEMO_PATH}`
+export const DEMO_ORIGIN = "https://statglass.steamfield.io";
+export const DEMO_SCENARIO = "multi-host";
+export const DEMO_PATH = `/demo/index.html?window=dashboard&scenario=${DEMO_SCENARIO}`;
+export const DEMO_URL = `${DEMO_ORIGIN}${DEMO_PATH}`;
 /** What the frame's address bar shows. */
-export const DEMO_ADDRESS = DEMO_URL.replace('https://', '')
+export const DEMO_ADDRESS = DEMO_URL.replace("https://", "");
 
 /**
  * The width the embedded dashboard is laid out at, in CSS pixels, whatever the
  * projector's resolution; the frame scales it to fit. The dashboard window's
  * minimum width is 1024 (docs-site/src/lib/demo.ts line 18).
  */
-export const DEMO_LAYOUT_WIDTH = 1200
+export const DEMO_LAYOUT_WIDTH = 1200;
 
-export const UI = { name: 'React UI', path: 'src/app' } as const
-export const INTERFACE = { name: 'Transport', path: 'src/core/transport/contracts.ts' } as const
-export const LINT_RULE = ['biome noRestrictedImports:', 'no @tauri-apps/** in src/app/**'] as const
+export const UI = { name: "React UI", path: "src/app" } as const;
+export const INTERFACE = { name: "Transport", path: "src/core/transport/contracts.ts" } as const;
+export const LINT_RULE = ["biome noRestrictedImports:", "no @tauri-apps/** in src/app/**"] as const;
 
 export const IMPLEMENTATIONS = [
-  { id: 'tauri', name: 'Tauri', note: 'commands and Channels', path: 'src/core/transport/native.ts' },
-  { id: 'mock', name: 'Mock', note: 'in-browser fake backend', path: 'src/core/mock-transport.ts' },
-] as const
+  {
+    id: "tauri",
+    name: "Tauri",
+    note: "commands and Channels",
+    path: "src/core/transport/native.ts",
+  },
+  { id: "mock", name: "Mock", note: "in-browser fake backend", path: "src/core/mock-transport.ts" },
+] as const;

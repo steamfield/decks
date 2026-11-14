@@ -9,25 +9,25 @@
  */
 export interface Excerpt {
   /** Directory name under ~/Projects, e.g. "stacks". */
-  repo: string
+  repo: string;
   /** Path inside that repo. */
-  path: string
+  path: string;
   /** First and last source line the excerpt draws from, 1-based, inclusive. */
-  start: number
-  end: number
+  start: number;
+  end: number;
   /** The commit the file was read at. */
-  commit: string
-  lang: 'ts' | 'rust' | 'json' | 'sh' | 'yaml' | 'text'
-  code: string
+  commit: string;
+  lang: "ts" | "rust" | "json" | "sh" | "yaml" | "text";
+  code: string;
 }
 
 /** A line that stands for dropped source lines. */
 export function isElision(line: string): boolean {
-  return /^\s*(\/\/|#)\s*…\s*$/.test(line)
+  return /^\s*(\/\/|#)\s*…\s*$/.test(line);
 }
 
 /** The kept part of a line cut short with a trailing ` …`, or null. */
 export function cutLine(line: string): string | null {
-  const kept = /^(.*\S) …\s*$/.exec(line)?.[1]
-  return kept === undefined ? null : kept.trim()
+  const kept = /^(.*\S) …\s*$/.exec(line)?.[1];
+  return kept === undefined ? null : kept.trim();
 }

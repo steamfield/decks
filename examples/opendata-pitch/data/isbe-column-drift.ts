@@ -11,11 +11,11 @@
  * same line in the same place for the cross slide morph to read as a morph
  * rather than as a cut.
  */
-import type { Point } from 'slidev-addon-decks/story'
+import type { Point } from "@steamfield/decks/kit";
 
 export interface ColumnDriftRow {
-  year: number
-  position: number
+  year: number;
+  position: number;
 }
 
 export const COLUMN_DRIFT: ColumnDriftRow[] = [
@@ -40,30 +40,39 @@ export const COLUMN_DRIFT: ColumnDriftRow[] = [
   { year: 2015, position: 451 },
   { year: 2016, position: 563 },
   { year: 2017, position: 607 },
-]
+];
 
-export const DRIFT_POINTS: Point[] = COLUMN_DRIFT.map((row) => ({ x: row.year, y: row.position }))
+export const DRIFT_POINTS: Point[] = COLUMN_DRIFT.map((row) => ({ x: row.year, y: row.position }));
 
-export const FIRST_YEAR = COLUMN_DRIFT[0].year
-export const LAST_YEAR = COLUMN_DRIFT[COLUMN_DRIFT.length - 1].year
-export const FIRST_POSITION = COLUMN_DRIFT[0].position
-export const LAST_POSITION = COLUMN_DRIFT[COLUMN_DRIFT.length - 1].position
+const FIRST_ROW = COLUMN_DRIFT[0];
+const LAST_ROW = COLUMN_DRIFT[COLUMN_DRIFT.length - 1];
+if (FIRST_ROW === undefined || LAST_ROW === undefined)
+  throw new Error("column drift table is empty");
+
+export const FIRST_YEAR = FIRST_ROW.year;
+export const LAST_YEAR = LAST_ROW.year;
+export const FIRST_POSITION = FIRST_ROW.position;
+export const LAST_POSITION = LAST_ROW.position;
 
 /** The distinct positions the field occupied: 14 of them. */
-export const DISTINCT_POSITIONS = new Set(COLUMN_DRIFT.map((row) => row.position)).size
+export const DISTINCT_POSITIONS = new Set(COLUMN_DRIFT.map((row) => row.position)).size;
 
 /** Each year the position changed, with the values on either side of it. */
 export const JUMPS = COLUMN_DRIFT.slice(1)
-  .map((row, i) => ({ year: row.year, from: COLUMN_DRIFT[i].position, to: row.position }))
-  .filter((jump) => jump.from !== jump.to)
+  .map((row, i) => {
+    const prev = COLUMN_DRIFT[i];
+    if (prev === undefined) throw new Error(`column drift has no row before ${row.year}`);
+    return { year: row.year, from: prev.position, to: row.position };
+  })
+  .filter((jump) => jump.from !== jump.to);
 
 /* ── Stage geometry, shared by slide 1 and slide 2 ── */
-export const X_DOMAIN: [number, number] = [FIRST_YEAR, LAST_YEAR]
-export const Y_DOMAIN: [number, number] = [150, 660]
-export const X_RANGE: [number, number] = [300, 1700]
+export const X_DOMAIN: [number, number] = [FIRST_YEAR, LAST_YEAR];
+export const Y_DOMAIN: [number, number] = [150, 660];
+export const X_RANGE: [number, number] = [300, 1700];
 /** Bottom first: a larger column position sits higher on the stage. */
-export const Y_RANGE: [number, number] = [940, 250]
+export const Y_RANGE: [number, number] = [940, 250];
 
 /** Baseline hairline and the two x labels. */
-export const BASELINE_Y = 955
-export const LABEL_Y = 1002
+export const BASELINE_Y = 955;
+export const LABEL_Y = 1002;

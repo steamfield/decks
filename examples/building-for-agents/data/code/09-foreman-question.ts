@@ -3,14 +3,14 @@
  * ~/Projects/claude-codex at commit 9413fa8. Checked by excerpts.test.ts.
  * Shown dedented; the test compares lines with their indentation trimmed.
  */
-import type { Excerpt } from './types'
+import type { Excerpt } from "./types";
 
-const base = { repo: 'claude-codex', commit: '9413fa8', lang: 'ts' } as const
+const base = { repo: "claude-codex", commit: "9413fa8", lang: "ts" } as const;
 
 /** Receiving the tool call: remember the request, mark the run waiting, send nothing. */
 export const HOLD_QUESTION: Excerpt = {
   ...base,
-  path: 'src/supervisor/questions.ts',
+  path: "src/supervisor/questions.ts",
   start: 103,
   end: 146,
   code: `const receive = Effect.fnUntraced(function* (
@@ -23,12 +23,12 @@ export const HOLD_QUESTION: Excerpt = {
     question: args.success.question,
   });
   yield* registry.state(run, "waiting");`,
-}
+};
 
 /** What every blocked `foreman wait` is parked on: a Deferred, swapped and resolved. */
 export const WAKE: Excerpt = {
   ...base,
-  path: 'src/supervisor/registry.ts',
+  path: "src/supervisor/registry.ts",
   start: 114,
   end: 119,
   code: `let changed = yield* Deferred.make<void>();
@@ -37,12 +37,12 @@ const wake = Effect.gen(function* () {
   changed = yield* Deferred.make<void>();
   yield* Deferred.succeed(previous, undefined);
 });`,
-}
+};
 
 /** The answer: a JSON-RPC response to the request id stored when the question arrived. */
 export const RESPOND: Excerpt = {
   ...base,
-  path: 'src/supervisor/questions.ts',
+  path: "src/supervisor/questions.ts",
   start: 82,
   end: 97,
   code: `yield* Effect.gen(function* () {
@@ -54,12 +54,12 @@ export const RESPOND: Excerpt = {
   // …
   if (run.calls.size === 0 && run.record.state === "waiting")
     yield* registry.state(run, "running");`,
-}
+};
 
 /** The timeout, tested by moving Effect's clock instead of waiting. */
 export const TIMEOUT_TEST: Excerpt = {
   ...base,
-  path: 'tests/supervisor-integration.test.ts',
+  path: "tests/supervisor-integration.test.ts",
   start: 6317,
   end: 6333,
   code: `it.effect("defers on the question timeout through TestClock", () =>
@@ -73,4 +73,4 @@ export const TIMEOUT_TEST: Excerpt = {
       { _tag: "Asked" },
       { _tag: "Deferred", by: "timeout" },
     ]);`,
-}
+};

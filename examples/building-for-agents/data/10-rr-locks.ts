@@ -16,277 +16,310 @@
  * RESULT_LINES quotes it; ./10-rr-locks.test.ts fails if a quoted line is
  * no longer a substring of the fixture.
  */
-import type { TermLine } from './types'
-import result from './fixtures/10-rr-result.json'
+
+import result from "./fixtures/10-rr-result.json";
+import type { TermLine } from "./types";
 
 /* ── The simulation (rr/site/src/lib/flow.ts) ── */
 
-export type FlowTask = { name: string; syncMs: number; testMs: number }
+export type FlowTask = { name: string; syncMs: number; testMs: number };
 export type FlowRun = {
-  agent: string
+  agent: string;
   /** What the agent typed. */
-  command: string
-  arrive: number
+  command: string;
+  arrive: number;
   /** One task is a plain run; several are a parallel task's subtasks, one per host. */
-  tasks: FlowTask[]
-  result: { ok: boolean; text: string }
-}
+  tasks: FlowTask[];
+  result: { ok: boolean; text: string };
+};
 
-export type SegmentKind = 'probe-locked' | 'probe-ok' | 'sync' | 'test' | 'hold' | 'result'
+export type SegmentKind = "probe-locked" | "probe-ok" | "sync" | "test" | "hold" | "result";
 export type Segment = {
-  run: number
-  host: number
-  kind: SegmentKind
-  start: number
-  end: number
+  run: number;
+  host: number;
+  kind: SegmentKind;
+  start: number;
+  end: number;
   /** The subtask, for a parallel run. */
-  task?: string
-}
+  task?: string;
+};
 
 /** A run's first lock attempts are drawn slowly enough to follow. */
-export const PROBE_MS = 600
+export const PROBE_MS = 600;
 /** Retries go back to back, the way roundRobinWait tries every locked host. */
-export const RETRY_PROBE_MS = 250
+export const RETRY_PROBE_MS = 250;
 /** The wait between retries: `time.NewTimer(2 * time.Second)`, rr/internal/cli/loadbalance.go line 477. */
-export const POLL_MS = 2000
-export const RESULT_MS = 600
-const STEP_MS = 50
+export const POLL_MS = 2000;
+export const RESULT_MS = 600;
+const STEP_MS = 50;
 
 /** Host names in the simulation. Schematic: OpenData's real hosts are in RUN. */
-export const FLOW_HOSTS = ['m4-mini', 'm1-linux', 'm1-mini']
+export const FLOW_HOSTS = ["m4-mini", "m1-linux", "m1-mini"];
 
 /** The made-up scenario, as on rr's site. Counts and timings are illustrative. */
 export const FLOW_RUNS: FlowRun[] = [
   {
-    agent: 'Agent 1',
-    command: 'rr test',
+    agent: "Agent 1",
+    command: "rr test",
     arrive: 400,
     tasks: [
-      { name: 'test-api', syncMs: 900, testMs: 8400 },
-      { name: 'test-web', syncMs: 900, testMs: 8000 },
-      { name: 'test-jobs', syncMs: 900, testMs: 8200 },
+      { name: "test-api", syncMs: 900, testMs: 8400 },
+      { name: "test-web", syncMs: 900, testMs: 8000 },
+      { name: "test-jobs", syncMs: 900, testMs: 8200 },
     ],
-    result: { ok: true, text: '3/3 passed' },
+    result: { ok: true, text: "3/3 passed" },
   },
   {
-    agent: 'Agent 2',
+    agent: "Agent 2",
     command: 'rr run "pytest auth"',
     arrive: 4000,
-    tasks: [{ name: 'pytest', syncMs: 800, testMs: 5600 }],
-    result: { ok: true, text: '86 passed' },
+    tasks: [{ name: "pytest", syncMs: 800, testMs: 5600 }],
+    result: { ok: true, text: "86 passed" },
   },
   {
-    agent: 'Agent 3',
+    agent: "Agent 3",
     command: 'rr run "bun test lib"',
     arrive: 5700,
-    tasks: [{ name: 'bun test', syncMs: 800, testMs: 4800 }],
-    result: { ok: false, text: '1 failed' },
+    tasks: [{ name: "bun test", syncMs: 800, testMs: 4800 }],
+    result: { ok: false, text: "1 failed" },
   },
   {
-    agent: 'Agent 4',
+    agent: "Agent 4",
     command: 'rr run "go test ./..."',
     arrive: 15000,
-    tasks: [{ name: 'go test', syncMs: 800, testMs: 3800 }],
-    result: { ok: true, text: '214 passed' },
+    tasks: [{ name: "go test", syncMs: 800, testMs: 3800 }],
+    result: { ok: true, text: "214 passed" },
   },
-]
+];
 
 type Worker =
-  | { kind: 'probe'; host: number; start: number; ms: number }
-  | { kind: 'waiting'; next: number }
-  | { kind: 'busy'; host: number; until: number }
-  | { kind: 'holding'; host: number; since: number }
-  | { kind: 'done' }
+  | { kind: "probe"; host: number; start: number; ms: number }
+  | { kind: "waiting"; next: number }
+  | { kind: "busy"; host: number; until: number }
+  | { kind: "holding"; host: number; since: number }
+  | { kind: "done" };
 
 /** Runs the scenario: every lock attempt, sync, test and result as timed segments. */
 export function simulate(runs: FlowRun[], hostCount: number): Segment[] {
-  const segments: Segment[] = []
-  const holder: (number | undefined)[] = Array(hostCount).fill(undefined)
+  const segments: Segment[] = [];
+  const holder: (number | undefined)[] = Array(hostCount).fill(undefined);
   // A plain run has one worker that walks the hosts; a parallel run has one per host.
-  const workers: Worker[][] = runs.map(() => [])
-  const horizon = Math.max(...runs.map((run) => run.arrive)) + 120_000
-  const finished = () => workers.every((mine) => mine.length > 0 && mine.every((w) => w.kind === 'done'))
+  const workers: Worker[][] = runs.map(() => []);
+  const horizon = Math.max(...runs.map((run) => run.arrive)) + 120_000;
+  const finished = () =>
+    workers.every((mine) => mine.length > 0 && mine.every((w) => w.kind === "done"));
 
   for (let t = 0; t <= horizon && !finished(); t += STEP_MS) {
     runs.forEach((run, i) => {
-      const parallel = run.tasks.length > 1
-      const mine = workers[i] as Worker[]
+      const parallel = run.tasks.length > 1;
+      const mine = workers[i] as Worker[];
       if (mine.length === 0 && t >= run.arrive) {
-        const count = parallel ? Math.min(run.tasks.length, hostCount) : 1
+        const count = parallel ? Math.min(run.tasks.length, hostCount) : 1;
         for (let w = 0; w < count; w++) {
-          mine.push({ kind: 'probe', host: parallel ? w : 0, start: t, ms: PROBE_MS })
+          mine.push({ kind: "probe", host: parallel ? w : 0, start: t, ms: PROBE_MS });
         }
       }
       mine.forEach((worker, w) => {
-        if (worker.kind === 'probe' && t >= worker.start + worker.ms) {
-          const free = holder[worker.host] === undefined
+        if (worker.kind === "probe" && t >= worker.start + worker.ms) {
+          const free = holder[worker.host] === undefined;
           segments.push({
             run: i,
             host: worker.host,
-            kind: free ? 'probe-ok' : 'probe-locked',
+            kind: free ? "probe-ok" : "probe-locked",
             start: worker.start,
             end: t,
-          })
+          });
           if (free) {
-            const task = run.tasks[parallel ? w : 0] as FlowTask
-            const name = parallel ? task.name : undefined
-            const syncEnd = t + task.syncMs
-            const until = syncEnd + task.testMs
-            holder[worker.host] = i
-            segments.push({ run: i, host: worker.host, kind: 'sync', start: t, end: syncEnd, task: name })
-            segments.push({ run: i, host: worker.host, kind: 'test', start: syncEnd, end: until, task: name })
-            mine[w] = { kind: 'busy', host: worker.host, until }
+            const task = run.tasks[parallel ? w : 0] as FlowTask;
+            const name = parallel ? task.name : undefined;
+            const syncEnd = t + task.syncMs;
+            const until = syncEnd + task.testMs;
+            holder[worker.host] = i;
+            segments.push({
+              run: i,
+              host: worker.host,
+              kind: "sync",
+              start: t,
+              end: syncEnd,
+              task: name,
+            });
+            segments.push({
+              run: i,
+              host: worker.host,
+              kind: "test",
+              start: syncEnd,
+              end: until,
+              task: name,
+            });
+            mine[w] = { kind: "busy", host: worker.host, until };
           } else if (!parallel && worker.host + 1 < hostCount) {
-            mine[w] = { ...worker, host: worker.host + 1, start: t }
+            mine[w] = { ...worker, host: worker.host + 1, start: t };
           } else {
             // A parallel worker waits for its own host; a plain run for any host.
-            mine[w] = { kind: 'waiting', next: t + POLL_MS }
+            mine[w] = { kind: "waiting", next: t + POLL_MS };
           }
-        } else if (worker.kind === 'waiting' && t >= worker.next) {
-          mine[w] = { kind: 'probe', host: parallel ? w : 0, start: t, ms: RETRY_PROBE_MS }
-        } else if (worker.kind === 'busy' && t >= worker.until) {
-          mine[w] = { kind: 'holding', host: worker.host, since: t }
+        } else if (worker.kind === "waiting" && t >= worker.next) {
+          mine[w] = { kind: "probe", host: parallel ? w : 0, start: t, ms: RETRY_PROBE_MS };
+        } else if (worker.kind === "busy" && t >= worker.until) {
+          mine[w] = { kind: "holding", host: worker.host, since: t };
         }
-      })
+      });
       // Locks release when the run ends: a plain run's at once, a parallel task's
       // only when every subtask is done.
-      if (mine.length > 0 && mine.every((w) => w.kind === 'holding')) {
+      if (mine.length > 0 && mine.every((w) => w.kind === "holding")) {
         for (const [w, worker] of mine.entries()) {
-          if (worker.kind !== 'holding') continue
+          if (worker.kind !== "holding") continue;
           if (worker.since < t) {
-            segments.push({ run: i, host: worker.host, kind: 'hold', start: worker.since, end: t })
+            segments.push({ run: i, host: worker.host, kind: "hold", start: worker.since, end: t });
           }
-          holder[worker.host] = undefined
-          segments.push({ run: i, host: worker.host, kind: 'result', start: t, end: t + RESULT_MS })
-          ;(workers[i] as Worker[])[w] = { kind: 'done' }
+          holder[worker.host] = undefined;
+          segments.push({
+            run: i,
+            host: worker.host,
+            kind: "result",
+            start: t,
+            end: t + RESULT_MS,
+          });
+          (workers[i] as Worker[])[w] = { kind: "done" };
         }
       }
-    })
+    });
   }
-  return segments.sort((a, b) => a.start - b.start || a.host - b.host)
+  return segments.sort((a, b) => a.start - b.start || a.host - b.host);
 }
 
 export type ChipView = {
   /** The rr process exists from the agent's call until its exit code is back. */
-  visible: boolean
-  state: 'trying' | 'waiting' | 'running' | 'done'
+  visible: boolean;
+  state: "trying" | "waiting" | "running" | "done";
   /** While waiting: milliseconds until it tries the locks again. */
-  retryIn?: number
+  retryIn?: number;
   /** 0 in the running column, 1 in the waiting column; eased between them. */
-  slot: number
-}
+  slot: number;
+};
 export type HostView = {
-  holder?: number
-  task?: string
-  phase: 'free' | 'sync' | 'test' | 'hold'
+  holder?: number;
+  task?: string;
+  phase: "free" | "sync" | "test" | "hold";
   /** 0..1 through the current phase. */
-  progress: number
-}
-export type Tag = { host: number; run: number; ok: boolean; age: number; ms: number }
+  progress: number;
+};
+export type Tag = { host: number; run: number; ok: boolean; age: number; ms: number };
 export type Scene = {
-  chips: ChipView[]
-  hosts: HostView[]
+  chips: ChipView[];
+  hosts: HostView[];
   /** Segments in flight at this moment, with how far along (0..1) each is. */
-  active: { segment: Segment; at: number }[]
+  active: { segment: Segment; at: number }[];
   /** Lock attempts that just landed, shown at the host end of the line. */
-  tags: Tag[]
-  results: (FlowRun['result'] | undefined)[]
-}
+  tags: Tag[];
+  results: (FlowRun["result"] | undefined)[];
+};
 
-const covers = (s: Segment, t: number) => t >= s.start && t < s.end
-const SLIDE_MS = 450
-export const TAG_MS = 1100
-const RETRY_TAG_MS = 600
+const covers = (s: Segment, t: number) => t >= s.start && t < s.end;
+const SLIDE_MS = 450;
+export const TAG_MS = 1100;
+const RETRY_TAG_MS = 600;
 /** The rr process lingers this long after its exit code is back. */
-const LINGER_MS = 900
+const LINGER_MS = 900;
 
-const ease = (u: number) => 1 - (1 - Math.max(0, Math.min(1, u))) ** 3
+const ease = (u: number) => 1 - (1 - Math.max(0, Math.min(1, u))) ** 3;
 
 /** The spans a run spends waiting on the laptop: from giving up until a retry lands a lock. */
 export function waitSpans(segments: Segment[], run: number): [number, number][] {
-  const probes = segments.filter((s) => s.run === run && s.kind.startsWith('probe'))
-  const spans: [number, number][] = []
-  let since: number | undefined
+  const probes = segments.filter((s) => s.run === run && s.kind.startsWith("probe"));
+  const spans: [number, number][] = [];
+  let since: number | undefined;
   for (const [k, s] of probes.entries()) {
-    const next = probes[k + 1]
-    if (s.kind === 'probe-locked' && since === undefined && next && next.start > s.end) {
-      since = s.end
+    const next = probes[k + 1];
+    if (s.kind === "probe-locked" && since === undefined && next && next.start > s.end) {
+      since = s.end;
     }
-    if (s.kind === 'probe-ok' && since !== undefined) {
-      spans.push([since, s.end])
-      since = undefined
+    if (s.kind === "probe-ok" && since !== undefined) {
+      spans.push([since, s.end]);
+      since = undefined;
     }
   }
-  return spans
+  return spans;
 }
 
 export function sceneAt(segments: Segment[], runs: FlowRun[], hostCount: number, t: number): Scene {
   const active = segments
-    .filter((s) => covers(s, t) && s.kind !== 'hold')
-    .map((segment) => ({ segment, at: (t - segment.start) / (segment.end - segment.start) }))
+    .filter((s) => covers(s, t) && s.kind !== "hold")
+    .map((segment) => ({ segment, at: (t - segment.start) / (segment.end - segment.start) }));
 
   const hosts: HostView[] = Array.from({ length: hostCount }, (_, host) => {
     const lock = segments.find(
-      (s) => s.host === host && (s.kind === 'sync' || s.kind === 'test' || s.kind === 'hold') && covers(s, t),
-    )
-    if (!lock) return { phase: 'free', progress: 0 }
+      (s) =>
+        s.host === host &&
+        (s.kind === "sync" || s.kind === "test" || s.kind === "hold") &&
+        covers(s, t),
+    );
+    if (!lock) return { phase: "free", progress: 0 };
     return {
       holder: lock.run,
       task: lock.task,
-      phase: lock.kind as HostView['phase'],
+      phase: lock.kind as HostView["phase"],
       progress: (t - lock.start) / (lock.end - lock.start),
-    }
-  })
+    };
+  });
 
   // A quick retry's answer shows briefly; a first attempt's long enough to read.
-  const tagMs = (s: Segment) => (s.end - s.start < PROBE_MS ? RETRY_TAG_MS : TAG_MS)
+  const tagMs = (s: Segment) => (s.end - s.start < PROBE_MS ? RETRY_TAG_MS : TAG_MS);
   const tags = segments
-    .filter((s) => s.kind.startsWith('probe') && t >= s.end && t < s.end + tagMs(s))
-    .map((s) => ({ host: s.host, run: s.run, ok: s.kind === 'probe-ok', age: t - s.end, ms: tagMs(s) }))
+    .filter((s) => s.kind.startsWith("probe") && t >= s.end && t < s.end + tagMs(s))
+    .map((s) => ({
+      host: s.host,
+      run: s.run,
+      ok: s.kind === "probe-ok",
+      age: t - s.end,
+      ms: tagMs(s),
+    }));
 
   const chips: ChipView[] = runs.map((run, i) => {
-    const mine = segments.filter((s) => s.run === i)
-    const lastResult = mine.filter((s) => s.kind === 'result').at(-1)
-    const end = lastResult ? lastResult.end : Number.POSITIVE_INFINITY
-    const visible = t >= run.arrive && t < end + LINGER_MS
-    const spans = waitSpans(segments, i)
+    const mine = segments.filter((s) => s.run === i);
+    const lastResult = mine.filter((s) => s.kind === "result").at(-1);
+    const end = lastResult ? lastResult.end : Number.POSITIVE_INFINITY;
+    const visible = t >= run.arrive && t < end + LINGER_MS;
+    const spans = waitSpans(segments, i);
     // Slide toward the waiting column when a wait starts, back when it ends.
-    let slot = 0
+    let slot = 0;
     for (const [from, to] of spans) {
-      if (t >= from && t < to) slot = ease((t - from) / SLIDE_MS)
-      else if (t >= to && t < to + SLIDE_MS) slot = 1 - ease((t - to) / SLIDE_MS)
+      if (t >= from && t < to) slot = ease((t - from) / SLIDE_MS);
+      else if (t >= to && t < to + SLIDE_MS) slot = 1 - ease((t - to) / SLIDE_MS);
     }
-    if (t >= end) return { visible, state: 'done', slot }
-    const busy = mine.some((s) => !s.kind.startsWith('probe') && covers(s, t))
-    if (busy) return { visible, state: 'running', slot }
-    const waiting = spans.some(([from, to]) => t >= from && t < to)
-    const probing = mine.some((s) => s.kind.startsWith('probe') && covers(s, t))
+    if (t >= end) return { visible, state: "done", slot };
+    const busy = mine.some((s) => !s.kind.startsWith("probe") && covers(s, t));
+    if (busy) return { visible, state: "running", slot };
+    const waiting = spans.some(([from, to]) => t >= from && t < to);
+    const probing = mine.some((s) => s.kind.startsWith("probe") && covers(s, t));
     if (waiting && !probing) {
-      const next = mine.find((s) => s.start > t)
-      return { visible, state: 'waiting', retryIn: next ? next.start - t : 0, slot }
+      const next = mine.find((s) => s.start > t);
+      return { visible, state: "waiting", retryIn: next ? next.start - t : 0, slot };
     }
-    return { visible, state: waiting ? 'waiting' : 'trying', slot }
-  })
+    return { visible, state: waiting ? "waiting" : "trying", slot };
+  });
 
   const results = runs.map((run, i) =>
-    segments.some((s) => s.run === i && s.kind === 'result' && t >= s.end) ? run.result : undefined,
-  )
-  return { chips, hosts, active, tags, results }
+    segments.some((s) => s.run === i && s.kind === "result" && t >= s.end) ? run.result : undefined,
+  );
+  return { chips, hosts, active, tags, results };
 }
 
-export type FlowStep = { at: number; title: string; text: string }
+export type FlowStep = { at: number; title: string; text: string };
 
 /** The story's beats, each starting at a moment the simulation produced. */
 export function flowSteps(segments: Segment[], runs: FlowRun[], hosts: string[]): FlowStep[] {
-  const lockOf = (run: number) => segments.find((s) => s.run === run && s.kind === 'probe-ok')
-  const release = segments.find((s) => s.run === 0 && s.kind === 'result')
-  const second = lockOf(1)
-  const third = lockOf(2)
-  const fourth = lockOf(runs.length - 1)
+  const lockOf = (run: number) => segments.find((s) => s.run === run && s.kind === "probe-ok");
+  const release = segments.find((s) => s.run === 0 && s.kind === "result");
+  const second = lockOf(1);
+  const third = lockOf(2);
+  const fourth = lockOf(runs.length - 1);
   // Agent 3's retry that finds the second agent's new host taken.
-  const bounce = segments.find((s) => s.run === 2 && s.kind === 'probe-locked' && s.start >= (second?.end ?? 0))
-  const last = runs.length - 1
-  const name = (host: number | undefined) => hosts[host ?? 0] ?? ''
+  const bounce = segments.find(
+    (s) => s.run === 2 && s.kind === "probe-locked" && s.start >= (second?.end ?? 0),
+  );
+  const last = runs.length - 1;
+  const name = (host: number | undefined) => hosts[host ?? 0] ?? "";
   return [
     {
       at: 0,
@@ -313,19 +346,20 @@ export function flowSteps(segments: Segment[], runs: FlowRun[], hosts: string[])
       title: `${runs[last]?.agent} gets ${name(fourth?.host)}`,
       text: `${runs[last]?.agent} arrives while a host is free and takes it without waiting. Each agent gets its own output and exit code.`,
     },
-  ]
+  ];
 }
 
 /* ── What the slide shows of it ── */
 
-export const SEGMENTS = simulate(FLOW_RUNS, FLOW_HOSTS.length)
-export const STEPS = flowSteps(SEGMENTS, FLOW_RUNS, FLOW_HOSTS)
+export const SEGMENTS = simulate(FLOW_RUNS, FLOW_HOSTS.length);
+export const STEPS = flowSteps(SEGMENTS, FLOW_RUNS, FLOW_HOSTS);
 
 /** Counts printed on the card: the scenario's agents and hosts. */
-export const AGENT_COUNT = FLOW_RUNS.length
-export const HOST_COUNT = FLOW_HOSTS.length
+export const AGENT_COUNT = FLOW_RUNS.length;
+export const HOST_COUNT = FLOW_HOSTS.length;
 
-const lockEnd = (run: number) => SEGMENTS.find((s) => s.run === run && s.kind === 'probe-ok')?.end ?? 0
+const lockEnd = (run: number) =>
+  SEGMENTS.find((s) => s.run === run && s.kind === "probe-ok")?.end ?? 0;
 
 /**
  * The moment each beat rests on, in simulation milliseconds. Each is derived
@@ -343,7 +377,7 @@ export const STILLS = [
   (STEPS[1]?.at ?? 0) - 400,
   Math.round(((waitSpans(SEGMENTS, 2)[0]?.[0] ?? 0) + (STEPS[2]?.at ?? 0)) / 200) * 100,
   lockEnd(FLOW_RUNS.length - 1) + 200,
-] as const
+] as const;
 
 /**
  * The JSON event a waiting rr prints, reduced to the two fields the slide
@@ -355,12 +389,21 @@ export const STILLS = [
 export const WAITING_EVENT = {
   status: '"status":"waiting"',
   holder: `"command":"${FLOW_RUNS[0]?.command}"`,
-} as const
+} as const;
 
 /* ── The recorded result (fixtures/10-rr-result.json) ── */
 
-type Failure = { task: string; host: string; tests?: { file: string; message: string; name: string }[] }
-const details = result.details as { failed: number; passed: number; total: number; failures: Failure[] }
+type Failure = {
+  task: string;
+  host: string;
+  tests?: { file: string; message: string; name: string }[];
+};
+const details = result.details as {
+  failed: number;
+  passed: number;
+  total: number;
+  failures: Failure[];
+};
 
 /** The run the event came from. */
 export const RUN = {
@@ -372,11 +415,11 @@ export const RUN = {
   failed: details.failed,
   /** The hosts named in details.failures: OpenData's real ones. */
   hosts: [...new Set(details.failures.map((f) => f.host))],
-} as const
+} as const;
 
 /** The one Vitest failure that carries a line number. */
-const located = details.failures.flatMap((f) => f.tests ?? []).find((t) => /:\d+$/.test(t.file))
-export const FAILURE_AT = located?.file ?? ''
+const located = details.failures.flatMap((f) => f.tests ?? []).find((t) => /:\d+$/.test(t.file));
+export const FAILURE_AT = located?.file ?? "";
 
 /**
  * The strip's lines. Apart from a leading or trailing `…`, which marks where
@@ -385,15 +428,24 @@ export const FAILURE_AT = located?.file ?? ''
  * lines.
  */
 export const RESULT_LINES: readonly TermLine[] = [
-  { text: '{"type":"result","status":"failed","exit_code":1,"details":{"failed":3, …', tone: 'out' },
-  { text: '{"file":"src/data/articles/charts-json.test.ts:74",', tone: 'fail' },
-  { text: '"message":"Error: ./staar-sat-gap.charts.json#bigCityCampusPoverty failed ', tone: 'out' },
-  { text: 'validateSpec: Spec error: encoding.tooltip[3].field \\"share\\" does not ', tone: 'out' },
-  { text: 'exist in data. Available columns: district, band, campuses",', tone: 'out' },
-  { text: '… "passed":5,"total":8},"ts":"2026-11-02T16:48:49Z"}', tone: 'out' },
-]
+  {
+    text: '{"type":"result","status":"failed","exit_code":1,"details":{"failed":3, …',
+    tone: "out",
+  },
+  { text: '{"file":"src/data/articles/charts-json.test.ts:74",', tone: "fail" },
+  {
+    text: '"message":"Error: ./staar-sat-gap.charts.json#bigCityCampusPoverty failed ',
+    tone: "out",
+  },
+  {
+    text: 'validateSpec: Spec error: encoding.tooltip[3].field \\"share\\" does not ',
+    tone: "out",
+  },
+  { text: 'exist in data. Available columns: district, band, campuses",', tone: "out" },
+  { text: '… "passed":5,"total":8},"ts":"2026-11-02T16:48:49Z"}', tone: "out" },
+];
 /** The line the last beat is about: the failure's file and line. */
-export const RESULT_HOT = RESULT_LINES.findIndex((line) => line.text.includes(FAILURE_AT))
+export const RESULT_HOT = RESULT_LINES.findIndex((line) => line.text.includes(FAILURE_AT));
 
 /**
  * The test frameworks rr parses into file, line and message:
@@ -401,10 +453,10 @@ export const RESULT_HOT = RESULT_LINES.findIndex((line) => line.text.includes(FA
  * jest.go's JestFormatter "parses Jest/Vitest test output" (line 31). The
  * README omits Vitest; the code has it.
  */
-export const PARSERS = ['pytest', 'Go test', 'Jest', 'Vitest'] as const
+export const PARSERS = ["pytest", "Go test", "Jest", "Vitest"] as const;
 
 /**
  * FLAG: author-reported. Riley says he usually has two to four agents running
  * at once. No repo records it. Used in the presenter notes only.
  */
-export const AGENTS_AT_ONCE = { low: 2, high: 4 } as const
+export const AGENTS_AT_ONCE = { low: 2, high: 4 } as const;

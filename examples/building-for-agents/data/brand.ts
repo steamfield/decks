@@ -8,10 +8,10 @@
  * edited here.
  */
 export const MARK_PATH =
-  'M0.002 12.75A13 13 0 0 1 25.998 12.75ZM0.039 14H25.961A13 13 0 0 1 25.447 16.75H0.553A13 13 0 0 1 0.039 14ZM1.221 18.5H24.779A13 13 0 0 1 23.437 20.75H2.563A13 13 0 0 1 1.221 18.5ZM4.693 23H21.307A13 13 0 0 1 4.693 23Z'
+  "M0.002 12.75A13 13 0 0 1 25.998 12.75ZM0.039 14H25.961A13 13 0 0 1 25.447 16.75H0.553A13 13 0 0 1 0.039 14ZM1.221 18.5H24.779A13 13 0 0 1 23.437 20.75H2.563A13 13 0 0 1 1.221 18.5ZM4.693 23H21.307A13 13 0 0 1 4.693 23Z";
 
 /** The mark's viewBox is a square of this many units. */
-export const MARK_SIZE = 26
+export const MARK_SIZE = 26;
 
 /** Sunset stops, top to bottom, as on the site (Sunset.astro). */
-export const SUNSET_STOPS = [0, 0.38, 0.66, 1] as const
+export const SUNSET_STOPS = [0, 0.38, 0.66, 1] as const;

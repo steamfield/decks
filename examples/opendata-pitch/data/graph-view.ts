@@ -7,7 +7,7 @@
  */
 
 /** How far into the graph the camera settles, over the fitted view. */
-export const GRAPH_ZOOM = 2.5
+export const GRAPH_ZOOM = 2.5;
 
 /** How far the cover dims the graph so the title reads over it. */
-export const COVER_DIM = 0.55
+export const COVER_DIM = 0.55;
