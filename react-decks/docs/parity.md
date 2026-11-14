@@ -17,8 +17,8 @@ without one is not done. "Change" marks a deliberate difference from Slidev.
 | Slide order | `src:` manifest | filename order. Change | `node/slides.test.ts` |
 | Slide fills the window at any aspect ratio | 100vw x 100vh override | `core/canvas.ts` fill | `canvas.test.ts`; `e2e/play.spec.ts` |
 | Type scales with the window | no (fixed rem) | yes. Change | `docs/spikes/parity.md` (canvas table) |
-| Presenter and audience windows stay in sync | server-ref | BroadcastChannel + `core/sync.ts` | |
-| A late or reloaded tab does not move the others | n/a | stamp ordering in `core/sync.ts` | `sync.test.ts` (browser test in Phase 3) |
+| Presenter and audience windows stay in sync | server-ref | BroadcastChannel + `core/sync.ts` | `runtime/window-sync.test.tsx`; `e2e/presenter.spec.ts` |
+| A late or reloaded tab does not move the others | n/a | stamp ordering in `core/sync.ts` | `sync.test.ts`; `e2e/presenter.spec.ts` |
 | Slide transition per boundary, direction-aware | TransitionGroup / view transition | view transitions | |
 | Story slides cross-fade with named elements | `startStoryTransition` | `runTransition` + `Morph` | |
 | Stages jump to end state outside the live slide | `$renderContext !== 'slide'` | `renderContext` + `data-deck-motion` | |
