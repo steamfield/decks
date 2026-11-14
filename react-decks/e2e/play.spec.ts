@@ -62,13 +62,15 @@ test("A cold start loads once without console errors or outdated dependencies.",
   expect(errors).toEqual([]);
 });
 
-test("Prefetched slides paint in the next animation frame when jumping.", async ({ page }) => {
+test("Prefetched slides paint in the next animation frame when jumping with instant motion.", async ({
+  page,
+}) => {
   const loaded = new Set<string>();
   page.on("requestfinished", (request) => {
     if (/\/slides\/.*\.mdx(?:\?|$)/.test(request.url()))
       loaded.add(new URL(request.url()).pathname);
   });
-  await page.goto("/");
+  await page.goto("/?motion=instant");
   await position(page, 1);
   await expect.poll(() => loaded.size).toBe(5);
   for (const [key, heading] of [

@@ -20,6 +20,13 @@ const gallery = [
   ["Draw", 2],
   ["useTimeline", 3],
   ["useTween", 1],
+  ["Keep moving.", 0],
+  ["Change the scale.", 0],
+  ["Make a clean cut.", 0],
+  ["Follow one idea.", 0],
+  ["Give it more room.", 0],
+  ["Move within the frame.", 1],
+  ["A little motion can stay.", 0],
 ] as const;
 
 async function position(page: Page, no: number, click = 0) {
@@ -30,9 +37,7 @@ async function position(page: Page, no: number, click = 0) {
 }
 
 async function settled(page: Page, no: number, click: number) {
-  await page.waitForFunction(() =>
-    document.getAnimations().every((animation) => animation.playState !== "running"),
-  );
+  await page.evaluate(() => window.__deck?.settled());
   if (no === 13)
     await expect(page.locator('[data-deck-active] [aria-hidden="true"]')).toHaveText(
       click ? "1,200" : "0",
@@ -51,9 +56,15 @@ async function settled(page: Page, no: number, click: number) {
 }
 
 async function poses(page: Page) {
-  return page.locator("[data-deck-active] [data-step-state]").evaluateAll((elements) =>
+  const steps = page.locator("[data-deck-active] [data-step-state]");
+  const morphs = page
+    .locator("[data-deck-active]")
+    .getByText(/^(ONE IDEA|ONE CLICK)$/)
+    .locator("..");
+  return steps.or(morphs).evaluateAll((elements) =>
     elements.map((element) => {
       const style = getComputedStyle(element);
+      const box = element.getBoundingClientRect();
       return {
         opacity: style.opacity,
         transform: style.transform,
@@ -61,6 +72,9 @@ async function poses(page: Page) {
         clip: style.clipPath,
         visibility: style.visibility,
         background: element.tagName === "MARK" ? style.backgroundSize : null,
+        box: element.hasAttribute("data-step-state")
+          ? null
+          : { x: box.x, y: box.y, width: box.width, height: box.height },
         stroke:
           element.tagName === "g"
             ? Array.from(element.children, (child) => getComputedStyle(child).strokeDashoffset)
@@ -92,7 +106,7 @@ test("Every gallery click reverses to exactly the poses before it.", async ({ pa
   test.setTimeout(90_000);
   for (let no = 1; no <= gallery.length; no++) {
     const total = gallery[no - 1]?.[1] ?? 0;
-    for (let click = 0; click < Math.max(total, 1); click++) {
+    for (let click = 0; click < Math.max(total, no < gallery.length ? 1 : 0); click++) {
       await page.goto(`/#/${no}${click ? `?clicks=${click}` : ""}`);
       await position(page, no, click);
       await settled(page, no, click);
@@ -116,18 +130,6 @@ test("Direct instant loads at the last click match settled live arrival on every
   test.setTimeout(90_000);
   const instant = await context.newPage();
   await instant.addInitScript(() => {
-    const keepInstant = () => {
-      const html = document.documentElement;
-      if (html && html.getAttribute("data-deck-motion") !== "instant")
-        html.setAttribute("data-deck-motion", "instant");
-    };
-    new MutationObserver(keepInstant).observe(document, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["data-deck-motion"],
-    });
-    keepInstant();
     const firstFrame = () => {
       if (document.querySelector("[data-deck-active] h1"))
         Reflect.set(
@@ -149,7 +151,7 @@ test("Direct instant loads at the last click match settled live arrival on every
       await settled(page, no, click);
     }
     const live = await poses(page);
-    await instant.goto(`/#/${no}${total ? `?clicks=${total}` : ""}`);
+    await instant.goto(`/?motion=instant#/${no}${total ? `?clicks=${total}` : ""}`);
     await position(instant, no, total);
     await expect
       .poll(() => instant.evaluate(() => Reflect.get(window, "motionFirstMode")))

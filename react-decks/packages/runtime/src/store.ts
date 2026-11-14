@@ -12,6 +12,7 @@ import {
   type Transport,
 } from "@react-decks/core";
 import { createStore } from "zustand/vanilla";
+import { cancelPresentation } from "./transition";
 
 export interface DeckState {
   readonly nav: NavState;
@@ -31,7 +32,10 @@ export interface DeckStore {
 
 export function createDeckStore(
   manifest: DeckManifest,
-  options?: { transport?: Transport },
+  options?: {
+    transport?: Transport;
+    present?: (change: { from: DeckState; to: DeckState }, apply: () => void) => void;
+  },
 ): DeckStore {
   function readLocation(): DeckState {
     const location = parseLocation(window.location.hash, window.location.search);
@@ -56,10 +60,27 @@ export function createDeckStore(
   const initial = readLocation();
   writeLocation(initial, false);
   const store = createStore<DeckState>(() => initial);
+  let logical = initial;
+  function apply() {
+    const presented = store.getState();
+    if (
+      positionChanged(presented.nav, logical.nav) ||
+      presented.view !== logical.view ||
+      presented.embedded !== logical.embedded ||
+      presented.bridge !== logical.bridge ||
+      presented.audienceAspect !== logical.audienceAspect
+    )
+      store.setState(logical, true);
+  }
+  function present(next: DeckState) {
+    logical = next;
+    if (options?.present) options.present({ from: store.getState(), to: logical }, apply);
+    else apply();
+  }
   const positionChanged = (a: NavState, b: NavState) => a.slide !== b.slide || a.click !== b.click;
   let lastAspect = window.innerWidth / window.innerHeight;
   function current(): SyncState {
-    const { nav, view, audienceAspect } = store.getState();
+    const { nav, view, audienceAspect } = logical;
     const aspect = view === "play" ? window.innerWidth / window.innerHeight : audienceAspect;
     return aspect === undefined ? { nav } : { nav, aspect };
   }
@@ -75,7 +96,7 @@ export function createDeckStore(
         transport: options.transport,
         current,
         onRemote(remote) {
-          const previous = store.getState();
+          const previous = logical;
           const nav = clampNav(remote.nav, manifest);
           const next = {
             ...previous,
@@ -88,7 +109,7 @@ export function createDeckStore(
           )
             return;
           writeLocation(next, nav.slide !== previous.nav.slide);
-          store.setState(next, true);
+          present(next);
         },
       })
     : undefined;
@@ -98,7 +119,7 @@ export function createDeckStore(
     session?.publish(state);
   }
   function onLocation() {
-    const previous = store.getState();
+    const previous = logical;
     const next = { ...previous, ...readLocation() };
     writeLocation(next, false);
     if (
@@ -108,7 +129,7 @@ export function createDeckStore(
       next.embedded !== previous.embedded ||
       next.bridge !== previous.bridge
     ) {
-      store.setState(next, true);
+      present(next);
       if (positionChanged(next.nav, previous.nav)) publish();
     }
   }
@@ -116,14 +137,14 @@ export function createDeckStore(
   function onResize() {
     if (
       !session ||
-      store.getState().view !== "play" ||
+      logical.view !== "play" ||
       resizeTimer !== undefined ||
       window.innerWidth / window.innerHeight === lastAspect
     )
       return;
     resizeTimer = setTimeout(() => {
       resizeTimer = undefined;
-      if (store.getState().view === "play") publish();
+      if (logical.view === "play") publish();
     }, 250);
   }
   window.addEventListener("hashchange", onLocation);
@@ -133,26 +154,27 @@ export function createDeckStore(
     getState: store.getState,
     subscribe: store.subscribe,
     dispatch(action) {
-      const previous = store.getState();
+      const previous = logical;
       if (previous.view === "overview" || previous.view === "print") return;
       const nav = navigate(previous.nav, action, manifest);
       if (nav === previous.nav) return;
       const next = { ...previous, nav };
       writeLocation(next, nav.slide !== previous.nav.slide);
-      store.setState(next, true);
+      present(next);
       publish();
     },
     setView(view, position) {
-      const previous = store.getState();
+      const previous = logical;
       const nav = position ? clampNav(position, manifest) : previous.nav;
       const moved = positionChanged(nav, previous.nav);
       if (view === previous.view && !moved) return;
       const next = { ...previous, view, nav };
       writeLocation(next, nav.slide !== previous.nav.slide);
-      store.setState(next, true);
+      present(next);
       if (moved) publish();
     },
     destroy() {
+      if (options?.present) cancelPresentation(options.present);
       window.removeEventListener("hashchange", onLocation);
       window.removeEventListener("popstate", onLocation);
       window.removeEventListener("resize", onResize);

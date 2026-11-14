@@ -1,6 +1,8 @@
 import "./motion.css";
+import "./settle";
 
 export { CountUp } from "./count-up";
+export { Morph } from "./morph";
 export {
   Draw,
   Highlight,

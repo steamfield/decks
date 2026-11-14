@@ -1,4 +1,4 @@
-import { formatHash, type NavAction, syncChannelId } from "@react-decks/core";
+import { formatHash, type NavAction, parseLocation, syncChannelId } from "@react-decks/core";
 import { useEffect } from "react";
 import { type KeybindingsMap, tinykeys } from "tinykeys";
 import { useDeckContext, useDeckSelector, usePresentation } from "./hooks";
@@ -20,18 +20,19 @@ export function useDeckKeys() {
         else void document.documentElement.requestFullscreen?.();
       },
       o(event) {
-        if (view === "print") return;
+        const current = parseLocation(window.location.hash, window.location.search).view;
+        if (current === "print") return;
         event.preventDefault();
-        store.setView(view === "overview" ? home.current : "overview");
+        store.setView(current === "overview" ? home.current : "overview");
       },
       Escape(event) {
-        if (view !== "overview") return;
+        if (parseLocation(window.location.hash, window.location.search).view !== "overview") return;
         event.preventDefault();
         store.setView(home.current);
       },
       p(event) {
-        const state = store.getState();
-        if (view !== "play" || state.embedded) return;
+        const state = parseLocation(window.location.hash, window.location.search);
+        if (state.view !== "play" || state.embedded) return;
         event.preventDefault();
         const channel = syncChannelId(
           source.manifest.name,
@@ -41,7 +42,7 @@ export function useDeckKeys() {
         if (!presenter) return;
         if (presenter.location.href === "about:blank") {
           const url = new URL(window.location.href);
-          url.hash = formatHash({ view: "presenter", ...state.nav });
+          url.hash = formatHash({ view: "presenter", slide: state.slide, click: state.click });
           presenter.location.href = url.href;
         }
         presenter.focus();
