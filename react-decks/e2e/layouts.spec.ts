@@ -3,8 +3,8 @@ import { join, resolve } from "node:path";
 import { expect, type Locator } from "@playwright/test";
 import { build, loadDeck } from "@react-decks/node";
 import { preview } from "vite";
-import { test as editableTest } from "./deck.fixture";
-import { test } from "./motion.fixture";
+import { test as editableTest } from "./fixtures/deck.fixture";
+import { test } from "./fixtures/motion.fixture";
 
 const shapes = [
   { width: 1920, height: 1080 },

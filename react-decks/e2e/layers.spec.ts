@@ -2,8 +2,8 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { loadDeck, scanSlides } from "@react-decks/node";
-import { test as editableTest } from "./deck.fixture";
-import { test } from "./motion.fixture";
+import { test as editableTest } from "./fixtures/deck.fixture";
+import { test } from "./fixtures/motion.fixture";
 
 const total = (await scanSlides(await loadDeck("examples/motion"))).length;
 
