@@ -1,12 +1,34 @@
 import { cp, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { resolve } from "node:path";
-import { test as base } from "@playwright/test";
+import { test as base, type Page } from "@playwright/test";
 import { dev, loadDeck } from "@react-decks/node";
 
 declare global {
   interface Window {
     e2eDocument?: string;
+    e2eFrame?: boolean;
   }
+}
+
+export async function waitForSlideModules(page: Page) {
+  await page.waitForFunction(
+    () =>
+      new Set(
+        performance
+          .getEntriesByType("resource")
+          .map((entry) => new URL(entry.name).pathname)
+          .filter((path) => /\/slides\/.*\.mdx$/.test(path)),
+      ).size === 5,
+  );
+  await page.evaluate(async () => {
+    const modules = new Set(
+      performance
+        .getEntriesByType("resource")
+        .map((entry) => new URL(entry.name).pathname)
+        .filter((path) => /\/slides\/.*\.mdx$/.test(path)),
+    );
+    await Promise.all(Array.from(modules, (path) => import(path)));
+  });
 }
 
 export const test = base.extend<{ editableDeck: { dir: string; url: string } }>({

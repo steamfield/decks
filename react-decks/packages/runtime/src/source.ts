@@ -1,6 +1,6 @@
 import type { DeckManifest } from "@react-decks/core";
 import type { MDXComponents } from "mdx/types";
-import { type ComponentType, lazy } from "react";
+import type { ComponentType } from "react";
 
 export type SlideLoader = () => Promise<{ default: ComponentType<{ components?: MDXComponents }> }>;
 
@@ -25,11 +25,29 @@ export function createSlideModules(source: DeckSource) {
       const loader = source.slides[id];
       if (!loader) throw new Error(`Missing slide loader for ${id}`);
       let promise: ReturnType<SlideLoader> | undefined;
+      let resolved: Awaited<ReturnType<SlideLoader>> | undefined;
       const load = () => {
-        promise ??= loader();
+        promise ??= loader().then(
+          (module) => {
+            resolved = module;
+            return module;
+          },
+          (error) => {
+            promise = undefined;
+            throw error;
+          },
+        );
         return promise;
       };
-      return [id, { Component: lazy(load), load }] as const;
+      return [
+        id,
+        {
+          get resolved() {
+            return resolved;
+          },
+          load,
+        },
+      ] as const;
     }),
   );
 }

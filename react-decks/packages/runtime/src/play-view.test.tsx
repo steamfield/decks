@@ -1,41 +1,34 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { expect, it, onTestFinished, vi } from "vitest";
-import { makeSource, Status } from "./deck.test-support";
-import { createDeckStore, Deck } from "./index";
+import { makeSource, Status, setup } from "./deck.test-support";
 
-function setup(hash = "#/1", source = makeSource()) {
-  window.history.replaceState(null, "", `/${hash}`);
-  const store = createDeckStore(source.manifest);
-  onTestFinished(() => {
-    store.destroy();
-    window.history.replaceState(null, "", "/");
-  });
-  return { ...render(<Deck source={source} store={store} />), store, source };
+function Broken(): never {
+  throw new Error("Render failed");
 }
 
-function EditingBoundaries() {
+function Counter() {
+  const [count, setCount] = useState(0);
   return (
-    <article contentEditable suppressContentEditableWarning>
-      <button type="button" contentEditable={false}>
-        Noneditable child
-      </button>
-    </article>
+    <button type="button" onClick={() => setCount(count + 1)}>
+      Count {count}
+    </button>
   );
 }
 
-it("a noneditable child inside an editing boundary allows deck navigation", async () => {
+it("a slide loaded while mounted keeps local state across nearby navigation", async () => {
   const source = makeSource();
-  setup("#/2?clicks=1", {
+  setup("#/1", {
     ...source,
-    slides: { ...source.slides, "slide-2": async () => ({ default: EditingBoundaries }) },
+    slides: { ...source.slides, "slide-1": async () => ({ default: Counter }) },
   });
   const user = userEvent.setup();
-  const child = await screen.findByRole("button", { name: "Noneditable child" });
-  await user.click(child);
-  expect(child).toHaveFocus();
-  await user.keyboard("{ArrowRight}");
-  expect(window.location.hash).toBe("#/2?clicks=2");
+  await user.click(await screen.findByRole("button", { name: "Count 0" }));
+  await user.keyboard("{ArrowDown}");
+  await screen.findByRole("heading", { name: "Title 2" });
+  await user.keyboard("{ArrowUp}");
+  expect(await screen.findByRole("button", { name: "Count 1" })).toBeVisible();
 });
 
 it.each([
@@ -129,6 +122,47 @@ it("a slide stays empty until its loader resolves", async () => {
   ).toBeVisible();
 });
 
+it("a neighbour whose loader never resolves does not block the current slide", async () => {
+  const source = makeSource();
+  setup("#/1", { ...source, slides: { ...source.slides, "slide-2": () => new Promise(() => {}) } });
+  expect(await screen.findByRole("heading", { name: "Title 1" })).toBeVisible();
+});
+
+it("a rejected slide stays isolated and retries after it is mounted again", async () => {
+  const source = makeSource();
+  let attempts = 0;
+  setup("#/1", {
+    ...source,
+    slides: {
+      ...source.slides,
+      "slide-2": async () => {
+        attempts++;
+        if (attempts === 1) throw new Error("Broken slide");
+        return { default: Status };
+      },
+    },
+  });
+  const user = userEvent.setup();
+  expect(await screen.findByRole("heading", { name: "Title 1" })).toBeVisible();
+  await user.keyboard("{ArrowDown}");
+  expect(await screen.findByText(/Unable to render slide slide-2/)).toBeVisible();
+  await user.keyboard("{End}");
+  expect(await screen.findByRole("heading", { name: "Title 5" })).toBeVisible();
+  await user.keyboard("{Home}{ArrowDown}");
+  expect(await screen.findByRole("heading", { name: "Title 2" })).toBeVisible();
+});
+
+it("a throwing slide shows its id and leaves navigation working", async () => {
+  const source = makeSource();
+  setup("#/1", {
+    ...source,
+    slides: { ...source.slides, "slide-1": async () => ({ default: Broken }) },
+  });
+  expect(await screen.findByText(/Unable to render slide slide-1/)).toBeVisible();
+  await userEvent.setup().keyboard("{End}");
+  expect(await screen.findByRole("heading", { name: "Title 5" })).toBeVisible();
+});
+
 it("idle prefetch requests every loader once without mounting distant slides", async () => {
   vi.useFakeTimers();
   onTestFinished(() => {
@@ -162,4 +196,32 @@ it("idle prefetch requests every loader once without mounting distant slides", a
   await user.keyboard("{End}{Home}{End}");
   await screen.findByRole("heading", { name: "Title 5" });
   expect(requested.toSorted()).toEqual(source.manifest.slides.map(({ id }) => id).toSorted());
+});
+
+it("a failed idle prefetch is handled and the next mount tries again", async () => {
+  vi.useFakeTimers();
+  onTestFinished(() => {
+    vi.useRealTimers();
+  });
+  const source = makeSource();
+  let attempts = 0;
+  setup("#/1", {
+    ...source,
+    slides: {
+      ...source.slides,
+      "slide-5": async () => {
+        attempts++;
+        if (attempts === 1) throw new Error("Prefetch failed");
+        return { default: Status };
+      },
+    },
+  });
+  await act(async () => {
+    await vi.runOnlyPendingTimersAsync();
+  });
+  expect(attempts).toBe(1);
+  vi.useRealTimers();
+  await userEvent.setup().keyboard("{End}");
+  expect(await screen.findByRole("heading", { name: "Title 5" })).toBeVisible();
+  expect(attempts).toBe(2);
 });

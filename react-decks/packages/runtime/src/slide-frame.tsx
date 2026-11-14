@@ -24,9 +24,10 @@ export function SlideFrame({
   useLayoutEffect(() => {
     const parent = frame.current?.parentElement;
     if (!parent || typeof ResizeObserver === "undefined") return;
-    const measure = () => setContainer({ width: parent.clientWidth, height: parent.clientHeight });
-    measure();
-    const observer = new ResizeObserver(measure);
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) setContainer({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
     observer.observe(parent);
     return () => observer.disconnect();
   }, []);

@@ -1,5 +1,6 @@
 import { basename, resolve } from "node:path";
-import { loadConfigFromFile, type UserConfig } from "vite";
+import { createJiti } from "jiti";
+import type { UserConfig } from "vite";
 import { z } from "zod";
 
 export interface DeckConfig {
@@ -44,15 +45,12 @@ export async function loadDeck(dir: string, name?: string): Promise<ResolvedDeck
   const absolute = resolve(dir);
   const file = resolve(absolute, "deck.config.ts");
   try {
-    const loaded = await loadConfigFromFile(
-      { command: "serve", mode: "development" },
-      file,
-      absolute,
-      undefined,
-      undefined,
-      "runner",
-    );
-    const config = schema.parse(loaded?.config);
+    const jiti = createJiti(import.meta.url, { moduleCache: false, fsCache: false });
+    const config = schema.parse(await jiti.import(file, { default: true }));
+    for (const key of Object.keys(config.htmlAttrs ?? {})) {
+      if (!/^[A-Za-z_:][-A-Za-z0-9_:.]*$/.test(key))
+        throw new Error(`Invalid htmlAttrs key ${key}`);
+    }
     return { name: name ?? basename(absolute), dir: absolute, config };
   } catch (cause) {
     throw new Error(`${file}: ${cause instanceof Error ? cause.message : String(cause)}`, {

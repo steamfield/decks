@@ -69,6 +69,7 @@ export function createDeckStore(manifest: DeckManifest): DeckStore {
     subscribe: store.subscribe,
     dispatch(action) {
       const previous = store.getState();
+      if (previous.view === "overview" || previous.view === "print") return;
       const nav = navigate(previous.nav, action, manifest);
       if (nav === previous.nav) return;
       const next = { ...previous, nav };
