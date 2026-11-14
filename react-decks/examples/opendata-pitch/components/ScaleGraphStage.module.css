@@ -1,0 +1,13 @@
+.graph {
+  position: absolute;
+  inset: 0;
+}
+
+:global(html[data-deck-motion="live"] [data-deck-context="slide"]) .graph {
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
+
+:global(html[data-deck-motion="instant"]) .stage :global(.od-story-link),
+:global([data-deck-context]:not([data-deck-context="slide"])) .stage :global(.od-story-link) {
+  transition: none;
+}
