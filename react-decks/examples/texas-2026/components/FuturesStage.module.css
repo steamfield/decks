@@ -1,0 +1,44 @@
+.futures {
+  position: absolute;
+  top: calc(20 * var(--sh));
+  left: var(--tx-margin-x);
+  right: var(--tx-margin-x);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(2 * var(--sw));
+}
+.future {
+  border: var(--tx-hairline) dotted var(--od-border);
+  border-radius: var(--tx-radius-card);
+  padding: calc(1.4 * var(--sw));
+  background: var(--od-surface);
+}
+.future header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: calc(1.4 * var(--sh));
+  border-bottom: var(--tx-hairline) dotted var(--od-border);
+}
+.future strong {
+  font-size: calc(1.8 * var(--sw));
+  font-weight: var(--tx-lead-weight);
+}
+.futureRow {
+  display: flex;
+  align-items: baseline;
+  gap: calc(1.1 * var(--sw));
+  padding-top: calc(1 * var(--sh));
+  height: calc(8 * var(--sh));
+  box-sizing: border-box;
+}
+.dimension {
+  flex: 0 0 calc(6.5 * var(--sw));
+  font-size: var(--tx-small-size);
+  color: var(--od-text-muted);
+}
+.outcome {
+  font-size: var(--tx-body-size);
+  line-height: var(--tx-label-leading);
+  color: var(--od-text);
+}
