@@ -1080,7 +1080,7 @@ transition has run.
 | Component | Behaviour |
 | --- | --- |
 | `Step` | As above, on an element chosen by `as` (default `div`). |
-| `Steps` | Wraps each child in a `Step` at `from + index` with the given `enter`, skipping whitespace-only text (MDX puts newlines between block children). With `as="ul"` or `"ol"` each wrapper is an `li`; otherwise a `div`. |
+| `Steps` | Wraps each child in a `Step` at `from + index` with the given `enter`, skipping whitespace-only text (MDX puts newlines between block children). When its only child is a list (`ul` or `ol`, which is what a markdown list compiles to), it renders that list and gives each top-level `li` the step attributes for `from + index` instead of wrapping it, so a markdown list reveals one item per click. With `as="ul"` or `"ol"` each wrapper is an `li`; otherwise a `div`. |
 | `Stagger` | One step state for the group on the container; each child is wrapped in an element with `--step-index: <index>`, and its transition is delayed by `index * --deck-stagger` when entering. The delay sits on the CSS rule for the visible states, so any move into `current` or `after` is staggered (re-entering from `gone` included) and any move into `before` or `gone` is not. |
 | `TextReveal` | Splits `children` on whitespace (`by="word"`, the default) or into characters. The root is a `span` holding a visually hidden `span` with the whole text, then the pieces inside an `aria-hidden` `span`, each piece a `span` with `--step-index`, staggered like `Stagger`. Whitespace between words is preserved. |
 | `Highlight` | A `mark` whose background (the `--deck-highlight` color, default a translucent `currentColor`) grows from zero to full width over `--deck-dur-slow` with `--deck-ease-draw` when its state is `current` or `after`. Its text is always visible; it is never `inert` or `aria-hidden`. |
@@ -1308,7 +1308,7 @@ uses `<Step at={2}>` does not also maintain a number:
 | --- | --- |
 | `Step`, `Stagger`, `Highlight`, `Draw` with `at` and optional `until` | `until` if present, else `at` |
 | `TextReveal`, `CountUp` with `at` | `at` |
-| `Steps` with `from` and `k` JSX element children | `from + k - 1` (nothing when `k` is 0) |
+| `Steps` with `from` and `k` JSX element children, or whose only child is a markdown list of `k` top-level items | `from + k - 1` (nothing when `k` is 0) |
 
 The total is the largest contribution, or 0. The count runs on the MDX syntax tree
 (`remark-parse` + `remark-mdx`, already installed), after `hide` is checked, so a hidden
@@ -1319,8 +1319,10 @@ slide's body is never parsed.
 - `at`, `until` and `from` must be non-negative integer literals (`at={2}`), and `until`
   must be greater than `at`. Anything else (an expression, a string, a fraction, a negative
   number) is an error naming the file and the attribute.
-- A child of `Steps` that is neither a JSX element nor whitespace (markdown, an expression) is
-  an error naming the file.
+- A child of `Steps` that is neither a JSX element nor whitespace is an error naming the
+  file and saying how to fix it, except a markdown list as the only child. MDX wraps inline
+  JSX written on consecutive lines in one paragraph, so `<li>` elements on adjacent lines are
+  this error: each child goes in its own block, or the items are written as a markdown list.
 - A counted name that appears inside a JavaScript expression in the slide (`{cond && <Step
   at={1} />}`, a `.map()`), where it cannot be counted, is an error naming the file.
 - None of these errors is raised when the slide sets `clicks:`; the number is then the
