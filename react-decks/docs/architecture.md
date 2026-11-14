@@ -1376,6 +1376,85 @@ error naming the file, as is an empty `transition`. `deck.config.ts`'s `transiti
 `DeckManifest.transition`. `assertManifest` rejects an empty `transition` on the manifest or
 a slide, and a `morphSteps` that is not a boolean.
 
+## 6.3 Code blocks and framework-provided components (Final)
+
+### Components every slide has
+
+The generated entry provides the motion package's components to every slide, so a new deck
+uses `<Step>` with no import and no re-export file: `Step`, `Steps`, `Stagger`,
+`TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph`, and `pre` mapped to `CodeBlock`
+(below). A deck component with the same name replaces the framework's for that deck.
+
+Click counting (section 6.2) follows the same resolution: a name counts as a motion
+component when it is one of the provided names and no deck component, slide import or
+top-level slide declaration shadows it; or when a deck re-export or a slide import from
+`@react-decks/motion` gives it another name.
+
+### Authoring
+
+A fenced code block is highlighted at compile time with Shiki. The info string after the
+language is the block's options:
+
+````md
+```ts {2,4-5|7|all} lines title="store.ts" maxHeight=420 at=1
+const store = createStore()
+```
+````
+
+| Option | Meaning |
+| --- | --- |
+| `{...}` | Lines to emphasize. Commas separate lines and ranges (`2,4-5`); `|` separates steps; `all` and `none` are keywords. The first step shows at click `at`, each `|` is one more click. Without it nothing is emphasized and the block uses no clicks. |
+| `at=<n>` | The click at which the first step shows. Default 0. |
+| `lines` | Show line numbers. `lines=<n>` starts numbering at `n`. |
+| `title="..."` | A caption above the block, usually a filename. |
+| `maxHeight=<n>` | Maximum height in canvas px; the block scrolls beyond it and keeps the emphasized lines in view. |
+
+A block with `k` steps contributes `at + k - 1` to the slide's click total (section 6.2). An
+option that does not parse (an unknown key, a range such as `5-2`, a line past the end of the
+block, `at` that is not a non-negative integer) is a compile error naming the file and the
+option. An unknown language is highlighted as plain text with a warning naming the file.
+A block with no language is plain text.
+
+### Compile
+
+The node package adds a rehype plugin (`@shikijs/rehype`, already a dependency) to the MDX
+pipeline. Colors come from Shiki's CSS-variables theme, so no theme is baked into the
+output: every token is `var(--shiki-token-*)`, and the motion stylesheet maps those to
+`--deck-code-*` variables with default values that a deck theme overrides. Each line is a
+`span` carrying `data-line="<number>"`. The parsed options reach the component as props on
+the `pre` element: `data-steps` (JSON array of line-number arrays, `"all"` or `"none"`),
+`data-at`, `data-lines` (start number), `data-title`, `data-max-height`.
+
+### `CodeBlock` (motion package)
+
+```ts
+/** What a fenced code block renders as. Authors do not write it by hand. */
+export function CodeBlock(props: React.ComponentProps<"pre">): ReactElement;
+```
+
+Renders a `figure` holding an optional `figcaption` (the title) and the `pre`. With steps,
+the step in force is the last one whose click is at or below the slide's click
+(`useSlide().clicks`); before `at`, no line is emphasized and none is dimmed. Each line gets
+`data-line-state`: `active` for emphasized lines, `dim` for the others while a step is in
+force, absent otherwise. `all` makes every line `active`; `none` makes every line `dim`.
+Dimming is an opacity transition on the motion tokens, so it reverses on going back and is
+immediate when motion is `instant`. With `maxHeight`, when the step changes the first active
+line is scrolled into view within the block (`scrollIntoView({ block: "nearest" })`), never
+scrolling the page. Line numbers are CSS counters from `data-lines`; they are not selectable
+text. The block is `tabindex="0"` when it scrolls, so it is reachable by keyboard.
+
+Inline code is not highlighted.
+
+| Situation (browser test, gallery slide) | Outcome |
+| --- | --- |
+| A `ts` block | Keywords and strings have different computed colors, taken from `--deck-code-*`. |
+| `{2|4-5|all}` walked forward and back | Click 0: line 2 active, others dim. Click 1: lines 4 and 5. Click 2: all active. Back reverses. The slide's click total is 2 with no `clicks:` in frontmatter. |
+| `at=1` | Nothing emphasized or dimmed at click 0. |
+| `lines=10` | The first line is numbered 10. |
+| `maxHeight` with a step on a line below the fold | That line is within the block's visible area after the click; the page did not scroll. |
+| A deck defines `components/Step.tsx` | Its `Step` renders in slides, and is not counted. |
+| A new deck with no `components/` directory uses `<Step at={1}>` | It renders and counts. |
+
 ## 7. kit (Outline)
 
 The port of `packages/decks`: theme tokens, global `od-*` styles, `compat.css`, the story
