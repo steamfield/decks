@@ -36,6 +36,11 @@ await cp(
   new URL("dist/kit/index.css", import.meta.url),
   new URL("dist/kit/styles.css", import.meta.url),
 );
+await cp(
+  new URL("../node/templates/", import.meta.url),
+  new URL("dist/templates/", import.meta.url),
+  { recursive: true },
+);
 await rm(new URL("docs/", import.meta.url), { recursive: true, force: true });
 await cp(new URL("../../docs/guide/", import.meta.url), new URL("docs/", import.meta.url), {
   recursive: true,
