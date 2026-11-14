@@ -10,3 +10,6 @@ dist/
 *.pdf
 .DS_Store
 *.tgz
+
+# Slidev parity baselines, kept until the swap is signed off
+.parity/
