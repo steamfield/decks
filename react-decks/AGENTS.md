@@ -51,6 +51,28 @@ bun run --cwd react-decks check:isolated   # the gate in a copy outside the repo
 hand-off with the exact line. If it needs a dependency, ask the orchestrator in a question
 before writing a substitute.
 
+## Proportion
+
+These come from mistakes made in this workspace. They outrank a wish to be thorough.
+
+- Build what the contract's acceptance asks for and stop. Hardening beyond it (closing every
+  bypass, handling inputs the domain cannot produce) is a note under "Look closer at", not
+  code.
+- If a piece of generic infrastructure is passing about 150 lines, stop and ask: there is
+  probably a library, or the task is bigger than the contract thought.
+- Never import an API whose path or docs call it unstable, experimental, internal or
+  private. Ask instead.
+- If something only works with a workaround (a custom resolver, an alias, a cast, a
+  re-implemented copy of a type), the design is probably wrong. Ask before keeping it.
+- A finding from your own review that asks for more than the contract does goes to the
+  orchestrator as a question or a hand-off note. Do not expand scope to satisfy it.
+- The spec can be wrong. Before coding, walk it through the situations a real user would
+  hit and write down any where it gives a surprising result. For anything with more than one
+  actor (windows, tabs, timers, a server and a client), step through the interleavings: both
+  start at once, one restarts mid-way, a third joins during a change, a message arrives late.
+  Implement the contract as written, and report what you found under "Spec concerns" in the
+  hand-off. If the flaw would make the feature not work, ask first.
+
 ## Conventions
 
 - One concept per file, its test beside it: `navigation.ts`, `navigation.test.ts`.

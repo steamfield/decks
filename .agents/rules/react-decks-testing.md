@@ -113,6 +113,22 @@ contract or in `docs/architecture.md` is the test list: one test per row, named 
 row, plus the edge cases it implies. Cover the error paths (invalid input, thrown errors) as
 well as the happy path. Do not test behaviour nobody specified.
 
+## Tests not to write
+
+Each of these was written in this workspace and removed in review.
+
+- A test for an input the domain cannot produce: a round-trip for slide number `1e21`. If no
+  deck can reach it, it is not behaviour.
+- An assertion on scheduler internals: `expect(vi.getTimerCount()).toBe(0)`. Assert what the
+  timer would have changed.
+- Clearing recorded evidence before asserting on it: `received.length = 0` half-way through
+  a scenario hid a real bug. If the array holds something unexpected, that is the finding.
+- Dozens of near-identical cases for one rule. One test per specified behaviour, plus the
+  boundaries either side of it. Seventy tests for a small parser means the cases are not
+  earning their place.
+- A scenario for a multi-actor protocol that only runs the orderly sequence. Write the races
+  as explicit interleavings and assert every participant ends in the same state.
+
 ## Do not
 
 - Weaken, skip or delete a test to get green. Report it.

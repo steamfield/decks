@@ -33,6 +33,14 @@ differ.
 {Signatures and behaviour tables copied from the architecture document. The exports already
 exist in `src/index.ts`; implement them, do not rename or add to them.}
 
+## Before you code
+
+Read the Proportion section of `react-decks/AGENTS.md`. Then spend a few minutes trying to
+break the spec, not the code: walk the behaviour above through what a real user does, and
+for anything with more than one actor step through the interleavings. Keep the list; it goes
+in the hand-off as "Spec concerns". If a concern means the feature would not work as a user
+expects, ask the orchestrator before implementing.
+
 ## Scope
 
 - May change:
@@ -96,7 +104,9 @@ react-decks/docs/architecture.md and the rules in .claude/rules/react-decks/. Yo
 read-only; don't run tests or edit files. The author already ran the checks. Report every
 real defect with a file:line reference: behaviour that differs from the contract's tables,
 missing edge cases, tests that cannot fail or assert implementation details, boundary
-violations, and code the contract did not ask for."
+violations, and code the contract did not ask for. Then review the spec itself: name any
+realistic situation in which the behaviour the contract specifies would be wrong for a
+user, even though the code implements it faithfully."
 
 Then run, replacing `<review-directory>`:
 
@@ -120,6 +130,9 @@ uncommitted and end with this report, naming files and symbols:
 4. Checks: each command and result with test counts; each new test file's three isolated runs
    and the full-suite result; QA.
 5. Review: the review file's absolute path, each finding and its resolution or dispute.
-6. Look closer at: assumptions, edge cases or tests the orchestrator should examine.
+6. Look closer at: assumptions, edge cases or tests the orchestrator should examine, and any
+   hardening you chose not to build.
+   Spec concerns: every situation you found where the specified behaviour surprises a user,
+   from your own pass and from the review, whether or not you think it matters.
 7. Open: unfinished work, blockers, and any change needed in an orchestrator-owned file,
    given as the exact line.
