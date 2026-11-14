@@ -2,7 +2,7 @@ import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { expect } from "@playwright/test";
 import { dev, loadDeck } from "@react-decks/node";
-import { test } from "./motion.fixture";
+import { test } from "./fixtures/motion.fixture";
 
 test("The markdown Steps list reveals one top-level item on each click.", async ({ page }) => {
   await page.goto("/#/8");

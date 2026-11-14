@@ -1,21 +1,8 @@
-import { createServer } from "vite";
-import { describe, expect, it, onTestFinished } from "vitest";
+import { describe, expect, it } from "vitest";
 import { parseCodeOptions } from "./code-options";
-import { fixture } from "./deck.test-support";
-import { loadDeck, reactDecks } from "./index";
+import { serve as serveDeck } from "./deck.test-support";
 
-async function serve(source: string) {
-  const deck = await fixture(onTestFinished, { "slides/01-first.mdx": source });
-  const server = await createServer({
-    configFile: false,
-    plugins: reactDecks(await loadDeck(deck.dir)),
-    server: { port: 0 },
-    logLevel: "silent",
-  });
-  onTestFinished(() => server.close());
-  await server.listen();
-  return { ...deck, server };
-}
+const serve = (source: string) => serveDeck({ "slides/01-first.mdx": source });
 
 describe("compiled code blocks", () => {
   it.each(["{1|2|all}", "linez"])(

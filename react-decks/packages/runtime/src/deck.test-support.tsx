@@ -1,6 +1,12 @@
-import { render } from "@testing-library/react";
+import {
+  createMemoryHub,
+  createSyncSession,
+  type SyncMessage,
+  type SyncState,
+} from "@react-decks/core";
+import { act, render } from "@testing-library/react";
 import type { MDXComponents } from "mdx/types";
-import { onTestFinished } from "vitest";
+import { onTestFinished, vi } from "vitest";
 import { createDeckStore, Deck, type DeckSource, useDeck, useSlide } from "./index";
 
 export function setup(hash = "#/1", source = makeSource()) {
@@ -87,4 +93,59 @@ export function makeSource(): DeckSource {
     frontmatter: Object.fromEntries(slides.map(({ id }) => [id, { custom: id }])),
     components: { Badge },
   };
+}
+
+// jsdom has no implementations of these browser APIs.
+export function install(target: object, name: string, value: unknown) {
+  const previous = Object.getOwnPropertyDescriptor(target, name);
+  Object.defineProperty(target, name, { configurable: true, value });
+  onTestFinished(() => {
+    if (previous) Object.defineProperty(target, name, previous);
+    else Reflect.deleteProperty(target, name);
+  });
+}
+
+export async function deliver(ms = 10) {
+  await act(async () => vi.advanceTimersByTimeAsync(ms));
+}
+
+export function setupWindowSync(hash = "#/presenter/2?clicks=1") {
+  window.history.replaceState(null, "", `/talk/?custom=kept${hash}`);
+  const source = makeSource();
+  const hub = createMemoryHub();
+  const observer = hub.connect();
+  const received: SyncMessage[] = [];
+  observer.subscribe((message) => received.push(message));
+  const store = createDeckStore(source.manifest, { transport: hub.connect() });
+  const rendered = render(<Deck source={source} store={store} />);
+  onTestFinished(() => {
+    rendered.unmount();
+    store.destroy();
+    observer.close();
+    window.history.replaceState(null, "", "/");
+  });
+  function peer(id = "peer", startedAt = 0, initial: SyncState = { nav: { slide: 4, click: 1 } }) {
+    let state = initial;
+    const applied: SyncState[] = [];
+    const session = createSyncSession({
+      id,
+      startedAt,
+      transport: hub.connect(),
+      current: () => state,
+      onRemote(next) {
+        state = next;
+        applied.push(next);
+      },
+    });
+    onTestFinished(() => session.close());
+    return {
+      applied,
+      publish(next: SyncState) {
+        state = next;
+        session.publish(next);
+      },
+      close: session.close,
+    };
+  }
+  return { store, received, hub, peer };
 }

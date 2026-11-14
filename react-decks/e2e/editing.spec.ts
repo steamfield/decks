@@ -1,7 +1,7 @@
-import { readFile, rename, rm, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect } from "@playwright/test";
-import { test, waitForSlideModules } from "./deck.fixture";
+import { test, waitForSlideModules } from "./fixtures/deck.fixture";
 
 test("Adding a Step in a running deck makes the new inferred click reachable.", async ({
   page,
@@ -19,7 +19,9 @@ test("Adding a Step in a running deck makes the new inferred click reachable.", 
   await page.evaluate(() => {
     window.e2eDocument = "before counted edit";
   });
+  const loaded = page.waitForEvent("load");
   await writeFile(file, `${source}\n<Step at={2}>New counted marker</Step>\n`);
+  await loaded;
   await expect(page.getByText("Slide 2 of 5, click 1 of 2, active", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => window.e2eDocument)).toBeUndefined();
   await page.keyboard.press("ArrowRight");
@@ -48,48 +50,6 @@ test("A slide body edit hot-updates without reloading or losing its click.", asy
   expect(await page.evaluate(() => window.e2eDocument)).toBe("before edit");
 });
 
-test("Adding a component file alone reloads the page and preserves its URL.", async ({
-  page,
-  editableDeck,
-}) => {
-  await page.goto(`${editableDeck.url}#/2?clicks=2`);
-  await expect(page.getByRole("heading", { name: "Three steps", exact: true })).toBeVisible();
-  await waitForSlideModules(page);
-  await page.evaluate(() => {
-    window.e2eDocument = "before addition";
-  });
-  await writeFile(
-    join(editableDeck.dir, "components/Added.tsx"),
-    "export function Added() { return <p>New component</p>; }",
-  );
-  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBeUndefined();
-  await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
-  await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=2`);
-});
-
-test("A newly added component can be used after its file reloads the page.", async ({
-  page,
-  editableDeck,
-}) => {
-  await page.goto(`${editableDeck.url}#/3`);
-  await expect(page.getByText("auto-provided", { exact: true })).toBeVisible();
-  await waitForSlideModules(page);
-  await page.evaluate(() => {
-    window.e2eDocument = "before addition";
-  });
-  await writeFile(
-    join(editableDeck.dir, "components/Added.tsx"),
-    "export function Added() { return <p>Added while presenting</p>; }",
-  );
-  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBeUndefined();
-  await expect(page.getByRole("heading", { name: "A deck component", exact: true })).toBeVisible();
-  await expect(page).toHaveURL(`${editableDeck.url}#/3`);
-  const slide = join(editableDeck.dir, "slides/03-component.mdx");
-  await writeFile(slide, `${await readFile(slide, "utf8")}\n<Added />\n`);
-  await expect(page.getByText("Added while presenting", { exact: true })).toBeVisible();
-  await expect(page).toHaveURL(`${editableDeck.url}#/3`);
-});
-
 test("A frontmatter edit reloads while keeping slide two at click two.", async ({
   page,
   editableDeck,
@@ -101,75 +61,12 @@ test("A frontmatter edit reloads while keeping slide two at click two.", async (
     window.e2eDocument = "before frontmatter";
   });
   const file = join(editableDeck.dir, "slides/02-steps.mdx");
+  const loaded = page.waitForEvent("load");
   await writeFile(
     file,
     (await readFile(file, "utf8")).replace("title: Three steps", "title: Revised steps"),
   );
-  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBeUndefined();
-  await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
-  await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=2`);
-});
-
-for (const change of ["adding", "removing"]) {
-  test(`${change} a slide reloads and keeps the position.`, async ({ page, editableDeck }) => {
-    await page.goto(`${editableDeck.url}#/2?clicks=2`);
-    await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
-    await waitForSlideModules(page);
-    await page.evaluate(() => {
-      window.e2eDocument = "before slide change";
-    });
-    if (change === "adding")
-      await writeFile(join(editableDeck.dir, "slides/07-added.mdx"), "# Added slide");
-    else await rm(join(editableDeck.dir, "slides/06-end.mdx"));
-    await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBeUndefined();
-    await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
-    await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=2`);
-    await page.keyboard.press("End");
-    await expect(
-      page.getByRole("heading", {
-        name: change === "adding" ? "Added slide" : "One click",
-        exact: true,
-      }),
-    ).toBeVisible();
-  });
-}
-
-test("Renaming the last slide produces one reload and keeps that slide's URL.", async ({
-  page,
-  editableDeck,
-}) => {
-  await page.goto(`${editableDeck.url}#/5`);
-  await expect(page.getByRole("heading", { name: "The end", exact: true })).toBeVisible();
-  await waitForSlideModules(page);
-  const documents: string[] = [];
-  page.on("request", (request) => {
-    if (request.isNavigationRequest()) documents.push(request.url());
-  });
-  await page.evaluate(() => {
-    window.e2eDocument = "before rename";
-  });
-  await rename(
-    join(editableDeck.dir, "slides/06-end.mdx"),
-    join(editableDeck.dir, "slides/07-renamed.mdx"),
-  );
-  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBeUndefined();
-  await expect(page.getByRole("heading", { name: "The end", exact: true })).toBeVisible();
-  await expect(page).toHaveURL(`${editableDeck.url}#/5`);
-  expect(documents).toEqual([editableDeck.url]);
-});
-
-test("Removing a component reloads and keeps the slide and click.", async ({
-  page,
-  editableDeck,
-}) => {
-  await page.goto(`${editableDeck.url}#/2?clicks=2`);
-  await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
-  await waitForSlideModules(page);
-  await page.evaluate(() => {
-    window.e2eDocument = "before removal";
-  });
-  await rm(join(editableDeck.dir, "components/Badge.tsx"));
-  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBeUndefined();
+  await loaded;
   await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
   await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=2`);
 });

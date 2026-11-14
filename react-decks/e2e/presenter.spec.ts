@@ -1,7 +1,7 @@
 import { appendFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, type Page } from "@playwright/test";
-import { test } from "./deck.fixture";
+import { test } from "./fixtures/deck.fixture";
 
 async function openPresenter(page: Page, hash = "#/2?clicks=1") {
   await page.goto(`/${hash}`);
@@ -248,22 +248,6 @@ test("a 4:3 audience resize frames both previews before and after presenter relo
   await expectRatio();
   await presenter.reload();
   await expectRatio();
-});
-
-test("the local timer keeps counting while the presenter is in overview", async ({ page }) => {
-  const presenter = await openPresenter(page);
-  const time = new Date("2026-01-01T13:00:00Z");
-  await presenter.clock.install({ time });
-  await presenter.reload();
-  await expect(presenter.getByRole("region", { name: "Current slide" })).toBeVisible();
-  await presenter.clock.pauseAt(new Date(time.getTime() + 60000));
-  await presenter.keyboard.press("ArrowRight");
-  await presenter.clock.fastForward(2000);
-  await expect(presenter.getByLabel("Elapsed time")).toHaveText("00:02");
-  await presenter.keyboard.press("o");
-  await presenter.clock.fastForward(3000);
-  await presenter.keyboard.press("Escape");
-  await expect(presenter.getByLabel("Elapsed time")).toHaveText("00:05");
 });
 
 test("the play cursor hides on idle, pointer movement restores it, and f toggles fullscreen", async ({

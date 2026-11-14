@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { test } from "./motion.fixture";
+import { test } from "./fixtures/motion.fixture";
 
 test("A span Step applies its scale to the rendered box.", async ({ page }) => {
   await page.goto("/#/5");

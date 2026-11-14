@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect } from "@playwright/test";
 import { build, loadDeck } from "@react-decks/node";
 import { preview } from "vite";
-import { test } from "./deck.fixture";
+import { test } from "./fixtures/deck.fixture";
 
 test("A built deck served under a base path loads and walks to slide two.", async ({ page }) => {
   await mkdir(resolve(".tmp"), { recursive: true });
@@ -28,9 +28,7 @@ test("A built deck served under a base path loads and walks to slide two.", asyn
       await expect(page.getByRole("heading", { name: "Three steps", exact: true })).toBeVisible();
       await expect(page).toHaveURL(`${url}#/2`);
     } finally {
-      await new Promise<void>((done, reject) =>
-        server.httpServer.close((error) => (error ? reject(error) : done())),
-      );
+      await server.close();
     }
   } finally {
     await rm(outDir, { recursive: true, force: true });

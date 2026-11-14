@@ -189,7 +189,7 @@ it("the timer waits for navigation, survives overview, resets stopped, and forma
   });
   vi.setSystemTime(new Date(2026, 0, 1, 13, 5));
   const { store, unmount } = setup();
-  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTimeAsync });
   await act(async () => vi.advanceTimersByTimeAsync(3000));
   expect(screen.getByLabelText("Elapsed time")).toHaveTextContent("00:00");
   act(() => store.dispatch({ type: "next" }));
@@ -199,7 +199,7 @@ it("the timer waits for navigation, survives overview, resets stopped, and forma
   await act(async () => vi.advanceTimersByTimeAsync(3000));
   act(() => store.setView("presenter"));
   expect(screen.getByLabelText("Elapsed time")).toHaveTextContent("00:05");
-  vi.setTimerTickMode("interval", 1);
+  vi.setTimerTickMode("nextTimerAsync");
   await user.click(screen.getByRole("button", { name: "Reset timer" }));
   vi.setTimerTickMode("manual");
   await act(async () => vi.advanceTimersByTimeAsync(2000));
@@ -207,7 +207,7 @@ it("the timer waits for navigation, survives overview, resets stopped, and forma
   act(() => store.dispatch({ type: "next" }));
   vi.setSystemTime(Date.now() + 3661000);
   await act(async () => vi.advanceTimersByTimeAsync(1000));
-  expect(screen.getByLabelText("Elapsed time")).toHaveTextContent(/^1:01:0[12]$/);
+  expect(screen.getByLabelText("Elapsed time")).toHaveTextContent("1:01:02");
   expect(screen.getByLabelText("Local time")).toHaveTextContent("14:06");
   unmount();
 });

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { StrictMode, useLayoutEffect } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished } from "vitest";
 import { gsap, motionMode, useTween } from "./index";
 import { tick } from "./motion.test-support";
 
@@ -135,6 +135,11 @@ describe("useTween", () => {
   });
 
   it("reads live only from an explicit live DOM setting", async () => {
+    const previous = document.documentElement.getAttribute("data-deck-motion");
+    onTestFinished(() => {
+      if (previous === null) document.documentElement.removeAttribute("data-deck-motion");
+      else document.documentElement.setAttribute("data-deck-motion", previous);
+    });
     document.documentElement.removeAttribute("data-deck-motion");
     expect(motionMode()).toBe("instant");
     document.documentElement.setAttribute("data-deck-motion", "live");

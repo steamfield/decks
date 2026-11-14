@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { test } from "./motion.fixture";
+import { test } from "./fixtures/motion.fixture";
 
 test("Character reveals preserve visible line breaks.", async ({ page }) => {
   await page.goto("/#/11");

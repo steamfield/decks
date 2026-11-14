@@ -147,7 +147,7 @@ describe("useTimeline", () => {
       const visible = number();
       await move();
       await tick();
-      expect(number()).toBeCloseTo(visible, -1);
+      expect(number()).toBe(visible);
       await tick(0.61);
       expect(number()).toBe(direction === "forward" ? 200 : 100);
     },

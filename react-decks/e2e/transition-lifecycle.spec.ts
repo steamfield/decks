@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect } from "@playwright/test";
-import { test } from "./deck.fixture";
+import { test } from "./fixtures/deck.fixture";
 
 declare global {
   interface Window {

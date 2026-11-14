@@ -17,6 +17,7 @@ export async function setupMotion(
   Subject: ComponentType,
   options: { click?: number; context?: RenderContext; error?: boolean } = {},
 ) {
+  const previousMotion = document.documentElement.getAttribute("data-deck-motion");
   window.history.replaceState(null, "", `/#/1${options.click ? `?clicks=${options.click}` : ""}`);
   function Content() {
     const slide = useSlide();
@@ -67,6 +68,8 @@ export async function setupMotion(
   onTestFinished(() => {
     result.unmount();
     store.destroy();
+    if (previousMotion === null) document.documentElement.removeAttribute("data-deck-motion");
+    else document.documentElement.setAttribute("data-deck-motion", previousMotion);
     window.history.replaceState(null, "", "/");
   });
   if (options.error) await screen.findByText("Unable to render slide slide-1.");

@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect } from "@playwright/test";
-import { test } from "./deck.fixture";
+import { test } from "./fixtures/deck.fixture";
 
 test("An initial timeline seek paints its endpoint even during a costly mount", async ({
   page,
