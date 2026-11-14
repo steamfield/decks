@@ -22,6 +22,9 @@ function config(deck: ResolvedDeck): InlineConfig {
         normalizePath(
           createRequire(join(deck.dir, "deck.config.ts")).resolve("@react-decks/runtime"),
         ),
+        normalizePath(
+          createRequire(join(deck.dir, "deck.config.ts")).resolve("@react-decks/motion"),
+        ),
         "components/*.tsx",
       ],
     },

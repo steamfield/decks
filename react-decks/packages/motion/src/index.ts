@@ -1,6 +1,7 @@
 import "./motion.css";
 import "./settle";
 
+export { CodeBlock } from "./code-block";
 export { CountUp } from "./count-up";
 export { Morph } from "./morph";
 export {

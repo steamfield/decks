@@ -5,6 +5,7 @@ import mdx from "@mdx-js/rollup";
 import react from "@vitejs/plugin-react";
 import remarkFrontmatter from "remark-frontmatter";
 import { mergeConfig, normalizePath, type Plugin, type ViteDevServer } from "vite";
+import { codeBlocks } from "./code-blocks";
 import { componentsModule } from "./components";
 import { loadDeck, type ResolvedDeck } from "./config";
 import { deckHtml, entryModule } from "./entry";
@@ -207,7 +208,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
   };
   // MDX returns Rollup's Plugin type; Vite 8 uses Rolldown's narrower source-map type.
   const compiler = {
-    ...mdx({ remarkPlugins: [remarkFrontmatter, removeNotes] }),
+    ...mdx({ remarkPlugins: [remarkFrontmatter, removeNotes], rehypePlugins: [codeBlocks] }),
     enforce: "pre",
   } as Plugin;
   const plugins = [plugin, compiler, ...react({ include: /\.(mdx|jsx|tsx)$/ })];

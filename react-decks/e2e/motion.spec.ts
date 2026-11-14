@@ -25,6 +25,8 @@ const gallery = [
   ["Give it more room.", 0],
   ["Move within the frame.", 1],
   ["A little motion can stay.", 0],
+  ["Types make the boundary readable.", 1],
+  ["Follow the state through the store.", 2],
 ] as const;
 
 async function position(page: Page, no: number, click = 0) {

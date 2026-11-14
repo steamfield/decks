@@ -62,9 +62,9 @@ describe("static click totals", () => {
     });
     expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(3);
   });
-  it("does not count a Step name with no motion binding", async () => {
+  it("counts a provided Step without a deck re-export", async () => {
     const { dir } = await fixture({ "slides/01-first.mdx": "<Step at={2} />" });
-    expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(0);
+    expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(2);
   });
   it("lets a slide's motion import override a local deck component", async () => {
     const { dir } = await fixture({
@@ -126,7 +126,7 @@ export const example = 'import { Step } from "@react-decks/motion"';
 
 <Reveal at={2} until={4} />
 
-<Step at={n} />`,
+<Step at={2} />`,
     });
     expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(4);
   });

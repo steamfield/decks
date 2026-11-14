@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@react-decks/motion": "workspace:*",
     "@react-decks/runtime": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"

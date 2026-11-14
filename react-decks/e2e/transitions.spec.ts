@@ -348,16 +348,18 @@ test("End before the final module resolves cuts without an error", async ({ page
   const held = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route(/\/slides\/23-loop\.mdx/, async (route) => {
+  await page.route(/\/slides\/25-code-steps\.mdx/, async (route) => {
     await held;
     await route.continue();
   });
   await page.goto("/#/1");
   await expect(page.getByRole("heading", { name: "Motion", exact: true })).toBeVisible();
   await keys(page, ["End"]);
-  await expect(page).toHaveURL(/#\/23$/);
+  await expect(page).toHaveURL(/#\/25$/);
   release();
-  await expect(page.getByRole("heading", { name: "A little motion can stay." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Follow the state through the store." }),
+  ).toBeVisible();
   await settle(page);
   expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
 });
@@ -369,7 +371,7 @@ test("An unresolved target skips a transition whose callback is still pending", 
   const held = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route(/\/slides\/23-loop\.mdx/, async (route) => {
+  await page.route(/\/slides\/25-code-steps\.mdx/, async (route) => {
     await held;
     await route.continue();
   });
@@ -379,7 +381,7 @@ test("An unresolved target skips a transition whose callback is still pending", 
     page.getByRole("heading", { name: "Change the scale.", includeHidden: true }),
   ).toHaveCount(1);
   await keys(page, ["ArrowRight", "End"]);
-  await expect(page).toHaveURL(/#\/23$/);
+  await expect(page).toHaveURL(/#\/25$/);
   const snapshot = await page.evaluate(() =>
     window.e2eTransition?.ready.then(
       () => "animated",
@@ -388,14 +390,16 @@ test("An unresolved target skips a transition whose callback is still pending", 
   );
   expect(snapshot).toBe("skipped");
   release();
-  await expect(page.getByRole("heading", { name: "A little motion can stay." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Follow the state through the store." }),
+  ).toBeVisible();
   await settle(page);
 });
 
 test("Instant End and Home paint their target in the next frame", async ({ page }) => {
   await open(page, 1, "?motion=instant");
   for (const [key, heading] of [
-    ["End", "A little motion can stay."],
+    ["End", "Follow the state through the store."],
     ["Home", "Motion"],
   ]) {
     const visible = await page.evaluate(

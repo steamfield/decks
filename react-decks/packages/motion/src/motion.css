@@ -11,6 +11,16 @@
     border: 0;
   }
   :root {
+    --deck-code-background: oklch(0.135 0.018 255);
+    --deck-code-foreground: oklch(0.9 0.018 255);
+    --deck-code-keyword: oklch(0.78 0.1 290);
+    --deck-code-string: oklch(0.83 0.1 165);
+    --deck-code-comment: oklch(0.6 0.025 255);
+    --deck-code-constant: oklch(0.85 0.1 75);
+    --deck-code-function: oklch(0.8 0.08 230);
+    --deck-code-punctuation: oklch(0.72 0.025 255);
+    --deck-code-caption: oklch(0.68 0.025 255);
+    --deck-code-dim: 0.35;
     --deck-dur-quick: 140ms;
     --deck-dur-base: 300ms;
     --deck-dur-slow: 600ms;
@@ -26,6 +36,83 @@
     --deck-dur-base: 0ms;
     --deck-dur-slow: 0ms;
     --deck-stagger: 0ms;
+  }
+
+  .rd-code {
+    --shiki-background: var(--deck-code-background);
+    --shiki-foreground: var(--deck-code-foreground);
+    --shiki-token-keyword: var(--deck-code-keyword);
+    --shiki-token-string: var(--deck-code-string);
+    --shiki-token-string-expression: var(--deck-code-string);
+    --shiki-token-comment: var(--deck-code-comment);
+    --shiki-token-constant: var(--deck-code-constant);
+    --shiki-token-function: var(--deck-code-function);
+    --shiki-token-parameter: var(--deck-code-foreground);
+    --shiki-token-punctuation: var(--deck-code-punctuation);
+    --shiki-token-link: var(--deck-code-string);
+    margin: 16px 0;
+    min-height: 0;
+    border-radius: 20px;
+    background: var(--deck-code-background);
+    overflow: hidden;
+  }
+  .rd-code figcaption {
+    padding: 20px 32px 0;
+    font:
+      24px / 1.4 ui-monospace,
+      monospace;
+    color: var(--deck-code-caption);
+  }
+  .rd-code pre {
+    max-height: var(--deck-code-max-height);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 28px 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    position: relative;
+  }
+  .rd-code pre code {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    color: var(--deck-code-foreground);
+    font:
+      32px / 1.6 ui-monospace,
+      "SFMono-Regular",
+      Consolas,
+      monospace;
+    tab-size: 2;
+  }
+  .rd-code [data-line] {
+    display: inline-block;
+    box-sizing: border-box;
+    min-width: 100%;
+    padding: 0 32px;
+    opacity: 1;
+    transition: opacity var(--deck-dur-base) var(--deck-ease-settle);
+  }
+  .rd-code [data-line-state="dim"] {
+    opacity: var(--deck-code-dim);
+  }
+  .rd-code [data-line-number]::before {
+    content: attr(data-line-number);
+    display: inline-block;
+    width: 3ch;
+    margin-right: 2ch;
+    text-align: right;
+    color: var(--deck-code-caption);
+    user-select: none;
+  }
+  [data-deck-context="print"] .rd-code,
+  html[data-deck-view="print"] .rd-code,
+  [data-deck-context="print"] .rd-code pre,
+  html[data-deck-view="print"] .rd-code pre {
+    --deck-code-max-height: none;
+    overflow: visible;
+  }
+  [data-deck-context]:not([data-deck-context="slide"]) .rd-code [data-line] {
+    transition-duration: 0ms;
   }
 
   [data-step-state] {
