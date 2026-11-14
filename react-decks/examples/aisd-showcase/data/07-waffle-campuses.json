@@ -1,0 +1,5280 @@
+[
+  {
+    "campusNumber": "227901002",
+    "campus": "AUSTIN H S",
+    "year": 2026,
+    "rating": "A",
+    "score": 92,
+    "ecoDis": 0.231,
+    "enrollment": 2292,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901004",
+    "campus": "NAVARRO EARLY COLLEGE H S",
+    "year": 2026,
+    "rating": "B",
+    "score": 80,
+    "ecoDis": 0.937,
+    "enrollment": 1391,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901005",
+    "campus": "MCCALLUM H S",
+    "year": 2026,
+    "rating": "A",
+    "score": 91,
+    "ecoDis": 0.188,
+    "enrollment": 1952,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901006",
+    "campus": "NORTHEAST EARLY COLLEGE H S",
+    "year": 2026,
+    "rating": "C",
+    "score": 77,
+    "ecoDis": 0.917,
+    "enrollment": 952,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901007",
+    "campus": "TRAVIS EARLY COLLEGE H S",
+    "year": 2026,
+    "rating": "D",
+    "score": 66,
+    "ecoDis": 0.811,
+    "enrollment": 917,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901008",
+    "campus": "CROCKETT EARLY COLLEGE H S",
+    "year": 2026,
+    "rating": "C",
+    "score": 79,
+    "ecoDis": 0.636,
+    "enrollment": 1463,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901009",
+    "campus": "ANDERSON H S",
+    "year": 2026,
+    "rating": "B",
+    "score": 88,
+    "ecoDis": 0.227,
+    "enrollment": 2173,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901013",
+    "campus": "BOWIE H S",
+    "year": 2026,
+    "rating": "A",
+    "score": 95,
+    "ecoDis": 0.135,
+    "enrollment": 2869,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901014",
+    "campus": "LBJ EARLY COLLEGE H S",
+    "year": 2026,
+    "rating": "C",
+    "score": 74,
+    "ecoDis": 0.87,
+    "enrollment": 728,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901015",
+    "campus": "GARZA INDEPENDENCE H S",
+    "year": 2026,
+    "rating": "B",
+    "score": 83,
+    "ecoDis": 0.348,
+    "enrollment": 132,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Alternative Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901017",
+    "campus": "AKINS EARLY COLLEGE H S",
+    "year": 2026,
+    "rating": "C",
+    "score": 79,
+    "ecoDis": 0.61,
+    "enrollment": 2354,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901018",
+    "campus": "LASA H S",
+    "year": 2026,
+    "rating": "A",
+    "score": 99,
+    "ecoDis": 0.104,
+    "enrollment": 1592,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901019",
+    "campus": "EASTSIDE EARLY COLLEGE H S",
+    "year": 2026,
+    "rating": "C",
+    "score": 75,
+    "ecoDis": 0.837,
+    "enrollment": 584,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901028",
+    "campus": "RICHARDS SCH FOR YOUNG WOMEN LEADERS",
+    "year": 2026,
+    "rating": "A",
+    "score": 97,
+    "ecoDis": 0.332,
+    "enrollment": 921,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901029",
+    "campus": "INTERNATIONAL H S",
+    "year": 2026,
+    "rating": "B",
+    "score": 86,
+    "ecoDis": 0.989,
+    "enrollment": 90,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Alternative Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901043",
+    "campus": "LIVELY MIDDLE",
+    "year": 2026,
+    "rating": "C",
+    "score": 79,
+    "ecoDis": 0.68,
+    "enrollment": 919,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901044",
+    "campus": "KEALING MIDDLE",
+    "year": 2026,
+    "rating": "A",
+    "score": 90,
+    "ecoDis": 0.239,
+    "enrollment": 1232,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901045",
+    "campus": "LAMAR MIDDLE",
+    "year": 2026,
+    "rating": "B",
+    "score": 89,
+    "ecoDis": 0.17,
+    "enrollment": 1099,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901046",
+    "campus": "BURNET MIDDLE",
+    "year": 2026,
+    "rating": "F",
+    "score": 59,
+    "ecoDis": 0.94,
+    "enrollment": 688,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901047",
+    "campus": "O HENRY MIDDLE",
+    "year": 2026,
+    "rating": "B",
+    "score": 86,
+    "ecoDis": 0.279,
+    "enrollment": 657,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901051",
+    "campus": "MARTIN MIDDLE",
+    "year": 2026,
+    "rating": "F",
+    "score": 53,
+    "ecoDis": 0.922,
+    "enrollment": 308,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901052",
+    "campus": "MURCHISON MIDDLE",
+    "year": 2026,
+    "rating": "A",
+    "score": 90,
+    "ecoDis": 0.25,
+    "enrollment": 1254,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901053",
+    "campus": "WEBB MIDDLE",
+    "year": 2026,
+    "rating": "F",
+    "score": 58,
+    "ecoDis": 0.923,
+    "enrollment": 429,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901054",
+    "campus": "BEDICHEK MIDDLE",
+    "year": 2026,
+    "rating": "C",
+    "score": 71,
+    "ecoDis": 0.85,
+    "enrollment": 607,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "D"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901055",
+    "campus": "DOBIE MIDDLE",
+    "year": 2026,
+    "rating": "D",
+    "score": 62,
+    "ecoDis": 0.946,
+    "enrollment": 392,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901057",
+    "campus": "COVINGTON MIDDLE",
+    "year": 2026,
+    "rating": "C",
+    "score": 79,
+    "ecoDis": 0.466,
+    "enrollment": 625,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "D"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901058",
+    "campus": "MENDEZ MIDDLE",
+    "year": 2026,
+    "rating": "D",
+    "score": 65,
+    "ecoDis": 0.876,
+    "enrollment": 283,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Improvement Required"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901059",
+    "campus": "BAILEY MIDDLE",
+    "year": 2026,
+    "rating": "B",
+    "score": 83,
+    "ecoDis": 0.304,
+    "enrollment": 759,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901060",
+    "campus": "SMALL MIDDLE",
+    "year": 2026,
+    "rating": "A",
+    "score": 92,
+    "ecoDis": 0.265,
+    "enrollment": 1233,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901061",
+    "campus": "PAREDES MIDDLE",
+    "year": 2026,
+    "rating": "F",
+    "score": 51,
+    "ecoDis": 0.826,
+    "enrollment": 593,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "D"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901062",
+    "campus": "GORZYCKI MIDDLE",
+    "year": 2026,
+    "rating": "A",
+    "score": 91,
+    "ecoDis": 0.075,
+    "enrollment": 1307,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901063",
+    "campus": "GENERAL MARSHALL MIDDLE",
+    "year": 2026,
+    "rating": "D",
+    "score": 68,
+    "ecoDis": 0.622,
+    "enrollment": 638,
+    "history": [
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901064",
+    "campus": "GARCIA YMLA",
+    "year": 2026,
+    "rating": "B",
+    "score": 86,
+    "ecoDis": 0.975,
+    "enrollment": 243,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901065",
+    "campus": "SADLER MEANS YWLA",
+    "year": 2026,
+    "rating": "B",
+    "score": 85,
+    "ecoDis": 0.766,
+    "enrollment": 222,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Improvement Required"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901101",
+    "campus": "ALLISON EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 47,
+    "ecoDis": 0.9,
+    "enrollment": 290,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901102",
+    "campus": "ANDREWS EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 79,
+    "ecoDis": 0.966,
+    "enrollment": 294,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901103",
+    "campus": "BARTON HILLS EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 95,
+    "ecoDis": 0.077,
+    "enrollment": 271,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901104",
+    "campus": "BECKER EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 90,
+    "ecoDis": 0.184,
+    "enrollment": 528,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901105",
+    "campus": "BLACKSHEAR EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 72,
+    "ecoDis": 0.554,
+    "enrollment": 204,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901106",
+    "campus": "BLANTON EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 81,
+    "ecoDis": 0.42,
+    "enrollment": 735,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901107",
+    "campus": "BRENTWOOD EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 90,
+    "ecoDis": 0.135,
+    "enrollment": 694,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901109",
+    "campus": "BROWN EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 72,
+    "ecoDis": 0.943,
+    "enrollment": 419,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901110",
+    "campus": "BRYKER WOODS EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 89,
+    "ecoDis": 0.136,
+    "enrollment": 273,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901111",
+    "campus": "CAMPBELL EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 74,
+    "ecoDis": 0.71,
+    "enrollment": 176,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901112",
+    "campus": "CASIS EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 94,
+    "ecoDis": 0.076,
+    "enrollment": 642,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901113",
+    "campus": "CUNNINGHAM EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 82,
+    "ecoDis": 0.514,
+    "enrollment": 331,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901114",
+    "campus": "DAWSON EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 58,
+    "ecoDis": 0.783,
+    "enrollment": 152,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901116",
+    "campus": "GOVALLE EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 55,
+    "ecoDis": 0.868,
+    "enrollment": 372,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901117",
+    "campus": "GULLETT EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 93,
+    "ecoDis": 0.076,
+    "enrollment": 540,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901118",
+    "campus": "HARRIS EL",
+    "year": 2026,
+    "rating": "D",
+    "score": 69,
+    "ecoDis": 0.951,
+    "enrollment": 266,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901119",
+    "campus": "HIGHLAND PARK EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 94,
+    "ecoDis": 0.045,
+    "enrollment": 648,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901121",
+    "campus": "LEE EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 92,
+    "ecoDis": 0.175,
+    "enrollment": 416,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901122",
+    "campus": "MAPLEWOOD EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 94,
+    "ecoDis": 0.188,
+    "enrollment": 426,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901123",
+    "campus": "MATHEWS EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 91,
+    "ecoDis": 0.313,
+    "enrollment": 377,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901125",
+    "campus": "OAK SPRINGS EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 59,
+    "ecoDis": 0.977,
+    "enrollment": 213,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901126",
+    "campus": "ORTEGA EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 85,
+    "ecoDis": 0.81,
+    "enrollment": 211,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901127",
+    "campus": "SANCHEZ EL",
+    "year": 2026,
+    "rating": "D",
+    "score": 69,
+    "ecoDis": 0.845,
+    "enrollment": 348,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901129",
+    "campus": "PECAN SPRINGS EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 56,
+    "ecoDis": 0.971,
+    "enrollment": 240,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "D"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901130",
+    "campus": "PLEASANT HILL EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 70,
+    "ecoDis": 0.878,
+    "enrollment": 361,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901132",
+    "campus": "REILLY EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 86,
+    "ecoDis": 0.374,
+    "enrollment": 318,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901133",
+    "campus": "RIDGETOP EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 93,
+    "ecoDis": 0.163,
+    "enrollment": 375,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901136",
+    "campus": "ST ELMO EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 75,
+    "ecoDis": 0.809,
+    "enrollment": 282,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901138",
+    "campus": "SUMMITT EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 89,
+    "ecoDis": 0.254,
+    "enrollment": 745,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901140",
+    "campus": "TRAVIS HTS EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 76,
+    "ecoDis": 0.595,
+    "enrollment": 484,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901141",
+    "campus": "WALNUT CREEK EL",
+    "year": 2026,
+    "rating": "D",
+    "score": 67,
+    "ecoDis": 0.906,
+    "enrollment": 404,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "D"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901143",
+    "campus": "PATTON EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 85,
+    "ecoDis": 0.318,
+    "enrollment": 711,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901144",
+    "campus": "WOOTEN EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 59,
+    "ecoDis": 0.924,
+    "enrollment": 236,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901145",
+    "campus": "ZAVALA EL",
+    "year": 2026,
+    "rating": "D",
+    "score": 65,
+    "ecoDis": 0.906,
+    "enrollment": 202,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901146",
+    "campus": "ZILKER EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 92,
+    "ecoDis": 0.201,
+    "enrollment": 537,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901147",
+    "campus": "MENCHACA EL",
+    "year": 2026,
+    "rating": "D",
+    "score": 68,
+    "ecoDis": 0.449,
+    "enrollment": 621,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901148",
+    "campus": "OAK HILL EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 83,
+    "ecoDis": 0.513,
+    "enrollment": 544,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901149",
+    "campus": "BARRINGTON EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 59,
+    "ecoDis": 0.971,
+    "enrollment": 307,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "F"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901150",
+    "campus": "NORMAN-SIMS EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 55,
+    "ecoDis": 0.931,
+    "enrollment": 260,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901151",
+    "campus": "PILLOW EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 59,
+    "ecoDis": 0.749,
+    "enrollment": 275,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901152",
+    "campus": "WOOLDRIDGE EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 87,
+    "ecoDis": 0.96,
+    "enrollment": 348,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901154",
+    "campus": "DOSS EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 89,
+    "ecoDis": 0.178,
+    "enrollment": 934,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901155",
+    "campus": "HILL EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 92,
+    "ecoDis": 0.158,
+    "enrollment": 796,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901156",
+    "campus": "ODOM EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 56,
+    "ecoDis": 0.786,
+    "enrollment": 271,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901157",
+    "campus": "WINN MONTESSORI",
+    "year": 2026,
+    "rating": "C",
+    "score": 75,
+    "ecoDis": 0.586,
+    "enrollment": 370,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "Not Rated: Senate Bill 1365"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901158",
+    "campus": "SUNSET VALLEY EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 91,
+    "ecoDis": 0.3,
+    "enrollment": 444,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901159",
+    "campus": "GRAHAM EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 72,
+    "ecoDis": 0.82,
+    "enrollment": 367,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901160",
+    "campus": "LINDER EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 59,
+    "ecoDis": 0.939,
+    "enrollment": 619,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901161",
+    "campus": "COOK EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 58,
+    "ecoDis": 0.945,
+    "enrollment": 384,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901162",
+    "campus": "HOUSTON EL",
+    "year": 2026,
+    "rating": "D",
+    "score": 67,
+    "ecoDis": 0.898,
+    "enrollment": 443,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901163",
+    "campus": "HART EL",
+    "year": 2026,
+    "rating": "D",
+    "score": 68,
+    "ecoDis": 0.944,
+    "enrollment": 531,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "D"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901164",
+    "campus": "PICKLE EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 55,
+    "ecoDis": 0.983,
+    "enrollment": 349,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901165",
+    "campus": "MCBEE EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 80,
+    "ecoDis": 0.947,
+    "enrollment": 300,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901166",
+    "campus": "WILLIAMS EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 85,
+    "ecoDis": 0.734,
+    "enrollment": 357,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901168",
+    "campus": "LANGFORD EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 73,
+    "ecoDis": 0.978,
+    "enrollment": 319,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901170",
+    "campus": "BOONE EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 84,
+    "ecoDis": 0.317,
+    "enrollment": 388,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901171",
+    "campus": "PALM EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 85,
+    "ecoDis": 0.866,
+    "enrollment": 299,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901172",
+    "campus": "KOCUREK EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 77,
+    "ecoDis": 0.668,
+    "enrollment": 476,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901173",
+    "campus": "CASEY EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 89,
+    "ecoDis": 0.538,
+    "enrollment": 558,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901174",
+    "campus": "RODRIGUEZ EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 82,
+    "ecoDis": 0.962,
+    "enrollment": 341,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901175",
+    "campus": "WIDEN EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 58,
+    "ecoDis": 0.914,
+    "enrollment": 339,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Improvement Required"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901176",
+    "campus": "GALINDO EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 80,
+    "ecoDis": 0.899,
+    "enrollment": 368,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901177",
+    "campus": "UPHAUS EARLY CHILDHOOD CENTER",
+    "year": 2026,
+    "rating": "B",
+    "score": 84,
+    "ecoDis": 0.782,
+    "enrollment": 257,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901178",
+    "campus": "JORDAN EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 58,
+    "ecoDis": 0.946,
+    "enrollment": 482,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "D"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901179",
+    "campus": "DAVIS EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 77,
+    "ecoDis": 0.299,
+    "enrollment": 643,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "C"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901180",
+    "campus": "KIKER EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 95,
+    "ecoDis": 0.057,
+    "enrollment": 715,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901181",
+    "campus": "MILLS EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 95,
+    "ecoDis": 0.061,
+    "enrollment": 701,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901182",
+    "campus": "BARANOFF EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 91,
+    "ecoDis": 0.143,
+    "enrollment": 764,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901183",
+    "campus": "COWAN EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 85,
+    "ecoDis": 0.265,
+    "enrollment": 551,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901184",
+    "campus": "CLAYTON EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 94,
+    "ecoDis": 0.028,
+    "enrollment": 633,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901185",
+    "campus": "BLAZIER EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 84,
+    "ecoDis": 0.615,
+    "enrollment": 701,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "A"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901186",
+    "campus": "GUERRERO THOMPSON",
+    "year": 2026,
+    "rating": "B",
+    "score": 80,
+    "ecoDis": 0.975,
+    "enrollment": 520,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901187",
+    "campus": "BALDWIN EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 92,
+    "ecoDis": 0.118,
+    "enrollment": 507,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "A"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901188",
+    "campus": "PADRON EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 71,
+    "ecoDis": 0.944,
+    "enrollment": 500,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "D"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901189",
+    "campus": "OVERTON EL",
+    "year": 2026,
+    "rating": "F",
+    "score": 59,
+    "ecoDis": 0.938,
+    "enrollment": 418,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "F"
+      },
+      {
+        "year": 2024,
+        "rating": "D"
+      },
+      {
+        "year": 2025,
+        "rating": "F"
+      },
+      {
+        "year": 2026,
+        "rating": "F"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901190",
+    "campus": "PEREZ EL",
+    "year": 2026,
+    "rating": "C",
+    "score": 71,
+    "ecoDis": 0.924,
+    "enrollment": 435,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "C"
+      },
+      {
+        "year": 2023,
+        "rating": "B"
+      },
+      {
+        "year": 2024,
+        "rating": "F"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "C"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901194",
+    "campus": "AUSTIN ISD PREK PARTNERSHIP (PKP)",
+    "year": 2026,
+    "rating": "B",
+    "score": 81,
+    "ecoDis": 0.627,
+    "enrollment": 233,
+    "history": [
+      {
+        "year": 2018,
+        "rating": "Met Standard"
+      },
+      {
+        "year": 2019,
+        "rating": "B"
+      },
+      {
+        "year": 2020,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "C"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901195",
+    "campus": "BEAR CREEK EL",
+    "year": 2026,
+    "rating": "A",
+    "score": 94,
+    "ecoDis": 0.036,
+    "enrollment": 522,
+    "history": [
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "A"
+      },
+      {
+        "year": 2023,
+        "rating": "A"
+      },
+      {
+        "year": 2024,
+        "rating": "B"
+      },
+      {
+        "year": 2025,
+        "rating": "A"
+      },
+      {
+        "year": 2026,
+        "rating": "A"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901196",
+    "campus": "BLAZIER PRI",
+    "year": 2026,
+    "rating": "B",
+    "score": 81,
+    "ecoDis": 0.605,
+    "enrollment": 529,
+    "history": [
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  },
+  {
+    "campusNumber": "227901198",
+    "campus": "JOSLIN EL",
+    "year": 2026,
+    "rating": "B",
+    "score": 83,
+    "ecoDis": 0.441,
+    "enrollment": 245,
+    "history": [
+      {
+        "year": 2021,
+        "rating": "Not Rated: Declared State of Disaster"
+      },
+      {
+        "year": 2022,
+        "rating": "B"
+      },
+      {
+        "year": 2023,
+        "rating": "C"
+      },
+      {
+        "year": 2024,
+        "rating": "C"
+      },
+      {
+        "year": 2025,
+        "rating": "B"
+      },
+      {
+        "year": 2026,
+        "rating": "B"
+      }
+    ]
+  }
+]

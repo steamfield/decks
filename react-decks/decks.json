@@ -15,5 +15,11 @@
   },
   "tides-slide": {
     "dir": "examples/tides-slide"
+  },
+  "pitch": {
+    "dir": "examples/opendata-pitch"
+  },
+  "aisd": {
+    "dir": "examples/aisd-showcase"
   }
 }

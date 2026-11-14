@@ -1,0 +1,10 @@
+{
+  "name": "@react-decks/example-opendata-pitch",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@steamfield/decks": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

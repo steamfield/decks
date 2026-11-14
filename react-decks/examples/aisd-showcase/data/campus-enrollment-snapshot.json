@@ -1,0 +1,812 @@
+{
+  "queriedAt": "2026-10-15",
+  "startSchoolYear": "2017-2018",
+  "endSchoolYear": "2025-2026",
+  "sql": "SELECT campus_number, max(campus) AS source_name, max(CASE WHEN school_year = '2017-2018' AND number_of_students >= 0 THEN number_of_students END) AS enrollment2018, max(CASE WHEN school_year = '2025-2026' AND number_of_students >= 0 THEN number_of_students END) AS enrollment2026 FROM \"tea/accountability-summary:campuses\" WHERE district_number = '227901' AND school_year IN ('2017-2018','2025-2026') GROUP BY campus_number ORDER BY campus_number",
+  "rows": [
+    {
+      "campus_number": "227901002",
+      "source_name": "AUSTIN H S",
+      "enrollment2018": 2262,
+      "enrollment2026": 2292
+    },
+    {
+      "campus_number": "227901004",
+      "source_name": "NAVARRO EARLY COLLEGE H S",
+      "enrollment2018": 1584,
+      "enrollment2026": 1391
+    },
+    {
+      "campus_number": "227901005",
+      "source_name": "MCCALLUM H S",
+      "enrollment2018": 1755,
+      "enrollment2026": 1952
+    },
+    {
+      "campus_number": "227901006",
+      "source_name": "REAGAN H S",
+      "enrollment2018": 1248,
+      "enrollment2026": 952
+    },
+    {
+      "campus_number": "227901007",
+      "source_name": "TRAVIS H S",
+      "enrollment2018": 1227,
+      "enrollment2026": 917
+    },
+    {
+      "campus_number": "227901008",
+      "source_name": "CROCKETT H S",
+      "enrollment2018": 1463,
+      "enrollment2026": 1463
+    },
+    {
+      "campus_number": "227901009",
+      "source_name": "ANDERSON H S",
+      "enrollment2018": 2216,
+      "enrollment2026": 2173
+    },
+    {
+      "campus_number": "227901012",
+      "source_name": "ALTERNATIVE LEARNING CENTER",
+      "enrollment2018": 101,
+      "enrollment2026": 114
+    },
+    {
+      "campus_number": "227901013",
+      "source_name": "BOWIE H S",
+      "enrollment2018": 2867,
+      "enrollment2026": 2869
+    },
+    {
+      "campus_number": "227901014",
+      "source_name": "LBJ HIGH SCHOOL",
+      "enrollment2018": 794,
+      "enrollment2026": 728
+    },
+    {
+      "campus_number": "227901015",
+      "source_name": "GARZA INDEPENDENCE H S",
+      "enrollment2018": 147,
+      "enrollment2026": 132
+    },
+    {
+      "campus_number": "227901017",
+      "source_name": "AKINS H S",
+      "enrollment2018": 2763,
+      "enrollment2026": 2354
+    },
+    {
+      "campus_number": "227901018",
+      "source_name": "LASA H S",
+      "enrollment2018": 1185,
+      "enrollment2026": 1592
+    },
+    {
+      "campus_number": "227901019",
+      "source_name": "EASTSIDE MEMORIAL AT THE JOHNSTON",
+      "enrollment2018": 486,
+      "enrollment2026": 584
+    },
+    {
+      "campus_number": "227901025",
+      "source_name": "GRADUATION PREP ACADEMY TRAVIS",
+      "enrollment2018": 145,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901026",
+      "source_name": "GRADUATION PREP ACADEMY LANIER",
+      "enrollment2018": 73,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901027",
+      "source_name": "TRAVIS COUNTY DAY SCHOOL",
+      "enrollment2018": 8,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901028",
+      "source_name": "RICHARDS SCH FOR YOUNG WOMEN LEADERS",
+      "enrollment2018": 827,
+      "enrollment2026": 921
+    },
+    {
+      "campus_number": "227901029",
+      "source_name": "INTERNATIONAL H S",
+      "enrollment2018": 191,
+      "enrollment2026": 90
+    },
+    {
+      "campus_number": "227901030",
+      "source_name": "TRAVIS COUNTY JUVENILE DETENTION CENTER",
+      "enrollment2018": 34,
+      "enrollment2026": 38
+    },
+    {
+      "campus_number": "227901032",
+      "source_name": "PHOENIX ACADEMY",
+      "enrollment2018": 19,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901035",
+      "source_name": "LEADERSHIP ACADEMY",
+      "enrollment2018": 16,
+      "enrollment2026": 25
+    },
+    {
+      "campus_number": "227901036",
+      "source_name": "TRAVIS COUNTY J J A E P",
+      "enrollment2018": 3,
+      "enrollment2026": 3
+    },
+    {
+      "campus_number": "227901043",
+      "source_name": "LIVELY MIDDLE",
+      "enrollment2018": 997,
+      "enrollment2026": 919
+    },
+    {
+      "campus_number": "227901044",
+      "source_name": "KEALING MIDDLE",
+      "enrollment2018": 1222,
+      "enrollment2026": 1232
+    },
+    {
+      "campus_number": "227901045",
+      "source_name": "LAMAR MIDDLE",
+      "enrollment2018": 1130,
+      "enrollment2026": 1099
+    },
+    {
+      "campus_number": "227901046",
+      "source_name": "BURNET MIDDLE",
+      "enrollment2018": 967,
+      "enrollment2026": 688
+    },
+    {
+      "campus_number": "227901047",
+      "source_name": "O HENRY MIDDLE",
+      "enrollment2018": 862,
+      "enrollment2026": 657
+    },
+    {
+      "campus_number": "227901051",
+      "source_name": "MARTIN MIDDLE",
+      "enrollment2018": 450,
+      "enrollment2026": 308
+    },
+    {
+      "campus_number": "227901052",
+      "source_name": "MURCHISON MIDDLE",
+      "enrollment2018": 1392,
+      "enrollment2026": 1254
+    },
+    {
+      "campus_number": "227901053",
+      "source_name": "WEBB MIDDLE",
+      "enrollment2018": 662,
+      "enrollment2026": 429
+    },
+    {
+      "campus_number": "227901054",
+      "source_name": "BEDICHEK MIDDLE",
+      "enrollment2018": 846,
+      "enrollment2026": 607
+    },
+    {
+      "campus_number": "227901055",
+      "source_name": "DOBIE MIDDLE",
+      "enrollment2018": 579,
+      "enrollment2026": 392
+    },
+    {
+      "campus_number": "227901057",
+      "source_name": "COVINGTON MIDDLE",
+      "enrollment2018": 660,
+      "enrollment2026": 625
+    },
+    {
+      "campus_number": "227901058",
+      "source_name": "MENDEZ MIDDLE",
+      "enrollment2018": 646,
+      "enrollment2026": 283
+    },
+    {
+      "campus_number": "227901059",
+      "source_name": "BAILEY MIDDLE",
+      "enrollment2018": 1006,
+      "enrollment2026": 759
+    },
+    {
+      "campus_number": "227901060",
+      "source_name": "SMALL MIDDLE",
+      "enrollment2018": 1231,
+      "enrollment2026": 1233
+    },
+    {
+      "campus_number": "227901061",
+      "source_name": "PAREDES MIDDLE",
+      "enrollment2018": 892,
+      "enrollment2026": 593
+    },
+    {
+      "campus_number": "227901062",
+      "source_name": "GORZYCKI MIDDLE",
+      "enrollment2018": 1275,
+      "enrollment2026": 1307
+    },
+    {
+      "campus_number": "227901063",
+      "source_name": "GENERAL MARSHALL MIDDLE",
+      "enrollment2018": null,
+      "enrollment2026": 638
+    },
+    {
+      "campus_number": "227901064",
+      "source_name": "GARCIA YMLA",
+      "enrollment2018": 390,
+      "enrollment2026": 243
+    },
+    {
+      "campus_number": "227901065",
+      "source_name": "SADLER MEANS YWLA",
+      "enrollment2018": 388,
+      "enrollment2026": 222
+    },
+    {
+      "campus_number": "227901101",
+      "source_name": "ALLISON EL",
+      "enrollment2018": 477,
+      "enrollment2026": 290
+    },
+    {
+      "campus_number": "227901102",
+      "source_name": "ANDREWS EL",
+      "enrollment2018": 502,
+      "enrollment2026": 294
+    },
+    {
+      "campus_number": "227901103",
+      "source_name": "BARTON HILLS EL",
+      "enrollment2018": 453,
+      "enrollment2026": 271
+    },
+    {
+      "campus_number": "227901104",
+      "source_name": "BECKER EL",
+      "enrollment2018": 437,
+      "enrollment2026": 528
+    },
+    {
+      "campus_number": "227901105",
+      "source_name": "BLACKSHEAR EL",
+      "enrollment2018": 378,
+      "enrollment2026": 204
+    },
+    {
+      "campus_number": "227901106",
+      "source_name": "BLANTON EL",
+      "enrollment2018": 515,
+      "enrollment2026": 735
+    },
+    {
+      "campus_number": "227901107",
+      "source_name": "BRENTWOOD EL",
+      "enrollment2018": 671,
+      "enrollment2026": 694
+    },
+    {
+      "campus_number": "227901108",
+      "source_name": "BROOKE EL",
+      "enrollment2018": 244,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901109",
+      "source_name": "BROWN EL",
+      "enrollment2018": 272,
+      "enrollment2026": 419
+    },
+    {
+      "campus_number": "227901110",
+      "source_name": "BRYKER WOODS EL",
+      "enrollment2018": 456,
+      "enrollment2026": 273
+    },
+    {
+      "campus_number": "227901111",
+      "source_name": "CAMPBELL EL",
+      "enrollment2018": 187,
+      "enrollment2026": 176
+    },
+    {
+      "campus_number": "227901112",
+      "source_name": "CASIS EL",
+      "enrollment2018": 762,
+      "enrollment2026": 642
+    },
+    {
+      "campus_number": "227901113",
+      "source_name": "CUNNINGHAM EL",
+      "enrollment2018": 394,
+      "enrollment2026": 331
+    },
+    {
+      "campus_number": "227901114",
+      "source_name": "DAWSON EL",
+      "enrollment2018": 352,
+      "enrollment2026": 152
+    },
+    {
+      "campus_number": "227901115",
+      "source_name": "DAEP- EL",
+      "enrollment2018": 7,
+      "enrollment2026": 2
+    },
+    {
+      "campus_number": "227901116",
+      "source_name": "GOVALLE EL",
+      "enrollment2018": 407,
+      "enrollment2026": 372
+    },
+    {
+      "campus_number": "227901117",
+      "source_name": "GULLETT EL",
+      "enrollment2018": 566,
+      "enrollment2026": 540
+    },
+    {
+      "campus_number": "227901118",
+      "source_name": "HARRIS EL",
+      "enrollment2018": 627,
+      "enrollment2026": 266
+    },
+    {
+      "campus_number": "227901119",
+      "source_name": "HIGHLAND PARK EL",
+      "enrollment2018": 640,
+      "enrollment2026": 648
+    },
+    {
+      "campus_number": "227901120",
+      "source_name": "JOSLIN EL",
+      "enrollment2018": 282,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901121",
+      "source_name": "LEE EL",
+      "enrollment2018": 442,
+      "enrollment2026": 416
+    },
+    {
+      "campus_number": "227901122",
+      "source_name": "MAPLEWOOD EL",
+      "enrollment2018": 485,
+      "enrollment2026": 426
+    },
+    {
+      "campus_number": "227901123",
+      "source_name": "MATHEWS EL",
+      "enrollment2018": 437,
+      "enrollment2026": 377
+    },
+    {
+      "campus_number": "227901124",
+      "source_name": "METZ EL",
+      "enrollment2018": 285,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901125",
+      "source_name": "OAK SPRINGS EL",
+      "enrollment2018": 322,
+      "enrollment2026": 213
+    },
+    {
+      "campus_number": "227901126",
+      "source_name": "ORTEGA EL",
+      "enrollment2018": 276,
+      "enrollment2026": 211
+    },
+    {
+      "campus_number": "227901127",
+      "source_name": "SANCHEZ EL",
+      "enrollment2018": 258,
+      "enrollment2026": 348
+    },
+    {
+      "campus_number": "227901128",
+      "source_name": "PEASE EL",
+      "enrollment2018": 233,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901129",
+      "source_name": "PECAN SPRINGS EL",
+      "enrollment2018": 453,
+      "enrollment2026": 240
+    },
+    {
+      "campus_number": "227901130",
+      "source_name": "PLEASANT HILL EL",
+      "enrollment2018": 465,
+      "enrollment2026": 361
+    },
+    {
+      "campus_number": "227901131",
+      "source_name": "READ PRE-K CENTER",
+      "enrollment2018": 304,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901132",
+      "source_name": "REILLY EL",
+      "enrollment2018": 238,
+      "enrollment2026": 318
+    },
+    {
+      "campus_number": "227901133",
+      "source_name": "RIDGETOP EL",
+      "enrollment2018": 371,
+      "enrollment2026": 375
+    },
+    {
+      "campus_number": "227901136",
+      "source_name": "ST ELMO EL",
+      "enrollment2018": 297,
+      "enrollment2026": 282
+    },
+    {
+      "campus_number": "227901138",
+      "source_name": "SUMMITT EL",
+      "enrollment2018": 841,
+      "enrollment2026": 745
+    },
+    {
+      "campus_number": "227901139",
+      "source_name": "SIMS EL",
+      "enrollment2018": 204,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901140",
+      "source_name": "TRAVIS HTS EL",
+      "enrollment2018": 518,
+      "enrollment2026": 484
+    },
+    {
+      "campus_number": "227901141",
+      "source_name": "WALNUT CREEK EL",
+      "enrollment2018": 642,
+      "enrollment2026": 404
+    },
+    {
+      "campus_number": "227901143",
+      "source_name": "PATTON EL",
+      "enrollment2018": 982,
+      "enrollment2026": 711
+    },
+    {
+      "campus_number": "227901144",
+      "source_name": "WOOTEN EL",
+      "enrollment2018": 503,
+      "enrollment2026": 236
+    },
+    {
+      "campus_number": "227901145",
+      "source_name": "ZAVALA EL",
+      "enrollment2018": 297,
+      "enrollment2026": 202
+    },
+    {
+      "campus_number": "227901146",
+      "source_name": "ZILKER EL",
+      "enrollment2018": 546,
+      "enrollment2026": 537
+    },
+    {
+      "campus_number": "227901147",
+      "source_name": "MENCHACA EL",
+      "enrollment2018": 715,
+      "enrollment2026": 621
+    },
+    {
+      "campus_number": "227901148",
+      "source_name": "OAK HILL EL",
+      "enrollment2018": 863,
+      "enrollment2026": 544
+    },
+    {
+      "campus_number": "227901149",
+      "source_name": "BARRINGTON EL",
+      "enrollment2018": 547,
+      "enrollment2026": 307
+    },
+    {
+      "campus_number": "227901150",
+      "source_name": "NORMAN-SIMS EL",
+      "enrollment2018": 192,
+      "enrollment2026": 260
+    },
+    {
+      "campus_number": "227901151",
+      "source_name": "PILLOW EL",
+      "enrollment2018": 514,
+      "enrollment2026": 275
+    },
+    {
+      "campus_number": "227901152",
+      "source_name": "WOOLDRIDGE EL",
+      "enrollment2018": 532,
+      "enrollment2026": 348
+    },
+    {
+      "campus_number": "227901154",
+      "source_name": "DOSS EL",
+      "enrollment2018": 832,
+      "enrollment2026": 934
+    },
+    {
+      "campus_number": "227901155",
+      "source_name": "HILL EL",
+      "enrollment2018": 952,
+      "enrollment2026": 796
+    },
+    {
+      "campus_number": "227901156",
+      "source_name": "ODOM EL",
+      "enrollment2018": 461,
+      "enrollment2026": 271
+    },
+    {
+      "campus_number": "227901157",
+      "source_name": "WINN MONTESSORI",
+      "enrollment2018": 259,
+      "enrollment2026": 370
+    },
+    {
+      "campus_number": "227901158",
+      "source_name": "SUNSET VALLEY EL",
+      "enrollment2018": 543,
+      "enrollment2026": 444
+    },
+    {
+      "campus_number": "227901159",
+      "source_name": "GRAHAM EL",
+      "enrollment2018": 610,
+      "enrollment2026": 367
+    },
+    {
+      "campus_number": "227901160",
+      "source_name": "LINDER EL",
+      "enrollment2018": 305,
+      "enrollment2026": 619
+    },
+    {
+      "campus_number": "227901161",
+      "source_name": "COOK EL",
+      "enrollment2018": 452,
+      "enrollment2026": 384
+    },
+    {
+      "campus_number": "227901162",
+      "source_name": "HOUSTON EL",
+      "enrollment2018": 642,
+      "enrollment2026": 443
+    },
+    {
+      "campus_number": "227901163",
+      "source_name": "HART EL",
+      "enrollment2018": 681,
+      "enrollment2026": 531
+    },
+    {
+      "campus_number": "227901164",
+      "source_name": "PICKLE EL",
+      "enrollment2018": 544,
+      "enrollment2026": 349
+    },
+    {
+      "campus_number": "227901165",
+      "source_name": "MCBEE EL",
+      "enrollment2018": 392,
+      "enrollment2026": 300
+    },
+    {
+      "campus_number": "227901166",
+      "source_name": "WILLIAMS EL",
+      "enrollment2018": 466,
+      "enrollment2026": 357
+    },
+    {
+      "campus_number": "227901168",
+      "source_name": "LANGFORD EL",
+      "enrollment2018": 537,
+      "enrollment2026": 319
+    },
+    {
+      "campus_number": "227901170",
+      "source_name": "BOONE EL",
+      "enrollment2018": 534,
+      "enrollment2026": 388
+    },
+    {
+      "campus_number": "227901171",
+      "source_name": "PALM EL",
+      "enrollment2018": 449,
+      "enrollment2026": 299
+    },
+    {
+      "campus_number": "227901172",
+      "source_name": "KOCUREK EL",
+      "enrollment2018": 576,
+      "enrollment2026": 476
+    },
+    {
+      "campus_number": "227901173",
+      "source_name": "CASEY EL",
+      "enrollment2018": 615,
+      "enrollment2026": 558
+    },
+    {
+      "campus_number": "227901174",
+      "source_name": "RODRIGUEZ EL",
+      "enrollment2018": 503,
+      "enrollment2026": 341
+    },
+    {
+      "campus_number": "227901175",
+      "source_name": "WIDEN EL",
+      "enrollment2018": 522,
+      "enrollment2026": 339
+    },
+    {
+      "campus_number": "227901176",
+      "source_name": "GALINDO EL",
+      "enrollment2018": 585,
+      "enrollment2026": 368
+    },
+    {
+      "campus_number": "227901177",
+      "source_name": "UPHAUS EARLY CHILDHOOD CENTER",
+      "enrollment2018": 340,
+      "enrollment2026": 257
+    },
+    {
+      "campus_number": "227901178",
+      "source_name": "JORDAN EL",
+      "enrollment2018": 659,
+      "enrollment2026": 482
+    },
+    {
+      "campus_number": "227901179",
+      "source_name": "DAVIS EL",
+      "enrollment2018": 805,
+      "enrollment2026": 643
+    },
+    {
+      "campus_number": "227901180",
+      "source_name": "KIKER EL",
+      "enrollment2018": 1109,
+      "enrollment2026": 715
+    },
+    {
+      "campus_number": "227901181",
+      "source_name": "MILLS EL",
+      "enrollment2018": 852,
+      "enrollment2026": 701
+    },
+    {
+      "campus_number": "227901182",
+      "source_name": "BARANOFF EL",
+      "enrollment2018": 1013,
+      "enrollment2026": 764
+    },
+    {
+      "campus_number": "227901183",
+      "source_name": "COWAN EL",
+      "enrollment2018": 836,
+      "enrollment2026": 551
+    },
+    {
+      "campus_number": "227901184",
+      "source_name": "CLAYTON EL",
+      "enrollment2018": 837,
+      "enrollment2026": 633
+    },
+    {
+      "campus_number": "227901185",
+      "source_name": "BLAZIER EL",
+      "enrollment2018": 858,
+      "enrollment2026": 701
+    },
+    {
+      "campus_number": "227901186",
+      "source_name": "GUERRERO THOMPSON",
+      "enrollment2018": 633,
+      "enrollment2026": 520
+    },
+    {
+      "campus_number": "227901187",
+      "source_name": "BALDWIN EL",
+      "enrollment2018": 806,
+      "enrollment2026": 507
+    },
+    {
+      "campus_number": "227901188",
+      "source_name": "PADRON EL",
+      "enrollment2018": 759,
+      "enrollment2026": 500
+    },
+    {
+      "campus_number": "227901189",
+      "source_name": "OVERTON EL",
+      "enrollment2018": 557,
+      "enrollment2026": 418
+    },
+    {
+      "campus_number": "227901190",
+      "source_name": "PEREZ EL",
+      "enrollment2018": 649,
+      "enrollment2026": 435
+    },
+    {
+      "campus_number": "227901192",
+      "source_name": "DOBIE PK CENTER",
+      "enrollment2018": 209,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901193",
+      "source_name": "WEBB PRI CENTER",
+      "enrollment2018": 246,
+      "enrollment2026": null
+    },
+    {
+      "campus_number": "227901194",
+      "source_name": "AUSTIN ISD PREK PARTNERSHIP (PKP)",
+      "enrollment2018": 170,
+      "enrollment2026": 233
+    },
+    {
+      "campus_number": "227901195",
+      "source_name": "BEAR CREEK EL",
+      "enrollment2018": null,
+      "enrollment2026": 522
+    },
+    {
+      "campus_number": "227901196",
+      "source_name": "BLAZIER PRI",
+      "enrollment2018": null,
+      "enrollment2026": 529
+    },
+    {
+      "campus_number": "227901198",
+      "source_name": "JOSLIN EL",
+      "enrollment2018": null,
+      "enrollment2026": 245
+    },
+    {
+      "campus_number": "227901199",
+      "source_name": "GREENLEAF NCC",
+      "enrollment2018": null,
+      "enrollment2026": 35
+    },
+    {
+      "campus_number": "227901250",
+      "source_name": "AUSTIN ST HOSPITAL",
+      "enrollment2018": 16,
+      "enrollment2026": 19
+    },
+    {
+      "campus_number": "227901251",
+      "source_name": "ROSEDALE",
+      "enrollment2018": 132,
+      "enrollment2026": 181
+    }
+  ]
+}

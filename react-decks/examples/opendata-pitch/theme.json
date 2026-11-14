@@ -1,0 +1,10 @@
+{
+  "brand": {
+    "name": "OpenData",
+    "url": "tryopendata.ai",
+    "logo": {
+      "view-box": "0 0 32 32",
+      "svg": "<path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#2563EB\" opacity=\"0.25\" /><g class=\"od-intro od-intro-1\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#F59E0B\" /></g><g class=\"od-intro od-intro-0\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#A78BFA\" /></g><g class=\"od-settle-teal\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#10B981\" /></g><g class=\"od-settle-cyan\"><path d=\"M 4 18 L 16 23 L 28 18 L 16 13 Z\" fill=\"#38BDF8\" /></g><path d=\"M 4 18 L 16 23 L 16 30 L 4 25 Z\" fill=\"#2563EB\" /><path d=\"M 16 23 L 28 18 L 28 25 L 16 30 Z\" fill=\"#1E3A5F\" />"
+    }
+  }
+}

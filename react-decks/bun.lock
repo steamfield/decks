@@ -33,6 +33,14 @@
         "vitest": "5.1.0",
       },
     },
+    "examples/aisd-showcase": {
+      "name": "@react-decks/example-aisd-showcase",
+      "dependencies": {
+        "@steamfield/decks": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+    },
     "examples/basic": {
       "name": "@react-decks/example-basic",
       "dependencies": {
@@ -77,6 +85,14 @@
       },
       "devDependencies": {
         "@react-decks/node": "workspace:*",
+      },
+    },
+    "examples/opendata-pitch": {
+      "name": "@react-decks/example-opendata-pitch",
+      "dependencies": {
+        "@steamfield/decks": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
       },
     },
     "examples/tides-slide": {
@@ -411,11 +427,15 @@
 
     "@react-decks/core": ["@react-decks/core@workspace:packages/core"],
 
+    "@react-decks/example-aisd-showcase": ["@react-decks/example-aisd-showcase@workspace:examples/aisd-showcase"],
+
     "@react-decks/example-basic": ["@react-decks/example-basic@workspace:examples/basic"],
 
     "@react-decks/example-building-for-agents": ["@react-decks/example-building-for-agents@workspace:examples/building-for-agents"],
 
     "@react-decks/example-motion": ["@react-decks/example-motion@workspace:examples/motion"],
+
+    "@react-decks/example-opendata-pitch": ["@react-decks/example-opendata-pitch@workspace:examples/opendata-pitch"],
 
     "@react-decks/example-tides-slide": ["@react-decks/example-tides-slide@workspace:examples/tides-slide"],
 
