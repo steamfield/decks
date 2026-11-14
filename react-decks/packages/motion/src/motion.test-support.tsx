@@ -82,12 +82,15 @@ export async function setupMotion(
   };
 }
 
+// gsap's root timeline normally follows the wall clock, which made mid-tween assertions
+// depend on how fast the machine was. Tests own the clock: only tick() moves it.
+gsap.ticker.remove(gsap.updateRoot);
+let clock = gsap.globalTimeline.time();
+
 export async function tick(seconds = 0) {
   await act(async () => {
-    // The ticker adds real elapsed time, so set the exact target after it, not before.
-    const target = gsap.globalTimeline.time() + seconds;
-    gsap.ticker.tick();
-    if (seconds) gsap.globalTimeline.time(target);
+    clock += seconds;
+    gsap.updateRoot(clock);
     await Promise.resolve();
   });
 }

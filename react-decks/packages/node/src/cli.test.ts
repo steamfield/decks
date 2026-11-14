@@ -101,12 +101,17 @@ describe("decks CLI", () => {
     await put("deck.config.ts", "export default {title:42};");
     await vi.waitFor(() => expect(process.output().stderr).toContain("deck.config.ts"));
     await put("deck.config.ts", 'export default {title:"Recovered deck"};');
-    await vi.waitFor(async () => {
-      expect(process.child.exitCode, process.output().stderr).toBe(null);
-      const response = await fetch(url);
-      expect(response.status).toBe(200);
-      expect(await response.text()).toContain("Recovered deck");
-    });
+    // A config save restarts a real server; the default one-second wait is too short on a
+    // slow machine.
+    await vi.waitFor(
+      async () => {
+        expect(process.child.exitCode, process.output().stderr).toBe(null);
+        const response = await fetch(url);
+        expect(response.status).toBe(200);
+        expect(await response.text()).toContain("Recovered deck");
+      },
+      { timeout: 10000 },
+    );
   });
   it("build accepts a directory and explicit output and base", async () => {
     const { dir } = await fixture();
