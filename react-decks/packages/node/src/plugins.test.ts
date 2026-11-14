@@ -171,6 +171,7 @@ describe("deck modules and HTML", () => {
     expect(html).toContain('<html lang="en" data-theme="dark">');
     expect(html).toContain("<title>A &lt;talk&gt; &amp; friends</title>");
     expect(html).toContain('<meta name="author" content="A &amp; B">');
+    expect(html).toContain('<link rel="icon" href="data:,">');
     expect(html).toContain(`<meta name="decks:entry" content="${app.dir}">`);
     expect(html).toContain(`<meta name="decks:name" content="${app.dir.split("/").at(-1)}">`);
     expect(html).toContain('<div id="deck-root"></div>');
@@ -187,6 +188,17 @@ describe("deck modules and HTML", () => {
     const app = await serve();
     expect(await app.get("/")).not.toContain('name="author"');
     expect(await app.get(virtual("entry"))).not.toContain("/styles/index.css");
+  });
+  it("keeps a deck's public favicon in development and under a build base", async () => {
+    const app = await serve({ "public/favicon.ico": "Deck icon" });
+    expect(await app.get("/")).toContain('<link rel="icon" href="/favicon.ico">');
+    expect(await app.get("/favicon.ico")).toBe("Deck icon");
+    const outDir = join(app.dir, "site");
+    await build(await loadDeck(app.dir), { outDir, base: "/talk/" });
+    expect(await readFile(join(outDir, "index.html"), "utf8")).toContain(
+      '<link rel="icon" href="/talk/favicon.ico">',
+    );
+    expect(await readFile(join(outDir, "favicon.ico"), "utf8")).toBe("Deck icon");
   });
   it.each(["./", "/talk/"])(
     "builds HTML and assets with base %s without creating deck index.html",

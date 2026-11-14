@@ -1,6 +1,7 @@
-import { resolve } from "node:path";
+import { createRequire } from "node:module";
+import { join, resolve } from "node:path";
 import getPort, { portNumbers } from "get-port";
-import { createServer, type InlineConfig, build as viteBuild } from "vite";
+import { createServer, type InlineConfig, normalizePath, build as viteBuild } from "vite";
 import type { ResolvedDeck } from "./config";
 import { reactDecks } from "./plugins";
 
@@ -15,6 +16,15 @@ function config(deck: ResolvedDeck): InlineConfig {
     root: deck.dir,
     plugins: [reactDecks(deck), deck.config.vite?.plugins ?? []],
     resolve: { dedupe: ["react", "react-dom"] },
+    // There is no on-disk HTML entry for Vite to crawl before the first request.
+    optimizeDeps: {
+      entries: [
+        normalizePath(
+          createRequire(join(deck.dir, "deck.config.ts")).resolve("@react-decks/runtime"),
+        ),
+        "components/*.tsx",
+      ],
+    },
   };
 }
 
@@ -22,7 +32,7 @@ export async function dev(
   deck: ResolvedDeck,
   options?: { port?: number; open?: boolean },
 ): Promise<DevServer> {
-  const port = options?.port || (await getPort({ port: portNumbers(3030, 65535) }));
+  const port = options?.port ?? (await getPort({ port: portNumbers(3030, 65535) }));
   const server = await createServer({
     ...config(deck),
     server: { port, open: options?.open ?? false },
