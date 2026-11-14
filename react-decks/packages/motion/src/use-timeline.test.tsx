@@ -94,7 +94,7 @@ describe("useTimeline", () => {
     const view = await setupMotion(() => <InvalidTimeline build={build} />, { error: true });
     expect(view.errors.length).toBeGreaterThan(0);
     expect(String(view.errors[0])).toContain(label);
-    expect(screen.getByText("Unable to render slide slide-1.")).toBeVisible();
+    expect(screen.getByText(/^Slide slide-1 \(1.mdx\) failed to render:/)).toBeVisible();
   });
 
   it("seeks jumps and clamps clicks beyond the final label", async () => {

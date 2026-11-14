@@ -85,12 +85,12 @@ it("a failed presenter slide does not leave the current and preview regions stuc
   });
   expect(
     await within(screen.getByRole("region", { name: "Current slide" })).findByText(
-      "Unable to render slide slide-2.",
+      "Slide slide-2 failed to load. See the terminal or the error overlay.",
     ),
   ).toBeVisible();
   expect(
     await within(screen.getByRole("region", { name: "Next" })).findByText(
-      "Unable to render slide slide-2.",
+      "Slide slide-2 failed to load. See the terminal or the error overlay.",
     ),
   ).toBeVisible();
   act(() => store.dispatch({ type: "nextSlide" }));
@@ -176,7 +176,9 @@ it("a rejected notes load shows a useful error while navigation keeps working", 
     },
   });
   expect(
-    await within(screen.getByRole("region", { name: "Notes" })).findByText("Notes failed to load"),
+    await within(screen.getByRole("region", { name: "Notes" })).findByText(
+      "Notes failed to load: Unavailable notes. Reload to retry.",
+    ),
   ).toBeVisible();
   await userEvent.setup().keyboard("{ArrowDown}");
   expect(window.location.hash).toBe("#/presenter/3");

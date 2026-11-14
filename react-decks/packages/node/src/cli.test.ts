@@ -45,7 +45,7 @@ describe("decks CLI", () => {
       await put("decks.json", contents);
       const process = cli(dir, ["build", "talk"]);
       expect((await process.exit)[0]).toBe(1);
-      expect(process.output().stderr).toContain(join(dir, "decks.json"));
+      expect(process.output().stderr).toContain("decks.json");
       expect(process.output().stderr).not.toContain('"expected"');
     },
   );
@@ -119,6 +119,6 @@ describe("decks CLI", () => {
     await put("missing/file.txt", "No config here");
     const process = cli(dir, ["build", "./missing"]);
     expect((await process.exit)[0]).toBe(1);
-    expect(process.output().stderr).toContain(join(dir, "missing/deck.config.ts"));
+    expect(process.output().stderr).toContain("no deck.config.ts in missing.");
   });
 });

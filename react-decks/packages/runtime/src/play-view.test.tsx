@@ -146,7 +146,9 @@ it("a rejected slide stays isolated and retries after it is mounted again", asyn
   const user = userEvent.setup();
   expect(await screen.findByRole("heading", { name: "Title 1" })).toBeVisible();
   await user.keyboard("{ArrowDown}");
-  expect(await screen.findByText(/Unable to render slide slide-2/)).toBeVisible();
+  expect(
+    await screen.findByText("Slide slide-2 failed to load. See the terminal or the error overlay."),
+  ).toBeVisible();
   await user.keyboard("{End}");
   expect(await screen.findByRole("heading", { name: "Title 5" })).toBeVisible();
   await user.keyboard("{Home}{ArrowDown}");
@@ -159,7 +161,9 @@ it("a throwing slide shows its id and leaves navigation working", async () => {
     ...source,
     slides: { ...source.slides, "slide-1": async () => ({ default: Broken }) },
   });
-  expect(await screen.findByText(/Unable to render slide slide-1/)).toBeVisible();
+  expect(
+    await screen.findByText("Slide slide-1 (slides/1.mdx) failed to render: Render failed"),
+  ).toBeVisible();
   await userEvent.setup().keyboard("{End}");
   expect(await screen.findByRole("heading", { name: "Title 5" })).toBeVisible();
 });

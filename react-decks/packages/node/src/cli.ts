@@ -2,10 +2,12 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
-import { defineCommand, runMain } from "citty";
+import { type ParseArgsOptionsConfig, parseArgs } from "node:util";
+import { defineCommand, runCommand, showUsage } from "citty";
 import pc from "picocolors";
 import { z } from "zod";
 import { loadDeck } from "./config";
+import { authorError, DeckError, validationError } from "./errors";
 import { build, dev } from "./server";
 
 const registrySchema = z.record(z.string(), z.unknown());
@@ -19,28 +21,41 @@ async function resolveDeck(value: string) {
   const registryPath = resolve("decks.json");
   let defaults: z.infer<typeof defaultsSchema>;
   let entry: z.infer<typeof entrySchema> | undefined;
+  let aliases: string[] = [];
+  let validationInput: unknown;
   try {
-    const registry = existsSync(registryPath)
-      ? registrySchema.parse(JSON.parse(await readFile(registryPath, "utf8")))
+    validationInput = existsSync(registryPath)
+      ? JSON.parse(await readFile(registryPath, "utf8"))
       : {};
-    defaults = defaultsSchema.parse(registry._config ?? {});
+    const registry = registrySchema.parse(validationInput);
+    aliases = Object.keys(registry).filter((key) => !key.startsWith("_"));
+    validationInput = registry._config ?? {};
+    defaults = defaultsSchema.parse(validationInput);
     const registered =
       !value.startsWith("_") && Object.hasOwn(registry, value) ? registry[value] : undefined;
+    validationInput = registered;
     entry = registered === undefined ? undefined : entrySchema.parse(registered);
   } catch (cause) {
-    const problem =
-      cause instanceof z.ZodError
-        ? cause.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ")
-        : cause instanceof Error
-          ? cause.message
-          : String(cause);
-    // Citty prints Error causes verbatim, including Zod's raw validation dump.
-    throw new Error(`${registryPath}: malformed decks.json: ${problem}`);
+    if (cause instanceof z.ZodError)
+      throw validationError(registryPath, cause.issues, validationInput);
+    throw new DeckError(
+      `malformed decks.json: ${cause instanceof Error ? cause.message : String(cause)}`,
+      registryPath,
+      undefined,
+      { cause },
+    );
   }
   if (entry !== undefined) {
+    if (!existsSync(entry.dir))
+      throw new DeckError(
+        `decks.json entry ${JSON.stringify(value)} points at ${entry.dir.replace(/\/$/, "")}/, which does not exist.`,
+      );
     return { deck: await loadDeck(entry.dir, value), defaults };
   }
-  if (!existsSync(value)) throw new Error(`Unknown deck "${value}"`);
+  if (!existsSync(value))
+    throw new DeckError(
+      `${JSON.stringify(value)} is not a registered deck or a directory. Registered in decks.json: ${aliases.length ? aliases.join(", ") : "none"}.`,
+    );
   return { deck: await loadDeck(value, basename(resolve(value))), defaults };
 }
 
@@ -49,31 +64,94 @@ const deckArg = {
   required: true,
   description: "Deck alias or directory",
 } as const;
+const commands = {
+  dev: defineCommand({
+    meta: { name: "decks dev", description: "Serve a deck with live updates" },
+    args: {
+      deck: deckArg,
+      port: { type: "string", description: "Port to listen on" },
+      open: { type: "boolean", default: false, description: "Open the deck in a browser" },
+    },
+    async run({ args }) {
+      const { deck } = await resolveDeck(args.deck);
+      if (args.port !== undefined && (!/^\d+$/.test(args.port) || Number(args.port) > 65535))
+        throw new DeckError(`Invalid --port "${args.port}". Use a whole number from 0 to 65535.`);
+      const port = args.port === undefined ? undefined : Number(args.port);
+      const server = await dev(deck, { port, open: args.open });
+      console.log(pc.green(server.url));
+    },
+  }),
+  build: defineCommand({
+    meta: { name: "decks build", description: "Build a static deck site" },
+    args: {
+      deck: deckArg,
+      out: { type: "string", description: "Output directory (emptied before building)" },
+      base: { type: "string", description: "Base URL for the built site" },
+    },
+    async run({ args }) {
+      const { deck, defaults } = await resolveDeck(args.deck);
+      await build(deck, {
+        outDir: args.out ?? defaults.outDir.replaceAll("{name}", deck.name),
+        base: args.base ?? defaults.base,
+      });
+    },
+  }),
+};
 const main = defineCommand({
-  meta: { name: "decks" },
-  subCommands: {
-    dev: defineCommand({
-      args: { deck: deckArg, port: { type: "string" }, open: { type: "boolean", default: false } },
-      async run({ args }) {
-        const { deck } = await resolveDeck(args.deck);
-        if (args.port !== undefined && (!/^\d+$/.test(args.port) || Number(args.port) > 65535))
-          throw new Error(`Invalid --port "${args.port}"`);
-        const port = args.port === undefined ? undefined : Number(args.port);
-        const server = await dev(deck, { port, open: args.open });
-        console.log(pc.green(server.url));
-      },
-    }),
-    build: defineCommand({
-      args: { deck: deckArg, out: { type: "string" }, base: { type: "string" } },
-      async run({ args }) {
-        const { deck, defaults } = await resolveDeck(args.deck);
-        await build(deck, {
-          outDir: args.out ?? defaults.outDir.replaceAll("{name}", deck.name),
-          base: args.base ?? defaults.base,
-        });
-      },
-    }),
-  },
+  meta: { name: "decks", description: "Develop and build React slide decks" },
+  subCommands: commands,
 });
 
-await runMain(main);
+const rawArgs = process.argv.slice(2);
+const command = rawArgs[0];
+try {
+  if (command !== "dev" && command !== "build") {
+    await showUsage(main);
+    if (command && command !== "--help" && command !== "-h") {
+      throw new DeckError(`unknown command ${JSON.stringify(command)}. Use dev or build.`);
+    }
+  } else if (rawArgs.includes("--help") || rawArgs.includes("-h")) {
+    if (command === "dev") await showUsage(commands.dev);
+    else await showUsage(commands.build);
+  } else {
+    const options: ParseArgsOptionsConfig =
+      command === "build"
+        ? { out: { type: "string" }, base: { type: "string" } }
+        : { port: { type: "string" }, open: { type: "boolean" } };
+    try {
+      parseArgs({ args: rawArgs.slice(1), options, allowPositionals: true });
+    } catch (cause) {
+      if (
+        cause instanceof Error &&
+        "code" in cause &&
+        cause.code === "ERR_PARSE_ARGS_UNKNOWN_OPTION"
+      ) {
+        const option = cause.message.match(/Unknown option '([^']+)'/)?.[1];
+        throw new DeckError(
+          `unknown option ${option}. Options: ${Object.keys(options)
+            .map((key) => `--${key}`)
+            .join(", ")}.`,
+        );
+      }
+      throw new DeckError(
+        cause instanceof Error ? cause.message : String(cause),
+        undefined,
+        undefined,
+        { cause },
+      );
+    }
+    try {
+      await runCommand(main, { rawArgs });
+    } catch (cause) {
+      if (cause instanceof Error && cause.name === "CLIError") throw new DeckError(cause.message);
+      throw cause;
+    }
+  }
+} catch (cause) {
+  const error = authorError(cause);
+  const message =
+    error?.message ??
+    `${cause instanceof Error ? cause.stack : String(cause)}\nThis is a bug in react-decks.`;
+  console.error(`decks${command ? ` ${command}` : ""}: ${message}`);
+  process.exitCode = 1;
+}

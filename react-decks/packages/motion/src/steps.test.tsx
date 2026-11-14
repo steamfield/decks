@@ -56,7 +56,7 @@ describe("step primitives", () => {
     async (until) => {
       const view = await setupMotion(() => <InvalidStep until={until} />, { error: true });
       expect(String(view.errors[0])).toContain(String(until));
-      expect(screen.getByText("Unable to render slide slide-1.")).toBeVisible();
+      expect(screen.getByText(/^Slide slide-1 \(1.mdx\) failed to render:/)).toBeVisible();
     },
   );
 
@@ -164,7 +164,7 @@ describe("step primitives", () => {
     expect(view.errors[0]).toBeInstanceOf(Error);
     expect(view.errors[0]).toHaveProperty(
       "message",
-      `TextReveal takes plain text; received ${type}`,
+      `TextReveal takes plain text; received ${type}. Pass a string as its child.`,
     );
   });
 
@@ -274,6 +274,8 @@ describe("step primitives", () => {
   });
 
   it("throws when a step is rendered outside a SlideHost", () => {
-    expect(() => render(<Step at={1}>Orphan</Step>)).toThrow(/SlideHost/);
+    expect(() => render(<Step at={1}>Orphan</Step>)).toThrow(
+      /useSlide\(\).*Render the component from a slide/,
+    );
   });
 });

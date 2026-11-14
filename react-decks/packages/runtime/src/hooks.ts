@@ -11,7 +11,10 @@ export const DeckContext = createContext<{
 
 export function useDeckContext() {
   const context = useContext(DeckContext);
-  if (!context) throw new Error("Missing Deck provider");
+  if (!context)
+    throw new Error(
+      "useDeck() was called outside a deck. Render the component from a slide inside <Deck>.",
+    );
   return context;
 }
 
@@ -96,7 +99,10 @@ export const SlideContext = createContext<{
 
 export function useSlide(): SlideApi {
   const slide = useContext(SlideContext);
-  if (!slide) throw new Error("Missing SlideHost provider");
+  if (!slide)
+    throw new Error(
+      "useSlide() was called outside a slide (this is also what <Step>, <Morph> and the other motion components use). Render the component from a slide.",
+    );
   const { source } = useDeckContext();
   const clicks = useDeckSelector(
     (state) => slide.clicks ?? clicksForSlide(slide.meta.no, state.nav, source.manifest),

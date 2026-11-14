@@ -1,3 +1,5 @@
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { createServer } from "vite";
@@ -5,6 +7,34 @@ import { expect, onTestFinished, vi } from "vitest";
 import { loadDeck, type ResolvedDeck, reactDecks, scanSlides } from "./index";
 
 export const testVite = { optimizeDeps: { noDiscovery: true, include: [] } };
+
+export function cli(cwd: string, args: string[]) {
+  const child = spawn(
+    resolve("node_modules/.bin/tsx"),
+    [resolve("packages/node/src/cli.ts"), ...args],
+    {
+      cwd,
+      env: { ...process.env, NO_COLOR: "1" },
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", (data) => {
+    stdout += String(data);
+  });
+  child.stderr.on("data", (data) => {
+    stderr += String(data);
+  });
+  const exit = once(child, "close");
+  onTestFinished(async () => {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill("SIGTERM");
+      await exit;
+    }
+  });
+  return { child, exit, output: () => ({ stdout, stderr }) };
+}
 
 export const waitForWatcher = (assertion: () => void | Promise<void>) =>
   vi.waitFor(assertion, { timeout: 10_000 });

@@ -67,7 +67,7 @@ describe("loadDeck", () => {
   it("names the missing config file", async () => {
     const { dir } = await fixture();
     await expect(loadDeck(join(dir, "missing"))).rejects.toThrow(
-      join(dir, "missing", "deck.config.ts"),
+      `no deck.config.ts in .tmp/${dir.split("/").at(-1)}/missing.`,
     );
   });
 });
