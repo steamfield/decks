@@ -1,5 +1,3 @@
-import { mkdir } from "node:fs/promises";
-import { resolve } from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { test } from "./motion.fixture";
 
@@ -106,8 +104,8 @@ test("Every gallery click reverses to exactly the poses before it.", async ({ pa
   test.setTimeout(90_000);
   for (let no = 1; no <= gallery.length; no++) {
     const total = gallery[no - 1]?.[1] ?? 0;
+    await page.goto(`/#/${no}`);
     for (let click = 0; click < Math.max(total, no < gallery.length ? 1 : 0); click++) {
-      await page.goto(`/#/${no}${click ? `?clicks=${click}` : ""}`);
       await position(page, no, click);
       await settled(page, no, click);
       const before = await poses(page);
@@ -119,6 +117,7 @@ test("Every gallery click reverses to exactly the poses before it.", async ({ pa
       await position(page, no, click);
       await settled(page, no, click);
       await expect.poll(() => poses(page)).toEqual(before);
+      if (click + 1 < total) await page.keyboard.press("ArrowRight");
     }
   }
 });
@@ -141,10 +140,11 @@ test("Direct instant loads at the last click match settled live arrival on every
     };
     requestAnimationFrame(firstFrame);
   });
+  await page.goto("/#/1");
   for (let no = 1; no <= gallery.length; no++) {
     const total = gallery[no - 1]?.[1] ?? 0;
-    await page.goto(`/#/${no}`);
     await position(page, no);
+    await settled(page, no, 0);
     for (let click = 1; click <= total; click++) {
       await page.keyboard.press("ArrowRight");
       await position(page, no, click);
@@ -159,6 +159,7 @@ test("Direct instant loads at the last click match settled live arrival on every
     await settled(instant, no, total);
     expect(await poses(instant)).toEqual(live);
     await expect(instant.locator("html")).toHaveCSS("--deck-dur-base", "0ms");
+    if (no < gallery.length) await page.keyboard.press("ArrowRight");
   }
   await instant.close();
 });
@@ -355,12 +356,10 @@ test("useTween updates its SVG attribute on each active frame and stops at the e
   );
 });
 
-test("The gallery walks every frame in both directions, reverses interruptions, and fits 4:3.", async ({
+test("The gallery walks every frame forward, reverses interruptions, and fits 4:3.", async ({
   page,
 }) => {
   test.setTimeout(90_000);
-  const dir = resolve(".tmp/motion-qa");
-  await mkdir(dir, { recursive: true });
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/#/1");
@@ -369,15 +368,7 @@ test("The gallery walks every frame in both directions, reverses interruptions, 
     for (let click = 0; click <= total; click++) {
       await position(page, no, click);
       await settled(page, no, click);
-      await page.screenshot({ path: `${dir}/${String(no).padStart(2, "0")}-${click}.png` });
       if (no !== gallery.length || click !== total) await page.keyboard.press("ArrowRight");
-    }
-  }
-  for (let no: number = gallery.length; no >= 1; no--) {
-    for (let click = gallery[no - 1]?.[1] ?? 0; click >= 0; click--) {
-      await position(page, no, click);
-      await settled(page, no, click);
-      if (no !== 1 || click !== 0) await page.keyboard.press("ArrowLeft");
     }
   }
   for (const no of [9, 10, 11]) {
@@ -421,7 +412,6 @@ test("The gallery walks every frame in both directions, reverses interruptions, 
       const previous = boxes[index - 1];
       if (previous) expect(box.y).toBeGreaterThanOrEqual(previous.bottom);
     }
-    await page.screenshot({ path: `${dir}/resize-${no}.png` });
   }
   expect(errors).toEqual([]);
 });

@@ -157,6 +157,10 @@ export function TextReveal({
   children: string;
 }) {
   const attrs = stepAttributes(useStepState(at), enter);
+  if (typeof children !== "string")
+    throw new Error(
+      `TextReveal takes plain text; received ${children === null ? "null" : Array.isArray(children) ? "array" : typeof children}`,
+    );
   const pieces =
     by === "char"
       ? Array.from(graphemes.segment(children), ({ segment }) => segment)

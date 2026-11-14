@@ -134,6 +134,35 @@ it("Space on Reset timer uses native button activation and never advances the ta
   expect(screen.getByLabelText("Elapsed time")).toHaveTextContent("00:00");
 });
 
+it("fullscreen is ignored when disabled", async () => {
+  const requests: string[] = [];
+  install(document, "fullscreenEnabled", false);
+  install(document.documentElement, "requestFullscreen", async () => {
+    requests.push("enter");
+  });
+  setup();
+  await userEvent.setup().keyboard("f");
+  expect(requests).toEqual([]);
+});
+
+it.each([false, true])(
+  "a refused fullscreen toggle is handled when already fullscreen is %s",
+  async (fullscreen) => {
+    const requests: string[] = [];
+    install(document, "fullscreenEnabled", true);
+    install(document, "fullscreenElement", fullscreen ? document.documentElement : null);
+    const refuse = async () => {
+      requests.push(fullscreen ? "exit" : "enter");
+      throw new Error("Fullscreen refused by the browser");
+    };
+    install(document, "exitFullscreen", refuse);
+    install(document.documentElement, "requestFullscreen", refuse);
+    setup();
+    await userEvent.setup().keyboard("f");
+    expect(requests).toEqual([fullscreen ? "exit" : "enter"]);
+  },
+);
+
 it("without randomUUID a synced deck uses sixteen random bytes and still renders", async () => {
   install(crypto, "randomUUID", undefined);
   const byteCounts: number[] = [];
@@ -186,6 +215,7 @@ it("missing wake-lock and fullscreen APIs leave the deck usable", async () => {
 it.each(["play", "presenter", "overview", "print"])(
   "f toggles document fullscreen in %s",
   async (view) => {
+    install(document, "fullscreenEnabled", true);
     const events: string[] = [];
     let fullscreen: Element | null = null;
     const previous = Object.getOwnPropertyDescriptor(document, "fullscreenElement");

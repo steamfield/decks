@@ -24,6 +24,7 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
   const configFile = normalizePath(join(deck.dir, "deck.config.ts"));
   let metadata = new Map<string, string>();
   let componentsCode: string | undefined;
+  let motionNames: ReadonlyMap<string, string> = new Map();
   const totals = new Map<string, number>();
   const reload = (server: ViteDevServer, name: string) => {
     changedModules.add(name);
@@ -71,6 +72,7 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
       if (id === `\0${prefix}manifest`) {
         metadata = scanned.metadata;
         componentsCode = scanned.componentsCode;
+        motionNames = scanned.motionNames;
         const loaders = slides
           .map(
             ({ meta }) =>
@@ -145,6 +147,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
       const scanned = await scanSlidesWithCounts(current, totals);
       metadata = scanned.metadata;
       componentsCode = scanned.componentsCode;
+      motionNames = scanned.motionNames;
       configChanged(configFile);
     },
     closeBundle() {
@@ -161,6 +164,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
         context.type === "update"
       ) {
         const scanned = await scanSlidesWithCounts(current, totals);
+        motionNames = scanned.motionNames;
         if (
           scanned.componentsCode === componentsCode &&
           Array.from(scanned.metadata).every(([file, value]) => metadata.get(file) === value)
@@ -186,7 +190,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
         await context.read(),
         file,
         totals.get(key),
-        (await componentsModule(deck.dir)).motionNames,
+        motionNames,
       );
       const previous = metadata.get(key);
       metadata.set(key, next);

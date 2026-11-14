@@ -1,6 +1,8 @@
+import { type CallExpression, parseSync, Visitor } from "oxc-parser";
+import { createServer } from "vite";
 import { describe, expect, it, onTestFinished } from "vitest";
 import { fixture as createFixture } from "./deck.test-support";
-import { loadDeck, scanSlides } from "./index";
+import { loadDeck, reactDecks, scanSlides } from "./index";
 
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
 
@@ -25,6 +27,18 @@ describe("static click totals", () => {
     const { dir } = await fixture({
       "components/motion.tsx": 'export { Step as Reveal } from "@react-decks/motion";',
       "slides/01-first.mdx": "<Reveal at={3} />",
+    });
+    expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(3);
+  });
+  it.each([
+    ['import { Step } from "@react-decks/motion"; export { Step };', "Step"],
+    ['import { Step as Local } from "@react-decks/motion"; export { Local };', "Local"],
+    ['import { Step } from "@react-decks/motion"; export { Step as Reveal };', "Reveal"],
+    ['import { Step as Local } from "@react-decks/motion"; export { Local as Reveal };', "Reveal"],
+  ])("counts a locally exported motion import: %s", async (source, name) => {
+    const { dir } = await fixture({
+      "components/motion.tsx": source,
+      "slides/01-first.mdx": `<${name} at={3} />`,
     });
     expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(3);
   });
@@ -179,11 +193,76 @@ export const example = 'import { Step } from "@react-decks/motion"';
     await expect(scan(body)).rejects.toThrow(/01-first\.mdx.*(Step|TextReveal).*spread.*clicks/);
     expect((await scan(`---\nclicks: 4\n---\n${body}`))[0]?.meta.clicks).toBe(4);
   });
-  it("rejects a paragraph of inline JSX with instructions for making children countable", async () => {
-    await expect(scan("<Steps from={1}>\n<li>One</li>\n<li>Two</li>\n</Steps>")).rejects.toThrow(
-      /01-first\.mdx.*Steps.*own block.*markdown list/,
-    );
-  });
+  it.each([
+    ["adjacent li lines", "<li>One</li>\n<li>Two</li>"],
+    ["adjacent div lines", "<div>One</div>\n<div>Two</div>"],
+    ["li blocks", "<li>One</li>\n\n<li>Two</li>"],
+    ["div blocks", "<div>One</div>\n\n<div>Two</div>"],
+    ["a JSX list", "<ul>\n<li>One</li>\n<li>Two</li>\n</ul>"],
+    ["a JSX ordered list with blank lines", "<ol>\n<li>One</li>\n\n<li>Two</li>\n</ol>"],
+    ["a markdown list", "\n- One\n- Two\n"],
+    ["multiline children", "<div>\nOne\n</div>\n<div>\nTwo\n</div>"],
+    ["a non-breaking space", "<li>One</li>&nbsp;<li>Two</li>", true],
+  ])(
+    "matches the children MDX actually compiles for %s",
+    async (_name, children, paragraph = false) => {
+      const body = `<Steps from={1}>\n${children}\n</Steps>`;
+      const { dir, put } = await fixture({
+        "components/motion.tsx": 'export { Steps } from "@react-decks/motion";',
+        // The override lets MDX compile a body the static counter should reject.
+        "slides/01-first.mdx": paragraph ? `---\nclicks: 0\n---\n${body}` : body,
+      });
+      const deck = await loadDeck(dir);
+      const server = await createServer({
+        configFile: false,
+        plugins: reactDecks(deck),
+        server: { port: 0 },
+        logLevel: "silent",
+      });
+      onTestFinished(() => server.close());
+      const compiled = await server.transformRequest("/slides/01-first.mdx");
+      if (!compiled) throw new Error("MDX did not compile");
+      const childCalls = (call: CallExpression): CallExpression[] => {
+        const props = call.arguments[1];
+        if (props?.type !== "ObjectExpression") return [];
+        const children = props.properties.find(
+          (property) =>
+            property.type === "Property" &&
+            property.key.type === "Identifier" &&
+            property.key.name === "children",
+        );
+        if (children?.type !== "Property") return [];
+        const values =
+          children.value.type === "ArrayExpression" ? children.value.elements : [children.value];
+        return values.filter((value): value is CallExpression => value?.type === "CallExpression");
+      };
+      let compiledCount: number | undefined;
+      new Visitor({
+        CallExpression(call) {
+          if (call.arguments[0]?.type !== "Identifier" || call.arguments[0].name !== "Steps")
+            return;
+          let children = childCalls(call);
+          const first = children[0];
+          const only = first?.arguments[0];
+          if (
+            children.length === 1 &&
+            first &&
+            ((only?.type === "Literal" && (only.value === "ul" || only.value === "ol")) ||
+              (only?.type === "MemberExpression" &&
+                only.property.type === "Identifier" &&
+                (only.property.name === "ul" || only.property.name === "ol")))
+          )
+            children = childCalls(first);
+          compiledCount = children.length;
+        },
+      }).visit(parseSync("compiled.js", compiled.code).program);
+      expect(compiledCount).toBe(paragraph ? 1 : 2);
+      if (paragraph) {
+        await put("slides/01-first.mdx", body);
+        await expect(scanSlides(deck)).rejects.toThrow(/01-first\.mdx.*Steps.*children/);
+      } else expect((await scanSlides(deck))[0]?.meta.clicks).toBe(compiledCount);
+    },
+  );
   it("rejects a list mixed with other Steps children", async () => {
     await expect(scan("<Steps from={1}>\n\n- One\n\n<div />\n</Steps>")).rejects.toThrow(
       /01-first\.mdx.*Steps.*children/,

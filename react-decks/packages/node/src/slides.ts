@@ -86,7 +86,7 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
     }
   }
   if (!slides.length) throw new Error(`${deck.dir}: no visible slides`);
-  return { slides, metadata, componentsCode };
+  return { slides, metadata, componentsCode, motionNames };
 }
 
 export function buildManifest(deck: ResolvedDeck, slides: readonly ScannedSlide[]): DeckManifest {

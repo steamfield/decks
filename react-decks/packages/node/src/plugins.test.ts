@@ -600,6 +600,7 @@ export default { title: "Startup title", vite: { plugins: [{ name: "pause-startu
     );
     expect(
       app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+      app.messages.slice(Math.max(0, start - 4)).join("\n"),
     ).toBe(false);
     expect(await app.get("/slides/02-new.mdx")).toContain("Edited");
   });
