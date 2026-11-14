@@ -42,6 +42,7 @@ export { easeHeight, entrance, fadeIn, fadeOutInPlace, RISE, riseIn } from "./mo
 export { OdByline } from "./od-byline";
 export { OdCoverHead } from "./od-cover-head";
 export { OdEyebrow } from "./od-eyebrow";
+export { OdLogo } from "./od-logo";
 export { OdQrCard } from "./od-qr-card";
 export { OpenChart } from "./open-chart";
 export { CATEGORICAL_COLORS } from "./palette";

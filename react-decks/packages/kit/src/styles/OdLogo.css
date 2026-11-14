@@ -1,0 +1,167 @@
+/* The brand mark (OdLogo). The mark is theme-supplied SVG markup, so its layers are styled by
+   class under .od-logo. Ported from the addon's OdLogo.vue. */
+
+/* Cycle 1: transient accent burst pair emerges, rises, fades out. */
+@keyframes od-logo-intro-fade {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes od-logo-intro-move {
+  0% {
+    transform: translate3d(0, 3px, 0);
+  }
+  10% {
+    transform: translate3d(0, 0, 0);
+  }
+  40% {
+    transform: translate3d(0, -3px, 0);
+  }
+  70%,
+  100% {
+    transform: translate3d(0, -9px, 0);
+  }
+}
+.od-logo .od-intro {
+  opacity: 0;
+  animation:
+    od-logo-intro-fade 2s linear forwards,
+    od-logo-intro-move 2s cubic-bezier(0.12, 0, 1, 1) forwards;
+  will-change: transform, opacity;
+}
+.od-logo .od-intro-0 {
+  animation-delay: 0s;
+}
+.od-logo .od-intro-1 {
+  animation-delay: 0.25s;
+}
+
+/* Cycle 2: brand layers emerge and settle into final position. */
+@keyframes od-logo-settle-fade {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes od-logo-settle-move-teal {
+  0% {
+    transform: translate3d(0, 3px, 0);
+  }
+  15% {
+    transform: translate3d(0, 0, 0);
+  }
+  65% {
+    transform: translate3d(0, -5.5px, 0);
+  }
+  100% {
+    transform: translate3d(0, -5px, 0);
+  }
+}
+@keyframes od-logo-settle-move-cyan {
+  0% {
+    transform: translate3d(0, 3px, 0);
+  }
+  15% {
+    transform: translate3d(0, 0, 0);
+  }
+  65% {
+    transform: translate3d(0, -9.5px, 0);
+  }
+  100% {
+    transform: translate3d(0, -9px, 0);
+  }
+}
+.od-logo .od-settle-teal {
+  opacity: 0;
+  animation:
+    od-logo-settle-fade 2s ease-out forwards,
+    od-logo-settle-move-teal 2s ease-out forwards;
+  animation-delay: 1.6s;
+  will-change: transform, opacity;
+}
+.od-logo .od-settle-cyan {
+  opacity: 0;
+  animation:
+    od-logo-settle-fade 2s ease-out forwards,
+    od-logo-settle-move-cyan 2s ease-out forwards;
+  animation-delay: 1.85s;
+  will-change: transform, opacity;
+}
+
+/* After settling, drift in a subtle infinite float. */
+@keyframes od-logo-float-teal {
+  0%,
+  100% {
+    transform: translate3d(0, -5px, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+@keyframes od-logo-float-cyan {
+  0%,
+  100% {
+    transform: translate3d(0, -9px, 0);
+  }
+  50% {
+    transform: translate3d(0, -10.2px, 0);
+  }
+}
+.od-logo .od-float-teal {
+  opacity: 1;
+  animation: od-logo-float-teal 3s ease-in-out infinite;
+  will-change: transform;
+}
+.od-logo .od-float-cyan {
+  opacity: 1;
+  animation: od-logo-float-cyan 3.4s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Settled: reduced motion, and every context but the live slide. */
+@media (prefers-reduced-motion: reduce) {
+  .od-logo .od-intro {
+    display: none;
+  }
+  .od-logo .od-settle-teal {
+    opacity: 1;
+    animation: none;
+    transform: translate3d(0, -5px, 0);
+  }
+  .od-logo .od-settle-cyan {
+    opacity: 1;
+    animation: none;
+    transform: translate3d(0, -9px, 0);
+  }
+}
+
+.od-logo.is-settled .od-intro {
+  display: none;
+}
+.od-logo.is-settled :is(.od-settle-teal, .od-float-teal) {
+  opacity: 1;
+  animation: none;
+  transform: translate3d(0, -5px, 0);
+}
+.od-logo.is-settled :is(.od-settle-cyan, .od-float-cyan) {
+  opacity: 1;
+  animation: none;
+  transform: translate3d(0, -9px, 0);
+}
