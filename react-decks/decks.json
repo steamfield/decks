@@ -2,7 +2,7 @@
   "_config": {
     "decksDir": "examples",
     "outDir": "dist/{name}",
-    "base": "/"
+    "base": "./"
   },
   "basic": {
     "dir": "examples/basic"

@@ -44,7 +44,8 @@ than hand-written code asks for it by name.
 
 | Concern | Use | Package |
 | --- | --- | --- |
-| Deck store and selector subscriptions | zustand vanilla store, read through `useStore` with selectors | `runtime` |
+| Deck store | zustand vanilla store behind the `DeckStore` surface; hooks subscribe with React's `useSyncExternalStore` and a selector | `runtime` |
+| Error boundary around each slide | `react-error-boundary` | `runtime` |
 | Keyboard shortcuts | `tinykeys` | `runtime` |
 | Pinch, wheel and drag for the viewer | `@use-gesture/react` | `runtime` |
 | Class name composition | `clsx` | `runtime`, `motion`, `kit` |
@@ -52,7 +53,9 @@ than hand-written code asks for it by name.
 | MDX compile | `@mdx-js/rollup` | `node` |
 | Frontmatter | `remark-frontmatter` + `remark-mdx-frontmatter` in the MDX pipeline; `gray-matter` when only metadata is read | `node` |
 | Markdown in notes to HTML | `remark-rehype` + `rehype-stringify` | `node` |
+| Loading `deck.config.ts` | `jiti` | `node` |
 | Config validation | `zod` | `node` |
+| Reading a component file's export names | `oxc-parser` | `node` |
 | CLI commands and flags | `citty` | `node` |
 | Terminal colour and prompts | `picocolors`, `@clack/prompts` | `node` |
 | Free port | `get-port` | `node` |
@@ -593,6 +596,8 @@ runtime and the tests use.
 | Any write | `location.search` is preserved. |
 | `destroy` | Listeners removed; later URL changes do not notify. |
 
+| `dispatch` while the view is `overview` or `print` | Nothing. Those views cannot hold a position in the hash yet, so navigation is disabled in them until they are specified. |
+
 `useDeck` and `useSlide` throw an `Error` naming the missing provider when used outside
 `Deck` or outside a `SlideHost`.
 
@@ -608,8 +613,14 @@ import `@mdx-js/react` and there is no `MDXProvider`. In Phase 2 every view rend
 - Each slide root is an element with `data-deck-slide` and `data-deck-context` (section 3).
   The current one has `data-deck-active`; the others have the `hidden` attribute.
 - A slide whose module has not loaded renders nothing until it has. When the browser is idle
-  after the first render, every slide module is requested once so later navigation does not
-  wait.
+  after the first render, every slide module is requested once. A slide whose module has
+  already loaded renders in the same frame it is mounted in: jumping to any prefetched slide
+  shows no blank frame.
+- A slide whose module fails to load, or whose component throws, shows an error naming the
+  slide id in place of that slide only; the rest of the deck keeps working, and the next
+  mount of that slide tries the load again.
+- A slide root with the `hidden` attribute is not displayed, whatever the deck's own CSS
+  says about `[data-deck-slide]`.
 - Keys, bound with `tinykeys` on `window`:
 
 | Key | Action |
@@ -622,7 +633,8 @@ import `@mdx-js/react` and there is no `MDXProvider`. In Phase 2 every view rend
 | `End` | `go(total)` |
 
   A key is ignored when the event target is an `input`, `textarea`, `select` or
-  contenteditable element.
+  contenteditable element, and while it auto-repeats: holding a key down advances once.
+  This is `tinykeys`' default behaviour; do not replace it.
 
 `SlideFrame` measures its parent with `ResizeObserver`, applies `fitCanvas` with the
 manifest's canvas, sizes its content to the logical width and height in px, transform-scales
@@ -712,34 +724,39 @@ export function dev(deck: ResolvedDeck, options?: { port?: number; open?: boolea
 export function build(deck: ResolvedDeck, options: { outDir: string; base?: string }): Promise<void>;
 ```
 
-Config is loaded with Vite's `loadConfigFromFile` and validated with zod. Unknown keys are
-an error naming the key.
+Config is loaded with `jiti` (no module cache, so an edited file is re-read) and validated
+with zod. Unknown keys are an error naming the key. An `htmlAttrs` key must be a valid HTML
+attribute name (`/^[A-Za-z_:][-A-Za-z0-9_:.]*$/`).
 
 Modules the plugins serve:
 
 | Id | Exports |
 | --- | --- |
 | `virtual:react-decks/manifest` | `manifest: DeckManifest`; `slides: Record<id, () => import(<slide file>)>`; `frontmatter: Record<id, Record<string, unknown>>` |
-| `virtual:react-decks/components` | `components: Record<name, Component>` built per section 3.1 |
+| `virtual:react-decks/components` | `components: Record<name, Component>` built per section 3.1. Export names are read from each file when the module is generated, so a duplicate name fails `dev` and `build` with the error, not the browser |
 | `virtual:react-decks/notes` | `notes: Record<id, { click: number; html: string }[]>`: each slide's `<Notes>` markdown split with core's `segmentNotes` and each segment rendered to HTML; slides without notes are absent |
 | `virtual:react-decks/entry` | no exports; imports the three above (notes lazily, as `loadNotes`), the deck's `styles/index.css` when it exists, and calls `mountDeck` from `@react-decks/runtime` |
 
 The served HTML has `<html>` carrying `config.htmlAttrs`, a `<title>` from `config.title`,
-`<meta name="author">` when set, `<meta name="decks:entry" content="<absolute deck dir>">`,
-`<meta name="decks:name" content="<name>">`, `<div id="deck-root">`, and a module script for
+`<meta name="author">` when set, `<meta name="decks:name" content="<name>">`, in dev only
+`<meta name="decks:entry" content="<absolute deck dir>">` (a built site never contains a
+local path), `<div id="deck-root">`, and a module script for
 the entry. No `index.html` is written into the deck directory, in dev or in build.
 
 Slide `.mdx` files compile through `@mdx-js/rollup` with `remark-frontmatter` (frontmatter is
 not rendered) and a remark plugin that removes `<Notes>`. JSX and Fast Refresh come from
 `@vitejs/plugin-react`. The deck's `public/` is Vite's public directory. `config.vite` is
-merged last.
+merged over the framework's config, and then the explicit options of `dev` and `build`
+(`port`, `outDir`, `base`) are applied last: a `--base` on the command line beats a `base`
+in `config.vite`.
 
 | Change while `dev` runs | Result in the browser |
 | --- | --- |
 | A slide's body is edited | That slide hot-updates; no full reload |
 | A slide's frontmatter changes, or a slide file is added, removed or renamed | The manifest module is invalidated and the page reloads; slide and click survive because they are in the URL |
 | A file is added to or removed from `components/` | The components module is invalidated and the page reloads; no server restart |
-| `deck.config.ts` changes | The server restarts |
+| `deck.config.ts` changes | The server restarts and the page recovers at the same slide and click |
+| A slide file is renamed | One reload, after both the removal and the addition have been seen; the position in the URL is not clamped by an intermediate state |
 
 Before the first request Vite scans the runtime's entry and the deck's `components/*.tsx`
 for dependencies, so a cold start does not reload. A package imported directly in a slide's
@@ -750,7 +767,7 @@ Known limits, accepted: a slide's URL holds its number, so after a slide is inse
 it the same URL shows a different slide; and a structural reload (a slide or component file
 added or removed, frontmatter changed) discards component-local state.
 
-`build` writes a static site to `outDir` that works from any `base` and from `file:`-relative
+`build` empties `outDir` first and writes a static site that works from any `base` and from `file:`-relative
 hosting under that base; hash routing needs no server rewrites.
 
 CLI (`packages/node/src/cli.ts`, built with `citty`, run with `tsx`, which runs on Node):
@@ -762,8 +779,9 @@ decks build <deck> [--out <dir>] [--base <path>]
 
 `<deck>` is an alias in `./decks.json` (`{ "<alias>": { "dir": "<path>" } }`, keys starting
 with `_` are config) or a path to a deck directory. `dev` prints the URL it serves.
-`build` defaults `--out` to `decks.json`'s `_config.outDir` with `{name}` replaced, and
-`--base` to `_config.base`. An unknown alias or a directory without `deck.config.ts` exits 1
+`build` defaults `--out` to `decks.json`'s `_config.outDir` with `{name}` replaced (default
+`dist/{name}`), and `--base` to `_config.base` (default `./`). A `--port` that is not a whole
+number, and a malformed `decks.json`, exit 1 with a message naming the value or the file. An unknown alias or a directory without `deck.config.ts` exits 1
 with a message naming it.
 
 ## 7. kit (Outline)
