@@ -159,6 +159,11 @@ in two real windows. A branch only jsdom takes (a missing browser API) is not a 
   `--repeat-each=5`. Do not edit the checkout while Playwright runs: its dev servers watch
   the source. A test that fails only in the suite is
   diagnosed (skill: `references/flaky-tests.md`), never retried or delayed.
+- A test file covers one feature and stays under 300 lines, so an agent working on that
+  feature loads only its tests: `plugins.test.ts` is not a place, `slide-hmr.test.ts` and
+  `config-restart.test.ts` are. Split by behaviour area, name the file after it, and keep
+  shared setup in one `*.test-support.ts` per package. In `e2e/`, one spec per workflow
+  area with fixtures in `e2e/fixtures/`. `tests/test-files.test.ts` enforces the limit.
 - Name a test after the behaviour, as a sentence. A behaviour table is the test list: one
   test per row, plus the boundaries either side. Cover error paths. See a bug-fix test fail
   before the fix. Never weaken, skip or delete a test to get green.
