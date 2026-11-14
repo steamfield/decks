@@ -226,7 +226,7 @@ The same slide is rendered in several places, sometimes at once.
 | `presenter` | The presenter window's current slide. | The deck's click. | False |
 | `preview` | The presenter window's "Next" box. | The click the next key press leads to. | False |
 | `overview` | An overview tile. | The slide's last click. | False |
-| `print` | Reserved for export. Nothing renders it yet. | | False |
+| `print` | The print view (`#/print`), which `decks export` captures. | The frame's click step, or the last click with `?print=final`. | False |
 
 What a component must do:
 

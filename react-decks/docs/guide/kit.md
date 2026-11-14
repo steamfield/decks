@@ -41,7 +41,10 @@ export { StoryCover } from "@steamfield/decks/kit";
 | `StoryStage`, `StoryLayer`, `StoryCard`, `StoryCover`, `StoryLink`, `STAGE` | Story stage components and the stage's 1920x1080 box. |
 | `useStage`, `useScriptedDemo` | Hooks that drive a stage from clicks. |
 | `OpenChart`, `slideChartTheme`, `scaleChartTheme`, `slideChartAnimation`, `useFrameScale` | Charts. |
-| `OdQrCard`, `OdByline`, `OdCoverHead` | A QR code card, a byline row and the cover's brand row. |
+| `OdQrCard`, `OdByline`, `OdCoverHead`, `OdEyebrow`, `OdLogo` | A QR code card, a byline row, the cover's brand row, a small overline label, and the theme's brand mark. |
+| `InkLine`, `InkBars`, `InkTimeline`, `InkTimelineCursor`, `InkRule`, `InkNumber`, `InkChip`, `InkCardRect`, `InkPing`, `UnitGrid`, `Underline`, `CodeInk`, `Graph3D`; handle types `LineHandle`, `BarsHandle`, `GrowHandle`, `RuleHandle`, `UnitGridHandle`, data types `InkBarRow`, `InkStep`, `DrawOptions` | Marks for story stages: lines, bars, timelines, rules, figures that count up, chips, card outlines, focus rings, unit grids (waffles), underlines, SQL with ink, and a 3D graph (live WebGL on the slide, an SVG still everywhere else). A mark that grows itself exposes a handle the stage adds to its timeline through a ref. `Graph3D` needs `three`, `3d-force-graph` and `three-spritetext` installed. |
+| `useStageEntrance`, `useStageMap`, `entrance`, `fadeIn`, `fadeOutInPlace`, `riseIn`, `easeHeight`, `RISE`, `prefersReducedMotion`, `resolvePosition` | Lower-level stage helpers: a one-shot entrance, stage-to-overlay coordinates, gsap tween presets, the reduced-motion check, and timeline position resolution. |
+| `brushRibbon`, `inkStyle`, `polylinePath`, `STORY_STYLE`, `STROKE`, `hash`, `hashRange`, `hashSigned`, `rippleProgress`, `parliament`, `tokenizeSql`, `UNIT_GRID_DEFAULTS`, `unitCellCenter`, `unitCellHeight`, `lerp`, `stackEndLabels`, `CATEGORICAL_COLORS`, `CANVAS` | Drawing primitives for custom marks: hand-drawn ribbons seeded by data identity, stroke styles, seeded hashes, ripple and hemicycle layouts, SQL tokens, unit-grid geometry, and the theme's categorical palette and canvas color. |
 | `DUR`, `SETTLE`, `DRAW`, `TRACE`, `SETTLE_CSS`, `DRAW_CSS`, `TRACE_CSS`, `easedStagger` | The story duration table (seconds), three gsap ease names, the same curves as CSS strings, and an eased stagger offset. |
 | `xScale`, `yScale`, `clamp01`, `stagger` | Linear scales (d3-scale) for stage coordinates, a 0 to 1 clamp, and per-item progress within one staggered beat. |
 | `FILTER_IDS`, `filterUrl` | SVG filters every `StoryStage` defines (marker textures and a glow), referenced as `filter={filterUrl(FILTER_IDS.glow)}`. |
@@ -193,7 +196,7 @@ export function TideDayStage() {
 }
 ```
 
-`InkLine`, `InkRule` and `InkChip` are local to that example (`examples/tides-slide/components/`), not kit exports. They show how to write a mark that adds its own tween to the stage's timeline through a ref.
+The tides example keeps its own small `InkLine`, `InkRule` and `InkChip` (`examples/tides-slide/components/`) to show how a mark adds its own tween to the stage's timeline through a ref. The kit exports full versions of these and the other Ink marks; see the export list in `packages/kit/src/index.ts`.
 
 ### `useStage({ copy, enter, beats })`
 

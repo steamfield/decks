@@ -12,17 +12,16 @@ Each page stands alone. Read the one that answers your question.
 | [motion.md](motion.md) | How do clicks work, which motion components and hooks exist, and how do slide transitions and `Morph` work? |
 | [code-blocks.md](code-blocks.md) | How do I show highlighted code and step through lines? |
 | [config.md](config.md) | What can `deck.config.ts` set, how do I add MDX plugins, layers or a setup file, and how are errors reported? |
+| [cli.md](cli.md) | What do `decks new`, `check`, `lint`, `hook`, `export`, `shot` and `init` do? |
 | [presenting.md](presenting.md) | Which keys do what, and how do the presenter window, overview, sync and text sizing behave? |
 | [kit.md](kit.md) | What does `@steamfield/decks/kit` provide: theme, story stages, `OpenChart`, the `story` transition? |
 
 ## Not built yet
 
-These are planned or mentioned in the design document, and do not exist in the code. Do not write a deck that depends on them.
+These are mentioned in the design document and do not exist in the code. Do not write a deck that depends on them.
 
-- Any `decks` command other than `dev` and `build`: `new`, `export`, `check`, `lint`, `list`, `shot`, `snap`, `film`, `motion-check`, `init`.
-- PDF export and a print view. The `#/print` URL and the `print` render context are reserved, and `#/print` shows the play view today.
+- `decks list`, `snap`, `film` and `motion-check`.
 - `defineTheme` and theme packages. A deck themes itself with CSS, and with the kit's `theme.json` when it uses the kit.
 - Tailwind scaffolding. A deck can add Vite plugins through the `vite` option, and nothing sets Tailwind up for it.
 - Pinch zoom and pan in the viewer.
-- The embed message protocol. `?embedded` only turns off sync and the presenter key.
-- Most of the kit beyond the exports listed in [kit.md](kit.md): the `Ink*` and `Unit*` marks, `Graph3D`, `CodeInk`, `RowStrip` and the conventional slide chrome have not been ported.
+- A print page size other than the 1920x1080 canvas: `decks export` prints every deck at that size.
