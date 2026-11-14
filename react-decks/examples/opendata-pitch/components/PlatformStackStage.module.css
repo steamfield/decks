@@ -1,0 +1,25 @@
+.surface {
+  transition: color var(--od-dur-card) var(--od-settle);
+}
+.surface :global(.od-card-stroke) {
+  transition: none;
+}
+.name {
+  font-family: var(--od-font-sans);
+  font-size: calc(30px * var(--deck-text-scale, 1));
+  font-weight: 590;
+  letter-spacing: -0.015em;
+  fill: var(--od-text);
+}
+.meta {
+  font-family: var(--od-font-mono);
+  font-size: calc(20px * var(--deck-text-scale, 1));
+  font-weight: 500;
+  fill: var(--od-text-faint);
+}
+.who {
+  font-family: var(--od-font-sans);
+  font-size: calc(19px * var(--deck-text-scale, 1));
+  line-height: 1.3;
+  color: var(--od-text-muted);
+}

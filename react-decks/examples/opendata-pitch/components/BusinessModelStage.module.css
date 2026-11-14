@@ -1,0 +1,39 @@
+.name {
+  font-family: var(--od-font-sans);
+  font-size: calc(30px * var(--deck-text-scale, 1));
+  font-weight: 590;
+  letter-spacing: -0.015em;
+  fill: var(--od-text);
+}
+.buyer {
+  font-family: var(--od-font-mono);
+  font-size: calc(22px * var(--deck-text-scale, 1));
+  font-weight: 500;
+  fill: var(--od-text-faint);
+}
+.price {
+  font-family: var(--od-font-mono);
+  font-size: calc(24px * var(--deck-text-scale, 1));
+  font-weight: 510;
+  font-variant-numeric: tabular-nums;
+}
+.foot {
+  font-family: var(--od-font-mono);
+  font-size: calc(17px * var(--deck-text-scale, 1));
+  letter-spacing: 0.06em;
+  fill: var(--od-text-dim);
+}
+.comps {
+  position: absolute;
+  left: calc(56.25 * var(--sw));
+  top: calc(27 * var(--sh));
+  width: calc(40 * var(--sw));
+  display: flex;
+  flex-direction: column;
+  gap: calc(7 * var(--sh));
+}
+.margin {
+  position: absolute;
+  left: calc(5.7 * var(--sw));
+  top: calc(74 * var(--sh));
+}

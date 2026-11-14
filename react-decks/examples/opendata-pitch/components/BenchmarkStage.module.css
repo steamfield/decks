@@ -1,0 +1,84 @@
+.row {
+  font-family: var(--od-font-mono);
+  font-size: calc(24px * var(--deck-text-scale, 1));
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  fill: var(--od-text-muted);
+  dominant-baseline: middle;
+}
+.figures {
+  position: absolute;
+  left: calc(56 * var(--sw));
+  top: calc(48 * var(--sh));
+}
+.figuresHead {
+  margin: 0 0 calc(1.4 * var(--sh));
+  font-family: var(--od-font-mono);
+  font-size: calc(1.05 * var(--sw) * var(--deck-text-scale, 1));
+  font-weight: 500;
+  line-height: calc(1.25 * var(--sw) * var(--deck-text-scale, 1));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--od-text-faint);
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
+.figuresRow {
+  display: flex;
+  align-items: baseline;
+  gap: calc(3.2 * var(--sw));
+}
+.phase0 {
+  position: absolute;
+  left: calc(56 * var(--sw));
+  top: calc(48 * var(--sh));
+}
+.phase0None {
+  margin: calc(2.4 * var(--sh)) 0 0;
+  font-family: var(--od-font-mono);
+  font-size: calc(1.05 * var(--sw) * var(--deck-text-scale, 1));
+  font-weight: 500;
+  line-height: calc(1.25 * var(--sw) * var(--deck-text-scale, 1));
+  letter-spacing: 0.02em;
+  color: var(--od-text-faint);
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
+.effort {
+  position: absolute;
+  left: calc(56 * var(--sw));
+  top: calc(63 * var(--sh));
+  width: calc(38 * var(--sw));
+}
+.effortRow {
+  display: grid;
+  grid-template-columns: 1fr calc(8 * var(--sw)) calc(9.6 * var(--sw));
+  align-items: baseline;
+  gap: calc(1.2 * var(--sw));
+  padding: calc(0.8 * var(--sh)) 0;
+  border-bottom: 1px solid var(--od-border);
+}
+.effortRow .name {
+  font-family: var(--od-font-sans);
+  font-size: calc(1.1 * var(--sw) * var(--deck-text-scale, 1));
+  font-weight: 400;
+  color: var(--od-text-muted);
+}
+.effortRow .value {
+  text-align: right;
+  font-family: var(--od-font-mono);
+  font-size: calc(1.25 * var(--sw) * var(--deck-text-scale, 1));
+  font-weight: 510;
+  font-variant-numeric: tabular-nums;
+  color: var(--od-text-secondary);
+}
+.effortRow .value.mcp {
+  color: var(--od-cyan);
+}
+.effortRow.head .name,
+.effortRow.head .value {
+  font-family: var(--od-font-mono);
+  font-size: calc(0.92 * var(--sw) * var(--deck-text-scale, 1));
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--od-text-faint);
+}
