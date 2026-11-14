@@ -20,7 +20,9 @@
       "includes": [
         "packages/core/src/**",
         "!packages/core/src/**/*.test.ts",
-        "!packages/core/src/**/*.test.tsx"
+        "!packages/core/src/**/*.test.tsx",
+        "!packages/core/src/**/*.test-support.ts",
+        "!packages/core/src/**/*.test-support.tsx"
       ],
       "linter": {
         "rules": {
@@ -70,7 +72,12 @@
       }
     },
     {
-      "includes": ["packages/core/src/**/*.test.ts", "packages/core/src/**/*.test.tsx"],
+      "includes": [
+        "packages/core/src/**/*.test.ts",
+        "packages/core/src/**/*.test.tsx",
+        "packages/core/src/**/*.test-support.ts",
+        "packages/core/src/**/*.test-support.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -130,7 +137,9 @@
       "includes": [
         "packages/runtime/src/**",
         "!packages/runtime/src/**/*.test.ts",
-        "!packages/runtime/src/**/*.test.tsx"
+        "!packages/runtime/src/**/*.test.tsx",
+        "!packages/runtime/src/**/*.test-support.ts",
+        "!packages/runtime/src/**/*.test-support.tsx"
       ],
       "linter": {
         "rules": {
@@ -240,7 +249,12 @@
       }
     },
     {
-      "includes": ["packages/runtime/src/**/*.test.ts", "packages/runtime/src/**/*.test.tsx"],
+      "includes": [
+        "packages/runtime/src/**/*.test.ts",
+        "packages/runtime/src/**/*.test.tsx",
+        "packages/runtime/src/**/*.test-support.ts",
+        "packages/runtime/src/**/*.test-support.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -344,7 +358,9 @@
       "includes": [
         "packages/motion/src/**",
         "!packages/motion/src/**/*.test.ts",
-        "!packages/motion/src/**/*.test.tsx"
+        "!packages/motion/src/**/*.test.tsx",
+        "!packages/motion/src/**/*.test-support.ts",
+        "!packages/motion/src/**/*.test-support.tsx"
       ],
       "linter": {
         "rules": {
@@ -453,7 +469,12 @@
       }
     },
     {
-      "includes": ["packages/motion/src/**/*.test.ts", "packages/motion/src/**/*.test.tsx"],
+      "includes": [
+        "packages/motion/src/**/*.test.ts",
+        "packages/motion/src/**/*.test.tsx",
+        "packages/motion/src/**/*.test-support.ts",
+        "packages/motion/src/**/*.test-support.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -556,7 +577,9 @@
       "includes": [
         "packages/node/src/**",
         "!packages/node/src/**/*.test.ts",
-        "!packages/node/src/**/*.test.tsx"
+        "!packages/node/src/**/*.test.tsx",
+        "!packages/node/src/**/*.test-support.ts",
+        "!packages/node/src/**/*.test-support.tsx"
       ],
       "linter": {
         "rules": {
@@ -593,7 +616,12 @@
       }
     },
     {
-      "includes": ["packages/node/src/**/*.test.ts", "packages/node/src/**/*.test.tsx"],
+      "includes": [
+        "packages/node/src/**/*.test.ts",
+        "packages/node/src/**/*.test.tsx",
+        "packages/node/src/**/*.test-support.ts",
+        "packages/node/src/**/*.test-support.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -624,7 +652,9 @@
       "includes": [
         "packages/kit/src/**",
         "!packages/kit/src/**/*.test.ts",
-        "!packages/kit/src/**/*.test.tsx"
+        "!packages/kit/src/**/*.test.tsx",
+        "!packages/kit/src/**/*.test-support.ts",
+        "!packages/kit/src/**/*.test-support.tsx"
       ],
       "linter": {
         "rules": {
@@ -732,7 +762,12 @@
       }
     },
     {
-      "includes": ["packages/kit/src/**/*.test.ts", "packages/kit/src/**/*.test.tsx"],
+      "includes": [
+        "packages/kit/src/**/*.test.ts",
+        "packages/kit/src/**/*.test.tsx",
+        "packages/kit/src/**/*.test-support.ts",
+        "packages/kit/src/**/*.test-support.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {

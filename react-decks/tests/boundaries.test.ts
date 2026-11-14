@@ -1,9 +1,18 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { builtinModules } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseSync, Visitor } from "oxc-parser";
 import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
@@ -35,20 +44,6 @@ const TEST_TOOLING = [
   "@testing-library/user-event",
   "@testing-library/jest-dom",
 ];
-// The core environment restriction is deliberately a direct identifier check.
-const DOM_GLOBALS = [
-  "window",
-  "document",
-  "location",
-  "navigator",
-  "history",
-  "localStorage",
-  "sessionStorage",
-  "BroadcastChannel",
-  "requestAnimationFrame",
-  "cancelAnimationFrame",
-  "fetch",
-];
 
 function packageName(specifier: string): string {
   return specifier.startsWith("@")
@@ -65,6 +60,7 @@ function importViolation(
   const rule = RULES[owner];
   if (!rule) return "unknown workspace package";
   const name = packageName(specifier);
+  if (/(?:^|\/)unstable(?:\/|$)/.test(specifier)) return "unstable APIs are not allowed";
   if (specifier.startsWith("node:") || BUILTINS.has(specifier)) {
     return rule.node ? undefined : "Node built-ins are forbidden";
   }
@@ -79,7 +75,10 @@ function importViolation(
   }
   // Test tooling is root-owned; tests still obey the forbidden dependency directions above.
   if (testFile && TEST_TOOLING.includes(name)) return undefined;
-  if (rule.npm === "declared" && declared.includes(name)) return undefined;
+  // A declared @types/<name> package is what provides the types imported from <name>.
+  if (rule.npm === "declared" && (declared.includes(name) || declared.includes(`@types/${name}`))) {
+    return undefined;
+  }
   return "external dependency is not allowed";
 }
 
@@ -91,94 +90,81 @@ function checkDependencies(owner: string, manifest: Manifest): string[] {
   });
 }
 
-/**
- * Blanks comments and replaces each string literal's contents with its index in `strings`, so
- * the patterns below see only real code and can read a specifier back by index. Newlines are
- * kept, so offsets still map to the original line numbers.
- */
-function scan(source: string): { code: string; strings: string[] } {
-  const strings: string[] = [];
-  let code = "";
-  let i = 0;
-  while (i < source.length) {
-    const char = source[i] ?? "";
-    const next = source[i + 1];
-    if (char === "/" && next === "/") {
-      while (i < source.length && source[i] !== "\n") i++;
-    } else if (char === "/" && next === "*") {
-      const end = source.indexOf("*/", i + 2);
-      const stop = end === -1 ? source.length : end + 2;
-      code += source.slice(i, stop).replace(/[^\n]/g, " ");
-      i = stop;
-    } else if (char === '"' || char === "'" || char === "`") {
-      let j = i + 1;
-      while (j < source.length && source[j] !== char) j += source[j] === "\\" ? 2 : 1;
-      const text = source.slice(i + 1, j);
-      // A template literal with a substitution is not a fixed specifier.
-      const fixed = char !== "`" || !text.includes("${");
-      code += fixed ? `"${strings.push(text) - 1}"` : "`computed`";
-      code += text.replace(/[^\n]/g, "");
-      i = j + 1;
-    } else {
-      code += char;
-      i++;
-    }
-  }
-  return { code, strings };
-}
-
-/** Resolves escapes such as "re\u0061ct", which name the same module as "react". */
-function resolveEscapes(text: string): string {
-  try {
-    return JSON.parse(`"${text.replace(/"/g, '\\"')}"`);
-  } catch {
-    return text;
-  }
-}
-
-const SPECIFIER = /(?:\bfrom\s*|\bimport\s*)"(\d+)"|\b(?:import|require)\s*\(\s*"(\d+)"\s*[,)]/g;
-const COMPUTED = /\b(?:import|require)\s*\(\s*(?!"\d+"\s*[,)])[^)\s]/g;
-
-/** Reads imports and globals from source text; comments and string contents cannot hide or fake them. */
+/** Reads module requests using the same parser as Vite, including type-only imports. */
 function checkSource(
   owner: string,
   file: string,
   source: string,
   declared: string[] = [],
 ): string[] {
-  const { code, strings } = scan(source);
+  // The workspace is TypeScript only, so every source file is type-checked by the same configs.
+  if (!/\.tsx?$/.test(file)) return [`${file}:1: source files must be .ts or .tsx`];
+  const result = parseSync(file, source);
   const violations: string[] = [];
   const report = (offset: number, specifier: string, reason: string) => {
-    const line = code.slice(0, offset).split("\n").length;
+    const line = source.slice(0, offset).split(/\r\n|[\n\r\u2028\u2029]/).length;
     violations.push(`${file}:${line}: ${specifier}: ${reason}`);
   };
-  for (const match of code.matchAll(SPECIFIER)) {
-    const specifier = resolveEscapes(strings[Number(match[1] ?? match[2])] ?? "");
+  for (const error of result.errors) {
+    report(error.labels[0]?.start ?? 0, "parse", error.message);
+  }
+  const checkImport = (offset: number, specifier: string) => {
     if (specifier.startsWith(".")) {
       const target = resolve(ROOT, dirname(file), specifier);
       const within = relative(join(ROOT, "packages", owner), target);
       if (within === ".." || within.startsWith(`..${sep}`) || isAbsolute(within)) {
-        report(match.index, specifier, "relative import leaves its package");
+        report(offset, specifier, "relative import leaves its package");
       }
     } else {
-      const reason = importViolation(owner, specifier, declared, /\.test\.tsx?$/.test(file));
-      if (reason) report(match.index, specifier, reason);
+      const reason = importViolation(
+        owner,
+        specifier,
+        declared,
+        /\.test(?:-support)?\.tsx?$/.test(file),
+      );
+      if (reason) report(offset, specifier, reason);
     }
+  };
+  for (const entry of result.module.staticImports) {
+    checkImport(entry.start, entry.moduleRequest.value);
   }
-  for (const match of code.matchAll(COMPUTED)) {
-    report(
-      match.index,
-      "import()",
-      "import specifier must be a string literal for boundary checking",
+  for (const statement of result.module.staticExports) {
+    const requests = new Set(
+      statement.entries.flatMap((entry) => entry.moduleRequest?.value ?? []),
     );
+    for (const specifier of requests) checkImport(statement.start, specifier);
   }
-  if (owner === "core") {
-    for (const match of code.matchAll(new RegExp(`\\b(?:${DOM_GLOBALS.join("|")})\\b`, "g"))) {
-      report(match.index, match[0], "DOM global is forbidden in core");
+  const dynamicSpecifiers = new Map<number, string>();
+  // Module records omit empty re-exports, import types, and dynamic specifier AST nodes.
+  new Visitor({
+    ExportNamedDeclaration(node) {
+      if (node.source && node.specifiers.length === 0) {
+        checkImport(node.start, node.source.value);
+      }
+    },
+    ImportExpression(node) {
+      if (node.source.type === "Literal" && typeof node.source.value === "string") {
+        dynamicSpecifiers.set(node.start, node.source.value);
+      }
+    },
+    TSImportType(node) {
+      checkImport(node.start, node.source.value);
+    },
+  }).visit(result.program);
+  for (const entry of result.module.dynamicImports) {
+    const specifier = dynamicSpecifiers.get(entry.start);
+    if (specifier !== undefined) {
+      checkImport(entry.start, specifier);
+    } else {
+      report(
+        entry.start,
+        "import()",
+        "import specifier must be a string literal for boundary checking",
+      );
     }
   }
-  // JSX compiles to an implicit react/jsx-runtime import, so core and node hold no .tsx files.
-  if ((owner === "core" || owner === "node") && file.endsWith(".tsx")) {
+  // JSX compiles to an implicit react/jsx-runtime import.
+  if ((owner === "core" || owner === "node") && /\.[jt]sx$/.test(file)) {
     violations.push(`${file}:1: react/jsx-runtime: implicit React import is forbidden`);
   }
   return violations;
@@ -187,8 +173,18 @@ function checkSource(
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const file = join(directory, entry.name);
-    return entry.isDirectory() ? sourceFiles(file) : /\.tsx?$/.test(entry.name) ? [file] : [];
+    return entry.isDirectory()
+      ? sourceFiles(file)
+      : /\.(?:[jt]sx?|m[jt]s|cts)$/.test(entry.name)
+        ? [file]
+        : [];
   });
+}
+
+function packageDirectories(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
 }
 
 function lintSource(
@@ -208,7 +204,37 @@ function lintSource(
     );
     const result = spawnSync(
       join(ROOT, "node_modules/.bin/biome"),
-      ["lint", `--only=${only}`, file],
+      ["lint", ...(only ? [`--only=${only}`] : []), file],
+      { cwd: fixture, encoding: "utf8" },
+    );
+    if (result.error) throw result.error;
+    return { status: result.status, output: `${result.stdout}\n${result.stderr}` };
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
+function typecheckSource(owner: string, file: string, source: string) {
+  const fixture = mkdtempSync(join(tmpdir(), "react-decks-typecheck-"));
+  try {
+    const directory = join(fixture, "packages", owner);
+    mkdirSync(join(directory, "src"), { recursive: true });
+    symlinkSync(join(ROOT, "node_modules"), join(fixture, "node_modules"), "dir");
+    for (const config of ["tsconfig.json", `packages/${owner}/tsconfig.json`]) {
+      writeFileSync(join(fixture, config), readFileSync(join(ROOT, config)));
+    }
+    if (owner === "core") {
+      writeFileSync(
+        join(directory, "src/globals.d.ts"),
+        readFileSync(join(ROOT, "packages/core/src/globals.d.ts")),
+      );
+    }
+    // Keep a TS input so excluded JavaScript cannot produce a misleading "no inputs" failure.
+    writeFileSync(join(directory, "src/included.ts"), "export {};");
+    writeFileSync(join(directory, "src", file), source);
+    const result = spawnSync(
+      join(ROOT, "node_modules/.bin/tsc"),
+      ["--noEmit", "-p", join(directory, "tsconfig.json")],
       { cwd: fixture, encoding: "utf8" },
     );
     if (result.error) throw result.error;
@@ -221,7 +247,7 @@ function lintSource(
 describe("workspace boundaries", () => {
   it("keeps every source file and package manifest within its dependency boundary", () => {
     const violations: string[] = [];
-    expect(readdirSync(join(ROOT, "packages")).sort()).toEqual(Object.keys(RULES).sort());
+    expect(packageDirectories(join(ROOT, "packages")).sort()).toEqual(Object.keys(RULES).sort());
     for (const owner of Object.keys(RULES)) {
       const directory = join(ROOT, "packages", owner);
       const manifest: Manifest = JSON.parse(readFileSync(join(directory, "package.json"), "utf8"));
@@ -242,6 +268,152 @@ describe("workspace boundaries", () => {
 });
 
 describe("boundary checker", () => {
+  it.each(['export {} from "react";', 'export type {} from "react";'])(
+    "checks empty re-exports: %s",
+    (source) => {
+      expect(checkSource("core", "packages/core/src/index.ts", source)).toEqual([
+        "packages/core/src/index.ts:1: react: React is forbidden",
+      ]);
+    },
+  );
+
+  it("rejects empty relative re-exports that cross package boundaries", () => {
+    expect(
+      checkSource(
+        "runtime",
+        "packages/runtime/src/index.ts",
+        'export {} from "../../kit/src/index";',
+      ),
+    ).toEqual([
+      "packages/runtime/src/index.ts:1: ../../kit/src/index: relative import leaves its package",
+    ]);
+  });
+
+  it("typechecks globals in core and node sources", () => {
+    for (const owner of ["core", "node"]) {
+      const result = typecheckSource(owner, "probe.ts", 'globalThis["document"].title;');
+      expect(result.status, result.output).not.toBe(0);
+      expect(result.output).toContain("document");
+    }
+  });
+
+  it("leaves core tests and test support to the root config", () => {
+    for (const suffix of ["test", "test-support"]) {
+      const result = typecheckSource("core", `probe.${suffix}.ts`, 'globalThis["document"].title;');
+      expect(result.status, result.output).toBe(0);
+    }
+  });
+
+  it("typechecks core timers and property and parameter names shared with browser globals", () => {
+    const result = typecheckSource(
+      "core",
+      "probe.ts",
+      "interface State { history: string[] } function read(location: State) { const timer = setTimeout(() => location.history, 0); clearTimeout(timer); }",
+    );
+    expect(result.status, result.output).toBe(0);
+  });
+
+  it.each([
+    ['const re = /"/;\nimport "react";', 2],
+    [
+      String.raw`base.replace(/\/*$/, '');
+import "react";`,
+      2,
+    ],
+    [String.raw`/^\/\//; import('react');`, 1],
+    [`const text = \`\${await import('react')}\`;`, 1],
+    [`const text = \`outer \${\`inner \${await import('react')}\`}\`;`, 1],
+    ['export * as x from "react";', 1],
+    ['import type { ReactNode } from "react";', 1],
+    ['export type { ReactNode } from "react";', 1],
+  ])("finds the exact forbidden import in %s", (source, line) => {
+    expect(checkSource("core", "packages/core/src/index.ts", source)).toEqual([
+      `packages/core/src/index.ts:${line}: react: React is forbidden`,
+    ]);
+  });
+
+  it("finds imports after apostrophes in JSX text", () => {
+    expect(
+      checkSource("kit", "packages/kit/src/view.tsx", '<p>Don\'t panic</p>;\nimport "node:fs";'),
+    ).toEqual(["packages/kit/src/view.tsx:2: node:fs: Node built-ins are forbidden"]);
+  });
+
+  it("does not interpret JSX text as an import", () => {
+    expect(checkSource("kit", "packages/kit/src/view.tsx", '<p>Data from "Census"</p>;')).toEqual(
+      [],
+    );
+  });
+
+  it("reports syntax errors with the file and line", () => {
+    expect(checkSource("core", "packages/core/src/index.ts", "// first line\nconst x = ;")).toEqual(
+      ["packages/core/src/index.ts:2: parse: Unexpected token"],
+    );
+  });
+
+  it.each(["js", "jsx", "mjs", "mts", "cts"])("rejects a .%s source file", (extension) => {
+    const file = `packages/kit/src/view.${extension}`;
+    expect(checkSource("kit", file, "export {};")).toEqual([
+      `${file}:1: source files must be .ts or .tsx`,
+    ]);
+  });
+
+  it.each(["ts", "tsx"])("allows test tooling in .test-support.%s files", (extension) => {
+    for (const owner of Object.keys(RULES)) {
+      const file = `packages/${owner}/src/view.test-support.${extension}`;
+      const implicit =
+        extension === "tsx" && (owner === "core" || owner === "node")
+          ? [`${file}:1: react/jsx-runtime: implicit React import is forbidden`]
+          : [];
+      expect(checkSource(owner, file, 'import "vitest";')).toEqual(implicit);
+      const result = lintSource(file, 'import "vitest";', {}, "");
+      expect(result.status, result.output).toBe(0);
+      const restricted = lintSource(file, 'import "vitest";');
+      expect(restricted.status, restricted.output).toBe(0);
+      expect(checkSource(owner, file, 'import "@react-decks/kit";')).toEqual([
+        `${file}:1: @react-decks/kit: workspace dependency is forbidden`,
+        ...implicit,
+      ]);
+    }
+  });
+
+  it.each(["\n", "\r\n", "\r", "\u2028", "\u2029"])(
+    "reports lines from parser offsets after Unicode text and %j",
+    (newline) => {
+      expect(
+        checkSource(
+          "core",
+          "packages/core/src/index.ts",
+          `const text = "𝄞";${newline}import('react');`,
+        ),
+      ).toEqual(["packages/core/src/index.ts:2: react: React is forbidden"]);
+    },
+  );
+
+  it("reports a re-export statement once even when it exports several names", () => {
+    expect(
+      checkSource("core", "packages/core/src/index.ts", 'export { a, b } from "react";'),
+    ).toEqual(["packages/core/src/index.ts:1: react: React is forbidden"]);
+  });
+
+  it.each([String.raw`import "re\u0061ct";`, String.raw`import('re\u0061ct');`])(
+    "checks decoded string specifiers in %s",
+    (source) => {
+      expect(checkSource("core", "packages/core/src/index.ts", source)).toEqual([
+        "packages/core/src/index.ts:1: react: React is forbidden",
+      ]);
+    },
+  );
+
+  it("permits property and parameter names that coincide with browser globals", () => {
+    expect(
+      checkSource(
+        "core",
+        "packages/core/src/index.ts",
+        "interface State { history: string[] } function read(location: State) { return location.history; }",
+      ),
+    ).toEqual([]);
+  });
+
   it("permits the two core timers", () => {
     expect(
       checkSource(
@@ -303,15 +475,6 @@ describe("boundary checker", () => {
       ).join("\n"),
     ).toContain("react: React is forbidden");
   });
-
-  it.each(["export const { document } = globalThis;", "const { document: doc } = globalThis;"])(
-    "rejects direct destructured DOM access: %s",
-    (source) => {
-      expect(checkSource("core", "packages/core/src/index.ts", source).join("\n")).toContain(
-        "DOM global is forbidden",
-      );
-    },
-  );
 
   it.each([
     ["core", "react", false],
@@ -377,10 +540,7 @@ describe("boundary checker", () => {
     'import type { ReactNode } from "react";',
     'import { type ReactNode } from "react";',
     'const load = () => import(/* comment */ "react");',
-    "const load = () => import(`react`);",
     'type Node = import("react").ReactNode;',
-    'import React = require("react");',
-    'const React = require("react");',
     'import "re\u0061ct";',
     'import {\n  ReactNode,\n} from /* comment */ "react";',
   ])("checks every import form: %s", (source) => {
@@ -395,16 +555,37 @@ describe("boundary checker", () => {
     );
   });
 
-  it.each([...DOM_GLOBALS, "globalThis.document"])(
-    "rejects the DOM global %s in core",
-    (expression) => {
-      expect(
-        checkSource("core", "packages/core/src/index.ts", `const value = ${expression};`).join(
-          "\n",
-        ),
-      ).toContain("DOM global is forbidden");
-    },
-  );
+  it("rejects a template specifier even without substitutions", () => {
+    expect(checkSource("core", "packages/core/src/index.ts", "import(`react`);")).toEqual([
+      "packages/core/src/index.ts:1: import(): import specifier must be a string literal for boundary checking",
+    ]);
+  });
+
+  it("ignores non-directory entries when listing workspace packages", () => {
+    const fixture = mkdtempSync(join(tmpdir(), "react-decks-packages-"));
+    try {
+      mkdirSync(join(fixture, "core"));
+      writeFileSync(join(fixture, ".DS_Store"), "");
+      expect(packageDirectories(fixture)).toEqual(["core"]);
+    } finally {
+      rmSync(fixture, { recursive: true, force: true });
+    }
+  });
+
+  it("scans every supported source extension recursively", () => {
+    const fixture = mkdtempSync(join(tmpdir(), "react-decks-sources-"));
+    try {
+      mkdirSync(join(fixture, "nested"));
+      const files = ["ts", "tsx", "js", "jsx", "mjs", "mts", "cts"].map((extension) =>
+        join(fixture, "nested", `source.${extension}`),
+      );
+      for (const file of files) writeFileSync(file, 'import "react";');
+      writeFileSync(join(fixture, "ignored.css"), "");
+      expect(sourceFiles(fixture).sort()).toEqual(files.sort());
+    } finally {
+      rmSync(fixture, { recursive: true, force: true });
+    }
+  });
 
   it("ignores comments and strings", () => {
     expect(
@@ -447,6 +628,23 @@ describe("boundary checker", () => {
     expect(
       checkSource("core", "packages/core/src/navigation/steps.ts", "export * from '../../local';"),
     ).toEqual([]);
+  });
+
+  it("accepts a type import covered by a declared @types package", () => {
+    const file = "packages/runtime/src/source.ts";
+    const source = 'import type { MDXComponents } from "mdx/types";';
+    expect(checkSource("runtime", file, source, ["@types/mdx"])).toEqual([]);
+    expect(checkSource("runtime", file, source)).toHaveLength(1);
+  });
+
+  it("rejects an import from an unstable API path", () => {
+    expect(
+      checkSource("node", "packages/node/src/index.ts", 'import "typescript/unstable/ast";', [
+        "typescript",
+      ]),
+    ).toEqual([
+      "packages/node/src/index.ts:1: typescript/unstable/ast: unstable APIs are not allowed",
+    ]);
   });
 
   it("permits only declared npm dependencies outside core", () => {
