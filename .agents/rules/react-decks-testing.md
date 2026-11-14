@@ -7,53 +7,113 @@ globs: "**/react-decks/**"
 
 # react-decks testing
 
-Load the `ce:writing-tests` skill before writing or changing a test. Where it and this rule
-differ, this rule wins.
+Load the `ce:writing-tests` skill, and its `references/typescript-react.md` and
+`references/waiting-typescript.md`, before writing or changing a test. This rule applies the
+skill to this workspace. Where they differ, this rule wins.
 
-## What a test asserts
+## The principle
 
-Observable behaviour through the public interface: what a function returns, what a component
-renders, what the URL becomes, what a second window shows. Not which internal function was
-called, not private state, not a snapshot of markup.
+Test what a user or caller can observe, using real dependencies, so a test survives a
+refactor and fails only when behaviour breaks. A test that would still pass with the feature
+broken, or fail after a rename with the behaviour intact, is a defect.
 
-A behaviour table in a contract or in `docs/architecture.md` is the test list: one test per
-row, named after the row. Add the edge cases the table implies (empty input, boundaries,
-invalid values). Do not add tests for behaviour nobody specified.
+## Which kind of test (Testing Trophy)
 
-## Which kind of test
+Integration is the default: several real modules working together give the most confidence
+per test. An isolated unit test is for a pure function. E2E is for a complete user workflow.
 
-| Code under test | Test with | Environment |
+| Code under test | Kind | How |
 | --- | --- | --- |
-| `packages/core` | Plain unit tests. No mocks at all: core has no dependencies to mock. | `unit` project (node) |
-| `packages/node` | Unit tests against real files in a temp directory (`fs.mkdtemp`), a real Vite server where a plugin is involved. | `unit` project (node) |
-| `packages/runtime`, `motion`, `kit` components and hooks | React Testing Library. Render with a real store built from a real manifest and `createMemoryHub()`. Query by role and text, then by the DOM contract's data attributes. | `dom` project (jsdom) |
-| Anything involving the real URL bar, two windows, view transitions, layout, or PDF output | Playwright against a fixture deck in `examples/`. | browser |
+| `packages/core` | Unit. Every function is pure, so this is the one place unit tests are the right default. | `unit` project (node). Inputs in, values and thrown errors out. |
+| `packages/runtime`, `motion`, `kit` | Integration. | `dom` project (jsdom). Render the real component tree with a real store built by `createDeckStore` from a real manifest, real `@react-decks/core`, real child components. |
+| `packages/node` | Integration. | `unit` project (node). Real files in a per-test temp directory, a real Vite dev server or build where a plugin is involved, on a port the OS picks. |
+| A user workflow: presenting with arrow keys, two windows in sync, reload keeping position, resizing, view transitions, PDF export | E2E. | Playwright against a fixture deck in `examples/`. |
 
-jsdom has no layout and no View Transitions API. Do not fake either in a jsdom test; write
-the Playwright test.
+jsdom has no layout and no View Transitions API. Do not fake either. If the behaviour needs
+layout, real navigation, two windows or a transition, it is a Playwright test.
 
-## What may be faked
+Do not write an isolated unit test for a component or hook by stubbing what it depends on.
+That tests the stubs.
 
-- `createMemoryHub()` in place of BroadcastChannel.
-- Vitest fake timers for the sync join timeout and other timer-driven logic.
-- A hand-written `DeckManifest` literal.
+## Mocking
 
-Nothing else. Do not mock a module from this workspace, a React hook, `gsap`, or the store.
-If something is hard to test without a mock, the design is wrong: say so in the hand-off.
+Mock only what this workspace does not own or cannot control. Here that is exactly:
+
+- Time: Vitest fake timers, for the sync join timeout and timer-driven logic. Use the async
+  APIs (`await vi.advanceTimersByTimeAsync(300)`), and restore real timers in `afterEach`.
+- Randomness, if a test ever needs it.
+
+Never `vi.mock` a module from this workspace, a React hook, a child component, `gsap` or the
+store. There is no network in this codebase to stub.
+
+`createMemoryHub()` from `@react-decks/core` is the in-process implementation of the
+`Transport` interface. Use it wherever a test needs two participants in one process. It has
+the same shape and delivery rules as the BroadcastChannel transport, which the Playwright
+two-window test covers for real.
+
+No test-only method, flag or export in production code. If a test needs a helper, it lives in
+the test file or a `*.test-support.ts` file beside it.
+
+## Assertions
+
+| Context | Assert on | Not on |
+| --- | --- | --- |
+| Library function (`core`) | Return values and thrown errors | Private helpers, call counts |
+| Component (`runtime`, `motion`, `kit`) | Visible text, roles, accessible names, and what the user would see change | CSS class names, component state, props passed to children |
+| Callback-based API (`createSyncSession`) | The states a participant ends up with: record what `onRemote` received in a plain array and assert on the array | `toHaveBeenCalledTimes` on a spy |
+| Node tooling | Files written, the module a virtual id resolves to, the HTML or PDF produced, exit code and stderr | Which internal function ran |
+| Browser (Playwright) | What is on screen, the URL, the other window | Internal store state read through `page.evaluate` |
+
+Never assert that a mock or spy was called. Assert the outcome the call produced.
+
+The DOM contract in `docs/architecture.md` section 3 (`data-deck-slide`, `data-deck-view`,
+`data-step-state` and the rest) is public API that CSS and tooling depend on. A test whose
+subject is that contract asserts on those attributes. Every other test finds elements the way
+a user does and never uses `getByTestId`, a class name or a CSS selector.
+
+## Queries and interaction
+
+Query in this order: `getByRole` with a name, `getByLabelText`, `getByText`. Use `findBy*`
+for anything that appears asynchronously, `queryBy*` only to assert absence.
+
+Drive components with `@testing-library/user-event` (`const user = userEvent.setup()`), not
+`fireEvent`: a real key press or click, as a presenter would make it.
+
+Take expected strings from the source they come from (the manifest literal the test built,
+an exported constant), not a second hard-coded copy.
+
+In Playwright, use role and text locators and web-first assertions
+(`await expect(locator).toBeVisible()`, `await expect(page).toHaveURL(...)`). Never
+`expect(await locator.isVisible()).toBe(true)`: it does not retry.
 
 ## Waiting
 
-Never sleep. In jsdom, use `findBy*` and `waitFor`. In Playwright, wait on a locator, on the
-URL, or on `window.__deck.settled()`. A fixed timeout in a test is a defect.
+Never sleep. A fixed delay before an assertion is a defect.
+
+- jsdom: `await screen.findByText(...)`, or `waitFor` with an assertion inside that throws.
+  No side effects inside `waitFor`; no empty `waitFor`.
+- Playwright: auto-waiting locators, web-first assertions, `page.waitForFunction`, or
+  `await page.evaluate(() => window.__deck.settled())` once motion exists.
+- Timers under test: fake timers, advanced explicitly.
 
 ## Isolation
 
-Each test builds its own manifest, store and hub. No module-level mutable state shared
-between tests, no reliance on test order. Temp directories are created per test and removed
-after. A test file must pass alone and in the full suite.
+Each test builds its own manifest, store, hub and temp directory, and tears them down. No
+module-level mutable state shared between tests, no reliance on order. Servers listen on port
+0. A test file passes alone and in the full suite; a new test file is run three times alone
+and once in the suite before hand-off. For a test that fails only in the suite, follow the
+skill's `references/flaky-tests.md`: diagnose first, do not add a retry or a delay.
+
+## Naming and coverage
+
+Name a test after the behaviour it checks, as a sentence a user of the code would say:
+`prev on the first click lands on the previous slide's last click`. A behaviour table in a
+contract or in `docs/architecture.md` is the test list: one test per row, named after the
+row, plus the edge cases it implies. Cover the error paths (invalid input, thrown errors) as
+well as the happy path. Do not test behaviour nobody specified.
 
 ## Do not
 
 - Weaken, skip or delete a test to get green. Report it.
-- Assert on implementation details so a refactor breaks the test.
 - Write a test that cannot fail. For a bug fix, see the test fail before the fix.
+- Snapshot markup.

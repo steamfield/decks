@@ -23,7 +23,7 @@ Read anything else when the work reaches it, not up front.
 
 ## Skills to apply
 
-`ce:architecting-systems` when adding or shaping a module; `ce:writing-tests` for every test.
+`ce:architecting-systems` when adding or shaping a module; `ce:writing-tests` (with its `references/typescript-react.md` and `references/waiting-typescript.md`) for every test: behaviour through the public interface, real dependencies, integration by default, no mocks of this workspace's own code, no sleeps.
 If a named skill is not installed, say so in the hand-off and continue with the repo's rules.
 Say in the hand-off where skills changed your approach. The repo's rules win where they
 differ.
