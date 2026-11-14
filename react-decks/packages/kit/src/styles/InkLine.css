@@ -1,0 +1,7 @@
+.od-ink-line {
+  clip-path: inset(0 var(--od-clip, 0%) 0 0);
+}
+.od-ink-line-root .od-ink-body,
+.od-ink-line-root .od-ink-dots {
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}

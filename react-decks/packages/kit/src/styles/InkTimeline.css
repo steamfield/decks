@@ -1,0 +1,9 @@
+.od-ink-timeline .od-stage-label {
+  font-family: var(--od-font-mono);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  fill: var(--od-text-faint);
+}
+.od-ink-timeline .od-stage-label.is-end {
+  fill: var(--od-text-secondary);
+}

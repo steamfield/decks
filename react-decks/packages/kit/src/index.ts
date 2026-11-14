@@ -21,7 +21,16 @@ export {
   unitCellHeight,
 } from "./grid";
 export { hash, hashRange, hashSigned } from "./hash";
+export { type BarsHandle, type GrowHandle, type InkBarRow, InkBars } from "./ink-bars";
+export { type DrawOptions, InkLine, type LineHandle } from "./ink-line";
 export { inkStyle, polylinePath, STORY_STYLE, STROKE } from "./ink-style";
+export {
+  InkTimeline,
+  type TickState,
+  type TimelineHandle,
+  type TimelineTick,
+} from "./ink-timeline";
+export { InkTimelineCursor } from "./ink-timeline-cursor";
 export { easeHeight, entrance, fadeIn, fadeOutInPlace, RISE, riseIn } from "./motion";
 export { OdByline } from "./od-byline";
 export { OdCoverHead } from "./od-cover-head";
