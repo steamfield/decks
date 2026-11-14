@@ -85,13 +85,10 @@ Slidev capture. Capture Slidev baselines first. Each deck needs its `data-source
 modules and `theme.json` carried over unchanged, and a fact-check after the port
 (`fact-checking-a-deck` skill) because figures are computed at module load.
 
-Still open on `building-for-agents`, which Riley presents the week of 2026-11-16: a motion
-pass against the Slidev deck (beats, the story transition, entrances), the presenter flow on
-this deck (notes per click, timer), a static build, performance of a full run under the CRT
-filter, and a look at the projector's resolution. Two content questions for Riley: slide 17
-shows the Vue stage's own source (keep, or switch to the React source), and slide 10 keeps an
-invalid SVG `path-length` attribute. The deck's link style gives the credit a dashed
-underline.
+`building-for-agents` is signed off: Riley checked it by hand on 2026-11-14 and it is good to
+go for the talk the week of 2026-11-16. Two content questions were left unanswered and can
+wait: slide 17 shows the Vue stage's own source (keep, or switch to the React source), and
+slide 10 keeps an invalid SVG `path-length` attribute.
 
 ### 3. Package it as `@steamfield/decks`
 
