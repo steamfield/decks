@@ -130,5 +130,5 @@ Things to know:
 
 - Only text grows. Boxes, padding and images keep their size, so a tightly composed slide overflows after a step or two. Flex and grid layouts absorb more than fixed heights do.
 - The fallback `, 1` keeps the rule valid where the variable is not set.
-- The kit's stylesheet follows the rule throughout. The framework's own fenced code blocks currently use fixed sizes and do not follow the text scale.
+- The kit's stylesheet follows the rule throughout. So do the framework's fenced code blocks.
 - The chosen size is stored per deck in the browser and applies to every window of that deck. See [presenting.md](presenting.md).

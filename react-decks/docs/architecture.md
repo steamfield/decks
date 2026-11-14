@@ -1287,6 +1287,13 @@ Modules the plugins serve:
 | `virtual:react-decks/notes` | `notes: Record<id, { click: number; html: string }[]>`: each slide's `<Notes>` markdown split with core's `segmentNotes` and each segment rendered to HTML; slides without notes are absent |
 | `virtual:react-decks/entry` | no exports; imports the three above (notes lazily, as `loadNotes`), the deck's `styles/index.css` when it exists, and calls `mountDeck` from `@react-decks/runtime` |
 
+The served HTML also carries what a browser tab and a shared link show: a viewport meta, an
+icon (`public/favicon.svg`, `.png` or `.ico` if the deck has one, otherwise the Decks mark as
+a data URL), `description` and `og:description` from `config.info`, `og:title`, `og:type`,
+and `twitter:card`. With `config.url` (where the built deck is published) it adds `og:url`,
+and if the deck has `public/og.png` or `og.jpg`, an absolute `og:image` and the large card.
+Nothing generates the preview image yet.
+
 The served HTML has `<html>` carrying `config.htmlAttrs`, a `<title>` from `config.title`,
 `<meta name="author">` when set, `<meta name="decks:name" content="<name>">`, in dev only
 `<meta name="decks:entry" content="<absolute deck dir>">` (a built site never contains a

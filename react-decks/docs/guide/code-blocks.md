@@ -102,7 +102,7 @@ No theme is baked in. Tokens are colored through CSS variables with dark default
 }
 ```
 
-Code is set in the system monospace font at 32px with a line height of 1.6, and the title at 24px. These sizes are fixed: they do not follow the viewer's text scale. The framework's styles are in the CSS layer `react-decks`, so any rule in the deck's own stylesheet overrides them:
+Code is set in the system monospace font at 32px with a line height of 1.6, and the title at 24px. Both follow the viewer's text scale. The framework's styles are in the CSS layer `react-decks`, so any rule in the deck's own stylesheet overrides them:
 
 ```css
 [data-deck-slide] pre code {

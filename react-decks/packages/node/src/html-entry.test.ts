@@ -3,7 +3,7 @@ import { access } from "node:fs/promises";
 import { join } from "node:path";
 
 import { describe, expect, it, onTestFinished } from "vitest";
-import { fixture as createFixture, serve, virtual } from "./deck.test-support";
+import { fixture as createFixture, serve, testVite, virtual } from "./deck.test-support";
 import { dev, loadDeck } from "./index";
 
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
@@ -19,7 +19,11 @@ describe("html-entry", () => {
     expect(html).toContain('<html lang="en" data-theme="dark">');
     expect(html).toContain("<title>A &lt;talk&gt; &amp; friends</title>");
     expect(html).toContain('<meta name="author" content="A &amp; B">');
-    expect(html).toContain('<link rel="icon" href="data:,">');
+    expect(html).toContain('<link rel="icon" href="data:image/svg+xml,');
+    expect(html).toContain('<meta property="og:title" content="A &lt;talk&gt; &amp; friends">');
+    expect(html).toContain('<meta name="twitter:card" content="summary">');
+    expect(html).not.toContain("og:image");
+    expect(html).not.toContain('name="description"');
     expect(html).toContain(`<meta name="decks:entry" content="${app.dir}">`);
     expect(html).toContain(`<meta name="decks:name" content="${app.dir.split("/").at(-1)}">`);
     expect(html).toContain('<div id="deck-root"></div>');
@@ -31,6 +35,28 @@ describe("html-entry", () => {
     expect(entry).toContain("/styles/index.css");
     expect(await app.get("/hello.txt")).toBe("Hello public");
     await expect(access(join(app.dir, "index.html"))).rejects.toThrow();
+  });
+  it("names the deck's own icon, its description and an absolute preview image", async () => {
+    const app = await serve({
+      "deck.config.ts": `export default ${JSON.stringify({ title: "Talk", info: 'Why "it" works', url: "https://talks.example.com/agents", vite: testVite })}`,
+      "public/favicon.svg": "<svg xmlns='http://www.w3.org/2000/svg'/>",
+      "public/og.png": "not really a png",
+    });
+    const html = await app.get("/");
+    expect(html).toContain('<link rel="icon" href="/favicon.svg">');
+    expect(html).toContain('<meta name="description" content="Why &quot;it&quot; works">');
+    expect(html).toContain('<meta property="og:description" content="Why &quot;it&quot; works">');
+    expect(html).toContain('<meta property="og:url" content="https://talks.example.com/agents">');
+    expect(html).toContain(
+      '<meta property="og:image" content="https://talks.example.com/agents/og.png">',
+    );
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+  });
+  it("rejects a url that is not a URL, naming the key", async () => {
+    const { dir } = await fixture({
+      "deck.config.ts": 'export default { title: "Talk", url: "talks.example.com" }',
+    });
+    await expect(loadDeck(dir)).rejects.toThrow(/url/);
   });
   it("omits author metadata and optional CSS when absent", async () => {
     const app = await serve();

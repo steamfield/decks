@@ -29,7 +29,7 @@ There is no `index.html` and no slide list to maintain. The framework generates 
 | `layers/` | Only `above.tsx`, `below.tsx` and `credit.tsx` are allowed. Any other `.tsx` file there is an error. See [config.md](config.md). |
 | `setup.ts` | Imported for its side effects before any component module. A deck that uses the kit installs its theme here. |
 | `styles/index.css` | The one stylesheet the framework loads for you. Import others from it. |
-| `public/` | Vite's public directory. `public/field.svg` is served as `field.svg`. A `public/favicon.ico` is used as the page icon. |
+| `public/` | Vite's public directory. `public/field.svg` is served as `field.svg`. `public/favicon.svg`, `.png` or `.ico` is used as the page icon (the Decks mark otherwise), and `public/og.png` or `og.jpg` as the link preview image when `url` is set. |
 
 Other files and folders (`data/`, `scene/`, a `theme.json`) are yours. Import them from components or slides.
 

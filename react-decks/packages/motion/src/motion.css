@@ -59,7 +59,7 @@
   .rd-code figcaption {
     padding: 20px 32px 0;
     font:
-      24px / 1.4 ui-monospace,
+      calc(24px * var(--deck-text-scale, 1)) / 1.4 ui-monospace,
       monospace;
     color: var(--deck-code-caption);
   }
@@ -78,7 +78,7 @@
     min-width: 100%;
     color: var(--deck-code-foreground);
     font:
-      32px / 1.6 ui-monospace,
+      calc(32px * var(--deck-text-scale, 1)) / 1.6 ui-monospace,
       "SFMono-Regular",
       Consolas,
       monospace;

@@ -9,7 +9,10 @@ import { DeckError, displayPath, validationError } from "./errors";
 export interface DeckConfig {
   readonly title: string;
   readonly author?: string;
+  /** One line about the deck: the page description and the text of a shared link's preview. */
   readonly info?: string;
+  /** Where the built deck is published. Share previews need it for absolute links. */
+  readonly url?: string;
   readonly canvas?: { readonly width: number; readonly height: number };
   readonly transition?: string;
   readonly htmlAttrs?: Readonly<Record<string, string>>;
@@ -43,6 +46,7 @@ const schema = z.strictObject({
   title: z.string(),
   author: z.string().optional(),
   info: z.string().optional(),
+  url: z.url().optional(),
   canvas: z
     .strictObject({ width: z.number().positive(), height: z.number().positive() })
     .default({ width: 1920, height: 1080 }),
