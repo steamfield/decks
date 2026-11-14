@@ -60,4 +60,5 @@ export { STAGE, StoryStage } from "./story-stage";
 export { ink, installTheme, resolveTheme, theme } from "./theme";
 export type { Hue, Theme } from "./theme-resolve";
 export { prefersReducedMotion, resolvePosition } from "./timeline";
+export { Underline } from "./underline";
 export { UnitGrid, type UnitGridHandle } from "./unit-grid";
