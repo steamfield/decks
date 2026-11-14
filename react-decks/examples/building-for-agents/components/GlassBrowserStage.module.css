@@ -1,0 +1,80 @@
+.glass-browser {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--sf-hairline) solid var(--od-border-rule);
+  border-radius: var(--sf-radius-card);
+  background: var(--od-surface);
+  pointer-events: none;
+}
+/* The overlay ignores the pointer; the frame takes it back once it is shown. */
+.glass-browser:global(.is-on) {
+  pointer-events: auto;
+}
+.glass-browser-bar {
+  display: flex;
+  align-items: center;
+  gap: calc(1 * var(--sw));
+  padding: calc(0.6 * var(--sw)) calc(0.9 * var(--sw));
+  border-bottom: var(--sf-hairline) solid var(--od-border-rule);
+}
+.glass-browser-dots {
+  display: flex;
+  gap: calc(0.42 * var(--sw));
+}
+.glass-browser-dots i {
+  width: calc(0.62 * var(--sw));
+  height: calc(0.62 * var(--sw));
+  border-radius: var(--sf-full);
+  background: var(--od-text-faint);
+}
+.glass-browser-address {
+  flex: 1;
+  min-width: 0;
+  padding: calc(0.3 * var(--sw)) calc(0.8 * var(--sw));
+  border-radius: var(--sf-radius-control);
+  background: var(--od-well);
+  font-family: var(--od-font-mono);
+  font-size: calc(0.9375 * var(--sw));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--od-text-secondary);
+}
+.glass-browser-view {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--od-screen-black);
+}
+.glass-browser-wait {
+  position: absolute;
+  inset: var(--sf-zero);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(1.1 * var(--sw));
+  text-align: center;
+}
+.glass-browser-url {
+  font-family: var(--od-font-mono);
+  font-size: calc(0.9375 * var(--sw));
+  color: var(--od-text-muted);
+}
+.glass-browser-line {
+  font-family: var(--od-font-sans);
+  font-size: calc(2.1 * var(--sw));
+  color: var(--od-phosphor);
+}
+.glass-browser-app {
+  position: absolute;
+  top: var(--sf-zero);
+  left: var(--sf-zero);
+  border: none;
+  transform-origin: top left;
+  pointer-events: auto;
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
