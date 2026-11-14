@@ -43,6 +43,7 @@
     "build": "node build.mjs"
   },
   "dependencies": {
+    "3d-force-graph": "1.80.1",
     "@mdx-js/rollup": "3.1.1",
     "@opendata-ai/openchart-core": "9.0.0",
     "@opendata-ai/openchart-react": "9.0.0",
@@ -66,6 +67,8 @@
     "remark-parse": "11.0.0",
     "remark-rehype": "11.1.2",
     "shiki": "4.6.0",
+    "three": "0.185.1",
+    "three-spritetext": "1.10.0",
     "tinyglobby": "0.2.17",
     "tinykeys": "4.0.1",
     "unified": "11.0.5",
@@ -76,21 +79,7 @@
   },
   "peerDependencies": {
     "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "3d-force-graph": ">=1.80.1",
-    "three": ">=0.185.1 <1",
-    "three-spritetext": ">=1.10.0"
-  },
-  "peerDependenciesMeta": {
-    "3d-force-graph": {
-      "optional": true
-    },
-    "three": {
-      "optional": true
-    },
-    "three-spritetext": {
-      "optional": true
-    }
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@react-decks/core": "workspace:*",
