@@ -1,5 +1,8 @@
 import { expect, type Page } from "@playwright/test";
+import { loadDeck, scanSlides } from "@react-decks/node";
 import { test } from "./motion.fixture";
+
+const gallerySize = (await scanSlides(await loadDeck("examples/motion"))).length;
 
 declare global {
   interface Window {
@@ -24,10 +27,12 @@ async function open(page: Page, slide = 17, search = "") {
     String(slide),
   );
   await page.waitForFunction(
-    () =>
+    (count) =>
       performance
         .getEntriesByType("resource")
-        .filter((entry) => /\/slides\/.*\.mdx$/.test(new URL(entry.name).pathname)).length === 23,
+        .filter((entry) => /\/slides\/.*\.mdx$/.test(new URL(entry.name).pathname)).length ===
+      count,
+    gallerySize,
   );
   await page.evaluate(async () => {
     await Promise.all(
@@ -153,6 +158,20 @@ test("Opposite arrows in one frame leave both windows and the URL at the origina
     if (frame === other.mainFrame()) received.push(new URL(frame.url()).hash);
   });
   await keys(page, ["ArrowRight", "ArrowLeft"]);
+  const outcome = await page.evaluate(async () => {
+    const transition = window.e2eTransition;
+    const result = await transition?.ready.then(
+      () => "animated",
+      () => "skipped",
+    );
+    await window.__deck?.settled();
+    return {
+      result,
+      transition: document.documentElement.getAttribute("data-deck-transition"),
+      direction: document.documentElement.getAttribute("data-deck-nav"),
+    };
+  });
+  expect(outcome).toEqual({ result: "skipped", transition: null, direction: null });
   await expect.poll(() => received).toEqual(["#/18", "#/17"]);
   await expect(other).toHaveURL(/#\/17$/);
   await settle(page);

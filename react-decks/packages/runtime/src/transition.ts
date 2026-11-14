@@ -25,14 +25,6 @@ export function transitionInFlight() {
   return active !== undefined;
 }
 
-export function afterTransition() {
-  return (
-    active?.transition?.finished.catch(() => {
-      // Skipping a transition is expected during navigation.
-    }) ?? Promise.resolve()
-  );
-}
-
 export function cancelPresentation(owner: object) {
   if (active?.owner !== owner) return;
   active.transition?.skipTransition();

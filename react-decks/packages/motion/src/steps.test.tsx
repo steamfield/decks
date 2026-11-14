@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import { cloneElement } from "react";
 import { describe, expect, it } from "vitest";
 import { CountUp, Draw, Highlight, Stagger, Step, Steps, TextReveal, useStepState } from "./index";
 import { setupMotion, tick } from "./motion.test-support";
@@ -146,6 +147,25 @@ describe("step primitives", () => {
     );
     expect(screen.getByText("e\u0301", { exact: true })).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByText("👩‍👩‍👧‍👦", { exact: true })).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it.each([
+    [42, "number"],
+    [null, "null"],
+    [undefined, "undefined"],
+    [false, "boolean"],
+    [<b key="nested">Nested</b>, "object"],
+    [["one", "two"], "array"],
+  ])("rejects TextReveal children of type %s with a plain-text error", async (child, type) => {
+    const view = await setupMotion(
+      () => cloneElement(<TextReveal at={1}>Replaced</TextReveal>, undefined, child),
+      { error: true },
+    );
+    expect(view.errors[0]).toBeInstanceOf(Error);
+    expect(view.errors[0]).toHaveProperty(
+      "message",
+      `TextReveal takes plain text; received ${type}`,
+    );
   });
 
   it.each(["word", "char"] as const)(

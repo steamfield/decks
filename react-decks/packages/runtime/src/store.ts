@@ -169,6 +169,7 @@ export function createDeckStore(
       const moved = positionChanged(nav, previous.nav);
       if (view === previous.view && !moved) return;
       const next = { ...previous, view, nav };
+      if (nav.slide !== previous.nav.slide) writeLocation({ ...previous, view }, false);
       writeLocation(next, nav.slide !== previous.nav.slide);
       present(next);
       if (moved) publish();

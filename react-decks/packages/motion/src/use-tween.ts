@@ -1,7 +1,9 @@
-import { useState, useSyncExternalStore } from "react";
+import { useLayoutEffect, useReducer, useState, useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
 import { pendingTweenNotification } from "./settle";
 
 export function useTween<T extends Record<string, number>>(initial: T): T {
+  const [, refresh] = useReducer((revision: number) => revision + 1, 0);
   const [store] = useState(() => {
     const listeners = new Set<() => void>();
     const fields = new Set(Object.keys(initial));
@@ -20,7 +22,7 @@ export function useTween<T extends Record<string, number>>(initial: T): T {
               if (pending !== publish) return;
               pending = null;
               pendingTweenNotification(-1);
-              for (const notify of listeners) notify();
+              for (const notify of [...listeners]) notify();
             };
             pending = publish;
             pendingTweenNotification(1);
@@ -46,6 +48,14 @@ export function useTween<T extends Record<string, number>>(initial: T): T {
       },
     };
   });
-  useSyncExternalStore(store.subscribe, store.snapshot, store.snapshot);
+  const revision = useSyncExternalStore(store.subscribe, store.snapshot, store.snapshot);
+  useLayoutEffect(
+    () =>
+      store.subscribe(() => {
+        // Mount-time seeks must commit before paint, before passive subscriptions exist.
+        if (store.snapshot() !== revision) flushSync(refresh);
+      }),
+    [store, revision],
+  );
   return store.value;
 }

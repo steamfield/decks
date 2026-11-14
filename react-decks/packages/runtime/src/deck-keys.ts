@@ -1,6 +1,6 @@
 import { formatHash, type NavAction, parseLocation, syncChannelId } from "@react-decks/core";
 import { useEffect } from "react";
-import { type KeybindingsMap, tinykeys } from "tinykeys";
+import { defaultKeybindingsHandlerIgnore, type KeybindingsMap, tinykeys } from "tinykeys";
 import { useDeckContext, useDeckSelector, usePresentation } from "./hooks";
 
 export function useDeckKeys() {
@@ -9,15 +9,19 @@ export function useDeckKeys() {
   const { home } = usePresentation();
   useEffect(() => {
     const bind = (action: NavAction) => (event: KeyboardEvent) => {
-      if (event.target instanceof Element && event.target.closest("button")) return;
       event.preventDefault();
       store.dispatch(action);
     };
     const keys: KeybindingsMap = {
       f(event) {
+        if (!document.fullscreenEnabled) return;
         event.preventDefault();
-        if (document.fullscreenElement) void document.exitFullscreen();
-        else void document.documentElement.requestFullscreen?.();
+        const toggle = document.fullscreenElement
+          ? document.exitFullscreen()
+          : document.documentElement.requestFullscreen();
+        void toggle.catch(() => {
+          // A browser may refuse fullscreen because of permissions or lost user activation.
+        });
       },
       o(event) {
         const current = parseLocation(window.location.hash, window.location.search).view;
@@ -62,6 +66,12 @@ export function useDeckKeys() {
         End: bind({ type: "go", slide: source.manifest.slides.length }),
       });
     }
-    return tinykeys(window, keys);
+    return tinykeys(window, keys, {
+      ignore: (event) =>
+        defaultKeybindingsHandlerIgnore(event) ||
+        ((event.code === "Space" || event.key === "Enter") &&
+          event.target instanceof Element &&
+          event.target.closest("button") !== null),
+    });
   }, [view, home, source, store]);
 }

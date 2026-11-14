@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { useLayoutEffect } from "react";
+import { StrictMode, useLayoutEffect } from "react";
 import { describe, expect, it } from "vitest";
 import { gsap, motionMode, useTween } from "./index";
 import { tick } from "./motion.test-support";
@@ -33,6 +33,15 @@ function LayoutWriteProbe() {
 describe("useTween", () => {
   it("renders a layout-effect write before yielding to async publication", () => {
     render(<LayoutWriteProbe />);
+    expect(screen.getByRole("status")).toHaveTextContent("100");
+  });
+  it("keeps a mount's layout write through StrictMode's subscription cleanup", async () => {
+    render(
+      <StrictMode>
+        <LayoutWriteProbe />
+      </StrictMode>,
+    );
+    await tick();
     expect(screen.getByRole("status")).toHaveTextContent("100");
   });
   it("copies initial fields and preserves object identity across renders", async () => {
@@ -72,6 +81,11 @@ describe("useTween", () => {
     await tick();
     await tick();
     expect(commits).toEqual(["0/0", "1/2"]);
+    value.x = 3;
+    value.y = 4;
+    await tick();
+    expect(screen.getByRole("status")).toHaveTextContent("3/4");
+    expect(commits).toEqual(["0/0", "1/2", "3/4"]);
   });
 
   it("ignores added fields and publishes real GSAP tween updates", async () => {

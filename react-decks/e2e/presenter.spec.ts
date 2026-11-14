@@ -114,7 +114,7 @@ test("overview focus and Escape never move the audience and preserve the talk's 
   expect(audienceUrls).toEqual([]);
 });
 
-test("activating an overview slide moves both windows to click zero and returns to presenter", async ({
+test("activating an overview slide and Back move both windows while preserving presenter view", async ({
   page,
 }) => {
   const presenter = await openPresenter(page);
@@ -123,6 +123,29 @@ test("activating an overview slide moves both windows to click zero and returns 
   await expect(presenter).toHaveURL(/#\/presenter\/5$/);
   await expect(page).toHaveURL(/#\/5$/);
   await expect(page.getByRole("heading", { name: "The end", exact: true })).toBeVisible();
+  await presenter.goBack();
+  await expect(presenter).toHaveURL(/#\/presenter\/2\?clicks=1$/);
+  await expect(page).toHaveURL(/#\/2\?clicks=1$/);
+  await expect(
+    presenter.getByRole("region", { name: "Current slide" }).getByRole("listitem"),
+  ).toHaveText(["First point"]);
+  await expect(page.getByRole("listitem")).toHaveText(["First point"]);
+});
+
+test("after Reset timer, arrows and PageDown navigate while Space activates the button", async ({
+  page,
+}) => {
+  const presenter = await openPresenter(page);
+  await presenter.getByRole("button", { name: "Reset timer" }).click();
+  await presenter.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/#\/2\?clicks=2$/);
+  await expect(presenter).toHaveURL(/#\/presenter\/2\?clicks=2$/);
+  await presenter.keyboard.press("Space");
+  await expect(presenter.getByLabel("Elapsed time")).toHaveText("00:00");
+  await expect(presenter).toHaveURL(/#\/presenter\/2\?clicks=2$/);
+  await presenter.keyboard.press("PageDown");
+  await expect(page).toHaveURL(/#\/2\?clicks=3$/);
+  await expect(presenter).toHaveURL(/#\/presenter\/2\?clicks=3$/);
 });
 
 test("an audience reload while the presenter browses overview restores the talk rather than its focused tile", async ({

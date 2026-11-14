@@ -27,6 +27,25 @@ interface ClickNode {
   children?: ClickNode[];
 }
 
+function elementChildren(node: ClickNode | undefined): ClickNode[] {
+  return (node?.children ?? [])
+    .flatMap((child) =>
+      child.type === "paragraph" &&
+      child.children?.every(
+        (part) =>
+          part.type === "mdxJsxTextElement" ||
+          (part.type === "text" &&
+            typeof part.value === "string" &&
+            /^[\t\n\v\f\r ]*$/.test(part.value)),
+      )
+        ? child.children
+        : [child],
+    )
+    .filter(
+      (child) => child.type !== "text" || typeof child.value !== "string" || child.value.trim(),
+    );
+}
+
 function integerAttribute(node: ClickNode, name: string, file: string): number {
   const attribute = node.attributes?.find(
     (attribute) => attribute.type === "mdxJsxAttribute" && attribute.name === name,
@@ -140,13 +159,11 @@ export function countClicks(
       if (motion === "Steps") {
         const from = integerAttribute(node, "from", file);
         let children = 0;
-        const content = (node.children ?? []).filter(
-          (child) => child.type !== "text" || typeof child.value !== "string" || child.value.trim(),
-        );
+        const content = elementChildren(node);
         if (content.length === 1 && content[0]?.type === "list") {
           children = content[0].children?.length ?? 0;
         } else if (content.length === 1 && ["ul", "ol"].includes(String(content[0]?.name))) {
-          children = (content[0]?.children ?? []).filter(
+          children = elementChildren(content[0]).filter(
             (child) =>
               (child.type === "mdxJsxFlowElement" || child.type === "mdxJsxTextElement") &&
               child.name === "li",
@@ -157,7 +174,7 @@ export function countClicks(
               children++;
             else
               throw new Error(
-                `${file}: <Steps> children must be JSX elements or a single markdown list; put each child element on its own block, or use a markdown list`,
+                `${file}: <Steps> children must be JSX elements or a single markdown list`,
               );
           }
         if (children) total = Math.max(total, from + children - 1);
