@@ -3,7 +3,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { loadExamples } from "../src/data/examples";
 
-const example = loadExamples().find((entry) => entry.name === "keeling");
+const post = readFileSync("src/content/blog/make-slides-with-claude-code.mdx", "utf8");
+const exampleName = /<DeckDemo\s[^>]*\bexample="([^"]+)"/.exec(post)?.[1];
+const example = loadExamples().find((entry) => entry.name === exampleName);
 if (!example) throw new Error("Missing reference post example");
 // Every step shows a card, so the start step of the post's example (whichever it is) has the text
 // the player waits for before it reports ready.

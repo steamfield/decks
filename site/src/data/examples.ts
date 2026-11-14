@@ -72,12 +72,6 @@ export const startSlideOf = (name: string) => entryFor(name)?.startSlide;
 /** The 0-based step on the start slide the poster, the loop and the live deck start on. */
 export const startBeatOf = (name: string) => entryFor(name)?.startBeat ?? 0;
 
-/** The deck's headmatter title, used until `make demo` has recorded the deck. */
-function headmatterTitle(name: string): string {
-  const slides = readFileSync(join(deckDir(name), "slides.md"), "utf8");
-  return /^title:\s*["']?(.+?)["']?\s*$/m.exec(slides)?.[1] ?? name;
-}
-
 /** How the deck was made; an agent deck's label ends with the edit's size from git. */
 export function provenanceOf(entry: ExampleEntry, edits: Edits | null = null): Provenance {
   const where =
@@ -132,7 +126,7 @@ export function loadExample(entry: ExampleEntry): Example {
     name,
     featured: entry.featured,
     attribution: entry.attribution,
-    title: recording?.title || headmatterTitle(name),
+    title: recording?.title || name,
     href: `/d/${name}/`,
     slides: recording?.slides ?? 0,
     slideTitles: recording?.slideTitles ?? [],

@@ -4,7 +4,7 @@
 // same build through the same contract the player uses (at the start step, once
 // the deck reports it settled, so entrances have finished drawing), records the
 // hero loop for each example marked `loop`, and takes the normal and warm stills
-// with the repository's own `shot` script.
+// with the repository's `decks shot` CLI.
 //
 //   node scripts/demo.mjs            # everything
 //   node scripts/demo.mjs --build    # deck builds only (what a deploy needs)
@@ -13,7 +13,7 @@
 //   node scripts/demo.mjs --posters  # builds, recordings and posters only
 //   node scripts/demo.mjs --headed   # visible Chromium (default on macOS)
 //   DEMO_HEADLESS=1 node scripts/demo.mjs # headless capture for CI
-//   node scripts/demo.mjs --only opendata-showcase,aisd-showcase # selected builds and fixtures
+//   node scripts/demo.mjs --only opendata-pitch,aisd-showcase # selected builds and fixtures
 //
 // A loop is the deck in the player's frame from its start step: three steps
 // forward, then three back, so it shows the stepped build and the reverse replay
@@ -26,18 +26,26 @@
 // Run from site/. The parent repository must have its dependencies installed
 // (`bun install` at the root). Posters, loops, stills and recordings are
 // committed; public/d/ and .demo/ are not.
-import { spawn, spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { createServer } from "node:http";
-import { createRequire } from "node:module";
 import { createServer as createNetServer } from "node:net";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 import sharp from "sharp";
-import { deepMerge } from "../../packages/decks/theme/resolve.ts";
+import { deepMerge, resolveTheme } from "../../packages/kit/src/theme-resolve.ts";
 
 const site = resolve(import.meta.dirname, "..");
 const repo = resolve(site, "..");
+const registry = JSON.parse(readFileSync(join(repo, "decks.json"), "utf8"));
 const work = join(site, ".demo");
 const { examples: ENTRIES } = JSON.parse(
   readFileSync(join(site, "src/data/examples.json"), "utf8"),
@@ -58,7 +66,7 @@ const LOOP = {
   steps: ["next", "next", "next", "prev", "prev", "prev"],
 };
 /** The NORMAL/WARM stills: this deck, at its start slide, after this many clicks. */
-const STILL = { deck: "tides", clicks: 1 };
+const STILL = { deck: "aisd-showcase", clicks: 1 };
 const buildOnly = process.argv.includes("--build");
 const noShots = process.argv.includes("--no-shots");
 const loopsOnly = process.argv.includes("--loops");
@@ -77,12 +85,13 @@ function run(command, args, options = {}) {
   }
 }
 
-/** Slidev's CLI entry, resolved from the repository root like deck.mjs does. */
-function slidevBin() {
-  const require = createRequire(join(repo, "package.json"));
-  const pkgPath = require.resolve("@slidev/cli/package.json");
-  const { bin } = JSON.parse(readFileSync(pkgPath, "utf8"));
-  return join(dirname(pkgPath), typeof bin === "string" ? bin : bin.slidev);
+/** Resolve the site's slug through the repository's registered deck directories. */
+function aliasOf(name) {
+  const alias = Object.entries(registry).find(
+    ([key, value]) => !key.startsWith("_") && value.dir === `examples/${name}`,
+  )?.[0];
+  if (!alias) throw new Error(`${name}: no deck registered in decks.json`);
+  return alias;
 }
 
 const freePort = () =>
@@ -95,54 +104,12 @@ const freePort = () =>
     });
   });
 
-async function waitForHttp(url, timeoutMs = 90_000) {
-  const until = Date.now() + timeoutMs;
-  while (Date.now() < until) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) return;
-    } catch {
-      // Not up yet.
-    }
-    await new Promise((done) => setTimeout(done, 500));
-  }
-  throw new Error(`${url} did not answer within ${timeoutMs / 1000}s`);
-}
-
-/** Starts Slidev's dev server for a deck; returns its port and a stop function. */
-async function devServer(entry) {
-  const port = await freePort();
-  const child = spawn("node", [slidevBin(), entry, "--port", String(port)], {
-    cwd: repo,
-    stdio: ["ignore", "ignore", "inherit"],
-    detached: true,
-  });
-  const stop = () => {
-    try {
-      process.kill(-child.pid, "SIGTERM");
-    } catch {
-      // Already gone.
-    }
-  };
-  try {
-    await waitForHttp(`http://localhost:${port}/`);
-  } catch (error) {
-    stop();
-    throw error;
-  }
-  return { port, stop };
-}
-
 function build(name) {
   const out = join(site, "public/d", name);
   rmSync(out, { recursive: true, force: true });
-  run(
-    "node",
-    [slidevBin(), "build", `examples/${name}/slides.md`, "--base", `/d/${name}/`, "--out", out],
-    {
-      cwd: repo,
-    },
-  );
+  run("bun", ["run", "decks", "build", aliasOf(name), "--base", `/d/${name}/`, "--out", out], {
+    cwd: repo,
+  });
 }
 
 const TYPES = {
@@ -202,7 +169,7 @@ async function record(page, port, name) {
   await page.goto(`http://localhost:${port}/__harness.html`);
   await page.evaluate((src) => {
     document.getElementById("deck").src = src;
-  }, `/d/${name}/`);
+  }, `/d/${name}/?decks-bridge&motion=instant`);
   /** The newest settled state once more than `after` have arrived. */
   const settled = async (after) => {
     await page.waitForFunction(
@@ -264,6 +231,7 @@ async function record(page, port, name) {
   const key = (s) => `${s.slide}:${s.beat}`;
   for (let guard = 0; guard < 400; guard++) {
     if (states.some((s) => key(s) === key(state))) break;
+    log(`${name}: recorded slide ${state.slide}, step ${state.beat + 1}`);
     states.push({
       slide: state.slide,
       beat: state.beat,
@@ -300,7 +268,7 @@ async function poster(page, port, name, { startSlide, startBeat }) {
   const query = startBeat ? `?clicks=${startBeat}` : "";
   await page.evaluate((src) => {
     document.getElementById("deck").src = src;
-  }, `/d/${name}/index.html#/${startSlide}${query}`);
+  }, `/d/${name}/index.html?decks-bridge#/${startSlide}${query}`);
   await page.waitForFunction(
     ([slide, beat, featured]) =>
       window.messages.some(
@@ -343,7 +311,7 @@ async function loopVideo(browser, port, name, { startSlide, startBeat, states })
     deck.style.width = "100vw";
     deck.style.height = "100vh";
     deck.src = src;
-  }, `/d/${name}/index.html#/${startSlide}${query}`);
+  }, `/d/${name}/index.html?decks-bridge#/${startSlide}${query}`);
   const settledCount = () =>
     page.evaluate(
       () => window.messages.filter((m) => m.type === "decks:state" && m.settled).length,
@@ -356,8 +324,11 @@ async function loopVideo(browser, port, name, { startSlide, startBeat, states })
     [startSlide, startBeat],
     { timeout: 30_000 },
   );
-  // Let fonts and the first draw finish before the loop starts.
-  await page.waitForTimeout(800);
+  await page
+    .locator("#deck")
+    .contentFrame()
+    .locator("body")
+    .evaluate(() => document.fonts.ready);
   const trim = now();
   const marks = [{ t: 0, slide: startSlide, beat: startBeat }];
   await page.waitForTimeout(LOOP.dwellMs);
@@ -440,20 +411,14 @@ async function encode(png, base) {
   log(`wrote ${base.replace(`${site}/`, "")}-{640,1280,1920}.{avif,webp}`);
 }
 
-/** Runs the repository's `shot` script against a dev server for `entry`; returns the PNG path. */
-async function shot(entry, slide, clicks, outDir) {
+/** Runs the source CLI's settled screenshot command; returns the PNG path. */
+function shot(entry, slide, clicks, outDir) {
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
-  const server = await devServer(entry);
-  try {
-    run("bun", ["run", "shot", String(slide), String(clicks), String(server.port)], {
-      cwd: repo,
-      env: { ...process.env, SHOT_DIR: outDir },
-    });
-  } finally {
-    server.stop();
-  }
   const png = join(outDir, `slide-${slide}-c${clicks}.png`);
+  run("bun", ["run", "decks", "shot", entry, String(slide), String(clicks), "--out", png], {
+    cwd: repo,
+  });
   if (!existsSync(png)) throw new Error(`shot wrote no ${png}`);
   return png;
 }
@@ -466,60 +431,83 @@ function warmCopy(name) {
     recursive: true,
     filter: (source) => !source.includes("node_modules"),
   });
+  // Bun installs this deck's direct dependencies beside it, outside the copy.
+  symlinkSync(join(repo, "examples", name, "node_modules"), join(copy, "node_modules"), "dir");
   const own = join(copy, "theme.json");
   const warm = JSON.parse(readFileSync(join(site, "demo/warm-theme.json"), "utf8"));
-  const theme = existsSync(own) ? deepMerge(JSON.parse(readFileSync(own, "utf8")), warm) : warm;
+  const defaults = JSON.parse(
+    readFileSync(join(repo, "packages/kit/src/theme-default.json"), "utf8"),
+  );
+  const override = existsSync(own) ? deepMerge(JSON.parse(readFileSync(own, "utf8")), warm) : warm;
+  const theme = resolveTheme(defaults, override);
   writeFileSync(own, `${JSON.stringify(theme, null, 2)}\n`);
+  writeFileSync(
+    join(copy, "setup.ts"),
+    'import { installTheme, resolveTheme } from "@steamfield/decks/kit";\nimport theme from "./theme.json";\n\ninstallTheme(resolveTheme(theme));\n',
+  );
   return copy;
 }
 
 async function main() {
-  run("bun", ["run", "lint"], { cwd: repo });
-  run("bun", ["run", "check"], { cwd: repo });
+  run("bun", ["run", "decks", "check"], { cwd: repo });
   for (const name of NAMES) build(name);
   if (buildOnly) return;
 
   mkdirSync(join(site, "fixtures/examples"), { recursive: true });
   const server = await staticServer();
-  // Native Metal keeps macOS WebGL recording responsive; forcing software
-  // rendering can stall animation frames under capture. CI/DEMO_HEADLESS can
-  // use headless software rendering without changing the deck runtime.
-  const browser = await chromium.launch({
-    headless: !headed,
-    args: headed ? [] : ["--use-angle=swiftshader"],
-  });
   const recordings = {};
   try {
-    const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-    for (const name of NAMES) {
-      log(`recording ${name}`);
-      recordings[name] = await record(page, server.port, name);
-      writeFileSync(
-        join(site, "fixtures/examples", `${name}.json`),
-        `${JSON.stringify(recordings[name], null, 2)}\n`,
-      );
-    }
-    await page.close();
-    if (!noShots && !loopsOnly) {
-      const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    // The untimed text walk crosses nested demos and WebGL covers. Headless,
+    // instant motion avoids capture stalls; pixel captures below stay live.
+    const recorder = await chromium.launch({ headless: true, args: ["--use-angle=swiftshader"] });
+    try {
       for (const name of NAMES) {
-        const { startSlide, startBeat } = recordings[name];
-        log(`poster ${name} at slide ${startSlide}, step ${startBeat + 1}`);
-        await encode(
-          await poster(page, server.port, name, recordings[name]),
-          join(site, "public/posters", name),
+        const page = await recorder.newPage({ viewport: { width: 1920, height: 1080 } });
+        log(`recording ${name}`);
+        try {
+          recordings[name] = await record(page, server.port, name);
+        } finally {
+          await page.close();
+        }
+        writeFileSync(
+          join(site, "fixtures/examples", `${name}.json`),
+          `${JSON.stringify(recordings[name], null, 2)}\n`,
         );
       }
-      await page.close();
+    } finally {
+      await recorder.close();
     }
-    if (!noShots && !postersOnly) {
-      for (const entry of SELECTED.filter((e) => e.loop)) {
-        log(`loop ${entry.name}`);
-        await loopVideo(browser, server.port, entry.name, recordings[entry.name]);
+    if (!noShots) {
+      // Native Metal keeps macOS WebGL captures responsive; software rendering
+      // can stall animation frames. CI/DEMO_HEADLESS can use headless capture.
+      const browser = await chromium.launch({
+        headless: !headed,
+        args: headed ? [] : ["--use-angle=swiftshader"],
+      });
+      try {
+        if (!loopsOnly) {
+          const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+          for (const name of NAMES) {
+            const { startSlide, startBeat } = recordings[name];
+            log(`poster ${name} at slide ${startSlide}, step ${startBeat + 1}`);
+            await encode(
+              await poster(page, server.port, name, recordings[name]),
+              join(site, "public/posters", name),
+            );
+          }
+          await page.close();
+        }
+        if (!postersOnly) {
+          for (const entry of SELECTED.filter((e) => e.loop)) {
+            log(`loop ${entry.name}`);
+            await loopVideo(browser, server.port, entry.name, recordings[entry.name]);
+          }
+        }
+      } finally {
+        await browser.close();
       }
     }
   } finally {
-    await browser.close();
     server.close();
   }
   run("bunx", ["biome", "format", "--write", "fixtures/examples"], { cwd: site });
@@ -527,19 +515,14 @@ async function main() {
 
   const { startSlide } = recordings[STILL.deck];
   const normal = await shot(
-    `examples/${STILL.deck}/slides.md`,
+    aliasOf(STILL.deck),
     startSlide,
     STILL.clicks,
     join(work, "shots", "normal"),
   );
   await encode(normal, join(site, "public/stills", `${STILL.deck}-normal`));
   const copy = warmCopy(STILL.deck);
-  const warm = await shot(
-    join(copy, "slides.md"),
-    startSlide,
-    STILL.clicks,
-    join(work, "shots", "warm"),
-  );
+  const warm = await shot(copy, startSlide, STILL.clicks, join(work, "shots", "warm"));
   await encode(warm, join(site, "public/stills", `${STILL.deck}-warm`));
   log("done");
 }

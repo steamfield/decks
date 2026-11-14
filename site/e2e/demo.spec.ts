@@ -1,0 +1,129 @@
+import { expect, test } from "@playwright/test";
+import { loadExamples } from "../src/data/examples";
+import { announcement, mirrorCopy } from "../src/lib/player/format";
+
+const examples = loadExamples();
+
+for (const example of examples) {
+  test(`${example.name} loads from the gallery at its recorded start and mirrors live steps`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const player = page.getByRole("group", { name: /^Deck player:/ });
+    await player.scrollIntoViewIfNeeded();
+    await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
+    await page
+      .getByRole("link")
+      .filter({ has: page.getByText(example.title, { exact: true }) })
+      .click();
+    await expect(player.locator("iframe")).toHaveAttribute(
+      "src",
+      new RegExp(`/d/${example.name}/`),
+    );
+    await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
+    await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+    const at = example.states.findIndex(
+      (state) => state.slide === example.startSlide && state.beat === example.startBeat,
+    );
+    if (at < 0) throw new Error(`${example.name}: no recorded start`);
+    if (example.name === "aisd-showcase") {
+      await page
+        .frameLocator("iframe")
+        .locator("body")
+        .click({ position: { x: 10, y: 10 } });
+      await page.keyboard.press("ArrowLeft");
+      await page.keyboard.press("ArrowRight");
+      await expect(
+        player
+          .getByRole("paragraph")
+          .and(player.getByText(example.states[at + 1]?.lead ?? "", { exact: true })),
+      ).toBeVisible();
+      await page.keyboard.press("ArrowLeft");
+      await expect(
+        player
+          .getByRole("paragraph")
+          .and(player.getByText(example.states[at]?.lead ?? "", { exact: true })),
+      ).toBeVisible();
+    }
+    for (const [index, state] of example.states.slice(at, at + 3).entries()) {
+      if (index) await page.getByRole("button", { name: "Step forward", exact: true }).click();
+      const caption = mirrorCopy(state, example.slideTitles);
+      await expect(
+        player.getByRole("paragraph").and(player.getByText(caption.lead, { exact: true })),
+      ).toBeVisible();
+      await expect(
+        player.getByText(
+          announcement({ ...state, slides: example.slides }, example.slideTitles[state.slide - 1]),
+          { exact: true },
+        ),
+      ).toBeAttached();
+      if (caption.body)
+        await expect(
+          player.getByRole("paragraph").and(player.getByText(caption.body, { exact: true })),
+        ).toBeVisible();
+      await expect(page.frameLocator("iframe").locator("[data-deck-active]")).toHaveAttribute(
+        "data-deck-slide",
+        String(state.slide),
+      );
+    }
+  });
+}
+
+test("a phone shows the AISD poster until the uniformly scaled live deck is ready", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  let release = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/d/aisd-showcase/index.html*", async (route) => {
+    await gate;
+    await route.continue();
+  });
+  const opening = page.waitForRequest("**/d/aisd-showcase/index.html*");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const player = page.getByRole("group", { name: /^Deck player:/ });
+  await player.scrollIntoViewIfNeeded();
+  try {
+    await opening;
+    await expect(player.getByRole("status")).toContainText("Loading interactive deck");
+    await expect(player.getByRole("img", { name: /AISD.*slide 1 of/ })).toBeVisible();
+    await expect(player.locator("iframe")).toBeHidden();
+  } finally {
+    release();
+  }
+  await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
+  await expect(player.getByRole("img")).toHaveCount(0);
+  const slide = await page.frameLocator("iframe").locator("[data-deck-active]").boundingBox();
+  const frame = await player.locator("iframe").boundingBox();
+  expect(slide).not.toBeNull();
+  expect(frame).not.toBeNull();
+  expect(slide?.width).toBeCloseTo(frame?.width ?? 0, 0);
+  expect(slide?.height).toBeCloseTo(frame?.height ?? 0, 0);
+  expect((slide?.width ?? 0) / (slide?.height ?? 1)).toBeCloseTo(16 / 9, 2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+});
+
+test("Play advances the live AISD deck with its recorded caption", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const player = page.getByRole("group", { name: /^Deck player:/ });
+  await player.scrollIntoViewIfNeeded();
+  await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await expect(
+    player
+      .getByRole("paragraph")
+      .and(player.getByText(examples[0]?.states[1]?.lead ?? "", { exact: true })),
+  ).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(page.frameLocator("iframe").locator("html")).toHaveAttribute(
+    "data-deck-view",
+    "play",
+  );
+});
