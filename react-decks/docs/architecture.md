@@ -209,6 +209,7 @@ export function formatHash(location: Pick<DeckLocation, 'view' | 'slide' | 'clic
 | `#/presenter` | presenter, slide 1, click 0 |
 | `#/presenter/5?clicks=2` | presenter, slide 5, click 2 |
 | `#/overview` | overview, slide 1, click 0 |
+| `#/overview/5?clicks=2` | overview, slide 5, click 2 |
 | `#/print` | print, slide 1, click 0 |
 | anything unrecognized, e.g. `#/abc`, `#/5/extra`, `#/-1` | play, slide 1, click 0 |
 
@@ -220,9 +221,11 @@ other than `0` or `false`, including no value. Search parameters inside the hash
 read for `clicks`.
 
 `formatHash` output: `#/5`, `#/5?clicks=2` (omitted when click is 0), `#/presenter/5`,
-`#/presenter/5?clicks=2`, `#/overview`, `#/print`. For every location `L` whose slide
-and click are non-negative safe integers, `parseLocation(formatHash(L), '')` returns the same
-view, slide and click (for `overview` and `print`, slide 1 click 0).
+`#/presenter/5?clicks=2`, `#/overview/5`, `#/overview/5?clicks=2`, `#/print`. For every
+location `L` whose slide and click are non-negative safe integers,
+`parseLocation(formatHash(L), '')` returns the same view, slide and click (for `print`,
+slide 1 click 0). The overview's hash holds the talk's position, which browsing the overview
+does not change, so leaving it returns to where the talk was.
 
 ### 2.5 `notes.ts`
 
@@ -415,6 +418,7 @@ Kit CSS, deck CSS, tests and tooling select on these and nothing else from the f
 | `data-deck-active` | the same element, present only on the active slide in the play view | |
 | `data-deck-view` | `<html>` | `play`, `presenter`, `overview`, `print` |
 | `data-deck-motion` | `<html>` | `live`, `instant` |
+| `data-deck-idle` | `<html>`, in the play view after 3 s without pointer movement | |
 | `data-deck-nav` | `<html>`, during a transition | `forward`, `backward` |
 | `data-deck-transition` | `<html>`, during a transition | a slide transition name, or `step` |
 | `#deck-root` | the React mount node | |
@@ -597,8 +601,7 @@ runtime and the tests use.
 | `hashchange` or `popstate` (edited URL, back, forward) | Re-parses and clamps; state updates and subscribers are notified if it differs; a non-canonical hash is rewritten with `replaceState`. |
 | Any write | `location.search` is preserved. |
 | `destroy` | Listeners removed; later URL changes do not notify. |
-
-| `dispatch` while the view is `overview` or `print` | Nothing. Those views cannot hold a position in the hash yet, so navigation is disabled in them until they are specified. |
+| `dispatch` while the view is `overview` or `print` | Nothing. The overview moves the talk through `setView` (section 4.2); print has no position. |
 
 `useDeck` and `useSlide` throw an `Error` naming the missing provider when used outside
 `Deck` or outside a `SlideHost`.
@@ -645,6 +648,172 @@ manifest's canvas, sizes its content to the logical width and height in px, tran
 it from the top left, makes it a CSS size container, and sets `--deck-w`, `--deck-h` and
 `--deck-scale` (unitless numbers) on it. Where `ResizeObserver` does not exist it renders at
 the design size with scale 1.
+
+## 4.2 runtime, Phase 3 surface: presenter, overview, sync (Final)
+
+```ts
+import type { NavState, Transport } from "@react-decks/core";
+
+export interface DeckState {
+  // ...the Phase 2 fields, plus:
+  /** Width / height of the audience window, once a play view has reported it. */
+  readonly audienceAspect?: number;
+}
+
+export interface DeckStore {
+  // ...the Phase 2 members, plus:
+  /** Switches view, optionally moving to `nav` (clamped) in the same step. One `pushState`.
+   *  Does nothing when neither the view nor the position would change. */
+  setView(view: DeckView, nav?: NavState): void;
+}
+
+/** `transport` joins the store to other windows of the same deck. Without it the store is local. */
+export function createDeckStore(manifest: DeckManifest, options?: { transport?: Transport }): DeckStore;
+
+/** A `Transport` over `BroadcastChannel`. */
+export function createBroadcastTransport(channelId: string): Transport;
+
+export function PresenterView(): ReactElement;
+export function OverviewView(): ReactElement;
+```
+
+The store's position (`nav`, the hash) is always the talk's position. The overview does not
+move it while the user browses: its highlight is DOM focus, local to the view. `dispatch`
+stays a no-op in `overview` and `print`; the overview moves the talk only through `setView`.
+
+### Sync
+
+`mountDeck` creates a transport with
+`createBroadcastTransport(syncChannelId(manifest.name, base))`, where `base` is
+`location.pathname` with a trailing `index.html` removed, unless `BroadcastChannel` is
+missing, the location is `?decks-bridge` or `?embedded`, or the view at mount is `print`.
+The decision is made once at mount. With a transport, the store creates one
+`createSyncSession` for its lifetime, with a random id (`crypto.randomUUID()`) and
+`startedAt = performance.timeOrigin + performance.now()`.
+
+`current()` returns `{ nav, aspect }`, where `aspect` is `innerWidth / innerHeight` when the
+view is `play` and absent otherwise. Every publish sends the same shape, read at the moment
+of publishing.
+
+| Event | Store behaviour |
+| --- | --- |
+| Created | Publishes nothing. |
+| The position changes locally: `dispatch`, `setView` with a `nav`, an edited URL, back, forward | Publishes. |
+| The view changes and the position does not | Publishes nothing. |
+| The window resizes in the `play` view and `aspect` changed | Publishes, at most once per 250 ms, trailing. |
+| A newer remote state arrives | Applies `nav` (clamped) in any view, written to the hash with the same rule as a local change (`pushState` when the slide changed, `replaceState` for a click), notifies subscribers once, publishes nothing. If the state carries `aspect`, sets `audienceAspect`. |
+| `hashchange` or `popstate` | The URL-derived fields are merged into the state; `audienceAspect` is kept. |
+| `destroy` | Closes the session and the transport. |
+
+Remote slide changes are pushed so that every window's history is the talk's history and a
+back gesture steps one slide back for the whole room.
+
+Accepted limits:
+
+- A mistyped hash (`#/abc`) parses as slide 1, as it does on load, and the room follows.
+- With several play windows open, the presenter shows the aspect of whichever published last.
+- A resize publish and a navigation in another window within the same few milliseconds tie on
+  `seq`; the window that has been open longer wins, which can undo the navigation.
+- A window mounted in `print` and then edited to another view stays unsynced until reload.
+
+### Views and keys
+
+`Deck` renders `PlayView`, `PresenterView` or `OverviewView` by `DeckState.view` (print comes
+in Phase 5 and renders `PlayView` until then) and sets `data-deck-motion` to `live` in the
+play view and `instant` in every other view. `Deck` keeps two things in memory above the
+view switch: the timer (below) and the home view, the last of `play` and `presenter` shown.
+When the view at mount is `overview`, the home view is `presenter` if `window.name` starts
+with `react-decks-presenter:` and `play` otherwise.
+
+Keys added to the Phase 2 table:
+
+| Key | Action |
+| --- | --- |
+| `o` | From play or presenter: `setView("overview")`. From the overview: `setView(home)`. |
+| `Escape` | In the overview: `setView(home)`. The position is untouched, clicks included. |
+| `p` | In the play view, when not embedded: opens the presenter window. |
+| `f` | In every view: toggles fullscreen on `document.documentElement`. |
+
+The presenter window: `const w = window.open("", "react-decks-presenter:" + channelId)`. If
+`w.location.href` is `about:blank`, set it to the current URL with the hash formatted for the
+presenter view at the current position. Then `w.focus()`. An existing presenter is focused
+and not navigated. If `window.open` returns null (a popup blocker), nothing happens.
+
+### `PresenterView`
+
+Four regions, each a landmark with an accessible name:
+
+- "Current slide": `SlideHost` at the store's position, context `presenter`, in the
+  `SlideFrame main`.
+- "Next": `SlideHost` at `navigate(nav, { type: "next" })`, context `preview`, in a
+  `SlideFrame`. On the deck's last frame it shows the text "End of deck" and no slide.
+- "Notes": every note segment of the current slide, in order, as HTML. The segment with the
+  greatest `click` not above the current click has `aria-current="true"` and is scrolled into
+  view (`scrollIntoView({ block: "nearest" })`) when it changes. While notes load, the
+  region is empty. A slide with no segments, or only empty ones, or a deck without
+  `loadNotes`, shows "No notes for this slide". A rejected load shows "Notes failed to load".
+- A status bar: the position as "5 / 12", the click as "click 2 of 3" when the slide has
+  clicks, the local time as 24-hour `HH:MM`, and the timer.
+
+Both slide boxes have the CSS `aspect-ratio` of `audienceAspect`, falling back to the
+canvas's design ratio, so the speaker sees the framing the room sees. Navigation keys work as
+in the play view.
+
+Timer: `00:00` and stopped until the first position change, local or remote, after `Deck`
+mounts; then it counts up once a second as `mm:ss`, or `h:mm:ss` from one hour. A button
+named "Reset timer" returns it to `00:00`, stopped; the next position change starts it again.
+Its state lives in `Deck`, so opening the overview does not reset it; a reload does. It is
+not synced. One interval drives the timer and the clock and is cleared on unmount.
+
+Note HTML is compiled from the deck author's own markdown at build time and is rendered with
+`dangerouslySetInnerHTML`.
+
+### `OverviewView`
+
+A scrollable grid with one button per slide, named "Slide 3: <title>", each showing
+`SlideHost` with context `overview` at that slide's last click inside a `SlideFrame` in a box
+of the canvas's design ratio. The button for the store's current slide has
+`aria-current="true"`, and on entry it is focused and scrolled into view.
+
+Arrow keys move focus: `ArrowRight` and `ArrowDown` to the next button, `ArrowLeft` and
+`ArrowUp` to the previous, `Home` and `End` to the first and last. Nothing is bound to
+`Enter` or `Space` globally; activating a button the native way (click, `Enter`, `Space`)
+calls `setView(home, { slide: no, click: 0 })`, except on the current slide's button, where
+it calls `setView(home)` and so keeps the click. Every slide is mounted; decks here have at
+most a few dozen slides and a stage outside the `slide` context renders one static frame.
+This is an accepted limit, not a place to add virtualization.
+
+### Wake lock, idle cursor
+
+In the play and presenter views the runtime holds a screen wake lock
+(`navigator.wakeLock.request("screen")`) while the document is visible, requests it again
+when the document becomes visible, and releases it on leaving those views. A rejected request
+is expected (battery saver, an unfocused window) and is ignored; where the API is missing
+nothing happens.
+
+In the play view, after 3 s without a `pointermove`, `<html>` gets `data-deck-idle` and the
+framework's CSS hides the cursor; the next `pointermove`, or leaving the play view, removes
+it.
+
+### Behaviour that needs a browser test
+
+| Situation | Outcome |
+| --- | --- |
+| Play window on slide 3 click 1; press `p` | A presenter window opens on slide 3 click 1. Pressing `p` again opens no second window and does not move the presenter. |
+| Advance in the presenter | The play window follows, URL included. Advance in the play window and the presenter follows. |
+| Reload the presenter mid-talk | It returns to the talk's position; the play window does not move. |
+| Reload the play window mid-talk | It returns to the talk's position; the presenter does not move. |
+| Open a third window at `#/1` mid-talk | It is brought to the talk's position; the others do not move. |
+| Presenter opens the overview, arrows to another slide, presses `Escape` | The audience never moved; the presenter is back on the talk's slide and click. |
+| Presenter opens the overview and activates slide 6 | Both windows go to slide 6, click 0, and the presenter is in the presenter view. |
+| The audience window reloads while the presenter is browsing the overview | The audience returns to the talk's position, not the focused tile. |
+| Presenter reloaded while in the overview, then `Escape` | It returns to the presenter view. |
+| The talk advances three slides from the play window; press back in the presenter | Both windows step back one slide. |
+| Presenter on a slide with `[click]` notes; advance a click | The segment for that click becomes the current one. |
+| Play window resized to 4:3; then the presenter reloads | The presenter's two slide boxes are 4:3 before and after the reload. |
+| Open the overview from the presenter after the timer started | On return the timer has kept counting. |
+| Two decks served from one origin at different paths, each with two windows | Navigating one deck does not move the other. |
+| The same built deck opened as `/dir/` and `/dir/index.html` | The two windows sync. |
 
 ## 5. motion (Outline)
 
