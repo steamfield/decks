@@ -27,7 +27,7 @@ export function parseLocation(hash: string, search: string): DeckLocation {
   const slide = Number(play?.[1] ?? presenter?.[1] ?? 1);
   if (
     (!play && !presenter && path !== "" && path !== "#" && path !== "#/") ||
-    !Number.isInteger(slide)
+    !Number.isSafeInteger(slide)
   ) {
     return { view: "play", slide: 1, click: 0, ...flags };
   }
@@ -36,7 +36,7 @@ export function parseLocation(hash: string, search: string): DeckLocation {
   return {
     view: presenter ? "presenter" : "play",
     slide,
-    click: Number.isInteger(clicks) ? clicks : 0,
+    click: Number.isSafeInteger(clicks) ? clicks : 0,
     ...flags,
   };
 }
