@@ -1,6 +1,6 @@
 # RFC 0007: react-decks, a React slide framework to replace Slidev
 
-Status: In progress on branch `react-decks`. Phases 0 to 2 are done: the fixture deck runs in a browser with keyboard navigation, URL-held position, an adaptive canvas and hot reload, proven by 470 unit and integration tests and 12 Playwright tests. Next is phase 3, the parity spike.
+Status: Done in 1.0.0-rc.0. Slidev is removed (tag `slidev-final`); the framework is the repo, published as `@steamfield/decks`. See "Outcome" at the end for what was built and what changed from the plan.
 
 ## Problem
 
@@ -91,3 +91,19 @@ browser. At checkpoint 2: `build`, `export`, `snap` and `snap:diff` against Slid
   transform-scaled ancestor and accepts a pixel ratio.
 - Whether time can be seeked across gsap, CSS and view-transition animations at once for
   `decks film`, or it falls back to slowed real-time capture.
+
+## Outcome
+
+Built, as of 1.0.0-rc.0:
+
+- The five packages the plan named (`core`, `runtime`, `motion`, `node`, `kit`), kept private with enforced boundaries, and a sixth, `packages/decks`, that bundles them into the one published package `@steamfield/decks` with subpath exports. A source condition (`@steamfield/decks/source`) lets the repo run the public names from TypeScript.
+- Four decks ported from Slidev and checked frame by frame against Slidev captures (`building-for-agents`, `opendata-pitch`, `aisd-showcase`, `texas-2026`). The other seven Slidev decks were not ported.
+- The CLI: `dev`, `build`, `new`, `check`, `lint`, `hook`, `export` (a real print view), `shot`, `init`, and og.png generation at build. `list`, `snap`, `fact-extract` and `review-prose` were not carried over.
+- The embed protocol the site's player speaks, and a Claude Code plugin (skills, agent, hooks) that replaces the rendered `.claude/` copies the Slidev package installed.
+
+Changed from the plan:
+
+- The agent setup became a plugin with a marketplace instead of files `init` writes into a project; `init` now enables the plugin and copies the skills for Codex.
+- Parity was proved by pixel comparison against Slidev captures (`scripts/parity.mjs`) rather than by side-by-side review alone; live WebGL and force-graph frames were judged by eye.
+- The work was done by Codex runs against written contracts, with Claude orchestrating and reviewing; `docs/delegation-log.md` records each run and what it taught.
+
