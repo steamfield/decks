@@ -43,13 +43,13 @@ test: ## Unit and component tests
 coverage: ## Unit and component tests with coverage
 	bunx vitest run --coverage
 
-ci-prepare: ## Workers Builds only: install the parent repo, then build the decks into public/demo/
+ci-prepare: ## Workers Builds only: install the parent repo, then build the decks into public/d/
 	cd .. && bun install --frozen-lockfile
 	node scripts/demo.mjs --build
 
 # Cloudflare Workers Builds (WORKERS_CI=1) runs `bun run build` from site/ on a
 # fresh checkout: install the parent repo and build the decks first, since
-# public/demo/ is gitignored and the site reads ../packages at build time.
+# public/d/ is gitignored and the site reads ../packages at build time.
 build: $(if $(WORKERS_CI),ci-prepare) ## Static build into dist/, then the acceptance tests over it
 	bunx astro build
 	bunx vitest run --config vitest.build.config.ts
@@ -65,10 +65,10 @@ clean: ## Remove build output, test output and Astro caches
 
 # The player's decks. Needs the parent repository's dependencies (bun install at
 # the root) and, for the posters and stills, Playwright's Chromium.
-demo: ## Lint, check and build the example decks into public/demo/, record them, take posters and stills
+demo: ## Lint, check and build the example decks into public/d/, record them, take posters and stills
 	node scripts/demo.mjs
 
-demo-build: ## Build the example decks into public/demo/ only (what a deploy needs)
+demo-build: ## Build the example decks into public/d/ only (what a deploy needs)
 	node scripts/demo.mjs --build
 
 deploy-check: build ## Serve dist/ through wrangler dev and check headers, canonical URLs and 404

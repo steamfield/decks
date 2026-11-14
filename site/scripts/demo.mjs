@@ -1,5 +1,5 @@
 // `make demo`: builds every example deck in src/data/examples.json into
-// public/demo/<name>/ for the player, records what each deck reports through the
+// public/d/<name>/ for the player, records what each deck reports through the
 // embed contract into fixtures/examples/<name>.json, takes each poster from the
 // same build through the same contract the player uses (at the start step, once
 // the deck reports it settled, so entrances have finished drawing), records the
@@ -25,7 +25,7 @@
 //
 // Run from site/. The parent repository must have its dependencies installed
 // (`bun install` at the root). Posters, loops, stills and recordings are
-// committed; public/demo/ and .demo/ are not.
+// committed; public/d/ and .demo/ are not.
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -134,11 +134,11 @@ async function devServer(entry) {
 }
 
 function build(name) {
-  const out = join(site, "public/demo", name);
+  const out = join(site, "public/d", name);
   rmSync(out, { recursive: true, force: true });
   run(
     "node",
-    [slidevBin(), "build", `examples/${name}/slides.md`, "--base", `/demo/${name}/`, "--out", out],
+    [slidevBin(), "build", `examples/${name}/slides.md`, "--base", `/d/${name}/`, "--out", out],
     {
       cwd: repo,
     },
@@ -202,7 +202,7 @@ async function record(page, port, name) {
   await page.goto(`http://localhost:${port}/__harness.html`);
   await page.evaluate((src) => {
     document.getElementById("deck").src = src;
-  }, `/demo/${name}/`);
+  }, `/d/${name}/`);
   /** The newest settled state once more than `after` have arrived. */
   const settled = async (after) => {
     await page.waitForFunction(
@@ -300,7 +300,7 @@ async function poster(page, port, name, { startSlide, startBeat }) {
   const query = startBeat ? `?clicks=${startBeat}` : "";
   await page.evaluate((src) => {
     document.getElementById("deck").src = src;
-  }, `/demo/${name}/index.html#/${startSlide}${query}`);
+  }, `/d/${name}/index.html#/${startSlide}${query}`);
   await page.waitForFunction(
     ([slide, beat, featured]) =>
       window.messages.some(
@@ -343,7 +343,7 @@ async function loopVideo(browser, port, name, { startSlide, startBeat, states })
     deck.style.width = "100vw";
     deck.style.height = "100vh";
     deck.src = src;
-  }, `/demo/${name}/index.html#/${startSlide}${query}`);
+  }, `/d/${name}/index.html#/${startSlide}${query}`);
   const settledCount = () =>
     page.evaluate(
       () => window.messages.filter((m) => m.type === "decks:state" && m.settled).length,

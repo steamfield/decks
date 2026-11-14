@@ -203,7 +203,7 @@ test.describe("without JavaScript", () => {
 // coalescing. The real excerpts below exercise the addon's actual bridge.
 const stub = readFileSync("e2e/fixtures/stub-deck.html", "utf8");
 async function withStubDecks(page: Page) {
-  await page.route("**/demo/*/index.html*", (route) =>
+  await page.route("**/d/*/index.html*", (route) =>
     route.fulfill({ contentType: "text/html", body: stub }),
   );
 }
@@ -260,7 +260,7 @@ test.describe("the interactive player", () => {
     const response = new Promise<void>((resolve) => {
       release = resolve;
     });
-    await page.route("**/demo/*/index.html*", async (route) => {
+    await page.route("**/d/*/index.html*", async (route) => {
       await response;
       await route.fulfill({
         contentType: "text/html",
@@ -352,7 +352,7 @@ test.describe("the interactive player", () => {
       "aria-label",
       new RegExp(`^Deck player: ${pick.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.`),
     );
-    await expect(page.locator("iframe")).toHaveAttribute("src", new RegExp(`/demo/${pick.name}/`));
+    await expect(page.locator("iframe")).toHaveAttribute("src", new RegExp(`/d/${pick.name}/`));
     await expect.poll(() => position(page)).toBe(`slide ${pick.startSlide} beat ${pick.startBeat}`);
   });
 });

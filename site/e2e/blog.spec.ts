@@ -14,7 +14,7 @@ const stub = readFileSync("e2e/fixtures/stub-deck.html", "utf8").replace(
 
 for (const scheme of ["light", "dark"] as const) {
   test(`a blog post in ${scheme} passes axe`, async ({ page }) => {
-    await page.route("**/demo/*/index.html*", (route) =>
+    await page.route("**/d/*/index.html*", (route) =>
       route.fulfill({ contentType: "text/html", body: stub }),
     );
     await page.emulateMedia({ colorScheme: scheme });
@@ -43,7 +43,7 @@ test("the blog player shows its poster and stays at the registered start step wi
   const gate = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route("**/demo/*/index.html*", async (route) => {
+  await page.route("**/d/*/index.html*", async (route) => {
     await gate;
     await route.fulfill({ contentType: "text/html", body: stub });
   });
@@ -66,7 +66,7 @@ test("the blog player shows its poster and stays at the registered start step wi
 test("the blog fits a narrow viewport and its toolbar follows its own container", async ({
   page,
 }) => {
-  await page.route("**/demo/*/index.html*", (route) =>
+  await page.route("**/d/*/index.html*", (route) =>
     route.fulfill({ contentType: "text/html", body: stub }),
   );
   await page.setViewportSize({ width: 360, height: 800 });
@@ -87,7 +87,7 @@ test("the blog fits a narrow viewport and its toolbar follows its own container"
 test("a single-example player aligns its desktop controls and retains its brand rule", async ({
   page,
 }) => {
-  await page.route("**/demo/*/index.html*", (route) =>
+  await page.route("**/d/*/index.html*", (route) =>
     route.fulfill({ contentType: "text/html", body: stub }),
   );
   await page.setViewportSize({ width: 1440, height: 1000 });

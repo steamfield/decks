@@ -305,7 +305,7 @@ describe("the whole site", () => {
   });
 
   it("credits Steamfield with a linked lockup in every page's footer", () => {
-    for (const file of htmlFiles("dist").filter((file) => !file.startsWith("demo/"))) {
+    for (const file of htmlFiles("dist").filter((file) => !file.startsWith("d/"))) {
       const footer = page("dist", file).querySelector("footer");
       expect(footer, file).not.toBeNull();
       if (!footer) throw new Error(`No footer in ${file}`);
@@ -460,7 +460,7 @@ describe("adding a docs page", () => {
       ]) {
         cpSync(entry, join(root, entry), {
           recursive: true,
-          filter: (from) => !from.includes("public/demo"),
+          filter: (from) => !/public\/d(\/|$)/.test(from),
         });
       }
       symlinkSync(resolve("node_modules"), join(root, "node_modules"), "dir");

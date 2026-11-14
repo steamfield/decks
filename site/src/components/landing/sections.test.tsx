@@ -33,7 +33,7 @@ const example = (name: string, label: string, kind = "talk"): Example =>
   ({
     name,
     title: `${name} title`,
-    href: `/demo/${name}/`,
+    href: `/d/${name}/`,
     provenance: { kind, label },
     poster: { base: `/posters/${name}`, width: 1280, height: 720 },
     states: [],
@@ -119,7 +119,7 @@ describe("landing sections", () => {
       <ExampleGallery examples={[example("a", "Template deck"), example("b", "From the talks")]} />,
     );
     const link = screen.getByRole("link", { name: /^a title/ });
-    expect(link).toHaveAttribute("href", "/demo/a/");
+    expect(link).toHaveAttribute("href", "/d/a/");
     expect(link).toHaveAttribute("data-example", "a");
     expect(link.querySelector("img")).toHaveAttribute("src", "/posters/a-640.webp");
     expect(screen.getByText("From the talks")).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe("landing sections", () => {
   it("prints a deck's text for readers without JavaScript", () => {
     const deck = {
       title: "Tides",
-      href: "/demo/tides/",
+      href: "/d/tides/",
       states: [
         { slide: 1, beat: 0, beats: 1, lead: "", body: "" },
         { slide: 2, beat: 1, beats: 3, lead: "Lead.", body: "Body." },
@@ -181,7 +181,7 @@ describe("landing sections", () => {
     expect(screen.getByText("Slide 2, step 2")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open the example deck" })).toHaveAttribute(
       "href",
-      "/demo/tides/",
+      "/d/tides/",
     );
   });
 });

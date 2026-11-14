@@ -8,7 +8,7 @@ import { BOOT_TIMEOUT_MS, DeckPlayer } from "./DeckPlayer";
 const example = (name: string, title: string, extra: Partial<Example> = {}): Example => ({
   name,
   title,
-  href: `/demo/${name}/`,
+  href: `/d/${name}/`,
   slides: 3,
   slideTitles: ["Cover", "", "Close"],
   startSlide: 2,
@@ -136,14 +136,14 @@ describe("DeckPlayer", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open deck" })).toHaveAttribute(
       "href",
-      "/demo/tides/#/2",
+      "/d/tides/#/2",
     );
   });
 
   it("automatically opens a titled interactive deck and stays paused under reduced motion", () => {
     render(<DeckPlayer examples={examples} priority gallery />);
     const frame = document.querySelector("iframe");
-    expect(frame?.getAttribute("src")).toBe("/demo/tides/index.html?decks-bridge=1#/2");
+    expect(frame?.getAttribute("src")).toBe("/d/tides/index.html?decks-bridge=1#/2");
     expect(frame?.hasAttribute("inert")).toBe(false);
     expect(frame?.getAttribute("tabindex")).not.toBe("-1");
     expect(frame?.getAttribute("title")).toMatch(/Tides run on the Moon's clock/);
@@ -204,7 +204,7 @@ describe("DeckPlayer", () => {
     expect(caption()).toBe("Recorded second lead.");
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     expect(document.querySelector("iframe")?.getAttribute("src")).toBe(
-      "/demo/tides/index.html?decks-bridge=1#/2?clicks=1",
+      "/d/tides/index.html?decks-bridge=1#/2?clicks=1",
     );
     const d = deck();
     d.state({});
@@ -302,7 +302,7 @@ describe("DeckPlayer", () => {
     expect(document.querySelector("iframe")).toBeNull();
     expect(screen.getByRole("link", { name: "Open deck" })).toHaveAttribute(
       "href",
-      "/demo/tides/#/2",
+      "/d/tides/#/2",
     );
     // The dropped deck answering late changes nothing.
     d.state({ lead: "Too late." });
@@ -373,7 +373,7 @@ describe("DeckPlayer", () => {
     });
     expect(document.querySelector("iframe")).toHaveAttribute(
       "src",
-      "/demo/other/index.html?decks-bridge=1#/2",
+      "/d/other/index.html?decks-bridge=1#/2",
     );
     expect(screen.getByRole("button", { name: "Another deck" })).toHaveAttribute(
       "aria-pressed",
@@ -389,7 +389,7 @@ describe("DeckPlayer", () => {
     render(<DeckPlayer examples={examples} priority gallery />);
     expect(document.querySelector("iframe")).toHaveAttribute(
       "src",
-      "/demo/other/index.html?decks-bridge=1#/2",
+      "/d/other/index.html?decks-bridge=1#/2",
     );
     expect(screen.getByRole("button", { name: "Another deck" })).toHaveAttribute(
       "aria-pressed",
@@ -538,7 +538,7 @@ describe("DeckPlayer", () => {
     expect(screen.queryByText("Old session.")).toBeNull();
     expect(document.querySelector("iframe")).toHaveAttribute(
       "src",
-      "/demo/other/index.html?decks-bridge=1#/2",
+      "/d/other/index.html?decks-bridge=1#/2",
     );
     const next = deck();
     next.state({ lead: "New session." });
@@ -624,7 +624,7 @@ describe("DeckPlayer", () => {
       expect(document.querySelector("iframe")).not.toBe(frame);
       expect(document.querySelector("iframe")).toHaveAttribute(
         "src",
-        "/demo/tides/index.html?decks-bridge=1#/2?clicks=1",
+        "/d/tides/index.html?decks-bridge=1#/2?clicks=1",
       );
       const retried = deck();
       old.state({ beat: 1, requestId: 1, lead: "Dropped session." });
@@ -660,7 +660,7 @@ describe("DeckPlayer", () => {
     expect(document.querySelector("iframe")).not.toBe(previousFrame);
     expect(document.querySelector("iframe")).toHaveAttribute(
       "src",
-      "/demo/tides/index.html?decks-bridge=1#/3",
+      "/d/tides/index.html?decks-bridge=1#/3",
     );
     const restarted = deck();
     restarted.state({ slide: 3, beat: 0, beats: 0 });
@@ -675,7 +675,7 @@ describe("DeckPlayer", () => {
   it("server-renders the poster, the caption and a link to the deck, no controls needed", async () => {
     const { renderToString } = await import("react-dom/server");
     const html = renderToString(<DeckPlayer examples={examples} priority gallery />);
-    expect(html).toContain('href="/demo/tides/#/2"');
+    expect(html).toContain('href="/d/tides/#/2"');
     expect(html).toContain("Recorded lead.");
     expect(html).not.toContain("<iframe");
     expect(html).not.toContain("<video");
@@ -718,7 +718,7 @@ describe("blog players", () => {
     act(() => window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: "other" })));
     expect(document.querySelector("iframe")).toHaveAttribute(
       "src",
-      "/demo/tides/index.html?decks-bridge=1#/2",
+      "/d/tides/index.html?decks-bridge=1#/2",
     );
     window.__decksPick = undefined;
   });

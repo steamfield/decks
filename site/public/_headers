@@ -1,7 +1,7 @@
 # Response headers for the Worker's static assets. The build copies this file to
 # dist/_headers; tests/deploy.test.mjs serves dist/ through `wrangler dev` and
 # checks it. HTML, feeds, text exports and the sitemaps keep the default
-# revalidating cache. Framing is same-origin: the hero player embeds /demo/.
+# revalidating cache. Framing is same-origin: the hero player embeds /d/.
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
@@ -11,5 +11,5 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
 
-/demo/*
+/d/*
   X-Robots-Tag: noindex

@@ -133,7 +133,7 @@ export function loadExample(entry: ExampleEntry): Example {
     featured: entry.featured,
     attribution: entry.attribution,
     title: recording?.title || headmatterTitle(name),
-    href: `/demo/${name}/`,
+    href: `/d/${name}/`,
     slides: recording?.slides ?? 0,
     slideTitles: recording?.slideTitles ?? [],
     startSlide: recording?.startSlide ?? 1,

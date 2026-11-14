@@ -2,7 +2,7 @@
 
 The landing page and docs for Decks (`slidev-addon-decks`), a Slidev addon for step-by-step chart slides, at decks.steamfield.io.
 
-The product's static site: a landing page at `/` and documentation under `/docs/`, built with [Astro](https://astro.build). Every docs page is also served as Markdown, and `/llms.txt` lists them for coding agents. The landing page's player plays the repository's example decks, built into `public/demo/` by `make demo`.
+The product's static site: a landing page at `/` and documentation under `/docs/`, built with [Astro](https://astro.build). Every docs page is also served as Markdown, and `/llms.txt` lists them for coding agents. The landing page's player plays the repository's example decks, built into `public/d/` by `make demo`.
 
 ## Quickstart
 
@@ -31,7 +31,7 @@ Create a Markdown file under `src/content/docs/<group>/` with `title`, `descript
 | `make e2e`        | Browser and accessibility tests                               |
 | `make preview`    | Serve the production build                                    |
 | `make demo`       | Build, record and screenshot the example decks for the player |
-| `make demo-build` | Build the example decks into `public/demo/` only              |
+| `make demo-build` | Build the example decks into `public/d/` only              |
 
 ## License
 

@@ -93,7 +93,7 @@ test("pages carry the security headers and a revalidating cache", async () => {
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
-  // SAMEORIGIN, not DENY: the hero player frames the decks under /demo/.
+  // SAMEORIGIN, not DENY: the hero player frames the decks under /d/.
   assert.equal(response.headers.get("x-frame-options"), "SAMEORIGIN");
   assert.match(response.headers.get("cache-control") ?? "", /max-age=0/);
 });
@@ -132,7 +132,7 @@ test("the sitemap alias redirects through Worker assets", async () => {
 test("embedded decks are noindex while pages remain indexable", async () => {
   const deck = readdirSync("dist/demo").find((name) => name !== ".DS_Store");
   assert.ok(deck);
-  const response = await get(`/demo/${deck}/`);
+  const response = await get(`/d/${deck}/`);
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("x-robots-tag"), "noindex");
   for (const path of ["/", "/docs/", "/blog/", "/blog/make-slides-with-claude-code/"]) {

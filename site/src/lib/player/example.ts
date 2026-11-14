@@ -56,12 +56,12 @@ export type Edits = {
 };
 
 export type Example = {
-  /** Directory name under examples/, and the path segment under /demo/. */
+  /** Directory name under examples/, and the path segment under /d/. */
   name: string;
   title: string;
   featured?: { label: string; hint: string };
   attribution?: { label: string; href?: string };
-  /** The static build: /demo/<name>/. */
+  /** The static build: /d/<name>/. */
   href: string;
   slides: number;
   slideTitles: string[];
