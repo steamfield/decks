@@ -1,0 +1,35 @@
+.gap,
+.office,
+.rules {
+  position: absolute;
+  left: calc(45 * var(--sw));
+  right: var(--tx-margin-x);
+  display: flex;
+  align-items: center;
+  gap: var(--tx-byline-gap);
+  font-size: var(--tx-small-size);
+}
+.office {
+  top: calc(79 * var(--sh));
+  flex-wrap: wrap;
+}
+.gap {
+  top: calc(70.4 * var(--sh));
+}
+.gap strong {
+  font-weight: var(--tx-label-weight);
+  color: var(--od-amber);
+}
+.gap strong,
+.office strong {
+  font-size: var(--tx-body-size);
+}
+.office strong,
+.rules strong {
+  font-weight: var(--tx-lead-weight);
+}
+.rules {
+  top: calc(87 * var(--sh));
+  padding-top: var(--tx-copy-gap);
+  border-top: var(--tx-hairline) dashed var(--od-amber);
+}

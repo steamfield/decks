@@ -1,0 +1,40 @@
+.tooltip {
+  position: absolute;
+  left: var(--tx-margin-x);
+  top: calc(70.740741 * var(--sh));
+  width: var(--tx-card-width);
+  padding: calc(1.25 * var(--sw));
+  border: var(--tx-hairline) solid var(--od-border);
+  border-radius: var(--tx-radius-card);
+  background: var(--od-surface);
+  font-size: var(--tx-body-size);
+  line-height: var(--tx-label-leading);
+}
+.metadata {
+  display: flex;
+  align-items: baseline;
+  gap: var(--tx-byline-gap);
+  margin: var(--tx-copy-gap) var(--tx-zero);
+  color: var(--od-text-muted);
+  font-size: var(--tx-small-size);
+}
+.tooltip strong {
+  font-weight: var(--tx-lead-weight);
+}
+.tooltip dl {
+  display: flex;
+  gap: var(--tx-byline-gap);
+  margin: var(--tx-zero);
+}
+.tooltip dl > div {
+  display: flex;
+  gap: var(--tx-copy-gap);
+}
+.tooltip dt {
+  color: var(--od-text-secondary);
+}
+.tooltip dd {
+  margin: var(--tx-zero);
+  color: var(--od-text);
+  font-variant-numeric: tabular-nums;
+}
