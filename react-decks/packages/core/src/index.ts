@@ -19,6 +19,7 @@ export {
   type SyncMessage,
   type SyncSession,
   type SyncSessionOptions,
+  type SyncStamp,
   type SyncState,
   syncChannelId,
   type Transport,
