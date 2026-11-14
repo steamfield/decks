@@ -353,9 +353,15 @@ What this guarantees, each of which is a test:
 | A tab receives another tab's answer to a newcomer | The stamp equals its own; ignored, no `onRemote`. |
 | The only other tab closes before answering a newcomer | The newcomer keeps its own state; nothing is posted after close. |
 
-Known limit, accepted: a new tab that navigates twice or more before it has heard any answer
-can publish a `seq` above the talk's and move the others. The window is the few milliseconds
-between opening and the first answer.
+Known limits, accepted:
+
+- A new tab that navigates twice or more before it has heard any answer can publish a `seq`
+  above the talk's and move the others. The window is the few milliseconds between opening
+  and the first answer.
+- Two tabs created one after the other with exactly equal `startedAt`, where the later one
+  has the greater id, stay on their own slides until someone navigates. The runtime passes
+  `performance.timeOrigin + performance.now()`, which has sub-millisecond resolution, so
+  equal values do not occur in practice.
 
 `onRemote` applying a state must not `publish` it back; the runtime store guards this.
 
