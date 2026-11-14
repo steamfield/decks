@@ -1,0 +1,115 @@
+{
+ "pretty": {
+  "file": "run.pretty.txt",
+  "lines": [
+   {
+    "n": 6,
+    "text": "  \u2715 test-backend-api on mbp (3m29.9s)",
+    "dropped": 0
+   },
+   {
+    "n": 18,
+    "text": "    5 failed, 1680 passed in 200.99s (0:03:20)",
+    "dropped": 11
+   },
+   {
+    "n": 19,
+    "text": "  \u25c9 test-backend-infra on m4-mini (4m24.1s)",
+    "dropped": 0
+   },
+   {
+    "n": 20,
+    "text": "  \u25c9 test-backend-services on mbp (2m48.9s)",
+    "dropped": 0
+   },
+   {
+    "n": 21,
+    "text": "  \u2715 test-blog-fast on m1-mini (8.0s)",
+    "dropped": 0
+   },
+   {
+    "n": 29,
+    "text": "  \u25c9 test-e2e-fast on m4-mini (2m17.4s)",
+    "dropped": 7
+   },
+   {
+    "n": 30,
+    "text": "  \u25c9 test-frontend-fast on m1-mini (1m43.6s)",
+    "dropped": 0
+   },
+   {
+    "n": 31,
+    "text": "  \u25c9 test-mcp-fast on m1-mini (6.4s)",
+    "dropped": 0
+   },
+   {
+    "n": 32,
+    "text": "  \u25c9 test-opendata on m4-mini (1m55.1s)",
+    "dropped": 0
+   },
+   {
+    "n": 34,
+    "text": "  \u25c9 6 passed  \u2715 2 failed  \u25cf 8 total  (8m48.2s)",
+    "dropped": 0
+   }
+  ]
+ },
+ "ansi": {
+  "file": "raw/run.pretty.ansi",
+  "lines": [
+   {
+    "n": 6,
+    "text": "  \u2715 test-backend-api on mbp (3m29.9s)"
+   },
+   {
+    "n": 7,
+    "text": "    failed"
+   },
+   {
+    "n": 8,
+    "text": "    ... (217 lines omitted)"
+   },
+   {
+    "n": 9,
+    "text": "      \u001b[36mservice\u001b[0m=\u001b[35mopendata\u001b[0m"
+   },
+   {
+    "n": 10,
+    "text": "      \u001b[36muser_agent\u001b[0m=\u001b[35mpython-httpx/0.28.1\u001b[0m"
+   },
+   {
+    "n": 11,
+    "text": "      \u001b[36mrequest_id\u001b[0m=\u001b[35mfeed236c-cba0-47f9-8f53-4b0a59b80ce9\u001b[0m"
+   },
+   {
+    "n": 12,
+    "text": "    =========================== short test summary info ============================"
+   },
+   {
+    "n": 13,
+    "text": "    FAILED tests/api/test_rate_limit_analytics.py::TestRateLimitHitAnalytics::test_signup_gate_403_fires_rate_limit_hit"
+   }
+  ]
+ },
+ "events": {
+  "file": "run.jsonl",
+  "lines": [
+   {
+    "n": 1,
+    "text": "{\"type\":\"phase\",\"phase\":\"sync\",\"status\":\"warn\",\"host\":\"m4-mini\",\"details\":{\"code\":\"source_mismatch\",\"current_source\":\"~/Projects/opendata\",\"previous_branch\":\"worktree-agent-a5a7291833ba6bc09\",\"previous_hostname\":\"laptop\",\"previous_source\":\"~/Projects/opendata/.claude/worktrees/agent-a5a7291833ba6bc09\",\"previous_worktree\":\"agent-a5a7291833ba6bc09\",\"remote_dir\":\"~/rr/opendata\"},\"ts\":\"2026-11-02T16:41:12Z\"}"
+   },
+   {
+    "n": 2,
+    "text": "{\"type\":\"phase\",\"phase\":\"sync\",\"status\":\"invalidated\",\"host\":\"m1-mini\",\"details\":{\"dir\":\"node_modules/\",\"lockfile\":\"bun.lock\"},\"ts\":\"2026-11-02T16:41:12Z\"}"
+   },
+   {
+    "n": 3,
+    "text": "{\"type\":\"phase\",\"phase\":\"sync\",\"status\":\"warn\",\"host\":\"m1-mini\",\"details\":{\"code\":\"source_mismatch\",\"current_source\":\"~/Projects/opendata\",\"previous_branch\":\"worktree-agent-abc98d69e3bd7fca9\",\"previous_hostname\":\"laptop\",\"previous_source\":\"~/Projects/opendata/.claude/worktrees/agent-abc98d69e3bd7fca9\",\"previous_worktree\":\"agent-abc98d69e3bd7fca9\",\"remote_dir\":\"~/rr/opendata\"},\"ts\":\"2026-11-02T16:41:23Z\"}"
+   },
+   {
+    "n": 4,
+    "text": "{\"type\":\"result\",\"status\":\"failed\",\"exit_code\":1,\"details\":{\"failed\":3,\"failures\":[{\"exit_code\":1,\"host\":\"m1-mini\",\"log_file\":\"~/.rr/logs/test-20261102-104112/test-blog-fast_6.log\",\"task\":\"test-blog-fast\",\"tests\":[{\"file\":\"src/components/aisd-takeover-charts/campus-data.test.ts\",\"message\":\"Error: Failed to resolve import \\\"../../../../talks/aisd-takeover/data/09-scatter\\\" from \\\"src/components/aisd-takeover-charts/campus-data.test.ts\\\". Does the file exist?\\n  Plugin: vite:import-analysis\\n  File: ~/rr/opendata/blog/src/components/aisd-takeover-charts/campus-data.test.ts:6:45\\n  4  |  import { scatterPoint\\n...\\nmodules/vite/dist/node/chunks/node.js:30405:14\\n \u276f normalizeUrl ../node_modules/.bun/vite@8.0.12+40159864fa1d0fe8/node_modules/vite/dist/node/chunks/node.js:27662:18\",\"name\":\"src/components/aisd-takeover-charts/campus-data.test.ts\"},{\"file\":\"src/data/articles/aisd-takeover-houston-playbook.test.ts\",\"message\":\"Error: Failed to resolve import \\\"../../../../talks/aisd-takeover/data/05-accountability-scores\\\" from \\\"src/data/articles/aisd-takeover-houston-playbook.test.ts\\\". Does the file exist?\\n  Plugin: vite:import-analysis\\n  File: ~/rr/opendata/blog/src/data/articles/aisd-takeover-houston-playbook.test.ts:4:37\\n  2  |  impor\\n...\\nmodules/vite/dist/node/chunks/node.js:30405:14\\n \u276f normalizeUrl ../node_modules/.bun/vite@8.0.12+40159864fa1d0fe8/node_modules/vite/dist/node/chunks/node.js:27662:18\",\"name\":\"src/data/articles/aisd-takeover-houston-playbook.test.ts\"},{\"file\":\"src/data/articles/charts-json.test.ts:74\",\"message\":\"Error: ./staar-sat-gap.charts.json#bigCityCampusPoverty failed validateSpec: Spec error: encoding.tooltip[3].field \\\"share\\\" does not exist in data. Available columns: district, band, campuses\",\"name\":\"article chart-spec JSON modules > ./staar-sat-gap.charts.json > complete spec \\\"bigCityCampusPoverty\\\" passes validateSpec\"}]},{\"exit_code\":1,\"host\":\"mbp\",\"log_file\":\"~/.rr/logs/test-20261102-104112/test-backend-api_1.log\",\"output_tail\":\"\u2026 20 lines\",\"task\":\"test-backend-api\"},{\"exit_code\":1,\"host\":\"m4-mini\",\"log_file\":\"~/.rr/logs/test-20261102-104112/test-e2e-fast_7.log\",\"output_tail\":\"\u2026 20 lines\",\"task\":\"test-e2e-fast\"}],\"log_dir\":\"~/.rr/logs/test-20261102-104112\",\"passed\":5,\"total\":8},\"ts\":\"2026-11-02T16:48:49Z\"}"
+   }
+  ]
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "recorded": "2026-11-13",
+ "cli": "0.7.0",
+ "stack": "typescript-cli",
+ "scaffold": "stacks new typescript-cli proj --sandbox --no-launch --offline",
+ "human": {
+  "command": "stacks verify",
+  "exit": 5,
+  "reportLines": 192,
+  "lines": [
+   "verify: failed (full run; 6 passed, 16 failed, 0 skipped; 0.9s)",
+   "  \u001b[32mpassed \u001b[39m  setup     install                   (0.1s)",
+   "  \u001b[32mpassed \u001b[39m  setup     git-hooks-install         (0.0s)",
+   "  \u001b[31mfailed \u001b[39m  check     lint                      (exit 127, 0.0s)  command not found: bun",
+   "      | $ biome check .",
+   "\u001b[36mNext: fix the code or config these steps exercise, not the steps, then run stacks verify again.\u001b[39m",
+   "\u001b[31mVerify failed.\u001b[39m"
+  ]
+ },
+ "agent": {
+  "command": "CLAUDECODE=1 stacks verify",
+  "exit": 5,
+  "stderrLines": 23,
+  "stdoutLines": 185,
+  "stderr": [
+   "> install",
+   "> git-hooks-install",
+   "Verify failed."
+  ],
+  "stdout": [
+   "verify: failed (full run; 6 passed, 16 failed, 0 skipped; 1.0s)",
+   "  failed   check     lint                      (exit 127, 0.0s)  command not found: bun",
+   "      | $ biome check .",
+   "Next: fix the code or config these steps exercise, not the steps, then run stacks verify again."
+  ]
+ },
+ "json": {
+  "command": "stacks verify --json",
+  "exit": 5,
+  "stdoutChars": 15885,
+  "stdoutHead": "{\"outcome\":\"failed\",\"scope\":\"full\",\"steps\":[{\"name\":\"install\",\"phase\":\"setup\",\"layer\":\"install\",\"command\":\"bun install\",",
+  "stdoutTail": "\"totals\":{\"passed\":6,\"failed\":16,\"skipped\":0},\"durationMs\":924,\"secondsSinceCreated\":2,\"tamperCheck\":\"full\",\"firstGreen\":false,\"stateRecord\":true}",
+  "stderrLines": 45,
+  "stderrFirst": "{\"event\":\"step-started\",\"name\":\"install\",\"phase\":\"setup\"}",
+  "stderrLast": "{\"error\":{\"tag\":\"VerifyFailed\",\"message\":\"Verify failed.\",\"retryable\":false,\"next\":\"fix the code or config these steps exercise, not the steps, then run stacks verify again.\",\"details\":{\"failed\":[{\"name\":\"lint\",\"failureKind\":\"env\",\"exitCode\":127},{\"name\":\"typecheck\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"test\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"config-logging\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"binary\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"readme-filled\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"agents-md-filled\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"claude-readme-filled\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"ci-workflow\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"harness-hooks\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"harness-doc-filled\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"schema-conventions\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"effect-testkit\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"effect-api-reference\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"git-hooks-validate\",\"failureKind\":\"step\",\"exitCode\":1},{\"name\":\"git-hooks-jobs\",\"failureKind\":\"step\",\"exitCode\":1}]}}}"
+ }
+}

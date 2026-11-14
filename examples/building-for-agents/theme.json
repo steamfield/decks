@@ -1,0 +1,130 @@
+{
+  "surfaces": {
+    "canvas": "#170d21",
+    "canvas-cover": "{surfaces.canvas}",
+    "surface": "#24143a",
+    "surface-raised": "#2d1b47",
+    "muted": "#3a2658"
+  },
+  "text": {
+    "primary": "#f6f1ff",
+    "secondary": "#d2c7f4",
+    "muted": "#a395d6",
+    "faint": "#8375b0",
+    "dim": "#5f4d8a",
+    "highlight": "#ffffff"
+  },
+  "borders": {
+    "default": "#3a2658",
+    "subtle": "#2a1a40",
+    "rule": "#553a7c",
+    "axis": "#553a7c"
+  },
+  "ramps": {
+    "rose": [
+      "#e23c80",
+      "#ff5798",
+      "#ff86b5",
+      "#ffb9d4"
+    ],
+    "cyan": [
+      "#2fb3aa",
+      "#66e8df",
+      "#97f0ea",
+      "#c6f7f3"
+    ],
+    "amber": [
+      "#c9a40c",
+      "#ffd319",
+      "#ffe066",
+      "#ffeda3"
+    ],
+    "emerald": [
+      "#22b96a",
+      "#47ff9c",
+      "#86ffbd",
+      "#bdffda"
+    ],
+    "violet": [
+      "#8558b8",
+      "#9b70c7",
+      "#bb9bdc",
+      "#dac8ee"
+    ],
+    "slate": [
+      "#8375b0",
+      "#a395d6",
+      "#d2c7f4",
+      "#f6f1ff"
+    ]
+  },
+  "accents": {
+    "blue": "{ramps.violet.2}",
+    "blue-soft": "{ramps.violet.3}",
+    "pink": "{ramps.rose.2}",
+    "phosphor": "{ramps.emerald.2}",
+    "well": "#1c1029",
+    "sun-yellow": "#ffd319",
+    "sun-orange": "#ff901f",
+    "sun-pink": "#ff2e88",
+    "sun-violet": "#a04dff",
+    "hero-mid": "#34234a",
+    "hero-haze": "#87436f",
+    "hero-grid": "#ff5798",
+    "hero-ridge": "#66e8df",
+    "chrome-1": "#fff5e8",
+    "chrome-2": "#e7eefc",
+    "chrome-3": "#9db8e7",
+    "chrome-4": "#35203f",
+    "chrome-5": "#814268",
+    "chrome-6": "#e88abb",
+    "chrome-7": "#fff0e2",
+    "hero-ink": "#170d21",
+    "hero-wire": "#9b70c7",
+    "screen-black": "#0c0612"
+  },
+  "glows": {
+    "primary": "#9b70c7",
+    "secondary": "#ff5798",
+    "amber": "#ffd319",
+    "violet": "#9b70c7",
+    "emerald": "#47ff9c",
+    "rose": "#ff5798"
+  },
+  "categorical": [
+    "{ramps.rose.2}",
+    "{ramps.cyan.2}",
+    "{ramps.violet.3}",
+    "{ramps.amber.2}",
+    "{ramps.emerald.2}",
+    "{ramps.slate.2}"
+  ],
+  "fonts": {
+    "sans": "'VT323', ui-monospace, monospace",
+    "serif": "'Orbitron Variable', 'VT323', sans-serif",
+    "mono": "'JetBrains Mono Variable', ui-monospace, Menlo, monospace"
+  },
+  "shape": {
+    "radius": "8px",
+    "hairline": "1px",
+    "card-width": "36",
+    "dim": "0.45"
+  },
+  "chart": {
+    "text": "{text.muted}",
+    "gridline": "{borders.subtle}",
+    "axis": "{borders.axis}",
+    "eyebrow": "{ramps.amber.2}",
+    "title": "{text.primary}",
+    "subtitle": "{text.secondary}",
+    "source": "{text.muted}",
+    "graph-label": "{text.secondary}"
+  },
+  "qr-white": "{text.primary}",
+  "brand": {
+    "name": "Steamfield",
+    "url": "steamfield.io",
+    "wordmark-gradient": "linear-gradient(95deg, {text.primary}, {text.primary})",
+    "logo": null
+  }
+}

@@ -34,6 +34,14 @@
       }
     },
     {
+      "name": "building-for-agents",
+      "startSlide": 1,
+      "provenance": "agent",
+      "attribution": {
+        "label": "A talk on building tools for coding agents, Austin JS, November 2026"
+      }
+    },
+    {
       "name": "keeling",
       "startSlide": 2,
       "startBeat": 2,
