@@ -2,7 +2,7 @@ import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import { createServer } from "vite";
 import { expect, it, onTestFinished, vi } from "vitest";
-import { fixture } from "./deck.test-support";
+import { fixture, testVite } from "./deck.test-support";
 import { loadDeck, reactDecks, scanSlides } from "./index";
 
 async function serve(files: Record<string, string> = {}) {
@@ -50,7 +50,7 @@ it("serves the deck's own credit, and false when the config turns the credit off
     "Mine",
   );
   const off = await serve({
-    "deck.config.ts": 'export default { title: "Fixture", credit: false };',
+    "deck.config.ts": `export default ${JSON.stringify({ title: "Fixture", credit: false, vite: testVite })};`,
     "layers/credit.tsx": 'export default function Credit() { return "Mine"; }',
   });
   expect((await off.server.ssrLoadModule("virtual:react-decks/layers")).layers).toEqual({
