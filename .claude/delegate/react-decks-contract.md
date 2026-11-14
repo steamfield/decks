@@ -101,7 +101,11 @@ write `<review-directory>/prompt.md` containing:
 "Review uncommitted changes and new files in {ABSOLUTE WORKTREE PATH} against base
 react-decks. Read the contract at {ABSOLUTE CONTRACT PATH} first, then
 react-decks/docs/architecture.md and react-decks/AGENTS.md. Your sandbox is
-read-only; don't run tests or edit files. The author already ran the checks. Report every
+read-only; don't run tests or edit files. The author already ran the checks. Where the
+change has behaviour a user sees, do not stop at reading the diff: reason through what
+happens on screen frame by frame for each situation in the contract's QA list, and for each
+library API the change calls, check the installed version's type declarations for
+`@deprecated` and `@experimental` tags. Report every
 real defect with a file:line reference: behaviour that differs from the contract's tables,
 missing edge cases, tests that cannot fail or assert implementation details, boundary
 violations, and code the contract did not ask for. Then review the spec itself: name any
