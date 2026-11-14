@@ -1,0 +1,66 @@
+# Clicks, tokens and stage lifecycle
+
+## MDX counts
+
+A slide with `clicks: 3` has states 0, 1, 2, 3. Click 0 is arrival. Forward from the final click crosses the slide boundary; backward enters the previous slide at its last click.
+
+Without explicit `clicks`, the compiler uses the maximum contribution in MDX:
+
+| Element | Count contribution |
+| --- | --- |
+| `Step`, `Stagger`, `Highlight`, `Draw` | `until` when present, otherwise `at` |
+| `TextReveal`, `CountUp` | `at` |
+| `Steps` with k children | `from + k - 1` |
+| Fenced code with k emphasis states | `at + k - 1` |
+
+Counted values must be literal nonnegative integers, and `until` must exceed `at`. Computed/spread props or counted elements in expressions need an explicit frontmatter total. `Steps` accepts JSX children or a single Markdown list; Markdown inside JSX needs blank lines around it.
+
+Inside React components, the compiler cannot count steps or timeline labels. Set MDX `clicks` explicitly. An explicit total overrides counting, so check it manually. `Notes` never adds clicks.
+
+## Primitive details
+
+Read installed declarations for full props; the commonly needed ones are:
+
+- `Step`: `at`, optional `until`, `enter`, `exit`, `as`, `className`. Hidden content stays mounted, retains layout, and is inert and hidden from assistive technology.
+- `Steps`: `from`, `enter`, `as`, `className`. One click per child.
+- `Stagger`: `at`, optional `until`, `enter`, `as`, `className`. One click for the group.
+- Entrance/exit presets: `fade`, `rise`, `drop`, `scale`, `blur`, `wipe`. Select a restrained preset for the argument, not a different effect for every item.
+- `TextReveal`: `at`, `by="word"` or `"char"`, `enter`; child must be a plain string.
+- `Highlight`: `at`, optional `until`; text remains visible. Its color is `--deck-highlight`.
+- `CountUp`: `at`, `from`, `to`, optional `format`. Backward shows the start value immediately. In instant mode it settles according to the click.
+- `Draw`: `at`, optional `until`; wraps direct stroked SVG shapes in a `g`. Supply the stroke through CSS.
+- `Morph`: `name`, optional `as`, `className`. Same name once per slide, shared by adjacent slides for the same object. Use a valid nonreserved CSS identifier. It does not morph under `cut`.
+
+## Tokens
+
+Import `duration`, `ease`, `stagger` and `gsap` from `@steamfield/decks/motion`. `duration.quick`, `.base`, `.slow` correspond to `--deck-dur-quick`, `--deck-dur-base`, `--deck-dur-slow`. `ease.enter`, `.exit`, `.settle`, `.draw` correspond to `--deck-ease-enter`, `--deck-ease-exit`, `--deck-ease-settle`, `--deck-ease-draw`. `stagger` corresponds to `--deck-stagger`.
+
+For story timelines use `DUR` and the kit's `SETTLE`, `DRAW`, `TRACE`; their CSS equivalents are `SETTLE_CSS`, `DRAW_CSS`, `TRACE_CSS`. The kit also exports a function named `stagger` for per-item progress, which is different from the motion package's numeric stagger token. Do not confuse their imports.
+
+CSS transitions on duration tokens become instant in instant mode. Custom JavaScript must honor motion mode too. Import the registered `gsap` instance from Decks, not another instance from the raw library.
+
+## React stage construction
+
+Use `useTween({ ... })` from `@steamfield/decks/motion` for stable numeric state read in JSX. `useStage({ copy: COPY, enter, beats })` from the kit builds entrance and click timelines. `enter` is optional; `beats` calls `beat(0)` before any tween, then labels in ascending order without gaps. A tween between `beat(0)` and `beat(1)` plays on click 1. State at click 0 is the initial state.
+
+`COPY` needs an entry for each state, including an empty lead for a deliberate cardless beat. `useStage` returns the current `copy`, `beats` equal to the copy length, and `clicks`, `isActive`, `playCount`, `shown`. Pass those to `StoryStage` and `StoryCard`; MDX sets `clicks` to copy length minus one. The hook clamps copy selection but does not validate this whole agreement for you.
+
+`useTimeline` is the lower-level motion hook for a custom click sequence. It seeks immediately on initial positioning, inactive contexts, instant motion and larger click jumps; adjacent clicks on the active slide tween from the visible position. If dependencies rebuild a timeline, use explicit `fromTo` values so the old end pose cannot become the new baseline.
+
+`useStage` plays its entrance on an arrival at click 0 after any slide transition. It seeks the entrance to its end outside the live slide or on a later-click arrival. Returning to click 0 during the visit must not restart the scene. `StoryStage` also has built-in entrance groups: `od-story-head`, `od-enter-a`, `od-enter-b`, `od-enter-c`, card and progress rail. `enterAfterTransition` lets parts not handed over by a transition enter after it. Do not stack a second fade over the same object without a continuity reason.
+
+Use `useSlide().clicks` for the local instance, not `useDeck().clicks` for the global talk position. A neighboring slide can already be mounted. `useScriptedDemo` supplies visit state for scripted playback, but it does not exempt a custom effect from context and instant-mode rules.
+
+## Handles and identity
+
+Marks such as `InkLine`, `InkBars` and `InkRule` append animation through refs to the parent's timeline. Import their public handle types rather than restating them. Keep timeline-driven children outside any subtree keyed by `playCount`; remounting replaces the instance that the built timeline holds. Reserve visit keys for state the stage timeline does not own.
+
+An omitted position appends. `"<"` means the previous inserted tween's start; a beat label is not a tween. Pass it explicitly only when two changes should happen together. Do not use watchers, timers or DOM mutations to establish evidence that the beat timeline must reverse.
+
+## Contexts and transitions
+
+In `presenter`, `preview`, `overview` and `print`, in an inactive slide, and in instant/reduced motion, show the completed pose for the local click. Overview uses the final click; preview can show the next click rather than the current one. No animation, timers or WebGL there. Custom SVG ids use `useId()` because several instances can coexist.
+
+Deck config `transition` supplies the fallback; slide frontmatter overrides the boundary from that slide to the next in either direction. Built-ins: `fade`, `push`, `zoom`, `cut`; `story` comes from the kit stylesheet. Prefer a consistent quiet transition and reserve changes for meaningful boundaries. The story transition preserves headline/card positions. Use `Morph` for authored object hand-offs instead of manually assigning unscoped view-transition names.
+
+`?motion=instant#/2?clicks=1` checks a settled state directly. `window.__deck.settled()` waits for registered motion; after a change in another window, wait for navigation to arrive before waiting for settlement. A custom canvas animation needs the public `registerSettleProbe` API and cleanup if capture must await it; prefer built-in primitives over adding such a loop.
