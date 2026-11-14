@@ -1,0 +1,54 @@
+.campusPair {
+  position: absolute;
+  left: calc(45.9375 * var(--sw));
+  top: calc(19.62963 * var(--sh));
+  width: calc(8.125 * var(--sw));
+  height: calc(5.185185 * var(--sh));
+  color: var(--od-amber);
+}
+.campusPair svg {
+  width: var(--tx-full);
+  height: var(--tx-full);
+}
+.campusPair rect {
+  fill: currentColor;
+  rx: var(--tx-radius-mark);
+}
+.wire {
+  fill: none;
+  stroke: var(--od-amber);
+  stroke-width: var(--tx-oval-stroke);
+}
+.wire.pending {
+  stroke-dasharray: var(--tx-pending-dash);
+}
+.node {
+  fill: var(--od-surface);
+  stroke: var(--od-amber);
+  stroke-width: var(--tx-hairline);
+  rx: var(--tx-radius-card);
+}
+.gateTag {
+  position: absolute;
+  left: calc(50 * var(--sw));
+  top: calc(36.296296 * var(--sh));
+  transform: translateX(-50%);
+  will-change: opacity;
+}
+.inputTags {
+  position: absolute;
+  top: calc(46.296296 * var(--sh));
+  left: calc(13.645833 * var(--sw));
+  width: calc(72.708333 * var(--sw));
+}
+.inputTags > span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.inputTags > span:first-child {
+  left: var(--tx-zero);
+}
+.inputTags > span:last-child {
+  left: var(--tx-full);
+}

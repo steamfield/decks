@@ -1,0 +1,35 @@
+.tools {
+  position: absolute;
+  top: calc(24 * var(--sh));
+  left: var(--tx-margin-x);
+  right: var(--tx-margin-x);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(5 * var(--sw));
+}
+.column h3 {
+  font-family: var(--od-font-sans);
+  font-size: var(--tx-body-size);
+  line-height: var(--tx-label-leading);
+  font-weight: var(--tx-lead-weight);
+  margin: var(--tx-zero) var(--tx-zero) calc(2 * var(--sh));
+}
+.tool {
+  min-height: calc(7 * var(--sh));
+  padding: var(--tx-chip-pad-y) var(--tx-chip-pad-x);
+  margin-bottom: calc(1 * var(--sh));
+  border: var(--tx-hairline) solid var(--od-border);
+  border-radius: var(--tx-radius-card);
+  background: var(--od-surface);
+  font-size: var(--tx-body-size);
+  line-height: var(--tx-label-leading);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tool small {
+  display: block;
+  margin-top: var(--tx-copy-gap);
+  color: var(--od-text-muted);
+  font-size: var(--tx-tag-size);
+}

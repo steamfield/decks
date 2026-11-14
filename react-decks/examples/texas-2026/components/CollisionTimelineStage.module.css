@@ -1,0 +1,21 @@
+.sources {
+  position: absolute;
+  right: var(--tx-margin-x);
+  bottom: var(--tx-rail-bottom);
+  display: flex;
+  gap: var(--tx-byline-gap);
+}
+:global(.od-slide.is-story) .sources :global(.od-story-link) {
+  position: static;
+}
+.screenReaderOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

@@ -1,0 +1,31 @@
+.row {
+  stroke-width: var(--tx-oval-stroke);
+}
+.districtBracket {
+  fill: none;
+  stroke: var(--od-text-muted);
+  stroke-width: var(--tx-hairline);
+}
+.eventTick {
+  stroke: var(--od-text-muted);
+  stroke-width: var(--tx-oval-stroke);
+}
+.eventTick.reported {
+  stroke-dasharray: 0 5;
+  stroke-linecap: round;
+}
+.alignEnd {
+  text-align: right;
+}
+:global(.od-slide.is-story) .timeline foreignObject :global(.tx-tag) {
+  font-size: var(--tx-svg-tag);
+  padding: 0.15em 0.35em;
+}
+.timeline :global(.od-stage-label) {
+  font-family: var(--od-font-sans);
+  fill: var(--od-text-secondary);
+  letter-spacing: var(--tx-body-tracking);
+}
+.timeline :global(.timeline-cursor) > line {
+  display: none;
+}
