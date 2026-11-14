@@ -15,6 +15,7 @@ examples/*/.out/
 
 # Generated into the package by its build
 packages/decks/docs/
+packages/decks/LICENSE
 
 # Slidev parity baselines for the ported decks (captures of the Slidev originals, tag slidev-final)
 .parity/

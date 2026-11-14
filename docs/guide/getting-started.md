@@ -49,12 +49,14 @@ A slide's id is its filename without `.mdx` (`02-steps`). Its number is its 1-ba
 
 ## Commands
 
-`@steamfield/decks` installs the `decks` command. Run it from the project directory that holds `decks.json`. Use `bunx decks` with Bun or `npx decks` with npm:
+`@steamfield/decks` installs the `decks` command. Run it from the project directory that holds `decks.json`, through the package so the runner never fetches the unrelated package named `decks` on npm:
 
 ```bash
-bunx decks dev hello
-bunx decks build hello
+bunx -p @steamfield/decks decks dev hello
+npx -p @steamfield/decks decks build hello
 ```
+
+Or add scripts to `package.json` (`"dev": "decks dev hello"`, `"build": "decks build hello"`), which run the installed bin, and use `bun run dev` or `npm run dev`. The rest of the guide writes the command as `decks` for short.
 
 ### `decks dev <deck> [--port <n>] [--open]`
 

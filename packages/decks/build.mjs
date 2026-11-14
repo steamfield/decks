@@ -53,4 +53,5 @@ await rm(new URL("docs/", import.meta.url), { recursive: true, force: true });
 await cp(new URL("../../docs/guide/", import.meta.url), new URL("docs/", import.meta.url), {
   recursive: true,
 });
+await cp(new URL("../../LICENSE", import.meta.url), new URL("LICENSE", import.meta.url));
 await chmod(new URL("dist/cli.js", import.meta.url), 0o755);

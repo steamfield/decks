@@ -1,6 +1,24 @@
 {
   "name": "@steamfield/decks",
   "version": "1.0.0-rc.0",
+  "description": "React slide decks for animated, data-driven talks: MDX slides, motion, story stages, charts, and a CLI, built with coding agents.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steamfield/decks.git",
+    "directory": "packages/decks"
+  },
+  "homepage": "https://decks.steamfield.io",
+  "bugs": "https://github.com/steamfield/decks/issues",
+  "keywords": [
+    "slides",
+    "presentations",
+    "react",
+    "mdx",
+    "vite",
+    "data-storytelling",
+    "charts"
+  ],
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
@@ -37,7 +55,8 @@
   "files": [
     "dist",
     "docs",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "node build.mjs"

@@ -1,6 +1,29 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-rc.0
+
+Decks is now its own React framework, published as `@steamfield/decks`. It replaces `slidev-addon-decks`, the Slidev addon this repo built before (never published to npm); the last Slidev version is the git tag `slidev-final`, and `docs/guide/migrating-from-slidev.md` maps a Slidev deck onto Decks.
+
+### Package (`@steamfield/decks`)
+
+- One package with subpath exports: `@steamfield/decks` (runtime hooks, layouts, views, types), `/motion`, `/kit`, `/kit/styles.css` and `/node`, built to ESM with type declarations, and a `decks` bin that runs under Node 22.12+. React 19 is a peer dependency.
+- Decks are MDX slides (`slides/NN-slug.mdx`) with React components, `deck.config.ts`, optional `setup.ts`, `layers/` and `styles/`. A 1920x1080 canvas scales to the window; clicks step through `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw` and `Morph`; slide transitions, code blocks with stepped highlights, a presenter window and overview, two-window sync, text sizing, and error reporting in dev.
+- The kit: theme (`theme.json`, `installTheme`), story stages (`StoryStage`, `StoryCard`, `useStage`), the Ink marks (`InkLine`, `InkBars`, `InkTimeline`, `InkRule`, `InkNumber`, `InkChip`, `InkCardRect`, `InkPing`, `UnitGrid`, `Underline`, `CodeInk`), `OpenChart` with slide chart themes, and `Graph3D` (live WebGL on the slide, an SVG still elsewhere).
+- CLI: `dev`, `build`, `new` (conventional and story templates), `check`, `lint` (AI-rhetoric patterns in MDX, JSX and story copy), `hook` (Claude Code and Codex write hooks), `export` (PDF through the print view, every click step or `--final`), `shot`, and `init`. `build` writes an `og.png` share image from slide 1 when a deck has none.
+- Embed protocol: a built deck in a same-origin iframe with `?decks-bridge` takes `decks:cmd` commands and reports ready, meta and settled state, for the site's deck player.
+- The user guide ships in the package under `docs/`.
+
+### Agent setup
+
+- A Claude Code plugin, `decks@steamfield` (marketplace at `.claude-plugin/marketplace.json`): seven skills (`working-with-decks`, `building-a-deck`, `writing-slides`, `deck-design`, `deck-motion`, `visualization`, `deck-data`), a `deck-author` agent, and hooks that deny error-level AI-rhetoric patterns in deck prose as it is written.
+- `decks init` enables the plugin in a project's `.claude/settings.json`, pinned to the installed version, copies the skills to `.agents/skills/` for Codex, and adds a Decks section to `AGENTS.md`, never overwriting files the user edited. Each collaborator runs `claude plugin install decks@steamfield --scope project` once.
+
+### Repo
+
+- The four example decks (`building-for-agents`, `opendata-pitch`, `aisd-showcase`, `texas-2026`) were ported from Slidev and match their Slidev captures frame for frame. The other seven Slidev example decks were not ported and remain in `slidev-final`.
+- `bun run test:tarball` packs the package, installs it outside the repo with bun and npm, and builds and serves a deck in Chromium.
+
+## slidev-addon-decks, unreleased (superseded by 1.0.0-rc.0)
 
 ### Package (`slidev-addon-decks`)
 

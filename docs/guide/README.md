@@ -13,6 +13,7 @@ Each page stands alone. Read the one that answers your question.
 | [code-blocks.md](code-blocks.md) | How do I show highlighted code and step through lines? |
 | [config.md](config.md) | What can `deck.config.ts` set, how do I add MDX plugins, layers or a setup file, and how are errors reported? |
 | [cli.md](cli.md) | What do `decks new`, `check`, `lint`, `hook`, `export`, `shot` and `init` do? |
+| [migrating-from-slidev.md](migrating-from-slidev.md) | How do I move a deck from `slidev-addon-decks`? |
 | [presenting.md](presenting.md) | Which keys do what, and how do the presenter window, overview, sync and text sizing behave? |
 | [kit.md](kit.md) | What does `@steamfield/decks/kit` provide: theme, story stages, `OpenChart`, the `story` transition? |
 
