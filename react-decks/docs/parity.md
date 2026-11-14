@@ -13,7 +13,7 @@ without one is not done. "Change" marks a deliberate difference from Slidev.
 | Reload keeps slide and click | URL | store + Playwright | `e2e/play.spec.ts` |
 | Hidden slides are not numbered, printed or counted | parser drops `hide: true` | node `slides` plugin | `node/slides.test.ts`; `e2e/play.spec.ts` |
 | Speaker notes with `[click]` markers, cumulative `[click:N]` | last HTML comment | `<Notes>` + `core/notes.ts` | `notes.test.ts`; `node/plugins.test.ts` |
-| Click total known before a slide mounts | no (0 until mount) | yes, static in the manifest. Change | `node/slides.test.ts` |
+| Click total known before a slide mounts | no (0 until mount) | yes, static in the manifest, counted from step components. Change | `node/slides.test.ts`; `node/clicks.test.ts` |
 | Slide order | `src:` manifest | filename order. Change | `node/slides.test.ts` |
 | Slide fills the window at any aspect ratio | 100vw x 100vh override | `core/canvas.ts` fill | `canvas.test.ts`; `e2e/play.spec.ts` |
 | Type scales with the window | no (fixed rem) | yes. Change | `docs/spikes/parity.md` (canvas table) |
