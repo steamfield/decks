@@ -31,11 +31,9 @@ pass. On the cluster, `rr rd-test --repeat 12 --no-phases` and `rr rd-e2e --repe
 (`.rr.yaml`; hosts `m4-mini`, `m1-mini`, `m1-linux`). Sync a committed tree: a run started
 while files are mid-edit reports failures that are not real.
 
-Parity tool for the ported deck: `node examples/building-for-agents/scripts/parity.mjs [slides]`
-from `react-decks/`, comparing against Slidev frames. It hides the credit and its band, since
-the Slidev baseline has neither. The baselines live in a session scratchpad and will not
-survive; re-capture them from the Slidev deck with `bun run snap agents` at 1920x1080 before
-Slidev is removed, and keep them somewhere durable until the swap is signed off.
+Parity tool for a ported deck: `node scripts/parity.mjs <alias> [slides] [--live sNN-cK,...]`
+from `react-decks/`, reading baselines from `.parity/<alias>` at the repo root (gitignored, captured with `bun run snap <slidev alias> .parity/<alias>` at 1920x1080).
+It hides the credit and its band, since the Slidev baseline has neither.
 
 ## How the work has been done
 

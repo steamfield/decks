@@ -1,15 +1,18 @@
-// Compare this deck's frames with the Slidev capture, frame by frame.
+// Compare a ported deck's frames with its Slidev capture, frame by frame.
 //
-//   node examples/building-for-agents/scripts/parity.mjs            # every frame
-//   node examples/building-for-agents/scripts/parity.mjs 4 5        # slides 4 and 5
+//   node scripts/parity.mjs <alias>                 # every frame
+//   node scripts/parity.mjs <alias> 4 5             # slides 4 and 5
+//   node scripts/parity.mjs <alias> --live s01-c0   # frames with a live scene, judged by eye
 //
-// Run from react-decks/. It starts `decks dev agents` on a free port, loads each frame with
-// motion off, waits for fonts and for the deck to settle, and counts differing pixels against
-// the baseline with the same settings the Slidev `snap diff` uses. Diff images and the
-// captured frames go to examples/building-for-agents/.out/. The cover and the close run a
-// live WebGL scene: two Slidev captures of them differ by about 1%, so they are reported but
-// judged by eye.
+// Run from react-decks/. Baselines are `bun run snap <slidev alias> .parity/<alias>` captures
+// at 1920x1080, found in the nearest `.parity/<alias>` directory above this one (override with
+// PARITY_BASELINE). A baseline frame sNN-cK is slide NN at click K; a ported deck names its
+// slides `slides/NN-slug.mdx` with NN the Slidev slide position, so a partial port still lines
+// up. The script starts `decks dev <alias>` on a free port, loads each frame with motion off,
+// waits for fonts and for the deck to settle, and counts differing pixels with the settings
+// Slidev's `snap diff` uses. Captures and diff images go to <deck>/.out/.
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { dirname, join, resolve } from "node:path";
@@ -18,14 +21,34 @@ import { chromium } from "@playwright/test";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 
-const deck = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const baseline =
-  process.env.BFA_BASELINE ??
-  "/private/tmp/claude-501/-Users-riley--claude-spares-spare-BdMOe7/636427da-5e73-4422-94d4-718ee4e977c5/scratchpad/bfa-baseline";
-const out = join(deck, ".out");
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LIMIT = 0.002;
-const LIVE = new Set(["s01-c0.png", "s19-c0.png"]);
-const only = process.argv.slice(2).map(Number);
+const args = process.argv.slice(2);
+const alias = args.shift();
+if (!alias) {
+  console.error("usage: node scripts/parity.mjs <alias> [slide...] [--live sNN-cK,...]");
+  process.exit(2);
+}
+const live = new Set();
+const only = [];
+while (args.length) {
+  const arg = args.shift();
+  if (arg === "--live") for (const name of (args.shift() ?? "").split(",")) live.add(`${name}.png`);
+  else only.push(Number(arg));
+}
+
+const registry = JSON.parse(await readFile(join(root, "decks.json"), "utf8"));
+if (!registry[alias]?.dir) throw new Error(`${alias} is not in decks.json`);
+const deck = join(root, registry[alias].dir);
+const findBaseline = () => {
+  for (let dir = root; ; dir = dirname(dir)) {
+    const candidate = join(dir, ".parity", alias);
+    if (existsSync(candidate)) return candidate;
+    if (dirname(dir) === dir) throw new Error(`no .parity/${alias} above ${root}`);
+  }
+};
+const baseline = process.env.PARITY_BASELINE ?? findBaseline();
+const out = join(deck, ".out");
 
 const port = await new Promise((done, fail) => {
   const probe = createServer();
@@ -35,8 +58,8 @@ const port = await new Promise((done, fail) => {
     probe.close(() => done(port));
   });
 });
-const server = spawn("bun", ["run", "decks", "dev", "agents", "--port", String(port)], {
-  cwd: resolve(deck, "../.."),
+const server = spawn("bun", ["run", "decks", "dev", alias, "--port", String(port)], {
+  cwd: root,
   stdio: ["ignore", "pipe", "pipe"],
 });
 let log = "";
@@ -50,18 +73,16 @@ for (;;) {
   } catch {}
   if (Date.now() > deadline) {
     server.kill();
-    throw new Error(`decks dev agents did not start:\n${log}`);
+    throw new Error(`decks dev ${alias} did not start:\n${log}`);
   }
   await new Promise((done) => setTimeout(done, 200));
 }
 
-// A baseline frame's slide number is the Slidev page number, which is the file prefix here.
-// While the port is partial the deck has fewer slides, so find each slide's current position.
 const ported = (await readdir(join(deck, "slides"))).filter((name) => name.endsWith(".mdx")).sort();
 const position = (slide) => ported.findIndex((name) => Number(name.slice(0, 2)) === slide) + 1;
 const frames = (await readdir(baseline))
   .filter((name) => /^s\d+-c\d+\.png$/.test(name))
-  .filter((name) => !only.length || only.includes(Number(name.slice(1, 3))))
+  .filter((name) => !only.length || only.includes(Number(name.match(/^s(\d+)/)[1])))
   .sort();
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch();
@@ -74,7 +95,6 @@ await page.addInitScript(() => {
   const style = document.createElement("style");
   style.textContent =
     '[data-deck-slide] { --deck-credit-space: 0px !important; } [data-deck-layer="credit"] { display: none; }';
-  // An init script runs before the document has a root element.
   const add = () => document.documentElement?.append(style);
   if (document.documentElement) add();
   else
@@ -90,36 +110,29 @@ page.on("pageerror", (error) => errors.push(String(error)));
 let failed = 0;
 try {
   for (const name of frames) {
-    const page_ = Number(name.slice(1, 3));
-    const slide = position(page_);
-    const click = Number(name.match(/-c(\d+)/)[1]);
+    const [, number, clicks] = name.match(/^s(\d+)-c(\d+)/);
+    const slide = position(Number(number));
+    const click = Number(clicks);
     if (!slide) {
       console.log(`${name}\tnot ported yet`);
       continue;
     }
-    // The cover and close are compared with their scene running, as the baseline was captured.
-    const query = LIVE.has(name) ? "" : "?motion=instant";
+    const query = live.has(name) ? "" : "?motion=instant";
     await page.goto(`${url}/${query}#/${slide}${click ? `?clicks=${click}` : ""}`);
     await page.reload();
     // The slide's host exists before its lazily loaded module has rendered.
-    await page
-      .locator(
-        `[data-deck-slide="${slide}"][data-deck-active] > .od-slide:not(.sf-tube-host) .od-story-frame`,
-      )
-      .waitFor();
+    await page.locator(`[data-deck-slide="${slide}"][data-deck-active] > *`).first().waitFor();
     await page.evaluate(async () => {
       await document.fonts.ready;
       await window.__deck.settled();
     });
-    // A slide with a hosted page (slide 13) shows a placeholder until its iframe has loaded.
     const hosted = page.frames().filter((frame) => frame !== page.mainFrame());
     if (hosted.length) {
       await Promise.all(hosted.map((frame) => frame.waitForLoadState("load")));
-      await page.locator("[data-deck-active] iframe").first().waitFor();
       await page.waitForTimeout(1500);
     }
-    // The Slidev capture waited 3.2 s on every frame; the live scene needs the same to draw.
-    if (LIVE.has(name)) await page.waitForTimeout(3200);
+    // The Slidev capture waited 3.2 s on every frame; a live scene needs the same to draw.
+    if (live.has(name)) await page.waitForTimeout(3200);
     const file = join(out, name);
     await page.screenshot({ path: file });
     const actual = PNG.sync.read(await readFile(file));
@@ -137,7 +150,7 @@ try {
     });
     await writeFile(join(out, name.replace(".png", "-diff.png")), PNG.sync.write(diff));
     const fraction = pixels / (actual.width * actual.height);
-    const verdict = LIVE.has(name)
+    const verdict = live.has(name)
       ? "live scene, judge by eye"
       : fraction <= LIMIT
         ? "ok"

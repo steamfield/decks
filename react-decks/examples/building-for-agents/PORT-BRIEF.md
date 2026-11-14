@@ -12,7 +12,7 @@ before touching anything; your contract names the slides and files you own.
 - `data/`, `scene/`, `public/`, `theme.json`: copied from the Slidev deck. The values in them do
   not change. They may need type or lint fixes to pass this workspace's checks: fix types and
   formatting only, never a value, a string, or a number.
-- `deck.config.ts`, `setup.ts` (installs the theme), `scripts/parity.mjs`.
+- `deck.config.ts`, `setup.ts` (installs the theme).
 
 ## Where code goes
 
@@ -74,7 +74,7 @@ The Slidev capture is 68 frames at 1920x1080 in
 `react-decks/`:
 
 ```sh
-node examples/building-for-agents/scripts/parity.mjs 4 5     # your slides
+node scripts/parity.mjs agents 4 5 --live s01-c0,s19-c0   # your slides
 ```
 
 A frame passes at 0.2% of pixels or fewer. Two Slidev captures of the same deck are identical
