@@ -151,5 +151,6 @@ above. The hook-trust and worktree notes above still apply.
 - Iterate on the scoped test command in your contract, then `bun run --cwd react-decks lint`
   and `bun run --cwd react-decks typecheck`. Run each new test file three times alone, then
   `bun run --cwd react-decks test` once.
-- Do not edit the files listed as the orchestrator's in `react-decks/AGENTS.md`, add a
-  dependency, or commit.
+- Do not edit the files listed as the orchestrator's in `react-decks/AGENTS.md`, or commit.
+  When a maintained library would do a job better than hand-written code and is not
+  installed, ask the orchestrator for it in a question; do not edit a `package.json`.

@@ -69,7 +69,10 @@ library module; QA is reading each exported function's behaviour against the tab
 
 - Commit or push; leave changes for review.
 - Disable lint, weaken a test, add a cast or suppress a type error to get green.
-- Add features, options, abstractions, exports or dependencies the goal does not need.
+- Add features, options, abstractions or exports the goal does not need.
+- Hand-write generic infrastructure a library already does well. Use the libraries in
+  section 1.1 of the architecture document; if another would fit, ask the orchestrator for it
+  in a question and wait for the answer. Do not edit a `package.json`.
 - Create `utils`, `shared`, `helpers` or `types` files or directories.
 - Edit `~/.codex` config, hooks, trust or auth.
 - Mention any repository outside this one in a tracked file.

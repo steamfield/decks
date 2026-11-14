@@ -17,8 +17,8 @@ kit -> motion -> runtime -> core <- node
 | Package | Purpose | May import | Must never import |
 | --- | --- | --- | --- |
 | `@react-decks/core` | Pure deck logic | its own files | `react`, `react-dom`, `node:*`, any `@react-decks/*`, DOM globals (`window`, `document`, `location`, `BroadcastChannel`) |
-| `@react-decks/runtime` | React client | `core`, `react`, `react-dom` | `node:*`, `motion`, `kit`, `node` |
-| `@react-decks/motion` | Tokens, step primitives, timelines | `core`, `runtime`, `react`, `gsap`, `@gsap/react` | `node:*`, `kit`, `node` |
+| `@react-decks/runtime` | React client | `core`, `react`, `react-dom`, declared npm deps | `node:*`, `motion`, `kit`, `node` |
+| `@react-decks/motion` | Tokens, step primitives, timelines | `core`, `runtime`, `react`, declared npm deps (`gsap`, `@gsap/react`) | `node:*`, `kit`, `node` |
 | `@react-decks/node` | Vite plugins, CLI, export, tooling | `core`, `node:*`, declared npm deps | `react`, `runtime`, `motion`, `kit` |
 | `@react-decks/kit` | Opinionated components and theme | `core`, `runtime`, `motion`, `react`, declared npm deps | `node:*`, `node` |
 
@@ -32,6 +32,41 @@ helper used by one file lives in that file.
 `core` takes numbers, strings and plain objects and returns the same. Anything that needs the
 browser or Node is passed in by the caller. `setTimeout` and `clearTimeout` are the one
 exception: they exist in both environments and core may use them.
+
+## 1.1 Libraries (Final)
+
+Use an established, maintained library where one fits; write our own only where the code is
+small and specific to decks. `core` is the exception: it is small pure logic with zero
+dependencies by design. The orchestrator installs packages; a run that finds a better fit
+than hand-written code asks for it by name.
+
+| Concern | Use | Package |
+| --- | --- | --- |
+| Deck store and selector subscriptions | zustand vanilla store, read through `useStore` with selectors | `runtime` |
+| Keyboard shortcuts | `tinykeys` | `runtime` |
+| Pinch, wheel and drag for the viewer | `@use-gesture/react` | `runtime` |
+| Class name composition | `clsx` | `runtime`, `motion`, `kit` |
+| Timelines, text splitting, SVG drawing, count-up | `gsap` with `@gsap/react`, `SplitText`, `DrawSVGPlugin` | `motion` |
+| MDX compile | `@mdx-js/rollup`, `@mdx-js/react` | `node`, `runtime` |
+| Frontmatter | `remark-frontmatter` + `remark-mdx-frontmatter` in the MDX pipeline; `gray-matter` when only metadata is read | `node` |
+| Markdown in notes to HTML | `remark-rehype` + `rehype-stringify` | `node` |
+| Config validation | `zod` | `node` |
+| CLI commands and flags | `citty` | `node` |
+| Terminal colour and prompts | `picocolors`, `@clack/prompts` | `node` |
+| Free port | `get-port` | `node` |
+| File globbing | `tinyglobby` | `node` |
+| Browser automation, PDF | `playwright`, `pdf-lib` | `node` |
+| Image diff and contact sheets | `pixelmatch` + `pngjs`, `sharp` | `node` |
+| Dev server, HMR, file watching, React refresh | `vite`, `@vitejs/plugin-react` | `node` |
+| Fonts | `@fontsource*` packages | decks, `kit` |
+| Charts | `@opendata-ai/openchart-react` | `kit` |
+| Tests | `vitest`, `@testing-library/react`, `user-event`, `jest-dom`, `@playwright/test` (`toHaveScreenshot` for pixel checks) | workspace |
+
+Written here on purpose: the navigation reducer, hash codec, notes segmentation, sync
+protocol and canvas fit in `core` (each is a few dozen lines of deck-specific rules), and the
+import scanner in `tests/boundaries.test.ts` (dependency-cruiser does not support TypeScript
+7 yet). The browser's own APIs are used directly where they exist: `BroadcastChannel`,
+`ResizeObserver`, View Transitions, Screen Wake Lock.
 
 ## 2. core (Final)
 
@@ -335,8 +370,8 @@ no CSS reset.
 
 ## 4. runtime (Outline)
 
-- Store: `createDeckStore(manifest, locationAdapter, transport?)` over `navigate`; read with
-  `useSyncExternalStore`. The URL hash is the source of truth: clicks are written with
+- Store: `createDeckStore(manifest, locationAdapter, transport?)`, a zustand vanilla store
+  whose only reducer is core's `navigate`; components read it through selector hooks. The URL hash is the source of truth: clicks are written with
   `replaceState`, slide changes with `pushState`.
 - Hooks: `useDeck()` returns `{ slide, total, clicks, clicksTotal, slides, view, isPrint,
   next, prev, nextSlide, prevSlide, go }`. `useSlide()` returns `{ no, clicks, clicksTotal,

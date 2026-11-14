@@ -47,8 +47,9 @@ bun run --cwd react-decks check:isolated   # the gate in a copy outside the repo
 ## Files only the orchestrator edits
 
 `docs/`, every `package.json`, every `packages/*/src/index.ts`, `biome.json`,
-`tsconfig.json`, `vitest.config.ts`, `decks.json`. If your task needs one changed (a new
-export, a dependency), say so in the hand-off with the exact line; do not make the change.
+`tsconfig.json`, `vitest.config.ts`, `decks.json`. If your task needs a new export, say so in the
+hand-off with the exact line. If it needs a dependency, ask the orchestrator in a question
+before writing a substitute.
 
 ## Conventions
 
@@ -56,6 +57,9 @@ export, a dependency), say so in the hand-off with the exact line; do not make t
 - No `utils/`, `shared/`, `helpers/` or `types/` directories. A type lives with the code that
   owns it.
 - Named exports only. No default exports except where a tool requires one (Vite config, MDX).
+- Reach for the library named in `docs/architecture.md` section 1.1, an installed dependency
+  or a platform API before writing generic infrastructure by hand. If a library would fit and
+  is not installed, ask for it; do not hand-roll around it.
 - No abstraction with one implementation, no options nobody asked for, no speculative
   parameters. Three similar lines beat a helper.
 - Errors: throw an `Error` whose message names the offending value. Never swallow one.

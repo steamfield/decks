@@ -10,9 +10,9 @@ paths:
 
 - React 19, function components, TypeScript. No class components, no `React.FC`, no default
   exports for components.
-- Deck state lives in the store from `createDeckStore`, read with `useSyncExternalStore`
-  through `useDeck()` and `useSlide()`. No state library, no context that re-renders the whole
-  tree on every click.
+- Deck state lives in the zustand store from `createDeckStore`, read through `useDeck()` and
+  `useSlide()` with selectors so a component re-renders only when what it reads changes. No
+  second state library, no context that re-renders the whole tree on every click.
 - The URL hash is the source of truth for slide and click. Never keep a second copy in
   component state.
 - No `useEffect` to derive state from props or other state; compute it during render. An

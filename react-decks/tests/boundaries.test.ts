@@ -12,18 +12,13 @@ type Rule = {
   workspace: string[];
   react: boolean;
   node: boolean;
-  npm: "none" | "declared" | string[];
+  npm: "none" | "declared";
 };
 
 const RULES: Record<string, Rule> = {
   core: { workspace: [], react: false, node: false, npm: "none" },
-  runtime: { workspace: ["core"], react: true, node: false, npm: "none" },
-  motion: {
-    workspace: ["core", "runtime"],
-    react: true,
-    node: false,
-    npm: ["gsap", "@gsap/react"],
-  },
+  runtime: { workspace: ["core"], react: true, node: false, npm: "declared" },
+  motion: { workspace: ["core", "runtime"], react: true, node: false, npm: "declared" },
   node: { workspace: ["core"], react: false, node: true, npm: "declared" },
   kit: { workspace: ["core", "runtime", "motion"], react: true, node: false, npm: "declared" },
 };
@@ -84,7 +79,6 @@ function importViolation(
   }
   // Test tooling is root-owned; tests still obey the forbidden dependency directions above.
   if (testFile && TEST_TOOLING.includes(name)) return undefined;
-  if (Array.isArray(rule.npm) && rule.npm.includes(name)) return undefined;
   if (rule.npm === "declared" && declared.includes(name)) return undefined;
   return "external dependency is not allowed";
 }
@@ -268,26 +262,29 @@ describe("boundary checker", () => {
     expect(result.status, result.output).toBe(1);
   });
 
-  it.each(["node", "kit"])("permits declared npm dependencies in %s lint", (owner) => {
-    const result = lintSource(`packages/${owner}/src/index.ts`, "import 'some-tool';", {
-      "some-tool": "1.0.0",
-    });
-    expect(result.status, result.output).toBe(0);
-    const declared = lintSource(
-      `packages/${owner}/src/index.ts`,
-      "import 'some-tool';",
-      { "some-tool": "1.0.0" },
-      "correctness/noUndeclaredDependencies",
-    );
-    expect(declared.status, declared.output).toBe(0);
-    const undeclared = lintSource(
-      `packages/${owner}/src/index.ts`,
-      "import 'some-tool';",
-      {},
-      "correctness/noUndeclaredDependencies",
-    );
-    expect(undeclared.status, undeclared.output).toBe(1);
-  });
+  it.each(["runtime", "motion", "node", "kit"])(
+    "permits declared npm dependencies in %s lint",
+    (owner) => {
+      const result = lintSource(`packages/${owner}/src/index.ts`, "import 'some-tool';", {
+        "some-tool": "1.0.0",
+      });
+      expect(result.status, result.output).toBe(0);
+      const declared = lintSource(
+        `packages/${owner}/src/index.ts`,
+        "import 'some-tool';",
+        { "some-tool": "1.0.0" },
+        "correctness/noUndeclaredDependencies",
+      );
+      expect(declared.status, declared.output).toBe(0);
+      const undeclared = lintSource(
+        `packages/${owner}/src/index.ts`,
+        "import 'some-tool';",
+        {},
+        "correctness/noUndeclaredDependencies",
+      );
+      expect(undeclared.status, undeclared.output).toBe(1);
+    },
+  );
 
   it.each(["core", "node"])("rejects implicit JSX runtime imports in %s", (owner) => {
     expect(
@@ -325,8 +322,6 @@ describe("boundary checker", () => {
     ["runtime", "@react-decks/core", true],
     ["runtime", "react-dom/client", true],
     ["motion", "@react-decks/kit", false],
-    ["motion", "@gsap/react", true],
-    ["motion", "gsap", true],
     ["node", "react", false],
     ["node", "node:fs", true],
     ["node", "fs/promises", true],
@@ -435,8 +430,6 @@ describe("boundary checker", () => {
     ["motion", "@react-decks/core"],
     ["motion", "@react-decks/runtime"],
     ["motion", "react"],
-    ["motion", "gsap"],
-    ["motion", "@gsap/react"],
     ["node", "@react-decks/core"],
     ["node", "node:fs"],
     ["node", "fs/promises"],
@@ -456,8 +449,8 @@ describe("boundary checker", () => {
     ).toEqual([]);
   });
 
-  it("permits only declared npm dependencies in node and kit", () => {
-    for (const owner of ["node", "kit"]) {
+  it("permits only declared npm dependencies outside core", () => {
+    for (const owner of ["runtime", "motion", "node", "kit"]) {
       const file = `packages/${owner}/src/index.ts`;
       expect(checkSource(owner, file, "import 'some-tool';", ["some-tool"])).toEqual([]);
       expect(checkSource(owner, file, "import 'some-tool';")).toHaveLength(1);

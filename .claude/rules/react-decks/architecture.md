@@ -44,7 +44,22 @@ an import pass.
 - Do not add an interface, a factory, an options object or a generic parameter until a second
   real caller needs it. `Transport` in `core/sync.ts` exists because tests use an in-memory
   one and the browser uses BroadcastChannel; that is the bar.
-- Do not add a dependency. Ask for it in the hand-off.
+
+## Libraries before hand-written code
+
+Prefer an established, maintained library over writing the same thing by hand. Section 1.1
+of the architecture document lists the library chosen for each concern: use it. Before
+writing more than a few dozen lines of generic infrastructure (argument parsing, gesture
+math, a store, a debounce, a glob walker, text splitting, an escaping routine), stop and
+check whether a library in that table, a dependency already installed, or a browser or Node
+built-in does it.
+
+If a library fits and is not installed, ask the orchestrator for it by name and version
+through a question, and wait. Do not hand-roll a substitute to avoid asking, and do not edit
+a `package.json` yourself. `core` stays dependency-free: it is small deck-specific logic.
+
+A good candidate is widely used, maintained in the last year, typed, and does one job. Do not
+ask for a library to save five lines.
 
 ## The DOM contract
 
