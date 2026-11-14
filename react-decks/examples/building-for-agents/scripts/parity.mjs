@@ -35,14 +35,10 @@ const port = await new Promise((done, fail) => {
     probe.close(() => done(port));
   });
 });
-const server = spawn(
-  "bun",
-  ["run", "decks", "dev", "agents", "--port", String(port), "--no-open"],
-  {
-    cwd: resolve(deck, "../.."),
-    stdio: ["ignore", "pipe", "pipe"],
-  },
-);
+const server = spawn("bun", ["run", "decks", "dev", "agents", "--port", String(port)], {
+  cwd: resolve(deck, "../.."),
+  stdio: ["ignore", "pipe", "pipe"],
+});
 let log = "";
 server.stdout.on("data", (chunk) => (log += chunk));
 server.stderr.on("data", (chunk) => (log += chunk));
