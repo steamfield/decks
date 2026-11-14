@@ -85,7 +85,9 @@ try {
     await page.goto(`${url}/?motion=instant#/${slide}${click ? `?clicks=${click}` : ""}`);
     await page.reload();
     // The slide's host exists before its lazily loaded module has rendered.
-    await page.locator(`[data-deck-slide="${slide}"][data-deck-active] .od-slide`).waitFor();
+    await page
+      .locator(`[data-deck-slide="${slide}"][data-deck-active] > .od-slide:not(.sf-tube-host) .od-story-frame`)
+      .waitFor();
     await page.evaluate(async () => {
       await document.fonts.ready;
       await window.__deck.settled();
