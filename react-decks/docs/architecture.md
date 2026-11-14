@@ -207,15 +207,16 @@ export function formatHash(location: Pick<DeckLocation, 'view' | 'slide' | 'clic
 | `#/print` | print, slide 1, click 0 |
 | anything unrecognized, e.g. `#/abc`, `#/5/extra`, `#/-1` | play, slide 1, click 0 |
 
-A `clicks` value that is missing, negative or not an integer parses as 0. `parseLocation`
+A `clicks` value that is missing, negative, not an integer or not a safe integer parses as 0;
+a slide number that is not a safe integer is unrecognized. `parseLocation`
 does not know the manifest and does not clamp to it; the store calls `clampNav` afterwards.
 `embedded` and `bridge` are true when the parameter is present in `search` with any value
 other than `0` or `false`, including no value. Search parameters inside the hash are only
 read for `clicks`.
 
 `formatHash` output: `#/5`, `#/5?clicks=2` (omitted when click is 0), `#/presenter/5`,
-`#/presenter/5?clicks=2`, `#/overview`, `#/print`. For every location `L` with a
-non-negative integer slide and click, `parseLocation(formatHash(L), '')` returns the same
+`#/presenter/5?clicks=2`, `#/overview`, `#/print`. For every location `L` whose slide
+and click are non-negative safe integers, `parseLocation(formatHash(L), '')` returns the same
 view, slide and click (for `overview` and `print`, slide 1 click 0).
 
 ### 2.5 `notes.ts`
@@ -223,21 +224,38 @@ view, slide and click (for `overview` and `print`, slide 1 click 0).
 ```ts
 export interface NoteSegment {
   /** The click this text belongs to. Text before the first marker belongs to click 0. */
-  readonly click: number
-  readonly html: string
+  readonly click: number;
+  /** Markdown source of the segment, trimmed. */
+  readonly markdown: string;
 }
 
-export function segmentNotes(html: string): NoteSegment[]
+/** Splits a slide's notes, as markdown source, at its click markers. */
+export function segmentNotes(markdown: string): NoteSegment[]
 /** The click of the last marker; 0 when there are none. */
-export function noteClickCount(html: string): number
+export function noteClickCount(markdown: string): number
 ```
 
-Markers are the literal text `[click]` and `[click:N]` (N a positive integer). `[click]` adds
-1 to the running click; `[click:N]` adds N. Each marker starts a new segment and is removed
-from the output. Segment `html` is the text between markers, trimmed; empty segments are
-kept, so the result always has one segment for click 0 plus one per marker. A malformed
-marker such as `[click:0]`, `[click:-1]` or `[click:x]` is left in the text and starts
-nothing. Input with no markers returns one segment with click 0.
+Notes are segmented as markdown, before any conversion to HTML, so every segment is a
+sequence of whole blocks and renders to balanced markup. The node package renders each
+segment separately.
+
+A marker is `[click]` or `[click:N]` (N a positive integer, leading zeros allowed) at the
+start of a line, after optional spaces or tabs. `[click]` adds 1 to the running click;
+`[click:N]` adds N. Each marker starts a new segment; the marker and the spaces after it are
+removed and the rest of that line belongs to the new segment. A marker anywhere else in a
+line, and a malformed one (`[click:0]`, `[click:-1]`, `[click:x]`), is left in the text and
+starts nothing. Empty segments are kept, so the result always has one segment for click 0
+plus one per marker. Input with no markers returns one segment with click 0.
+
+| Input | Segments (click: markdown) |
+| --- | --- |
+| `Intro` | 0: `Intro` |
+| `Intro\n\n[click] First\n\n[click] Second` | 0: `Intro`, 1: `First`, 2: `Second` |
+| `[click]\nFirst` | 0: (empty), 1: `First` |
+| `A\n[click:3] B` | 0: `A`, 3: `B` |
+| `[click]\n[click] B` | 0: (empty), 1: (empty), 2: `B` |
+| `Say [click] here` | 0: `Say [click] here` |
+| `  [click] indented` | 0: (empty), 1: `indented` |
 
 ### 2.6 `sync.ts`
 
@@ -248,9 +266,16 @@ export interface SyncState {
   readonly aspect?: number
 }
 
+/** Orders states across tabs: higher `seq` wins; equal `seq` is decided by comparing `origin` as strings. */
+export interface SyncStamp {
+  readonly seq: number
+  /** Id of the session that published this state. */
+  readonly origin: string
+}
+
 export type SyncMessage =
   | { readonly type: 'hello'; readonly from: string }
-  | { readonly type: 'state'; readonly from: string; readonly state: SyncState }
+  | { readonly type: 'state'; readonly from: string; readonly stamp: SyncStamp; readonly state: SyncState }
 
 export interface Transport {
   post(message: SyncMessage): void
@@ -264,29 +289,26 @@ export interface MemoryHub {
   connect(): Transport
 }
 
-/** In-memory stand-in for BroadcastChannel: a post reaches every other open transport,
- *  never the sender, synchronously, in connection order. A closed transport neither sends
- *  nor receives. */
+/** In-memory stand-in for BroadcastChannel. A post reaches every other open transport, never
+ *  the sender. Like BroadcastChannel, delivery is asynchronous: each delivery is queued with
+ *  `setTimeout(fn, 0)`, so one sender's messages arrive in order and nothing arrives inside
+ *  the `post` call. A transport closed before a queued delivery runs does not receive it. */
 export function createMemoryHub(): MemoryHub
 
 export interface SyncSessionOptions {
   /** Unique per tab. */
   readonly id: string
   readonly transport: Transport
-  /** Called to answer a newcomer's hello. */
+  /** The session's current local state; used to answer a newcomer. */
   readonly current: () => SyncState
-  /** Called when another participant's state should be applied locally. */
+  /** Called when a newer state from another participant should be applied locally. */
   readonly onRemote: (state: SyncState) => void
-  /** How long to wait for an answer before assuming this tab is alone. Default 300. */
-  readonly joinTimeoutMs?: number
 }
 
 export interface SyncSession {
-  /** False until a state arrived or the join timeout passed. */
-  readonly joined: boolean
-  /** Tell the other participants about a local change. No-op until joined. */
+  /** Tell the other participants about a local change. */
   publish(state: SyncState): void
-  /** Stops listening, cancels the join timer, closes the transport. */
+  /** Stops listening and closes the transport. Later publishes do nothing. */
   close(): void
 }
 
@@ -296,20 +318,33 @@ export function createSyncSession(options: SyncSessionOptions): SyncSession
 export function syncChannelId(deckName: string, base: string): string
 ```
 
-Protocol:
+Every session keeps a stamp for the state it currently shows. It starts at
+`{ seq: 0, origin: id }`. Stamp `a` is newer than stamp `b` when `a.seq > b.seq`, or the
+`seq`s are equal and `a.origin > b.origin`.
 
-1. On creation a session posts `hello` and starts the join timer. It is not joined.
-2. A joined session that receives `hello` posts `state` with `current()`.
-3. A session that receives `state` from another id calls `onRemote(state)` and, if it was not
-   joined, becomes joined and cancels its timer.
-4. If the join timer fires first, the session becomes joined: it is alone.
-5. `publish` before joining does nothing. This is what stops a reloaded or late tab from
-   pulling the others back to slide 1.
-6. A message whose `from` equals the session's own id is ignored.
-7. A session never posts in response to a `state` message. `onRemote` applying a state must
-   not cause a `publish` of that same state; the runtime store guards this, and a test here
-   proves that two joined sessions exchanging one publish produce exactly one `onRemote` call
-   and no further messages.
+1. On creation a session subscribes, then posts `hello`.
+2. A session that receives `hello` from another id posts `state` carrying its own stamp,
+   unchanged, and `current()`. Every session answers, new or old.
+3. A session that receives `state` whose stamp is newer than its own adopts that stamp and
+   calls `onRemote(state)`. A `state` whose stamp is not newer is ignored. The stamp is
+   adopted before `onRemote` is called.
+4. `publish(state)` sets the session's stamp to `{ seq: seq + 1, origin: id }` and posts
+   `state` with it.
+5. A message whose `from` equals the session's own id is ignored.
+6. Receiving a `state` never causes a post.
+
+What this guarantees, each of which is a test:
+
+| Case | Outcome |
+| --- | --- |
+| A tab opens or reloads while others are mid-talk | Its `hello` is answered with stamps above 0; it adopts the talk's position. Its own answer and any publish it makes before hearing back carry lower stamps and are ignored by the others: a late tab never moves them. |
+| Two tabs open at the same moment on different slides | Both answer each other's `hello` at `seq` 0; the stamp with the greater `origin` wins on both sides and they agree. |
+| Three tabs; one navigates while another's answer to a newcomer is in flight | The answer carries the older stamp, so the navigating tab ignores it; the newcomer ends on the newest stamp whichever arrives first. All three agree. |
+| Two tabs publish at the same moment | Equal `seq`, different `origin`: both sides keep the state with the greater `origin`. |
+| A joined tab receives another tab's answer to a newcomer | The stamp equals its own; ignored, no `onRemote`. |
+| The only other tab closes before answering a newcomer | The newcomer keeps its own state; nothing is posted after close. |
+
+`onRemote` applying a state must not `publish` it back; the runtime store guards this.
 
 `syncChannelId` normalizes `base` to start and end with `/`.
 
@@ -447,8 +482,14 @@ export interface DeckSource {
   /** Keyed by slide id. */
   readonly frontmatter: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   readonly components: MDXComponents;
-  /** Notes HTML keyed by slide id; loaded only by views that show notes. */
-  readonly loadNotes?: () => Promise<Readonly<Record<string, string>>>;
+  /** Rendered notes keyed by slide id, one entry per segment; loaded only by views that show notes. */
+  readonly loadNotes?: () => Promise<Readonly<Record<string, readonly NoteHtml[]>>>;
+}
+
+/** One note segment after rendering: the click it belongs to and its HTML. */
+export interface NoteHtml {
+  readonly click: number;
+  readonly html: string;
 }
 
 export interface DeckState {
@@ -660,7 +701,7 @@ Modules the plugins serve:
 | --- | --- |
 | `virtual:react-decks/manifest` | `manifest: DeckManifest`; `slides: Record<id, () => import(<slide file>)>`; `frontmatter: Record<id, Record<string, unknown>>` |
 | `virtual:react-decks/components` | `components: Record<name, Component>` built per section 3.1 |
-| `virtual:react-decks/notes` | `notes: Record<id, string>`: each slide's `<Notes>` content rendered from markdown to HTML; slides without notes are absent |
+| `virtual:react-decks/notes` | `notes: Record<id, { click: number; html: string }[]>`: each slide's `<Notes>` markdown split with core's `segmentNotes` and each segment rendered to HTML; slides without notes are absent |
 | `virtual:react-decks/entry` | no exports; imports the three above (notes lazily, as `loadNotes`), the deck's `styles/index.css` when it exists, and calls `mountDeck` from `@react-decks/runtime` |
 
 The served HTML has `<html>` carrying `config.htmlAttrs`, a `<title>` from `config.title`,

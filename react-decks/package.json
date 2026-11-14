@@ -28,6 +28,7 @@
     "@testing-library/user-event": "14.6.10",
     "@testing-library/jest-dom": "7.0.1",
     "@playwright/test": "1.65.1",
-    "vite": "8.3.8"
+    "vite": "8.3.8",
+    "oxc-parser": "0.158.0"
   }
 }

@@ -47,9 +47,10 @@ Never `vi.mock` a module from this workspace, a React hook, a child component, `
 store. There is no network in this codebase to stub.
 
 `createMemoryHub()` from `@react-decks/core` is the in-process implementation of the
-`Transport` interface. Use it wherever a test needs two participants in one process. It has
-the same shape and delivery rules as the BroadcastChannel transport, which the Playwright
-two-window test covers for real.
+`Transport` interface. Use it wherever a test needs two participants in one process. It
+delivers asynchronously through `setTimeout(fn, 0)`, as BroadcastChannel does, so drive it
+with fake timers (`await vi.runAllTimersAsync()`) and write races as explicit interleavings.
+The real BroadcastChannel path is covered by the Playwright two-window test.
 
 No test-only method, flag or export in production code. If a test needs a helper, it lives in
 the test file or a `*.test-support.ts` file beside it.
