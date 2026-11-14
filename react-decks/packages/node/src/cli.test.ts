@@ -1,0 +1,108 @@
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { access, readFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
+import { fixture as createFixture } from "./deck.test-support";
+
+const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
+
+function cli(cwd: string, args: string[]) {
+  const child = spawn(
+    resolve("node_modules/.bin/tsx"),
+    [resolve("packages/node/src/cli.ts"), ...args],
+    { cwd, env: { ...process.env, NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] },
+  );
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", (data) => {
+    stdout += String(data);
+  });
+  child.stderr.on("data", (data) => {
+    stderr += String(data);
+  });
+  const exit = once(child, "exit");
+  onTestFinished(async () => {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill("SIGTERM");
+      await exit;
+    }
+  });
+  return { child, exit, output: () => ({ stdout, stderr }) };
+}
+
+describe("decks CLI", () => {
+  it("dev resolves an alias and prints a URL that serves the deck", async () => {
+    const { dir, put } = await fixture();
+    await put("decks.json", JSON.stringify({ talk: { dir: "." } }));
+    const process = cli(dir, ["dev", "talk", "--port", "0"]);
+    let url = "";
+    await vi.waitFor(
+      () => {
+        url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
+        expect(url, process.output().stderr).not.toBe("");
+      },
+      { timeout: 10000 },
+    );
+    const response = await fetch(url);
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('<meta name="decks:name" content="talk">');
+    await expect(access(join(dir, "index.html"))).rejects.toThrow();
+  });
+  it("build uses registry outDir and base defaults", async () => {
+    const { dir, put } = await fixture();
+    await put(
+      "decks.json",
+      JSON.stringify({ _config: { outDir: "site/{name}", base: "/default/" }, talk: { dir: "." } }),
+    );
+    const process = cli(dir, ["build", "talk"]);
+    expect((await process.exit)[0], process.output().stderr).toBe(0);
+    expect(await readFile(join(dir, "site/talk/index.html"), "utf8")).toContain(
+      'src="/default/assets/',
+    );
+  });
+  it("reports an invalid config edit and recovers after the next valid save", async () => {
+    const { dir, put } = await fixture();
+    const process = cli(dir, ["dev", dir, "--port", "0"]);
+    let url = "";
+    await vi.waitFor(
+      () => {
+        url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
+        expect(url).not.toBe("");
+      },
+      { timeout: 10000 },
+    );
+    expect((await fetch(url)).status).toBe(200);
+    await put("deck.config.ts", "export default {title:42};");
+    await vi.waitFor(() => expect(process.output().stderr).toContain("deck.config.ts"));
+    await put("deck.config.ts", 'export default {title:"Recovered deck"};');
+    await vi.waitFor(async () => {
+      expect(process.child.exitCode, process.output().stderr).toBe(null);
+      const response = await fetch(url);
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain("Recovered deck");
+    });
+  });
+  it("build accepts a directory and explicit output and base", async () => {
+    const { dir } = await fixture();
+    const process = cli(dir, ["build", dir, "--out", "custom", "--base", "./"]);
+    expect((await process.exit)[0], process.output().stderr).toBe(0);
+    expect(await readFile(join(dir, "custom/index.html"), "utf8")).toContain('src="./assets/');
+  });
+  it.each(["unknown-talk", "constructor"])(
+    "exits 1 and names unknown alias %s in stderr",
+    async (alias) => {
+      const { dir } = await fixture();
+      const process = cli(dir, ["dev", alias]);
+      expect((await process.exit)[0]).toBe(1);
+      expect(process.output().stderr).toContain(alias);
+    },
+  );
+  it("exits 1 and names a directory's missing deck.config.ts in stderr", async () => {
+    const { dir, put } = await fixture();
+    await put("missing/file.txt", "No config here");
+    const process = cli(dir, ["build", "./missing"]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toContain(join(dir, "missing/deck.config.ts"));
+  });
+});
