@@ -32,7 +32,7 @@ const schema = z.strictObject({
   canvas: z
     .strictObject({ width: z.number().positive(), height: z.number().positive() })
     .default({ width: 1920, height: 1080 }),
-  transition: z.string().optional(),
+  transition: z.string().min(1).optional(),
   htmlAttrs: z.record(z.string(), z.string()).optional(),
   vite: z
     .custom<UserConfig>(

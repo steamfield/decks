@@ -1,0 +1,158 @@
+import { describe, expect, it, onTestFinished } from "vitest";
+import { fixture as createFixture } from "./deck.test-support";
+import { loadDeck, scanSlides } from "./index";
+
+const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
+
+async function scan(body: string) {
+  const { dir } = await fixture({ "slides/01-first.mdx": body });
+  return scanSlides(await loadDeck(dir));
+}
+
+describe("static click totals", () => {
+  it.each(["Step", "Stagger", "Highlight", "Draw"])(
+    "counts at or until on %s elements",
+    async (name) => {
+      const slides = await scan(`<${name} at={2} />\n\n<${name} at={3} until={4} />`);
+      expect(slides[0]?.meta.clicks).toBe(4);
+      expect(slides[0]?.frontmatter).not.toHaveProperty("clicks");
+      expect((await scan(`<${name} at={2} />`))[0]?.meta.clicks).toBe(2);
+    },
+  );
+  it.each(["TextReveal", "CountUp"])("counts at on %s", async (name) => {
+    expect((await scan(`<${name} at={3} />`))[0]?.meta.clicks).toBe(3);
+  });
+  it("counts Steps from its first click and direct JSX element children", async () => {
+    const slides = await scan(`<Steps from={2}>
+  <div>
+    <span>Nested child</span>
+  </div>
+  <span>
+    Second child
+  </span>
+</Steps>`);
+    expect(slides[0]?.meta.clicks).toBe(3);
+  });
+  it("counts no contribution for empty Steps", async () => {
+    expect((await scan("<Steps from={7}>   </Steps>"))[0]?.meta.clicks).toBe(0);
+  });
+  it.each(["-", "1."])(
+    "counts only top-level items in a single %s markdown list",
+    async (marker) => {
+      const slides = await scan(
+        `<Steps from={2}>\n\n${marker} First\n${" ".repeat(marker.length + 1)}- Nested\n${marker} Second\n\n</Steps>`,
+      );
+      expect(slides[0]?.meta.clicks).toBe(3);
+    },
+  );
+  it.each(["ul", "ol"])("counts the top-level li children of a sole JSX %s", async (name) => {
+    const slides = await scan(
+      `<Steps from={2}><${name}><li>One<ul><li>Nested</li></ul></li><li>Two</li></${name}></Steps>`,
+    );
+    expect(slides[0]?.meta.clicks).toBe(3);
+  });
+  it.each([
+    "<Step at={1} {...props} />",
+    "<Step at={1} {...{until: 4}} />",
+    "<Steps from={1} {...props}><b /></Steps>",
+    "<TextReveal {...props} at={1} />",
+  ])("requires explicit clicks for a counted element with spread props: %s", async (body) => {
+    await expect(scan(body)).rejects.toThrow(/01-first\.mdx.*(Step|TextReveal).*spread.*clicks/);
+    expect((await scan(`---\nclicks: 4\n---\n${body}`))[0]?.meta.clicks).toBe(4);
+  });
+  it("rejects a paragraph of inline JSX with instructions for making children countable", async () => {
+    await expect(scan("<Steps from={1}>\n<li>One</li>\n<li>Two</li>\n</Steps>")).rejects.toThrow(
+      /01-first\.mdx.*Steps.*own block.*markdown list/,
+    );
+  });
+  it("rejects a list mixed with other Steps children", async () => {
+    await expect(scan("<Steps from={1}>\n\n- One\n\n<div />\n</Steps>")).rejects.toThrow(
+      /01-first\.mdx.*Steps.*children/,
+    );
+  });
+  it("uses the largest nested, block or inline contribution", async () => {
+    const slides = await scan(
+      "<Step at={1}><Step at={4} /></Step>\n\nInline <Highlight at={2} until={5}>text</Highlight>.",
+    );
+    expect(slides[0]?.meta.clicks).toBe(5);
+  });
+  it("allows literal zero as the first click", async () => {
+    expect(
+      (await scan("<Step at={0} />\n\n<Steps from={0}><i /><b /></Steps>"))[0]?.meta.clicks,
+    ).toBe(1);
+  });
+  it("ignores aliases, member names and code samples", async () => {
+    expect(
+      (
+        await scan(
+          'import { Step as Alias } from "@react-decks/motion";\n\n<Alias at={8} />\n\n<motion.Step at={9} />\n\n`<Step at={7} />`\n\n```mdx\n<Step at={6} />\n```',
+        )
+      )[0]?.meta.clicks,
+    ).toBe(0);
+  });
+  it("leaves steps inside a deck component to an explicit clicks override", async () => {
+    const { dir, put } = await fixture({
+      "components/Stage.tsx":
+        'import { Step } from "@react-decks/motion"; export function Stage() { return <Step at={3} />; }',
+      "slides/01-first.mdx": "<Stage />",
+    });
+    const deck = await loadDeck(dir);
+    expect((await scanSlides(deck))[0]?.meta.clicks).toBe(0);
+    await put("slides/01-first.mdx", "---\nclicks: 3\n---\n<Stage />");
+    expect((await scanSlides(deck))[0]?.meta.clicks).toBe(3);
+  });
+  it.each([
+    ["at", "<Step />"],
+    ["at", "<Step at />"],
+    ["at", '<Step at="2" />'],
+    ["at", "<Step at={n} />"],
+    ["at", "<Step at={1 + 1} />"],
+    ["at", "<Step at={1.5} />"],
+    ["at", "<Step at={-1} />"],
+    ["until", '<Step at={1} until="2" />'],
+    ["until", "<Step at={1} until={n} />"],
+    ["until", "<Step at={1} until={1.5} />"],
+    ["until", "<Step at={1} until={-1} />"],
+    ["until", "<Step at={1} until={1} />"],
+    ["until", "<Step at={2} until={1} />"],
+    ["from", "<Steps><b /></Steps>"],
+    ["from", '<Steps from="2"><b /></Steps>'],
+    ["from", "<Steps from={n}><b /></Steps>"],
+    ["from", "<Steps from={1.5}><b /></Steps>"],
+    ["from", "<Steps from={-1}><b /></Steps>"],
+  ])(
+    "rejects a non-literal or invalid %s in %s naming file and attribute",
+    async (attribute, body) => {
+      await expect(scan(body)).rejects.toThrow(new RegExp(`01-first\\.mdx:[\\s\\S]*${attribute}`));
+    },
+  );
+  it.each(["Plain markdown", "{items}", "**bold**"])(
+    "rejects non-JSX Steps children: %s",
+    async (child) => {
+      await expect(scan(`<Steps from={1}>\n${child}\n</Steps>`)).rejects.toThrow(
+        /01-first\.mdx.*Steps.*children/,
+      );
+    },
+  );
+  it.each([
+    "{cond && <Step at={1} />}",
+    "{items.map(item => <Steps from={1}><b /></Steps>)}",
+    "<div child={<CountUp at={1} to={3} />} />",
+    "export const content = <Draw at={1} />;",
+  ])("rejects counted names inside JavaScript expressions: %s", async (body) => {
+    await expect(scan(body)).rejects.toThrow(/01-first\.mdx.*(Step|CountUp|Draw).*expression/);
+  });
+  it.each([0, 2])(
+    "uses explicit clicks %s without validating the body for counting",
+    async (clicks) => {
+      const slides = await scan(
+        `---\nclicks: ${clicks}\n---\n<Step at={n} />\n\n<Steps from={-1}>{items}</Steps>\n\n{cond && <Step at={1} />}`,
+      );
+      expect(slides[0]?.meta.clicks).toBe(clicks);
+      expect(slides[0]?.frontmatter.clicks).toBe(clicks);
+    },
+  );
+  it("leaves an unparseable body's cold-start total at zero for its compiler", async () => {
+    expect((await scan("<Step at={3}>"))[0]?.meta.clicks).toBe(0);
+  });
+});

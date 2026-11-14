@@ -22,6 +22,50 @@ describe("assertManifest", () => {
   it("rejects a manifest with zero slides", () => {
     expect(() => assertManifest({ ...manifest(), slides: [] })).toThrow(/0 slides/);
   });
+  it("preserves default and slide transitions and boolean morphSteps", () => {
+    const input = {
+      ...manifest(),
+      transition: "slide",
+      slides: manifest().slides.map((slide) => ({
+        ...slide,
+        transition: "fade",
+        morphSteps: slide.no === 1,
+      })),
+    };
+    expect(assertManifest(input)).toBe(input);
+  });
+  it("rejects an empty deck transition", () => {
+    expect(() => assertManifest({ ...manifest(), transition: "" })).toThrow(/Manifest.*transition/);
+  });
+  it("rejects an empty slide transition naming the slide", () => {
+    const input = manifest();
+    expect(() =>
+      assertManifest({
+        ...input,
+        slides: input.slides.map((slide) => ({
+          ...slide,
+          transition: "",
+        })),
+      }),
+    ).toThrow(/intro.*transition/);
+  });
+  it.each([null, 0, "true"])(
+    "rejects a non-boolean morphSteps of %s naming the slide",
+    (morphSteps) => {
+      const input = manifest();
+      // JSON is the untyped boundary assertManifest validates.
+      const untyped = JSON.parse(
+        JSON.stringify({
+          ...input,
+          slides: input.slides.map((slide) => ({
+            ...slide,
+            morphSteps,
+          })),
+        }),
+      );
+      expect(() => assertManifest(untyped)).toThrow(/intro.*morphSteps/);
+    },
+  );
 
   it.each([0, -1, 1.5, 2, Number.NaN, Number.POSITIVE_INFINITY])(
     "rejects a slide number of %s instead of its 1-based position",
