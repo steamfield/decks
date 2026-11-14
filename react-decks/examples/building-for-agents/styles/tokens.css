@@ -1,28 +1,28 @@
-@import '@fontsource-variable/orbitron';
-@import '@fontsource/press-start-2p';
-@import '@fontsource/vt323';
-@import '@fontsource/mr-dafoe';
-@import '@fontsource-variable/jetbrains-mono';
+@import "@fontsource-variable/orbitron";
+@import "@fontsource/press-start-2p";
+@import "@fontsource/vt323";
+@import "@fontsource/mr-dafoe";
+@import "@fontsource-variable/jetbrains-mono";
 
 /* TeX Gyre Heros, self-hosted from steamfield.io (public/fonts, GUST licence
    alongside). The family name is what theme.json's fonts.sans names. */
 @font-face {
-  font-family: 'Heros';
-  src: url('/fonts/heros-regular.woff2') format('woff2');
+  font-family: "Heros";
+  src: url("/fonts/heros-regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: block;
 }
 @font-face {
-  font-family: 'Heros';
-  src: url('/fonts/heros-italic.woff2') format('woff2');
+  font-family: "Heros";
+  src: url("/fonts/heros-italic.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
   font-display: block;
 }
 @font-face {
-  font-family: 'Heros';
-  src: url('/fonts/heros-bold.woff2') format('woff2');
+  font-family: "Heros";
+  src: url("/fonts/heros-bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: block;
@@ -41,10 +41,10 @@
 .od-slide.is-story {
   /* Faces the theme has no slot for. Heros and JetBrains Mono come from
      theme.json (fonts.sans, fonts.mono). */
-  --sf-font-display: 'Orbitron Variable', var(--od-font-sans);
-  --sf-font-pixel: 'Press Start 2P', ui-monospace, monospace;
-  --sf-font-term: 'VT323', ui-monospace, monospace;
-  --sf-font-script: 'Mr Dafoe', cursive;
+  --sf-font-display: "Orbitron Variable", var(--od-font-sans);
+  --sf-font-pixel: "Press Start 2P", ui-monospace, monospace;
+  --sf-font-term: "VT323", ui-monospace, monospace;
+  --sf-font-script: "Mr Dafoe", cursive;
 
   /* Endpoints and the dim level. --sf-dim mirrors DIM in design.ts. */
   --sf-zero: 0;
@@ -129,7 +129,8 @@
   --sf-svg-pixel-small: 13px;
 
   /* Neon glow, for the one lit element of a beat. Never on card or code text. */
-  --sf-glow-pink: 0 0 6px rgba(var(--od-glow-rose-rgb), 0.9), 0 0 18px rgba(var(--od-glow-rose-rgb), 0.6),
+  --sf-glow-pink:
+    0 0 6px rgba(var(--od-glow-rose-rgb), 0.9), 0 0 18px rgba(var(--od-glow-rose-rgb), 0.6),
     0 0 42px rgba(var(--od-glow-rose-rgb), 0.35);
 
   /* CRT: mirrors of CRT in design.ts. */
@@ -162,7 +163,8 @@
   --sf-fringe-size: calc(0.035 * var(--sw));
   --sf-fringe-red: rgb(255 70 90 / 0.4);
   --sf-fringe-cyan: color-mix(in srgb, var(--od-cyan) 40%, transparent);
-  --sf-fringe: var(--sf-fringe-size) 0 0 var(--sf-fringe-red),
+  --sf-fringe:
+    var(--sf-fringe-size) 0 0 var(--sf-fringe-red),
     calc(-1 * var(--sf-fringe-size)) 0 0 var(--sf-fringe-cyan);
   /* The hero's soft-light grain over the live scene. */
   --sf-scene-grain: 0.22;
@@ -192,7 +194,7 @@
    large because its x-height is small. Heros stays only inside the wordmark,
    which is the logo. */
 .od-slide.is-story {
-  --sf-font-wordmark: 'Heros', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sf-font-wordmark: "Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --sf-head-size: calc(2.03 * var(--sw));
   --sf-head-weight: 700;
   --sf-head-leading: 1.16;

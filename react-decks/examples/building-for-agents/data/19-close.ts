@@ -9,19 +9,19 @@
  *   "Open core". That is why the lede says "most".
  * SITE: the studio's home page, the same file's site.
  */
-import { PRODUCTS } from './products'
+import { PRODUCTS } from "./products";
 
-export const SITE = 'https://steamfield.io'
+export const SITE = "https://steamfield.io";
 
 /** Shown under the lede, one per line. */
 export const INSTALL = [
-  'npm install -g @steamfield/stacks',
-  'npm install -g @steamfield/foreman',
-  'brew install rileyhilliard/tap/rr',
-] as const
+  "npm install -g @steamfield/stacks",
+  "npm install -g @steamfield/foreman",
+  "brew install rileyhilliard/tap/rr",
+] as const;
 
 /** Products with an open source licence in projects.ts, of PRODUCTS.length. */
-export const OPEN_SOURCE = 6
+export const OPEN_SOURCE = 6;
 
 /** The lede's count, as a word. */
-export const PRODUCT_COUNT = PRODUCTS.length
+export const PRODUCT_COUNT = PRODUCTS.length;

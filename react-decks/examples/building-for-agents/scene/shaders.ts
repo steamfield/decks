@@ -16,7 +16,7 @@ const lightNoise = /* glsl */ `
     return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
       mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0)), f.x), f.y) * 2.0 - 1.0;
   }
-`
+`;
 
 export const sunShader = {
   vertex: /* glsl */ `
@@ -68,7 +68,7 @@ export const sunShader = {
       // Straight alpha: don't multiply the halo into its color a second time.
       gl_FragColor = vec4(mix(haloCol, col, body), max(body, halo) * uReveal);
     }`,
-}
+};
 
 export const gridShader = {
   vertex: /* glsl */ `
@@ -107,7 +107,7 @@ export const gridShader = {
       col += uHaze * smoothstep(110.0, 200.0, dist) * 0.25 * uDaylight;
       gl_FragColor = vec4(col, 1.0);
     }`,
-}
+};
 
 export const skyShader = {
   vertex: /* glsl */ `
@@ -152,4 +152,4 @@ export const skyShader = {
       col += uGlow * min(spill * 0.12 * illumination, 0.14) * uReveal * uDaylight;
       gl_FragColor = vec4(col, 1.0);
     }`,
-}
+};

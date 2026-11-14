@@ -10,7 +10,7 @@
 // live WebGL scene: two Slidev captures of them differ by about 1%, so they are reported but
 // judged by eye.
 import { spawn } from "node:child_process";
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,10 +35,14 @@ const port = await new Promise((done, fail) => {
     probe.close(() => done(port));
   });
 });
-const server = spawn("bun", ["run", "decks", "dev", "agents", "--port", String(port), "--no-open"], {
-  cwd: resolve(deck, "../.."),
-  stdio: ["ignore", "pipe", "pipe"],
-});
+const server = spawn(
+  "bun",
+  ["run", "decks", "dev", "agents", "--port", String(port), "--no-open"],
+  {
+    cwd: resolve(deck, "../.."),
+    stdio: ["ignore", "pipe", "pipe"],
+  },
+);
 let log = "";
 server.stdout.on("data", (chunk) => (log += chunk));
 server.stderr.on("data", (chunk) => (log += chunk));
@@ -61,7 +65,10 @@ const frames = (await readdir(baseline))
   .sort();
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({
+  viewport: { width: 1920, height: 1080 },
+  deviceScaleFactor: 1,
+});
 const errors = [];
 page.on("console", (message) => message.type() === "error" && errors.push(message.text()));
 page.on("pageerror", (error) => errors.push(String(error)));
@@ -82,15 +89,23 @@ try {
     const actual = PNG.sync.read(await readFile(file));
     const expected = PNG.sync.read(await readFile(join(baseline, name)));
     if (actual.width !== expected.width || actual.height !== expected.height) {
-      console.log(`${name}\tsize ${actual.width}x${actual.height}, baseline ${expected.width}x${expected.height}`);
+      console.log(
+        `${name}\tsize ${actual.width}x${actual.height}, baseline ${expected.width}x${expected.height}`,
+      );
       failed++;
       continue;
     }
     const diff = new PNG({ width: actual.width, height: actual.height });
-    const pixels = pixelmatch(actual.data, expected.data, diff.data, actual.width, actual.height, { threshold: 0.1 });
+    const pixels = pixelmatch(actual.data, expected.data, diff.data, actual.width, actual.height, {
+      threshold: 0.1,
+    });
     await writeFile(join(out, name.replace(".png", "-diff.png")), PNG.sync.write(diff));
     const fraction = pixels / (actual.width * actual.height);
-    const verdict = LIVE.has(name) ? "live scene, judge by eye" : fraction <= LIMIT ? "ok" : "DIFFERS";
+    const verdict = LIVE.has(name)
+      ? "live scene, judge by eye"
+      : fraction <= LIMIT
+        ? "ok"
+        : "DIFFERS";
     if (verdict === "DIFFERS") failed++;
     console.log(`${name}\t${(fraction * 100).toFixed(3)}%\t${verdict}`);
   }

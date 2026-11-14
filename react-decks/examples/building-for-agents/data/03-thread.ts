@@ -21,23 +21,23 @@
  *
  * "Most started inside OpenData" on the first card is FLAG: author-reported.
  */
-import { PRODUCTS, type ProductId } from './products'
+import { PRODUCTS, type ProductId } from "./products";
 
 /** Published as "around 14,000" and "about 14,000". See the header. */
-export const OPENDATA_TESTS = 14000
+export const OPENDATA_TESTS = 14000;
 
 /** The products that get more than one slide. */
-export const FEATURED: readonly ProductId[] = ['stacks', 'foreman', 'statglass']
+export const FEATURED: readonly ProductId[] = ["stacks", "foreman", "statglass"];
 
 /** How many of the seven have TypeScript on their language chip. */
-export const TYPESCRIPT_PRODUCTS = PRODUCTS.filter((p) => p.lang.includes('TypeScript')).length
+export const TYPESCRIPT_PRODUCTS = PRODUCTS.filter((p) => p.lang.includes("TypeScript")).length;
 
 /** A language chip, split where products.ts puts a middle dot, one part per line. */
-export const langLines = (lang: string): string[] => lang.split(' · ')
+export const langLines = (lang: string): string[] => lang.split(" · ");
 
 /** A small count as the word a card would use. */
 export const countWord = (n: number): string =>
-  ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'][n] ?? String(n)
+  ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven"][n] ?? String(n);
 
 /** Seconds the notes give each product that is not featured. FLAG: author-reported (OUTLINE.md section 10). */
-export const BRIEF_SECONDS = 90
+export const BRIEF_SECONDS = 90;

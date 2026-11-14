@@ -24,59 +24,59 @@
  * ENGINE_VERSION: the version this repo's package.json pins, and the one in
  *   every packages/<name>/package.json of the openchart repo.
  */
-import { validateSpec } from '@opendata-ai/openchart-engine'
-import type { Excerpt } from './code/types'
+import { validateSpec } from "@opendata-ai/openchart-engine";
+import type { Excerpt } from "./code/types";
 
 export const README_SPEC = {
-  mark: 'bar',
+  mark: "bar",
   data: [
-    { language: 'Python', popularity: 29 },
-    { language: 'JavaScript', popularity: 24 },
-    { language: 'TypeScript', popularity: 17 },
-    { language: 'Java', popularity: 14 },
-    { language: 'Go', popularity: 10 },
+    { language: "Python", popularity: 29 },
+    { language: "JavaScript", popularity: 24 },
+    { language: "TypeScript", popularity: 17 },
+    { language: "Java", popularity: 14 },
+    { language: "Go", popularity: 10 },
   ],
   encoding: {
-    x: { field: 'popularity', type: 'quantitative' },
-    y: { field: 'language', type: 'nominal' },
+    x: { field: "popularity", type: "quantitative" },
+    y: { field: "language", type: "nominal" },
   },
   chrome: {
-    title: 'Python leads developer mindshare',
-    subtitle: '2024 developer survey results',
-    source: 'Source: Stack Overflow',
+    title: "Python leads developer mindshare",
+    subtitle: "2024 developer survey results",
+    source: "Source: Stack Overflow",
   },
-} as const
+} as const;
 
 /** The one token that differs between the two specs. */
-export const TYPO = { right: 'language', wrong: 'langauge' } as const
+export const TYPO = { right: "language", wrong: "langauge" } as const;
 
 export const BAD_SPEC = {
   ...README_SPEC,
   encoding: { ...README_SPEC.encoding, y: { ...README_SPEC.encoding.y, field: TYPO.wrong } },
-}
+};
 
-const bad = validateSpec(BAD_SPEC)
-const fixed = validateSpec(README_SPEC)
+const bad = validateSpec(BAD_SPEC);
+const fixed = validateSpec(README_SPEC);
 
 /** What the engine said about the misspelled spec: its first error. */
 export const VERDICT = {
   errors: bad.errors.length,
-  path: bad.errors[0]?.path ?? '',
-  code: bad.errors[0]?.code ?? '',
-  suggestion: bad.errors[0]?.suggestion ?? '',
-}
+  path: bad.errors[0]?.path ?? "",
+  code: bad.errors[0]?.code ?? "",
+  suggestion: bad.errors[0]?.suggestion ?? "",
+};
 /** What it said about the README's spec. */
-export const FIXED = { valid: fixed.valid, errors: fixed.errors.length }
+export const FIXED = { valid: fixed.valid, errors: fixed.errors.length };
 
 /** The elision line, and the spec lines the slide has room for. */
-const ELIDED = '    // …'
+const ELIDED = "    // …";
 function shownLines(spec: unknown): string[] {
-  const all = JSON.stringify(spec, null, 2).split('\n')
-  const data = all.indexOf('  "data": [')
-  const dataEnd = all.indexOf('  ],', data)
-  const encoding = all.indexOf('  "encoding": {', dataEnd)
-  const encodingEnd = all.indexOf('  },', encoding)
-  return [all[1], all[data], ELIDED, ...all.slice(dataEnd, encodingEnd + 1)]
+  const all = JSON.stringify(spec, null, 2).split("\n");
+  const data = all.indexOf('  "data": [');
+  const dataEnd = all.indexOf("  ],", data);
+  const encoding = all.indexOf('  "encoding": {', dataEnd);
+  const encodingEnd = all.indexOf("  },", encoding);
+  return [all[1], all[data], ELIDED, ...all.slice(dataEnd, encodingEnd + 1)];
 }
 
 /**
@@ -87,47 +87,51 @@ function shownLines(spec: unknown): string[] {
  * lines to drift against.
  */
 const specExcerpt = (spec: unknown): Excerpt => ({
-  repo: 'openchart',
-  path: 'README.md',
+  repo: "openchart",
+  path: "README.md",
   start: 26,
   end: 44,
-  commit: '26bd0ba6',
-  lang: 'json',
-  code: shownLines(spec).join('\n'),
-})
-export const BAD_EXCERPT = specExcerpt(BAD_SPEC)
-export const FIXED_EXCERPT = specExcerpt(README_SPEC)
+  commit: "26bd0ba6",
+  lang: "json",
+  code: shownLines(spec).join("\n"),
+});
+export const BAD_EXCERPT = specExcerpt(BAD_SPEC);
+export const FIXED_EXCERPT = specExcerpt(README_SPEC);
 /** What the pane's own label says, in place of a file path. */
-export const SPEC_LABEL = 'spec.json · openchart README, lines 26 to 44'
+export const SPEC_LABEL = "spec.json · openchart README, lines 26 to 44";
 
 /** The 1-based line of the shown spec that holds the misspelled field. */
-export const TYPO_LINE = shownLines(BAD_SPEC).findIndex((line) => line.includes(`"${TYPO.wrong}"`)) + 1
+export const TYPO_LINE =
+  shownLines(BAD_SPEC).findIndex((line) => line.includes(`"${TYPO.wrong}"`)) + 1;
 
-export const ENGINE_VERSION = '9.0.0'
-export const MARKS = 19
-export const VALIDATOR_LINES = 3369
+export const ENGINE_VERSION = "9.0.0";
+export const MARKS = 19;
+export const VALIDATOR_LINES = 3369;
 
 export interface Package {
-  name: string
+  name: string;
   /** Non-test .ts and .tsx lines under packages/<name>/src. */
-  lines: number
+  lines: number;
   /** What the package is, in two or three words. */
-  role: string
+  role: string;
 }
 export const PACKAGES: readonly Package[] = [
-  { name: 'core', lines: 13668, role: 'types and theme' },
-  { name: 'engine', lines: 50369, role: 'computes layout' },
-  { name: 'vanilla', lines: 42424, role: 'draws to the DOM' },
-  { name: 'react', lines: 2639, role: 'wrapper' },
-  { name: 'vue', lines: 2502, role: 'wrapper' },
-  { name: 'svelte', lines: 864, role: 'wrapper' },
-]
-const linesOf = (name: string) => PACKAGES.find((p) => p.name === name)?.lines ?? 0
+  { name: "core", lines: 13668, role: "types and theme" },
+  { name: "engine", lines: 50369, role: "computes layout" },
+  { name: "vanilla", lines: 42424, role: "draws to the DOM" },
+  { name: "react", lines: 2639, role: "wrapper" },
+  { name: "vue", lines: 2502, role: "wrapper" },
+  { name: "svelte", lines: 864, role: "wrapper" },
+];
+const linesOf = (name: string) => PACKAGES.find((p) => p.name === name)?.lines ?? 0;
 /** The React wrapper's size as a whole percent of the engine's. */
-export const REACT_SHARE = Math.round((linesOf('react') / linesOf('engine')) * 100)
+export const REACT_SHARE = Math.round((linesOf("react") / linesOf("engine")) * 100);
 
 if (bad.valid || !VERDICT.path || !VERDICT.suggestion.includes(`"${TYPO.right}"`)) {
-  throw new Error('16-openchart: the engine no longer rejects the misspelled field with a suggestion')
+  throw new Error(
+    "16-openchart: the engine no longer rejects the misspelled field with a suggestion",
+  );
 }
-if (!fixed.valid) throw new Error('16-openchart: the engine no longer accepts the README spec')
-if (TYPO_LINE < 1) throw new Error('16-openchart: the misspelled line is not among the shown lines')
+if (!fixed.valid) throw new Error("16-openchart: the engine no longer accepts the README spec");
+if (TYPO_LINE < 1)
+  throw new Error("16-openchart: the misspelled line is not among the shown lines");

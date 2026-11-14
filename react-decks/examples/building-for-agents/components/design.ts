@@ -5,13 +5,19 @@
  */
 
 /** Earlier evidence stays readable. Mirror in tokens.css: --sf-dim. */
-export const DIM = 0.45
+export const DIM = 0.45;
 /** Resting and hidden endpoints for beat opacity and progress. */
-export const ON = 1
-export const OFF = 0
+export const ON = 1;
+export const OFF = 0;
 
 /** Shared viewBox and the frame's horizontal margins (5.7lw is about 110). */
-export const FRAME = { viewBox: '0 0 1920 1080', width: 1920, height: 1080, left: 110, right: 1810 } as const
+export const FRAME = {
+  viewBox: "0 0 1920 1080",
+  width: 1920,
+  height: 1080,
+  left: 110,
+  right: 1810,
+} as const;
 
 /**
  * The cover's picture. The horizon sits at 65% of the frame; the sun and the
@@ -49,10 +55,10 @@ export const FIELD = {
   /** The bottom of the floor fades into the canvas over this share of it. */
   fadeFrom: 0.72,
   tagY: 744,
-} as const
+} as const;
 
 /** CRT frame: bezel thickness, the bezel's tag band and one scanline period. */
-export const CRT = { pad: 14, tagBand: 44, scanPeriod: 6, scanHeight: 3 } as const
+export const CRT = { pad: 14, tagBand: 44, scanPeriod: 6, scanHeight: 3 } as const;
 
 /** Slide 4, the Stacks loop. */
 export const LOOP = {
@@ -70,35 +76,37 @@ export const LOOP = {
   axis: { x0: 1000, x1: 1740, y: 800, tick: 14, labelUp: 30, labelDown: 46 },
   packet: 9,
   lock: 20,
-} as const
+} as const;
 
 /** A deterministic 0..1 value for a seed and an index (stars, never data). */
 export function noise(seed: number, n: number): number {
-  const x = Math.sin(seed * 9283.17 + n * 127.1 + 311.7) * 43758.5453
-  return x - Math.floor(x)
+  const x = Math.sin(seed * 9283.17 + n * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
 }
 
-export type Pt = readonly [number, number]
+export type Pt = readonly [number, number];
 
 /** The point a share `t` (0..1) of the way along a polyline, by length. */
 export function along(points: readonly Pt[], t: number): Pt {
-  const lengths = points.slice(1).map((p, i) => Math.hypot(p[0] - points[i][0], p[1] - points[i][1]))
-  const total = lengths.reduce((a, b) => a + b, 0)
-  let left = Math.min(1, Math.max(0, t)) * total
+  const lengths = points
+    .slice(1)
+    .map((p, i) => Math.hypot(p[0] - points[i][0], p[1] - points[i][1]));
+  const total = lengths.reduce((a, b) => a + b, 0);
+  let left = Math.min(1, Math.max(0, t)) * total;
   for (let i = 0; i < lengths.length; i++) {
     if (left <= lengths[i] || i === lengths.length - 1) {
-      const f = lengths[i] === 0 ? 0 : Math.min(1, left / lengths[i])
+      const f = lengths[i] === 0 ? 0 : Math.min(1, left / lengths[i]);
       return [
         points[i][0] + (points[i + 1][0] - points[i][0]) * f,
         points[i][1] + (points[i + 1][1] - points[i][1]) * f,
-      ]
+      ];
     }
-    left -= lengths[i]
+    left -= lengths[i];
   }
-  return points[points.length - 1]
+  return points[points.length - 1];
 }
 
 /** An SVG path through a polyline. */
 export function polyline(points: readonly Pt[]): string {
-  return points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]} ${p[1]}`).join(' ')
+  return points.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]} ${p[1]}`).join(" ");
 }

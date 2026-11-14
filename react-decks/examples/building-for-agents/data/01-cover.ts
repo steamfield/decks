@@ -14,32 +14,32 @@
  * The smoothing is ported from buildRidgeSeries in
  * ~/Projects/steamfield/src/lib/ridge-readout.ts.
  */
-import commits from './commits.json'
+import commits from "./commits.json";
 
 /** Cover byline. The talk's date is from Riley, 2026-11-13. */
 export const BYLINE = {
-  speaker: 'Riley Hilliard',
-  studio: 'Steamfield',
-  event: 'Austin JS',
-  month: '2026-11',
-} as const
+  speaker: "Riley Hilliard",
+  studio: "Steamfield",
+  event: "Austin JS",
+  month: "2026-11",
+} as const;
 
 const totals = Array.from({ length: commits.days }, (_, i) =>
   Object.values(commits.series as Record<string, number[]>).reduce(
     (sum, values) => sum + (values[i] ?? 0),
     0,
   ),
-)
+);
 
 const smooth = totals.map((_, i) => {
-  const win = totals.slice(Math.max(0, i - 6), i + 1)
-  return win.reduce((a, b) => a + b, 0) / win.length
-})
+  const win = totals.slice(Math.max(0, i - 6), i + 1);
+  return win.reduce((a, b) => a + b, 0) / win.length;
+});
 
-const peak = Math.max(...smooth) || 1
+const peak = Math.max(...smooth) || 1;
 
 /** One value per day, 0..1 of the busiest seven-day mean. */
-export const RIDGE: readonly number[] = smooth.map((mean) => mean / peak)
+export const RIDGE: readonly number[] = smooth.map((mean) => mean / peak);
 
 /** The window the ridge covers, for the figure tag. */
 export const RIDGE_WINDOW = {
@@ -49,4 +49,4 @@ export const RIDGE_WINDOW = {
   repos: Object.keys(commits.series).length,
   /** The busiest seven-day mean, commits per day, rounded. */
   peakPerDay: Math.round(peak),
-} as const
+} as const;

@@ -5,14 +5,14 @@
  * The WORKFLOW line is cut after "enum values", before the source's dash;
  * the trailing … marks the cut.
  */
-import type { Excerpt } from './types'
+import type { Excerpt } from "./types";
 
-const base = { repo: 'opendata', commit: 'd9b5ee7c4', lang: 'ts' } as const
+const base = { repo: "opendata", commit: "d9b5ee7c4", lang: "ts" } as const;
 
 /** Every tool the server registers: one call each, fourteen of them. */
 export const TOOL_REGISTRY: Excerpt = {
   ...base,
-  path: 'mcp/src/tools/index.ts',
+  path: "mcp/src/tools/index.ts",
   start: 23,
   end: 36,
   code: `registerSearchDatasets(server, client, userId);
@@ -29,12 +29,12 @@ registerRequestDataset(server, client, userId);
 registerSaveChartDraft(server, client, userId);
 registerFetchQueryResult(server, client, userId);
 registerPublishFigure(server, client, userId);`,
-}
+};
 
 /** The instruction the server sends every client at initialize. */
 export const WORKFLOW: Excerpt = {
   ...base,
-  path: 'mcp/src/server.ts',
+  path: "mcp/src/server.ts",
   start: 52,
   end: 62,
   code: `const SERVER_INSTRUCTIONS = [
@@ -42,4 +42,4 @@ export const WORKFLOW: Excerpt = {
   "WORKFLOW: search_datasets -> query_sql -> openchart. Top search hits already carry column schemas and enum values …
   // …
 ].join(" ");`,
-}
+};

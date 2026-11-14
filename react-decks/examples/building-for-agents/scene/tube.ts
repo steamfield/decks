@@ -7,8 +7,9 @@
 // warp.ts), and it bends this canvas along with the type over it. So
 // `tubeWarp` defaults to 0 and the shader keeps the beam bloom and the corner
 // falloff. Scanlines and the phosphor mask come from the tube overlay.
-import { Uniform, Vector2 } from 'three'
-import { BlendFunction, Effect, EffectAttribute } from 'postprocessing'
+
+import { BlendFunction, Effect, EffectAttribute } from "postprocessing";
+import { Uniform, Vector2 } from "three";
 
 const tubeShader = /* glsl */ `
   uniform vec2 tubeSize;
@@ -47,17 +48,17 @@ const tubeShader = /* glsl */ `
     color *= 1.0 - 0.24 * edge * sqrt(edge);
     outputColor = vec4(mix(inputColor.rgb, color, tubeAmount), inputColor.a);
   }
-`
+`;
 
 /** The CRT tube stage: beam bloom and corner falloff. Last pass. */
 export function createCrtTube() {
-  return new Effect('CrtTube', tubeShader, {
+  return new Effect("CrtTube", tubeShader, {
     blendFunction: BlendFunction.NORMAL,
     attributes: EffectAttribute.CONVOLUTION,
     uniforms: new Map<string, Uniform>([
-      ['tubeSize', new Uniform(new Vector2(1, 1))],
-      ['tubeWarp', new Uniform(0)],
-      ['tubeAmount', new Uniform(1)],
+      ["tubeSize", new Uniform(new Vector2(1, 1))],
+      ["tubeWarp", new Uniform(0)],
+      ["tubeAmount", new Uniform(1)],
     ]),
-  })
+  });
 }

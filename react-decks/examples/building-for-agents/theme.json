@@ -21,42 +21,12 @@
     "axis": "#553a7c"
   },
   "ramps": {
-    "rose": [
-      "#e23c80",
-      "#ff5798",
-      "#ff86b5",
-      "#ffb9d4"
-    ],
-    "cyan": [
-      "#2fb3aa",
-      "#66e8df",
-      "#97f0ea",
-      "#c6f7f3"
-    ],
-    "amber": [
-      "#c9a40c",
-      "#ffd319",
-      "#ffe066",
-      "#ffeda3"
-    ],
-    "emerald": [
-      "#22b96a",
-      "#47ff9c",
-      "#86ffbd",
-      "#bdffda"
-    ],
-    "violet": [
-      "#8558b8",
-      "#9b70c7",
-      "#bb9bdc",
-      "#dac8ee"
-    ],
-    "slate": [
-      "#8375b0",
-      "#a395d6",
-      "#d2c7f4",
-      "#f6f1ff"
-    ]
+    "rose": ["#e23c80", "#ff5798", "#ff86b5", "#ffb9d4"],
+    "cyan": ["#2fb3aa", "#66e8df", "#97f0ea", "#c6f7f3"],
+    "amber": ["#c9a40c", "#ffd319", "#ffe066", "#ffeda3"],
+    "emerald": ["#22b96a", "#47ff9c", "#86ffbd", "#bdffda"],
+    "violet": ["#8558b8", "#9b70c7", "#bb9bdc", "#dac8ee"],
+    "slate": ["#8375b0", "#a395d6", "#d2c7f4", "#f6f1ff"]
   },
   "accents": {
     "blue": "{ramps.violet.2}",
