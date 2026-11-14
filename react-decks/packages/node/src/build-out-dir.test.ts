@@ -58,7 +58,8 @@ it.each(["canary.txt/sub", "dangling"])(
   },
 );
 
-it("explains an unwritable output directory", async () => {
+// Root can write to a read-only directory, so the failure cannot happen there.
+it.skipIf(process.getuid?.() === 0)("explains an unwritable output directory", async () => {
   const { dir, put } = await fixture(onTestFinished);
   await put("locked/keep.txt", "Must survive");
   await chmod(join(dir, "locked"), 0o555);

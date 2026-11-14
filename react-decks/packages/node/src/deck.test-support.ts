@@ -47,7 +47,9 @@ export async function fixture(
   const root = resolve(".tmp");
   await mkdir(root, { recursive: true });
   const dir = await mkdtemp(join(root, "node-"));
-  cleanup(() => rm(dir, { recursive: true, force: true }));
+  // A test that replaces deck.config.ts drops the fixture's optimizer setting, and Vite's
+  // optimizer can still be writing its cache after the server closes: rm retries ENOTEMPTY.
+  cleanup(() => rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
   await mkdir(join(dir, "node_modules/@react-decks"), { recursive: true });
   for (const name of ["node", "runtime", "motion"])
     await symlink(resolve("packages", name), join(dir, "node_modules/@react-decks", name), "dir");
