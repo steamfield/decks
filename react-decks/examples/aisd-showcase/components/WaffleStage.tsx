@@ -216,7 +216,9 @@ export function WaffleStage() {
       }
       overlay={
         <>
-          <h2 className="od-story-head">It is not just two schools.</h2>
+          <h2 className="od-story-head">
+            It is not just two schools. {/* lint-allow: not-just-reveal */}
+          </h2>
           <div
             className={styles.key}
             style={{ opacity: s.recolor, display: selected ? "none" : undefined }}
