@@ -127,6 +127,11 @@ and for the agent setup.
 
 Smaller items found this session:
 
+- One intermittent browser test: `e2e/dev-error-state.spec.ts:57` ("An invalid config retains
+  the previous deck and resends its overlay after reload until fixed") failed once in a full
+  local suite run on 2026-11-14 and passed 25 of 25 when run alone. It is not diagnosed. It
+  has not failed on the cluster. Diagnose it (suite-only failures are usually shared state or
+  a wait armed too late), do not retry around it.
 - Link previews: nothing generates `public/og.png`. A build step that screenshots slide 1 at
   1200x630 would do it once `shot` exists. Until then a deck supplies the file.
 - Text sizing scales fonts only. Fixed compositions overflow after a step or two.
