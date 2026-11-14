@@ -880,9 +880,11 @@ resolved.
 
 For each change the presenter decides, in this order:
 
-1. If a transition's update callback has not run yet, start nothing: that callback will apply
-   the latest logical state. If the new logical state equals the presented state, call
-   `skipTransition()` on the pending transition.
+1. If a transition's update callback has not run yet, start nothing. If the latest change
+   must not animate (step 2's conditions, which include a target whose module has not
+   resolved and a view that left `play`), call `skipTransition()` on the pending transition
+   and `apply()` now, without `flushSync`. Otherwise that callback will apply the latest
+   logical state; if it equals the presented state, call `skipTransition()`.
 2. Otherwise, if the change must not animate, call `skipTransition()` on any transition still
    in flight and `apply()` now, without `flushSync` (a dispatch can come from an effect).
    A change must not animate when any of these holds: `document.startViewTransition` is
@@ -910,6 +912,9 @@ rejects `ready`, which is expected.
 
 The presenter window never transitions (its view is not `play`).
 
+A pending or running transition belongs to the store that started it. `destroy()` skips it
+and drops its callback, so a deck mounted afterwards is not blocked by it.
+
 ### Presets
 
 `transition.css`, in `@layer react-decks`, styles the root snapshot per name. Durations and
@@ -924,7 +929,8 @@ cannot import the motion package.
 | `zoom` | Old scales up to 1.08 and fades, new scales from 0.94 and fades in, reversed when `backward`, over `--deck-dur-slow`. |
 | `step` | The old root snapshot is hidden (`display: none`) and the new root has `animation: none`, so the live slide shows through with its steps' own CSS transitions. Leaving both root snapshots visible would add them together (the browser blends them `plus-lighter`). |
 
-For every name, a named group (`::view-transition-group(*)` other than `root`) moves and
+`fade` sets `mix-blend-mode: normal` on both root snapshots so the cross-fade does not
+brighten mid-way. For every name, a named group (`::view-transition-group(*)` other than `root`) moves and
 resizes over `--deck-dur-slow` with `--deck-ease-settle`, so an element with the same
 `view-transition-name` before and after glides to its new place under any preset. A deck
 defines its own transition by naming it in frontmatter and writing CSS against
@@ -1159,7 +1165,9 @@ The package registers one settle probe with the runtime when it is first importe
 while a `useTween` notification is pending, or while any tween nested anywhere under gsap's
 global timeline is not paused, does not repeat forever and has not reached its end (so a
 tween still in its `delay` counts, and a `repeat: -1` child inside a finite timeline does
-not).
+not). An unfinished, finite, unpaused timeline between the global timeline and a tween also
+counts, so a parent waiting in its `repeatDelay` is busy; anything under a paused or
+forever-repeating ancestor is ignored.
 
 Browser tests, against two new gallery slides (`Morph` across slides, `Morph` across clicks
 with `morphSteps: true`):
