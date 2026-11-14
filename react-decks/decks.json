@@ -21,5 +21,8 @@
   },
   "aisd": {
     "dir": "examples/aisd-showcase"
+  },
+  "tx26": {
+    "dir": "examples/texas-2026"
   }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "@react-decks/example-texas-2026",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@fontsource-variable/public-sans": "5.3.0",
+    "@fontsource-variable/source-serif-4": "5.3.1",
+    "@steamfield/decks": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

@@ -96,6 +96,16 @@
         "react-dom": "19.3.1",
       },
     },
+    "examples/texas-2026": {
+      "name": "@react-decks/example-texas-2026",
+      "dependencies": {
+        "@fontsource-variable/public-sans": "5.3.0",
+        "@fontsource-variable/source-serif-4": "5.3.1",
+        "@steamfield/decks": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+    },
     "examples/tides-slide": {
       "name": "@react-decks/example-tides-slide",
       "dependencies": {
@@ -354,6 +364,10 @@
 
     "@fontsource-variable/orbitron": ["@fontsource-variable/orbitron@5.3.0", "", {}, "sha512-KwW0YX1DJNqF0v86W1hZonuauypCFaltGdpB6qwCeu5bUyHoFpeZ84aAjChZSRF7RWZFithg/il0nMwYxJgqDA=="],
 
+    "@fontsource-variable/public-sans": ["@fontsource-variable/public-sans@5.3.0", "", {}, "sha512-AVfkmAt50BMXWpOO21FAntiJFKGX6xTc2dSL8dxtDteONe9IuRXJWGbs0EbG955vAMCq23ENeuopuW87cGWDSQ=="],
+
+    "@fontsource-variable/source-serif-4": ["@fontsource-variable/source-serif-4@5.3.1", "", {}, "sha512-4Rtay22SC4lMvw11r/+9kxANB6P3M0X8s1NudBC2v0J1KU2y3DcMoNcT3lBoZ/CqLirzf+StlO6UlJilyrvaUg=="],
+
     "@fontsource/mr-dafoe": ["@fontsource/mr-dafoe@5.3.0", "", {}, "sha512-zYTNXnERIkYWqFDTOaw5Z5xL9H1twFhAhFwxFIEWA/Y+dt0E3XpySsFFxhiOElIZUAOMuVvxrd/s976G/3cEzg=="],
 
     "@fontsource/press-start-2p": ["@fontsource/press-start-2p@5.3.0", "", {}, "sha512-gxWFxdeDglPhEYSwEeooomcaFK8kSQYLQwVxfnOJeYRj2sPEHXjpVtFgEaYfqzOjuAJGrIcJOipu2KY5YkbyuQ=="],
@@ -437,6 +451,8 @@
     "@react-decks/example-motion": ["@react-decks/example-motion@workspace:examples/motion"],
 
     "@react-decks/example-opendata-pitch": ["@react-decks/example-opendata-pitch@workspace:examples/opendata-pitch"],
+
+    "@react-decks/example-texas-2026": ["@react-decks/example-texas-2026@workspace:examples/texas-2026"],
 
     "@react-decks/example-tides-slide": ["@react-decks/example-tides-slide@workspace:examples/tides-slide"],
 
