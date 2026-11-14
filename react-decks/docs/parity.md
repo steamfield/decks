@@ -16,7 +16,7 @@ without one is not done. "Change" marks a deliberate difference from Slidev.
 | Click total known before a slide mounts | no (0 until mount) | yes, static in the manifest. Change | `node/slides.test.ts` |
 | Slide order | `src:` manifest | filename order. Change | `node/slides.test.ts` |
 | Slide fills the window at any aspect ratio | 100vw x 100vh override | `core/canvas.ts` fill | `canvas.test.ts`; `e2e/play.spec.ts` |
-| Type scales with the window | no (fixed rem) | yes. Change | |
+| Type scales with the window | no (fixed rem) | yes. Change | `docs/spikes/parity.md` (canvas table) |
 | Presenter and audience windows stay in sync | server-ref | BroadcastChannel + `core/sync.ts` | |
 | A late or reloaded tab does not move the others | n/a | stamp ordering in `core/sync.ts` | `sync.test.ts` (browser test in Phase 3) |
 | Slide transition per boundary, direction-aware | TransitionGroup / view transition | view transitions | |

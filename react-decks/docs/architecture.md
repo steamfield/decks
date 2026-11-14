@@ -828,6 +828,19 @@ it.
 - `useTween(initial)`: a stable object gsap can tween; the owning component re-renders once
   per animation frame while it changes.
 
+Decided at checkpoint 1 (`docs/spikes/parity.md` has the measurements):
+
+- `useTween` stays as designed: a stable Proxy over the initial numeric fields, read through
+  `useSyncExternalStore`. A changed field schedules one notification on `gsap.ticker`, so the
+  render lands in the same frame as gsap's update. A separate `requestAnimationFrame` queue
+  halved the visible update rate and is not used. On the 102-cell waffle stage React matched
+  Vue's frame interval at 1x and 4x CPU throttle, so no mark writes through refs. If a later
+  stage does drop frames, that mark alone moves to gsap writing attributes through refs.
+- `useTimeline` builds in a layout effect, after child `useImperativeHandle` refs exist, and
+  keeps the Slidev rule: seek on first run, when inactive, outside the `slide` context, when
+  motion is `instant`, or on a jump of more than one beat; otherwise tween, retargeting from
+  the visible position on a rapid second click. Killed on unmount.
+
 ## 6. node (Outline)
 
 - Vite plugins: `slides` (scan `slides/*.mdx`, frontmatter, drop `hide: true`, build the
@@ -965,3 +978,34 @@ with a message naming it.
 
 The port of `packages/decks`: theme tokens, global `od-*` styles, `compat.css`, the story
 engine on `@react-decks/motion`, and the `Od*`, `Ink*`, `Unit*`, `Story*` components.
+
+Decided at checkpoint 1 (`docs/spikes/parity.md`):
+
+- Units. Inside a slide, `vw` and `vh` become `cqw` and `cqh` (the frame is a size
+  container). The story frame keeps its fitted 16:9 box: `--sw` and `--sh` derive from
+  `min(100cqw, 177.7778cqh)` and `min(100cqh, 56.25cqw)`, and SVG scene geometry stays in
+  1920x1080 design units. In a window that is not 16:9 a story scene is centred with the
+  canvas background around it; a conventional slide's flex and grid layout takes the extra
+  space. Slidev's full-screen overrides (`transform: none !important`) are not ported.
+- `compat.css` is small and stays for the port: the Tailwind reset Slidev loaded, the
+  `h1`-`h3` sizes and list-item margins from Slidev's `layouts-base.css` (so `h2.od-h2`
+  still renders at 30px), and the dashed link border. It is scoped to `[data-deck-slide]`.
+  Vue's scoped-style attribute added specificity that a plain class loses; a ported rule that
+  relied on it is qualified to keep its place in the cascade. With these, three `tides`
+  frames matched Slidev pixel for pixel and the conventional slide differed by 127 pixels in
+  a simplified logo.
+- Slidev synthesized italics from the normal Inter face; the kit ships the same single face
+  so italic text keeps its metrics.
+- OpenChart measures its container with `getBoundingClientRect()` and has no size option, so
+  under the scaled canvas it compiles at screen size and is scaled again. The kit's
+  `OpenChart` wrapper counter-scales its host (`width`/`height` of `scale * 100%`,
+  `transform: scale(1 / scale)`, origin top left) so layout size equals screen size. The
+  chart then draws 1:1 on screen, resizes with the window, and stays sharp with the canvas
+  renderer. Font sizes in a spec are therefore screen pixels: `useFrameScale()` returns
+  `useSlideScale()` and chart themes multiply by it, as they do today. It is not used for
+  anything inside the scaled canvas, which would shrink twice.
+- SVG filter ids are per stage instance (`useId()`), since a slide renders in several
+  contexts at once.
+- Not covered by the spike and still to prove in the port: marker brushes, the other
+  `UnitGrid` variants, `StoryCard`'s outgoing-copy overlap and height easing, cross-slide
+  transitions, and stages in the presenter, preview, overview and print contexts.

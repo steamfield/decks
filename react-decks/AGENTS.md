@@ -120,6 +120,8 @@ test. Never test a component by stubbing what it depends on.
   randomness. Never `vi.mock` this workspace's code, a hook, a child component, `gsap` or the
   store. `createMemoryHub()` is the in-process `Transport`; it delivers asynchronously like
   BroadcastChannel, so drive it with fake timers and write races as explicit interleavings.
+- A browser API jsdom lacks (wake lock, fullscreen, `window.open`) is an environment
+  boundary: a test may install a small fake of it that records calls in a plain array.
 - No test-only method, flag or export in production code. Helpers live in the test file or a
   `*.test-support.ts` beside it.
 - Assert outcomes: return values and thrown errors; visible text, roles and accessible
