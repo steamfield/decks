@@ -3,12 +3,35 @@ import { join, relative } from "node:path";
 import { expect } from "@playwright/test";
 import { test } from "./fixtures/error.fixture";
 
+test("A cold-start frontmatter error serves an overlay and recovers on save.", async ({
+  page,
+  errorDeck,
+}) => {
+  const app = await errorDeck({ "slides/01-cover.mdx": '---\nclicks: "two"\n---\n# Broken' });
+  await page.goto(app.url);
+  await expect(
+    page.getByText(/frontmatter clicks must be a whole number/, { exact: false }),
+  ).toBeVisible();
+  const compiled = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === "/slides/01-cover.mdx" && response.status() === 200,
+  );
+  await app.put("slides/01-cover.mdx", "# Recovered cold start");
+  await (await compiled).finished();
+  await expect(page.getByRole("heading", { name: "Recovered cold start" })).toBeVisible();
+});
+
 test("Invalid frontmatter survives reload in the overlay and recovers on save.", async ({
   page,
   errorDeck,
 }) => {
   const app = await errorDeck();
+  const compiled = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === "/slides/01-cover.mdx" && response.status() === 200,
+  );
   await page.goto(app.url);
+  await (await compiled).finished();
   await expect(
     page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
   ).toBeVisible();

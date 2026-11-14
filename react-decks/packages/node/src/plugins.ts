@@ -26,8 +26,10 @@ export function createDeckPlugins(deck: ResolvedDeck) {
   let restarting = Promise.resolve();
   let closing = false;
   let serving = false;
-  let reporting = errorReporting(deck.config.vite?.customLogger);
+  let reportLogger = deck.config.vite?.customLogger;
+  let reporting = errorReporting(reportLogger, deck.dir);
   const failures = new Map<string, DeckError>();
+  const scanFailures = new Map<string, DeckError>();
   const compiled = new Set<string>();
   const failedLoads = new Set<string>();
   let configError: DeckError | undefined;
@@ -38,17 +40,38 @@ export function createDeckPlugins(deck: ResolvedDeck) {
   const htmlFile = normalizePath(join(deck.dir, "index.html"));
   const configFile = normalizePath(join(deck.dir, "deck.config.ts"));
   const readConfig = () => readSource(configFile);
+  // At merge, pass true to readSource here once its afterChange argument is available.
+  const readChangedSource = async (file: string) => {
+    try {
+      return await readSource(file);
+    } catch (cause) {
+      if (cause instanceof DeckError && file !== configFile) failures.set(file, cause);
+      throw cause;
+    }
+  };
   let metadata = new Map<string, string>();
   let componentsCode: string | undefined;
   let motionNames: ReadonlyMap<string, string> = new Map();
   let componentNames: ReadonlySet<string> = new Set();
   const totals = new Map<string, number>();
   const scanDeck = () => {
-    if (serving || !scan) scan = scanSlidesWithCounts(current, totals);
+    if (serving || !scan)
+      scan = (async () => {
+        try {
+          const scanned = await scanSlidesWithCounts(current, totals);
+          await layersModule(deck.dir);
+          for (const [key] of scanFailures) reporting.fixed(key);
+          scanFailures.clear();
+          return scanned;
+        } catch (cause) {
+          if (cause instanceof DeckError) rememberScan(cause);
+          throw cause;
+        }
+      })();
     return scan;
   };
-  const remember = (error: DeckError) => {
-    if (error.file) failures.set(error.file, error);
+  const rememberScan = (error: DeckError) => {
+    scanFailures.set(error.file ?? error.message, error);
     if (serving) reporting.report(error);
   };
   const overlay = (error: DeckError) => ({
@@ -58,10 +81,12 @@ export function createDeckPlugins(deck: ResolvedDeck) {
     stack: "",
   });
   const reload = (server: ViteDevServer, name: string) => {
+    if (closing) return;
     changedModules.add(name);
     if (reloadTimer) clearTimeout(reloadTimer);
     // A rename can deliver its add and unlink as separate watcher events.
     reloadTimer = setTimeout(() => {
+      if (closing) return;
       const graph = server.environments.client?.moduleGraph;
       changedModules.add("notes");
       for (const name of changedModules) {
@@ -77,7 +102,10 @@ export function createDeckPlugins(deck: ResolvedDeck) {
     enforce: "pre",
     async config(inline, { command }) {
       serving = command === "serve";
-      if (serving && inline.customLogger) reporting = errorReporting(inline.customLogger);
+      if (serving && inline.customLogger && inline.customLogger !== reportLogger) {
+        reportLogger = inline.customLogger;
+        reporting = errorReporting(reportLogger, deck.dir);
+      }
       if (command === "serve") configSource ??= await readConfig();
       return mergeConfig(
         mergeConfig(
@@ -108,18 +136,17 @@ export function createDeckPlugins(deck: ResolvedDeck) {
       if (id === `\0${prefix}components`) return (await scanDeck()).componentsCode;
       if (id === `\0${prefix}layers`) return layersModule(deck.dir);
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;
-      const failure = failures.values().next().value;
-      if (failure) this.error(failure);
       let scanned: Awaited<ReturnType<typeof scanSlidesWithCounts>>;
       try {
         scanned = await scanDeck();
       } catch (cause) {
         if (cause instanceof DeckError) {
-          remember(cause);
           this.error(cause);
         }
         throw cause;
       }
+      const failure = failures.values().next().value;
+      if (failure) this.error(failure);
       const slides = scanned.slides;
       if (id === `\0${prefix}manifest`) {
         metadata = scanned.metadata;
@@ -187,27 +214,29 @@ export const slides = Object.fromEntries([${loaders}]);`;
             // Re-read after restart too: a save can arrive while the watcher is closed.
             for (;;) {
               if (closing) return;
-              const source = await readConfig();
+              let source = await readChangedSource(configFile);
               if (closing) return;
-              if (source === configSource) return;
-              configSource = source;
+              if (source === configSource && !configError) return;
               try {
                 current = await loadDeck(deck.dir, deck.name);
               } catch (cause) {
-                const latest = await readConfig();
+                const latest = await readChangedSource(configFile);
                 if (latest === source) throw cause;
-                configSource = latest;
+                source = latest;
                 current = await loadDeck(deck.dir, deck.name);
               }
               if (closing) return;
+              plugins[1] = compiler();
+              server.config.inlineConfig.plugins = [plugins, current.config.vite?.plugins ?? []];
+              const previousConfig = server.config;
+              await server.restart();
+              // Vite logs creation failures and resolves restart without replacing the server.
+              if (server.config === previousConfig) return;
+              configSource = source;
               if (configError) {
                 reporting.fixed(configFile, "deck.config.ts is valid again, restarting.");
                 configError = undefined;
-                failures.delete(configFile);
               }
-              plugins[1] = compiler();
-              server.config.inlineConfig.plugins = [plugins, current.config.vite?.plugins ?? []];
-              await server.restart();
             }
           })
           .catch((cause: unknown) => {
@@ -217,10 +246,10 @@ export const slides = Object.fromEntries([${loaders}]);`;
               const graph = server.environments.client?.moduleGraph;
               const manifest = graph?.getModuleById(`\0${prefix}manifest`);
               if (manifest) graph?.invalidateModule(manifest);
-              server.config.logger.info(
+              reporting.report(
+                cause,
                 "deck.config.ts is invalid, still serving the last valid config:",
               );
-              reporting.report(cause);
               server.ws.send({ type: "error", err: overlay(cause) });
               return;
             }
@@ -245,12 +274,15 @@ export const slides = Object.fromEntries([${loaders}]);`;
           next(error);
         }
       });
-      const scanned = await scanDeck();
-      await layersModule(deck.dir);
-      metadata = scanned.metadata;
-      componentsCode = scanned.componentsCode;
-      motionNames = scanned.motionNames;
-      componentNames = scanned.componentNames;
+      try {
+        const scanned = await scanDeck();
+        metadata = scanned.metadata;
+        componentsCode = scanned.componentsCode;
+        motionNames = scanned.motionNames;
+        componentNames = scanned.componentNames;
+      } catch (cause) {
+        if (!(cause instanceof DeckError)) throw cause;
+      }
       server.httpServer?.once("listening", () => configChanged(configFile));
     },
     closeBundle() {
@@ -269,13 +301,15 @@ export const slides = Object.fromEntries([${loaders}]);`;
           file.endsWith(".tsx") &&
           context.type === "update"
         ) {
-          const scanned = await scanSlidesWithCounts(current, totals);
+          const wasScanFailed = scanFailures.size > 0;
+          const scanned = await scanDeck();
           const wasFailed = failures.delete(file);
           reporting.fixed(file);
           componentNames = scanned.componentNames;
           motionNames = scanned.motionNames;
           if (
             !wasFailed &&
+            !wasScanFailed &&
             scanned.componentsCode === componentsCode &&
             Array.from(scanned.metadata).every(([file, value]) => metadata.get(file) === value)
           )
@@ -297,7 +331,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
           return;
         const key = file.slice(deckDir.length + 1);
         const { clicks: total, fingerprint: next } = readSlide(
-          await context.read(),
+          await readChangedSource(file),
           file,
           totals.get(key),
           motionNames,
@@ -308,11 +342,13 @@ export const slides = Object.fromEntries([${loaders}]);`;
         const previous = metadata.get(key);
         metadata.set(key, next);
         totals.set(key, total);
+        const wasScanFailed = scanFailures.size > 0;
+        if (wasScanFailed) await scanDeck();
         const graph = this.environment.moduleGraph;
         const notes = graph.getModuleById(`\0${prefix}notes`);
         if (notes) graph.invalidateModule(notes);
         const failedLoad = failedLoads.delete(file);
-        if (next === previous && !wasFailed && !failedLoad) return;
+        if (next === previous && !wasFailed && !failedLoad && !wasScanFailed) return;
         const manifest = graph.getModuleById(`\0${prefix}manifest`);
         if (manifest) graph.invalidateModule(manifest);
         this.environment.hot.send({ type: "full-reload" });
@@ -320,7 +356,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
       } catch (cause) {
         if (!(cause instanceof DeckError)) throw cause;
         if (cause.file !== configFile) {
-          remember(cause);
+          rememberScan(cause);
           const graph = this.environment.moduleGraph;
           const manifest = graph.getModuleById(`\0${prefix}manifest`);
           if (manifest) graph.invalidateModule(manifest);
@@ -335,8 +371,8 @@ export const slides = Object.fromEntries([${loaders}]);`;
       remarkPlugins: [
         remarkFrontmatter,
         removeNotes,
-        checkComponents(() => componentNames),
         ...(current.config.mdx?.remarkPlugins ?? []),
+        checkComponents(() => componentNames),
       ],
       rehypePlugins: [...(current.config.mdx?.rehypePlugins ?? []), codeBlocks],
     });

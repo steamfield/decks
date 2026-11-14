@@ -67,6 +67,14 @@ export function validationError(
 
 export function compileError(cause: unknown, file: string): DeckError {
   if (cause instanceof DeckError) return cause;
+  if (
+    !(cause instanceof Error) ||
+    !("source" in cause) ||
+    typeof cause.source !== "string" ||
+    !("ruleId" in cause) ||
+    typeof cause.ruleId !== "string"
+  )
+    throw cause;
   const loc =
     cause instanceof Error &&
     "line" in cause &&

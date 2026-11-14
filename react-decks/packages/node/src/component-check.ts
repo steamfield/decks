@@ -85,6 +85,13 @@ export function checkComponents(names: () => ReadonlySet<string>) {
     const walk = (value: unknown): void => {
       if (typeof value !== "object" || value === null) return;
       const node: Node = value;
+      // Function-local JSX resolves through JavaScript bindings, not the deck component map.
+      if (
+        ["ArrowFunctionExpression", "FunctionExpression", "FunctionDeclaration"].includes(
+          String(node.type),
+        )
+      )
+        return;
       if (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement")
         check(node.name, node.position?.start);
       if (

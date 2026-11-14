@@ -54,12 +54,13 @@ describe("virtual-modules", () => {
       expect(typeof component).toBe("function");
   });
   it("names both files when component exports collide", async () => {
-    await expect(
-      serve({
-        "components/Badge.tsx": "export default function Badge() {}",
-        "components/Other.tsx": "export function Badge() {}",
-      }),
-    ).rejects.toThrow(/Badge.*components\/Badge\.tsx.*components\/Other\.tsx/);
+    const app = await serve({
+      "components/Badge.tsx": "export default function Badge() {}",
+      "components/Other.tsx": "export function Badge() {}",
+    });
+    const response = await fetch(new URL("/@id/__x00__virtual:react-decks/manifest", app.url));
+    expect(response.status).toBe(500);
+    expect(await response.text()).toMatch(/Badge.*components\/Badge\.tsx.*components\/Other\.tsx/);
   });
   it("accepts a component exported as both named and default from the same file", async () => {
     const app = await serve({

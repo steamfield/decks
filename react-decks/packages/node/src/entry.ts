@@ -16,6 +16,7 @@ mountDeck({ manifest, slides, frontmatter, layers,
   loadNotes: () => import("virtual:react-decks/notes").then(module => module.notes)
 });
 }).catch(error => {
+  reportError(error);
   document.getElementById("deck-root").textContent = "The deck failed to start: " + error.message;
 });`;
 }

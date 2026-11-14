@@ -45,9 +45,12 @@ it("serves absent layers and each default layer export through the virtual modul
 it.each(["extra.tsx", "nested/above.tsx"])(
   "rejects unexpected layer file %s naming it",
   async (name) => {
-    await expect(
-      serve({ [`layers/${name}`]: "export default function Extra() {}" }),
-    ).rejects.toThrow(`layers/${name}`);
+    const app = await serve({ [`layers/${name}`]: "export default function Extra() {}" });
+    const response = await fetch(
+      new URL("/@id/__x00__virtual:react-decks/manifest", app.server.resolvedUrls?.local[0]),
+    );
+    expect(response.status).toBe(500);
+    expect(await response.text()).toContain(`layers/${name}`);
   },
 );
 
