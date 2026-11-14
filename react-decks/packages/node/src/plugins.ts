@@ -40,10 +40,10 @@ export function createDeckPlugins(deck: ResolvedDeck) {
   const htmlFile = normalizePath(join(deck.dir, "index.html"));
   const configFile = normalizePath(join(deck.dir, "deck.config.ts"));
   const readConfig = () => readSource(configFile);
-  // At merge, pass true to readSource here once its afterChange argument is available.
+  // A read that follows a change event may catch the file mid-write, so it retries an empty read.
   const readChangedSource = async (file: string) => {
     try {
-      return await readSource(file);
+      return await readSource(file, true);
     } catch (cause) {
       if (cause instanceof DeckError && file !== configFile) failures.set(file, cause);
       throw cause;
