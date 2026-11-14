@@ -78,7 +78,6 @@ export async function pauseEntry(page: Page) {
       animation.pause();
       animation.currentTime = 90;
     }
-    const opacities = elements.map((element) => Number(getComputedStyle(element).opacity));
-    return opacities;
+    return animations.filter((animation) => animation.playState === "paused").length;
   });
 }

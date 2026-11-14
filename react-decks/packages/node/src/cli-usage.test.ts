@@ -1,6 +1,29 @@
 import { createServer } from "node:net";
 import { expect, it, onTestFinished } from "vitest";
-import { cli, fixture } from "./deck.test-support";
+import { cli, fixture, waitForWatcher } from "./deck.test-support";
+
+it("accepts boolean negation while serving a deck", async () => {
+  const { dir } = await fixture(onTestFinished);
+  const process = cli(dir, ["dev", ".", "--no-open", "--port", "0"]);
+  await waitForWatcher(() =>
+    expect(process.output().stdout, process.output().stderr).toContain("http:"),
+  );
+  expect(process.output().stderr).toBe("");
+});
+
+it.each([
+  [["--port"], "--port needs a value. Pass --port <n>, a whole number from 0 to 65535."],
+  [["--open=false"], "--open does not take a value. Use --open or --no-open."],
+  [["extra"], 'unexpected argument "extra". Pass one deck alias or directory.'],
+])("explains invalid dev arguments %s", async (args, message) => {
+  const { dir } = await fixture(onTestFinished);
+  const process = cli(dir, ["dev", ".", ...args]);
+  if (args[0] === "extra") {
+    await waitForWatcher(() => expect(process.output().stderr).not.toBe(""));
+  }
+  expect((await process.exit)[0]).toBe(1);
+  expect(process.output().stderr).toBe(`decks dev: ${message}\n`);
+});
 
 it("rejects an unknown build option with the command's options", async () => {
   const { dir } = await fixture(onTestFinished);

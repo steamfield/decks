@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { createServer } from "vite";
 import { expect, onTestFinished, vi } from "vitest";
 import { loadDeck, type ResolvedDeck, reactDecks, scanSlides } from "./index";
@@ -77,7 +78,7 @@ export async function testServer(deck: ResolvedDeck) {
 }
 
 export async function serve(files: Record<string, string> = {}) {
-  const markers = Array.from({ length: 8 }, (_, index) => `sentinel-${index}.css`);
+  const markers = Array.from({ length: 16 }, (_, index) => `sentinel-${index}.css`);
   const deck = await fixture(onTestFinished, {
     ...Object.fromEntries(markers.map((file) => [file, "body { --sentinel: 0; }"])),
     ...files,
@@ -111,6 +112,13 @@ export async function serve(files: Record<string, string> = {}) {
   );
   let sentinel = 0;
   async function checkpoint() {
+    // Call after the edit's acknowledgement: an unprocessed watcher event is not bounded here.
+    await sentinelUpdate();
+    // The second sentinel follows the plugin's 100 ms structural-change quiet window.
+    await delay(100);
+    await sentinelUpdate();
+  }
+  async function sentinelUpdate() {
     const file = markers[sentinel++];
     if (!file) throw new Error("The four-edit HMR fixture has no unused checkpoint marker");
     const start = messages.length;

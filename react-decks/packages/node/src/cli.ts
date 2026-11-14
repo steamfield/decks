@@ -119,8 +119,31 @@ try {
         ? { out: { type: "string" }, base: { type: "string" } }
         : { port: { type: "string" }, open: { type: "boolean" } };
     try {
-      parseArgs({ args: rawArgs.slice(1), options, allowPositionals: true });
+      const { positionals } = parseArgs({
+        args: rawArgs.slice(1),
+        options,
+        allowPositionals: true,
+        allowNegative: true,
+      });
+      if (positionals.length > 1)
+        throw new DeckError(
+          `unexpected argument ${JSON.stringify(positionals[1])}. Pass one deck alias or directory.`,
+        );
     } catch (cause) {
+      if (cause instanceof DeckError) throw cause;
+      if (
+        cause instanceof Error &&
+        "code" in cause &&
+        cause.code === "ERR_PARSE_ARGS_INVALID_OPTION_VALUE"
+      ) {
+        const option = cause.message.match(/Option '(--[^' ]+)/)?.[1];
+        if (option)
+          throw new DeckError(
+            options[option.slice(2)]?.type === "boolean"
+              ? `${option} does not take a value. Use ${option} or --no-${option.slice(2)}.`
+              : `${option} needs a value. Pass ${option} ${option === "--port" ? "<n>, a whole number from 0 to 65535" : option === "--out" ? "<dir>" : "<path>"}.`,
+          );
+      }
       if (
         cause instanceof Error &&
         "code" in cause &&

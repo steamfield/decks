@@ -74,7 +74,11 @@ test("The gallery reverses interruptions and fits 4:3.", async ({ page }) => {
   for (const no of [9, 10, 11]) {
     await page.goto(`/#/${no}`);
     await position(page, no);
-    const entry = await pauseEntry(page);
+    const items = page.locator("[data-deck-active] [data-step-state] [data-step-state]");
+    expect(await pauseEntry(page)).toBe(await items.count());
+    const entry = await items.evaluateAll((elements) =>
+      elements.map((element) => Number(getComputedStyle(element).opacity)),
+    );
     expect(entry.some((opacity) => opacity > 0 && opacity < 1)).toBe(true);
     await page.keyboard.press("ArrowLeft");
     await position(page, no);

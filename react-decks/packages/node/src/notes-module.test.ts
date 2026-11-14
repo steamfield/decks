@@ -14,7 +14,7 @@ describe("notes-module", () => {
     const file = join(dir, "editor-write.mdx");
     await put("saved-source.mdx", "# Slide\n\n<Notes>Saved notes</Notes>");
     await promisify(execFile)("mkfifo", [file]);
-    const source = readSource(file);
+    const source = readSource(file, true);
     const emptyWrite = await open(file, "w");
     // The first reader holds the empty FIFO; its next read sees the saved regular file.
     await rename(join(dir, "saved-source.mdx"), file);

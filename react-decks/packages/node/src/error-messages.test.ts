@@ -127,6 +127,17 @@ it.each([true, false])("explains an empty visible deck (hidden=%s)", async (hidd
   expect(process.output().stderr).toBe(
     hidden
       ? "decks build: every slide in ./slides has hide: true.\n"
-      : "decks build: no slides/*.mdx files in ..\n",
+      : "decks build: no slides/*.mdx files in the current directory.\n",
+  );
+});
+
+it("gives a component syntax error's position and a remedy", async () => {
+  const { dir } = await fixture(onTestFinished, {
+    "components/X.tsx": "export default function X() {\n  return null;\n",
+  });
+  const process = cli(dir, ["build", "."]);
+  expect((await process.exit)[0]).toBe(1);
+  expect(process.output().stderr).toBe(
+    "decks build: components/X.tsx:3:1: Expected `}` but found `EOF`. Check the component syntax.\n",
   );
 });
