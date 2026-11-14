@@ -1,0 +1,48 @@
+.funding {
+  position: absolute;
+  left: var(--tx-margin-x);
+  top: calc(35 * var(--sh));
+}
+.period {
+  margin-top: var(--tx-copy-gap);
+  font-size: var(--tx-small-size);
+  color: var(--od-text-muted);
+}
+.budget {
+  position: absolute;
+  left: calc(44 * var(--sw));
+  right: var(--tx-margin-x);
+  top: calc(47 * var(--sh));
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: calc(2 * var(--sw));
+}
+.budgetItem {
+  border-top: var(--tx-hairline) solid var(--od-amber);
+  padding-top: var(--tx-card-pad);
+}
+.figure {
+  font-size: calc(4.5 * var(--sw));
+  font-weight: var(--tx-lead-weight);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--tx-figure-leading);
+  color: var(--od-amber);
+}
+.label {
+  font-size: var(--tx-body-size);
+  line-height: var(--tx-label-leading);
+  margin-top: var(--tx-copy-gap);
+}
+.tag {
+  margin-top: var(--tx-byline-gap);
+}
+.sourceLinks {
+  position: absolute;
+  right: var(--tx-margin-x);
+  bottom: var(--tx-rail-bottom);
+  display: flex;
+  gap: calc(1.5 * var(--sw));
+}
+.stage .sourceLinks :global(.od-story-link) {
+  position: static;
+}

@@ -1,0 +1,11 @@
+.highlight {
+  fill: none;
+  stroke-width: var(--tx-oval-stroke);
+}
+.threshold {
+  stroke: currentColor;
+  stroke-width: var(--tx-hairline);
+}
+.label {
+  fill: currentColor;
+}

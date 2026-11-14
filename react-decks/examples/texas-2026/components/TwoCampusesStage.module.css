@@ -1,0 +1,49 @@
+.bracket {
+  stroke: var(--od-amber);
+  stroke-width: var(--tx-oval-stroke);
+  fill: none;
+}
+.pair {
+  position: absolute;
+  left: calc(6.875 * var(--sw));
+  top: calc(28.703704 * var(--sh));
+  width: calc(8.125 * var(--sw));
+  height: calc(5.185185 * var(--sh));
+}
+.pair svg {
+  width: var(--tx-full);
+  height: var(--tx-full);
+}
+.pair rect {
+  fill: currentColor;
+  rx: var(--tx-radius-mark);
+}
+.stage :global(.od-unit-grid) rect {
+  rx: var(--tx-radius-mark);
+}
+.chip {
+  position: absolute;
+  top: calc(18.888889 * var(--sh));
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: var(--tx-body-size);
+  line-height: var(--tx-body-leading);
+  color: var(--od-amber);
+}
+.target {
+  position: absolute;
+  pointer-events: auto;
+  background: transparent;
+  border: none;
+  padding: var(--tx-zero);
+  border-radius: var(--tx-radius-mark);
+  cursor: help;
+}
+.target:focus-visible {
+  outline: var(--tx-hairline) solid var(--od-text);
+}
+@media print {
+  .targets {
+    display: none;
+  }
+}
