@@ -1,0 +1,83 @@
+.od-codeink {
+  position: absolute;
+  box-sizing: border-box;
+  padding: calc(1.1 * var(--sw)) calc(1.4 * var(--sw));
+  font-family: var(--od-font-mono);
+}
+.od-codeink,
+.od-stage-overlay .od-codeink {
+  pointer-events: none;
+}
+[data-deck-slide] .od-codeink.is-link {
+  color: inherit;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background var(--od-dur-card) var(--od-settle);
+}
+.od-codeink.is-interactive,
+.od-stage-overlay .od-codeink.is-interactive {
+  pointer-events: auto;
+}
+.od-codeink.is-link:focus-visible {
+  outline: none;
+}
+.od-codeink.is-link.is-lit {
+  border-radius: calc(0.520833 * var(--sw));
+  background: color-mix(in srgb, var(--od-surface) 80%, transparent);
+}
+.od-codeink.is-surface {
+  border-radius: calc(0.520833 * var(--sw));
+  background: color-mix(in srgb, var(--od-canvas) 90%, transparent);
+}
+.od-codeink-label {
+  margin-bottom: 0.75em;
+  font-size: 0.78em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.od-codeink-body {
+  margin: 0;
+  font: inherit;
+  line-height: 1.75;
+  color: var(--od-text-secondary);
+}
+.od-codeink-line {
+  display: block;
+  white-space: pre;
+}
+.od-codeink:not(.is-overflow) .od-codeink-body {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.od-codeink.is-scroll {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.od-codeink.is-scroll .od-codeink-label {
+  flex: none;
+}
+.od-codeink.is-scroll .od-codeink-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--od-border) transparent;
+  mask-image: linear-gradient(to bottom, var(--od-text) calc(100% - 2.5em), transparent);
+}
+.od-codeink.is-overflow {
+  overflow: visible;
+}
+.od-codeink.is-overflow .od-codeink-body {
+  width: max-content;
+  overflow: visible;
+}
+html[data-deck-motion="instant"] .od-codeink.is-link,
+[data-deck-context]:not([data-deck-context="slide"]) .od-codeink,
+[data-deck-slide]:not([data-deck-active]) .od-codeink {
+  transition: none;
+}

@@ -9,10 +9,12 @@ export {
   type Series,
 } from "./brush";
 export { scaleChartTheme, slideChartAnimation, slideChartTheme } from "./chart-theme";
+export { CodeInk } from "./code-ink";
 export { tokenizeSql } from "./code-tokens";
 export { DRAW, DRAW_CSS, DUR, easedStagger, SETTLE, SETTLE_CSS, TRACE, TRACE_CSS } from "./easings";
 export { useStageEntrance } from "./entrance";
 export { FILTER_IDS, filterUrl } from "./filters";
+export { Graph3D } from "./graph-3d";
 export {
   UNIT_GRID_DEFAULTS,
   type UnitGridGeometry,

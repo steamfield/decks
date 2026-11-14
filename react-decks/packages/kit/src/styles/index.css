@@ -13,6 +13,8 @@
 @import "./OdByline.css";
 @import "./OdCoverHead.css";
 @import "./story-transition.css";
+@import "./CodeInk.css";
+@import "./Graph3D.css";
 .oc-slide-chart {
   min-height: 1px;
 }
