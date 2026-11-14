@@ -10,11 +10,11 @@ it.each(["overview", "print"])(
     const notifications: string[] = [];
     store.subscribe(() => notifications.push(window.location.hash));
     const history = window.history.length;
-    await userEvent.setup().click(await screen.findByRole("button", { name: "Next slide" }));
-    expect(window.location.hash).toBe(`#/${view}`);
+    act(() => store.dispatch({ type: "nextSlide" }));
+    expect(window.location.hash).toBe(view === "overview" ? "#/overview/1" : "#/print");
     expect(window.history.length).toBe(history);
     expect(notifications).toEqual([]);
-    expect(screen.getByRole("heading", { name: "Title 1" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Title 1" })).toBeVisible();
   },
 );
 

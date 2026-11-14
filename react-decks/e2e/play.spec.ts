@@ -216,7 +216,7 @@ for (const view of ["overview", "print"]) {
     ).toBeVisible();
     await page.keyboard.press("ArrowRight");
     await page.keyboard.press("ArrowDown");
-    await expect(page).toHaveURL(new RegExp(`#/${view}$`));
+    await expect(page).toHaveURL(new RegExp(view === "overview" ? "#/overview/1$" : "#/print$"));
     await expect(
       page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
     ).toBeVisible();
@@ -224,7 +224,7 @@ for (const view of ["overview", "print"]) {
     await expect(
       page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
     ).toBeVisible();
-    await expect(page).toHaveURL(new RegExp(`#/${view}$`));
+    await expect(page).toHaveURL(new RegExp(view === "overview" ? "#/overview/1$" : "#/print$"));
   });
 }
 

@@ -1,4 +1,8 @@
 @layer react-decks {
+  html[data-deck-idle],
+  html[data-deck-idle] * {
+    cursor: none !important;
+  }
   .rd-play-view {
     position: fixed;
     inset: 0;

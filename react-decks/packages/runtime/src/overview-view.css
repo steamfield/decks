@@ -1,0 +1,58 @@
+@layer react-decks {
+  .rd-overview-view {
+    --rd-ui-line: color-mix(in oklab, currentColor 22%, transparent);
+    --rd-ui-dim: color-mix(in oklab, currentColor 62%, transparent);
+    --rd-ui-accent: oklch(0.8 0.13 200);
+    box-sizing: border-box;
+    position: fixed;
+    inset: 0;
+    overflow: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    align-content: start;
+    gap: 1.5rem;
+    padding: 2rem;
+    font:
+      0.9375rem / 1.4 system-ui,
+      sans-serif;
+  }
+
+  .rd-overview-tile {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .rd-overview-box {
+    overflow: hidden;
+    margin-bottom: 0.625rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0 1px var(--rd-ui-line);
+    pointer-events: none;
+  }
+
+  .rd-overview-tile:hover .rd-overview-box {
+    box-shadow: 0 0 0 1px var(--rd-ui-dim);
+  }
+
+  .rd-overview-tile:focus-visible {
+    outline: none;
+  }
+
+  .rd-overview-tile:focus-visible .rd-overview-box {
+    box-shadow: 0 0 0 3px var(--rd-ui-accent);
+  }
+
+  .rd-overview-tile > span {
+    color: var(--rd-ui-dim);
+  }
+
+  .rd-overview-tile[aria-current="true"] > span {
+    color: inherit;
+  }
+}

@@ -1,5 +1,5 @@
 import { clicksForSlide, type DeckView, type SlideMeta } from "@react-decks/core";
-import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
+import { createContext, type RefObject, useContext, useMemo, useSyncExternalStore } from "react";
 import type { createSlideModules, DeckSource } from "./source";
 import type { DeckState, DeckStore } from "./store";
 
@@ -18,6 +18,19 @@ export function useDeckContext() {
 export function useDeckSelector<T>(selector: (state: DeckState) => T): T {
   const { store } = useDeckContext();
   return useSyncExternalStore(store.subscribe, () => selector(store.getState()));
+}
+
+export const PresentationContext = createContext<{
+  home: RefObject<"play" | "presenter">;
+  /** When the timer started, in epoch milliseconds; null while stopped. */
+  started: number | null;
+  reset(): void;
+} | null>(null);
+
+export function usePresentation() {
+  const value = useContext(PresentationContext);
+  if (!value) throw new Error("Missing Deck presentation provider");
+  return value;
 }
 
 export interface DeckApi {

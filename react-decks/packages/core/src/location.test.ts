@@ -62,6 +62,21 @@ describe("parseLocation", () => {
     });
   });
 
+  it("#/overview/5?clicks=2 preserves the talk position", () => {
+    expect(parseLocation("#/overview/5?clicks=2", "")).toEqual({
+      view: "overview",
+      slide: 5,
+      click: 2,
+      embedded: false,
+      bridge: false,
+    });
+  });
+
+  it("#/overview/5 defaults to click zero", () => {
+    expect(parseLocation("#/overview/5", "").click).toBe(0);
+    expect(parseLocation("#/overview/5", "").slide).toBe(5);
+  });
+
   it("#/print parses as print, slide 1, click 0", () => {
     expect(parseLocation("#/print", "")).toEqual({
       view: "print",
@@ -81,7 +96,9 @@ describe("parseLocation", () => {
     "#/Infinity",
     "#/presenter/-1",
     "#/presenter/5/extra",
-    "#/overview/5",
+    "#/overview/5/extra",
+    "#/overview/-1",
+    "#/overview/9007199254740993",
     "#/print/5",
     "#/play/5",
     "#/abc?clicks=2",
@@ -102,7 +119,7 @@ describe("parseLocation", () => {
   it.each(["\n", "\r", "\r\n", "\u2028", "\u2029"])(
     "rejects hashes ending in the line terminator %j",
     (ending) => {
-      for (const path of ["#/5", "#/presenter/5", "#/presenter"]) {
+      for (const path of ["#/5", "#/presenter/5", "#/presenter", "#/overview/5", "#/overview"]) {
         expect(parseLocation(`${path}${ending}`, "")).toEqual({
           view: "play",
           slide: 1,
@@ -228,7 +245,8 @@ describe("parseLocation", () => {
     });
   });
 
-  it.each(["overview", "print"])("%s always uses slide 1 click 0 even with hash clicks", (view) => {
+  it("print always uses slide 1 click 0 even with hash clicks", () => {
+    const view = "print";
     expect(parseLocation(`#/${view}?clicks=9`, "?embedded")).toEqual({
       view,
       slide: 1,
@@ -256,8 +274,12 @@ describe("formatHash", () => {
     expect(formatHash({ view: "presenter", slide: 5, click: 2 })).toBe("#/presenter/5?clicks=2");
   });
 
-  it("formats overview as #/overview regardless of slide and click", () => {
-    expect(formatHash({ view: "overview", slide: 5, click: 2 })).toBe("#/overview");
+  it("formats overview with the talk's slide and click", () => {
+    expect(formatHash({ view: "overview", slide: 5, click: 2 })).toBe("#/overview/5?clicks=2");
+  });
+
+  it("formats overview without a query for click zero", () => {
+    expect(formatHash({ view: "overview", slide: 5, click: 0 })).toBe("#/overview/5");
   });
 
   it("formats print as #/print regardless of slide and click", () => {
@@ -281,8 +303,8 @@ describe("formatHash", () => {
       for (const click of [0, 1, Number.MAX_SAFE_INTEGER]) {
         expect(parseLocation(formatHash({ view, slide, click }), "")).toEqual({
           view,
-          slide: view === "overview" || view === "print" ? 1 : slide,
-          click: view === "overview" || view === "print" ? 0 : click,
+          slide: view === "print" ? 1 : slide,
+          click: view === "print" ? 0 : click,
           embedded: false,
           bridge: false,
         });
@@ -295,8 +317,8 @@ describe("formatHash", () => {
       for (let click = 0; click <= 6; click++) {
         expect(parseLocation(formatHash({ view, slide, click }), "")).toEqual({
           view,
-          slide: view === "overview" || view === "print" ? 1 : slide,
-          click: view === "overview" || view === "print" ? 0 : click,
+          slide: view === "print" ? 1 : slide,
+          click: view === "print" ? 0 : click,
           embedded: false,
           bridge: false,
         });

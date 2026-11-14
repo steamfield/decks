@@ -25,6 +25,7 @@ it("a slide loaded while mounted keeps local state across nearby navigation", as
   });
   const user = userEvent.setup();
   await user.click(await screen.findByRole("button", { name: "Count 0" }));
+  await user.click(document.body);
   await user.keyboard("{ArrowDown}");
   await screen.findByRole("heading", { name: "Title 2" });
   await user.keyboard("{ArrowUp}");
