@@ -6,14 +6,15 @@ import getPort, { portNumbers } from "get-port";
 import {
   createLogger,
   createServer,
+  defaultClientConditions,
   type InlineConfig,
-  normalizePath,
   type Plugin,
   build as viteBuild,
 } from "vite";
 import type { ResolvedDeck } from "./config";
 import { DeckError, displayPath } from "./errors";
 import { createDeckPlugins, reactDecks } from "./plugins";
+import { PUBLIC_SPECIFIERS } from "./specifiers";
 
 export interface DevServer {
   readonly url: string;
@@ -25,18 +26,27 @@ function config(deck: ResolvedDeck, plugins: Plugin[] = reactDecks(deck)): Inlin
     configFile: false,
     root: deck.dir,
     plugins: [plugins, deck.config.vite?.plugins ?? []],
-    resolve: { dedupe: ["react", "react-dom"] },
+    resolve: {
+      dedupe: ["react", "react-dom"],
+      ...(import.meta.url.endsWith(".ts")
+        ? {
+            conditions: ["@steamfield/decks/source", ...defaultClientConditions],
+            // Vite's CSS @import resolver ignores resolve.conditions.
+            alias: [
+              {
+                find: /^@steamfield\/decks\/kit\/styles\.css$/,
+                replacement: createRequire(import.meta.url).resolve("@react-decks/kit/styles.css"),
+              },
+            ],
+          }
+        : {}),
+    },
     // There is no on-disk HTML entry for Vite to crawl before the first request.
     optimizeDeps: {
-      entries: [
-        normalizePath(
-          createRequire(join(deck.dir, "deck.config.ts")).resolve("@react-decks/runtime"),
-        ),
-        normalizePath(
-          createRequire(join(deck.dir, "deck.config.ts")).resolve("@react-decks/motion"),
-        ),
-        "components/*.tsx",
-      ],
+      entries: ["components/*.tsx"],
+      ...(import.meta.url.endsWith(".ts")
+        ? { exclude: [PUBLIC_SPECIFIERS.runtime, PUBLIC_SPECIFIERS.motion] }
+        : { include: [PUBLIC_SPECIFIERS.runtime, PUBLIC_SPECIFIERS.motion] }),
     },
   };
 }

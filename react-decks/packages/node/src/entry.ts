@@ -1,10 +1,11 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { ResolvedDeck } from "./config";
+import { PUBLIC_SPECIFIERS } from "./specifiers";
 
 export function entryModule(deck: ResolvedDeck): string {
-  return `${existsSync(join(deck.dir, "setup.ts")) ? 'import "/setup.ts";\n' : ""}import { mountDeck, Center, Cover, Section, TwoCol, ImageSide } from "@react-decks/runtime";
-import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock } from "@react-decks/motion";
+  return `${existsSync(join(deck.dir, "setup.ts")) ? 'import "/setup.ts";\n' : ""}import { mountDeck, Center, Cover, Section, TwoCol, ImageSide } from "${PUBLIC_SPECIFIERS.runtime}";
+import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock } from "${PUBLIC_SPECIFIERS.motion}";
 ${existsSync(join(deck.dir, "styles/index.css")) ? 'import "/styles/index.css";' : ""}
 Promise.all([
   import("virtual:react-decks/manifest"),

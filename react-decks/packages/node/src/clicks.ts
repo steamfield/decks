@@ -3,6 +3,7 @@ import remarkParse from "remark-parse";
 import { type PluggableList, unified } from "unified";
 import { parseCodeOptions } from "./code-options";
 import { DeckError } from "./errors";
+import { PUBLIC_SPECIFIERS } from "./specifiers";
 
 export const stepNames = new Set([
   "Step",
@@ -141,7 +142,8 @@ export function countClicks(
           const local = specifier.local.name;
           names.delete(local);
           if (
-            statement.source.value !== "@react-decks/motion" ||
+            (statement.source.value !== "@react-decks/motion" &&
+              statement.source.value !== PUBLIC_SPECIFIERS.motion) ||
             specifier.type !== "ImportSpecifier"
           )
             continue;

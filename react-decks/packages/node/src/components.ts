@@ -4,6 +4,7 @@ import { parseSync } from "oxc-parser";
 import { glob } from "tinyglobby";
 import { stepNames } from "./clicks";
 import { DeckError } from "./errors";
+import { PUBLIC_SPECIFIERS } from "./specifiers";
 
 export async function componentsModule(dir: string) {
   const files = (await glob("components/*.tsx", { cwd: dir })).sort();
@@ -45,7 +46,8 @@ export async function componentsModule(dir: string) {
         motionNames.delete(name);
         const imported = entry.importName.name;
         if (
-          entry.moduleRequest?.value === "@react-decks/motion" &&
+          (entry.moduleRequest?.value === "@react-decks/motion" ||
+            entry.moduleRequest?.value === PUBLIC_SPECIFIERS.motion) &&
           imported &&
           stepNames.has(imported)
         )
