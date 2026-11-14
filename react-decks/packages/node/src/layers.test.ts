@@ -42,7 +42,7 @@ it("serves absent layers and each default layer export through the virtual modul
   expect(layers.below()).toBe("Below");
 });
 
-it.each(["extra.tsx", "nested/above.tsx", ".hidden"])(
+it.each(["extra.tsx", "nested/above.tsx"])(
   "rejects unexpected layer file %s naming it",
   async (name) => {
     await expect(
@@ -50,6 +50,17 @@ it.each(["extra.tsx", "nested/above.tsx", ".hidden"])(
     ).rejects.toThrow(`layers/${name}`);
   },
 );
+
+it("ignores dotfiles and non-TSX files in layers", async () => {
+  const app = await serve({
+    "layers/.DS_Store": "Finder",
+    "layers/.hidden": "Editor",
+    "layers/.above.tsx.swp": "Editor",
+    "layers/readme.txt": "Notes",
+    "layers/.hidden.tsx": "Not a layer",
+  });
+  expect(await app.get("layers")).toContain("export const layers = {}");
+});
 
 it.each(["true", "both", "3", "[above]", "null"])(
   "rejects layers: %s frontmatter naming the file and key",

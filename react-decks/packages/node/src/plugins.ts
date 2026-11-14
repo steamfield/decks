@@ -1,43 +1,62 @@
-import { once } from "node:events";
-import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
 import mdx from "@mdx-js/rollup";
 import react from "@vitejs/plugin-react";
 import remarkFrontmatter from "remark-frontmatter";
 import { mergeConfig, normalizePath, type Plugin, type ViteDevServer } from "vite";
 import { codeBlocks } from "./code-blocks";
-import { componentsModule } from "./components";
+import { checkComponents } from "./component-check";
 import { loadDeck, type ResolvedDeck } from "./config";
 import { deckHtml, entryModule } from "./entry";
+import { errorReporting } from "./error-reporting";
+import { compileError, DeckError } from "./errors";
 import { layersModule } from "./layers";
 import { removeNotes, renderNotes } from "./notes";
+import { readSource } from "./read-source";
 import { buildManifest, readSlide, scanSlidesWithCounts } from "./slides";
 
 const prefix = "virtual:react-decks/";
 
 export function reactDecks(deck: ResolvedDeck): Plugin[] {
+  return createDeckPlugins(deck).plugins;
+}
+
+export function createDeckPlugins(deck: ResolvedDeck) {
   let current = deck;
   let configSource: string | undefined;
   let restarting = Promise.resolve();
+  let closing = false;
+  let serving = false;
+  let reporting = errorReporting(deck.config.vite?.customLogger);
+  const failures = new Map<string, DeckError>();
+  const compiled = new Set<string>();
+  const failedLoads = new Set<string>();
+  let configError: DeckError | undefined;
+  let scan: ReturnType<typeof scanSlidesWithCounts> | undefined;
   let reloadTimer: ReturnType<typeof setTimeout> | undefined;
   const changedModules = new Set<string>();
   const deckDir = normalizePath(deck.dir);
   const htmlFile = normalizePath(join(deck.dir, "index.html"));
   const configFile = normalizePath(join(deck.dir, "deck.config.ts"));
-  const readConfig = async () => {
-    let source = await readFile(configFile, "utf8");
-    // Editors can emit just one event for a truncate followed by a write.
-    for (let attempt = 0; !source && attempt < 10; attempt++) {
-      await delay(10);
-      source = await readFile(configFile, "utf8");
-    }
-    return source;
-  };
+  const readConfig = () => readSource(configFile);
   let metadata = new Map<string, string>();
   let componentsCode: string | undefined;
   let motionNames: ReadonlyMap<string, string> = new Map();
+  let componentNames: ReadonlySet<string> = new Set();
   const totals = new Map<string, number>();
+  const scanDeck = () => {
+    if (serving || !scan) scan = scanSlidesWithCounts(current, totals);
+    return scan;
+  };
+  const remember = (error: DeckError) => {
+    if (error.file) failures.set(error.file, error);
+    if (serving) reporting.report(error);
+  };
+  const overlay = (error: DeckError) => ({
+    message: error.message,
+    id: error.file,
+    loc: error.loc,
+    stack: "",
+  });
   const reload = (server: ViteDevServer, name: string) => {
     changedModules.add(name);
     if (reloadTimer) clearTimeout(reloadTimer);
@@ -57,6 +76,8 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
     name: "react-decks",
     enforce: "pre",
     async config(inline, { command }) {
+      serving = command === "serve";
+      if (serving && inline.customLogger) reporting = errorReporting(inline.customLogger);
       if (command === "serve") configSource ??= await readConfig();
       return mergeConfig(
         mergeConfig(
@@ -65,7 +86,14 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
         ),
         {
           ...(inline.base === undefined ? {} : { base: inline.base }),
-          ...(inline.server?.port === undefined ? {} : { server: { port: inline.server.port } }),
+          customLogger: serving ? reporting.logger : inline.customLogger,
+          server: {
+            // Caught React errors already have a slide fallback or a compiler diagnostic.
+            forwardConsole: { unhandledErrors: true, logLevels: ["warn"] },
+            ...(inline.server?.port === undefined
+              ? {}
+              : { port: inline.server.port, strictPort: inline.server.strictPort }),
+          },
           ...(inline.build === undefined ? {} : { build: inline.build }),
         },
       );
@@ -77,15 +105,27 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
     async load(id) {
       if (normalizePath(id) === htmlFile) return deckHtml(current, false);
       if (id === `\0${prefix}entry`) return entryModule(current);
-      if (id === `\0${prefix}components`) return (await componentsModule(deck.dir)).code;
+      if (id === `\0${prefix}components`) return (await scanDeck()).componentsCode;
       if (id === `\0${prefix}layers`) return layersModule(deck.dir);
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;
-      const scanned = await scanSlidesWithCounts(current, totals);
+      const failure = failures.values().next().value;
+      if (failure) this.error(failure);
+      let scanned: Awaited<ReturnType<typeof scanSlidesWithCounts>>;
+      try {
+        scanned = await scanDeck();
+      } catch (cause) {
+        if (cause instanceof DeckError) {
+          remember(cause);
+          this.error(cause);
+        }
+        throw cause;
+      }
       const slides = scanned.slides;
       if (id === `\0${prefix}manifest`) {
         metadata = scanned.metadata;
         componentsCode = scanned.componentsCode;
         motionNames = scanned.motionNames;
+        componentNames = scanned.componentNames;
         const loaders = slides
           .map(
             ({ meta }) =>
@@ -100,23 +140,39 @@ export const slides = Object.fromEntries([${loaders}]);`;
       for (const { meta } of slides) {
         const file = normalizePath(join(deck.dir, meta.file));
         const segments = await renderNotes(
-          await readFile(file, "utf8"),
+          await readSource(file),
           file,
           current.config.mdx?.remarkPlugins,
-        );
+        ).catch((cause: unknown) => {
+          if (cause instanceof DeckError) {
+            if (serving) reporting.report(cause);
+            this.error(cause);
+          }
+          throw cause;
+        });
         if (segments !== undefined) notes.push([meta.id, segments]);
       }
       return `export const notes = Object.fromEntries(${JSON.stringify(notes)});`;
     },
-    async configureServer(server) {
+    async configureServer(viteServer) {
+      const server = viteServer;
+      // A replacement config is not served until its new server is listening.
+      const servedDeck = current;
+      server.ws.on("connection", (_socket, _request) => {
+        if (configError) server.ws.send({ type: "error", err: overlay(configError) });
+      });
       const structural = (path: string) => {
         const file = normalizePath(path);
         if (normalizePath(dirname(file)) === `${deckDir}/slides` && file.endsWith(".mdx")) {
           metadata.delete(file.slice(deckDir.length + 1));
           totals.delete(file.slice(deckDir.length + 1));
+          failures.delete(file);
+          reporting.fixed(file);
           reload(server, "manifest");
         }
         if (normalizePath(dirname(file)) === `${deckDir}/components` && file.endsWith(".tsx")) {
+          failures.delete(file);
+          reporting.fixed(file);
           reload(server, "components");
           reload(server, "manifest");
         }
@@ -125,14 +181,14 @@ export const slides = Object.fromEntries([${loaders}]);`;
       server.watcher.on("add", structural);
       server.watcher.on("unlink", structural);
       const configChanged = (file: string) => {
-        if (normalizePath(file) !== configFile) return;
+        if (closing || !server.httpServer?.listening || normalizePath(file) !== configFile) return;
         restarting = restarting
           .then(async () => {
-            if (server.httpServer && !server.httpServer.listening)
-              await once(server.httpServer, "listening");
             // Re-read after restart too: a save can arrive while the watcher is closed.
             for (;;) {
+              if (closing) return;
               const source = await readConfig();
+              if (closing) return;
               if (source === configSource) return;
               configSource = source;
               try {
@@ -143,12 +199,31 @@ export const slides = Object.fromEntries([${loaders}]);`;
                 configSource = latest;
                 current = await loadDeck(deck.dir, deck.name);
               }
+              if (closing) return;
+              if (configError) {
+                reporting.fixed(configFile, "deck.config.ts is valid again, restarting.");
+                configError = undefined;
+                failures.delete(configFile);
+              }
               plugins[1] = compiler();
               server.config.inlineConfig.plugins = [plugins, current.config.vite?.plugins ?? []];
               await server.restart();
             }
           })
           .catch((cause: unknown) => {
+            if (closing) return;
+            if (cause instanceof DeckError) {
+              configError = cause;
+              const graph = server.environments.client?.moduleGraph;
+              const manifest = graph?.getModuleById(`\0${prefix}manifest`);
+              if (manifest) graph?.invalidateModule(manifest);
+              server.config.logger.info(
+                "deck.config.ts is invalid, still serving the last valid config:",
+              );
+              reporting.report(cause);
+              server.ws.send({ type: "error", err: overlay(cause) });
+              return;
+            }
             const error = cause instanceof Error ? cause : new Error(String(cause));
             server.config.logger.error(error.stack ?? error.message);
             server.ws.send({
@@ -163,19 +238,20 @@ export const slides = Object.fromEntries([${loaders}]);`;
         const base = server.config.base;
         if (path !== base && path !== `${base}index.html`) return next();
         try {
-          const html = await server.transformIndexHtml(req.url ?? "/", deckHtml(current, true));
+          const html = await server.transformIndexHtml(req.url ?? "/", deckHtml(servedDeck, true));
           res.setHeader("Content-Type", "text/html");
           res.end(html);
         } catch (error) {
           next(error);
         }
       });
-      const scanned = await scanSlidesWithCounts(current, totals);
+      const scanned = await scanDeck();
       await layersModule(deck.dir);
       metadata = scanned.metadata;
       componentsCode = scanned.componentsCode;
       motionNames = scanned.motionNames;
-      configChanged(configFile);
+      componentNames = scanned.componentNames;
+      server.httpServer?.once("listening", () => configChanged(configFile));
     },
     closeBundle() {
       clearTimeout(reloadTimer);
@@ -183,70 +259,115 @@ export const slides = Object.fromEntries([${loaders}]);`;
     },
     async hotUpdate(context) {
       if (this.environment.name !== "client") return;
-      const file = normalizePath(context.file);
-      const parent = normalizePath(dirname(file));
-      if (file.startsWith(`${deckDir}/layers/`) && context.type !== "update") return [];
-      if (
-        parent === `${deckDir}/components` &&
-        file.endsWith(".tsx") &&
-        context.type === "update"
-      ) {
-        const scanned = await scanSlidesWithCounts(current, totals);
-        motionNames = scanned.motionNames;
+      try {
+        if (configError) this.error(configError);
+        const file = normalizePath(context.file);
+        const parent = normalizePath(dirname(file));
+        if (file.startsWith(`${deckDir}/layers/`) && context.type !== "update") return [];
         if (
-          scanned.componentsCode === componentsCode &&
-          Array.from(scanned.metadata).every(([file, value]) => metadata.get(file) === value)
+          parent === `${deckDir}/components` &&
+          file.endsWith(".tsx") &&
+          context.type === "update"
+        ) {
+          const scanned = await scanSlidesWithCounts(current, totals);
+          const wasFailed = failures.delete(file);
+          reporting.fixed(file);
+          componentNames = scanned.componentNames;
+          motionNames = scanned.motionNames;
+          if (
+            !wasFailed &&
+            scanned.componentsCode === componentsCode &&
+            Array.from(scanned.metadata).every(([file, value]) => metadata.get(file) === value)
+          )
+            return;
+          componentsCode = scanned.componentsCode;
+          metadata = scanned.metadata;
+          // A re-export edit can change how every slide's JSX names resolve.
+          reload(context.server, "components");
+          reload(context.server, "manifest");
+          return [];
+        }
+        if (
+          context.type !== "update" &&
+          ((parent === `${deckDir}/slides` && file.endsWith(".mdx")) ||
+            (parent === `${deckDir}/components` && file.endsWith(".tsx")))
         )
+          return [];
+        if (parent !== `${deckDir}/slides` || !file.endsWith(".mdx") || context.type !== "update")
           return;
-        componentsCode = scanned.componentsCode;
-        metadata = scanned.metadata;
-        // A re-export edit can change how every slide's JSX names resolve.
-        reload(context.server, "components");
-        reload(context.server, "manifest");
+        const key = file.slice(deckDir.length + 1);
+        const { clicks: total, fingerprint: next } = readSlide(
+          await context.read(),
+          file,
+          totals.get(key),
+          motionNames,
+          current.config.mdx?.remarkPlugins,
+        );
+        const wasFailed = failures.delete(file);
+        if (wasFailed) reporting.fixed(file);
+        const previous = metadata.get(key);
+        metadata.set(key, next);
+        totals.set(key, total);
+        const graph = this.environment.moduleGraph;
+        const notes = graph.getModuleById(`\0${prefix}notes`);
+        if (notes) graph.invalidateModule(notes);
+        const failedLoad = failedLoads.delete(file);
+        if (next === previous && !wasFailed && !failedLoad) return;
+        const manifest = graph.getModuleById(`\0${prefix}manifest`);
+        if (manifest) graph.invalidateModule(manifest);
+        this.environment.hot.send({ type: "full-reload" });
         return [];
+      } catch (cause) {
+        if (!(cause instanceof DeckError)) throw cause;
+        if (cause.file !== configFile) {
+          remember(cause);
+          const graph = this.environment.moduleGraph;
+          const manifest = graph.getModuleById(`\0${prefix}manifest`);
+          if (manifest) graph.invalidateModule(manifest);
+        }
+        this.error(cause);
       }
-      if (
-        context.type !== "update" &&
-        ((parent === `${deckDir}/slides` && file.endsWith(".mdx")) ||
-          (parent === `${deckDir}/components` && file.endsWith(".tsx")))
-      )
-        return [];
-      if (parent !== `${deckDir}/slides` || !file.endsWith(".mdx") || context.type !== "update")
-        return;
-      const key = file.slice(deckDir.length + 1);
-      const { clicks: total, fingerprint: next } = readSlide(
-        await context.read(),
-        file,
-        totals.get(key),
-        motionNames,
-        current.config.mdx?.remarkPlugins,
-      );
-      const previous = metadata.get(key);
-      metadata.set(key, next);
-      totals.set(key, total);
-      const graph = this.environment.moduleGraph;
-      const notes = graph.getModuleById(`\0${prefix}notes`);
-      if (notes) graph.invalidateModule(notes);
-      if (next === previous) return;
-      const manifest = graph.getModuleById(`\0${prefix}manifest`);
-      if (manifest) graph.invalidateModule(manifest);
-      this.environment.hot.send({ type: "full-reload" });
-      return [];
     },
   };
   // MDX returns Rollup's Plugin type; Vite 8 uses Rolldown's narrower source-map type.
-  const compiler = () =>
-    ({
-      ...mdx({
-        remarkPlugins: [
-          remarkFrontmatter,
-          removeNotes,
-          ...(current.config.mdx?.remarkPlugins ?? []),
-        ],
-        rehypePlugins: [...(current.config.mdx?.rehypePlugins ?? []), codeBlocks],
-      }),
+  const compiler = () => {
+    const mdxPlugin = mdx({
+      remarkPlugins: [
+        remarkFrontmatter,
+        removeNotes,
+        checkComponents(() => componentNames),
+        ...(current.config.mdx?.remarkPlugins ?? []),
+      ],
+      rehypePlugins: [...(current.config.mdx?.rehypePlugins ?? []), codeBlocks],
+    });
+    return {
+      ...mdxPlugin,
+      async transform(source: string, id: string) {
+        try {
+          const result = await mdxPlugin.transform(source, id);
+          if (result) {
+            compiled.add(id);
+            reporting.fixed(id);
+          }
+          return result;
+        } catch (cause) {
+          if (!compiled.has(id)) failedLoads.add(id);
+          const error = compileError(cause, id);
+          if (serving) reporting.report(error);
+          this.error(error);
+        }
+      },
       enforce: "pre",
-    }) as Plugin;
+    } as Plugin;
+  };
   const plugins = [plugin, compiler(), ...react({ include: /\.(mdx|jsx|tsx)$/ })];
-  return plugins;
+  return {
+    plugins,
+    async stop() {
+      closing = true;
+      await restarting;
+      clearTimeout(reloadTimer);
+      changedModules.clear();
+    },
+  };
 }

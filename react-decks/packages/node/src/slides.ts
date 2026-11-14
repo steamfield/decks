@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { assertManifest, type DeckManifest, type SlideMeta } from "@react-decks/core";
 import matter from "gray-matter";
@@ -8,6 +7,8 @@ import { z } from "zod";
 import { countClicks } from "./clicks";
 import { componentsModule } from "./components";
 import type { ResolvedDeck } from "./config";
+import { DeckError, displayPath, validationError } from "./errors";
+import { readSource } from "./read-source";
 
 export interface ScannedSlide {
   readonly meta: SlideMeta;
@@ -36,21 +37,50 @@ export function readSlide(
 ) {
   try {
     const { data, content } = matter(source);
-    const frontmatter = frontmatterSchema.parse(data);
+    const parsed = frontmatterSchema.safeParse(data);
+    if (!parsed.success) throw validationError(file, parsed.error.issues, data, [], true);
+    const frontmatter = parsed.data;
     const clicks = frontmatter.hide
       ? 0
-      : (frontmatter.clicks ?? countClicks(content, file, previous, motionNames, remarkPlugins));
+      : (frontmatter.clicks ??
+        countClicks(
+          source.slice(0, source.length - content.length).replace(/[^\n]/g, " ") + content,
+          file,
+          previous,
+          motionNames,
+          remarkPlugins,
+        ));
     return { frontmatter, clicks, fingerprint: JSON.stringify([data, clicks]) };
   } catch (cause) {
-    if (cause instanceof Error && cause.message.startsWith(`${file}:`)) throw cause;
-    throw new Error(`${file}: ${cause instanceof Error ? cause.message : String(cause)}`, {
+    if (cause instanceof DeckError) throw cause;
+    const mark =
+      typeof cause === "object" && cause !== null && "mark" in cause ? cause.mark : undefined;
+    const loc =
+      typeof mark === "object" &&
+      mark !== null &&
+      "line" in mark &&
+      typeof mark.line === "number" &&
+      "column" in mark &&
+      typeof mark.column === "number"
+        ? { line: mark.line + 1, column: mark.column + 1 }
+        : undefined;
+    if (!loc) throw cause;
+    const reason =
+      typeof cause === "object" && cause !== null && "reason" in cause
+        ? String(cause.reason)
+        : String(cause);
+    throw new DeckError(`invalid YAML: ${reason}. Check the frontmatter syntax.`, file, loc, {
       cause,
     });
   }
 }
 
 export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<string, number>) {
-  const { motionNames, code: componentsCode } = await componentsModule(deck.dir);
+  const {
+    motionNames,
+    code: componentsCode,
+    names: componentNames,
+  } = await componentsModule(deck.dir);
   const files = (await glob("slides/*.mdx", { cwd: deck.dir })).sort();
   const slides: ScannedSlide[] = [];
   const metadata = new Map<string, string>();
@@ -58,7 +88,7 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
     const id = basename(file, ".mdx");
     try {
       const { frontmatter, clicks, fingerprint } = readSlide(
-        await readFile(join(deck.dir, file), "utf8"),
+        await readSource(join(deck.dir, file)),
         join(deck.dir, file),
         totals.get(file),
         motionNames,
@@ -81,20 +111,26 @@ export async function scanSlidesWithCounts(deck: ResolvedDeck, totals: Map<strin
         frontmatter,
       });
     } catch (cause) {
-      if (cause instanceof Error && cause.message.startsWith(`${join(deck.dir, file)}:`))
-        throw cause;
-      throw new Error(
-        `${join(deck.dir, file)}: ${cause instanceof Error ? cause.message : String(cause)}`,
+      if (cause instanceof DeckError) throw cause;
+      throw new DeckError(
+        cause instanceof Error ? cause.message : String(cause),
+        join(deck.dir, file),
+        undefined,
         { cause },
       );
     }
   }
-  if (!slides.length) throw new Error(`${deck.dir}: no visible slides`);
-  return { slides, metadata, componentsCode, motionNames };
+  if (!slides.length)
+    throw new DeckError(
+      files.length
+        ? `every slide in ${displayPath(deck.dir)}/slides has hide: true.`
+        : `no slides/*.mdx files in ${displayPath(deck.dir)}.`,
+    );
+  return { slides, metadata, componentsCode, motionNames, componentNames };
 }
 
 export function buildManifest(deck: ResolvedDeck, slides: readonly ScannedSlide[]): DeckManifest {
-  if (!slides.length) throw new Error(`${deck.dir}: no visible slides`);
+  if (!slides.length) throw new DeckError(`no slides/*.mdx files in ${displayPath(deck.dir)}.`);
   return assertManifest({
     name: deck.name,
     title: deck.config.title,

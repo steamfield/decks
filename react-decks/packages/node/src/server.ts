@@ -1,20 +1,30 @@
+import { constants } from "node:fs";
+import { access, readdir, readFile, realpath, stat } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { join, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import getPort, { portNumbers } from "get-port";
-import { createServer, type InlineConfig, normalizePath, build as viteBuild } from "vite";
+import {
+  createLogger,
+  createServer,
+  type InlineConfig,
+  normalizePath,
+  type Plugin,
+  build as viteBuild,
+} from "vite";
 import type { ResolvedDeck } from "./config";
-import { reactDecks } from "./plugins";
+import { DeckError, displayPath } from "./errors";
+import { createDeckPlugins, reactDecks } from "./plugins";
 
 export interface DevServer {
   readonly url: string;
   close(): Promise<void>;
 }
 
-function config(deck: ResolvedDeck): InlineConfig {
+function config(deck: ResolvedDeck, plugins: Plugin[] = reactDecks(deck)): InlineConfig {
   return {
     configFile: false,
     root: deck.dir,
-    plugins: [reactDecks(deck), deck.config.vite?.plugins ?? []],
+    plugins: [plugins, deck.config.vite?.plugins ?? []],
     resolve: { dedupe: ["react", "react-dom"] },
     // There is no on-disk HTML entry for Vite to crawl before the first request.
     optimizeDeps: {
@@ -36,17 +46,32 @@ export async function dev(
   options?: { port?: number; open?: boolean },
 ): Promise<DevServer> {
   const port = options?.port ?? (await getPort({ port: portNumbers(3030, 65535) }));
+  const lifecycle = createDeckPlugins(deck);
   const server = await createServer({
-    ...config(deck),
-    server: { port, open: options?.open ?? false },
+    ...config(deck, lifecycle.plugins),
+    server: { port, strictPort: options?.port !== undefined, open: options?.open ?? false },
   });
   try {
     await server.listen();
     const url = server.resolvedUrls?.local[0];
     if (!url) throw new Error(`${deck.dir}: Vite did not provide a local URL`);
-    return { url, close: () => server.close() };
+    return {
+      url,
+      close: async () => {
+        await lifecycle.stop();
+        await server.close();
+      },
+    };
   } catch (error) {
+    await lifecycle.stop();
     await server.close();
+    if (error instanceof Error && error.message.includes(`Port ${port} is already in use`))
+      throw new DeckError(
+        `port ${port} is already in use. Stop what is using it or pass a different --port.`,
+        undefined,
+        undefined,
+        { cause: error },
+      );
     throw error;
   }
 }
@@ -55,8 +80,11 @@ export async function build(
   deck: ResolvedDeck,
   options: { outDir: string; base?: string },
 ): Promise<void> {
+  await guardOutput(deck, options.outDir);
   await viteBuild({
     ...config(deck),
+    logLevel: "silent",
+    customLogger: createLogger("silent"),
     base: options.base ?? deck.config.vite?.base ?? "./",
     build: {
       outDir: resolve(options.outDir),
@@ -64,4 +92,59 @@ export async function build(
       rolldownOptions: { input: resolve(deck.dir, "index.html") },
     },
   });
+}
+
+async function canonicalPath(path: string): Promise<string> {
+  try {
+    return await realpath(path);
+  } catch (cause) {
+    if (!(cause instanceof Error) || !("code" in cause) || cause.code !== "ENOENT") throw cause;
+    return join(await canonicalPath(dirname(path)), path.slice(dirname(path).length + 1));
+  }
+}
+
+async function guardOutput(deck: ResolvedDeck, value: string) {
+  const out = resolve(value);
+  const label = displayPath(out);
+  try {
+    const canonical = await canonicalPath(out);
+    for (const protectedDir of [await realpath(deck.dir), await realpath(process.cwd())]) {
+      const inside = relative(canonical, protectedDir);
+      if (!inside || (inside !== ".." && !inside.startsWith(`..${sep}`) && !inside.startsWith(sep)))
+        throw new DeckError(
+          `--out ${label} is the deck directory (or contains it). build empties --out first, which would delete the deck. Choose another directory.`,
+        );
+    }
+    let existing = out;
+    while (
+      !(await stat(existing).catch((cause: unknown) => {
+        if (cause instanceof Error && "code" in cause && cause.code === "ENOENT") return undefined;
+        throw cause;
+      }))
+    )
+      existing = dirname(existing);
+    const info = await stat(existing);
+    if (!info.isDirectory()) throw new DeckError(`--out ${label} is a file. Choose a directory.`);
+    await access(existing, constants.W_OK);
+    if (existing === out && (await readdir(out)).length) {
+      const html = await readFile(join(out, "index.html"), "utf8").catch((cause: unknown) => {
+        if (cause instanceof Error && "code" in cause && cause.code === "ENOENT") return "";
+        throw cause;
+      });
+      if (!/<meta\s+name=["']decks:name["']\s+content=["'][^"']*["']\s*\/?>/.test(html))
+        throw new DeckError(
+          `${label} is not empty and was not written by decks build. Empty it yourself or choose another --out.`,
+        );
+    }
+  } catch (cause) {
+    if (
+      cause instanceof Error &&
+      "code" in cause &&
+      ["EACCES", "EPERM"].includes(String(cause.code))
+    )
+      throw new DeckError(`cannot write to ${label} (permission denied).`, undefined, undefined, {
+        cause,
+      });
+    throw cause;
+  }
 }

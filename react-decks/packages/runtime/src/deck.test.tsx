@@ -145,11 +145,15 @@ it("Notes renders nothing", async () => {
 });
 
 it("useDeck names the missing Deck provider", () => {
-  expect(() => renderHook(useDeck)).toThrow("Deck provider");
+  expect(() => renderHook(useDeck)).toThrow(
+    "useDeck() was called outside a deck. Render the component from a slide inside <Deck>.",
+  );
 });
 
 it("useSlide names the missing SlideHost provider", () => {
-  expect(() => renderHook(useSlide)).toThrow("SlideHost provider");
+  expect(() => renderHook(useSlide)).toThrow(
+    "useSlide() was called outside a slide (this is also what <Step>, <Morph> and the other motion components use). Render the component from a slide.",
+  );
 });
 
 it("useSlideScale is one outside a frame", () => {

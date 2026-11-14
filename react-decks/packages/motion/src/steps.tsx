@@ -159,7 +159,7 @@ export function TextReveal({
   const attrs = stepAttributes(useStepState(at), enter);
   if (typeof children !== "string")
     throw new Error(
-      `TextReveal takes plain text; received ${children === null ? "null" : Array.isArray(children) ? "array" : typeof children}`,
+      `TextReveal takes plain text; received ${children === null ? "null" : Array.isArray(children) ? "array" : typeof children}. Pass a string as its child.`,
     );
   const pieces =
     by === "char"

@@ -81,7 +81,11 @@ test("A slide compile failure leaves its neighbour working and recovers after a 
   await page.goto(`${editableDeck.url}#/4`);
   await expect(page.getByRole("heading", { name: "One click", exact: true })).toBeVisible();
   await page.keyboard.press("End");
-  await expect(page.getByText("Unable to render slide 06-end.", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Slide 06-end failed to load. See the terminal or the error overlay.", {
+      exact: true,
+    }),
+  ).toBeVisible();
   await writeFile(file, original);
   await page.keyboard.press("Home");
   await expect(

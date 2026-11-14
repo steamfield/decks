@@ -22,6 +22,8 @@ it.each(["card", "_card-2", "Card_1"])(
 
 it.each([
   "root",
+  "deck-layer-above",
+  "DECK-LAYER-ABOVE",
   "none",
   "",
   "1card",

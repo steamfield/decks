@@ -10,9 +10,9 @@ export function PresenterView(): ReactElement {
   const { source } = useDeckContext();
   const nav = useDeckSelector((state) => state.nav);
   const aspect = useDeckSelector((state) => state.audienceAspect);
-  const [notes, setNotes] = useState<
-    Readonly<Record<string, readonly NoteHtml[]>> | "failed" | null
-  >(null);
+  const [notes, setNotes] = useState<Readonly<Record<string, readonly NoteHtml[]>> | Error | null>(
+    null,
+  );
   const revealNote = useCallback((element: HTMLDivElement | null) => {
     element?.scrollIntoView?.({ block: "nearest" });
   }, []);
@@ -25,7 +25,7 @@ export function PresenterView(): ReactElement {
     aspectRatio: ratio,
     "--rd-aspect": ratio,
   };
-  const segments = notes && notes !== "failed" && meta ? (notes[meta.id] ?? []) : [];
+  const segments = notes && !(notes instanceof Error) && meta ? (notes[meta.id] ?? []) : [];
   let active = -1;
   for (let index = 0; index < segments.length; index++) {
     const segment = segments[index];
@@ -40,8 +40,14 @@ export function PresenterView(): ReactElement {
         (result) => {
           if (!cancelled) setNotes(result);
         },
-        () => {
-          if (!cancelled) setNotes("failed");
+        (cause: unknown) => {
+          if (!cancelled) {
+            const error = new Error(cause instanceof Error ? cause.message : String(cause), {
+              cause,
+            });
+            console.error("Notes failed to load", error);
+            setNotes(error);
+          }
         },
       );
     }
@@ -70,8 +76,8 @@ export function PresenterView(): ReactElement {
         </div>
       </section>
       <section key={meta?.id} aria-label="Notes" className="rd-presenter-notes">
-        {notes === "failed" ? (
-          <p>Notes failed to load</p>
+        {notes instanceof Error ? (
+          <p>{`Notes failed to load: ${notes.message}. Reload to retry.`}</p>
         ) : source.loadNotes && notes === null ? null : !hasNotes ? (
           <p>No notes for this slide</p>
         ) : (
