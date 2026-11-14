@@ -115,7 +115,9 @@ and fails only when behaviour breaks.
 
 jsdom has no layout and no View Transitions; a behaviour that needs either is a Playwright
 test, never a hand-built fake of the browser. Never test a component by stubbing what it
-depends on.
+depends on. The dom project does not process CSS either: a prop that only changes styling is
+checked in a browser. A port keeps the source's mechanism (an inline style stays an inline
+style), because the kit guards in `tests/` police those mechanisms.
 
 Each behaviour is asserted at one layer, the cheapest that can show it. Which file change
 causes a reload or a hot update is decided and tested in `node`; the browser suite keeps one
