@@ -49,7 +49,7 @@ than hand-written code asks for it by name.
 | Pinch, wheel and drag for the viewer | `@use-gesture/react` | `runtime` |
 | Class name composition | `clsx` | `runtime`, `motion`, `kit` |
 | Timelines, text splitting, SVG drawing, count-up | `gsap` with `@gsap/react`, `SplitText`, `DrawSVGPlugin` | `motion` |
-| MDX compile | `@mdx-js/rollup`, `@mdx-js/react` | `node`, `runtime` |
+| MDX compile | `@mdx-js/rollup` | `node` |
 | Frontmatter | `remark-frontmatter` + `remark-mdx-frontmatter` in the MDX pipeline; `gray-matter` when only metadata is read | `node` |
 | Markdown in notes to HTML | `remark-rehype` + `rehype-stringify` | `node` |
 | Config validation | `zod` | `node` |
@@ -580,8 +580,9 @@ runtime and the tests use.
 `Deck` or outside a `SlideHost`.
 
 `Deck` sets `data-deck-view` and `data-deck-motion="live"` on `<html>`, provides the source and
-store, wraps slides in `MDXProvider` with `source.components`, and renders the view for
-`DeckState.view`. In Phase 2 every view renders `PlayView`.
+store, and renders the view for `DeckState.view`. `SlideHost` passes `source.components` to
+each slide through the MDX content component's `components` prop; compiled slides do not
+import `@mdx-js/react` and there is no `MDXProvider`. In Phase 2 every view renders `PlayView`.
 
 `PlayView`:
 
