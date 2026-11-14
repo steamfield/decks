@@ -220,9 +220,8 @@ After the three decks are ported and signed off:
   `tools/content-lint.sh`, `tools/content-fact-extract.mjs`, hooks and `test:hooks`.
 - Update `docs/rfcs/0007-react-decks.md` with what was built and what changed from the plan,
   and `docs/rfcs/README.md`.
-- Housekeeping: delete merged branches (`react-decks`, `bfa-react`, `spike/parity`), remove
-  the `.claude/worktrees/bfa-react` worktree, archive stale foreman runs. `OUTLINE.md` at the
-  repo root is untracked and is Riley's.
+- `OUTLINE.md` at the repo root is untracked and is Riley's. The session's branches and
+  worktrees are already removed.
 
 ### 7. Update the site
 
