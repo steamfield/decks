@@ -1,6 +1,9 @@
 // @vitest-environment node
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { type Browser, chromium } from "@playwright/test";
+import { type DevServer, dev, loadDeck } from "@steamfield/decks/node";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { faviconSvg, ico, MARK, markColors, markColorsDark, markPng, markSvg } from "./brand";
@@ -46,24 +49,39 @@ describe("brand mark", () => {
   });
 });
 
-// The addon draws the same mark without importing this module (a cross-package
-// import is listed as debt in AGENTS.md), so these compare the copies instead.
-describe("the addon's copies of the mark", () => {
-  const addon = (path: string) =>
-    readFileSync(join(process.cwd(), "..", "packages/decks", path), "utf8");
-
-  it("DecksCredit.vue uses the same geometry", () => {
-    const credit = addon("components/DecksCredit.vue");
-    expect(credit).toMatch(/<svg class="mark" viewBox="0 0 32 32"/);
-    expect(credit.match(/class="back"\s+d="([^"]+)"/)?.[1]).toBe(MARK.back);
-    const rect = credit.match(/<rect class="front"([^>]*)\/>/)?.[1] ?? "";
-    const attrs = Object.fromEntries(
-      [...rect.matchAll(/(\w+)="([^"]*)"/g)].map(([, name, value]) => [name, Number(value)]),
-    );
-    expect(attrs).toEqual(MARK.front);
-  });
-
-  it("the shipped favicon is the site's favicon", () => {
-    expect(addon("public/favicon.svg").trim()).toBe(faviconSvg());
-  });
+describe("the framework's visible mark", () => {
+  it("uses the site's geometry in its credit and default icon", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "decks-site-mark-"));
+    let server: DevServer | undefined;
+    let browser: Browser | undefined;
+    try {
+      mkdirSync(join(dir, "slides"));
+      symlinkSync(resolve("../node_modules"), join(dir, "node_modules"), "dir");
+      writeFileSync(join(dir, "deck.config.ts"), 'export default { title: "Brand mark" };');
+      writeFileSync(join(dir, "slides/01-cover.mdx"), "# Brand mark.\n");
+      server = await dev(await loadDeck(dir), { port: 0 });
+      browser = await chromium.launch();
+      const page = await browser.newPage();
+      await page.goto(server.url);
+      const credit = page.getByRole("link", { name: "Created with Decks" });
+      await credit.waitFor({ state: "visible" });
+      const artwork = await credit.locator("svg").evaluate((svg) => ({
+        viewBox: svg.getAttribute("viewBox"),
+        back: svg.querySelector("path")?.getAttribute("d"),
+        front: Object.fromEntries(
+          [...(svg.querySelector("rect")?.attributes ?? [])].map(({ name, value }) => [
+            name,
+            Number(value),
+          ]),
+        ),
+      }));
+      expect(artwork).toEqual({ viewBox: "0 0 32 32", back: MARK.back, front: MARK.front });
+      const icon = await page.locator('link[rel="icon"]').getAttribute("href");
+      expect(decodeURIComponent(icon?.split(",")[1] ?? "")).toBe(markSvg(markColors()));
+    } finally {
+      await browser?.close();
+      await server?.close();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 30_000);
 });

@@ -5,10 +5,11 @@ published: 2026-11-05
 keyword: "how to add charts to slidev"
 feature: charts
 relatedDocs:
-  - reference/components
-  - concepts/ink-marks
-  - concepts/beats-and-the-story-timeline
+  - kit
+  - motion
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -117,7 +118,7 @@ defaults:
   layout: full
 ```
 
-The [component reference](/docs/reference/components/) lists the auto-imported components. JavaScript helpers still need imports. For a line chart, export your dated observations as `points` and a numeric axis range as `yDomain` from `data/chart.ts`, then use:
+The [component reference](/docs/kit/) lists the auto-imported components. JavaScript helpers still need imports. For a line chart, export your dated observations as `points` and a numeric axis range as `yDomain` from `data/chart.ts`, then use:
 
 ```md title="Chart slide"
 <script setup lang="ts">
@@ -147,7 +148,7 @@ const spec: ChartSpec = {
 
 Each observation needs a `date` and a numeric `value`; `yDomain` is a pair of axis bounds appropriate to those values. The shared theme supplies slide-sized text and axis colors. The wrapper handles entrance animation. Its presence alone doesn't turn this fixed spec into a sequence of presentation steps.
 
-Decks requires Node 20.19+ or 22.12+, and its slides are dark only. It pins OpenChart 9.0.0. For registered decks using OpenChart, set `"animated": true` in `decks.json`; the [PDF export guide](/docs/guides/exporting-to-pdf/) explains the export settings.
+Decks requires Node 20.19+ or 22.12+, and its slides are dark only. It pins OpenChart 9.0.0. For registered decks using OpenChart, set `"animated": true` in `decks.json`; the [PDF export guide](/docs/cli/) explains the export settings.
 
 <DeckDemo example="state-of-js" caption="A story deck whose chart redraws at each step. Press the right arrow to advance and the left arrow to play the transition back." />
 
@@ -155,7 +156,7 @@ Decks requires Node 20.19+ or 22.12+, and its slides are dark only. It pins Open
 
 A Decks story stage pins a visualization in place while its caption changes with the presentation step. The State of JavaScript deck uses bars to compare build tools by usage, then reorders those bars by retention. The tools keep their identities while their values and positions change.
 
-Use `useStage` from `slidev-addon-decks/story` to connect the transition timeline to Slidev's click count. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls a step a "beat". Its `copy` array defines the caption for each step, and the array length determines the step count. The slide's `clicks:` setting is that count minus one, because the initial state needs no click.
+Use `useStage` from `slidev-addon-decks/story` to connect the transition timeline to Slidev's click count. The [story timeline guide](/docs/motion/) calls a step a "beat". Its `copy` array defines the caption for each step, and the array length determines the step count. The slide's `clicks:` setting is that count minus one, because the initial state needs no click.
 
 This excerpt comes from `BuildToolsStage.vue` in the State of JavaScript example:
 
@@ -177,7 +178,7 @@ The excerpt is the `enter` and `beats` portion of the options passed to `useStag
 
 The timeline plays between neighboring steps and reverses when you step backward. It seeks directly to the target on first render, with reduced motion, or when jumping across multiple steps. Interrupted transitions retarget from their current position so rapid navigation doesn't queue up animations. [Slidev animations and v-click](/blog/slidev-animations/) compares this with Slidev's built-in reveals.
 
-The [ink marks guide](/docs/concepts/ink-marks/) describes `InkBars` and `InkLine`, which expose handles for stage timelines. These marks are useful when you need to control a particular movement or annotation. `OpenChart` remains the shorter choice for a chart with axes and an entrance animation.
+The [ink marks guide](/docs/kit/) describes `InkBars` and `InkLine`, which expose handles for stage timelines. These marks are useful when you need to control a particular movement or annotation. `OpenChart` remains the shorter choice for a chart with axes and an entrance animation.
 
 ## How do the chart colors follow your theme?
 
@@ -185,4 +186,4 @@ Decks resolves a deck's `theme.json` over its defaults. Read that resolved palet
 
 Import `slideChartTheme` from `slidev-addon-decks/chart-theme` into each spec that needs the shared chart styling. The `OpenChart` wrapper does not insert that theme into your spec automatically. The theme covers chart text and axes; explicit series colors should also come from the resolved palette. A hex literal inside a spec keeps that color when the deck theme changes. The [custom theme guide](/blog/slidev-custom-theme/) covers the palette itself.
 
-The [theming guide](/docs/guides/theming-with-theme-json/) explains partial overrides and color ramps. Keep a tool's color consistent across steps so its identity survives a reorder. Changing the comparison already asks the audience to read a new scale; keeping the color stable gives them a familiar mark to follow.
+The [theming guide](/docs/kit/) explains partial overrides and color ramps. Keep a tool's color consistent across steps so its identity survives a reorder. Changing the comparison already asks the audience to read a new scale; keeping the color stable gives them a familiar mark to follow.

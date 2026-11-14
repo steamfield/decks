@@ -5,9 +5,10 @@ published: 2026-11-05
 keyword: "how to make a custom slidev theme"
 feature: theming
 relatedDocs:
-  - guides/theming-with-theme-json
-  - reference/theme-json-tokens
+  - kit
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import ThemeCompare from "../../components/blog/ThemeCompare.astro";
 
@@ -93,7 +94,7 @@ A chart with a literal color in its JavaScript configuration keeps that color. C
 
 You can build that connection in your own theme. Define a shared palette, then have your chart components read it. That approach also means maintaining the mapping between your stylesheet and the values your chart code expects.
 
-Decks, a Slidev addon for data-storytelling presentations, provides a shared theme file for this purpose. Its defaults live in `packages/decks/theme/default.json`. A deck's `theme.json` changes those values for both CSS and JavaScript, as the [theming guide](/docs/guides/theming-with-theme-json/) explains.
+Decks, a Slidev addon for data-storytelling presentations, provides a shared theme file for this purpose. Its defaults live in `packages/decks/theme/default.json`. A deck's `theme.json` changes those values for both CSS and JavaScript, as the [theming guide](/docs/kit/) explains.
 
 Use named CSS variables for slide styling:
 
@@ -115,7 +116,7 @@ const seriesColor = ink('cyan', 2)
 const labelColor = theme.chart.text
 ```
 
-These are color values to use in your chart's configuration. Ramps and the categorical palette are available through JavaScript; they aren't emitted as CSS variables. The [token reference](/docs/reference/theme-json-tokens/) lists which groups reach each interface, and the [Slidev charts guide](/blog/slidev-charts/) shows a complete chart spec.
+These are color values to use in your chart's configuration. Ramps and the categorical palette are available through JavaScript; they aren't emitted as CSS variables. The [token reference](/docs/kit/) lists which groups reach each interface, and the [Slidev charts guide](/blog/slidev-charts/) shows a complete chart spec.
 
 ## How does a theme.json override work?
 
@@ -146,7 +147,7 @@ Aliases resolve after the merge. For example, the default `accents.cyan` points 
 }
 ```
 
-Add this field to the same file if you want the secondary glow to follow the amber ramp. It stays connected when you recolor that ramp later. The [merge rules](/docs/guides/theming-with-theme-json/) cover aliases and array replacement.
+Add this field to the same file if you want the secondary glow to follow the amber ramp. It stays connected when you recolor that ramp later. The [merge rules](/docs/kit/) cover aliases and array replacement.
 
 Edits reload live during development and apply at build time. The repository includes a complete alternate palette in `examples/od-templates/theme.json`; `examples/opendata-pitch/theme.json` shows a brand-only override. Copying an entire palette is useful when you want a coordinated starting point, while a small file is easier to review for a limited change.
 
@@ -169,7 +170,7 @@ Set the `brand` object in the same `theme.json`. It holds the displayed name and
 }
 ```
 
-Here, `logo: null` means no mark. Set `url: null` to hide the cover URL. If you supply a logo, its object has a `view-box` string and an `svg` string containing the inner SVG markup. The surrounding SVG element is supplied by Decks. The [brand settings](/docs/guides/theming-with-theme-json/) describe the accepted fields.
+Here, `logo: null` means no mark. Set `url: null` to hide the cover URL. If you supply a logo, its object has a `view-box` string and an `svg` string containing the inner SVG markup. The surrounding SVG element is supplied by Decks. The [brand settings](/docs/kit/) describe the accepted fields.
 
 When scaffolding a deck, the runner can write the brand block for you:
 
@@ -187,6 +188,6 @@ The ramp names are fixed: `cyan`, `amber`, `rose`, `emerald`, `violet`, and `sla
 
 Each ramp needs four `#rrggbb` values that get lighter. Step 1 must have at least 3:1 contrast against `surfaces.canvas`; changing the canvas means checking that relationship again. This rule concerns ramp visibility against the canvas. It doesn't replace reviewing text readability or whether adjacent chart series are distinguishable.
 
-Glow values must resolve to six-digit hex colors because Decks converts them to RGB triplets. A hex-valued alias works; an `rgba()` glow value doesn't. Fonts have `sans` and `mono` fields, while colors have separate groups for text and chart labels, all listed in the [theme token reference](/docs/reference/theme-json-tokens/).
+Glow values must resolve to six-digit hex colors because Decks converts them to RGB triplets. A hex-valued alias works; an `rgba()` glow value doesn't. Fonts have `sans` and `mono` fields, while colors have separate groups for text and chart labels, all listed in the [theme token reference](/docs/kit/).
 
 Hard-coded colors in your own components still bypass the theme. If a mark stays unchanged after a palette edit, check its CSS and chart specification for literal values, then replace those values with the appropriate variable or theme lookup.

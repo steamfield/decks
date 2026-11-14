@@ -5,10 +5,11 @@ published: 2026-11-05
 keyword: "how to export slidev to pdf"
 feature: export
 relatedDocs:
-  - guides/exporting-to-pdf
-  - reference/decks-json
-  - reference/cli
+  - cli
+  - getting-started/quickstart
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -105,7 +106,7 @@ Run that command from the directory containing the registry. Here is an animated
 }
 ```
 
-The alias is `my-talk`; `entry` identifies the Markdown file. The `name` field is the slug used by build output settings. The [registry reference](/docs/reference/decks-json/) explains those fields and the optional `_config` defaults.
+The alias is `my-talk`; `entry` identifies the Markdown file. The `name` field is the slug used by build output settings. The [registry reference](/docs/getting-started/quickstart/) explains those fields and the optional `_config` defaults.
 
 Decks selects these export flags:
 
@@ -114,7 +115,7 @@ Decks selects these export flags:
 | Absent or `false` | `--dark --with-clicks --with-toc` |
 | `true` | `--dark --with-clicks --wait 1500` |
 
-Both paths include click steps and use the dark theme. Animated decks wait 1500 ms per page and omit `--with-toc`, which errors on HTML-only slides. The other path includes the PDF outline. These defaults and the Chromium requirement are documented in the [PDF export guide](/docs/guides/exporting-to-pdf/).
+Both paths include click steps and use the dark theme. Animated decks wait 1500 ms per page and omit `--with-toc`, which errors on HTML-only slides. The other path includes the PDF outline. These defaults and the Chromium requirement are documented in the [PDF export guide](/docs/cli/).
 
 Set `animated` to `true` for decks using OpenChart or scripted demos. A story scaffold sets it automatically:
 
@@ -122,7 +123,7 @@ Set `animated` to `true` for decks using OpenChart or scripted demos. A story sc
 bunx -p slidev-addon-decks decks new my-talk --story
 ```
 
-Use that scaffold command when creating a new deck. For an existing deck, update its registry entry. The [CLI reference](/docs/reference/cli/) describes the scaffold and export commands.
+Use that scaffold command when creating a new deck. For an existing deck, update its registry entry. The [CLI reference](/docs/cli/) describes the scaffold and export commands.
 
 Story stages also handle capture in their timeline: in print and export, the entrance jumps to its end state and the step timeline seeks to the requested state. That removes the need to capture a stage halfway through its entrance. Custom animation code still needs inspection; the export defaults do not establish that every component has finished loading.
 

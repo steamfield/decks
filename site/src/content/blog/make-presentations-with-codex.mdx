@@ -5,10 +5,11 @@ published: 2026-11-05
 keyword: "how to make presentations with codex"
 feature: agents
 relatedDocs:
-  - guides/writing-decks-with-an-agent
+  - cli
   - getting-started/quickstart
-  - reference/cli
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -50,7 +51,7 @@ You can maintain those instructions yourself. Start with the rules you repeatedl
 
 Decks supplies that guidance for data-storytelling presentations. It is a free, Apache-2.0-licensed Slidev addon and deck runner, published as `slidev-addon-decks`. Its initialization command writes a marked section in `AGENTS.md` with commands and a required reading order. Existing text outside the marked blocks is preserved.
 
-The shared rules and skills live under `.claude/` for compatibility. Codex follows their paths from `AGENTS.md` and reads them as Markdown. Initialization registers the `deck-author` agent natively in Claude Code; in Codex, you follow the shared role and workflow directly. The [agent-writing guide](/docs/guides/writing-decks-with-an-agent/) explains these entry points.
+The shared rules and skills live under `.claude/` for compatibility. Codex follows their paths from `AGENTS.md` and reads them as Markdown. Initialization registers the `deck-author` agent natively in Claude Code; in Codex, you follow the shared role and workflow directly. The [agent-writing guide](/docs/cli/) explains these entry points.
 
 ## How do you set up the project?
 
@@ -131,7 +132,7 @@ npx -p slidev-addon-decks decks snap my-talk
 npx -p slidev-addon-decks decks fact-extract my-talk
 ```
 
-The screenshot walk captures every slide and click state. Open the images and inspect labels, card placement and chart visibility. The figure extractor lists numbers for the fact-checking workflow; ask Codex to follow the installed fact-checking skill and resolve differences against the recorded sources. See the [deck-checking guide](/docs/guides/checking-a-deck/) for individual-slide screenshots and diagnostics.
+The screenshot walk captures every slide and click state. Open the images and inspect labels, card placement and chart visibility. The figure extractor lists numbers for the fact-checking workflow; ask Codex to follow the installed fact-checking skill and resolve differences against the recorded sources. See the [deck-checking guide](/docs/cli/) for individual-slide screenshots and diagnostics.
 
 Finish with the build and PDF export:
 
@@ -140,7 +141,7 @@ npx -p slidev-addon-decks decks build my-talk
 npx -p slidev-addon-decks decks export my-talk
 ```
 
-Export uses Chromium and includes click states. Review the resulting PDF as well as the browser deck, since the PDF presents static states. The [CLI reference](/docs/reference/cli/) lists the available commands and arguments.
+Export uses Chromium and includes click states. Review the resulting PDF as well as the browser deck, since the PDF presents static states. The [CLI reference](/docs/cli/) lists the available commands and arguments.
 
 ## What can't it do yet?
 

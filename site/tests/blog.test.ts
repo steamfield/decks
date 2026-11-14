@@ -41,6 +41,9 @@ describe("built blog posts", () => {
     const meta = (selector: string) => doc.querySelector(selector)?.getAttribute("content");
     const url = absolute(`/blog/${id}/`);
     expect(doc.querySelectorAll("h1")).toHaveLength(1);
+    const note = doc.querySelector("[data-blog-body]")?.firstElementChild;
+    expect(note?.textContent, id).toContain("Decks has moved to its own React framework");
+    expect(note?.querySelector("a")?.getAttribute("href"), id).toBe("/docs/");
     expect(doc.title.length).toBeLessThanOrEqual(60);
     expect(doc.title.replace(/ \| Decks$/, "").length).toBeLessThanOrEqual(48);
     const description = meta('meta[name="description"]') ?? "";
@@ -148,7 +151,8 @@ function expectCodeFrames(doc: ReturnType<typeof page>, source: string) {
     selectors.push("[data-code-title]");
   for (const selector of selectors) {
     expect(doc.querySelector(selector), selector).not.toBeNull();
-    expect(docs.querySelector(selector), selector).not.toBeNull();
+    if (selector !== "[data-code-title]")
+      expect(docs.querySelector(selector), selector).not.toBeNull();
   }
   expect(doc.documentElement.outerHTML).toContain("--shiki-dark:");
 }
@@ -181,7 +185,7 @@ describe("valid article shapes", () => {
     const doc = page("docs/getting-started/quickstart/index.html");
     for (const caption of doc.querySelectorAll("[data-code-title]")) caption.remove();
     expect(() =>
-      expectCodeFrames(doc, "```bash\nbunx -p slidev-addon-decks decks new my-talk --story\n```"),
+      expectCodeFrames(doc, "```bash\nbunx -p @steamfield/decks decks new my-talk --story\n```"),
     ).not.toThrow();
   });
   it("accepts > in a caption regardless of prop order", () => {

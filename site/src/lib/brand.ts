@@ -1,5 +1,5 @@
 // The Decks mark: two slides on the diagonal, cyan in front of violet, in the
-// product theme's own ramps. Every brand asset is built from this one geometry at
+// kit theme's own ramps (packages/kit/src/theme-default.json). Every brand asset is built from this one geometry at
 // build time: the header mark (Logo.astro), the favicons, the touch and manifest
 // icons (src/pages/*.ts) and the mark on the social card (og.ts).
 import sharp from "sharp";

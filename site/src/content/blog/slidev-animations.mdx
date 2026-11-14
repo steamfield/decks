@@ -5,10 +5,11 @@ published: 2026-11-05
 keyword: "slidev animations"
 feature: story-steps
 relatedDocs:
-  - concepts/beats-and-the-story-timeline
-  - reference/components
-  - getting-started/your-first-story-deck
+  - motion
+  - kit
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -79,7 +80,7 @@ Test backward navigation as soon as you have a changing chart. After an annotati
 
 A custom chart can derive its target state from `$clicks` and animate toward that target. Keep the axes and marks in the same component so you can choose which parts stay fixed. A visibility-only wrapper around the entire chart gives you control over its appearance, but the chart's internal transitions still need their own implementation.
 
-Decks provides that timeline structure through `useStage`. A story stage pins a visualization to the slide and derives its timeline position from Slidev's click count. An adjacent step change animates toward the new position, including backward changes. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls these steps "beats" and describes the API.
+Decks provides that timeline structure through `useStage`. A story stage pins a visualization to the slide and derives its timeline position from Slidev's click count. An adjacent step change animates toward the new position, including backward changes. The [story timeline guide](/docs/motion/) calls these steps "beats" and describes the API.
 
 In a project with Decks and its Slidev dependencies installed, create the starter with:
 
@@ -87,7 +88,7 @@ In a project with Decks and its Slidev dependencies installed, create the starte
 bunx -p slidev-addon-decks decks new my-talk --story
 ```
 
-The [first story deck guide](/docs/getting-started/your-first-story-deck/) explains the generated files. `components/FirstStage.vue` contains one series and one chip across three steps. The page places that stage; its stanza in `slides.md` declares:
+The [first story deck guide](/docs/kit/) explains the generated files. `components/FirstStage.vue` contains one series and one chip across three steps. The page places that stage; its stanza in `slides.md` declares:
 
 ```yaml title="Story slide manifest stanza"
 ---
@@ -132,4 +133,4 @@ A chart repeated on separate slides normally has separate component instances. T
 
 Decks supports a visual hand-off between story slides. The templates demo includes a hand-off pair alongside its minimal stage, bars and labelled cards. Use that pair as a reference when an explanation needs another slide while keeping a visual reference on screen.
 
-The [component reference](/docs/reference/components/) distinguishes the pieces: `StoryStage` holds the pinned visualization and card slots, `StoryCard` holds the prose, and `StoryLayer` supplies another SVG layer for marks that need a `view-transition-name`. Keep the shared visual reference consistent across the pair so the audience can follow the change around it. A carried baseline is useful only if it continues to mean the same thing on the receiving slide.
+The [component reference](/docs/kit/) distinguishes the pieces: `StoryStage` holds the pinned visualization and card slots, `StoryCard` holds the prose, and `StoryLayer` supplies another SVG layer for marks that need a `view-transition-name`. Keep the shared visual reference consistent across the pair so the audience can follow the change around it. A carried baseline is useful only if it continues to mean the same thing on the receiving slide.

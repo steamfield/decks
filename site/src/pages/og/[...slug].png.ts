@@ -14,7 +14,7 @@ export const getStaticPaths = (async () => {
   const siteName = `${site.name} · ${site.packageName}`;
   const landing = {
     title: site.tagline,
-    description: "A Slidev addon for interactive charts and data storytelling.",
+    description: "A React slide framework for animated data storytelling.",
     siteName,
   };
   return [

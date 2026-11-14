@@ -2,6 +2,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { guideData, guideId } from "../lib/guide";
 import { blogSchema, docSchema } from "./schema";
 
 const valid = { title: "Install", description: "How to install.", group: "getting-started" };
@@ -16,14 +17,15 @@ describe("docSchema", () => {
     expect(docSchema.safeParse({ ...valid, description: "x".repeat(161) }).success).toBe(false);
   });
 
-  it("names a group in every shipped page", () => {
-    const root = "src/content/docs";
+  it("derives valid navigation metadata from every shipped guide page", () => {
+    const root = "../docs/guide";
     const files = readdirSync(root, { recursive: true, encoding: "utf8" }).filter((file) =>
       file.endsWith(".md"),
     );
     expect(files.length).toBeGreaterThan(0);
     for (const file of files) {
-      expect(readFileSync(join(root, file), "utf8"), file).toMatch(/^group: [\w-]+$/m);
+      const metadata = guideData(guideId(file), readFileSync(join(root, file), "utf8"));
+      expect(docSchema.safeParse(metadata).success, file).toBe(true);
     }
   });
 });

@@ -4,7 +4,6 @@ import CopyBlock from "../components/CopyBlock.astro";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
 import {
-  CompareTable,
   DeckProse,
   ExampleGallery,
   FileTree,
@@ -14,7 +13,7 @@ import {
   Section,
   Transcript,
 } from "../components/landing/sections";
-import { agents, countWord, site } from "../config";
+import { agents, site } from "../config";
 import { ENTRIES, loadExamples } from "../data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../data/fixtures";
 import { loadProjectFiles, setupCommands } from "../data/project";
@@ -74,7 +73,7 @@ const files = loadProjectFiles();
       id="agent"
       tone="band"
       title={`Claude Code drafted this deck from one prompt in ${agentFigures.minutes} minutes.`}
-      lede="The Keeling curve deck below came from a fresh project set up with the commands above, then a second Claude Code session revised it."
+      lede="The Keeling curve deck below was recorded with the earlier Slidev addon, then a second Claude Code session revised it. The current setup uses React."
     >
       <div class="agent-evidence">
         <div class="agent-prompt">
@@ -98,7 +97,7 @@ const files = loadProjectFiles();
             <a href={agentExample.href} data-example={agentExample.name}>
               Load the Keeling deck in the player <span aria-hidden="true">→</span>
             </a>
-            <a href="/docs/guides/writing-decks-with-an-agent/">
+            <a href="/docs/cli/#decks-init---force">
               Writing decks with an agent <span aria-hidden="true">→</span>
             </a>
           </p>
@@ -136,7 +135,7 @@ const files = loadProjectFiles();
         <div>
           <dt>Check the sources</dt>
           <dd>
-            Run <code>fact-checking-a-deck</code> before presenting. Each figure stays linked to its
+            Use the <code>deck-data</code> skill before presenting. Each figure stays linked to its
             source.
           </dd>
         </div>
@@ -162,18 +161,6 @@ const files = loadProjectFiles();
     lede="Pick one to load it into the player at the top of the page. Each row says how the deck was made."
   >
     <ExampleGallery examples={examples} />
-    <details class="evidence-disclosure">
-      <summary>
-        Story slides and v-click <span>How the presentation advances</span>
-      </summary>
-      <div class="disclosure-content">
-        <p class="text-ink-2 mb-4">
-          Slidev's v-click shows or hides one element per click. A story slide redraws the chart
-          from the current click count.
-        </p>
-        <CompareTable rows={site.compare} />
-      </div>
-    </details>
   </Section>
 
   <Section
@@ -188,7 +175,7 @@ const files = loadProjectFiles();
     id="requirements"
     tone="band"
     title="Requirements and limits"
-    lede={`Decks runs on Slidev with shared instructions for ${countWord(agents.length)} agent platforms.`}
+    lede={`Decks uses React and MDX, with shared instructions for ${agents.join(" and ")}.`}
   >
     <div class="requirements-grid">
       <Requirements items={site.requirements} />
@@ -197,13 +184,13 @@ const files = loadProjectFiles();
         <a href="/docs/getting-started/quickstart/">
           Start a new deck <span aria-hidden="true">→</span>
         </a>
-        <a href="/docs/getting-started/add-decks-to-an-existing-deck/">
-          Add Decks to an existing Slidev deck <span aria-hidden="true">→</span>
+        <a href="/docs/slides/">
+          Write React and MDX slides <span aria-hidden="true">→</span>
         </a>
-        <a href="/docs/guides/writing-decks-with-an-agent/">
+        <a href="/docs/cli/#decks-init---force">
           Write with an agent <span aria-hidden="true">→</span>
         </a>
-        <a href="/docs/guides/theming-with-theme-json/">
+        <a href="/docs/kit/#theme">
           Customize the theme <span aria-hidden="true">→</span>
         </a>
       </div>

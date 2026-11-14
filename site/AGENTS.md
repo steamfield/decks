@@ -4,7 +4,7 @@ Instructions for coding agents working in this directory. Keep this file under a
 
 ## Overview
 
-The landing page, docs and blog for Decks (`slidev-addon-decks`) at decks.steamfield.io. The hero is a large headline with the install commands beside it, then a live same-origin deck in a presenter-style player: a sticky title bar (examples, position, transport), the slide, a rail of slides with step progress, and a readable caption. The header, hero, player and sections share one 1360px column. The landing page takes its palette from the product theme (`packages/decks/theme/default.json`), so the page canvas is the slide canvas and every other surface is that zinc tinted toward the theme's blue-violet. Astro (static), React islands, Tailwind 4, Bun. It lives in `site/` inside the decks repository, outside the bun workspace, and is scaffolded from the stacks `astro-product-site` stack.
+The landing page, docs and blog for Decks (`@steamfield/decks`), a React slide framework for animated data storytelling, at decks.steamfield.io. The hero is a large headline with the install commands beside it, then a live same-origin deck in a presenter-style player: a sticky title bar (examples, position, transport), the slide, a rail of slides with step progress, and a readable caption. The header, hero, player and sections share one 1360px column. The landing page takes its palette from the product theme (`packages/kit/src/theme-default.json`), so the page canvas is the slide canvas and every other surface is that zinc tinted toward the theme's blue-violet. Astro (static), React islands, Tailwind 4, Bun. It lives in `site/` inside the decks repository, outside the bun workspace, and is scaffolded from the stacks `astro-product-site` stack.
 
 ## Commands
 
@@ -37,10 +37,11 @@ Each target also has a `bun run <target>` alias in `package.json`. `make demo` n
 
 | Path | Owns |
 | --- | --- |
+| `../docs/guide/*.md` | Package guide, loaded directly by the docs collection; no second site copy |
 | `src/content/blog/`, `src/content/schema.ts` | MDX posts with validated metadata and docs references |
 | `src/lib/blog.ts`, `src/layouts/BlogLayout.astro`, `src/pages/blog/` | Blog URLs, reading time, structured data, reading layout and routes |
 | `src/components/blog/` | DeckDemo (paused live player), Figure (product media), ThemeCompare (also used on the landing) |
-| `src/config.ts` | All landing copy, install commands, requirements, notes for the file tree, the v-click comparison, footer, `site.islands` |
+| `src/config.ts` | All landing copy, install commands, requirements, notes for the file tree, the install workflow, footer, `site.islands` |
 | `src/pages/index.astro` | The landing page: section order and which island goes where |
 | `src/data/examples.json` | The example registry: gallery order (the first is the hero), start step, provenance, featured labels, excerpt attribution, run fixtures, edit commits and preview scripts |
 | `src/data/examples.ts` | Build-time example loader: recordings, posters, loops, run figures and edits from generated files |
@@ -57,32 +58,32 @@ Each target also has a `bun run <target>` alias in `package.json`. `make demo` n
 | `scripts/demo.mjs`, `edits.mjs`, `excerpt-run.mjs`, `capture-hook.mjs`, `hook.mjs`, `scratch-project.mjs` | Generators for the above |
 | `demo/warm-theme.json` | The warm still's theme override |
 | `public/posters/`, `public/stills/`, `public/loops/` | Generated images and video (committed); `public/d/` holds deck builds (gitignored) |
-| `src/content-drift.test.ts` | Commands, figures, the hook's answer, edits and deck recordings checked against the repository |
+| `src/content-drift.test.ts`, `src/lib/content-commands.test.ts` | Figures, the hook's answer, edits, deck recordings and current commands checked against the repository |
 | `e2e/fixtures/stub-deck.html` | A stand-in deck that speaks the embed contract, routed in for browser tests |
 
-The site reads its parent repository at build time (`../packages/decks`, `../examples`, `../README.md`), so it builds only inside the decks repo.
+The site reads its parent repository at build time (`../packages/`, `../docs/guide/`, `../plugins/decks/`, `../examples/`), so it builds only inside the decks repo.
 
 ## Agent harness
 
-Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` block destructive commands and secret-shaped writes, lint each written file and format changed files on stop (`.claude/README.md`). Rules in `.claude/rules/site/`: `docs.md` covers `src/content/docs/**`, `ui.md` covers the components, styles and pages.
+Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` block destructive commands and secret-shaped writes, lint each written file and format changed files on stop (`.claude/README.md`). Rules in `.claude/rules/site/`: `docs.md` describes docs conventions; the collection now reads `../docs/guide/*.md`, `ui.md` covers the components, styles and pages.
 
 ## Conventions
 
 - Copy is literal: say what the product does. Section headings are claims ending in a period, built from fixture figures where they cite one (reference sections such as Requirements and limits keep a topic label); Blog H2s may be phrased as the questions people search; landing and docs headings keep the claim rule. No slogans, no "not X but Y", no em dashes. The landing unit is a "step"; "beat" is defined in the docs. `make build` runs the package's prose lint over the landing text (R6); mark a quoted bad example with `data-lint-skip`.
 - Every number on the page comes from a generated fixture or the repository, and `src/content-drift.test.ts` checks it. Never type a figure, a transcript line or a slide title by hand: re-run the generator. Every landing image comes from `public/posters/`, `stills/`, `loops/` or `og/` (R3, build test), and each example says how it was made.
-- Every shown `decks` command pins the package: `bunx -p slidev-addon-decks decks …` (pnpm, which has no `-p`, uses `pnpm exec decks …` after its `pnpm add`). The bare `decks` on npm is unrelated.
+- Current landing commands install `@steamfield/decks react react-dom`, then use `bunx -p @steamfield/decks decks …`, `npx -p @steamfield/decks decks …` or `pnpm exec decks …`. The installed package supplies the local bin; the unrelated `decks` package on npm must never be installed. Agent setup is `decks init` plus `claude plugin install decks@steamfield --scope project`. Historical blog posts carry a migration note and keep their original examples.
 - The landing page is dark only. The canvas is the slide's #09090b; bands, panels, controls and hairlines are the theme's zinc tinted toward its blue-violet (`mix()` in `src/lib/tokens.ts`). Cyan is the one action color. The theme's other hues carry meaning only: provenance (agent cyan, talk amber, template violet, hand emerald), run output and the hook's verdict (emerald passes, rose blocks). Sections alternate canvas and band (`Section tone`), each band edged by hairlines, and a panel sits one step above its section. Depth comes from that ladder and borders; the open examples menu is the one shadow. The Decks mark (header, icons, social card) is the logo and sits outside these limits. Decorative marks are limited to the multi-hue rule (top of the player, above the closing call to action), the faint dot grid behind the hero and the terminal frame's window dots; no other textures, glows or gradients, and no extra display faces: Inter and JetBrains Mono only. `src/styles/tokens.test.ts` checks contrast, the tint and that the bands stay distinguishable.
 - The header, hero text and showcase share one column: 1360px wide with 32px gutters, or 16px below 768px, so the page has a single left edge. Never cap the showcase's width by viewport height. Preserve the full 16:9 composition by uniformly scaling the slide on mobile; captions and controls remain readable page text. Fullscreen fits the complete slide with letterboxing.
 - The selected live deck loads when the player hydrates in view. A sharp poster remains until the interactive deck is ready; no recorded video loads. Automatic live playback runs only when motion is allowed, visible and onscreen, and manual interaction pauses it. Reduced motion still loads the live deck without automatic playback. The shell and poster stay at or under 350 KB; live deck assets are measured separately. Recorded-video size and frame-rate targets are no longer release gates.
 - Islands: `DeckPlayer` (`client:visible`) on the landing and blog posts with `DeckDemo`; `InstallTabs` (`client:idle`) on the landing. Docs and the blog index ship no islands. Each server-renders a useful state: posters, deck text and links without JavaScript.
-- The embed contract's deck side is in the addon (`bun run test:embed` at the repo root). `beats` is the last beat index, so a slide has `beats + 1` steps.
+- The embed contract's deck side is in the framework. `beats` is the last beat index, so a slide has `beats + 1` steps.
 
 ## Guardrails
 
 - Destructive commands, credential-shaped writes and real `.env` writes are guarded by native hooks. A block means ask the user; never rephrase a command or use another tool to bypass it.
 - Store credentials in environment variables. Write variable names and placeholders in `.env.example`.
 - Treat lint diagnostics as work to resolve. Run the project check command before finishing.
-- Keep site-only changes inside `site/`. A request covering demo content or embedded interaction can also require changes to `examples/` and the addon; read the root rules for those changes.
+- Keep site-only changes inside `site/`. A request covering demo content or embedded interaction can also require changes to `examples/` and the framework; read the root rules for those changes.
 
 ## Testing
 
@@ -122,9 +123,9 @@ Cloudflare Worker `decks` serving `dist/` as static assets, production at decks.
 | Where | What and why | Remove when |
 | --- | --- | --- |
 | `package.json` | `typescript@^6`: `astro check` refuses TypeScript 7 | `@astrojs/check` supports TypeScript 7 |
-| `tests/build.test.ts` | The probe build copies `site/` into a temp parent and symlinks `packages`, `examples` and `README.md` beside it, because the site reads its parent repo | The site stops reading the parent repo at build time |
-| `src/content-drift.test.ts`, `scripts/demo.mjs` | Import `../../packages/decks/theme/resolve.ts` across the package boundary to merge and validate the warm still's theme with the real resolver | The addon publishes the resolver on an export path the site can depend on |
-| `src/lib/tokens.ts`, `scripts/scratch-project.mjs` | Read `packages/decks/theme/default.json` and run `packages/decks/scripts/deck.mjs` from the parent repo | The site stops reading the parent repo at build time |
+| `tests/build.test.ts` | The probe build copies `site/` into a temp parent and symlinks `packages`, `examples`, `plugins` and root `node_modules` beside it, and copies the package guide so the probe can add a page, because the site reads its parent repo | The site stops reading the parent repo at build time |
+| `src/content-drift.test.ts`, `scripts/demo.mjs` | Import `../../packages/kit/src/theme-resolve.ts` across the package boundary to merge and validate the warm still's theme with the real resolver | The framework publishes the resolver on an export path the site can depend on |
+| `src/lib/tokens.ts`, `scripts/scratch-project.mjs` | Read `packages/kit/src/theme-default.json` and run the source CLI in `packages/node/src/cli.ts` from the parent repo | The site stops reading the parent repo at build time |
 
 ## Deferred
 

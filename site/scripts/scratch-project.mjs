@@ -4,22 +4,29 @@
 // both show what a user gets rather than what this repository has.
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 // Run from site/ (builds, tests and the generators all do); once bundled into
 // dist/, import.meta paths no longer point here.
 const PACKAGE = resolve(process.cwd(), "../packages/decks");
-export const CLI = join(PACKAGE, "scripts/deck.mjs");
+const tsx = createRequire(resolve(process.cwd(), "../package.json")).resolve("tsx");
+export const CLI = resolve(process.cwd(), "../packages/node/src/cli.ts");
 /** What init and new are called with, in order. */
 const SETUP_ARGS = [["init"], ["new", "my-talk", "--story"]];
-/** The same commands as the page prints them: pinned, since the bare `decks` on npm is another package. */
+/** The installed package supplies the local decks bin. */
 export const SETUP_COMMANDS = SETUP_ARGS.map(
-  (args) => `bunx -p slidev-addon-decks decks ${args.join(" ")}`,
+  (args) => `bunx -p @steamfield/decks decks ${args.join(" ")}`,
 );
 
 function decks(cwd, args) {
-  const result = spawnSync("node", [CLI, ...args], { cwd, encoding: "utf8" });
+  const result = spawnSync(
+    "node",
+    ["--conditions=@steamfield/decks/source", "--import", tsx, CLI, ...args],
+    { cwd, encoding: "utf8" },
+  );
+  if (result.error) throw result.error;
   if (result.status !== 0) {
     throw new Error(
       `decks ${args.join(" ")} exited ${result.status}: ${result.stdout}${result.stderr}`,
@@ -36,8 +43,8 @@ function decks(cwd, args) {
 export function withScratchProject(fn) {
   const dir = mkdtempSync(join(tmpdir(), "decks-site-project-"));
   try {
-    mkdirSync(join(dir, "node_modules"));
-    symlinkSync(PACKAGE, join(dir, "node_modules/slidev-addon-decks"), "dir");
+    mkdirSync(join(dir, "node_modules/@steamfield"), { recursive: true });
+    symlinkSync(PACKAGE, join(dir, "node_modules/@steamfield/decks"), "dir");
     for (const args of SETUP_ARGS) decks(dir, args);
     return fn(dir);
   } finally {

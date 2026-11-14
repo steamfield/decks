@@ -5,10 +5,11 @@ published: 2026-11-05
 keyword: "data storytelling presentation"
 feature: storytelling
 relatedDocs:
-  - concepts/story-vs-conventional-decks
-  - getting-started/your-first-story-deck
-  - concepts/beats-and-the-story-timeline
+  - kit
+  - motion
 ---
+
+> This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
 import DeckDemo from "../../components/blog/DeckDemo.astro";
 
@@ -68,7 +69,7 @@ Duplicated slides are another way to prepare the states. In PowerPoint's thumbna
 
 Decks encodes this sequence in a story slide. It is an addon and deck runner for [Slidev, which combines Markdown with Vue components](https://sli.dev/guide/syntax). Each story slide pins one visualization in place. A stage component contains the visual and a caption card whose copy changes at each step.
 
-The timeline follows Slidev's click count. Moving back one step plays the transition in reverse during ordinary navigation; reduced motion and larger jumps seek to the requested state. A visual can also carry over to the next slide. The [story timeline guide](/docs/concepts/beats-and-the-story-timeline/) calls these steps "beats" and explains that behavior. This gives a developer an explicit sequence to edit and review alongside the chart code. [Slidev animations and v-click](/blog/slidev-animations/) compares the two approaches in code.
+The timeline follows Slidev's click count. Moving back one step plays the transition in reverse during ordinary navigation; reduced motion and larger jumps seek to the requested state. A visual can also carry over to the next slide. The [story timeline guide](/docs/motion/) calls these steps "beats" and explains that behavior. This gives a developer an explicit sequence to edit and review alongside the chart code. [Slidev animations and v-click](/blog/slidev-animations/) compares the two approaches in code.
 
 ## How much text belongs on a data slide?
 
@@ -76,7 +77,7 @@ Keep the finding on the slide and put the longer explanation in your speaker not
 
 Decks' conventional-slide guidance targets roughly 70 visible words, with no paragraphs and at most three single-sentence bullets as the normal rule. Leave unused space when a chart needs only its headline and labels.
 
-A story card has a tighter budget: eight words for its lead and twenty for its body. The repository's `beats.test.ts` checks those limits. The [story and conventional deck comparison](/docs/concepts/story-vs-conventional-decks/) describes both formats and their prose budgets.
+A story card has a tighter budget: eight words for its lead and twenty for its body. The repository's `beats.test.ts` checks those limits. The [story and conventional deck comparison](/docs/kit/) describes both formats and their prose budgets.
 
 Keep caveats that affect interpretation visible. If a long qualification cannot fit beside the finding, narrow the claim or give the qualification its own step. Cutting words should leave the audience with an accurate reading of the data.
 
@@ -110,4 +111,4 @@ For an existing project with Decks installed, the story scaffold command is:
 bunx -p slidev-addon-decks decks new my-talk --story
 ```
 
-The [first story deck guide](/docs/getting-started/your-first-story-deck/) explains the generated files. The page places the stage component; the stage holds the visualization and per-step copy. Its figures live in the data module, with their sources recorded separately. The repository's `examples/opendata-pitch` is the reference story deck for inspecting that structure in a complete talk. More decks to study are in [Slidev examples](/blog/slidev-examples/).
+The [first story deck guide](/docs/kit/) explains the generated files. The page places the stage component; the stage holds the visualization and per-step copy. Its figures live in the data module, with their sources recorded separately. The repository's `examples/opendata-pitch` is the reference story deck for inspecting that structure in a complete talk. More decks to study are in [Slidev examples](/blog/slidev-examples/).
