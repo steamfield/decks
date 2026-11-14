@@ -59,9 +59,10 @@ it.each([[], ["build", "--help"], ["dev", "--help"], ["wat"]].map((args) => ({ a
   async ({ args }) => {
     const { dir } = await fixture(onTestFinished);
     const process = cli(dir, args);
-    expect((await process.exit)[0]).toBe(args[0] === "wat" ? 1 : 0);
-    expect(process.output().stdout).toContain("USAGE decks");
-    expect(process.output().stdout).not.toMatch(/cli\.ts|undefined/);
+    expect((await process.exit)[0]).toBe(args.length === 0 || args[0] === "wat" ? 1 : 0);
+    const usage = args.length === 0 ? process.output().stderr : process.output().stdout;
+    expect(usage).toContain("USAGE decks");
+    expect(usage).not.toMatch(/cli\.ts|undefined/);
     if (args[0] === "build") {
       expect(process.output().stdout).toContain("Output directory");
       expect(process.output().stdout).toContain("Base URL");
@@ -69,8 +70,8 @@ it.each([[], ["build", "--help"], ["dev", "--help"], ["wat"]].map((args) => ({ a
       expect(process.output().stdout).toContain("Port to listen on");
       expect(process.output().stdout).toContain("Open the deck");
     } else {
-      expect(process.output().stdout).toContain("Serve a deck");
-      expect(process.output().stdout).toContain("Build a static deck");
+      expect(usage).toContain("Serve a deck");
+      expect(usage).toContain("Build a static deck");
     }
   },
 );

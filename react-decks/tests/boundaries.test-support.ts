@@ -28,6 +28,12 @@ export const RULES: Record<string, Rule> = {
   motion: { workspace: ["core", "runtime"], react: true, node: false, npm: "declared" },
   node: { workspace: ["core"], react: false, node: true, npm: "declared" },
   kit: { workspace: ["core", "runtime", "motion"], react: true, node: false, npm: "declared" },
+  decks: {
+    workspace: ["core", "runtime", "motion", "node", "kit"],
+    react: true,
+    node: true,
+    npm: "declared",
+  },
 };
 
 export type Manifest = {
@@ -58,6 +64,7 @@ function importViolation(
   const rule = RULES[owner];
   if (!rule) return "unknown workspace package";
   const name = packageName(specifier);
+  if (name === "@steamfield/decks") return "workspace dependency is forbidden";
   if (/(?:^|\/)unstable(?:\/|$)/.test(specifier)) return "unstable APIs are not allowed";
   if (specifier.startsWith("node:") || BUILTINS.has(specifier)) {
     return rule.node ? undefined : "Node built-ins are forbidden";

@@ -11,7 +11,10 @@ export default defineConfig({
           // loading the compiler and highlighter, which took over five seconds on the slower
           // cluster hosts; the limit bounds a hang, it is not an assertion.
           testTimeout: 30_000,
-          include: ["packages/{core,node}/src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
+          include: [
+            "packages/{core,node,decks}/src/**/*.test.{ts,tsx}",
+            "tests/**/*.test.{ts,tsx}",
+          ],
         },
       },
       {

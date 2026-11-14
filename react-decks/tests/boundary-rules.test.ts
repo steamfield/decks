@@ -7,6 +7,17 @@ import {
 } from "./boundaries.test-support";
 
 describe("boundary checker rules", () => {
+  it.each(["core", "runtime", "motion", "node", "kit", "decks"])(
+    "forbids %s from importing the public facade even when declared",
+    (owner) => {
+      const declared = ["@steamfield/decks"];
+      for (const specifier of ["@steamfield/decks", "@steamfield/decks/motion"]) {
+        expect(
+          checkSource(owner, `packages/${owner}/src/probe.ts`, `import "${specifier}";`, declared),
+        ).toHaveLength(1);
+      }
+    },
+  );
   it.each<[string, string, string, string, string[]]>([
     ["workspace direction", "runtime", "@react-decks/core", "@react-decks/kit", []],
     ["bare workspace names", "runtime", "@react-decks/core", "@react-decks/core/src/index", []],

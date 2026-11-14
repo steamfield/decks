@@ -4,6 +4,22 @@ import { loadDeck, scanSlides } from "./index";
 
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
 describe("motion bindings", () => {
+  it.each([
+    {
+      component: 'export { Step as Reveal } from "@steamfield/decks/motion";',
+      slide: "<Reveal at={3} />",
+    },
+    {
+      component: "export {};",
+      slide: 'import { Step as Reveal } from "@steamfield/decks/motion";\n\n<Reveal at={3} />',
+    },
+  ])("counts public motion bindings in $slide", async ({ component, slide }) => {
+    const { dir } = await fixture({
+      "components/motion.tsx": component,
+      "slides/01-first.mdx": slide,
+    });
+    expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(3);
+  });
   it("counts Step re-exported from motion by the deck", async () => {
     const { dir } = await fixture({
       "components/motion.tsx": 'export { Step } from "@react-decks/motion";',
