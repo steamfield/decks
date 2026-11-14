@@ -12,7 +12,7 @@
     "test": "vitest run",
     "check": "bun run lint && bun run typecheck && bun run test",
     "check:isolated": "node scripts/check-isolated.mjs",
-    "decks": "node packages/node/src/cli.ts"
+    "decks": "tsx packages/node/src/cli.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.7",
@@ -29,6 +29,7 @@
     "@testing-library/jest-dom": "7.0.1",
     "@playwright/test": "1.65.1",
     "vite": "8.3.8",
-    "oxc-parser": "0.158.0"
+    "oxc-parser": "0.158.0",
+    "tsx": "4.23.15"
   }
 }
