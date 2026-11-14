@@ -1,69 +1,16 @@
-import { existsSync, statSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { basename, isAbsolute, resolve } from "node:path";
 import { type ParseArgsOptionsConfig, parseArgs } from "node:util";
 import { defineCommand, renderUsage, runCommand, showUsage } from "citty";
 import pc from "picocolors";
-import { z } from "zod";
-import { loadDeck } from "./config";
-import { authorError, DeckError, validationError } from "./errors";
+import { check } from "./commands/check";
+import { exportDeck } from "./commands/export";
+import { hook } from "./commands/hook";
+import { init } from "./commands/init";
+import { lint } from "./commands/lint";
+import { newDeck } from "./commands/new";
+import { shot } from "./commands/shot";
+import { authorError, DeckError } from "./errors";
+import { resolveDeck } from "./registry";
 import { build, dev } from "./server";
-
-const registrySchema = z.record(z.string(), z.unknown());
-const entrySchema = z.object({ dir: z.string() });
-const defaultsSchema = z.object({
-  outDir: z.string().default("dist/{name}"),
-  base: z.string().default("./"),
-  decksDir: z.string().default("decks"),
-});
-
-async function resolveDeck(value: string) {
-  const registryPath = resolve("decks.json");
-  let defaults: z.infer<typeof defaultsSchema>;
-  let entry: z.infer<typeof entrySchema> | undefined;
-  let aliases: string[] = [];
-  let validationInput: unknown;
-  try {
-    validationInput = existsSync(registryPath)
-      ? JSON.parse(await readFile(registryPath, "utf8"))
-      : {};
-    const registry = registrySchema.parse(validationInput);
-    aliases = Object.keys(registry).filter((key) => !key.startsWith("_"));
-    validationInput = registry._config ?? {};
-    defaults = defaultsSchema.parse(validationInput);
-    const registered =
-      !value.startsWith("_") && Object.hasOwn(registry, value) ? registry[value] : undefined;
-    validationInput = registered;
-    entry = registered === undefined ? undefined : entrySchema.parse(registered);
-  } catch (cause) {
-    if (cause instanceof z.ZodError)
-      throw validationError(registryPath, cause.issues, validationInput);
-    throw new DeckError(
-      `malformed decks.json: ${cause instanceof Error ? cause.message : String(cause)}`,
-      registryPath,
-      undefined,
-      { cause },
-    );
-  }
-  if (entry !== undefined) {
-    if (!existsSync(entry.dir))
-      throw new DeckError(
-        `decks.json entry ${JSON.stringify(value)} points at ${entry.dir.replace(/\/$/, "")}/, which does not exist.`,
-      );
-    return { deck: await loadDeck(entry.dir, value), defaults };
-  }
-  const directory =
-    !isAbsolute(value) &&
-    basename(value) === value &&
-    !statSync(value, { throwIfNoEntry: false })?.isDirectory()
-      ? resolve(defaults.decksDir, value)
-      : value;
-  if (!existsSync(directory))
-    throw new DeckError(
-      `${JSON.stringify(value)} is not a registered deck or a directory. Registered in decks.json: ${aliases.length ? aliases.join(", ") : "none"}.`,
-    );
-  return { deck: await loadDeck(directory, basename(resolve(directory))), defaults };
-}
 
 const deckArg = {
   type: "positional",
@@ -103,21 +50,31 @@ const commands = {
     },
   }),
 };
+const tools = { new: newDeck, check, lint, hook, export: exportDeck, shot, init };
 const main = defineCommand({
   meta: { name: "decks", description: "Develop and build React slide decks" },
-  subCommands: commands,
+  subCommands: { ...commands, ...tools },
 });
 
 export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> {
   const command = rawArgs[0];
   try {
-    if (command !== "dev" && command !== "build") {
+    if (command !== undefined && Object.hasOwn(tools, command)) {
+      try {
+        await runCommand(main, { rawArgs });
+      } catch (cause) {
+        if (cause instanceof Error && cause.name === "CLIError") throw new DeckError(cause.message);
+        throw cause;
+      }
+    } else if (command !== "dev" && command !== "build") {
       if (command === undefined) {
         console.error(await renderUsage(main));
         process.exitCode = 1;
       } else await showUsage(main);
       if (command && command !== "--help" && command !== "-h") {
-        throw new DeckError(`unknown command ${JSON.stringify(command)}. Use dev or build.`);
+        throw new DeckError(
+          `unknown command ${JSON.stringify(command)}. Commands: ${Object.keys(main.subCommands ?? {}).join(", ")}.`,
+        );
       }
     } else if (rawArgs.includes("--help") || rawArgs.includes("-h")) {
       if (command === "dev") await showUsage(commands.dev);
