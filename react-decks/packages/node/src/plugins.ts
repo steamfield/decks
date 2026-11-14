@@ -163,6 +163,7 @@ export const slides = Object.fromEntries([${loaders}]);`;
       });
       const structural = (path: string) => {
         const file = normalizePath(path);
+        if (file === `${deckDir}/setup.ts`) reload(server, "entry");
         if (normalizePath(dirname(file)) === `${deckDir}/slides` && file.endsWith(".mdx")) {
           metadata.delete(file.slice(deckDir.length + 1));
           totals.delete(file.slice(deckDir.length + 1));
@@ -262,6 +263,10 @@ export const slides = Object.fromEntries([${loaders}]);`;
       try {
         if (configError) this.error(configError);
         const file = normalizePath(context.file);
+        if (file === `${deckDir}/setup.ts`) {
+          reload(context.server, "entry");
+          return [];
+        }
         const parent = normalizePath(dirname(file));
         if (file.startsWith(`${deckDir}/layers/`) && context.type !== "update") return [];
         if (
@@ -332,6 +337,9 @@ export const slides = Object.fromEntries([${loaders}]);`;
   // MDX returns Rollup's Plugin type; Vite 8 uses Rolldown's narrower source-map type.
   const compiler = () => {
     const mdxPlugin = mdx({
+      // Slides are `.mdx`. A `.md` file a deck imports (its text with `?raw`, say) is not a
+      // slide and must not be compiled into a component.
+      mdExtensions: [],
       remarkPlugins: [
         remarkFrontmatter,
         removeNotes,

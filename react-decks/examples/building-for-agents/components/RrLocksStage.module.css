@@ -1,0 +1,28 @@
+.rr-cap {
+  font-family: var(--od-font-sans);
+  font-size: 28px;
+  fill: var(--od-text-muted);
+}
+.rr-bold {
+  font-weight: 700;
+}
+.rr-waiting {
+  fill: none;
+  stroke-width: var(--sf-marker);
+  stroke-dasharray: 6 6;
+  rx: var(--sf-radius-card);
+}
+.rr-track {
+  fill: var(--od-border-rule);
+}
+.rr-pill {
+  fill: var(--od-canvas);
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-hairline);
+}
+.rr-fade {
+  transition: opacity var(--od-dur-card) var(--od-settle);
+}
+:global([data-deck-motion="instant"]) .rr-fade {
+  transition: none;
+}

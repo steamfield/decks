@@ -1,0 +1,39 @@
+.glass-quote {
+  position: absolute;
+  margin: var(--sf-zero);
+  padding: calc(1.2 * var(--sw)) calc(1.4 * var(--sw)) calc(1.3 * var(--sw));
+  border: var(--sf-hairline) solid var(--od-border-rule);
+  border-left: var(--sf-marker) solid var(--od-amber);
+  border-radius: var(--sf-radius-card);
+  background: var(--od-surface);
+}
+.glass-quote-label {
+  margin-bottom: calc(0.9 * var(--sw));
+  font-family: var(--sf-font-pixel);
+  font-size: var(--sf-pixel-size);
+  line-height: var(--sf-pixel-leading);
+  text-transform: uppercase;
+  color: var(--od-amber);
+  text-shadow: var(--sf-fringe);
+}
+.glass-quote-text {
+  display: block;
+  font-family: var(--od-font-sans);
+  font-size: calc(1.5625 * var(--sw));
+  line-height: 1.12;
+  color: var(--od-text);
+}
+.glass-quote-text code {
+  padding: var(--sf-zero);
+  background: none;
+  font-family: var(--od-font-mono);
+  font-size: calc(1.09375 * var(--sw));
+  color: var(--od-cyan);
+}
+.glass-quote-source {
+  margin-top: calc(1 * var(--sw));
+  font-family: var(--od-font-mono);
+  font-size: calc(0.9375 * var(--sw));
+  line-height: 1.45;
+  color: var(--od-text-muted);
+}

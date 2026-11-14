@@ -44,6 +44,8 @@ export interface DeckApi {
   readonly slides: readonly SlideMeta[];
   readonly view: DeckView;
   readonly isPrint: boolean;
+  /** True when the deck was opened with `?embedded`, inside another page. */
+  readonly embedded: boolean;
   next(): void;
   prev(): void;
   nextSlide(): void;
@@ -56,6 +58,7 @@ export function useDeck(): DeckApi {
   const slide = useDeckSelector((state) => state.nav.slide);
   const clicks = useDeckSelector((state) => state.nav.click);
   const view = useDeckSelector((state) => state.view);
+  const embedded = useDeckSelector((state) => state.embedded);
   const actions = useMemo(
     () => ({
       next: () => store.dispatch({ type: "next" }),
@@ -75,6 +78,7 @@ export function useDeck(): DeckApi {
     slides,
     view,
     isPrint: view === "print",
+    embedded,
     ...actions,
   };
 }

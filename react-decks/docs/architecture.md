@@ -562,6 +562,8 @@ export interface DeckApi {
   readonly slides: readonly SlideMeta[];
   readonly view: DeckView;
   readonly isPrint: boolean;
+  /** True when the deck was opened with `?embedded`, inside another page. */
+  readonly embedded: boolean;
   next(): void;
   prev(): void;
   nextSlide(): void;
@@ -1716,3 +1718,110 @@ Decided at checkpoint 1 (`docs/spikes/parity.md`):
 - Not covered by the spike and still to prove in the port: marker brushes, the other
   `UnitGrid` variants, `StoryCard`'s outgoing-copy overlap and height easing, cross-slide
   transitions, and stages in the presenter, preview, overview and print contexts.
+
+## 7.1 kit, first slice: what a story deck needs (Final)
+
+The first real deck to move is `building-for-agents` (a 19-slide story deck with its own
+design system). This slice is exactly what it uses from the Slidev addon
+(`packages/decks`); the `Ink*` and `Unit*` marks, `Graph3D`, `CodeInk`, `RowStrip`, the
+conventional `Od*` chrome and the viewer come later.
+
+### Deck setup file
+
+A deck may have `setup.ts` beside `deck.config.ts`. The generated entry imports it for its
+side effects first, before any component module is evaluated and before the deck mounts,
+so a component may read the theme at module level. It is where a deck installs its theme. Editing it in
+dev reloads the page.
+
+### Theme
+
+```ts
+/** The kit's default tokens with a deck's `theme.json` merged over them and aliases resolved. */
+export function resolveTheme(deckTheme?: unknown): Theme;
+/** Makes `theme` the active theme: writes its `--od-*` custom properties into one <style>
+ *  element in <head> and makes `theme()`, `ink()` and the chart themes read it. */
+export function installTheme(theme: Theme): void;
+/** The active theme. Throws if none is installed. */
+export function theme(): Theme;
+export function ink(hue: Hue, step: 1 | 2 | 3 | 4): string;
+```
+
+`resolve.ts` and `default.json` are the addon's, unchanged in behaviour (objects merge,
+arrays replace, `{group.token}` aliases resolve after the merge); its tests come with it. A
+deck's `setup.ts` is `installTheme(resolveTheme(deckThemeJson))`. Installing replaces the
+previous style element, so it is safe to run again. Custom-property names are the addon's
+(`--od-canvas`, `--od-text`, `--od-cyan`, `--od-glow-*-rgb`, `--od-font-*`, `--od-radius`,
+...), so deck CSS written against them is unchanged.
+
+### Story engine
+
+Exported from `@react-decks/kit`, same names and meanings as `slidev-addon-decks/story`:
+
+- `DUR` (the duration table, seconds), `SETTLE`, `DRAW`, `TRACE` (gsap ease names registered
+  on the motion package's `gsap`), `SETTLE_CSS`, `DRAW_CSS`, `TRACE_CSS`, `easedStagger`.
+- `STAGE` (the 1920x1080 stage box), `clamp01`, `xScale`, `yScale`,
+  `filterUrl` and the filter definitions `StoryStage` renders.
+- `useStage({ copy, enter, beats })`: returns `{ clicks, isActive, playCount, copy, beats }`.
+  `beats` is `copy.length`; `copy` is the entry for the current click, clamped. The beat
+  script runs on the motion package's `useTimeline`. `enter` is a one-shot timeline: outside
+  the `slide` context, or when motion is `instant`, or when the slide is entered on a later
+  click, it shows its end state; while the slide is not active it holds at zero; on arrival
+  at click 0 it plays once the slide transition has finished (after `settled`-style
+  completion of the view transition, never during it). Returning to click 0 within one
+  visit does not replay it.
+- `useScriptedDemo()`: `{ clicks, shown(at), playCount, isActive }`; `playCount` increases
+  each time the slide becomes active.
+- `useFrameScale()`: `useSlideScale()`. It exists for values handed to OpenChart, which is
+  counter-scaled (below); it is not for anything else.
+- `gsap` re-exported from the motion package, so a deck never has two instances.
+
+A stage's state object is `useTween({ ... })` where the Vue stage had `reactive({ ... })`.
+
+### Components
+
+`StoryStage` (the fitted 16:9 frame: `stage` svg, `overlay`, `card`, `background` as props
+holding nodes; `beats`, `click`, `fluid`, `enterAfterTransition`), `StoryLayer`,
+`StoryCard` (`anchor`, `hue`, `lead`, `body`; its outgoing-copy overlap and height easing
+are ported, not dropped), `StoryCover` (`field`, `head`, `title`, `lede`, `byline`,
+`eyebrow`, `aside`, `background`, `center`), `StoryLink`, `OdQrCard` (`uqr`), `OdByline`,
+`OdCoverHead`, and `OpenChart`.
+
+Named slots become props that take nodes. Scoped styles become CSS Modules, or stay global
+where the class is part of the `od-*` vocabulary deck CSS selects on (`od-story-head`,
+`od-story-card`, `od-enter-a/b/c`, `od-cover-*`, `od-slide`, `is-story`, ...). SVG filter
+and pattern ids are per instance (`useId`).
+
+`OpenChart` wraps `@opendata-ai/openchart-react`. Its host is counter-scaled (width and
+height `scale * 100%`, `transform: scale(1 / scale)`, origin top left, `scale` from
+`useSlideScale()`), so the chart measures a box whose layout size equals its screen size.
+It animates on becoming active in the `slide` context and renders with animation off in
+every other context and when motion is `instant`; it registers a settle probe while its
+enter animation runs. `slideChartTheme`, `scaleChartTheme` and `slideChartAnimation` come
+from the kit and read the active theme.
+
+### Styles
+
+`@react-decks/kit/styles.css`: the addon's `base`, `layout`, `components`, `stats`,
+`story-frame` and `story-marks` sheets with `vw`/`vh` as `cqw`/`cqh`, `--sw`/`--sh` from the
+frame container (section 7's units rule), Slidev's full-screen overrides removed, and
+`.slidev-layout` selectors mapped to `[data-deck-slide]`; plus `compat.css` (section 7).
+The story decks' cross-slide rules (`html[data-od-story]::view-transition-*`, the named
+head and card groups, direction variants) are ported onto `html[data-deck-transition="story"]`:
+a deck sets `transition: "story"` and gets the addon's cross-fade with the head and card
+holding their places. A deck imports the stylesheet from its `styles/index.css`.
+
+### Proof
+
+The kit's fixture is `examples/tides-slide`: the `tides` deck's cover and its slide 2
+(`TideDayStage`, with `InkLine`, `InkRule` and `InkChip` kept local to the fixture from the
+spike), compared against the Slidev frames in `examples/tides-slide/baseline/`.
+
+| Situation (browser test) | Outcome |
+| --- | --- |
+| Slide 2 at clicks 0, 1, 2 with `?motion=instant`, 1920x1080 | Each frame differs from its Slidev baseline in under 0.2% of pixels. |
+| Walk slide 2 forward and back | The card copy follows the click; `settled()` resolves after each. |
+| Arrive on slide 2 from the cover with ArrowRight | The enter timeline plays after the transition; the head and card do not flash. |
+| Reload at `#/2?clicks=2` | The settled click-2 frame, no entrance from zero. |
+| The cover | Its three rows are present and the deck's `theme.json` colors apply. |
+| An `OpenChart` in a 1280x720 window, cold | The chart's svg fills its host (within a pixel). |
+

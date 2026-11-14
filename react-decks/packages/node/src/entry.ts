@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { ResolvedDeck } from "./config";
 
 export function entryModule(deck: ResolvedDeck): string {
-  return `import { mountDeck, Center, Cover, Section, TwoCol, ImageSide } from "@react-decks/runtime";
+  return `${existsSync(join(deck.dir, "setup.ts")) ? 'import "/setup.ts";\n' : ""}import { mountDeck, Center, Cover, Section, TwoCol, ImageSide } from "@react-decks/runtime";
 import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock } from "@react-decks/motion";
 ${existsSync(join(deck.dir, "styles/index.css")) ? 'import "/styles/index.css";' : ""}
 Promise.all([
