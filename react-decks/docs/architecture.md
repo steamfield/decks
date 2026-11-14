@@ -741,6 +741,15 @@ merged last.
 | A file is added to or removed from `components/` | The components module is invalidated and the page reloads; no server restart |
 | `deck.config.ts` changes | The server restarts |
 
+Before the first request Vite scans the runtime's entry and the deck's `components/*.tsx`
+for dependencies, so a cold start does not reload. A package imported directly in a slide's
+MDX is not scanned and can cost one reload the first time it is seen: import packages from
+components, or list them in `deck.config.ts` under `vite.optimizeDeps.include`.
+
+Known limits, accepted: a slide's URL holds its number, so after a slide is inserted before
+it the same URL shows a different slide; and a structural reload (a slide or component file
+added or removed, frontmatter changed) discards component-local state.
+
 `build` writes a static site to `outDir` that works from any `base` and from `file:`-relative
 hosting under that base; hash routing needs no server rewrites.
 

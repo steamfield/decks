@@ -1,6 +1,6 @@
 # RFC 0007: react-decks, a React slide framework to replace Slidev
 
-Status: In progress. Phase 0 (foundations) on branch `react-decks`.
+Status: In progress on branch `react-decks`. Phases 0 to 2 are done: the fixture deck runs in a browser with keyboard navigation, URL-held position, an adaptive canvas and hot reload, proven by 470 unit and integration tests and 12 Playwright tests. Next is phase 3, the parity spike.
 
 ## Problem
 
