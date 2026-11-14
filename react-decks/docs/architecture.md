@@ -562,6 +562,8 @@ export interface DeckApi {
   readonly slides: readonly SlideMeta[];
   readonly view: DeckView;
   readonly isPrint: boolean;
+  /** True when the deck was opened with `?embedded`, inside another page. */
+  readonly embedded: boolean;
   next(): void;
   prev(): void;
   nextSlide(): void;
