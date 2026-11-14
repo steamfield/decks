@@ -1,0 +1,210 @@
+@import '@fontsource-variable/orbitron';
+@import '@fontsource/press-start-2p';
+@import '@fontsource/vt323';
+@import '@fontsource/mr-dafoe';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* TeX Gyre Heros, self-hosted from steamfield.io (public/fonts, GUST licence
+   alongside). The family name is what theme.json's fonts.sans names. */
+@font-face {
+  font-family: 'Heros';
+  src: url('/fonts/heros-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Heros';
+  src: url('/fonts/heros-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Heros';
+  src: url('/fonts/heros-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Document timing: mirrors of DUR.color, DUR.opacity and SETTLE_CSS. Root
+   scope is required for view-transition pseudo-elements. */
+:root {
+  --sf-vt-fade: 340ms;
+  --sf-vt-out: 140ms;
+  --sf-vt-reduced: 140ms;
+  --sf-vt-delay: 100ms;
+  --sf-vt-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.od-slide.is-story {
+  /* Faces the theme has no slot for. Heros and JetBrains Mono come from
+     theme.json (fonts.sans, fonts.mono). */
+  --sf-font-display: 'Orbitron Variable', var(--od-font-sans);
+  --sf-font-pixel: 'Press Start 2P', ui-monospace, monospace;
+  --sf-font-term: 'VT323', ui-monospace, monospace;
+  --sf-font-script: 'Mr Dafoe', cursive;
+
+  /* Endpoints and the dim level. --sf-dim mirrors DIM in design.ts. */
+  --sf-zero: 0;
+  --sf-full: 100%;
+  --sf-on: 1;
+  --sf-dim: 0.45;
+  --sf-faint: 0.22;
+
+  /* Radii from the site: chips, controls, cards, then the CRT bezel. */
+  --sf-radius-chip: 2px;
+  --sf-radius-control: 4px;
+  --sf-radius-card: 8px;
+  --sf-hairline: 1px;
+  --sf-marker: 2px;
+
+  /* Frame grid. The left margin matches the addon's 5.7lw (about 110 units). */
+  --sf-margin-x: calc(5.7 * var(--lw));
+  --sf-head-top: calc(6.2 * var(--sh));
+  --sf-head-width: calc(64 * var(--lw));
+
+  /* Heros headlines: 50px claims at 1920 wide. */
+  --sf-head-size: calc(2.604167 * var(--sw));
+  --sf-head-weight: 700;
+  --sf-head-leading: 1.12;
+  --sf-head-tracking: -0.018em;
+
+  /* Cover: Orbitron title at 112px, one script line across it. */
+  --sf-cover-size: calc(5.833333 * var(--sw));
+  --sf-cover-weight: 900;
+  --sf-cover-leading: 1.02;
+  --sf-cover-tracking: 0.01em;
+  --sf-cover-width: calc(62 * var(--lw));
+  --sf-cover-top: calc(7.4 * var(--sh));
+  --sf-script-size: calc(4.6875 * var(--sw));
+  --sf-script-tilt: -7deg;
+  --sf-script-right: calc(1.5 * var(--sw));
+  --sf-script-bottom: calc(-3.4 * var(--sw));
+  --sf-lede-gap: calc(7.6 * var(--sh));
+  --sf-lede-width: calc(52 * var(--lw));
+
+  /* Prose and labels. Body is 28px, small 22px, pixel tags 15px. */
+  --sf-body-size: calc(1.458333 * var(--sw));
+  --sf-small-size: calc(1.145833 * var(--sw));
+  --sf-pixel-size: calc(0.78125 * var(--sw));
+  --sf-pixel-leading: 1.6;
+  --sf-body-leading: 1.42;
+  --sf-lead-weight: 700;
+  --sf-body-weight: 400;
+  --sf-copy-gap: calc(0.74 * var(--sh));
+  --sf-card-pad-y: calc(1.3 * var(--sw));
+  --sf-card-pad-x: calc(1.6 * var(--sw));
+  --sf-byline-gap: calc(0.83 * var(--sw));
+
+  /* Name plate: icon, Orbitron name, language chip, top right. */
+  --sf-plate-icon: calc(2.5 * var(--sw));
+  --sf-plate-name: calc(1.875 * var(--sw));
+  --sf-plate-weight: 800;
+  --sf-plate-tracking: 0.06em;
+  --sf-plate-gap: calc(0.73 * var(--sw));
+  --sf-chip-size: calc(0.9375 * var(--sw));
+  --sf-chip-pad-y: calc(0.26 * var(--sw));
+  --sf-chip-pad-x: calc(0.52 * var(--sw));
+
+  /* Evidence tags. */
+  --sf-tag-pad-y: calc(0.36 * var(--sw));
+  --sf-tag-pad-x: calc(0.52 * var(--sw));
+
+  /* Thread rail, under the card. The beat rail moves below it. */
+  --sf-rail-bottom: calc(3.5 * var(--sh));
+  --sf-rail-icon: calc(1.875 * var(--sw));
+  --sf-rail-gap: calc(0.62 * var(--sw));
+  --sf-rail-pad: calc(0.62 * var(--sw));
+  --sf-rail-name: calc(1.041667 * var(--sw));
+  --sf-beat-bottom: calc(1.3 * var(--sh));
+
+  /* SVG type stays in viewBox units, so it never double scales. */
+  --sf-svg-term: 31px;
+  --sf-svg-mono: 21px;
+  --sf-svg-mono-small: 18px;
+  --sf-svg-name: 29px;
+  --sf-svg-pixel: 15px;
+  --sf-svg-pixel-small: 13px;
+
+  /* Neon glow, for the one lit element of a beat. Never on card or code text. */
+  --sf-glow-pink: 0 0 6px rgba(var(--od-glow-rose-rgb), 0.9), 0 0 18px rgba(var(--od-glow-rose-rgb), 0.6),
+    0 0 42px rgba(var(--od-glow-rose-rgb), 0.35);
+
+  /* CRT: mirrors of CRT in design.ts. */
+  --sf-crt-scan: 0.045;
+  --sf-crt-radius-outer: 18px;
+  --sf-crt-radius-screen: 12px;
+}
+
+/* ── The tube: steamfield.io's CRT glass, over every slide ──
+   Values are the site's (--crt-* in its global.css), with lengths rescaled
+   from its hero to a 1920-wide frame. global-top.vue draws the layers. */
+.od-slide.is-story {
+  /* One scanline period: 4px at 1920 wide, never under 3px, always a whole
+     pixel so the lines never beat against the pixel grid. */
+  --sf-tube-line: max(3px, round(calc(0.208333 * var(--sw)), 1px));
+  --sf-tube-scan: 0.07;
+  --sf-tube-mask: 0.03;
+  --sf-tube-grain: 0.035;
+  --sf-tube-hum: 0.025;
+  --sf-tube-hum-height: calc(18 * var(--sh));
+  --sf-tube-hum-duration: 9s;
+  --sf-tube-sheen: 0.03;
+  --sf-tube-vignette: 0.3;
+  --sf-tube-radius: calc(2.7 * var(--sw)) / calc(3.2 * var(--sw));
+  --sf-tube-edge: calc(2.2 * var(--sw));
+  --sf-tube-edge-shade: 0.5;
+  --sf-tube-power: 520ms;
+  --sf-tube-wash: 0.06;
+  /* Convergence error on neon and pixel type: red to the right, cyan left. */
+  --sf-fringe-size: calc(0.035 * var(--sw));
+  --sf-fringe-red: rgb(255 70 90 / 0.4);
+  --sf-fringe-cyan: color-mix(in srgb, var(--od-cyan) 40%, transparent);
+  --sf-fringe: var(--sf-fringe-size) 0 0 var(--sf-fringe-red),
+    calc(-1 * var(--sf-fringe-size)) 0 0 var(--sf-fringe-cyan);
+  /* The hero's soft-light grain over the live scene. */
+  --sf-scene-grain: 0.22;
+}
+
+/* ── Cover: the hero's composition, centered on the sun ── */
+.od-slide.is-story {
+  --sf-cover-size: calc(4.95 * var(--sw));
+  --sf-cover-top: calc(4.6 * var(--sh));
+  --sf-script-size: calc(4.4 * var(--sw));
+  --sf-script-right: calc(-2.4 * var(--sw));
+  --sf-script-bottom: calc(-3.1 * var(--sw));
+  --sf-lede-size: calc(2.1875 * var(--sw));
+  --sf-lede-gap: calc(8.4 * var(--sh));
+  --sf-lede-width: calc(66 * var(--lw));
+  --sf-wordmark-size: calc(1.5625 * var(--sw));
+  --sf-wordmark-mark: calc(1.7 * var(--sw));
+  --sf-nav-size: calc(1.4583 * var(--sw));
+  --sf-nav-gap: calc(1.9 * var(--sw));
+  --sf-fig-size: calc(0.9375 * var(--sw));
+  --sf-fig-width: calc(38 * var(--lw));
+}
+
+/* ── Type: the hero's faces only (Riley, 2026-11-13) ──
+   No Helvetica-style face on a slide. Headlines, card leads and names are
+   Orbitron in sentence case; card copy, captions and ledes are VT323, set
+   large because its x-height is small. Heros stays only inside the wordmark,
+   which is the logo. */
+.od-slide.is-story {
+  --sf-font-wordmark: 'Heros', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sf-head-size: calc(2.03 * var(--sw));
+  --sf-head-weight: 700;
+  --sf-head-leading: 1.16;
+  --sf-head-tracking: 0.005em;
+  --sf-head-width: calc(70 * var(--lw));
+  --sf-lead-size: calc(1.354 * var(--sw));
+  --sf-lead-weight: 700;
+  --sf-lead-tracking: 0.01em;
+  --sf-body-size: calc(1.8229 * var(--sw));
+  --sf-body-leading: 1.08;
+  --sf-body-tracking: 0.01em;
+  --sf-copy-gap: calc(0.9 * var(--sh));
+  --sf-fig-size: calc(1.3542 * var(--sw));
+  --sf-svg-name: 25px;
+}

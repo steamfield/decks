@@ -53,5 +53,10 @@
     "entry": "examples/texas-2026/slides.md",
     "name": "texas-2026",
     "animated": true
+  },
+  "agents": {
+    "entry": "examples/building-for-agents/slides.md",
+    "name": "building-for-agents",
+    "animated": true
   }
 }

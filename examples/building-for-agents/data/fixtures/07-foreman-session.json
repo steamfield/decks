@@ -1,0 +1,1829 @@
+{
+ "runs": [
+  {
+   "name": "site-console",
+   "model": "gpt-astra",
+   "createdAt": "2026-11-06T09:24:19.125Z",
+   "branch": "foreman/site-console",
+   "durationMs": 1228386
+  },
+  {
+   "name": "site-commands",
+   "model": "gpt-sol",
+   "createdAt": "2026-11-06T09:24:25.526Z",
+   "branch": "foreman/site-commands",
+   "durationMs": 925788
+  },
+  {
+   "name": "site-e2e",
+   "model": "gpt-terra",
+   "createdAt": "2026-11-06T09:47:40.094Z",
+   "branch": "foreman/site-e2e",
+   "durationMs": 479572
+  }
+ ],
+ "question": {
+  "id": "q1",
+  "text": "The required strict install-command drift check finds landing.ts install.options npx command `npx @steamfield/foreman doctor`, while README.md only contains `npx @steamfield/foreman` (Install). The contract forbids editing either here or loosening the test. Please align the source copy/README in your scope so the exact-command test can pass; I will retain the strict comparison.",
+  "answer": "Your test is right and the page copy is wrong. Change the npx option in site/src/data/landing.ts to exactly \"npx @steamfield/foreman\" (I made the same one-line change on the base branch, so the hunks will match at merge). You may edit that one line of landing.ts; nothing else in it. Keep the strict comparison.",
+  "run": "site-commands",
+  "askedMs": 31410,
+  "answeredMs": 49673,
+  "askedAt": "2026-11-06T09:24:56.936Z",
+  "answeredAt": "2026-11-06T09:25:15.199Z"
+ },
+ "delegates": [
+  {
+   "name": "site-console",
+   "model": "gpt-astra",
+   "work": "Hero console",
+   "branch": "foreman/site-console",
+   "contract": "console.md",
+   "mayChange": "- May change: site/src/data/supervision.ts, site/src/data/supervision.test.ts,",
+   "start": 4000,
+   "done": 32500,
+   "activity": [
+    {
+     "at": 6491,
+     "event": {
+      "kind": "command",
+      "command": "pwd && git status --short && ls site",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 6981,
+     "event": {
+      "kind": "command",
+      "command": "ls -d \"$HOME\"/.claude/plugins/cache/*/ce/*/ | sort -V | tail -1",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 7472,
+     "event": {
+      "kind": "command",
+      "command": "cat site/AGENTS.md site/DESIGN.md site/docs/PRODUCT.md",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 7963,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/data/supervision.ts"
+      ]
+     }
+    },
+    {
+     "at": 8454,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/console/ConsoleText.tsx"
+      ]
+     }
+    },
+    {
+     "at": 8944,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/console/Transcript.tsx"
+      ]
+     }
+    },
+    {
+     "at": 9435,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/console/EventFeed.tsx"
+      ]
+     }
+    },
+    {
+     "at": 9926,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/SupervisionConsole.tsx"
+      ]
+     }
+    },
+    {
+     "at": 10417,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/data/supervision.test.ts"
+      ]
+     }
+    },
+    {
+     "at": 10907,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/SupervisionConsole.test.tsx"
+      ]
+     }
+    },
+    {
+     "at": 11398,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 11889,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 12380,
+     "event": {
+      "kind": "command",
+      "command": "mktemp -d",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 12870,
+     "event": {
+      "kind": "command",
+      "command": "free-port 4400",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 13361,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/SupervisionConsole.test.tsx",
+       "site/src/data/supervision.test.ts"
+      ]
+     }
+    },
+    {
+     "at": 13852,
+     "event": {
+      "kind": "command",
+      "command": "node -e \\\"console.log(import.meta.resolve('playwright'))\\\"",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 14343,
+     "event": {
+      "kind": "command",
+      "command": "cat ~/.agents/skills/playwright-cli/SKILL.md",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 14833,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=supervision open http://localhost:4404",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 15324,
+     "event": {
+      "kind": "command",
+      "command": "cat ~/.agents/skills/playwright-cli/references/running-code.md",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 15815,
+     "event": {
+      "kind": "command",
+      "command": "sed -n '1,130p' site/src/lib/analytics.ts; cat site/src/lib/analytics.test.ts | head -90",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 16306,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/SupervisionConsole.tsx"
+      ]
+     }
+    },
+    {
+     "at": 16796,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/supervision.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 17287,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/supervision.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 17778,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/supervision.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 18269,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/SupervisionConsole.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 18759,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/SupervisionConsole.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 19250,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/SupervisionConsole.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 19741,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 20231,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 20722,
+     "event": {
+      "kind": "command",
+      "command": "make build",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 21213,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 21704,
+     "event": {
+      "kind": "command",
+      "command": "cat ~/.claude/plugins/cache/claude-essentials/ce/5.2.0/agents/code-reviewer.md",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 22194,
+     "event": {
+      "kind": "command",
+      "command": "git status --short && git diff --check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 22685,
+     "event": {
+      "kind": "command",
+      "command": "ls /tmp/scratch",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 23176,
+     "event": {
+      "kind": "command",
+      "command": "cat /tmp/scratch",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 23667,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/SupervisionConsole.test.tsx"
+      ]
+     }
+    },
+    {
+     "at": 24157,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/SupervisionConsole.test.tsx",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 24648,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/console/EventFeed.tsx"
+      ]
+     }
+    },
+    {
+     "at": 25139,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/SupervisionConsole.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 25630,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/SupervisionConsole.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 26120,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/SupervisionConsole.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 26611,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 27102,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/SupervisionConsole.tsx"
+      ]
+     }
+    },
+    {
+     "at": 27593,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 28083,
+     "event": {
+      "kind": "command",
+      "command": "make build",
+      "exitCode": 2
+     }
+    },
+    {
+     "at": 28574,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 29065,
+     "event": {
+      "kind": "command",
+      "command": "git diff --check && git status --short",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 29556,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 30046,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=supervision close",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 30537,
+     "event": {
+      "kind": "command",
+      "command": "PORT_WEB=4404 make dev",
+      "exitCode": 130
+     }
+    },
+    {
+     "at": 31028,
+     "event": {
+      "kind": "command",
+      "command": "on-port 4404",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 31519,
+     "event": {
+      "kind": "command",
+      "command": "make build",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 32009,
+     "event": {
+      "kind": "command",
+      "command": "git diff --check && git status --short",
+      "exitCode": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "site-commands",
+   "model": "gpt-sol",
+   "work": "Command tabs + llms.txt",
+   "branch": "foreman/site-commands",
+   "contract": "commands.md",
+   "mayChange": "- May change: site/src/data/commands.ts, site/src/data/commands.test.ts,",
+   "start": 6000,
+   "done": 43500,
+   "activity": [
+    {
+     "at": 10833,
+     "event": {
+      "kind": "command",
+      "command": "cat site/DESIGN.md site/src/styles/global.css site/src/components/landing/primitives.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 13667,
+     "event": {
+      "kind": "command",
+      "command": "cat site/node_modules/@steamfield/ui/README.md",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 22276,
+     "event": {
+      "kind": "command",
+      "command": "mktemp -d",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 22551,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/CommandTabs.tsx",
+       "site/src/data/commands.ts"
+      ]
+     }
+    },
+    {
+     "at": 22827,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/CommandTabs.test.tsx",
+       "site/src/data/commands.test.ts"
+      ]
+     }
+    },
+    {
+     "at": 23103,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/data/commands.ts"
+      ]
+     }
+    },
+    {
+     "at": 23378,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 23654,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 2
+     }
+    },
+    {
+     "at": 23929,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 24205,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/commands.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 24481,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/commands.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 24756,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/commands.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 25032,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 25308,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 25583,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 25859,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run tests/drift.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 26135,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run tests/drift.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 26410,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run tests/drift.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 26686,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/styles/tokens.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 26962,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/styles/tokens.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 27237,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/styles/tokens.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 27513,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 27788,
+     "event": {
+      "kind": "command",
+      "command": "make build",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 28064,
+     "event": {
+      "kind": "command",
+      "command": "wait-for http://localhost:4403 30",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 28340,
+     "event": {
+      "kind": "command",
+      "command": "node -p 'import.meta.resolve(\\\"playwright\\\")'",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 28615,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands open http://localhost:4405",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 28891,
+     "event": {
+      "kind": "command",
+      "command": "wait-for http://localhost:4405 30",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 29167,
+     "event": {
+      "kind": "command",
+      "command": "git diff -- site/DESIGN.md && git status --short",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 29442,
+     "event": {
+      "kind": "command",
+      "command": "cat .playwright-cli/console-2026-11-06T09-29-56-042Z.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 29718,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/CommandTabs.test.tsx"
+      ]
+     }
+    },
+    {
+     "at": 29994,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 30269,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/src/components/landing/CommandTabs.test.tsx",
+       "site/src/components/landing/CommandTabs.tsx"
+      ]
+     }
+    },
+    {
+     "at": 30545,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands run-code --filename=qa.js",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 30821,
+     "event": {
+      "kind": "command",
+      "command": "on-port 4405 && rg -n 'hydrated|max-h' site/src/components/landing/CommandTabs.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 31096,
+     "event": {
+      "kind": "command",
+      "command": "curl -s http://localhost:4405/src/components/landing/CommandTabs.tsx | head -c 1000",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 31372,
+     "event": {
+      "kind": "command",
+      "command": "PORT_WEB=4403 make dev",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 31647,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands run-code --filename=qa.js",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 31923,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands run-code --filename=qa.js",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 32199,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 32474,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 32750,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 33026,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 33301,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 33577,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 33853,
+     "event": {
+      "kind": "command",
+      "command": "make build",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 34128,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands run-code --filename=qa.js",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 34404,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands close",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 34679,
+     "event": {
+      "kind": "command",
+      "command": "PORT_WEB=4405 make dev",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 34955,
+     "event": {
+      "kind": "command",
+      "command": "cat ~/.claude/plugins/cache/claude-essentials/ce/5.2.0/agents/code-reviewer.md",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 35231,
+     "event": {
+      "kind": "command",
+      "command": "git diff --check && git diff --numstat && git status --short && on-port 4405",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 35506,
+     "event": {
+      "kind": "command",
+      "command": "ls /tmp/scratch",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 35782,
+     "event": {
+      "kind": "command",
+      "command": "git diff --check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 36058,
+     "event": {
+      "kind": "command",
+      "command": "cat /tmp/scratch",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 36333,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/commands.test.ts tests/drift.test.ts",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 36609,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands open http://localhost:4405",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 36885,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands run-code --filename=qa.js",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 37160,
+     "event": {
+      "kind": "command",
+      "command": "PORT_WEB=4405 make dev",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 37436,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands run-code --filename=qa.js",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 37712,
+     "event": {
+      "kind": "command",
+      "command": "playwright-cli -s=foreman-commands close",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 37987,
+     "event": {
+      "kind": "command",
+      "command": "PORT_WEB=4405 make dev",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 38263,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 38538,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 38814,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/commands.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 39090,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/commands.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 39365,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/data/commands.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 39641,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 39917,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 40192,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/components/landing/CommandTabs.test.tsx",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 40468,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run tests/drift.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 40744,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run tests/drift.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 41019,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run tests/drift.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 41295,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/styles/tokens.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 41571,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/styles/tokens.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 41846,
+     "event": {
+      "kind": "command",
+      "command": "bunx vitest run src/styles/tokens.test.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 42122,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 42397,
+     "event": {
+      "kind": "command",
+      "command": "make build",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 42673,
+     "event": {
+      "kind": "command",
+      "command": "git diff --check && git status --short",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 42949,
+     "event": {
+      "kind": "command",
+      "command": "git diff --check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 43224,
+     "event": {
+      "kind": "command",
+      "command": "on-port 4405",
+      "exitCode": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "site-e2e",
+   "model": "gpt-terra",
+   "work": "Browser + accessibility checks",
+   "branch": "foreman/site-e2e",
+   "contract": "e2e.md",
+   "mayChange": "- May change: site/e2e/, site/playwright.config.ts, site/Makefile (the e2e target and",
+   "start": 8000,
+   "done": 45500,
+   "activity": [
+    {
+     "at": 10623,
+     "event": {
+      "kind": "command",
+      "command": "pwd && git status --short && ls site",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 11246,
+     "event": {
+      "kind": "command",
+      "command": "ls ~/Projects/rr/site/e2e && cat ~/Projects/rr/site/e2e/*.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 11868,
+     "event": {
+      "kind": "command",
+      "command": "bun add -d @playwright/test@latest @axe-core/playwright@latest",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 12491,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts",
+       "site/playwright.config.ts"
+      ]
+     }
+    },
+    {
+     "at": 13114,
+     "event": {
+      "kind": "command",
+      "command": "on-port 4322",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 13737,
+     "event": {
+      "kind": "command",
+      "command": "bunx prettier --write e2e/landing.spec.ts playwright.config.ts AGENTS.md && make e2e",
+      "exitCode": 130
+     }
+    },
+    {
+     "at": 14360,
+     "event": {
+      "kind": "command",
+      "command": "free-port 4322",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 14982,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 15605,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 16228,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 2
+     }
+    },
+    {
+     "at": 16851,
+     "event": {
+      "kind": "command",
+      "command": "on-port 4323",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 17474,
+     "event": {
+      "kind": "command",
+      "command": "curl -I --max-time 2 http://localhost:4323/",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 18096,
+     "event": {
+      "kind": "command",
+      "command": "rg -n 'q1|baseURL' site/e2e/landing.spec.ts site/playwright.config.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 18719,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts",
+       "site/playwright.config.ts"
+      ]
+     }
+    },
+    {
+     "at": 19342,
+     "event": {
+      "kind": "command",
+      "command": "PORT_E2E=4323 make e2e",
+      "exitCode": 130
+     }
+    },
+    {
+     "at": 19965,
+     "event": {
+      "kind": "command",
+      "command": "bunx prettier --write e2e/landing.spec.ts playwright.config.ts && PORT_E2E=4323 make e2e",
+      "exitCode": 2
+     }
+    },
+    {
+     "at": 20588,
+     "event": {
+      "kind": "command",
+      "command": "bunx playwright install chromium",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 21211,
+     "event": {
+      "kind": "command",
+      "command": "tail -30 /tmp/foreman-e2e-1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 21833,
+     "event": {
+      "kind": "command",
+      "command": "PORT_E2E=4323 bunx playwright test e2e/landing.spec.ts > /tmp/foreman-e2e-1.log 2>&1",
+      "exitCode": 1
+     }
+    },
+    {
+     "at": 22456,
+     "event": {
+      "kind": "command",
+      "command": "rg -n -A45 '\"'^  [0-9]+'\"\\\\)' /tmp/foreman-e2e-1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 23079,
+     "event": {
+      "kind": "command",
+      "command": "sed -n '73,170p' /tmp/foreman-e2e-1.log && sed -n '275,430p' /tmp/foreman-e2e-1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 23702,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts"
+      ]
+     }
+    },
+    {
+     "at": 24325,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 24947,
+     "event": {
+      "kind": "command",
+      "command": "make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 25570,
+     "event": {
+      "kind": "command",
+      "command": "tail -30 /tmp/foreman-e2e-2.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 26193,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts"
+      ]
+     }
+    },
+    {
+     "at": 26816,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 27439,
+     "event": {
+      "kind": "command",
+      "command": "make check > /tmp/foreman-check.log 2>&1",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 28061,
+     "event": {
+      "kind": "command",
+      "command": "cat /tmp/foreman-check.log | tail -10",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 28684,
+     "event": {
+      "kind": "command",
+      "command": "tail -25 /tmp/foreman-e2e-final1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 29307,
+     "event": {
+      "kind": "command",
+      "command": "tail -20 /tmp/foreman-e2e-final1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 29930,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts"
+      ]
+     }
+    },
+    {
+     "at": 30553,
+     "event": {
+      "kind": "command",
+      "command": "mktemp -d",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 31175,
+     "event": {
+      "kind": "command",
+      "command": "tail -20 /tmp/foreman-final-isolated1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 31798,
+     "event": {
+      "kind": "command",
+      "command": "tail -18 /tmp/foreman-final-isolated1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 32421,
+     "event": {
+      "kind": "command",
+      "command": "git status --short && tail -8 /tmp/foreman-final-isolated1.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 33044,
+     "event": {
+      "kind": "command",
+      "command": "tail -15 /tmp/foreman-final-isolated23.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 33667,
+     "event": {
+      "kind": "command",
+      "command": "tail -12 /tmp/foreman-final-isolated23.log && git diff --stat",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 34289,
+     "event": {
+      "kind": "command",
+      "command": "tail -16 /tmp/foreman-e2e-full.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 34912,
+     "event": {
+      "kind": "command",
+      "command": "PORT_E2E=4323 make e2e > /tmp/foreman-e2e-full.log 2>&1",
+      "exitCode": 2
+     }
+    },
+    {
+     "at": 35535,
+     "event": {
+      "kind": "command",
+      "command": "tail -12 /tmp/foreman-headed.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 36158,
+     "event": {
+      "kind": "command",
+      "command": "sed -n '1,270p' site/e2e/landing.spec.ts",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 36781,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts"
+      ]
+     }
+    },
+    {
+     "at": 37404,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts"
+      ]
+     }
+    },
+    {
+     "at": 38026,
+     "event": {
+      "kind": "command",
+      "command": "make lint",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 38649,
+     "event": {
+      "kind": "command",
+      "command": "make check > /tmp/foreman-check2.log 2>&1",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 39272,
+     "event": {
+      "kind": "command",
+      "command": "tail -25 /tmp/foreman-reviewfix.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 39895,
+     "event": {
+      "kind": "files",
+      "paths": [
+       "site/e2e/landing.spec.ts"
+      ]
+     }
+    },
+    {
+     "at": 40518,
+     "event": {
+      "kind": "command",
+      "command": "rg -n -A65 '\"'^    Error: '\"\\\\[' /tmp/foreman-reviewfix.log | head -110",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 41140,
+     "event": {
+      "kind": "command",
+      "command": "make test",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 41763,
+     "event": {
+      "kind": "command",
+      "command": "make lint && make check",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 42386,
+     "event": {
+      "kind": "command",
+      "command": "tail -15 /tmp/foreman-e2e-reviewed.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 43009,
+     "event": {
+      "kind": "command",
+      "command": "tail -15 /tmp/foreman-reviewed-repeat.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 43632,
+     "event": {
+      "kind": "command",
+      "command": "tail -15 /tmp/foreman-reviewed-repeat.log",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 44254,
+     "event": {
+      "kind": "command",
+      "command": "tail -13 /tmp/foreman-reviewed-repeat.log && git status --short",
+      "exitCode": 0
+     }
+    },
+    {
+     "at": 44877,
+     "event": {
+      "kind": "command",
+      "command": "bunx playwright show-report --host 127.0.0.1 --port 9324",
+      "exitCode": 130
+     }
+    }
+   ]
+  }
+ ],
+ "steps": [
+  {
+   "at": 0,
+   "title": "Write three contracts"
+  },
+  {
+   "at": 4000,
+   "title": "Start three worktrees"
+  },
+  {
+   "at": 11000,
+   "title": "Wait while all three work"
+  },
+  {
+   "at": 16500,
+   "title": "Hold a question for Claude"
+  },
+  {
+   "at": 22000,
+   "title": "Answer and resume waiting"
+  },
+  {
+   "at": 27500,
+   "title": "Steer the active test turn"
+  },
+  {
+   "at": 32500,
+   "title": "Review the first result"
+  },
+  {
+   "at": 38000,
+   "title": "Follow up on the same thread"
+  },
+  {
+   "at": 43500,
+   "title": "Land the remaining work"
+  },
+  {
+   "at": 48500,
+   "title": "Archive the merged runs"
+  }
+ ],
+ "packets": [
+  {
+   "at": 4000,
+   "from": "claude",
+   "to": "daemon",
+   "label": "start",
+   "attention": false
+  },
+  {
+   "at": 5500,
+   "from": "daemon",
+   "to": 0,
+   "label": "turn",
+   "attention": false
+  },
+  {
+   "at": 32500,
+   "from": 0,
+   "to": "daemon",
+   "label": "done",
+   "attention": false
+  },
+  {
+   "at": 34000,
+   "from": "daemon",
+   "to": "claude",
+   "label": "done",
+   "attention": false
+  },
+  {
+   "at": 48500,
+   "from": "claude",
+   "to": "daemon",
+   "label": "archive",
+   "attention": false
+  },
+  {
+   "at": 6000,
+   "from": "claude",
+   "to": "daemon",
+   "label": "start",
+   "attention": false
+  },
+  {
+   "at": 7500,
+   "from": "daemon",
+   "to": 1,
+   "label": "turn",
+   "attention": false
+  },
+  {
+   "at": 43500,
+   "from": 1,
+   "to": "daemon",
+   "label": "done",
+   "attention": false
+  },
+  {
+   "at": 45000,
+   "from": "daemon",
+   "to": "claude",
+   "label": "done",
+   "attention": false
+  },
+  {
+   "at": 49100,
+   "from": "claude",
+   "to": "daemon",
+   "label": "archive",
+   "attention": false
+  },
+  {
+   "at": 8000,
+   "from": "claude",
+   "to": "daemon",
+   "label": "start",
+   "attention": false
+  },
+  {
+   "at": 9500,
+   "from": "daemon",
+   "to": 2,
+   "label": "turn",
+   "attention": false
+  },
+  {
+   "at": 45500,
+   "from": 2,
+   "to": "daemon",
+   "label": "done",
+   "attention": false
+  },
+  {
+   "at": 47000,
+   "from": "daemon",
+   "to": "claude",
+   "label": "done",
+   "attention": false
+  },
+  {
+   "at": 49700,
+   "from": "claude",
+   "to": "daemon",
+   "label": "archive",
+   "attention": false
+  },
+  {
+   "at": 16500,
+   "from": 1,
+   "to": "daemon",
+   "label": "ask_orchestrator",
+   "attention": true
+  },
+  {
+   "at": 18000,
+   "from": "daemon",
+   "to": "claude",
+   "label": "question q1",
+   "attention": true
+  },
+  {
+   "at": 22000,
+   "from": "claude",
+   "to": "daemon",
+   "label": "answer",
+   "attention": false
+  },
+  {
+   "at": 23500,
+   "from": "daemon",
+   "to": 1,
+   "label": "answer",
+   "attention": false
+  },
+  {
+   "at": 27500,
+   "from": "claude",
+   "to": "daemon",
+   "label": "steer",
+   "attention": false
+  },
+  {
+   "at": 29000,
+   "from": "daemon",
+   "to": 2,
+   "label": "steer",
+   "attention": false
+  },
+  {
+   "at": 38000,
+   "from": "claude",
+   "to": "daemon",
+   "label": "followup",
+   "attention": false
+  },
+  {
+   "at": 39500,
+   "from": "daemon",
+   "to": 0,
+   "label": "turn",
+   "attention": false
+  },
+  {
+   "at": 41500,
+   "from": 0,
+   "to": "daemon",
+   "label": "done",
+   "attention": false
+  },
+  {
+   "at": 43000,
+   "from": "daemon",
+   "to": "claude",
+   "label": "done",
+   "attention": false
+  }
+ ],
+ "duration": 54000,
+ "stillAt": 19500
+}
