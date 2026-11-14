@@ -1,0 +1,11 @@
+{
+  "name": "@react-decks/node",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@react-decks/core": "workspace:*"
+  }
+}
