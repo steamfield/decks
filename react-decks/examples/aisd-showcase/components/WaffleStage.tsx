@@ -1,4 +1,4 @@
-import { useDeck, useSlide } from "@steamfield/decks";
+import { routeEmbedNavigation, useDeck, useSlide } from "@steamfield/decks";
 import {
   CANVAS,
   clamp01,
@@ -285,11 +285,11 @@ export function WaffleStage() {
                     }
                     if (event.key === "ArrowRight") {
                       event.preventDefault();
-                      next();
+                      if (!routeEmbedNavigation(event.nativeEvent)) next();
                     }
                     if (event.key === "ArrowLeft") {
                       event.preventDefault();
-                      prev();
+                      if (!routeEmbedNavigation(event.nativeEvent)) prev();
                     }
                   }}
                 />
