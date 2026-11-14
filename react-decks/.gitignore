@@ -1,3 +1,4 @@
 .tmp/
 test-results/
 playwright-report/
+examples/*/.out/
