@@ -1,0 +1,157 @@
+:root {
+  color-scheme: dark;
+  --gallery-canvas: oklch(0.17 0.018 255);
+  --gallery-panel: oklch(0.23 0.024 255);
+  --gallery-ink: oklch(0.96 0.01 95);
+  --gallery-muted: oklch(0.7 0.025 255);
+  --gallery-accent: oklch(0.84 0.15 167);
+  --gallery-warm: oklch(0.83 0.15 75);
+  --deck-highlight: color-mix(in srgb, var(--gallery-accent) 35%, transparent);
+}
+body {
+  margin: 0;
+  background: var(--gallery-canvas);
+  color: var(--gallery-ink);
+  font-family: "Avenir Next", system-ui, sans-serif;
+}
+[data-deck-slide] {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 84px 116px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  font-size: 40px;
+}
+h1 {
+  font-size: 88px;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+  margin: 0;
+  font-weight: 600;
+}
+p {
+  margin: 0;
+}
+code {
+  color: var(--gallery-muted);
+  font-size: 28px;
+  line-height: 1.5;
+}
+.demo {
+  display: grid;
+  place-items: center;
+  flex: 1;
+}
+.hero-card {
+  background: var(--gallery-accent);
+  color: var(--gallery-canvas);
+  padding: 56px 72px;
+  border-radius: 32px;
+  width: 760px;
+  box-sizing: border-box;
+  display: grid;
+  gap: 24px;
+}
+.hero-card span,
+.hero-card small {
+  font-size: 24px;
+}
+.hero-card strong {
+  font-size: 72px;
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.cover-grid {
+  display: flex;
+  gap: 20px;
+  margin: auto 0;
+}
+.cover-grid span {
+  padding: 48px;
+  border-top: 2px solid var(--gallery-accent);
+  background: var(--gallery-panel);
+  flex: 1;
+  font-size: 48px;
+}
+.sequence {
+  margin: auto 0;
+  padding-left: 80px;
+  font-size: 62px;
+  line-height: 1.85;
+}
+.sequence li::marker {
+  color: var(--gallery-accent);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin: auto 0;
+}
+.cards > div {
+  background: var(--gallery-panel);
+  padding: 48px 32px;
+  border-radius: 24px;
+}
+.cards > div > div {
+  display: grid;
+  gap: 100px;
+}
+.cards small {
+  color: var(--gallery-accent);
+  font-size: 28px;
+}
+.cards strong {
+  font-size: 42px;
+  font-weight: 500;
+}
+.statement {
+  font-size: 100px;
+  line-height: 1.3;
+  letter-spacing: -0.03em;
+  max-width: 1400px;
+  margin: auto 0;
+}
+.number {
+  font-size: 260px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+  margin: auto 0;
+  color: var(--gallery-accent);
+}
+.number small {
+  display: block;
+  font-size: 36px;
+  color: var(--gallery-muted);
+  letter-spacing: 0;
+}
+.drawing,
+.scene {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  overflow: visible;
+}
+.drawing path {
+  stroke: var(--gallery-accent);
+  stroke-width: 12;
+  fill: none;
+  stroke-linecap: round;
+}
+.track,
+.orbit {
+  fill: none;
+  stroke: var(--gallery-muted);
+  stroke-width: 2;
+  stroke-dasharray: 8 16;
+  opacity: 0.35;
+}
+.scene text {
+  fill: var(--gallery-muted);
+  font-size: 26px;
+  letter-spacing: 0.05em;
+}
