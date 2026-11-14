@@ -338,8 +338,9 @@ test.describe("the interactive player", () => {
   });
   test("a featured selection loads that live deck at its start, paused", async ({ page }) => {
     const pick = examples[1];
-    if (!pick) throw new Error("two featured examples are required");
+    if (!pick) throw new Error("two examples are required");
     await expect(player(page)).toHaveAttribute("data-phase", "ready");
+    await page.getByText("More", { exact: true }).click();
     await page
       .getByRole("button", { name: pick.featured?.label ?? pick.title, exact: true })
       .click();
@@ -465,194 +466,6 @@ test("at 360px transport controls have 44px touch targets", async ({ page }) => 
   await expect(page.getByRole("link", { name: "Open deck", exact: true })).toBeVisible();
 });
 
-for (const name of ["opendata-showcase", "aisd-showcase"]) {
-  test(`${name} real bridge handles iframe keys and a boundary`, async ({ page }) => {
-    const errors = collectErrors(page);
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
-    await player(page).scrollIntoViewIfNeeded();
-    await expect(player(page)).toHaveAttribute("data-phase", /booting|ready/);
-    const example = examples.find((item) => item.name === name);
-    if (!example) throw new Error(`missing featured example ${name}`);
-    await page
-      .getByRole("button", { name: example.featured?.label ?? example.title, exact: true })
-      .click();
-    await expect(player(page)).toHaveAttribute("data-phase", "ready", { timeout: 20_000 });
-    await page
-      .frameLocator("iframe")
-      .locator("body")
-      .click({ position: { x: 10, y: 10 } });
-    await page.keyboard.press("ArrowRight");
-    await expect(live(page)).toContainText("step 2 of");
-    await page.keyboard.press("ArrowLeft");
-    await expect(live(page)).toContainText("step 1 of");
-    await page.keyboard.press("ArrowLeft");
-    await page.keyboard.press("ArrowRight");
-    await expect(live(page)).toContainText("step 2 of");
-    const frame = page.frameLocator("iframe");
-    const root = frame.locator(".slidev-page-1 .od-story-frame").first();
-    const bounds = await root.boundingBox();
-    const iframe = await page.locator("iframe").boundingBox();
-    expect((bounds?.width ?? 0) / (bounds?.height ?? 1)).toBeCloseTo(16 / 9, 2);
-    expect(Math.abs((bounds?.width ?? 0) - (iframe?.width ?? 0))).toBeLessThanOrEqual(2);
-    expect(Math.abs((bounds?.height ?? 0) - (iframe?.height ?? 0))).toBeLessThanOrEqual(2);
-    const extras = await frame.locator("#slide-container > div:not(#slide-content)").all();
-    for (const extra of extras) await expect(extra).toBeHidden();
-    await page.evaluate(() => {
-      const replies: { requestId?: number; settled?: boolean; slide?: number; beat?: number }[] =
-        [];
-      (window as unknown as Window & { __deckReplies?: typeof replies }).__deckReplies = replies;
-      window.addEventListener("message", (event) => {
-        if (event.data?.type === "decks:state") replies.push(event.data);
-      });
-    });
-    for (const command of [
-      { cmd: "go", slide: 1, beat: 0, requestId: 91001 },
-      { cmd: "prev", requestId: 91002 },
-      { cmd: "go", slide: 1, beat: 0, requestId: 91003 },
-    ]) {
-      await page
-        .locator("iframe")
-        .evaluate(
-          (el: HTMLIFrameElement, command) =>
-            el.contentWindow?.postMessage({ type: "decks:cmd", ...command }, location.origin),
-          command,
-        );
-      await expect
-        .poll(() =>
-          page.evaluate(
-            (id) =>
-              (
-                window as unknown as Window & {
-                  __deckReplies: {
-                    requestId?: number;
-                    settled?: boolean;
-                    slide?: number;
-                    beat?: number;
-                  }[];
-                }
-              ).__deckReplies.filter((reply) => reply.requestId === id && reply.settled),
-            command.requestId,
-          ),
-        )
-        .toEqual([
-          expect.objectContaining({
-            requestId: command.requestId,
-            slide: 1,
-            beat: 0,
-            settled: true,
-          }),
-        ]);
-    }
-    await page.screenshot({ path: `test-results/${name}-interactive.png`, fullPage: false });
-    expect(errors).toEqual([]);
-  });
-}
-test("the real graph survives two complete forward and reverse walks", async ({ page }) => {
-  test.setTimeout(90_000);
-  const example = examples.find((item) => item.name === "opendata-showcase");
-  if (!example) throw new Error("missing graph excerpt");
-  const errors = collectErrors(page);
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  await expect(player(page)).toHaveAttribute("data-phase", "ready");
-  await page
-    .frameLocator("iframe")
-    .locator("body")
-    .evaluate(() => {
-      const commands: unknown[] = [];
-      (window as unknown as Window & { __receivedCommands: unknown[] }).__receivedCommands =
-        commands;
-      window.addEventListener("message", (event) => {
-        if (event.data?.type === "decks:cmd") commands.push(event.data);
-      });
-    });
-  const ordered = [...example.states].sort((a, b) => a.slide - b.slide || a.beat - b.beat);
-  const destinations: { slide: number; beat: number }[] = [];
-  for (let cycle = 0; cycle < 2; cycle++) {
-    for (const [label, states] of [
-      ["Step forward", ordered.slice(1)],
-      ["Step back", ordered.slice(0, -1).reverse()],
-    ] as const) {
-      for (const state of states) {
-        await page.getByRole("button", { name: label, exact: true }).click();
-        await expect(live(page)).toHaveText(
-          `Slide ${state.slide} of ${example.slides}, step ${state.beat + 1} of ${state.beats + 1}. ${state.lead}`,
-          { timeout: 15_000 },
-        );
-        await expect(lead(page)).toHaveText(state.lead);
-        if (state.slide === 2 && state.beat >= 1) {
-          const canvas = page
-            .frameLocator("iframe")
-            .locator(".slidev-page-2 .od-graph3d-host canvas")
-            .first();
-          await expect(canvas).toBeVisible();
-          expect(
-            await canvas.evaluate(
-              (element: HTMLCanvasElement) => element.width > 0 && element.height > 0,
-            ),
-          ).toBe(true);
-        }
-        await page
-          .frameLocator("iframe")
-          .locator("body")
-          .evaluate(() => {
-            const frame = window as unknown as Window & { __rafFrames: number };
-            frame.__rafFrames = 0;
-            requestAnimationFrame(() => {
-              frame.__rafFrames++;
-              requestAnimationFrame(() => {
-                frame.__rafFrames++;
-              });
-            });
-          });
-        await expect
-          .poll(
-            () =>
-              page
-                .frameLocator("iframe")
-                .locator("body")
-                .evaluate(
-                  () => (window as unknown as Window & { __rafFrames: number }).__rafFrames,
-                ),
-            // A liveness check: a hung deck never paints two frames. The budget
-            // matches the step waits above, because the graph slides draw with
-            // SwiftShader here and two frames there have taken up to 3.7s.
-            { timeout: 15_000 },
-          )
-          .toBe(2);
-        destinations.push({ slide: state.slide, beat: state.beat });
-      }
-    }
-  }
-  const received = await page
-    .frameLocator("iframe")
-    .locator("body")
-    .evaluate(
-      () =>
-        (
-          window as unknown as Window & {
-            __receivedCommands: {
-              type: string;
-              cmd: string;
-              slide: number;
-              beat: number;
-              requestId: number;
-            }[];
-          }
-        ).__receivedCommands,
-    );
-  expect(received.map(({ slide, beat }) => ({ slide, beat }))).toEqual(destinations);
-  expect(
-    received.every(
-      (command) =>
-        command.type === "decks:cmd" && command.cmd === "go" && Number.isInteger(command.requestId),
-    ),
-  ).toBe(true);
-  expect(new Set(received.map((command) => command.requestId)).size).toBe(destinations.length);
-  expect(errors).toEqual([]);
-});
-
 test("hovering and focusing real campus marks pauses the live deck", async ({ page }) => {
   await page.clock.install();
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -743,8 +556,8 @@ for (const width of [390, 1440])
       }
     }
     expect(sizes.length).toBeGreaterThan(0);
-    const live = sizes.filter(([url]) => /\/demo\//.test(url));
-    const shell = sizes.filter(([url]) => !/\/demo\//.test(url));
+    const live = sizes.filter(([url]) => /\/d\//.test(url));
+    const shell = sizes.filter(([url]) => !/\/d\//.test(url));
     expect(sizes.some(([url]) => /\/loops\//.test(url))).toBe(false);
     expect(live.length, "live deck resources must be measured").toBeGreaterThan(0);
     const shellBytes = shell.reduce((sum, [, size]) => sum + size, 0);

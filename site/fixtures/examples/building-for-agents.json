@@ -450,7 +450,7 @@
       "beat": 0,
       "beats": 2,
       "lead": "Each click seeks the timeline to a beat.",
-      "body": "The slide is a Vue component with a GSAP timeline. Stepping back plays the same tweens in reverse."
+      "body": "The slide is a React component with a GSAP timeline. Stepping back plays the same tweens in reverse."
     },
     {
       "slide": 17,

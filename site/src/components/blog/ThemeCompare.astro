@@ -14,8 +14,8 @@ const themeCodeId = suffix === 1 ? "theme-json-code" : `theme-json-code-${suffix
 const defaultId = suffix === 1 ? "still-default" : `still-default-${suffix}`;
 const warmId = suffix === 1 ? "still-warm" : `still-warm-${suffix}`;
 const radioName = suffix === 1 ? "theme-still" : `theme-still-${suffix}`;
-// The theme stills are shot from this deck (STILL.deck in scripts/demo.mjs), not the hero.
-const STILL_DECK = "tides";
+// Keep this in sync with STILL.deck in scripts/demo.mjs.
+const STILL_DECK = "aisd-showcase";
 const stillTitle =
   examples.find((example) => example.name === STILL_DECK)?.title ?? "A story slide";
 const stills = (name: string) => ({
