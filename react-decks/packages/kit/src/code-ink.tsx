@@ -115,7 +115,12 @@ export function CodeInk({
             ) : (
               <g filter={filterUrl(FILTER_IDS.rule)}>
                 {dabs.map((dab) => (
-                  <path key={dab.d} d={dab.d} fill="currentColor" fillOpacity={dab.fillOpacity} />
+                  <path
+                    key={dab.d}
+                    d={dab.d}
+                    fill="currentColor"
+                    style={{ fillOpacity: dab.fillOpacity }}
+                  />
                 ))}
               </g>
             )}
