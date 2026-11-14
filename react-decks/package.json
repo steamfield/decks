@@ -10,9 +10,10 @@
     "lint": "biome check .",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/core/tsconfig.json && tsc --noEmit -p packages/node/tsconfig.json",
     "test": "vitest run",
-    "check": "bun run lint && bun run typecheck && bun run test",
+    "check": "bun run lint && bun run typecheck && bun run test && bun run test:e2e",
     "check:isolated": "node scripts/check-isolated.mjs",
-    "decks": "tsx packages/node/src/cli.ts"
+    "decks": "tsx packages/node/src/cli.ts",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.7",

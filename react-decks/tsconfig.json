@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "types": ["node", "react", "react-dom"]
   },
-  "include": ["packages/*/src", "tests", "examples", "vitest.setup.ts", "vitest.config.ts"]
+  "include": ["packages/*/src", "tests", "examples", "e2e", "playwright.config.ts", "vitest.setup.ts", "vitest.config.ts"]
 }
