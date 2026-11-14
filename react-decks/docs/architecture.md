@@ -1146,8 +1146,9 @@ Against `examples/motion`, one slide per primitive and preset:
 export function Morph(props: { name: string; as?: "div" | "span" | "h1" | "h2" | "h3" | "p" | "figure" | "g"; className?: string; children?: ReactNode }): ReactElement;
 ```
 
-`name` must be a CSS identifier (`/^[A-Za-z_][A-Za-z0-9_-]*$/`) other than `root` and `none`;
-anything else throws naming it. The name is set as an inline `view-transition-name` only when
+`name` must be a CSS identifier (`/^[A-Za-z_][A-Za-z0-9_-]*$/`) that is not, in any letter
+case, `none`, `auto`, `match-element`, `root`, `initial`, `inherit`, `unset`, `revert`,
+`revert-layer` or `default`; anything else throws naming it. The name is set as an inline `view-transition-name` only when
 `useSlide()` reports `isActive` and the `slide` context; in every other context, and on the
 hidden neighbour slides, the element carries no name, so a name is never present twice in
 one document. Two `Morph`s with the same name on one slide at the same time are an author
