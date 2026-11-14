@@ -23,6 +23,7 @@ export function deckHtml(deck: ResolvedDeck): string {
     .map(([key, value]) => `${key}="${escapeHtml(value)}"`)
     .join(" ");
   return `<!doctype html><html ${attrs}><head><meta charset="utf-8">
+<link rel="icon" href="${existsSync(join(deck.dir, "public/favicon.ico")) ? "/favicon.ico" : "data:,"}">
 <title>${escapeHtml(deck.config.title)}</title>
 ${deck.config.author === undefined ? "" : `<meta name="author" content="${escapeHtml(deck.config.author)}">`}
 <meta name="decks:entry" content="${escapeHtml(deck.dir)}">
