@@ -20,6 +20,7 @@ const frontmatterSchema = z.looseObject({
   hide: z.boolean().default(false),
   transition: z.string().min(1).optional(),
   morphSteps: z.boolean().optional(),
+  layers: z.union([z.literal(false), z.literal("above"), z.literal("below")]).optional(),
 });
 
 export async function scanSlides(deck: ResolvedDeck): Promise<readonly ScannedSlide[]> {

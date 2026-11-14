@@ -15,6 +15,7 @@ export interface DeckSource {
   readonly slides: Readonly<Record<string, SlideLoader>>;
   readonly frontmatter: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   readonly components: MDXComponents;
+  readonly layers?: { above?: ComponentType; below?: ComponentType };
   /** Rendered notes keyed by slide id, one entry per segment. */
   readonly loadNotes?: () => Promise<Readonly<Record<string, readonly NoteHtml[]>>>;
 }

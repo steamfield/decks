@@ -258,3 +258,47 @@ html[data-deck-motion="instant"] .loop-mark {
   border-radius: 50%;
   background: var(--gallery-accent);
 }
+.gallery-progress {
+  position: absolute;
+  inset: auto 0 0;
+  height: 48px;
+  padding: 0 48px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  color: var(--gallery-muted);
+  font-variant-numeric: tabular-nums;
+}
+.gallery-progress [role="progressbar"] {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--gallery-accent);
+}
+[data-deck-layout] small {
+  color: var(--gallery-accent);
+  font-size: 26px;
+  letter-spacing: 0.06em;
+}
+.layout-statement {
+  display: grid;
+  gap: 40px;
+}
+.layout-note {
+  padding: 48px;
+  background: var(--gallery-panel);
+  border-top: 2px solid var(--gallery-accent);
+}
+.layout-note h2 {
+  font-size: 52px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.layout-note p {
+  font-size: 32px;
+  color: var(--gallery-muted);
+}
+[data-deck-layout="image-side"] h1 {
+  font-size: 76px;
+}
