@@ -1610,8 +1610,9 @@ Message shape: `<file>[:line:col]: <what is wrong, naming the value>. <what to d
 | Port in use | `decks dev: port 3040 is already in use. Stop what is using it or pass a different --port.` |
 
 All validation issues go through one formatter (the one `cli.ts` uses for `decks.json`,
-extended); every issue of one file is listed, one per line. Paths are relative to the
-working directory everywhere. Step-count and component errors carry the position of the
+extended); every issue of one file is listed, one per line. Paths in messages are relative
+to the working directory; the browser overlay's file link stays absolute so clicking it
+opens the file in the editor. Step-count and component errors carry the position of the
 element (the syntax tree has it). A YAML error's line is the line in the file.
 
 ### Where each is shown
