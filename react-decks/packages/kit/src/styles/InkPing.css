@@ -1,0 +1,4 @@
+.od-ink-ping :is(rect, circle) {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
