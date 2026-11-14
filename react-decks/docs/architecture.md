@@ -1621,10 +1621,14 @@ element (the syntax tree has it). A YAML error's line is the line in the file.
   the browser overlay with the file and position (`this.error({ message, id, loc })` in a
   plugin hook), for cold start, hot update and config changes alike. An error raised in
   `hotUpdate` is logged to the terminal, not only sent to the browser.
-- An invalid file stays reported until it is fixed: while a slide or component file is in a
-  failed state the manifest module fails with the same error, so a reload shows it again
-  and never a deck that looks fine on stale data. When it is fixed the terminal says
-  `<file>: fixed`.
+- A validation failure (frontmatter, step counts, a component file, `layers/`) is about the
+  deck and stays reported until it is fixed: while it stands the manifest module fails with
+  the same error, so a reload shows it again and never a deck that looks fine on stale
+  data. When it is fixed the terminal says `<file>: fixed`. An MDX compile failure is about
+  one slide: that slide shows its error, its neighbours keep working (for a newly opened
+  tab too), and the manifest still loads.
+- Accepted limit: a component syntax error present at cold start is reported once by
+  react-decks and once more in Vite's own dependency-scan summary.
 - A slide whose module never loaded (it failed to compile at cold start) triggers a full
   reload when it next changes, so fixing it recovers without a manual reload.
 - An invalid `deck.config.ts` during a session: `deck.config.ts is invalid, still serving
