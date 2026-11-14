@@ -1,0 +1,36 @@
+.stage {
+  transition: color var(--od-dur-card) var(--od-settle);
+}
+:global(html[data-deck-motion="instant"]) .stage,
+:global([data-deck-context]:not([data-deck-context="slide"])) .stage,
+:global([data-deck-context="slide"]:not([data-deck-active])) .stage {
+  transition: none;
+}
+.code {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.name {
+  font-family: var(--od-font-sans);
+  font-size: 24px;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+  fill: var(--od-text);
+}
+.note {
+  font-family: var(--od-font-mono);
+  font-size: 17px;
+  fill: var(--od-text-faint);
+}
+.tag {
+  font-family: var(--od-font-mono);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.axis {
+  font-family: var(--od-font-mono);
+  font-size: 18px;
+  fill: var(--od-text-faint);
+}

@@ -1,11 +1,19 @@
 import { gsap, motionMode } from "@react-decks/motion";
 import { useSlide } from "@react-decks/runtime";
-import { type CSSProperties, useCallback, useLayoutEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { DUR, SETTLE } from "./easings";
 import type { Hue } from "./theme-resolve";
 
 export function StoryCard({
   lead,
+  leadContent,
   body = "",
   anchor = "left",
   hue = "cyan",
@@ -13,6 +21,7 @@ export function StoryCard({
   style,
 }: {
   lead: string;
+  leadContent?: ReactNode;
   body?: string;
   anchor?: "left" | "right";
   hue?: Hue;
@@ -35,10 +44,17 @@ export function StoryCard({
   const [content, setContent] = useState<{
     lead: string;
     body: string;
-    old: { lead: string; body: string } | null;
-  }>({ lead, body, old: null });
+    leadContent?: ReactNode;
+    old: { lead: string; body: string; leadContent?: ReactNode } | null;
+  }>({ lead, body, leadContent, old: null });
   if (content.lead !== lead || content.body !== body)
-    setContent({ lead, body, old: { lead: content.lead, body: content.body } });
+    setContent({
+      lead,
+      body,
+      leadContent,
+      old: { lead: content.lead, body: content.body, leadContent: content.leadContent },
+    });
+  else if (content.leadContent !== leadContent) setContent({ ...content, leadContent });
   useLayoutEffect(() => {
     const el = box.current;
     if (!el) return;
@@ -47,10 +63,12 @@ export function StoryCard({
     const to = el.offsetHeight;
     if (!content.old || !isActive || renderContext !== "slide" || motionMode() === "instant") {
       gsap.set(incoming.current, { clearProps: "opacity,transform" });
-      if (content.old) setContent({ lead, body, old: null });
+      if (content.old) setContent((previous) => ({ ...previous, old: null }));
       return;
     }
-    const tl = gsap.timeline({ onComplete: () => setContent({ lead, body, old: null }) });
+    const tl = gsap.timeline({
+      onComplete: () => setContent((previous) => ({ ...previous, old: null })),
+    });
     tl.fromTo(
       incoming.current,
       { opacity: 0, y: 6 },
@@ -68,10 +86,10 @@ export function StoryCard({
     return () => {
       tl.kill();
     };
-  }, [lead, body, isActive, renderContext, content.old]);
-  const copy = (text: { lead: string; body: string }) => (
+  }, [isActive, renderContext, content.old]);
+  const copy = (text: { lead: string; body: string; leadContent?: ReactNode }) => (
     <>
-      <p className="od-story-lead">{text.lead}</p>
+      <p className="od-story-lead">{text.leadContent ?? text.lead}</p>
       {text.body && <p className="od-story-copy">{text.body}</p>}
     </>
   );
@@ -94,7 +112,7 @@ export function StoryCard({
           </div>
         )}
         <div key={`${lead}|${body}`} ref={attachIncoming}>
-          {copy({ lead, body })}
+          {copy({ lead, body, leadContent })}
         </div>
       </div>
     </div>

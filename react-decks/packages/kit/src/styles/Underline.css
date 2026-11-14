@@ -1,0 +1,12 @@
+.od-underline {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+.od-underline-mark {
+  position: absolute;
+  left: 0;
+  bottom: -0.32em;
+  pointer-events: none;
+  overflow: visible;
+}

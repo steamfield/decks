@@ -1,0 +1,81 @@
+.wall {
+  transition: fill var(--od-dur-card) var(--od-settle);
+}
+:global(html[data-deck-motion="instant"]) .wall,
+:global([data-deck-context]:not([data-deck-context="slide"])) .wall,
+:global([data-deck-context="slide"]:not([data-deck-active])) .wall {
+  transition: none;
+}
+.tag {
+  font-family: var(--od-font-mono);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.role {
+  font-family: var(--od-font-mono);
+  font-size: 17px;
+  font-weight: 510;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cost {
+  font-family: var(--od-font-mono);
+  font-size: 28px;
+  font-weight: 510;
+  font-variant-numeric: tabular-nums;
+  fill: var(--od-text);
+}
+.costNote {
+  font-family: var(--od-font-mono);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--od-text-faint);
+}
+.name {
+  font-family: var(--od-font-sans);
+  font-size: 32px;
+  font-weight: 590;
+  letter-spacing: -0.015em;
+  fill: var(--od-text);
+}
+.spec {
+  font-family: var(--od-font-mono);
+  font-size: 19px;
+  fill: var(--od-text-muted);
+}
+.services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--od-font-mono);
+  font-size: 16px;
+  color: var(--od-text-secondary);
+}
+.service {
+  padding: 3px 10px;
+  border: 1px solid var(--od-border);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.gaugeLabel {
+  font-family: var(--od-font-sans);
+  font-size: 22px;
+  font-weight: 510;
+  fill: var(--od-text);
+}
+.gaugeText {
+  font-family: var(--od-font-mono);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--od-text-muted);
+}
+.loadHost {
+  position: absolute;
+  left: calc(56.25 * var(--sw));
+  top: calc(59 * var(--sh));
+  display: flex;
+  align-items: baseline;
+  gap: calc(2.4 * var(--sw));
+}
