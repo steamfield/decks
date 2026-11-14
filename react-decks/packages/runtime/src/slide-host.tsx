@@ -3,6 +3,7 @@
 import { clicksForSlide } from "@react-decks/core";
 import { lazy, type ReactElement, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { DeckCredit } from "./deck-credit";
 import { type RenderContext, SlideContext, useDeckContext, useDeckSelector } from "./hooks";
 import "./layers.css";
 
@@ -30,6 +31,7 @@ export function SlideHost({
   const layers = source.frontmatter[value.meta.id]?.layers;
   const Above = layers !== false && layers !== "below" ? source.layers?.above : undefined;
   const Below = layers !== false && layers !== "above" ? source.layers?.below : undefined;
+  const Credit = source.layers?.credit ?? DeckCredit;
   if (!module) throw new Error(`Missing slide module for ${value.meta.id}`);
   const { Component, startedPending, loadState } = useMemo(() => {
     const loaded = module.resolved?.default;
@@ -47,6 +49,17 @@ export function SlideHost({
       loadState,
     };
   }, [module]);
+  // The credit arrives with the slide, so a slide still loading stays empty.
+  const content = (
+    <>
+      <Component components={source.components} />
+      {Credit && (
+        <div data-deck-layer="credit">
+          <Credit />
+        </div>
+      )}
+    </>
+  );
   return (
     <div
       data-deck-slide={no}
@@ -76,13 +89,7 @@ export function SlideHost({
               <Below />
             </div>
           )}
-          {startedPending ? (
-            <Suspense fallback={null}>
-              <Component components={source.components} />
-            </Suspense>
-          ) : (
-            <Component components={source.components} />
-          )}
+          {startedPending ? <Suspense fallback={null}>{content}</Suspense> : content}
           {Above && (
             <div
               data-deck-layer="above"

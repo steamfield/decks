@@ -13,6 +13,11 @@ export interface DeckConfig {
   readonly canvas?: { readonly width: number; readonly height: number };
   readonly transition?: string;
   readonly htmlAttrs?: Readonly<Record<string, string>>;
+  /**
+   * The "Created with Decks" credit in the lower right of every slide. On by default; `false`
+   * removes it. To replace it, add `layers/credit.tsx` to the deck.
+   */
+  readonly credit?: boolean;
   readonly vite?: UserConfig;
   /** remark and rehype plugins added to the slide compiler. */
   readonly mdx?: {
@@ -26,6 +31,7 @@ export interface ResolvedDeck {
   readonly dir: string;
   readonly config: DeckConfig & {
     readonly canvas: { readonly width: number; readonly height: number };
+    readonly credit: boolean;
   };
 }
 
@@ -42,6 +48,7 @@ const schema = z.strictObject({
     .default({ width: 1920, height: 1080 }),
   transition: z.string().min(1).optional(),
   htmlAttrs: z.record(z.string(), z.string()).optional(),
+  credit: z.boolean().default(true),
   vite: z
     .custom<UserConfig>(
       (value) => typeof value === "object" && value !== null && !Array.isArray(value),

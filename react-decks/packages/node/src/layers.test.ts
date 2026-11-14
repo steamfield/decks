@@ -42,6 +42,29 @@ it("serves absent layers and each default layer export through the virtual modul
   expect(layers.below()).toBe("Below");
 });
 
+it("serves the deck's own credit, and false when the config turns the credit off", async () => {
+  const own = await serve({
+    "layers/credit.tsx": 'export default function Credit() { return "Mine"; }',
+  });
+  expect((await own.server.ssrLoadModule("virtual:react-decks/layers")).layers.credit()).toBe(
+    "Mine",
+  );
+  const off = await serve({
+    "deck.config.ts": 'export default { title: "Fixture", credit: false };',
+    "layers/credit.tsx": 'export default function Credit() { return "Mine"; }',
+  });
+  expect((await off.server.ssrLoadModule("virtual:react-decks/layers")).layers).toEqual({
+    credit: false,
+  });
+});
+
+it("rejects a credit option that is not true or false, naming it", async () => {
+  const { dir } = await fixture(onTestFinished, {
+    "deck.config.ts": 'export default { title: "Fixture", credit: "none" };',
+  });
+  await expect(loadDeck(dir)).rejects.toThrow(/credit/);
+});
+
 it.each(["extra.tsx", "nested/above.tsx"])(
   "rejects unexpected layer file %s naming it",
   async (name) => {

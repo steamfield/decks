@@ -1222,6 +1222,8 @@ export interface DeckConfig {
   readonly transition?: string;
   /** Attributes set on <html>. */
   readonly htmlAttrs?: Readonly<Record<string, string>>;
+  /** The corner credit of section 6.5. Default true; false removes it. */
+  readonly credit?: boolean;
   /** Merged into the Vite config; how a deck adds Tailwind or other plugins. */
   readonly vite?: UserConfig;
 }
@@ -1509,14 +1511,15 @@ and such a slide sets `clicks:`.
 ## 6.5 Layers (Final)
 
 A layer is a component that appears on every slide: a logo, a progress bar, a footer, a
-background. A deck provides up to two, each the default export of its file:
+background. A deck provides up to three, each the default export of its file:
 
 ```
-<deck>/layers/above.tsx   drawn over the slide's content
-<deck>/layers/below.tsx   drawn under it
+<deck>/layers/above.tsx    drawn over the slide's content
+<deck>/layers/below.tsx    drawn under it
+<deck>/layers/credit.tsx   replaces the built-in credit (below)
 ```
 
-`virtual:react-decks/layers` exports `{ above?, below? }`, and the entry passes it as
+`virtual:react-decks/layers` exports `{ above?, below?, credit? }`, and the entry passes it as
 `DeckSource.layers`. Adding, removing or editing a layer file in dev takes effect without a
 restart. Any other file under `layers/` is an error naming it.
 
@@ -1535,6 +1538,13 @@ therefore pair up as one named group, and it holds still while the slides transi
 any preset. In other contexts it carries no name. The below layer is never named: a named
 group is painted over the root snapshot, which would put a background on top of the slide
 mid-transition, so the below layer moves with its slide like any background.
+
+The credit is a third layer that is on by default: with no `layers/credit.tsx`, every slide in
+every context shows "Created with Decks" (the mark and a link to the Decks site) in its lower
+right corner, at `right: 110px; bottom: 14px` in canvas px, in the slide's own text color.
+Its element carries `data-deck-layer="credit"` and sits after the content and before the above
+layer, so an above layer covers it. `credit: false` in `deck.config.ts` removes it, own file
+or not; `layers/credit.tsx` replaces it. Frontmatter `layers` does not affect it.
 
 Frontmatter `layers: false` leaves both out for that slide; `layers: "above"` or `"below"`
 keeps only that one. Any other value is an error naming the file.

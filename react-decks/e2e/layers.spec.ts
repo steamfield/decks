@@ -115,10 +115,12 @@ test("The layer holds its box still throughout a push transition", async ({ page
   );
 });
 
-test("The cover opts out of every layer", async ({ page }) => {
+test("The cover opts out of both of the deck's layers", async ({ page }) => {
   await page.goto("/#/1");
   await expect(page.getByRole("heading", { name: "Motion", exact: true })).toBeVisible();
-  await expect(page.locator("[data-deck-active] [data-deck-layer]")).toHaveCount(0);
+  await expect(
+    page.locator('[data-deck-active] :is([data-deck-layer="above"], [data-deck-layer="below"])'),
+  ).toHaveCount(0);
 });
 
 editableTest(

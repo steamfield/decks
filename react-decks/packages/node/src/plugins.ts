@@ -59,7 +59,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
       scan = (async () => {
         try {
           const scanned = await scanSlidesWithCounts(current, totals);
-          await layersModule(deck.dir);
+          await layersModule(deck.dir, deck.config.credit);
           for (const [key] of scanFailures) reporting.fixed(key);
           scanFailures.clear();
           return scanned;
@@ -134,7 +134,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
       if (normalizePath(id) === htmlFile) return deckHtml(current, false);
       if (id === `\0${prefix}entry`) return entryModule(current);
       if (id === `\0${prefix}components`) return (await scanDeck()).componentsCode;
-      if (id === `\0${prefix}layers`) return layersModule(deck.dir);
+      if (id === `\0${prefix}layers`) return layersModule(deck.dir, deck.config.credit);
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;
       let scanned: Awaited<ReturnType<typeof scanSlidesWithCounts>>;
       try {

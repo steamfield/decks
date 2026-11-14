@@ -11,7 +11,39 @@
   [data-deck-layer="below"] {
     z-index: -1;
   }
-  [data-deck-layer="above"] {
+  /* In DOM order the credit comes before the above layer, so the above layer covers it. */
+  [data-deck-layer="above"],
+  [data-deck-layer="credit"] {
     z-index: 1;
+  }
+
+  /* Canvas px, as the Slidev addon placed it: under a story slide's source line. */
+  .rd-credit {
+    position: absolute;
+    right: 110px;
+    bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    line-height: 1;
+    color: inherit;
+    opacity: 0.5;
+    text-decoration: none;
+    pointer-events: auto;
+  }
+
+  .rd-credit:hover {
+    opacity: 1;
+  }
+
+  .rd-credit svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+
+  .rd-credit strong {
+    font-weight: 600;
   }
 }

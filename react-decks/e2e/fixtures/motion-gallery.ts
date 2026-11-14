@@ -14,7 +14,7 @@ export async function position(page: Page, no: number, click = 0) {
 export async function settled(page: Page, no: number, click: number) {
   await page.evaluate(() => window.__deck?.settled());
   if (no === 13)
-    await expect(page.locator('[data-deck-active] [aria-hidden="true"]')).toHaveText(
+    await expect(page.locator('[data-deck-active] span[aria-hidden="true"]')).toHaveText(
       click ? "1,200" : "0",
     );
   if (no === 15)

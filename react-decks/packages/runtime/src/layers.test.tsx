@@ -61,7 +61,7 @@ it.each([undefined, false, "above", "below"])(
         Array.from(root.children)
           .map((child) => child.getAttribute("data-deck-layer"))
           .filter(Boolean),
-      ).toEqual([...(below ? ["below"] : []), ...(above ? ["above"] : [])]);
+      ).toEqual([...(below ? ["below"] : []), "credit", ...(above ? ["above"] : [])]);
     }
     const inactive = container.querySelector<HTMLElement>(
       '[data-deck-slide="1"] [data-deck-layer="above"]',

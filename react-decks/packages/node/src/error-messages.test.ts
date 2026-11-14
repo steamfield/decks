@@ -14,7 +14,7 @@ it.each([
   [
     "unknown config key",
     'export default {titel:"Deck"}',
-    'deck.config.ts: title is required (a string).\ndeck.config.ts: unknown key "titel". Known keys: title, author, info, canvas, transition, htmlAttrs, vite, mdx.',
+    'deck.config.ts: title is required (a string).\ndeck.config.ts: unknown key "titel". Known keys: title, author, info, canvas, transition, htmlAttrs, credit, vite, mdx.',
   ],
   [
     "wrong type",

@@ -26,7 +26,7 @@ test("Stagger enters in order with different opacities partway through entry.", 
 test("CountUp shows zero, its final number, and an immediate reset.", async ({ page }) => {
   await page.goto("/#/13");
   await position(page, 13);
-  const number = page.locator('[data-deck-active] [aria-hidden="true"]');
+  const number = page.locator('[data-deck-active] span[aria-hidden="true"]');
   await expect(number).toHaveText("0");
   await page.keyboard.press("ArrowRight");
   await expect(number).toHaveText("1,200");

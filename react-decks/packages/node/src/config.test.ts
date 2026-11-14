@@ -40,7 +40,11 @@ describe("loadDeck", () => {
     const { dir } = await fixture({
       "deck.config.ts": `import { defineDeck } from '@react-decks/node'; export default defineDeck(${JSON.stringify(input)})`,
     });
-    expect(await loadDeck(dir, "talk")).toEqual({ name: "talk", dir, config: input });
+    expect(await loadDeck(dir, "talk")).toEqual({
+      name: "talk",
+      dir,
+      config: { ...input, credit: true },
+    });
   });
   it("defaults canvas and uses the directory basename as the name", async () => {
     const { dir } = await fixture();
