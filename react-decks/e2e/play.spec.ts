@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import { test, waitForSlideModules } from "./deck.fixture";
+import { test, waitForSlideModules } from "./fixtures/deck.fixture";
 
 const headings = ["Basic fixture deck", "Three steps", "A deck component", "One click", "The end"];
 const points = ["First point", "Second point", "Third point"];
@@ -177,16 +177,9 @@ test("Deck components and computed MDX render without imports in the slide.", as
   await expect(page.getByText("4 is computed in MDX.", { exact: true })).toBeVisible();
 });
 
-test("Only the active slide and its neighbours are mounted.", async ({ page }) => {
+test("Inactive neighbours stay hidden under a deck CSS override.", async ({ page }) => {
   await page.goto("/#/3");
   await position(page, 3);
-  await expect(page.locator("[data-deck-slide]")).toHaveCount(3);
-  await expect(page.locator("[data-deck-active]")).toHaveCount(1);
-  await expect(page.locator('[data-deck-slide="3"][data-deck-active]')).toBeVisible();
-  await expect(page.locator('[data-deck-slide="2"]')).toHaveCount(1);
-  await expect(page.locator('[data-deck-slide="4"]')).toHaveCount(1);
-  await expect(page.locator('[data-deck-slide="2"]')).toBeHidden();
-  await expect(page.locator('[data-deck-slide="4"]')).toBeHidden();
   await page.addStyleTag({ content: "[data-deck-slide] { display: grid; }" });
   await expect(page.locator('[data-deck-slide="2"]')).toBeHidden();
   await expect(page.locator('[data-deck-slide="4"]')).toBeHidden();

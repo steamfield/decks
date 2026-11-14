@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { build, loadDeck } from "@react-decks/node";
 import { preview } from "vite";
-import { test } from "./deck.fixture";
+import { test } from "./fixtures/deck.fixture";
 
 const builtTest = test.extend<{ builtUrl: string }>({
   builtUrl: async ({ browserName }, use) => {
@@ -22,9 +22,7 @@ const builtTest = test.extend<{ builtUrl: string }>({
         if (!url) throw new Error("Missing built-deck preview URL");
         await use(url);
       } finally {
-        await new Promise<void>((done, reject) =>
-          server.httpServer.close((error) => (error ? reject(error) : done())),
-        );
+        await server.close();
       }
     } finally {
       await rm(dir, { recursive: true, force: true });

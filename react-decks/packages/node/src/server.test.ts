@@ -1,12 +1,11 @@
 import { describe, expect, it, onTestFinished } from "vitest";
-import { fixture } from "./deck.test-support";
+import { fixture, testVite } from "./deck.test-support";
 import { dev, loadDeck } from "./index";
 
 describe("dev ports", () => {
   it.each([undefined, 0])("serves with port %s", async (port) => {
     const { dir } = await fixture(onTestFinished, {
-      "deck.config.ts":
-        'export default { title: "Port selection", vite: { server: { port: 1 } } };',
+      "deck.config.ts": `export default ${JSON.stringify({ title: "Port selection", vite: { ...testVite, server: { port: 1 } } })};`,
     });
     const server = await dev(await loadDeck(dir), { port });
     onTestFinished(() => server.close());

@@ -2,8 +2,8 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { access, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { describe, expect, it, onTestFinished, vi } from "vitest";
-import { fixture as createFixture } from "./deck.test-support";
+import { describe, expect, it, onTestFinished } from "vitest";
+import { fixture as createFixture, waitForWatcher } from "./deck.test-support";
 
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
 
@@ -62,13 +62,10 @@ describe("decks CLI", () => {
     await put("decks.json", JSON.stringify({ talk: { dir: "." } }));
     const process = cli(dir, ["dev", "talk", "--port", "0"]);
     let url = "";
-    await vi.waitFor(
-      () => {
-        url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
-        expect(url, process.output().stderr).not.toBe("");
-      },
-      { timeout: 10000 },
-    );
+    await waitForWatcher(() => {
+      url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
+      expect(url, process.output().stderr).not.toBe("");
+    });
     const response = await fetch(url);
     expect(response.status).toBe(200);
     expect(await response.text()).toContain('<meta name="decks:name" content="talk">');
@@ -90,29 +87,21 @@ describe("decks CLI", () => {
     const { dir, put } = await fixture();
     const process = cli(dir, ["dev", dir, "--port", "0"]);
     let url = "";
-    await vi.waitFor(
-      () => {
-        url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
-        expect(url).not.toBe("");
-      },
-      { timeout: 10000 },
-    );
+    await waitForWatcher(() => {
+      url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
+      expect(url).not.toBe("");
+    });
     expect((await fetch(url)).status).toBe(200);
     await put("deck.config.ts", "export default {title:42};");
-    await vi.waitFor(() => expect(process.output().stderr).toContain("deck.config.ts"));
+    await waitForWatcher(() => expect(process.output().stderr).toContain("deck.config.ts"));
     await put("deck.config.ts", 'export default {title:"Recovered deck"};');
-    // A config save restarts a real server; the default one-second wait is too short on a
-    // slow machine.
-    await vi.waitFor(
-      async () => {
-        expect(process.child.exitCode, process.output().stderr).toBe(null);
-        const response = await fetch(url);
-        expect(response.status).toBe(200);
-        expect(await response.text()).toContain("Recovered deck");
-      },
-      { timeout: 10000 },
-    );
-  });
+    await waitForWatcher(async () => {
+      expect(process.child.exitCode, process.output().stderr).toBe(null);
+      const response = await fetch(url);
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain("Recovered deck");
+    });
+  }, 40_000);
   it("build accepts a directory and explicit output and base", async () => {
     const { dir } = await fixture();
     const process = cli(dir, ["build", dir, "--out", "custom", "--base", "./"]);
