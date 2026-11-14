@@ -337,6 +337,9 @@ export const slides = Object.fromEntries([${loaders}]);`;
   // MDX returns Rollup's Plugin type; Vite 8 uses Rolldown's narrower source-map type.
   const compiler = () => {
     const mdxPlugin = mdx({
+      // Slides are `.mdx`. A `.md` file a deck imports (its text with `?raw`, say) is not a
+      // slide and must not be compiled into a component.
+      mdExtensions: [],
       remarkPlugins: [
         remarkFrontmatter,
         removeNotes,
