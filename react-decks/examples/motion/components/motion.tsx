@@ -1,1 +1,10 @@
-export { CountUp, Draw, Highlight, Stagger, Step, Steps, TextReveal } from "@react-decks/motion";
+export {
+  CountUp,
+  Draw,
+  Highlight,
+  Morph,
+  Stagger,
+  Step,
+  Steps,
+  TextReveal,
+} from "@react-decks/motion";

@@ -1,4 +1,5 @@
 import { useState, useSyncExternalStore } from "react";
+import { pendingTweenNotification } from "./settle";
 
 export function useTween<T extends Record<string, number>>(initial: T): T {
   const [store] = useState(() => {
@@ -18,9 +19,11 @@ export function useTween<T extends Record<string, number>>(initial: T): T {
             const publish = () => {
               if (pending !== publish) return;
               pending = null;
+              pendingTweenNotification(-1);
               for (const notify of listeners) notify();
             };
             pending = publish;
+            pendingTweenNotification(1);
             // Batch GSAP's writes within its frame, including layout-effect seeks before paint.
             queueMicrotask(publish);
           }
@@ -37,6 +40,7 @@ export function useTween<T extends Record<string, number>>(initial: T): T {
           listeners.delete(notify);
           if (!listeners.size && pending) {
             pending = null;
+            pendingTweenNotification(-1);
           }
         };
       },

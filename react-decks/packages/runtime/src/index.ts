@@ -15,6 +15,7 @@ export { Notes } from "./notes";
 export { OverviewView } from "./overview-view";
 export { PlayView } from "./play-view";
 export { PresenterView } from "./presenter-view";
+export { registerSettleProbe } from "./settle";
 export { SlideFrame } from "./slide-frame";
 export { SlideHost } from "./slide-host";
 export type { DeckSource, NoteHtml, SlideLoader } from "./source";

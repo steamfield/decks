@@ -155,3 +155,106 @@ code {
   font-size: 26px;
   letter-spacing: 0.05em;
 }
+.transition-poster {
+  flex: 1;
+  margin: 32px 0;
+  border-top: 2px solid var(--gallery-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--gallery-accent);
+}
+.transition-poster strong {
+  font-size: 148px;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 600;
+}
+.transition-poster > span:last-child {
+  font-size: 220px;
+}
+.transition-poster.warm {
+  color: var(--gallery-warm);
+  border-color: var(--gallery-warm);
+}
+.morph-field {
+  position: relative;
+  flex: 1;
+  margin: 20px 0;
+  border-top: 2px solid var(--gallery-muted);
+  border-bottom: 2px solid var(--gallery-muted);
+}
+.morph-card {
+  --gallery-card-scale: 1;
+  position: absolute;
+  box-sizing: border-box;
+  margin: 0;
+  border-radius: calc(28px * var(--gallery-card-scale));
+  background: var(--gallery-accent);
+  color: var(--gallery-canvas);
+  padding: calc(48px * var(--gallery-card-scale));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.morph-card small {
+  font-size: calc(24px * var(--gallery-card-scale));
+  letter-spacing: 0.12em;
+}
+.morph-card strong {
+  font-size: calc(72px * var(--gallery-card-scale));
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.morph-card.compact {
+  left: 40px;
+  top: 32px;
+  width: 460px;
+  height: 330px;
+}
+.morph-card.expanded {
+  --gallery-card-scale: calc(33 / 23);
+  left: 900px;
+  top: 100px;
+  width: 660px;
+  height: calc(330px * var(--gallery-card-scale));
+}
+.morph-origin,
+.morph-destination {
+  position: absolute;
+  color: var(--gallery-muted);
+  font-size: 32px;
+  line-height: 1.5;
+}
+.morph-origin {
+  left: 40px;
+  top: 420px;
+}
+.morph-destination {
+  left: 960px;
+  top: 32px;
+}
+.loop-mark {
+  width: 360px;
+  height: 360px;
+  border: 2px solid var(--gallery-muted);
+  border-radius: 50%;
+  animation: gallery-turn calc(var(--deck-dur-slow) * 6) linear infinite;
+}
+html[data-deck-motion="instant"] .loop-mark {
+  animation: none;
+}
+@keyframes gallery-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.loop-mark span {
+  display: block;
+  width: 90px;
+  height: 90px;
+  margin: -45px auto 0;
+  border-radius: 50%;
+  background: var(--gallery-accent);
+}

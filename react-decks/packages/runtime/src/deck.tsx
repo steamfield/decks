@@ -17,8 +17,18 @@ function DeckView(): ReactElement {
     const previousView = html.getAttribute("data-deck-view");
     const previousMotion = html.getAttribute("data-deck-motion");
     html.setAttribute("data-deck-view", view);
-    html.setAttribute("data-deck-motion", view === "play" ? "live" : "instant");
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    function updateMotion() {
+      const instant =
+        view !== "play" ||
+        reduced?.matches ||
+        new URLSearchParams(window.location.search).get("motion") === "instant";
+      html.setAttribute("data-deck-motion", instant ? "instant" : "live");
+    }
+    updateMotion();
+    reduced?.addEventListener("change", updateMotion);
     return () => {
+      reduced?.removeEventListener("change", updateMotion);
       if (previousView === null) html.removeAttribute("data-deck-view");
       else html.setAttribute("data-deck-view", previousView);
       if (previousMotion === null) html.removeAttribute("data-deck-motion");

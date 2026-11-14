@@ -19,7 +19,18 @@ export interface DeckSource {
   readonly loadNotes?: () => Promise<Readonly<Record<string, readonly NoteHtml[]>>>;
 }
 
+const slideModules = new WeakMap<DeckSource, ReturnType<typeof buildSlideModules>>();
+
 export function createSlideModules(source: DeckSource) {
+  let modules = slideModules.get(source);
+  if (!modules) {
+    modules = buildSlideModules(source);
+    slideModules.set(source, modules);
+  }
+  return modules;
+}
+
+function buildSlideModules(source: DeckSource) {
   return new Map(
     source.manifest.slides.map(({ id }) => {
       const loader = source.slides[id];

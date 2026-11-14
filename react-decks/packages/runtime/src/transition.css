@@ -1,0 +1,87 @@
+@layer react-decks {
+  ::view-transition-group(*) {
+    animation-duration: var(--deck-dur-slow, 600ms);
+    animation-timing-function: var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1));
+  }
+  ::view-transition-group(root) {
+    animation: none;
+  }
+  html[data-deck-transition="fade"]::view-transition-old(root),
+  html[data-deck-transition="fade"]::view-transition-new(root),
+  html[data-deck-transition="zoom"]::view-transition-old(root),
+  html[data-deck-transition="zoom"]::view-transition-new(root) {
+    mix-blend-mode: plus-lighter;
+  }
+  html[data-deck-transition="fade"]::view-transition-old(root) {
+    animation: rd-fade-out var(--deck-dur-base, 300ms) both;
+  }
+  html[data-deck-transition="fade"]::view-transition-new(root) {
+    animation: rd-fade-in var(--deck-dur-base, 300ms) both;
+  }
+  html[data-deck-transition="push"] {
+    --rd-push: 100%;
+  }
+  html[data-deck-transition="push"][data-deck-nav="backward"] {
+    --rd-push: -100%;
+  }
+  html[data-deck-transition="push"]::view-transition-old(root) {
+    animation: rd-push-out var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  html[data-deck-transition="push"]::view-transition-new(root) {
+    animation: rd-push-in var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  html[data-deck-transition="zoom"] {
+    --rd-zoom-old: 1.08;
+    --rd-zoom-new: 0.94;
+  }
+  html[data-deck-transition="zoom"][data-deck-nav="backward"] {
+    --rd-zoom-old: 0.94;
+    --rd-zoom-new: 1.08;
+  }
+  html[data-deck-transition="zoom"]::view-transition-old(root) {
+    animation: rd-zoom-out var(--deck-dur-slow, 600ms) both;
+  }
+  html[data-deck-transition="zoom"]::view-transition-new(root) {
+    animation: rd-zoom-in var(--deck-dur-slow, 600ms) both;
+  }
+  html[data-deck-transition="step"]::view-transition-old(root) {
+    display: none;
+  }
+  html[data-deck-transition="step"]::view-transition-new(root) {
+    animation: none;
+  }
+  @keyframes rd-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes rd-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes rd-push-out {
+    to {
+      transform: translateX(calc(-1 * var(--rd-push)));
+    }
+  }
+  @keyframes rd-push-in {
+    from {
+      transform: translateX(var(--rd-push));
+    }
+  }
+  @keyframes rd-zoom-out {
+    to {
+      opacity: 0;
+      transform: scale(var(--rd-zoom-old));
+    }
+  }
+  @keyframes rd-zoom-in {
+    from {
+      opacity: 0;
+      transform: scale(var(--rd-zoom-new));
+    }
+  }
+}
