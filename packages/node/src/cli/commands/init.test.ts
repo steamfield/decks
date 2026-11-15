@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdir, readdir, readFile, symlink } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, symlink } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { expect, inject, it } from "vitest";
 import { installedInit, pluginProject } from "./plugin.test-support";
@@ -98,6 +98,59 @@ it("ships source skills through the package build and copies binary references u
   expect(await readFile(join(dir, ".agents/skills/init-fixture/references/image.png"))).toEqual(
     Buffer.from([137, 80, 78, 71, 255, 0]),
   );
+});
+
+it.each([false, true])(
+  "removes obsolete unedited skills and preserves edited ones (force: %s)",
+  async (force) => {
+    const { dir, put } = await pluginProject(packageDir);
+    const obsolete = ".agents/skills/old-name/SKILL.md";
+    const edited = ".agents/skills/old-edited/SKILL.md";
+    const missing = ".agents/skills/old-missing/SKILL.md";
+    const names = ["old-name", "old-edited", "old-missing", "old-user"];
+    for (const name of names)
+      await put(`installed-decks/dist/plugin/skills/${name}/SKILL.md`, "Original skill\n");
+    await put("installed-decks/dist/plugin/skills/old-edited/references/setup.md", "Setup\n");
+    expect(installedInit(dir).status).toBe(0);
+    await put(edited, "My obsolete skill\n");
+    await put(".agents/skills/old-user/my-reference.md", "My reference\n");
+    await rm(join(dir, missing));
+    for (const name of names)
+      await rm(join(dir, `installed-decks/dist/plugin/skills/${name}`), { recursive: true });
+    const result = installedInit(dir, force ? ["--force"] : []);
+    expect(result.status, result.stderr).toBe(0);
+    await expect(read(dir, obsolete)).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(readdir(join(dir, ".agents/skills/old-name"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    expect(await read(dir, edited)).toBe("My obsolete skill\n");
+    expect(await read(dir, ".agents/skills/old-edited/references/setup.md")).toBe("Setup\n");
+    expect(await read(dir, ".agents/skills/old-user/SKILL.md")).toBe("Original skill\n");
+    expect(await read(dir, ".agents/skills/old-user/my-reference.md")).toBe("My reference\n");
+    expect(result.stdout).toContain("Kept .agents/skills/old-edited:");
+    expect(result.stdout).toContain("Kept .agents/skills/old-user:");
+    const manifest = JSON.parse(await read(dir, ".agents/skills/.decks-init.json"));
+    expect(manifest.files).not.toHaveProperty(obsolete);
+    expect(manifest.files).not.toHaveProperty(missing);
+    expect(await read(dir, skill)).toBe(await read(dir, shipped));
+  },
+);
+
+it("removes obsolete references within a shipped skill while keeping edited references", async () => {
+  const { dir, put } = await pluginProject(packageDir);
+  const original = "building-a-deck/references/retired.md";
+  const edited = "building-a-deck/references/edited.md";
+  for (const file of [original, edited])
+    await put(`installed-decks/dist/plugin/skills/${file}`, "Original reference\n");
+  expect(installedInit(dir).status).toBe(0);
+  await put(`.agents/skills/${edited}`, "My reference\n");
+  for (const file of [original, edited])
+    await rm(join(dir, `installed-decks/dist/plugin/skills/${file}`));
+  const result = installedInit(dir);
+  expect(result.status, result.stderr).toBe(0);
+  await expect(read(dir, `.agents/skills/${original}`)).rejects.toMatchObject({ code: "ENOENT" });
+  expect(await read(dir, `.agents/skills/${edited}`)).toBe("My reference\n");
+  expect(await read(dir, skill)).toBe(await read(dir, shipped));
 });
 
 it("updates managed skills and the section after a CRLF checkout without treating it as an edit", async () => {

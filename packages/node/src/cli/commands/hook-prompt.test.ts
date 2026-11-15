@@ -94,3 +94,19 @@ it("resolves modified deck paths against the Git root above the project", async 
     "Deck writing reminder",
   );
 });
+
+it("recognizes a renamed slide's source path when it moves out of the deck", async () => {
+  const { dir } = await fixture(onTestFinished);
+  for (const args of [
+    ["init", "-q"],
+    ["add", "-A"],
+    ["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "Initial"],
+    ["mv", "slides/01-first.mdx", "archived.mdx"],
+  ]) {
+    const result = spawnSync("git", args, { cwd: dir, encoding: "utf8" });
+    expect(result.status, result.stderr).toBe(0);
+  }
+  const result = prompt(dir, "tighten this bullet");
+  expect(result.status, result.stderr).toBe(0);
+  expect(result.context).toContain("Deck writing reminder");
+});

@@ -131,12 +131,21 @@ function promptPayload(payload: z.infer<typeof payloadSchema>, project: string) 
       encoding: "utf8",
     });
     if (top.error) throw top.error;
-    fires =
-      status.status === 0 &&
-      top.status === 0 &&
-      status.stdout
-        .split("\0")
-        .some((entry) => entry && inScope(entry.slice(3), top.stdout.trim()));
+    if (status.status === 0 && top.status === 0) {
+      const entries = status.stdout.split("\0");
+      for (let index = 0; index < entries.length; index++) {
+        const entry = entries[index];
+        if (!entry) continue;
+        const source = /[RC]/.test(entry.slice(0, 2)) ? entries[++index] : undefined;
+        if (
+          inScope(entry.slice(3), top.stdout.trim()) ||
+          (source && inScope(source, top.stdout.trim()))
+        ) {
+          fires = true;
+          break;
+        }
+      }
+    }
   }
   if (fires)
     emit({
