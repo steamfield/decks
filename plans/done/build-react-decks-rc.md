@@ -1,4 +1,4 @@
-# Build: react-decks to `@steamfield/decks` 1.0.0-rc
+# Build: react-decks to `@steamfield/decks` 1.0.0-rc (done: shipped to main 2026-11-15)
 
 ## Context
 
