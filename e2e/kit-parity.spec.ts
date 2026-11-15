@@ -39,7 +39,9 @@ test("The cover has its brand, body and byline rows and uses the installed theme
 }, info) => {
   await page.goto("/?motion=instant#/1");
   await expect(page.getByRole("heading", { name: "Tides run on the Moon's clock." })).toBeVisible();
-  await expect(page.locator("[data-deck-active] .od-brand-name")).toHaveText("Decks");
+  await expect(
+    page.locator("[data-deck-active]").getByText("Decks", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("Edited by Riley Hilliard")).toBeVisible();
   await settled(page);
   expect(

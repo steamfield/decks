@@ -41,14 +41,20 @@ export const test = base.extend<object, { embedURL: string }>({
           "setup.ts":
             'import { installTheme, resolveTheme } from "@steamfield/decks/kit"; installTheme(resolveTheme());',
           "styles/index.css": '@import "@steamfield/decks/kit/styles.css";',
-          "slides/01-cover.mdx": "---\ntitle: Cover\n---\n# Embed cover",
+          "slides/01-cover.mdx": "---\ntitle: Cover\n---\n# Embed cover\n\n<Marks />",
           "slides/02-story.mdx": "---\ntitle: Story\nclicks: 2\nmorphSteps: true\n---\n<Caption />",
           "slides/03-stage.mdx": "---\ntitle: Stage\nclicks: 1\n---\n<OwnKeys />",
           "slides/04-error.mdx": "---\ntitle: Error\nclicks: 1\n---\n<Broken />",
           "components/Embed.tsx": `
-import { StoryCard } from "@steamfield/decks/kit";
+import { OpenChart, StoryCard } from "@steamfield/decks/kit";
 import { routeEmbedNavigation, useDeck, useSlide } from "@steamfield/decks";
 import { useState } from "react";
+export function Marks() {
+  return <><section aria-label="Chart marks" style={{ position: "absolute", left: 100, top: 200, width: 800, height: 400 }}><OpenChart spec={{
+    mark: "bar", data: [{ name: "A", value: 3 }, { name: "B", value: 6 }],
+    encoding: { x: { field: "name", type: "nominal" }, y: { field: "value", type: "quantitative" } }, animation: false
+  }} /></section><span data-mark-id="custom" style={{ position: "absolute", left: 1000, top: 300 }}>Custom mark</span></>;
+}
 export function Caption() {
   const { clicks } = useSlide();
   const [caption, setCaption] = useState("default");

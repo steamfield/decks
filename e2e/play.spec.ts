@@ -94,7 +94,7 @@ test("Prefetched slides paint in the next animation frame when jumping with inst
       );
     }, heading);
     await page.keyboard.press(key);
-    await page.waitForFunction(() => window.e2eFrame !== undefined);
+    await page.evaluate(() => window.__deck?.settled());
     expect(await page.evaluate(() => window.e2eFrame)).toBe(true);
   }
 });

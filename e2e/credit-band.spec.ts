@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 import { kitFixture } from "./fixtures/kit.fixture";
 
 const slides = {
@@ -7,14 +7,14 @@ const slides = {
   "slides/02-layout.mdx": "<Section>\n\n# Bottom heading\n\n</Section>",
 };
 
-async function bottoms(page: import("@playwright/test").Page, content: string) {
-  const box = async (locator: import("@playwright/test").Locator) => {
+async function bottoms(page: Page, content: Locator) {
+  const box = async (locator: Locator) => {
     const found = await locator.boundingBox();
     if (!found) throw new Error("Missing box");
     return found;
   };
   const slide = await box(page.locator("[data-deck-active]"));
-  const target = await box(page.locator("[data-deck-active]").locator(content));
+  const target = await box(content);
   return { slide: slide.y + slide.height, content: target.y + target.height };
 }
 
@@ -27,10 +27,14 @@ test("A story frame and a layout's content both end above the credit.", async ({
     });
     await expect(credit).toBeVisible();
     const top = async () => (await credit.boundingBox())?.y ?? Number.NaN;
-    expect((await bottoms(page, ".od-story-frame")).content).toBeLessThanOrEqual(await top());
+    expect(
+      (await bottoms(page, page.getByText("Stage", { exact: true }))).content,
+    ).toBeLessThanOrEqual(await top());
     await page.goto(`${deck.url}#/2`);
     await expect(page.getByRole("heading", { name: "Bottom heading" })).toBeVisible();
-    expect((await bottoms(page, "h1")).content).toBeLessThanOrEqual(await top());
+    expect(
+      (await bottoms(page, page.getByRole("heading", { name: "Bottom heading" }))).content,
+    ).toBeLessThanOrEqual(await top());
   } finally {
     await deck.close();
   }
@@ -47,7 +51,7 @@ test("With the credit turned off a story frame reaches the bottom of a 16:9 wind
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(`${deck.url}#/1`);
     await expect(page.getByText("Stage")).toBeVisible();
-    const measured = await bottoms(page, ".od-story-frame");
+    const measured = await bottoms(page, page.getByText("Stage", { exact: true }));
     expect(Math.round(measured.content)).toBe(Math.round(measured.slide));
   } finally {
     await deck.close();
