@@ -2,11 +2,9 @@
  * Slide 10's data against its sources. The quoted result lines must be bytes
  * of the fixture, the fixture must still be line 4 of rr's run.jsonl, and the
  * ported simulation must still agree with rr's own. The two checks that read
- * ~/Projects/rr are skipped when that repo is not checked out.
+ * ~/Projects/rr run only with DECKS_SOURCE_REPOS=1, at the commits the data file cites.
  */
-import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
@@ -23,16 +21,26 @@ import {
   sceneAt,
   simulate,
 } from "./10-rr-locks";
+import {
+  describeSourceRepos,
+  importablePathAtCommit,
+  readAtCommit,
+} from "./source-repos.test-support";
 
-const fixture = readFileSync(
-  fileURLToPath(new URL("./fixtures/10-rr-result.json", import.meta.url)),
-  "utf8",
+// The fixture file is pretty-printed by the repo's formatter. The slide quotes rr's one-line
+// event, so compare against the compact serialization, which is that line.
+const fixture = JSON.stringify(
+  JSON.parse(
+    readFileSync(fileURLToPath(new URL("./fixtures/10-rr-result.json", import.meta.url)), "utf8"),
+  ),
 );
-const RR = join(homedir(), "Projects", "rr");
+// The commits cited in 10-rr-locks.ts: the run fixture, and the flow.ts it ports.
+const RUN_FIXTURE_COMMIT = "9a0dab1";
+const FLOW_COMMIT = "536948d";
 const scene = (beat: number) => sceneAt(SEGMENTS, FLOW_RUNS, FLOW_HOSTS.length, STILLS[beat] ?? 0);
 
 describe("slide 10: the recorded result", () => {
-  it("quotes the fixture byte for byte", () => {
+  it("quotes the fixture event byte for byte", () => {
     for (const line of RESULT_LINES) {
       const quoted = line.text.replace(/^… /, "").replace(/ …$/, "");
       expect(fixture, quoted).toContain(quoted);
@@ -47,14 +55,13 @@ describe("slide 10: the recorded result", () => {
   it("reads the run totals from the event", () => {
     expect(RUN).toMatchObject({ recorded: "2026-11-02", shards: 8, passed: 5, failed: 3 });
   });
+});
 
-  it.skipIf(!existsSync(join(RR, "site/fixtures/run.jsonl")))(
-    "is still line 4 of rr/site/fixtures/run.jsonl",
-    () => {
-      const lines = readFileSync(join(RR, "site/fixtures/run.jsonl"), "utf8").split("\n");
-      expect(fixture.trim()).toBe(lines[3]);
-    },
-  );
+describeSourceRepos("slide 10: the fixture against rr", () => {
+  it("is still line 4 of rr/site/fixtures/run.jsonl", () => {
+    const lines = readAtCommit("rr", RUN_FIXTURE_COMMIT, "site/fixtures/run.jsonl").split("\n");
+    expect(fixture).toBe(lines[3]);
+  });
 });
 
 describe("slide 10: each beat rests on the frame its card describes", () => {
@@ -82,22 +89,19 @@ describe("slide 10: each beat rests on the frame its card describes", () => {
   });
 });
 
-describe.skipIf(!existsSync(join(RR, "site/src/lib/flow.ts")))(
-  "slide 10: the port agrees with rr/site/src/lib/flow.ts",
-  () => {
-    it("produces the same segments, scenes and steps", async () => {
-      const path = join(RR, "site/src/lib/flow.ts");
-      const source = (await import(/* @vite-ignore */ path)) as typeof import("./10-rr-locks");
-      const theirs = source.simulate(source.FLOW_RUNS, source.FLOW_HOSTS.length);
-      expect(simulate(FLOW_RUNS, FLOW_HOSTS.length)).toEqual(theirs);
-      expect(STEPS).toEqual(source.flowSteps(theirs, source.FLOW_RUNS, source.FLOW_HOSTS));
-      expect(flowSteps(SEGMENTS, FLOW_RUNS, FLOW_HOSTS)).toEqual(STEPS);
-      const end = Math.max(...theirs.map((segment) => segment.end));
-      for (let t = 0; t <= end; t += 250) {
-        expect(sceneAt(SEGMENTS, FLOW_RUNS, FLOW_HOSTS.length, t)).toEqual(
-          source.sceneAt(theirs, source.FLOW_RUNS, source.FLOW_HOSTS.length, t),
-        );
-      }
-    });
-  },
-);
+describeSourceRepos("slide 10: the port agrees with rr/site/src/lib/flow.ts", () => {
+  it("produces the same segments, scenes and steps", async () => {
+    const path = importablePathAtCommit("rr", FLOW_COMMIT, "site/src/lib/flow.ts");
+    const source = (await import(/* @vite-ignore */ path)) as typeof import("./10-rr-locks");
+    const theirs = source.simulate(source.FLOW_RUNS, source.FLOW_HOSTS.length);
+    expect(simulate(FLOW_RUNS, FLOW_HOSTS.length)).toEqual(theirs);
+    expect(STEPS).toEqual(source.flowSteps(theirs, source.FLOW_RUNS, source.FLOW_HOSTS));
+    expect(flowSteps(SEGMENTS, FLOW_RUNS, FLOW_HOSTS)).toEqual(STEPS);
+    const end = Math.max(...theirs.map((segment) => segment.end));
+    for (let t = 0; t <= end; t += 250) {
+      expect(sceneAt(SEGMENTS, FLOW_RUNS, FLOW_HOSTS.length, t)).toEqual(
+        source.sceneAt(theirs, source.FLOW_RUNS, source.FLOW_HOSTS.length, t),
+      );
+    }
+  });
+});
