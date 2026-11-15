@@ -34,7 +34,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
   const scanFailures = new Map<string, DeckError>();
   const compiled = new Set<string>();
   const failedLoads = new Set<string>();
-  let configError: DeckError | undefined;
+  const configErrors = new WeakMap<ViteDevServer["config"], DeckError>();
   let scan: ReturnType<typeof scanSlidesWithCounts> | undefined;
   let reloadTimer: ReturnType<typeof setTimeout> | undefined;
   const changedModules = new Set<string>();
@@ -173,7 +173,10 @@ export function createDeckPlugins(deck: ResolvedDeck) {
       const server = viteServer;
       // A replacement config is not served until its new server is listening.
       const servedDeck = current;
+      // Vite replaces the server behind this proxy during restart; errors belong to its config.
+      const servedConfig = server.config;
       server.ws.on("connection", (_socket, _request) => {
+        const configError = configErrors.get(servedConfig);
         if (configError) server.ws.send({ type: "error", err: overlay(configError) });
       });
       const structural = (path: string) => {
@@ -205,7 +208,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
               if (closing) return;
               let source = await readChangedSource(configFile);
               if (closing) return;
-              if (source === configSource && !configError) return;
+              if (source === configSource && !configErrors.has(server.config)) return;
               try {
                 current = await loadDeck(deck.dir, deck.name);
               } catch (cause) {
@@ -222,16 +225,15 @@ export function createDeckPlugins(deck: ResolvedDeck) {
               // Vite logs creation failures and resolves restart without replacing the server.
               if (server.config === previousConfig) return;
               configSource = source;
-              if (configError) {
+              if (configErrors.delete(previousConfig)) {
                 reporting.fixed(configFile, "deck.config.ts is valid again, restarting.");
-                configError = undefined;
               }
             }
           })
           .catch((cause: unknown) => {
             if (closing) return;
             if (cause instanceof DeckError) {
-              configError = cause;
+              configErrors.set(server.config, cause);
               const graph = server.environments.client?.moduleGraph;
               const manifest = graph?.getModuleById(`\0${prefix}manifest`);
               if (manifest) graph?.invalidateModule(manifest);
@@ -281,6 +283,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
     async hotUpdate(context) {
       if (this.environment.name !== "client") return;
       try {
+        const configError = configErrors.get(context.server.config);
         if (configError) this.error(configError);
         const file = normalizePath(context.file);
         if (file === `${deckDir}/setup.ts`) {
