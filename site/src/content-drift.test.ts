@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadDeck } from "@steamfield/decks/node";
 import { describe, expect, it } from "vitest";
-import { resolveTheme } from "../../packages/kit/src/theme-resolve.ts";
+import { resolveTheme } from "../../packages/kit/src/theme/theme-resolve.ts";
 import { runHook } from "../scripts/hook.mjs";
 import {
   deckDir,
@@ -88,12 +88,12 @@ describe("the WARM still's theme.json", () => {
     expect(Object.keys(warm).sort()).toEqual(["ramps", "surfaces"]);
     expect(Object.keys(warm.ramps)).toHaveLength(2);
     expect(() =>
-      resolveTheme(JSON.parse(read("packages/kit/src/theme-default.json")), warm),
+      resolveTheme(JSON.parse(read("packages/kit/src/theme/theme-default.json")), warm),
     ).not.toThrow();
   });
 
   it("overrides the surfaces and chart ramps while retaining the other theme defaults", () => {
-    const defaults = JSON.parse(read("packages/kit/src/theme-default.json"));
+    const defaults = JSON.parse(read("packages/kit/src/theme/theme-default.json"));
     const resolved = resolveTheme(defaults, warm);
     expect(resolved.surfaces).toEqual(warm.surfaces);
     expect(resolved.ramps).toMatchObject(warm.ramps);

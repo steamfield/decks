@@ -12,7 +12,7 @@ Everything on this slide is computed at build time from files in this repository
 | DENIED | 5 | the rows whose severity is `error`: em-dash, banned-phrase, not-just-reveal, ai-vocab, inflated-significance. The file's header says the write hook denies an error row |
 | Notes: 22 warnings | 22 | PATTERNS minus DENIED |
 | SOURCED_FIGURES | computed at build | distinct table rows (header and separator rows left out) in `data-sources.md` and `data/sources/*.md`. It counts every table row, including claim rows and the banned-content table once that exists |
-| "a React component on a GSAP timeline" | claim | `packages/kit/src/stage.ts` builds the timeline with `gsap` from `@react-decks/motion`; `components/DecksStage.tsx` calls `useStage` |
+| "a React component on a GSAP timeline" | claim | `packages/kit/src/story/stage.ts` builds the timeline with `gsap` from `@react-decks/motion`; `components/DecksStage.tsx` calls `useStage` |
 | Notes: the engine count in the outline against the derived one | 50,097 and 50,369 | `OUTLINE.md` line 545; `data/16-openchart.ts` PACKAGES |
 
 Left out: the outline's note that the drafting agent "was refused more than once". No denial was recorded during this build.

@@ -78,9 +78,9 @@ it("ships compiled entry points, bundled declarations, executable CLI, styles an
   expect(await readFile(cli, "utf8")).toMatch(/^#!\/usr\/bin\/env node\n/);
   expect((await stat(cli)).mode & 0o111).not.toBe(0);
   expect(await readFile(join(dist, "motion.css"), "utf8")).toContain("data-step-state");
-  expect((await stat(join(dist, "kit/fonts/inter-latin-wght-normal.woff2"))).size).toBeGreaterThan(
-    0,
-  );
+  expect(
+    (await stat(join(dist, "kit/styles/fonts/inter-latin-wght-normal.woff2"))).size,
+  ).toBeGreaterThan(0);
   expect(await readFile(join(packageDir, "docs/README.md"), "utf8")).not.toBe("");
   expect(await readFile(join(dist, "lint/ai-rhetoric-patterns.tsv"), "utf8")).toBe(
     await readFile(resolve("packages/node/lint/ai-rhetoric-patterns.tsv"), "utf8"),

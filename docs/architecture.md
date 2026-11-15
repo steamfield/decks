@@ -1857,9 +1857,9 @@ export function theme(): Theme;
 export function ink(hue: Hue, step: 1 | 2 | 3 | 4): string;
 ```
 
-`theme-resolve.ts` and `theme-default.json` are the addon's `resolve.ts` and `default.json`,
+`theme/theme-resolve.ts` and `theme/theme-default.json` are the addon's `resolve.ts` and `default.json`,
 unchanged in behaviour (objects merge, arrays replace, `{group.token}` aliases resolve after
-the merge); its tests come with it (`theme-resolve.test.ts`). The kit also exports the
+the merge); its tests come with it (`theme/theme-resolve.test.ts`). The kit also exports the
 `Theme` and `Hue` types. A deck's `setup.ts` is `installTheme(resolveTheme(deckThemeJson))`,
 or `installTheme(resolveTheme())` for the default theme. Installing replaces the
 previous style element, so it is safe to run again. Custom-property names are the addon's

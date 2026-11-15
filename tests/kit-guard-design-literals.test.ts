@@ -87,7 +87,7 @@ it("keeps every kit component and stylesheet reachable by the theme", () => {
   const root = fileURLToPath(new URL("../packages/kit/src/", import.meta.url));
   const files = [
     ...globSync("**/*.tsx", { cwd: root }),
-    ...globSync("styles/*.css", { cwd: root }),
+    ...globSync("**/*.css", { cwd: root }),
   ].filter((file) => !/\.(test|test-support)\.tsx$/.test(file));
   expect(files.some((file) => file.endsWith(".tsx"))).toBe(true);
   expect(files.some((file) => file.endsWith(".css"))).toBe(true);

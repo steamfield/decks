@@ -47,7 +47,7 @@ it("uses frame units across the kit", () => {
   const root = fileURLToPath(new URL("../packages/kit/src/", import.meta.url));
   const files = [
     ...globSync("**/*.tsx", { cwd: root }),
-    ...globSync("styles/*.css", { cwd: root }),
+    ...globSync("**/*.css", { cwd: root }),
   ].filter((file) => !/\.(test|test-support)\.tsx$/.test(file));
   expect(files.length).toBeGreaterThan(0);
   expect(

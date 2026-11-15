@@ -4,7 +4,7 @@ Instructions for coding agents working in this directory. Keep this file under a
 
 ## Overview
 
-The landing page, docs and blog for Decks (`@steamfield/decks`), a React slide framework for animated data storytelling, at decks.steamfield.io. The hero is a large headline with the install commands beside it, then a live same-origin deck in a presenter-style player: a sticky title bar (examples, position, transport), the slide, a rail of slides with step progress, and a readable caption. The header, hero, player and sections share one 1360px column. The landing page takes its palette from the product theme (`packages/kit/src/theme-default.json`), so the page canvas is the slide canvas and every other surface is that zinc tinted toward the theme's blue-violet. Astro (static), React islands, Tailwind 4, Bun. It lives in `site/` inside the decks repository, outside the bun workspace, and is scaffolded from the stacks `astro-product-site` stack.
+The landing page, docs and blog for Decks (`@steamfield/decks`), a React slide framework for animated data storytelling, at decks.steamfield.io. The hero is a large headline with the install commands beside it, then a live same-origin deck in a presenter-style player: a sticky title bar (examples, position, transport), the slide, a rail of slides with step progress, and a readable caption. The header, hero, player and sections share one 1360px column. The landing page takes its palette from the product theme (`packages/kit/src/theme/theme-default.json`), so the page canvas is the slide canvas and every other surface is that zinc tinted toward the theme's blue-violet. Astro (static), React islands, Tailwind 4, Bun. It lives in `site/` inside the decks repository, outside the bun workspace, and is scaffolded from the stacks `astro-product-site` stack.
 
 ## Commands
 
@@ -124,8 +124,8 @@ Cloudflare Worker `decks` serving `dist/` as static assets, production at decks.
 | --- | --- | --- |
 | `package.json` | `typescript@^6`: `astro check` refuses TypeScript 7 | `@astrojs/check` supports TypeScript 7 |
 | `tests/build.test.ts` | The probe build copies `site/` into a temp parent and symlinks `packages`, `examples`, `plugins` and root `node_modules` beside it, and copies the package guide so the probe can add a page, because the site reads its parent repo | The site stops reading the parent repo at build time |
-| `src/content-drift.test.ts`, `scripts/demo.mjs` | Import `../../packages/kit/src/theme-resolve.ts` across the package boundary to merge and validate the warm still's theme with the real resolver | The framework publishes the resolver on an export path the site can depend on |
-| `src/lib/tokens.ts`, `scripts/scratch-project.mjs` | Read `packages/kit/src/theme-default.json` and run the source CLI in `packages/node/src/cli/cli.ts` from the parent repo | The site stops reading the parent repo at build time |
+| `src/content-drift.test.ts`, `scripts/demo.mjs` | Import `../../packages/kit/src/theme/theme-resolve.ts` across the package boundary to merge and validate the warm still's theme with the real resolver | The framework publishes the resolver on an export path the site can depend on |
+| `src/lib/tokens.ts`, `scripts/scratch-project.mjs` | Read `packages/kit/src/theme/theme-default.json` and run the source CLI in `packages/node/src/cli/cli.ts` from the parent repo | The site stops reading the parent repo at build time |
 
 ## Deferred
 
