@@ -141,9 +141,25 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
       return;
     routeEmbedNavigation(event);
   };
+  // Hovering or focusing something a viewer can explore (a chart mark, a link, a control)
+  // pauses the player, as a click does. Moving within the same element does not repeat it.
+  const onAttention = (event: PointerEvent | FocusEvent) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const interactive = target?.closest(
+      'button, a[href], input, textarea, select, [contenteditable], [tabindex]:not([tabindex="-1"]), [role="button"], [role="slider"], [data-mark-id], .oc-chart-root canvas, .od-graph3d-host canvas',
+    );
+    if (
+      !interactive ||
+      (event.relatedTarget instanceof Node && interactive.contains(event.relatedTarget))
+    )
+      return;
+    onInteraction();
+  };
   window.addEventListener("message", onMessage);
   window.addEventListener("keydown", onKey, true);
   window.addEventListener("pointerdown", onInteraction, true);
+  window.addEventListener("pointerover", onAttention, true);
+  window.addEventListener("focusin", onAttention, true);
   return {
     onError,
     start() {
@@ -165,6 +181,8 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
       window.removeEventListener("message", onMessage);
       window.removeEventListener("keydown", onKey, true);
       window.removeEventListener("pointerdown", onInteraction, true);
+      window.removeEventListener("pointerover", onAttention, true);
+      window.removeEventListener("focusin", onAttention, true);
     },
   };
 }
