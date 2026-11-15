@@ -121,7 +121,7 @@ it("refuses a missing alias before writing anything", async () => {
   const dir = await project();
   const result = await run(dir, []);
   expect(result.code).toBe(1);
-  expect(result.stderr).toContain("ALIAS");
+  expect(result.stderr).toBe("decks new: missing <alias>. Run decks new --help for usage.\n");
   expect(await readdir(dir)).toEqual([]);
 });
 
