@@ -73,6 +73,7 @@ bun run check:isolated               # the gate in a copy outside the repo
 bun run test:tarball                 # pack @steamfield/decks, install it outside the repo, build and serve a deck
 bun run decks dev|build|new|check|lint|export|shot|init <deck>   # the CLI, from source
 node scripts/parity.mjs <alias>      # compare a ported deck with its Slidev baseline in .parity/
+bun run release <x.y.z[-rc.N]>       # bump every place the version lives; never commits, tags or pushes
 ```
 
 `rr rd-test`, `rr rd-e2e` and `rr rd-check` run the same on the hosts in `.rr.yaml`; sync a
@@ -88,6 +89,42 @@ Playwright in the repo (root, `packages/node`, `site/`) stays on one version: a
 `docs/`, every `package.json`, every `packages/*/src/index.ts` unless the contract says
 otherwise, `biome.json`, every `tsconfig.json`, `vitest.config.ts`, `decks.json`, this file.
 Need a new export? Give the exact line in the hand-off. Need a dependency? Ask.
+
+## Releasing
+
+Releases are tag-driven and CI publishes; agents never run `npm publish`, push a tag or touch
+npm credentials. `.github/workflows/release.yml` runs on a `v*` tag: it checks the tag equals
+`packages/decks/package.json`'s version (and the plugin manifest's, and that the commit is on
+`main`), runs `bun run check`, packs `@steamfield/decks` once into a workflow artifact, and
+publishes that tarball through `scripts/release-publish.mjs` with provenance. Auth is npm
+trusted publishing (OIDC); there is no npm token or `NPM_TOKEN` secret, and none is to be added.
+
+To cut `X.Y.Z` (a prerelease `X.Y.Z-rc.N` publishes under the `rc` dist-tag):
+
+1. Add a `## X.Y.Z` section to `CHANGELOG.md`.
+2. `bun run release X.Y.Z` rewrites the version in `packages/decks/package.json`,
+   `plugins/decks/.claude-plugin/plugin.json` and `bun.lock`. It refuses a dirty tree (a
+   modified `CHANGELOG.md` is allowed), a branch other than `main`, an existing tag, the
+   current version or a missing changelog section.
+3. `bun run check`, then `git add -A && git commit -m "chore(release): X.Y.Z"`.
+4. After that commit exists, `git tag vX.Y.Z && git push origin main vX.Y.Z`. A tag pushed
+   before the bump fails the version check and the stale remote tag then blocks the real one.
+5. `gh run watch <id> --exit-status` (id from `gh run list --workflow Release`), then
+   `npm view @steamfield/decks version dist.integrity`.
+
+If a run fails partway, fix the cause and rerun the failed job (`gh run rerun <id> --failed`):
+it publishes the same artifact and `release-publish.mjs` skips a version already on npm with
+the same integrity. Never move or reuse a published version; bump the patch. A bad tag is
+deleted by the user (`git push origin :refs/tags/vX.Y.Z`); a hook blocks agents from doing it.
+
+The first release (`1.0.0-rc.0`) needs a one-time human bootstrap, because a Trusted Publisher
+can only be added to a package that already exists on npm: push the tag, let CI build and
+upload the artifact (its publish step fails with E404, which is expected), `gh run download
+<id> -n release-package`, then the user runs `npm publish <tgz> --tag rc --access public` with
+their OTP. Publishing the CI-built tarball keeps the registry integrity equal to what a rerun
+expects. That release has no provenance. Then, on npmjs.com for `@steamfield/decks`: Settings,
+Trusted Publisher, GitHub Actions, `steamfield`, `decks`, workflow `release.yml`, environment
+blank; set Publishing access to "Require two-factor authentication and disallow tokens".
 
 ## Proportion
 

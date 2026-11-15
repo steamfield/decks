@@ -1,77 +1,100 @@
 name: Release
 
-# Releasing is: bump packages/decks/package.json, commit to main, then
-#   git tag v<version> && git push origin v<version>
-# This workflow gates the tagged commit, publishes @steamfield/decks to npm with
-# provenance, and creates the GitHub release.
+# Releasing is: `bun run release X.Y.Z`, commit the bump to main, then tag that commit
+# and push the tag (see "Releasing" in AGENTS.md). This workflow gates the tagged commit,
+# packs @steamfield/decks once, and publishes that exact tarball to npm with provenance.
 on:
   push:
     tags: ["v*"]
 
 permissions:
-  contents: write # the GitHub release
-  id-token: write # npm provenance
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    # A required-reviewer rule on this environment makes every publish wait for approval.
-    environment: npm
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC) and provenance; there is no npm token
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: oven-sh/setup-bun@v2
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
-      - name: Tag matches the package version and main
-        id: release
+      - name: Verify release version
         run: |
           version=$(node -p "require('./packages/decks/package.json').version")
+          plugin=$(node -p "require('./plugins/decks/.claude-plugin/plugin.json').version")
           if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
-            echo "::error::tag ${GITHUB_REF_NAME} does not match packages/decks/package.json version ${version}"
+            echo "::error title=Tag does not match package.json::Tag ${GITHUB_REF_NAME} points at a commit whose packages/decks/package.json version is ${version}. Run bun run release X.Y.Z, commit, and tag that commit. Delete the bad tag with: git push origin :refs/tags/${GITHUB_REF_NAME}"
+            exit 1
+          fi
+          if [ "${plugin}" != "${version}" ]; then
+            echo "::error title=Plugin version mismatch::plugins/decks/.claude-plugin/plugin.json is ${plugin} but the package is ${version}. Run bun run release ${version}, commit, and tag that commit."
             exit 1
           fi
           if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
-            echo "::error::${GITHUB_REF_NAME} is not on main; tag a commit that has been merged"
+            echo "::error title=Tag is not on main::${GITHUB_REF_NAME} is not on main. Merge the bump commit to main and tag that commit."
             exit 1
           fi
-          # 1.0.0-rc.0 publishes under the "rc" dist-tag, a plain version under "latest".
-          case "$version" in
-            *-*) npm_tag=$(echo "$version" | cut -d- -f2 | cut -d. -f1); prerelease=true ;;
-            *) npm_tag=latest; prerelease=false ;;
-          esac
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "npm_tag=${npm_tag}" >> "$GITHUB_OUTPUT"
-          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+          # Trusted publishing needs npm 11.5.1 or newer.
+          if ! node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$(npm -v)"; then
+            echo "::error title=npm too old::npm $(npm -v) cannot publish with trusted publishing; the runner needs npm 11.5.1 or newer."
+            exit 1
+          fi
 
       - run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium
+      # lint, typecheck, unit and dom tests, browser tests, tarball test
+      - run: bun run check
 
-      # Both gates, the build and npm pack into dist/release/. It publishes nothing.
-      - run: bun run release:prepare
+      - name: Restore release artifacts
+        id: artifacts
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        continue-on-error: true
+        with:
+          name: release-package
+          path: dist/release
+      - if: steps.artifacts.outcome != 'success'
+        run: bun run build
+        working-directory: packages/decks
+      - if: steps.artifacts.outcome != 'success'
+        run: node scripts/release-publish.mjs pack packages/decks dist/release
+      - if: steps.artifacts.outcome != 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-package
+          path: dist/release/
+          if-no-files-found: error
 
       - name: Publish to npm
-        run: >
-          npm publish "dist/release/steamfield-decks-${{ steps.release.outputs.version }}.tgz"
-          --tag "${{ steps.release.outputs.npm_tag }}" --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Authenticates through npm trusted publishing (OIDC); no token is stored.
+        run: |
+          node scripts/release-publish.mjs publish dist/release
 
-      - name: GitHub release
+  github-release:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the GitHub release
+    steps:
+      - name: Create the GitHub release
         run: >
-          gh release create "${GITHUB_REF_NAME}"
+          gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --verify-tag
           --title "${GITHUB_REF_NAME}" --generate-notes
-          $( [ "${{ steps.release.outputs.prerelease }}" = true ] && echo --prerelease )
+          $( case "${GITHUB_REF_NAME}" in *-*) echo --prerelease ;; esac )
         env:
           GH_TOKEN: ${{ github.token }}
