@@ -109,8 +109,29 @@ These come from mistakes made here. They outrank a wish to be thorough.
 
 ## Structure
 
-- Group by feature, one concept per file, its test beside it (`navigation.ts`,
-  `navigation.test.ts`). No `utils/`, `shared/`, `helpers/`, `types/` or `constants/`.
+Where things live:
+
+| Looking for | Path |
+| --- | --- |
+| A CLI command (`new`, `check`, `lint`, `hook`, `export`, `shot`, `init`) | `packages/node/src/cli/commands/<name>.ts`; `dev` and `build` are `packages/node/src/dev/server.ts`; argument parsing is `cli/cli-command.ts`, `decks.json` is `cli/registry.ts` |
+| The Vite plugin, virtual modules, config loading, browser capture | `packages/node/src/dev/` |
+| MDX slides, click counting, code blocks, notes | `packages/node/src/mdx/` |
+| The prose lint and its patterns | `packages/node/src/prose/`, `packages/node/lint/ai-rhetoric-patterns.tsv` |
+| `decks new` templates | `packages/node/templates/{conventional,story}/` |
+| A runtime view (play, presenter, overview, print) | `packages/runtime/src/views/` |
+| The store, navigation keys, canvas, layouts, transitions, `settled()`, the embed protocol | `packages/runtime/src/{store,navigation,canvas,layouts,transitions,settle,embed}/` |
+| Motion primitives and tokens | `packages/motion/src/` |
+| A kit component | `packages/kit/src/ink/` (marks, charts, `Graph3D`), `story/` (stages, cards, `useStage`), `chrome/` (`Od*`), with its `.css` beside it |
+| The theme, eases, filters | `packages/kit/src/theme/`; global stylesheets in `packages/kit/src/styles/` |
+| The published package and its build | `packages/decks/` (`build.mjs`, `src/` re-exports) |
+| Browser tests and their helpers | `e2e/*.spec.ts`, `e2e/fixtures/` |
+| Repo-wide tests (boundaries, kit guards, the shared package build) | `tests/` |
+| The user guide (ships in the package) | `docs/guide/` |
+| The Claude Code plugin | `plugins/decks/` (skills, agent, hooks) |
+
+- Group by feature, one concept per file, its test beside it and named after its module
+  (`navigation.ts`, `navigation.test.ts`, `navigation-keys.test.ts`). No `utils/`, `shared/`,
+  `helpers/`, `types/` or `constants/`.
 - No interface, factory, options object or generic parameter until a second real caller
   needs it. No options nobody asked for. Three similar lines beat a helper.
 - Named exports only, except where a tool requires a default (Vite config, MDX).
