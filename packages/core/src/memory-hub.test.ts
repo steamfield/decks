@@ -1,9 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createMemoryHub, type SyncMessage } from "./sync";
 import { connect } from "./sync.test-support";
 
 describe("createMemoryHub", () => {
+  // Delivery is timer-driven: this file owns its fake clock instead of inheriting one
+  // from an import side effect in sync.test-support.
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
   it("queues delivery in sender order to other participants, never inside post", async () => {
     const hub = createMemoryHub();
     const first = connect(hub);

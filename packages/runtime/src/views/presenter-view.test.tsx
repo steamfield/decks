@@ -52,9 +52,9 @@ it("presenter landmarks render the current position and the next click in distin
       "Slide 2 click 1 in preview",
     ),
   ).toBeVisible();
-  expect(screen.getByRole("contentinfo", { name: "Presentation status" })).toHaveTextContent(
-    "2 / 5click 0 of 3",
-  );
+  const status = screen.getByRole("contentinfo", { name: "Presentation status" });
+  expect(within(status).getByText("2 / 5")).toBeVisible();
+  expect(within(status).getByText("click 0 of 3")).toBeVisible();
   expect(screen.getByLabelText("Local time")).toHaveTextContent(/^\d{2}:\d{2}$/);
 });
 
@@ -111,7 +111,11 @@ it("notes render compiled HTML in order and highlight the last segment at or bef
   setup();
   const notes = screen.getByRole("region", { name: "Notes" });
   await within(notes).findByText("First point.");
-  expect(notes).toHaveTextContent("Start here.First point.Third point.");
+  expect(
+    within(notes)
+      .getAllByText(/^(Start here|First point|Third point)\.$/)
+      .map((node) => node.textContent),
+  ).toEqual(["Start here.", "First point.", "Third point."]);
   expect(within(notes).getByText("Start here.").parentElement).toHaveAttribute(
     "aria-current",
     "true",

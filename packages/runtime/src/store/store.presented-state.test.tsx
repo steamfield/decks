@@ -1,7 +1,7 @@
 import { createMemoryHub, createSyncSession, type SyncState } from "@react-decks/core";
 import { act, render, screen } from "@testing-library/react";
 import { expect, it, onTestFinished, vi } from "vitest";
-import { makeSource } from "../deck.test-support";
+import { makeSource, RESIZE_THROTTLE } from "../deck.test-support";
 import { createDeckStore, Deck, type DeckState } from "../index";
 
 function setup() {
@@ -188,7 +188,7 @@ it("resize uses the logical view and position including a view switch before its
   store.dispatch({ type: "nextSlide" });
   window.innerWidth = width + 100;
   window.dispatchEvent(new Event("resize"));
-  await act(async () => vi.advanceTimersByTimeAsync(260));
+  await act(async () => vi.advanceTimersByTimeAsync(RESIZE_THROTTLE + 10));
   expect(existing.received.at(-1)).toEqual({
     nav: { slide: 2, click: 0 },
     aspect: (width + 100) / window.innerHeight,
@@ -197,8 +197,12 @@ it("resize uses the logical view and position including a view switch before its
   window.innerWidth = width + 200;
   window.dispatchEvent(new Event("resize"));
   store.setView("presenter");
-  await act(async () => vi.advanceTimersByTimeAsync(260));
-  expect(existing.received).toHaveLength(count);
+  await act(async () => vi.advanceTimersByTimeAsync(RESIZE_THROTTLE + 10));
+  // A later navigation is the sentinel: the stale resize timer published nothing before it.
+  store.dispatch({ type: "nextSlide" });
+  await act(async () => vi.advanceTimersByTimeAsync(10));
+  expect(existing.received).toHaveLength(count + 1);
+  expect(existing.received.at(-1)?.nav).toEqual({ slide: 3, click: 0 });
 });
 
 it("a resize after entering play is published even while the presented view is still presenter", async () => {
@@ -215,7 +219,7 @@ it("a resize after entering play is published even while the presented view is s
   store.setView("play", { slide: 3, click: 0 });
   window.innerWidth = width + 100;
   window.dispatchEvent(new Event("resize"));
-  await act(async () => vi.advanceTimersByTimeAsync(260));
+  await act(async () => vi.advanceTimersByTimeAsync(RESIZE_THROTTLE + 10));
   expect(store.getState().view).toBe("presenter");
   expect(existing.received.at(-1)).toEqual({
     nav: { slide: 3, click: 0 },

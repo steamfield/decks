@@ -1,3 +1,4 @@
+import { syncChannelId } from "@react-decks/core";
 import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, it, onTestFinished } from "vitest";
@@ -101,7 +102,7 @@ it.each(["play", "presenter"] as const)(
 
 it("a presenter-named window loaded in overview returns to presenter", async () => {
   const previous = window.name;
-  window.name = "react-decks-presenter:fixture";
+  window.name = `react-decks-presenter:${syncChannelId(makeSource().manifest.name, "/")}`;
   onTestFinished(() => {
     window.name = previous;
   });

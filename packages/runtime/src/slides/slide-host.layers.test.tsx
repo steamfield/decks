@@ -14,6 +14,11 @@ function Above() {
     </p>
   );
 }
+function layerTransitionName(layer: HTMLElement | null): string {
+  if (!layer) throw new Error("Missing layer element");
+  return layer.style.getPropertyValue("view-transition-name");
+}
+
 function Below() {
   return <p>Below {useSlide().no}</p>;
 }
@@ -49,13 +54,11 @@ it.each([undefined, false, "above", "below"])(
       if (layers !== false && layers !== "below") {
         expect(above).toHaveTextContent(`Above 2 / 5 in ${context}`);
         expect(above).not.toHaveAttribute("id");
-        expect(above?.style.viewTransitionName ?? "").toBe(
-          context === "slide" ? "deck-layer-above" : "",
-        );
+        expect(layerTransitionName(above)).toBe(context === "slide" ? "deck-layer-above" : "");
       } else expect(above).toBeNull();
       if (layers !== false && layers !== "above") {
         expect(below).toHaveTextContent("Below 2");
-        expect(below?.style.viewTransitionName ?? "").toBe("");
+        expect(layerTransitionName(below)).toBe("");
       } else expect(below).toBeNull();
       expect(
         Array.from(root.children)
@@ -66,9 +69,9 @@ it.each([undefined, false, "above", "below"])(
     const inactive = container.querySelector<HTMLElement>(
       '[data-deck-slide="1"] [data-deck-layer="above"]',
     );
-    expect(inactive?.style.viewTransitionName ?? "").toBe("");
+    expect(layerTransitionName(inactive)).toBe("");
     act(() => store.dispatch({ type: "go", slide: 1 }));
-    expect(inactive?.style.viewTransitionName).toBe("deck-layer-above");
+    expect(layerTransitionName(inactive)).toBe("deck-layer-above");
     expect(
       container
         .querySelector('[data-deck-slide="2"] [data-deck-layer="above"]')

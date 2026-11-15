@@ -105,6 +105,9 @@ export function install(target: object, name: string, value: unknown) {
   });
 }
 
+/** The trailing resize publish delay in store.ts (250 ms); tests wait this long to see it. */
+export const RESIZE_THROTTLE = 250;
+
 export async function deliver(ms = 10) {
   await act(async () => vi.advanceTimersByTimeAsync(ms));
 }

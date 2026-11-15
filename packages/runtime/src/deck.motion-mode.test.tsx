@@ -1,6 +1,6 @@
 import { act } from "@testing-library/react";
 import { expect, it, onTestFinished } from "vitest";
-import { setup } from "./deck.test-support";
+import { install, setup } from "./deck.test-support";
 
 it.each(["?motion=instant#/1", "#/presenter/1", "#/overview/1", "#/print"])(
   "%s selects instant motion",
@@ -11,6 +11,7 @@ it.each(["?motion=instant#/1", "#/presenter/1", "#/overview/1", "#/print"])(
 );
 
 it("missing matchMedia means live in play and view switches update motion", () => {
+  install(window, "matchMedia", undefined);
   const { store } = setup();
   expect(document.documentElement).toHaveAttribute("data-deck-motion", "live");
   act(() => store.setView("presenter"));

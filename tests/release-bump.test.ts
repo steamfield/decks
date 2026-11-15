@@ -1,18 +1,19 @@
 import { execFile, execFileSync } from "node:child_process";
-import { mkdir, mkdtemp, readFile, realpath, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
 import { expect, it } from "vitest";
+import { isolatedGitEnv, repoRoot, tempDir } from "./release-workflow.test-support";
 
 const exec = promisify(execFile);
-const script = resolve("scripts/release.mjs");
+const script = resolve(repoRoot, "scripts/release.mjs");
 
 // A throwaway repo shaped like this one: the two version files, a changelog and a bun workspace.
 async function fixture() {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const root = await realpath(await mkdtemp(resolve(".tmp/release-bump-")));
+  const root = await tempDir("release-bump-");
+  const env = isolatedGitEnv();
   const git = (...args: string[]) =>
-    execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+    execFileSync("git", args, { cwd: root, encoding: "utf8", env }).trim();
   await mkdir(`${root}/packages/decks`, { recursive: true });
   await mkdir(`${root}/plugins/decks/.claude-plugin`, { recursive: true });
   await writeFile(
@@ -28,15 +29,15 @@ async function fixture() {
     `{\n  "name": "decks",\n  "version": "1.0.0"\n}\n`,
   );
   await writeFile(`${root}/CHANGELOG.md`, "# Changelog\n\n## 1.0.0\n\nFirst.\n");
-  await exec("bun", ["install"], { cwd: root });
+  await exec("bun", ["install"], { cwd: root, env });
   git("init", "-q", "-b", "main");
   git("config", "user.email", "t@example.com");
   git("config", "user.name", "t");
   git("add", "-A");
-  git("commit", "-qm", "init");
+  git("-c", "commit.gpgsign=false", "commit", "-qm", "init");
   const bump = async (version: string) => {
     try {
-      const { stdout } = await exec(process.execPath, [script, version], { cwd: root });
+      const { stdout } = await exec(process.execPath, [script, version], { cwd: root, env });
       return { status: 0, stdout, stderr: "" };
     } catch (error) {
       if (!(error instanceof Error) || !("code" in error) || typeof error.code !== "number")

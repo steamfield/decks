@@ -1,11 +1,20 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, realpath, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { promisify } from "node:util";
 import { expect, it } from "vitest";
+import {
+  pathWith,
+  repoRoot,
+  runStepScript,
+  tempDir,
+  workflowStepScript,
+} from "./release-workflow.test-support";
 
 const exec = promisify(execFile);
+const releaseScript = resolve(repoRoot, "scripts/release-publish.mjs");
+const VIEW_ATTEMPTS = 3;
 const release = { name: "@steamfield/decks", version: "1.2.3", filename: "decks.tgz" };
 
 type Mode =
@@ -21,8 +30,7 @@ type Mode =
 
 // The publish step of the workflow, run as the workflow runs it, against a fake `npm` on PATH.
 async function runPublish(mode: Mode, version = release.version, env: Record<string, string> = {}) {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const root = await realpath(await mkdtemp(resolve(".tmp/release-publish-")));
+  const root = await tempDir("release-publish-");
   await mkdir(`${root}/bin`);
   await mkdir(`${root}/dist/release`, { recursive: true });
   const entry = { ...release, version, integrity: "sha512-built" };
@@ -69,42 +77,25 @@ if (args[0] === "view") {
     { mode: 0o755 },
   );
 
-  const workflow = await readFile(".github/workflows/release.yml", "utf8");
-  const publishStep = workflow
-    .split("      - name: Publish to npm")[1]
-    ?.split("        run: |\n")[1]
-    ?.split("\n\n")[0];
-  if (!publishStep) throw new Error("Release workflow has no `Publish to npm` step");
-  // The step's `run:` block, un-indented, with the script path pointing at this checkout.
-  const script = publishStep
-    .split("\n")
-    .map((line) => line.replace(/^ {10}/, ""))
-    .join("\n")
-    .replace("scripts/release-publish.mjs", resolve("scripts/release-publish.mjs"));
-
-  let status = 0;
-  let stderr = "";
-  let stdout = "";
-  try {
-    ({ stdout } = await exec("/bin/bash", ["-e", "-c", script], {
-      cwd: root,
-      env: {
-        HOME: root,
-        GITHUB_ACTIONS: "true",
-        PATH: `${root}/bin:${dirname(process.execPath)}`,
-        RELEASE_CONFIRM_DELAY_MS: "0",
-        RELEASE_CONFIRM_ATTEMPTS: "3",
-        RELEASE_CONFIRM_INTERVAL_MS: "0",
-        RELEASE_RETRY_BASE_MS: "0",
-        ...env,
-      },
-    }));
-  } catch (error) {
-    if (!(error instanceof Error) || !("code" in error) || typeof error.code !== "number")
-      throw error;
-    status = error.code;
-    stderr = "stderr" in error ? String(error.stderr) : "";
-  }
+  // The step's `run:` script, with the script path pointing at this checkout.
+  const script = (await workflowStepScript("Publish to npm")).replace(
+    "scripts/release-publish.mjs",
+    releaseScript,
+  );
+  const { status, stdout, stderr } = await runStepScript(script, {
+    cwd: root,
+    env: {
+      HOME: root,
+      GITHUB_ACTIONS: "true",
+      PATH: pathWith(`${root}/bin`),
+      RELEASE_CONFIRM_DELAY_MS: "0",
+      RELEASE_CONFIRM_ATTEMPTS: "3",
+      RELEASE_CONFIRM_INTERVAL_MS: "0",
+      RELEASE_RETRY_BASE_MS: "0",
+      RELEASE_VIEW_ATTEMPTS: String(VIEW_ATTEMPTS),
+      ...env,
+    },
+  });
   const calls = (await readFile(`${root}/calls.jsonl`, "utf8"))
     .split("\n")
     .filter(Boolean)
@@ -155,9 +146,9 @@ it("retries a registry error that keeps coming and then fails naming how many at
   const { status, stderr, published, views } = await runPublish("registry-error");
   expect(status).toBe(1);
   expect(published).toEqual([]);
-  expect(views).toBe(4);
+  expect(views).toBe(VIEW_ATTEMPTS);
   expect(stderr).toContain("npm view @steamfield/decks@1.2.3 failed (E503)");
-  expect(stderr).toContain("gave up after 4 attempts");
+  expect(stderr).toContain(`gave up after ${VIEW_ATTEMPTS} attempts`);
 });
 
 it("retries a registry error that clears and then publishes", async () => {
@@ -210,21 +201,16 @@ it("annotates a failure for GitHub", async () => {
 });
 
 it("packs the package and records the integrity of the exact tarball", async () => {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const root = await realpath(await mkdtemp(resolve(".tmp/release-pack-")));
+  const root = await tempDir("release-pack-");
   await mkdir(`${root}/pkg`);
   await writeFile(
     `${root}/pkg/package.json`,
     JSON.stringify({ name: "@steamfield/decks", version: "1.2.3" }),
   );
   await writeFile(`${root}/pkg/LICENSE`, "Test fixture");
-  await exec(
-    process.execPath,
-    [resolve("scripts/release-publish.mjs"), "pack", `${root}/pkg`, `${root}/out`],
-    {
-      env: { HOME: root, PATH: process.env.PATH, npm_config_cache: `${root}/cache` },
-    },
-  );
+  await exec(process.execPath, [releaseScript, "pack", `${root}/pkg`, `${root}/out`], {
+    env: { HOME: root, PATH: process.env.PATH, npm_config_cache: `${root}/cache` },
+  });
   const recorded = JSON.parse(await readFile(`${root}/out/release.json`, "utf8"));
   const bytes = await readFile(`${root}/out/${recorded.filename}`);
   expect(recorded.name).toBe("@steamfield/decks");
