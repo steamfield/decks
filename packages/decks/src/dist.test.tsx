@@ -1,18 +1,23 @@
 // @vitest-environment jsdom
 import { execFile, spawnSync } from "node:child_process";
-import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { act, render, screen } from "@testing-library/react";
 import { beforeAll, expect, inject, it, onTestFinished, vi } from "vitest";
 
 let runtime: typeof import("@react-decks/runtime");
 let motion: typeof import("@react-decks/motion");
+let testing: typeof import("@testing-library/react");
 const packageDir = inject("builtPackage");
 
 beforeAll(async () => {
   runtime = await vi.importActual(join(packageDir, "dist/index.js"));
   motion = await vi.importActual(join(packageDir, "dist/motion.js"));
+  // Render with the consumer's React DOM and React, including transitive dependencies.
+  testing = await vi.importActual(
+    createRequire(join(packageDir, "package.json")).resolve("@testing-library/react"),
+  );
 }, 30_000);
 
 function Slide() {
@@ -29,6 +34,7 @@ function Slide() {
 }
 
 it("shares the deck store and slide context between the built runtime and motion", async () => {
+  const { act, render, screen } = testing;
   const { createDeckStore, Deck } = runtime;
   window.history.replaceState(null, "", "/#/1");
   const source = {
@@ -66,6 +72,7 @@ it("ships compiled entry points, bundled declarations, executable CLI, styles an
     if (!file.endsWith(".js") && !file.endsWith(".d.ts")) continue;
     const contents = await readFile(join(dist, file), "utf8");
     expect(contents, file).not.toMatch(/(?:from\s*|import\s*(?:\(\s*)?)["']@react-decks\//);
+    if (file.endsWith(".d.ts")) expect(contents, file).not.toMatch(/import\s*["'][^"']+\.css["']/);
   }
   const cli = join(dist, "cli.js");
   expect(await readFile(cli, "utf8")).toMatch(/^#!\/usr\/bin\/env node\n/);
@@ -109,6 +116,8 @@ it("builds public motion imports and the kit stylesheet with working font URLs u
   onTestFinished(() => rm(dir, { recursive: true, force: true }));
   await mkdir(join(dir, "slides"));
   await mkdir(join(dir, "styles"));
+  await mkdir(join(dir, "node_modules/@steamfield"), { recursive: true });
+  await symlink(packageDir, join(dir, "node_modules/@steamfield/decks"), "dir");
   await writeFile(join(dir, "package.json"), '{"type":"module"}');
   await writeFile(
     join(dir, "deck.config.ts"),

@@ -39,6 +39,7 @@ export const RULES: Record<string, Rule> = {
 export type Manifest = {
   dependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
 };
 
 const BUILTINS = new Set(builtinModules.map((name) => name.replace(/^node:/, "")));
@@ -101,6 +102,7 @@ export function checkSource(
   file: string,
   source: string,
   declared: string[] = [],
+  devDependencies: string[] = [],
 ): string[] {
   // The workspace is TypeScript only, so every source file is type-checked by the same configs.
   if (!/\.tsx?$/.test(file)) return [`${file}:1: source files must be .ts or .tsx`];
@@ -121,11 +123,12 @@ export function checkSource(
         report(offset, specifier, "relative import leaves its package");
       }
     } else {
+      const testFile = /\.test(?:-support)?\.tsx?$/.test(file);
       const reason = importViolation(
         owner,
         specifier,
-        declared,
-        /\.test(?:-support)?\.tsx?$/.test(file),
+        testFile ? [...declared, ...devDependencies] : declared,
+        testFile,
       );
       if (reason) report(offset, specifier, reason);
     }

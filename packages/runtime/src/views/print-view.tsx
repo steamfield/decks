@@ -9,6 +9,7 @@ export function PrintView(): ReactElement {
   const final = new URLSearchParams(window.location.search).get("print") === "final";
   return (
     <div id="deck-print" className={styles.print}>
+      <style>{`@page { size: ${source.manifest.canvas.width}px ${source.manifest.canvas.height}px; }`}</style>
       {source.manifest.slides.flatMap((meta) =>
         Array.from({ length: final ? 1 : meta.clicks + 1 }, (_, index) => {
           const click = final ? meta.clicks : index;

@@ -3,8 +3,10 @@ import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { runCommand } from "citty";
+import pixelmatch from "pixelmatch";
+import { PNG } from "pngjs";
 import { describe, expect, it, onTestFinished } from "vitest";
-import { launchBrowser, MissingChromiumError, openBuiltDeck } from "./browser";
+import { launchBrowser, openBuiltDeck } from "./browser";
 import { exportDeck } from "./commands/export";
 import { shot } from "./commands/shot";
 import { cli, fixture } from "./deck.test-support";
@@ -21,7 +23,13 @@ async function cliWithNoBrowser(args: string[]) {
   const dir = await output();
   const child = spawn(
     process.execPath,
-    ["--import", "tsx", resolve("packages/node/src/cli.ts"), ...args],
+    [
+      "--conditions=@steamfield/decks/source",
+      "--import",
+      "tsx",
+      resolve("packages/node/src/cli.ts"),
+      ...args,
+    ],
     {
       env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: dir, NO_COLOR: "1" },
       stdio: ["ignore", "pipe", "pipe"],
@@ -47,17 +55,19 @@ async function cliWithNoBrowser(args: string[]) {
   return { code, stdout, stderr };
 }
 
-describe("browser captures", async () => {
-  let unavailable = "";
-  try {
-    const browser = await launchBrowser();
-    await browser.close();
-  } catch (cause) {
-    if (!(cause instanceof MissingChromiumError)) throw cause;
-    unavailable = cause.message;
-  }
-  const browserTest = it.skipIf(Boolean(unavailable));
-  if (unavailable) console.warn(`Browser integration tests skipped: ${unavailable}`);
+function expectSameFrame(actual: Buffer, expected: Buffer) {
+  const a = PNG.sync.read(actual);
+  const b = PNG.sync.read(expected);
+  expect([a.width, a.height]).toEqual([b.width, b.height]);
+  // Separate Chromium renders can rasterize text edges differently.
+  expect(
+    pixelmatch(a.data, b.data, undefined, a.width, a.height, { threshold: 0.1 }) /
+      (a.width * a.height),
+  ).toBeLessThan(0.002);
+}
+
+describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures", () => {
+  const browserTest = it;
 
   browserTest.each([false, true])(
     "exports the basic deck's PDF frames with final=%s",
@@ -106,7 +116,7 @@ describe("browser captures", async () => {
       onTestFinished(reference.close);
       expect(await reference.page.getByText("Second point", { exact: true }).count()).toBe(1);
       expect(await reference.page.getByText("Third point", { exact: true }).count()).toBe(0);
-      expect(await reference.page.screenshot()).toEqual(png);
+      expectSameFrame(await reference.page.screenshot(), png);
     },
   );
 
@@ -151,7 +161,7 @@ describe("browser captures", async () => {
       await reference.setContent(
         `<body style="margin:0;background:rgb(11,13,18)"><img style="margin-left:40px;width:1120px;height:630px;display:block" src="data:image/png;base64,${cover.toString("base64")}"></body>`,
       );
-      expect(await reference.screenshot()).toEqual(png);
+      expectSameFrame(await reference.screenshot(), png);
     },
   );
 
@@ -197,16 +207,14 @@ describe("browser captures", async () => {
   });
 });
 
-it("export and shot explain how to install Chromium and exit 1 without downloading it", async () => {
-  for (const args of [
-    ["export", "examples/basic"],
-    ["shot", "examples/basic", "1"],
-  ]) {
-    const result = await cliWithNoBrowser(args);
-    expect(result.code).toBe(1);
-    expect(result.stderr).toContain("npx playwright install chromium");
-    expect(result.stderr).not.toContain("This is a bug");
-  }
+it.each([
+  ["export", "examples/basic"],
+  ["shot", "examples/basic", "1"],
+])("%s explains how to install Chromium and exits 1 without downloading it", async (...args) => {
+  const result = await cliWithNoBrowser(args);
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("npx playwright install chromium");
+  expect(result.stderr).not.toContain("This is a bug");
 });
 
 it("build without Chromium succeeds with one warning and no generated image", async () => {
@@ -221,27 +229,23 @@ it("build without Chromium succeeds with one warning and no generated image", as
   expect(existsSync(join(outDir, "index.html"))).toBe(true);
 });
 
-it("shot rejects a missing slide and a click past its final state", async () => {
-  for (const [slide, click, error] of [
-    ["99", "0", "Unknown slide 99"],
-    ["1", "1", "Slide 1 has 0 clicks"],
-  ] as const) {
-    const command = cli(process.cwd(), ["shot", "examples/basic", slide, click]);
-    const [code] = await command.exit;
-    expect(code).toBe(1);
-    expect(command.output().stderr).toContain(error);
-  }
+it.each([
+  ["99", "0", "Unknown slide 99"],
+  ["1", "1", "Slide 1 has 0 clicks"],
+])("shot rejects slide %s click %s", async (slide, click, error) => {
+  const command = cli(process.cwd(), ["shot", "examples/basic", slide, click]);
+  const [code] = await command.exit;
+  expect(code).toBe(1);
+  expect(command.output().stderr).toContain(error);
 });
 
-it("capture commands reject unknown options instead of silently writing a file", async () => {
-  for (const args of [
-    ["shot", "examples/basic", "1"],
-    ["export", "examples/basic"],
-  ]) {
-    const command = cli(process.cwd(), [...args, "--bogus"]);
-    const [code] = await command.exit;
-    expect(code).toBe(1);
-    expect(command.output().stderr).toContain("Unknown option '--bogus'");
-    expect(command.output().stderr).not.toContain("This is a bug");
-  }
+it.each([
+  ["shot", "examples/basic", "1"],
+  ["export", "examples/basic"],
+])("%s rejects unknown options instead of silently writing a file", async (...args) => {
+  const command = cli(process.cwd(), [...args, "--bogus"]);
+  const [code] = await command.exit;
+  expect(code).toBe(1);
+  expect(command.output().stderr).toContain("Unknown option '--bogus'");
+  expect(command.output().stderr).not.toContain("This is a bug");
 });

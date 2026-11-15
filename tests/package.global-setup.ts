@@ -32,21 +32,12 @@ export default async function setup(project: TestProject) {
     await writeFile(join(fixture, "references/image.png"), Buffer.from([137, 80, 78, 71, 255, 0]));
     const builtPackage = join(workspace, "packages/decks");
     await promisify(execFile)("node", ["build.mjs"], { cwd: builtPackage });
-    // Source deck configs resolve the workspace package through Jiti, outside Vitest's resolver.
-    for (const path of ["dist", "docs"]) {
-      await rm(resolve("packages/decks", path), { recursive: true, force: true });
-      await cp(join(builtPackage, path), resolve("packages/decks", path), { recursive: true });
-    }
-    project.provide("builtPackage", resolve("packages/decks"));
+    project.provide("builtPackage", builtPackage);
   } catch (cause) {
     await rm(workspace, { recursive: true, force: true });
     throw cause;
   }
   return async () => {
-    await rm(resolve("packages/decks/dist/plugin/skills/init-fixture"), {
-      recursive: true,
-      force: true,
-    });
     await rm(workspace, { recursive: true, force: true });
   };
 }

@@ -2,8 +2,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
-import { createServer } from "vite";
+import { createServer, defaultClientConditions } from "vite";
 import { expect, onTestFinished, vi } from "vitest";
 import { loadDeck, type ResolvedDeck, reactDecks, scanSlides } from "./index";
 
@@ -13,12 +12,15 @@ declare module "vitest" {
   }
 }
 
-export const testVite = { optimizeDeps: { noDiscovery: true, include: [] } };
+export const testVite = {
+  optimizeDeps: { noDiscovery: true, include: [] },
+  resolve: { conditions: ["@steamfield/decks/source", ...defaultClientConditions] },
+};
 
 export function cli(cwd: string, args: string[]) {
   const child = spawn(
     resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli.ts"), ...args],
+    ["--conditions=@steamfield/decks/source", resolve("packages/node/src/cli.ts"), ...args],
     {
       cwd,
       env: { ...process.env, NO_COLOR: "1" },
@@ -120,10 +122,7 @@ export async function serve(files: Record<string, string> = {}) {
   );
   let sentinel = 0;
   async function checkpoint() {
-    // Call after the edit's acknowledgement: an unprocessed watcher event is not bounded here.
-    await sentinelUpdate();
-    // The second sentinel follows the plugin's 100 ms structural-change quiet window.
-    await delay(100);
+    // Call after the edit's acknowledgement; the CSS update is a later watcher event.
     await sentinelUpdate();
   }
   async function sentinelUpdate() {

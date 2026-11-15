@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdir, mkdtemp, readdir, readFile, realpath, rm, stat, writeFile } from "node:fs/promises";
-import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -67,6 +66,7 @@ async function pack() {
 async function install(manager, tarball) {
   await mkdir(join(scratch, manager));
   const project = await realpath(join(scratch, manager));
+  const { devDependencies } = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
   await writeFile(
     join(project, "package.json"),
     JSON.stringify(
@@ -79,6 +79,12 @@ async function install(manager, tarball) {
           react: "19.3.1",
           "react-dom": "19.3.1",
         },
+        devDependencies: Object.fromEntries(
+          ["@types/node", "@types/react", "@types/react-dom"].map((name) => [
+            name,
+            devDependencies[name],
+          ]),
+        ),
       },
       null,
       2,
@@ -241,20 +247,11 @@ async function staticBuild(project) {
 async function dev(project) {
   const env = { ...offline, FORCE_COLOR: "1" };
   delete env.NO_COLOR;
-  const socket = createServer();
-  socket.listen(0, "127.0.0.1");
-  await once(socket, "listening");
-  const port = socket.address().port;
-  await promisify(socket.close.bind(socket))();
-  const child = spawn(
-    join(project, "node_modules/.bin/decks"),
-    ["dev", "hello", "--port", String(port)],
-    {
-      cwd: project,
-      env,
-      stdio: ["ignore", "pipe", "pipe"],
-    },
-  );
+  const child = spawn(join(project, "node_modules/.bin/decks"), ["dev", "hello", "--port", "0"], {
+    cwd: project,
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
   const closed = once(child, "close");
   let output = "";
   child.stdout.on("data", (data) => {
@@ -280,11 +277,133 @@ async function dev(project) {
   }
 }
 
+async function newStory(project) {
+  await command(
+    project,
+    join(project, "node_modules/.bin/decks"),
+    ["new", "story", "--story"],
+    offline,
+  );
+  for (const file of [
+    "deck.config.ts",
+    "setup.ts",
+    "slides/01-cover.mdx",
+    "slides/02-first-point.mdx",
+    "components/FirstStage.tsx",
+    "data/01-first.ts",
+    "data-sources.md",
+    "styles/index.css",
+  ])
+    assert((await stat(join(project, "decks/story", file))).isFile(), `Story must ship ${file}`);
+  assert.equal(
+    JSON.parse(await readFile(join(project, "decks.json"), "utf8")).story.dir,
+    "decks/story",
+  );
+}
+
+async function check(project) {
+  const { stdout } = await command(
+    project,
+    join(project, "node_modules/.bin/decks"),
+    ["check"],
+    offline,
+  );
+  assert(stdout.includes("All decks check out."), stdout);
+}
+
+async function lint(project) {
+  await command(project, join(project, "node_modules/.bin/decks"), ["lint"], offline);
+}
+
+async function init(project) {
+  await command(project, join(project, "node_modules/.bin/decks"), ["init"], offline);
+  const settings = JSON.parse(await readFile(join(project, ".claude/settings.json"), "utf8"));
+  assert.equal(settings.enabledPlugins["decks@steamfield"], true);
+  assert((await readFile(join(project, "AGENTS.md"), "utf8")).includes("<!-- decks:start -->"));
+  const installed = join(project, "node_modules/@steamfield/decks/dist/plugin/skills");
+  for (const skill of await readdir(installed)) {
+    assert.equal(
+      await readFile(join(project, ".agents/skills", skill, "SKILL.md"), "utf8"),
+      await readFile(join(installed, skill, "SKILL.md"), "utf8"),
+    );
+  }
+  assert((await stat(join(project, ".agents/skills/.decks-init.json"))).isFile());
+}
+
+async function exportPdf(project) {
+  let browser;
+  try {
+    browser = await chromium.launch();
+  } catch (cause) {
+    console.log(
+      `SKIP decks export: Chromium cannot launch: ${cause instanceof Error ? cause.message : String(cause)}`,
+    );
+    return;
+  }
+  await browser.close();
+  await command(project, join(project, "node_modules/.bin/decks"), ["export", "hello"], offline);
+  const pdf = await readFile(join(project, "dist/hello.pdf"), "latin1");
+  assert(pdf.startsWith("%PDF-"));
+  assert.equal(pdf.match(/\/Type\s*\/Page\b/g)?.length, 5, "PDF must contain every click frame");
+}
+
+async function typecheck(project) {
+  await writeFile(
+    join(project, "consumer.ts"),
+    `
+import { createDeckStore, Deck } from "@steamfield/decks";
+import { Step } from "@steamfield/decks/motion";
+import { StoryStage } from "@steamfield/decks/kit";
+import { defineDeck } from "@steamfield/decks/node";
+const config = defineDeck({ title: "Consumer", canvas: { width: 1080, height: 1080 } });
+const store = createDeckStore({ name: "consumer", title: config.title,
+  canvas: { width: 1080, height: 1080 },
+  slides: [{ no: 1, id: "first", title: "First", file: "slides/01-first.mdx", clicks: 0 }] });
+store.destroy();
+const components = [Deck, Step, StoryStage];
+void components;
+`,
+  );
+  await command(
+    project,
+    join(root, "node_modules/.bin/tsc"),
+    [
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--types",
+      "vite/client",
+      "--module",
+      "esnext",
+      "--moduleResolution",
+      "bundler",
+      "--target",
+      "esnext",
+      "--jsx",
+      "react-jsx",
+      "consumer.ts",
+    ],
+    offline,
+  );
+}
+
+async function consumerCommands(project) {
+  await step("packed decks new --story", () => newStory(project));
+  await step("packed decks check", () => check(project));
+  await step("packed decks lint", () => lint(project));
+  await step("packed decks init writes guidance, settings and shipped skills", () => init(project));
+  await step("packed declarations compile through all four public entry points", () =>
+    typecheck(project),
+  );
+  await step("packed decks export writes five PDF frames", () => exportPdf(project));
+}
+
 async function bunCase(tarball) {
   const project = await step("bun install tarball outside workspace", () =>
     install("bun", tarball),
   );
   await step("write getting-started deck", () => writeDeck(project));
+  await consumerCommands(project);
   await step("decks build hello and assets", () => build(project));
   await step("Chromium static build: heading, both steps, kit, Inter, no errors", () =>
     staticBuild(project),
@@ -297,6 +416,7 @@ async function npmCase(tarball) {
     install("npm", tarball),
   );
   await step("write npm deck", () => writeDeck(project));
+  await consumerCommands(project);
   await step("npx decks build hello and assets", () => build(project, true));
   await step("Chromium npm static build", () => staticBuild(project));
 }

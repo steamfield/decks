@@ -85,7 +85,33 @@ describe("boundary checker rules", () => {
     const file = "packages/runtime/src/view";
     expect(checkSource("runtime", `${file}.test-support.ts`, 'import "vitest";')).toEqual([]);
     expect(checkSource("runtime", `${file}.ts`, 'import "vitest";')).toHaveLength(1);
-    expect(checkSource("runtime", `${file}.test.ts`, 'import "@react-decks/kit";')).toHaveLength(1);
+    expect(
+      checkSource(
+        "runtime",
+        `${file}.test.ts`,
+        'import "@react-decks/kit";',
+        [],
+        ["@react-decks/kit"],
+      ),
+    ).toHaveLength(1);
+  });
+
+  it.each(["test.ts", "test-support.ts"])("allows declared development tooling in %s", (suffix) => {
+    expect(
+      checkSource(
+        "node",
+        `packages/node/src/probe.${suffix}`,
+        'import "pixelmatch";',
+        [],
+        ["pixelmatch"],
+      ),
+    ).toEqual([]);
+  });
+
+  it("rejects development tooling in production sources", () => {
+    expect(
+      checkSource("node", "packages/node/src/probe.ts", 'import "pixelmatch";', [], ["pixelmatch"]),
+    ).toHaveLength(1);
   });
 
   it("allows a valid dependency manifest and rejects forbidden dependencies and peers", () => {

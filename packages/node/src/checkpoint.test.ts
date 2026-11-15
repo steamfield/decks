@@ -1,38 +1,20 @@
-import { expect, it, vi } from "vitest";
-import { serve } from "./deck.test-support";
+import { expect, it } from "vitest";
+import { manifest, serve, waitForWatcher } from "./deck.test-support";
 
-const clock = vi.hoisted(() => {
-  let markStarted: ((ms?: number) => void) | undefined;
-  let elapse: (() => void) | undefined;
-  const started = new Promise<number | undefined>((resolve) => {
-    markStarted = resolve;
-  });
-  const quietWindow = new Promise<void>((resolve) => {
-    elapse = resolve;
-  });
-  if (!markStarted || !elapse) throw new Error("The test clock did not initialize");
-  return { started, quietWindow, markStarted, elapse };
-});
-vi.mock("node:timers/promises", async (original) => ({
-  ...(await original<typeof import("node:timers/promises")>()),
-  setTimeout: (ms?: number) => {
-    clock.markStarted(ms);
-    return clock.quietWindow;
-  },
-}));
-
-it("does not finish a checkpoint before a coalesced reload reaches the client", async () => {
+it("serves the new slide after its coalesced reload and a later CSS update", async () => {
   const app = await serve();
-  const checkpoint = app.checkpoint();
-  try {
-    // The first sentinel has finished, but the coalescing window has not elapsed.
-    expect(await Promise.race([clock.started, checkpoint.then(() => "finished")])).toBe(100);
-    app.server.ws.send({ type: "full-reload" });
-    clock.elapse();
-    await checkpoint;
-    expect(app.messages.some((message) => message.includes('"type":"full-reload"'))).toBe(true);
-  } finally {
-    clock.elapse();
-    await checkpoint;
-  }
+  await manifest(app);
+  const start = app.messages.length;
+  await app.put("slides/02-second.mdx", "# Added slide");
+  await waitForWatcher(() =>
+    expect(
+      app.messages.slice(start).some((message) => message.includes('"type":"full-reload"')),
+    ).toBe(true),
+  );
+  await app.checkpoint();
+  expect((await manifest(app)).manifest.slides.map(({ id }: { id: string }) => id)).toEqual([
+    "01-first",
+    "02-second",
+  ]);
+  expect(await app.get("/slides/02-second.mdx")).toContain("Added slide");
 });

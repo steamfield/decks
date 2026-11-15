@@ -44,7 +44,8 @@ export const exportDeck = defineCommand({
   async run({ args }) {
     const { deck, defaults } = await resolveDeck(args.deck);
     const out = resolve(
-      args.out ?? join(defaults.outDir.replaceAll("{name}", deck.name), `${deck.name}.pdf`),
+      args.out ??
+        join(dirname(defaults.outDir.replaceAll("{name}", deck.name)), `${deck.name}.pdf`),
     );
     const browser = await launchBrowser();
     let outDir: string | undefined;

@@ -28,6 +28,7 @@ describe("workspace boundaries", () => {
             relative(ROOT, file),
             readFileSync(file, "utf8"),
             Object.keys({ ...manifest.dependencies, ...manifest.peerDependencies }),
+            Object.keys(manifest.devDependencies ?? {}),
           ),
         );
       }

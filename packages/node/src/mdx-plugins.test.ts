@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createLogger, createServer } from "vite";
 import { expect, it, onTestFinished, vi } from "vitest";
-import { fixture } from "./deck.test-support";
+import { fixture, testVite } from "./deck.test-support";
 import { build, loadDeck, reactDecks } from "./index";
 
 const mathConfig = `import remarkMath from "remark-math";
@@ -21,6 +21,7 @@ async function serve(files: Record<string, string> = {}) {
   const server = await createServer({
     configFile: false,
     plugins: reactDecks(await loadDeck(deck.dir)),
+    ...testVite,
     server: { port: 0 },
     customLogger: logger,
   });

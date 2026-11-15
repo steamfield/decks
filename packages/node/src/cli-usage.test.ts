@@ -18,9 +18,6 @@ it.each([
 ])("explains invalid dev arguments %s", async (args, message) => {
   const { dir } = await fixture(onTestFinished);
   const process = cli(dir, ["dev", ".", ...args]);
-  if (args[0] === "extra") {
-    await waitForWatcher(() => expect(process.output().stderr).not.toBe(""));
-  }
   expect((await process.exit)[0]).toBe(1);
   expect(process.output().stderr).toBe(`decks dev: ${message}\n`);
 });
@@ -54,24 +51,29 @@ it("keeps an explicit dev port strict without an EADDRINUSE stack", async () => 
   expect(process.output().stdout).not.toContain("http:");
 });
 
-it.each([[], ["build", "--help"], ["dev", "--help"], ["wat"]].map((args) => ({ args })))(
-  "prints named usage for $args",
-  async ({ args }) => {
-    const { dir } = await fixture(onTestFinished);
-    const process = cli(dir, args);
-    expect((await process.exit)[0]).toBe(args.length === 0 || args[0] === "wat" ? 1 : 0);
-    const usage = args.length === 0 ? process.output().stderr : process.output().stdout;
-    expect(usage).toContain("USAGE decks");
-    expect(usage).not.toMatch(/cli\.ts|undefined/);
-    if (args[0] === "build") {
-      expect(process.output().stdout).toContain("Output directory");
-      expect(process.output().stdout).toContain("Base URL");
-    } else if (args[0] === "dev") {
-      expect(process.output().stdout).toContain("Port to listen on");
-      expect(process.output().stdout).toContain("Open the deck");
-    } else {
-      expect(usage).toContain("Serve a deck");
-      expect(usage).toContain("Build a static deck");
-    }
-  },
-);
+it.each<{ args: string[]; code: number; channel: "stderr" | "stdout" }>([
+  { args: [], code: 1, channel: "stderr" },
+  { args: ["wat"], code: 1, channel: "stdout" },
+])("prints top-level usage for $args", async ({ args, code, channel }) => {
+  const { dir } = await fixture(onTestFinished);
+  const process = cli(dir, args);
+  expect((await process.exit)[0]).toBe(code);
+  const usage = process.output()[channel];
+  expect(usage).toContain("USAGE decks");
+  expect(usage).not.toMatch(/cli\.ts|undefined/);
+  expect(usage).toContain("Serve a deck");
+  expect(usage).toContain("Build a static deck");
+});
+
+it.each([
+  ["build", "Output directory", "Base URL"],
+  ["dev", "Port to listen on", "Open the deck"],
+])("prints %s options in its help", async (command, first, second) => {
+  const { dir } = await fixture(onTestFinished);
+  const process = cli(dir, [command, "--help"]);
+  expect((await process.exit)[0]).toBe(0);
+  expect(process.output().stdout).toContain(`USAGE decks ${command}`);
+  expect(process.output().stdout).not.toMatch(/cli\.ts|undefined/);
+  expect(process.output().stdout).toContain(first);
+  expect(process.output().stdout).toContain(second);
+});
