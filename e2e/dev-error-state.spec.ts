@@ -77,7 +77,7 @@ test("An invalid config retains the previous deck and resends its overlay after 
   await expect(page).toHaveURL(`${app.url}#/2?clicks=2`);
 });
 
-test("An MDX edit keeps the last good content under the overlay and recovers without reload.", async ({
+test("An MDX edit keeps the last good content under the overlay and the next save recovers it without reload.", async ({
   page,
   errorDeck,
 }) => {
@@ -95,9 +95,11 @@ test("An MDX edit keeps the last good content under the overlay and recovers wit
   await expect(
     page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
   ).toBeVisible();
-  // A save that lands while the dev server is still handling the previous one can go unnoticed
-  // (the browser trace of a loaded CI runner shows no update after the fix), so, like a person,
-  // save again until the page recovers. Each save rewrites the file, so each is a new change.
+  // The chokidar bundled in Vite drops a second `change` for the same path within 50 ms of the
+  // first, with no trailing event (`_throttle(EV_CHANGE, path, 50)`), so a fix written right
+  // after the overlay appears can go unseen; a CI trace showed exactly that, 30 ms apart. That
+  // loss is the watcher's, not the deck plugin's, so this test proves recovery on a later save:
+  // it saves until the page recovers. Each save rewrites the file, so each is a new change.
   await expect(async () => {
     await app.put(
       "slides/01-cover.mdx",
