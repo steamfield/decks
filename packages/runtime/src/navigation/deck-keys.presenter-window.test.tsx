@@ -39,7 +39,10 @@ it("p opens a named presenter window, not a tab, at this URL and position and fo
   setup("?custom=kept#/2?clicks=2");
   await userEvent.setup().keyboard("p");
   const channel = syncChannelId(makeSource().manifest.name, "/");
-  expect(events).toEqual([`|react-decks-presenter:${channel}|popup,width=1280,height=800`, "focus"]);
+  expect(events).toEqual([
+    `|react-decks-presenter:${channel}|popup,width=1280,height=800`,
+    "focus",
+  ]);
   expect(popup.location.href).toBe(`${window.location.origin}/?custom=kept#/presenter/2?clicks=2`);
 });
 

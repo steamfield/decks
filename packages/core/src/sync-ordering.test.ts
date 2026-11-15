@@ -104,7 +104,9 @@ describe("ordering remote states", () => {
       [state],
     ]);
   });
-  it("known limit: two early navigations can outnumber the talk and move the others", async () => {
+  // Known limit, so this is expected to fail. When a fix makes it pass, vitest reports the
+  // `it.fails` as red: flip it to a plain `it`.
+  it.fails("two early navigations in a later tab do not move the talk", async () => {
     const hub = createMemoryHub();
     const older = tab(hub, "a", { slide: 1, click: 0 }, 1000);
     older.publish({ nav: { slide: 8, click: 2 } });
@@ -114,8 +116,9 @@ describe("ordering remote states", () => {
     const next = { nav: { slide: 3, click: 0 } };
     late.publish(next);
     await vi.runAllTimersAsync();
-    expect([older.nav, late.nav]).toEqual([next.nav, next.nav]);
-    expect(older.received).toEqual([next]);
-    expect(late.received).toEqual([]);
+    expect([older.nav, late.nav]).toEqual([
+      { slide: 8, click: 2 },
+      { slide: 8, click: 2 },
+    ]);
   });
 });

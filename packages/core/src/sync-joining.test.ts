@@ -162,15 +162,16 @@ describe("joining a sync session", () => {
     expect(newcomer.received).toEqual([]);
     expect(messages).toEqual([{ type: "hello", from: "a" }]);
   });
-  it("known limit: equal starts can leave sequential tabs split when the first hello has no recipient", async () => {
+  // Known limit, so this is expected to fail. When a fix makes it pass, vitest reports the
+  // `it.fails` as red: flip it to a plain `it`.
+  it.fails("equal starts converge sequential tabs even when the first hello has no recipient", async () => {
     const hub = createMemoryHub();
     const older = tab(hub, "a", { slide: 8, click: 2 }, 1000);
     const late = tab(hub, "z", { slide: 1, click: 0 }, 1000);
     await vi.runAllTimersAsync();
     expect([older.nav, late.nav]).toEqual([
       { slide: 8, click: 2 },
-      { slide: 1, click: 0 },
+      { slide: 8, click: 2 },
     ]);
-    expect([older.received, late.received]).toEqual([[], []]);
   });
 });
