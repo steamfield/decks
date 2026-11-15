@@ -90,8 +90,8 @@ Playwright in the repo (root, `packages/node`, `site/`) stays on one version: a
 otherwise, `biome.json`, every `tsconfig.json`, `vitest.config.ts`, `decks.json`, this file.
 Need a new export? Give the exact line in the hand-off. Need a dependency? Ask.
 
-CI (`.github/workflows/ci.yml`, on pushes to `main` and pull requests) and the release both
-call `.github/workflows/check.yml`: `bun run check` split into parallel jobs, namely lint and
+CI (`.github/workflows/ci.yml`, on pushes to `main` and pull requests) calls
+`.github/workflows/check.yml`: `bun run check` split into parallel jobs, namely lint and
 typecheck, unit/dom tests in 3 shards (`bun run test --shard=N/3`), browser tests in 3 shards
 (`bun run test:e2e --shard=N/3`) and the tarball test. A failed e2e shard uploads its
 `test-results/` (actual screenshots, traces) as an artifact. Playwright's Linux screenshot
@@ -102,10 +102,11 @@ the one that has to match; the `-darwin` ones come from a Mac.
 
 Releases are tag-driven and CI publishes; agents never run `npm publish`, push a tag or touch
 npm credentials. `.github/workflows/release.yml` runs on a `v*` tag as jobs: `verify` (the tag
-equals `packages/decks/package.json`'s version and the plugin manifest's, and the commit is on
-`main`), `check` (the same sharded gate CI runs, described above) and `build` (packs `@steamfield/decks`
-once into a workflow artifact) in parallel, then `publish`, which publishes that tarball through
-`scripts/release-publish.mjs` with provenance, then `github-release`. Only `publish` gets
+equals `packages/decks/package.json`'s version and the plugin manifest's, the commit is on
+`main`, and CI passed on that exact commit; the gate is not run a second time) and `build`
+(packs `@steamfield/decks` once into a workflow artifact) in parallel, then `publish`, which
+publishes that tarball through `scripts/release-publish.mjs` with provenance, then
+`github-release`. Only `publish` gets
 `id-token: write` and it runs one release at a time. Auth is npm trusted publishing (OIDC);
 there is no npm token or `NPM_TOKEN` secret, and none is to be added.
 
@@ -117,8 +118,10 @@ To cut `X.Y.Z` (a prerelease `X.Y.Z-rc.N` publishes under the `rc` dist-tag):
    modified `CHANGELOG.md` is allowed), a branch other than `main`, an existing tag, the
    current version or a missing changelog section.
 3. `bun run check`, then `git add -A && git commit -m "chore(release): X.Y.Z"`.
-4. After that commit exists, `git tag vX.Y.Z && git push origin main vX.Y.Z`. A tag pushed
-   before the bump fails the version check and the stale remote tag then blocks the real one.
+4. `git push origin main` and wait for CI on that commit to pass. Then, with that commit
+   checked out, `git tag vX.Y.Z && git push origin vX.Y.Z`. A tag pushed before the bump fails
+   the version check, one pushed before CI passes fails the CI check, and the stale remote
+   tag then blocks the real one.
 5. `gh run watch <id> --exit-status` (id from `gh run list --workflow Release`), then
    `npm view @steamfield/decks version dist.integrity`.
 
