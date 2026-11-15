@@ -52,7 +52,9 @@ read their hook JSON and the repo's pattern file.
   `ce:architecting-systems`, `ce:writing-tests` and `ce:handling-errors`.
 - If `node_modules/` is missing, run `bun install`.
 - Iterate on the scoped test command in your contract, then `bun run lint` and `bun run
-  typecheck`. Run each new test file three times alone, then `bun run test` once; a new or
+  typecheck`. Run the whole gate as `rr run --local "bun run check"`: rr takes a machine-wide
+  lock, so parallel runs queue their gates instead of starving each other's build and browser
+  tests. Run each new test file three times alone, then `bun run test` once; a new or
   changed Playwright spec with `--repeat-each=5`.
 - Deck work: read `plugins/decks/skills/working-with-decks/SKILL.md` and the skills it routes
   to. A hook deny means rewrite the prose; never route the write around it.
