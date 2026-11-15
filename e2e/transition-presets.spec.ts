@@ -1,6 +1,13 @@
 import { expect } from "@playwright/test";
-
+import { slideNo } from "./fixtures/motion-gallery";
 import { keys, open, settle, test } from "./fixtures/transitions";
+
+const [cut, push, morphSteps, fade] = [
+  slideNo("cut"),
+  slideNo("push"),
+  slideNo("morph-steps"),
+  slideNo("fade"),
+];
 
 test("Attribute logs preserve two changes delivered in one mutation batch", async ({ page }) => {
   await open(page);
@@ -33,7 +40,7 @@ test("A fade boundary publishes its URL immediately and removes its forward attr
 });
 
 test("Going back across a fade boundary uses its backward direction", async ({ page }) => {
-  await open(page, 2);
+  await open(page, fade);
   await keys(page, ["ArrowLeft"]);
   await settle(page);
   await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toContain("fade");
@@ -72,7 +79,7 @@ test("Fade has no root-group motion that outlasts its opacity animation", async 
 });
 
 test("A cut boundary never sets transition attributes", async ({ page }) => {
-  await open(page, 19);
+  await open(page, cut);
   await keys(page, ["ArrowRight"]);
   await settle(page);
   await expect(page.getByRole("heading", { name: "Follow one idea." })).toBeVisible();
@@ -81,7 +88,7 @@ test("A cut boundary never sets transition attributes", async ({ page }) => {
 });
 
 test("Instant and live reduced-motion changes disable transitions", async ({ page }) => {
-  await open(page, 17, "?motion=instant");
+  await open(page, push, "?motion=instant");
   await keys(page, ["ArrowRight"]);
   await settle(page);
   await expect(page.locator("html")).toHaveAttribute("data-deck-motion", "instant");
@@ -97,11 +104,11 @@ test("Instant and live reduced-motion changes disable transitions", async ({ pag
 });
 
 test("Only clicks marked morphSteps start a step transition", async ({ page }) => {
-  await open(page, 2);
+  await open(page, fade);
   await keys(page, ["ArrowRight"]);
   await settle(page);
   await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
-  await open(page, 22);
+  await open(page, morphSteps);
   await keys(page, ["ArrowRight"]);
   await settle(page);
   await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toContain("step");

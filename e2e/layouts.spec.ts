@@ -5,6 +5,10 @@ import { build, loadDeck } from "@steamfield/decks/node";
 import { preview } from "vite";
 import { test as editableTest } from "./fixtures/deck.fixture";
 import { test } from "./fixtures/motion.fixture";
+import { slideNo } from "./fixtures/motion-gallery";
+
+const [center, twoCol, imageSide] = [slideNo("center"), slideNo("two-col"), slideNo("image-side")];
+const [cover, section] = [slideNo("cover", 1), slideNo("section")];
 
 const shapes = [
   { width: 1920, height: 1080 },
@@ -19,7 +23,7 @@ async function box(locator: Locator) {
 }
 
 test("Center keeps its content centered at every window shape", async ({ page }) => {
-  await page.goto("/?motion=instant#/26");
+  await page.goto(`/?motion=instant#/${center}`);
   const content = page.getByText("Give one idea the room.").locator("..");
   await expect(content).toBeVisible();
   for (const shape of shapes) {
@@ -37,7 +41,7 @@ test("Center keeps its content centered at every window shape", async ({ page })
 });
 
 test("TwoCol gives the first column twice the width without overflowing", async ({ page }) => {
-  await page.goto("/?motion=instant#/29");
+  await page.goto(`/?motion=instant#/${twoCol}`);
   const layout = page.locator('[data-deck-active] [data-deck-layout="two-col"]');
   await expect(layout).toBeVisible();
   for (const shape of shapes) {
@@ -59,7 +63,7 @@ test("TwoCol gives the first column twice the width without overflowing", async 
 });
 
 test("ImageSide runs its right image to three edges and pads the text", async ({ page }) => {
-  await page.goto("/?motion=instant#/30");
+  await page.goto(`/?motion=instant#/${imageSide}`);
   const image = page.getByRole("img", {
     name: "Mint paths converge around an amber circle on a dark field",
   });
@@ -97,7 +101,7 @@ test("ImageSide runs its right image to three edges and pads the text", async ({
     try {
       const url = server.resolvedUrls?.local[0];
       if (!url) throw new Error("Missing preview URL");
-      await page.goto(`${url}#/30`);
+      await page.goto(`${url}#/${imageSide}`);
       await expect(image).toBeVisible();
       await expect
         .poll(() =>
@@ -120,8 +124,8 @@ test("Cover and Section keep their content inside the padding at every window sh
   page,
 }) => {
   for (const [slide, layout] of [
-    [27, "cover"],
-    [28, "section"],
+    [cover, "cover"],
+    [section, "section"],
   ] as const) {
     await page.goto(`/?motion=instant#/${slide}`);
     const content = page.locator(`[data-deck-active] [data-deck-layout="${layout}"]`);

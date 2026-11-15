@@ -39,6 +39,8 @@ async function serve(deck: string, use: (url: string) => Promise<void>) {
 test("The source CLI shares its runtime with the agents deck's public imports", async ({
   page,
 }) => {
+  // One cold CLI process (about 11s on a loaded runner) plus its page loads.
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
@@ -55,6 +57,8 @@ test("The source CLI shares its runtime with the agents deck's public imports", 
 test("A public-only source deck loads motion and Inter without built package output", async ({
   page,
 }) => {
+  // Two CLI processes, `dev` then `build`, at about 11s each on a loaded runner.
+  test.setTimeout(120_000);
   await mkdir(resolve(".tmp"), { recursive: true });
   const dir = await mkdtemp(resolve(".tmp/public-source-"));
   try {
@@ -107,6 +111,8 @@ test("A public-only source deck loads motion and Inter without built package out
 });
 
 test("Public and private motion imports share clicks in a source deck", async ({ page }) => {
+  // One cold CLI process (about 11s on a loaded runner) plus its page loads.
+  test.setTimeout(120_000);
   await mkdir(resolve(".tmp"), { recursive: true });
   const dir = await mkdtemp(resolve(".tmp/mixed-source-"));
   try {

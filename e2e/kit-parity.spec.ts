@@ -42,7 +42,10 @@ test("The cover has its brand, body and byline rows and uses the installed theme
   await expect(
     page.locator("[data-deck-active]").getByText("Decks", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("Edited by Riley Hilliard")).toBeVisible();
+  const cover = await readFile(resolve("examples/tides-slide/slides/01-cover.mdx"), "utf8");
+  const editedBy = cover.match(/Edited by [^<]+/)?.[0];
+  if (!editedBy) throw new Error("The cover slide has no 'Edited by' byline to look for");
+  await expect(page.getByText(editedBy, { exact: true })).toBeVisible();
   await settled(page);
   await expect
     .poll(() =>

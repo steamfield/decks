@@ -4,6 +4,9 @@ import { expect } from "@playwright/test";
 import { loadDeck, scanSlides } from "@steamfield/decks/node";
 import { test as editableTest, seekTransition, settled } from "./fixtures/deck.fixture";
 import { test } from "./fixtures/motion.fixture";
+import { slideNo } from "./fixtures/motion-gallery";
+
+const push = slideNo("push");
 
 const total = (await scanSlides(await loadDeck("examples/motion"))).length;
 
@@ -25,23 +28,23 @@ test("Every gallery slide and each overview and presenter instance shows its own
         .getByLabel("Slide number"),
     ).toHaveText(`${no} / ${total}`);
   }
-  await page.goto("/?motion=instant#/17");
+  await page.goto(`/?motion=instant#/${push}`);
   await expect(page.locator("[data-deck-active]").getByLabel("Slide number")).toHaveText(
-    `17 / ${total}`,
+    `${push} / ${total}`,
   );
   const popup = page.waitForEvent("popup");
   await page.keyboard.press("p");
   const presenter = await popup;
   await expect(
     presenter.getByRole("region", { name: "Current slide" }).getByLabel("Slide number"),
-  ).toHaveText(`17 / ${total}`);
+  ).toHaveText(`${push} / ${total}`);
   await expect(
     presenter.getByRole("region", { name: "Next", exact: true }).getByLabel("Slide number"),
-  ).toHaveText(`18 / ${total}`);
+  ).toHaveText(`${push + 1} / ${total}`);
 });
 
 test("The layer holds its box still throughout a push transition", async ({ page }) => {
-  await page.goto("/#/17");
+  await page.goto(`/#/${push}`);
   await expect(page.getByRole("heading", { name: "Keep moving." })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Change the scale.", includeHidden: true }),
@@ -59,7 +62,7 @@ test("The layer holds its box still throughout a push transition", async ({ page
   expect(frames[0]?.width).toBe(1920);
   expect(frames[0]?.height).toBe("1080px");
   await expect(page.locator("[data-deck-active]").getByLabel("Slide number")).toHaveText(
-    `18 / ${total}`,
+    `${push + 1} / ${total}`,
   );
 });
 

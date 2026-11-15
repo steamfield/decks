@@ -1,7 +1,9 @@
 import { expect } from "@playwright/test";
 import { expectMonotone, record } from "./fixtures/deck.fixture";
 import { test } from "./fixtures/motion.fixture";
-import { position } from "./fixtures/motion-gallery";
+import { position, slideNo } from "./fixtures/motion-gallery";
+
+const timeline = slideNo("timeline");
 
 test("A rapid second timeline click continues from the visible pose and ends at beat two.", async ({
   page,
@@ -25,7 +27,7 @@ test("A rapid second timeline click continues from the visible pose and ends at 
   expect(before).toBeLessThan(460);
   expect(retargeted).toBe(before);
   expectMonotone(await recording.log(), 140, 780);
-  await position(page, 15, 2);
+  await position(page, timeline, 2);
 });
 
 test("Reloading timeline click two paints the click-two pose in its first frame.", async ({
@@ -41,10 +43,10 @@ test("Reloading timeline click two paints the click-two pose in its first frame.
     };
     requestAnimationFrame(frame);
   });
-  await page.goto("/#/15?clicks=2");
-  await position(page, 15, 2);
+  await page.goto(`/#/${timeline}?clicks=2`);
+  await position(page, timeline, 2);
   await page.reload();
-  await position(page, 15, 2);
+  await position(page, timeline, 2);
   await expect
     .poll(() => page.evaluate(() => Reflect.get(window, "motionPaints")))
     .toEqual(["translate(780 260)"]);

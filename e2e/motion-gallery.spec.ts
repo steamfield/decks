@@ -1,7 +1,15 @@
 import { expect } from "@playwright/test";
 
 import { test } from "./fixtures/motion.fixture";
-import { gallery, pauseEntry, poses, position, settled } from "./fixtures/motion-gallery";
+import { gallery, pauseEntry, poses, position, settled, slideNo } from "./fixtures/motion-gallery";
+
+const [steps, stagger, textWord, textChar, timeline] = [
+  slideNo("steps"),
+  slideNo("stagger"),
+  slideNo("text-word"),
+  slideNo("text-char"),
+  slideNo("timeline"),
+];
 
 for (let no = 1; no <= gallery.length; no++) {
   test(`Gallery slide ${no} reverses every click to the pose before it.`, async ({ page }) => {
@@ -76,7 +84,7 @@ for (let no = 1; no <= gallery.length; no++) {
 test("The gallery reverses interruptions and fits 4:3.", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  for (const no of [9, 10, 11]) {
+  for (const no of [stagger, textWord, textChar]) {
     await page.goto(`/#/${no}`);
     await position(page, no);
     const items = page.locator("[data-deck-active] [data-step-state] [data-step-state]");
@@ -93,9 +101,9 @@ test("The gallery reverses interruptions and fits 4:3.", async ({ page }) => {
   }
   await page.setViewportSize({ width: 1024, height: 768 });
   for (const [no, click] of [
-    [8, 4],
-    [9, 1],
-    [15, 3],
+    [steps, 4],
+    [stagger, 1],
+    [timeline, 3],
   ]) {
     await page.goto(`/#/${no}?clicks=${click}`);
     await position(page, no ?? 0, click);

@@ -1,8 +1,11 @@
 import { expect } from "@playwright/test";
 import { test } from "./fixtures/motion.fixture";
+import { slideNo } from "./fixtures/motion-gallery";
+
+const textChar = slideNo("text-char");
 
 test("Character reveals preserve visible line breaks.", async ({ page, deck }) => {
-  await page.goto("/#/11");
+  await page.goto(`/#/${textChar}`);
   await expect(page.getByRole("heading", { name: "TextReveal / char", exact: true })).toBeVisible();
   await page.keyboard.press("ArrowRight");
   await deck.settled();
