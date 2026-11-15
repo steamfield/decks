@@ -63,7 +63,8 @@ it.each(["presenter", "preview", "overview", "print"] as const)(
 );
 
 it("an active Morph carries its name inside a hidden step even with instant motion", async () => {
-  await setupMotion(() => (
+  // A click round trip re-renders the Morph after instant motion is in effect.
+  const view = await setupMotion(() => (
     <Step at={1}>
       <Morph name="hidden-card" as="h2">
         Hidden card
@@ -71,6 +72,8 @@ it("an active Morph carries its name inside a hidden step even with instant moti
     </Step>
   ));
   document.documentElement.setAttribute("data-deck-motion", "instant");
+  await view.next();
+  await view.previous();
   const card = screen.getByRole("heading", { name: "Hidden card", hidden: true });
   expect(card.style.viewTransitionName).toBe("hidden-card");
   expect(card.closest("[data-step-state]")).toHaveAttribute("data-step-state", "before");

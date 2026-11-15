@@ -103,6 +103,10 @@ it("does not commit a previous component stack during a later failure", async ()
   await screen.findByRole("heading", { name: "Between failures" });
   await user.keyboard("{ArrowRight}");
   await screen.findByText(/failed to render: Later failure/);
+  // The fallback shows the component stack only in dev builds. Waiting for the
+  // later component in it makes the absence checks below fail loudly, not vacuously.
+  const stack = await screen.findByText(/at LaterFailure/);
+  expect(stack).not.toHaveTextContent("FirstFailure");
   const later = committed.filter((text) => text.includes("failed to render: Later failure"));
   expect(later.length).toBeGreaterThan(0);
   expect(later.join("\n")).not.toContain("FirstFailure");

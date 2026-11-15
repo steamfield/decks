@@ -1,15 +1,25 @@
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, it } from "vitest";
+import { expect, it, onTestFinished, vi } from "vitest";
 import { install, setup } from "../deck.test-support";
 
 it("Space on Reset timer uses native button activation and never advances the talk", async () => {
-  setup("#/presenter/2?clicks=1");
-  const user = userEvent.setup();
-  const reset = screen.getByRole("button", { name: "Reset timer" });
-  reset.focus();
+  vi.useFakeTimers();
+  onTestFinished(() => {
+    vi.useRealTimers();
+  });
+  const { store } = setup("#/presenter/2?clicks=1");
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTimeAsync });
+  // The timer starts on the first navigation; without a running timer "00:00" proves nothing.
+  act(() => store.dispatch({ type: "next" }));
+  const hashBefore = window.location.hash;
+  await act(async () => vi.advanceTimersByTimeAsync(3000));
+  expect(screen.getByLabelText("Elapsed time")).toHaveTextContent("00:03");
+  screen.getByRole("button", { name: "Reset timer" }).focus();
+  vi.setTimerTickMode("nextTimerAsync");
   await user.keyboard(" ");
-  expect(window.location.hash).toBe("#/presenter/2?clicks=1");
+  vi.setTimerTickMode("manual");
+  expect(window.location.hash).toBe(hashBefore);
   expect(screen.getByLabelText("Elapsed time")).toHaveTextContent("00:00");
 });
 
