@@ -40,7 +40,8 @@ export function cli(cwd: string, args: string[]) {
   const process = cliProcess(
     repoPath("node_modules/.bin/tsx"),
     ["--conditions=@steamfield/decks/source", repoPath("packages/node/src/cli/cli.ts"), ...args],
-    { cwd, env: { ...globalThis.process.env, NO_COLOR: "1" } },
+    // NODE_NO_WARNINGS keeps a Node version's deprecation lines out of exact stderr assertions.
+    { cwd, env: { ...globalThis.process.env, NO_COLOR: "1", NODE_NO_WARNINGS: "1" } },
   );
   onTestFinished(process.close);
   return process;

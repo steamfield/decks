@@ -3,7 +3,17 @@ import { join } from "node:path";
 import { expect, it, onTestFinished } from "vitest";
 import { cli, fixture } from "./server.test-support";
 
-it.each([
+type Expected = string | { start: string; end: string };
+
+/** A string is pinned exactly; a pair pins this code's own start and end around library wording. */
+function expectReport(stderr: string, expected: Expected) {
+  if (typeof expected === "string") return expect(stderr).toBe(`decks build: ${expected}\n`);
+  expect(stderr.startsWith(`decks build: ${expected.start}`)).toBe(true);
+  expect(stderr.endsWith(`${expected.end}\n`)).toBe(true);
+  expect(stderr.trimEnd().split("\n")).toHaveLength(expected.start.split("\n").length);
+}
+
+it.each<[string, string, Expected]>([
   ["missing title", "export default {}", "deck.config.ts: title is required (a string)."],
   ["wrong config export", "export default 42", "deck.config.ts: config must be an object, got 42."],
   [
@@ -14,7 +24,12 @@ it.each([
   [
     "unknown config key",
     'export default {titel:"Deck"}',
-    'deck.config.ts: title is required (a string).\ndeck.config.ts: unknown key "titel". Known keys: title, author, info, url, canvas, transition, htmlAttrs, credit, vite, mdx.',
+    // The list of known keys follows the schema, so only the part this code writes is pinned.
+    {
+      start:
+        'deck.config.ts: title is required (a string).\ndeck.config.ts: unknown key "titel". Known keys: ',
+      end: ".",
+    },
   ],
   [
     "wrong type",
@@ -35,11 +50,11 @@ it.each([
   const { dir } = await fixture(onTestFinished, { "deck.config.ts": source });
   const process = cli(dir, ["build", "."]);
   expect((await process.exit)[0]).toBe(1);
-  expect(process.output().stderr).toBe(`decks build: ${message}\n`);
+  expectReport(process.output().stderr, message);
   expect(process.output().stdout).toBe("");
 });
 
-it.each([
+it.each<[string, string, Expected]>([
   [
     "frontmatter",
     '---\nclicks: "two"\n---\n# Slide',
@@ -58,12 +73,13 @@ it.each([
   [
     "YAML position",
     "---\ntitle: [\n---\n# Slide",
-    "slides/01-first.mdx:3:1: invalid YAML: unexpected end of the stream within a flow collection. Check the frontmatter syntax.",
+    // The reason in between is the YAML parser's wording; position and remedy are this code's.
+    { start: "slides/01-first.mdx:3:1: invalid YAML: ", end: " Check the frontmatter syntax." },
   ],
   [
     "MDX position",
     "# Slide\n\n<div",
-    "slides/01-first.mdx:3:5: Unexpected end of file in name, expected a name character such as letters, digits, `$`, or `_`; whitespace before attributes; or the end of the tag. Check the slide and its MDX plugins.",
+    { start: "slides/01-first.mdx:3:5: ", end: " Check the slide and its MDX plugins." },
   ],
   [
     "step inside an expression",
@@ -84,7 +100,7 @@ it.each([
   const { dir } = await fixture(onTestFinished, { "slides/01-first.mdx": source });
   const process = cli(dir, ["build", "."]);
   expect((await process.exit)[0]).toBe(1);
-  expect(process.output().stderr).toBe(`decks build: ${message}\n`);
+  expectReport(process.output().stderr, message);
   expect(process.output().stdout).toBe("");
 });
 
@@ -137,7 +153,8 @@ it("gives a component syntax error's position and a remedy", async () => {
   });
   const process = cli(dir, ["build", "."]);
   expect((await process.exit)[0]).toBe(1);
-  expect(process.output().stderr).toBe(
-    "decks build: components/X.tsx:3:1: Expected `}` but found `EOF`. Check the component syntax.\n",
-  );
+  expectReport(process.output().stderr, {
+    start: "components/X.tsx:3:1: ",
+    end: " Check the component syntax.",
+  });
 });
