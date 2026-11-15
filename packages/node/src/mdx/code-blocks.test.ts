@@ -1,49 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { serve as serveDeck } from "../dev/server.test-support";
+import { renderSlide, serve as serveDeck } from "../dev/server.test-support";
 import { parseCodeOptions } from "./code-options";
 
 const serve = (source: string) => serveDeck({ "slides/01-first.mdx": source });
 
-interface Element {
-  type: unknown;
-  props: Record<string, unknown>;
-}
-
-const isElement = (value: unknown): value is Element =>
-  typeof value === "object" && value !== null && "type" in value && "props" in value;
-
-/**
- * The slide module executed: its element tree, whose props are what the page receives. The node
- * package may not import React, so the tree is read as data instead of rendered.
- */
-async function render(app: Awaited<ReturnType<typeof serve>>) {
-  const slide = await app.server.ssrLoadModule("/slides/01-first.mdx");
-  const found: Element[] = [];
-  const walk = (value: unknown): void => {
-    if (Array.isArray(value)) {
-      value.forEach(walk);
-      return;
-    }
-    if (!isElement(value)) return;
-    found.push(value);
-    walk(value.props.children);
-  };
-  walk(slide.default({}));
-  const text = (value: unknown): string =>
-    Array.isArray(value)
-      ? value.map(text).join("")
-      : isElement(value)
-        ? text(value.props.children)
-        : typeof value === "string"
-          ? value
-          : "";
-  return {
-    elements: (type: string) => found.filter((element) => element.type === type),
-    text: found.map((element) => text(element.props.children)).join("\n"),
-    props: found.flatMap((element) => Object.keys(element.props)),
-    styles: JSON.stringify(found.map((element) => element.props.style ?? null)),
-  };
-}
+const render = (app: Awaited<ReturnType<typeof serve>>) =>
+  renderSlide(app.server, "/slides/01-first.mdx");
 
 describe("compiled code blocks", () => {
   it.each(["{1|2|all}", "linez"])(

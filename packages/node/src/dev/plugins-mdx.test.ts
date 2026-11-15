@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { createLogger, createServer } from "vite";
 import { expect, it, onTestFinished, vi } from "vitest";
 import { build, loadDeck, reactDecks } from "../index";
-import { fixture, testVite } from "./server.test-support";
+import { fixture, renderSlide, testVite } from "./server.test-support";
 
 const mathConfig = `import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -109,12 +109,13 @@ export default { title: "Remark deck", mdx: { remarkPlugins: [[extend, { text: "
       "---\ntitle: Steps\n---\n<Step at={2}>Authored step</Step>\n\n<Notes>Speaker secret</Notes>",
   });
   expect(await app.get(manifest)).toContain('"clicks":2');
-  const built = await builtCode(app.dir);
-  for (const code of [await app.get("/slides/01-first.mdx"), built]) {
-    expect(code).toContain("Generated step");
-    expect(code).toMatch(/at:\s*9/);
-  }
-  expect(built).toMatch(/clicks:\s*2/);
+  // The executed slide carries the generated step's real props, whatever the compiler's printing.
+  const slide = await renderSlide(app.server, "/slides/01-first.mdx", { Step: "step" });
+  expect(slide.elements().map((element) => element.props.at)).toEqual(
+    expect.arrayContaining([2, 9]),
+  );
+  expect(slide.text).toContain("Generated step");
+  expect(await builtCode(app.dir)).toContain("Generated step");
 });
 
 it("applies rehype plugins and code highlighting while preserving tuple options in dev and build", async () => {

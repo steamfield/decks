@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createServer, defaultClientConditions } from "vite";
+import { createServer, defaultClientConditions, type ViteDevServer } from "vite";
 import { expect, onTestFinished, vi } from "vitest";
 import { cliProcess } from "../cli/cli-process.test-support";
 import { loadDeck, type ResolvedDeck, reactDecks, scanSlides } from "../index";
@@ -162,4 +162,50 @@ export async function scanMotion(body: string) {
     "slides/01-first.mdx": body,
   });
   return scanSlides(await loadDeck(dir));
+}
+
+interface SlideElement {
+  type: unknown;
+  props: Record<string, unknown>;
+}
+
+const isElement = (value: unknown): value is SlideElement =>
+  typeof value === "object" && value !== null && "type" in value && "props" in value;
+
+/**
+ * The slide module executed: its element tree, whose props are what the page receives. The node
+ * package may not import React, so the tree is read as data instead of rendered.
+ */
+export async function renderSlide(
+  server: ViteDevServer,
+  id: string,
+  components: Record<string, string> = {},
+) {
+  const slide = await server.ssrLoadModule(id);
+  const found: SlideElement[] = [];
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (!isElement(value)) return;
+    found.push(value);
+    walk(value.props.children);
+  };
+  walk(slide.default({ components }));
+  const text = (value: unknown): string =>
+    Array.isArray(value)
+      ? value.map(text).join("")
+      : isElement(value)
+        ? text(value.props.children)
+        : typeof value === "string"
+          ? value
+          : "";
+  return {
+    elements: (type?: string) =>
+      type === undefined ? found : found.filter((element) => element.type === type),
+    text: found.map((element) => text(element.props.children)).join("\n"),
+    props: found.flatMap((element) => Object.keys(element.props)),
+    styles: JSON.stringify(found.map((element) => element.props.style ?? null)),
+  };
 }
