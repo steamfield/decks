@@ -51,7 +51,7 @@ export const exportDeck = defineCommand({
     let outDir: string | undefined;
     try {
       outDir = await mkdtemp(join(tmpdir(), "decks-export-"));
-      await build(deck, { outDir, base: "./" });
+      await build(deck, { outDir, base: "./", ogImage: false });
       const capture = await openBuiltDeck(
         browser,
         outDir,

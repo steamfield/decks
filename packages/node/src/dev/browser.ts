@@ -1,4 +1,4 @@
-import { type Browser, chromium } from "playwright-core";
+import { type Browser, chromium, errors, type Page } from "playwright-core";
 import { preview } from "vite";
 import { DeckError } from "./errors";
 
@@ -20,6 +20,38 @@ export async function launchBrowser(): Promise<Browser> {
   }
 }
 
+export async function waitForCapture(page: Page, timeout = 30_000): Promise<void> {
+  try {
+    await page.waitForFunction("window.__deck.settled().then(() => true)", undefined, { timeout });
+  } catch (cause) {
+    if (!(cause instanceof errors.TimeoutError)) throw cause;
+    // What is still running, from public browser signals; a gsap tween does not show here.
+    const busy = await page.evaluate<string[]>(`document.getAnimations().flatMap((animation) => {
+      const end = animation.effect?.getComputedTiming().endTime;
+      if (animation.playState !== "running" || typeof end !== "number" || !Number.isFinite(end))
+        return [];
+      const target = animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
+      const slide = target?.closest("[data-deck-slide]")?.getAttribute("data-deck-slide") ?? "unknown";
+      const name = animation instanceof CSSAnimation ? animation.animationName : animation.id || "animation";
+      return ["slide " + slide + ": " + name + " (ends at " + end + " ms)"];
+    })`);
+    const url = new URL(page.url());
+    const [slide, query] = url.hash.slice(2).split("?");
+    const click =
+      slide === "print"
+        ? new URLSearchParams(url.search).get("print") === "final"
+          ? "final"
+          : "all"
+        : (new URLSearchParams(query).get("clicks") ?? "0");
+    throw new DeckError(
+      `Timed out after ${timeout} ms waiting to capture slide ${slide} click ${click}. Still busy: ${busy.length ? busy.join("; ") : "settled() has not resolved; no running finite browser animations"}.`,
+      undefined,
+      undefined,
+      { cause },
+    );
+  }
+}
+
 /** Each capture owns a preview server on an OS-assigned port. */
 export async function openBuiltDeck(
   browser: Browser,
@@ -27,6 +59,7 @@ export async function openBuiltDeck(
   base: string,
   path: string,
   viewport = { width: 1920, height: 1080 },
+  settleTimeout = 30_000,
 ) {
   const server = await preview({
     configFile: false,
@@ -65,7 +98,7 @@ export async function openBuiltDeck(
     });
     await page.goto(`${url}${path}`);
     await page.waitForFunction("window.__deck !== undefined");
-    await page.evaluate("window.__deck.settled()");
+    await waitForCapture(page, settleTimeout);
     if (errors.length) throw new DeckError(`Cannot capture ${outDir}: ${errors.join("; ")}`);
     return { page, close: () => server.close() };
   } catch (cause) {

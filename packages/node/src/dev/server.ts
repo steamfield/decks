@@ -11,7 +11,7 @@ import {
   type Plugin,
   build as viteBuild,
 } from "vite";
-import { launchBrowser, MissingChromiumError, openBuiltDeck } from "./browser";
+import { launchBrowser, openBuiltDeck, waitForCapture } from "./browser";
 import type { ResolvedDeck } from "./config";
 import { DeckError, displayPath } from "./errors";
 import { createDeckPlugins, reactDecks } from "./plugins";
@@ -121,7 +121,7 @@ export async function dev(
 
 export async function build(
   deck: ResolvedDeck,
-  options: { outDir: string; base?: string },
+  options: { outDir: string; base?: string; ogImage?: boolean },
 ): Promise<void> {
   await guardOutput(deck, options.outDir);
   await viteBuild({
@@ -135,21 +135,25 @@ export async function build(
       rolldownOptions: { input: resolve(deck.dir, "index.html") },
     },
   });
-  await generateOgImage(
-    deck,
-    resolve(options.outDir),
-    options.base ?? deck.config.vite?.base ?? "./",
-  );
+  if (options.ogImage !== false) {
+    try {
+      await generateOgImage(
+        deck,
+        resolve(options.outDir),
+        options.base ?? deck.config.vite?.base ?? "./",
+      );
+    } catch (cause) {
+      // The share image is optional: a deck that cannot be captured still builds. A bug is not
+      // a capture failure, so only DeckErrors (Chromium missing, a slide error, a timeout) warn.
+      if (!(cause instanceof DeckError)) throw cause;
+      console.warn(`decks build: og.png skipped. ${cause.message.replace(/\s*\r?\n\s*/g, " ")}`);
+    }
+  }
 }
 
 async function generateOgImage(deck: ResolvedDeck, outDir: string, base: string): Promise<void> {
   if (existsSync(join(deck.dir, "public/og.png"))) return;
-  const browser = await launchBrowser().catch((cause: unknown) => {
-    if (!(cause instanceof MissingChromiumError)) throw cause;
-    console.warn(`decks build: og.png skipped. ${cause.message}`);
-    return undefined;
-  });
-  if (!browser) return;
+  const browser = await launchBrowser();
   try {
     const capture = await openBuiltDeck(browser, outDir, base, "?motion=instant#/1", {
       width: 1200,
@@ -171,7 +175,7 @@ async function generateOgImage(deck: ResolvedDeck, outDir: string, base: string)
           left: "${(1200 - width) / 2}px", top: "${(630 - height) / 2}px"
         });
       })()`);
-      await capture.page.evaluate("window.__deck.settled()");
+      await waitForCapture(capture.page);
       await capture.page.screenshot({ path: join(outDir, "og.png"), type: "png" });
     } finally {
       await capture.close();

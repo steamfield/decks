@@ -193,7 +193,11 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
     const { dir } = await fixture(onTestFinished, {
       "slides/01-first.mdx": '{(() => { throw new Error("Broken capture frame"); })()}',
     });
-    await expect(build(await loadDeck(dir), { outDir: join(dir, "site") })).rejects.toThrow(
+    const outDir = join(dir, "site");
+    await build(await loadDeck(dir), { outDir, ogImage: false });
+    const browser = await launchBrowser();
+    onTestFinished(() => browser.close());
+    await expect(openBuiltDeck(browser, outDir, "./", "#/1")).rejects.toThrow(
       /Cannot capture[\s\S]*Broken capture frame/,
     );
   });
