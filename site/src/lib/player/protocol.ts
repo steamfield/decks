@@ -1,6 +1,6 @@
 // The embed contract between the landing page and an example deck in an iframe.
-// The deck side lives in the addon (every example deck speaks it; the repo's
-// `bun run test:embed` tests it); this file is the page side. Both sides are
+// The deck side lives in the framework (packages/runtime/src/embed.ts, tested by
+// e2e/embed*.spec.ts at the repo root); this file is the page side. Both sides are
 // same-origin: the page sends commands with postMessage, and the deck answers
 // with decks:ready, decks:meta, then decks:state on load and on every navigation
 // change (settled: false), and again when the motion has stopped (settled: true).

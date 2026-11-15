@@ -1051,7 +1051,7 @@ count a slide module that is still loading.
 - `useTween(initial)`: a stable object gsap can tween; the owning component re-renders once
   per animation frame while it changes.
 
-Decided at checkpoint 1 (`docs/spikes/parity.md` has the measurements):
+Decided at checkpoint 1 (`docs/archive/spikes/parity.md` has the measurements):
 
 - `useTween` stays as designed: a stable Proxy over the initial numeric fields, read through
   `useSyncExternalStore`, notifying once per tick (section 5.1 has the scheduling, which
@@ -1796,7 +1796,7 @@ decks still to port): `InkNumber`, `InkChip`, `InkRule`, `InkCardRect`, `OdEyebr
 `UnitGridItem`, `InkPing`, `InkStep`, `CodeInk` and `Graph3D`, and the story modules they
 need. The rest of the addon's components are not planned.
 
-Decided at checkpoint 1 (`docs/spikes/parity.md`):
+Decided at checkpoint 1 (`docs/archive/spikes/parity.md`):
 
 - Units. Inside a slide, `vw` and `vh` become `cqw` and `cqh` (the frame is a size
   container). The story frame keeps its fitted 16:9 box: `--sw` and `--sh` derive from

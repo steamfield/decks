@@ -25,7 +25,7 @@ vocabulary: each stage hand-rolls its gsap.
 
 Build the framework in `react-decks/` as its own bun workspace, port the addon and the ten
 example decks onto it, and swap the repo over once it is proven. Design:
-`react-decks/docs/architecture.md`. Behaviour parity: `react-decks/docs/parity.md`. Code is
+`docs/architecture.md`. Behaviour parity: `docs/archive/parity.md`. Code is
 written by Codex runs from contracts (`.claude/delegate/react-decks-contract.md`); the
 orchestrator owns the design, the public export lists and the harness.
 

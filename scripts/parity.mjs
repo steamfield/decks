@@ -6,7 +6,7 @@
 //   node scripts/parity.mjs <alias> --ready ".od-slide"   # what marks a slide as rendered
 //                                                          (default: a story frame)
 //
-// Run from react-decks/. Baselines are `bun run snap <slidev alias> .parity/<alias>` captures
+// Run from the repo root. Baselines are `bun run snap <slidev alias> .parity/<alias>` captures
 // at 1920x1080, found in the nearest `.parity/<alias>` directory above this one (override with
 // PARITY_BASELINE). A baseline frame sNN-cK is slide NN at click K; a ported deck names its
 // slides `slides/NN-slug.mdx` with NN the Slidev slide position, so a partial port still lines
