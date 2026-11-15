@@ -6,6 +6,7 @@ export default defineConfig({
       {
         test: {
           name: "unit",
+          globalSetup: ["./tests/package.global-setup.ts"],
           environment: "node",
           // Node tests start real Vite servers and builds. The first test in a file pays for
           // loading the compiler and highlighter, which took over five seconds on the slower

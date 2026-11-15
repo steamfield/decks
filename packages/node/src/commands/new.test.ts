@@ -1,7 +1,6 @@
 import { execFile } from "node:child_process";
 import {
   chmod,
-  cp,
   mkdir,
   mkdtemp,
   readdir,
@@ -11,9 +10,9 @@ import {
   symlink,
   writeFile,
 } from "node:fs/promises";
-import { basename, dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { expect, it, onTestFinished } from "vitest";
+import { expect, inject, it, onTestFinished } from "vitest";
 import { loadDeck } from "../config";
 import { cli } from "../deck.test-support";
 import { build } from "../server";
@@ -212,21 +211,9 @@ it("prints a shell-safe next command for an alias containing spaces and quotes",
 
 it("ships templates, typechecks them and builds both scaffolds with the real Vite pipeline", async () => {
   const execute = promisify(execFile);
-  const dir = join(await project(), "react-decks");
-  await mkdir(dir);
-  for (const path of ["package.json", "bun.lock", "tsconfig.json", "packages", "docs/guide"]) {
-    await mkdir(dirname(join(dir, path)), { recursive: true });
-    await cp(resolve(path), join(dir, path), {
-      recursive: true,
-      filter: (source) => !["node_modules", "dist", "docs"].includes(basename(source)),
-    });
-  }
-  await cp(resolve("plugins/decks/skills"), resolve(dir, "../plugins/decks/skills"), {
-    recursive: true,
-  });
-  await execute("bun", ["install", "--offline", "--frozen-lockfile"], { cwd: dir });
-  await execute("node", ["build.mjs"], { cwd: join(dir, "packages/decks") });
-  const dist = join(dir, "packages/decks/dist");
+  const dir = await project();
+  const packageDir = inject("builtPackage");
+  const dist = join(packageDir, "dist");
   expect((await stat(join(dist, "templates"))).isDirectory()).toBe(true);
   await execute(resolve("node_modules/.bin/tsc"), [
     "--noEmit",
@@ -255,11 +242,7 @@ it("ships templates, typechecks them and builds both scaffolds with the real Vit
   ]);
   const consumer = join(dir, "consumer");
   await mkdir(join(consumer, "node_modules/@steamfield"), { recursive: true });
-  await symlink(
-    join(dir, "packages/decks"),
-    join(consumer, "node_modules/@steamfield/decks"),
-    "dir",
-  );
+  await symlink(packageDir, join(consumer, "node_modules/@steamfield/decks"), "dir");
   for (const { alias, flags } of [
     { alias: "conventional", flags: [] },
     { alias: "story", flags: ["--story", "--url", "example.com"] },

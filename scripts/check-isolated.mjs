@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { cp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,9 +20,10 @@ const isolated = mkdtempSync(join(tmpdir(), "react-decks-isolated-"));
 let status = 0;
 try {
   for (const file of new Set(listing.stdout.split("\0").filter(Boolean))) {
+    if (file === "site" || file.startsWith("site/")) continue;
     const destination = join(isolated, relative(root, resolve(root, file)));
     mkdirSync(dirname(destination), { recursive: true });
-    copyFileSync(join(root, file), destination);
+    await cp(join(root, file), destination, { recursive: true, verbatimSymlinks: true });
   }
   for (const args of [
     ["install", "--frozen-lockfile"],
