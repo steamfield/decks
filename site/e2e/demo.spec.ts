@@ -3,6 +3,11 @@ import { loadExamples } from "../src/data/examples";
 import { announcement, mirrorCopy } from "../src/lib/player/format";
 
 const examples = loadExamples();
+// The AISD branch below exercises that deck's own keyboard handling: fail loudly if it is
+// renamed, instead of silently skipping the branch.
+if (!examples.some(({ name }) => name === "aisd-showcase")) {
+  throw new Error("examples.json has no aisd-showcase: update the AISD branch in demo.spec.ts");
+}
 
 for (const example of examples) {
   test(`${example.name} loads from the gallery at its recorded start and mirrors live steps`, async ({

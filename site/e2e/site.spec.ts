@@ -71,6 +71,11 @@ for (const scheme of ["light", "dark"] as const) {
     await page.goto("/");
     await expect(page.locator("html")).toHaveClass(/\bdark\b/);
     await expect(page.locator("[data-theme-toggle]")).toHaveCount(0);
+    // Audit the hydrated player (its transport bar), not the server-rendered poster.
+    const player = page.getByRole("group", { name: /^Deck player:/ });
+    await player.scrollIntoViewIfNeeded();
+    await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
+    await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
     await axe(page);
     expect(errors).toEqual([]);
   });
