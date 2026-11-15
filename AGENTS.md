@@ -130,7 +130,9 @@ around asking, and do not ask to save five lines. `core` stays dependency-free.
 ## Testing
 
 Test what a user or caller can observe, with real dependencies, so a test survives a refactor
-and fails only when behaviour breaks.
+and fails only when behaviour breaks. Before writing or changing a test, load `ce:writing-tests`
+and read `.claude/rules/testing.md`: how to control time, which completion signals to wait on,
+how to test motion without timing it, and the banned patterns with their replacements.
 
 | Code | Kind | How |
 | --- | --- | --- |
