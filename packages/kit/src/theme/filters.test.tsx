@@ -17,10 +17,10 @@ function Stages() {
   );
 }
 
-it("renders the original seven filter definitions with fixed grain and displacement", async () => {
+it("renders one definition per filter token with fixed grain and displacement", async () => {
   const view = await setup(Stages, { instant: true });
   const defs = view.container.querySelector("defs");
-  expect(defs?.querySelectorAll("filter")).toHaveLength(7);
+  expect(defs?.querySelectorAll("filter")).toHaveLength(Object.keys(FILTER_IDS).length);
   for (const id of Object.values(FILTER_IDS))
     expect(defs?.querySelectorAll(`[id$="-${id}"]`)).toHaveLength(1);
   for (const [id, dryness, displacement, seed] of [
@@ -41,9 +41,11 @@ it("renders the original seven filter definitions with fixed grain and displacem
 it("gives simultaneous stages separate ids and points their inherited filter URLs at their own defs", async () => {
   const view = await setup(Stages, { instant: true });
   const ids = Array.from(view.container.querySelectorAll("filter"), (element) => element.id);
-  expect(ids).toHaveLength(14);
-  expect(new Set(ids).size).toBe(14);
-  for (const stage of view.container.querySelectorAll<HTMLElement>(".od-slide")) {
+  expect(ids).toHaveLength(2 * Object.keys(FILTER_IDS).length);
+  expect(new Set(ids).size).toBe(ids.length);
+  const stages = view.container.querySelectorAll<HTMLElement>(".od-slide");
+  expect(stages).toHaveLength(2);
+  for (const stage of stages) {
     const id = stage.querySelector('[id$="-mk-glow"]')?.id;
     if (!id) throw new Error("Missing stage glow");
     expect(stage.style.getPropertyValue("--od-filter-glow")).toBe(filterUrl(id));

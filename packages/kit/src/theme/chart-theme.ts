@@ -1,4 +1,5 @@
 import type { ThemeConfig } from "@opendata-ai/openchart-core";
+import { DUR } from "./easings";
 import { theme } from "./theme";
 
 export const slideChartTheme = {
@@ -62,7 +63,8 @@ export function scaleChartTheme<
   };
 }
 
+/** The chart library takes milliseconds; the values are the deck's own duration tokens. */
 export const slideChartAnimation = {
-  enter: { duration: 900, ease: "smooth" },
-  annotationDelay: 350,
+  enter: { duration: DUR.scale * 1000, ease: "smooth" },
+  annotationDelay: DUR.eraseDelay * 1000,
 } as const;

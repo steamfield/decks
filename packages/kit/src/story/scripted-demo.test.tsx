@@ -15,12 +15,12 @@ function Demo() {
 it("reveals by click and counts activation edges rather than renders or clicks", async () => {
   const app = await setup(Demo);
   expect(screen.queryByText("Revealed")).not.toBeInTheDocument();
-  expect(screen.getByLabelText("Demo")).toHaveTextContent("0/1/true");
+  expect(screen.getByLabelText("Demo")).toHaveTextContent(/^0\/1\/true$/);
   await app.next();
   expect(screen.getByText("Revealed")).toBeVisible();
-  expect(screen.getByLabelText("Demo")).toHaveTextContent("1/1/true");
+  expect(screen.getByLabelText("Demo")).toHaveTextContent(/^1\/1\/true$/);
   await act(async () => app.store.dispatch({ type: "go", slide: 2 }));
   await screen.findByRole("heading", { name: "Second slide" });
   await act(async () => app.store.dispatch({ type: "go", slide: 1 }));
-  expect(screen.getByLabelText("Demo")).toHaveTextContent("0/2/true");
+  expect(screen.getByLabelText("Demo")).toHaveTextContent(/^0\/2\/true$/);
 });

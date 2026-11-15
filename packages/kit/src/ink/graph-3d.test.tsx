@@ -108,11 +108,13 @@ it("shallow-merges spec overrides into both graph renderings", async () => {
   const app = await change({
     spec: { nodeOverrides: { a: { fill: ink("rose", 3), radius: 12 } } },
   });
+  const circle = (label: string) => screen.getByLabelText(label).querySelector("circle");
+  const alphaBefore = circle("Alpha")?.getAttribute("r");
+  const betaBefore = circle("Beta")?.getAttribute("r");
   await app.change();
-  expect(screen.getByLabelText("Alpha").querySelector("circle")).toHaveAttribute(
-    "fill",
-    ink("rose", 3),
-  );
+  expect(circle("Alpha")).toHaveAttribute("fill", ink("rose", 3));
+  expect(circle("Alpha")?.getAttribute("r")).not.toBe(alphaBefore);
+  expect(circle("Beta")?.getAttribute("r")).toBe(betaBefore);
 });
 
 it("shows categories and counts when legend is enabled", async () => {
@@ -151,16 +153,22 @@ it("does not orbit a still even when orbit is true", async () => {
   expect(node).toHaveAttribute("cx", x);
 });
 
-it("truncates above the WebGL ceiling and drops dangling edges in the still", async () => {
-  const many = Array.from({ length: 2001 }, (_, i) => ({
+it("truncates above the WebGL ceiling to the first nodes and drops dangling edges in the still", async () => {
+  // Well above the ceiling (2000 today); if the ceiling is ever raised past this, nothing is
+  // truncated and the first assertion says so.
+  const count = 5000;
+  const many = Array.from({ length: count }, (_, i) => ({
     id: String(i),
     label: `Node ${i}`,
     category: "First",
   }));
-  const app = await change({ nodes: many, edges: [{ source: "0", target: "2000" }] });
+  const app = await change({ nodes: many, edges: [{ source: "0", target: String(count - 1) }] });
   await app.change();
-  expect(screen.queryByLabelText("Node 2000")).not.toBeInTheDocument();
-  expect(screen.getByLabelText("Node 1999")).toBeInTheDocument();
+  const drawn = screen
+    .getAllByLabelText(/^Node \d+$/)
+    .map((node) => node.getAttribute("aria-label"));
+  expect(drawn.length).toBeLessThan(count);
+  expect(drawn).toEqual(many.slice(0, drawn.length).map((node) => node.label));
   expect(
     screen.getByRole("img", { name: "Similarity graph" }).querySelectorAll("path"),
   ).toHaveLength(0);

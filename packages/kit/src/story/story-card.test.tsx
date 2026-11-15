@@ -1,6 +1,6 @@
 import { act, screen } from "@testing-library/react";
 import { expect, it } from "vitest";
-import { StoryCard, Underline, useScriptedDemo } from "../index";
+import { DUR, StoryCard, Underline, useScriptedDemo } from "../index";
 import { setup, tick } from "../kit.test-support";
 
 function Card() {
@@ -30,12 +30,12 @@ it("keeps outgoing copy during a swap and removes it after the incoming copy set
   await app.next();
   expect(screen.getByText("First lead")).toBeInTheDocument();
   expect(screen.getByText("New lead")).toBeInTheDocument();
-  await tick(1);
+  await tick(DUR.bloom);
   expect(screen.queryByText("First lead")).not.toBeInTheDocument();
   expect(screen.getByText("Body 1")).toBeVisible();
   await app.next();
   await app.previous();
-  await tick(1);
+  await tick(DUR.bloom);
   expect(screen.queryByText("Body 2")).not.toBeInTheDocument();
   expect(screen.getByText("Body 1")).toBeVisible();
 });
@@ -50,7 +50,7 @@ it("swaps copy immediately with instant motion", async () => {
 it("restores fully opaque copy when leaving a swap and returning at the same last click", async () => {
   const app = await setup(Card, { click: 2 });
   await app.next();
-  await tick(0.1);
+  await tick(DUR.opacity / 2);
   const opacity = () => {
     let value = 1;
     for (
@@ -91,14 +91,14 @@ it("keeps the marked outgoing lead until the new copy settles, including after a
   expect(screen.getByText("last")).toBeVisible();
   await app.next();
   expect(screen.getByText("last")).toBeVisible();
-  await tick(1);
+  await tick(DUR.bloom);
   expect(screen.queryByText("last")).not.toBeInTheDocument();
   await app.previous();
-  await tick(1);
+  await tick(DUR.bloom);
   expect(screen.getByText("last")).toBeVisible();
   await app.next();
   expect(screen.getByText("last")).toBeVisible();
-  await tick(1);
+  await tick(DUR.bloom);
   expect(screen.queryByText("last")).not.toBeInTheDocument();
 });
 
@@ -131,10 +131,10 @@ function ChangingMarkupCard() {
 it("keeps the latest lead markup in a later swap when only the markup changed first", async () => {
   const app = await setup(ChangingMarkupCard);
   await app.next();
-  await tick(1);
+  await tick(DUR.bloom);
   expect(screen.getByText("last")).toBeVisible();
   await app.next();
   expect(screen.getByText("last")).toBeVisible();
-  await tick(1);
+  await tick(DUR.bloom);
   expect(screen.queryByText("last")).not.toBeInTheDocument();
 });

@@ -180,7 +180,13 @@ function GraphStill({
         })}
         {projected.map((node, i) => (
           <g key={node.id} aria-label={node.label ?? node.id}>
-            <circle cx={node.x} cy={node.y} r={node.r} fill={node.fill} opacity={node.opacity} />
+            <circle
+              cx={node.x}
+              cy={node.y}
+              r={node.r}
+              fill={node.fill}
+              style={{ opacity: node.opacity }}
+            />
             {i < 40 && node.label && (
               <text x={node.x + node.r + 5} y={node.y} fill={graph.theme.colors.text}>
                 {node.label}

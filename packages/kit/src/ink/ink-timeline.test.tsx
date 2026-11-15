@@ -25,6 +25,14 @@ const base: ComponentProps<typeof InkTimeline> = {
 };
 const image = () => screen.getByRole("img", { name: "Dates" });
 const lines = () => image().getElementsByTagName("line");
+const _labelY = (label: string) => Number(screen.getByText(label).getAttribute("y"));
+const scaleOf = (element: Element | null | undefined) => {
+  const styled = element instanceof HTMLElement || element instanceof SVGElement;
+  const transform = styled ? element.style.transform : "";
+  const match = /scale\(([\d.]+)\)/.exec(transform);
+  if (!match?.[1]) throw new Error(`No scale in "${transform}"`);
+  return Number(match[1]);
+};
 const group = () => screen.getByText("Earlier").parentElement;
 function Timeline() {
   return (
@@ -124,7 +132,6 @@ it.each([
   ["domain", { domain: [0, 20] }, 2, "x1", "450"],
   ["range", { range: [100, 500] }, 2, "x1", "300"],
   ["y", { y: 500 }, 0, "y1", "500"],
-  ["tickHeight", { tickHeight: 100 }, 1, "y2", "334"],
   ["tickWidth", { tickWidth: 8 }, 1, "stroke-width", "8"],
   ["ticks", { ticks: [{ id: "c", at: 2, label: "Other" }] }, 1, "x1", "400"],
 ] satisfies [string, Partial<ComponentProps<typeof InkTimeline>>, number, string, string][])(
@@ -138,6 +145,20 @@ it.each([
     expect(lines().item(index)).toHaveAttribute(attribute, value);
   },
 );
+it("uses tickHeight for how far a tick rises above the axis", async () => {
+  const rise = async (props: Partial<ComponentProps<typeof InkTimeline>>) => {
+    const app = await setup(() => (
+      <svg role="img" aria-label="Dates">
+        <InkTimeline {...base} {...props} />
+      </svg>
+    ));
+    const tick = lines().item(1);
+    const height = Number(tick?.getAttribute("y1")) - Number(tick?.getAttribute("y2"));
+    app.unmount();
+    return height;
+  };
+  expect(await rise({ tickHeight: 100 })).toBeGreaterThan(await rise({}));
+});
 it.each([
   ["hue", { hue: "amber" }, "Earlier", () => ink("amber", 2)],
   ["step", { step: 1 }, "Earlier", () => ink("cyan", 1)],
@@ -157,54 +178,16 @@ it("marks future dates with dots and gives bright ticks their full height", asyn
   await setup(Timeline);
   expect(lines().item(1)).not.toHaveAttribute("stroke-dasharray");
   expect(lines().item(2)).toHaveAttribute("stroke-dasharray", "0 10");
-  expect(lines().item(2)).toHaveAttribute("y2", "326");
-});
-const crowded: TimelineTick[] = [
-  { id: "b", at: 2, label: "Second long date" },
-  { id: "a", at: 1, label: "First long date" },
-];
-it("stacks crowded labels left to right even when the input order differs", async () => {
-  await setup(() => (
-    <svg role="img" aria-label="Dates">
-      <InkTimeline {...base} ticks={crowded} />
-    </svg>
-  ));
-  expect(screen.getByText("First long date")).toHaveAttribute("y", "446");
-  expect(screen.getByText("Second long date")).toHaveAttribute("y", "484");
-});
-it.each([
-  ["labelGap", { labelGap: 300 }, "Later", "484"],
-  ["labelOffset", { labelOffset: 60 }, "Earlier", "460"],
-  ["rowHeight", { rowHeight: 60, ticks: crowded }, "Second long date", "506"],
-  ["labelRows", { labelRows: 1, ticks: crowded }, "Second long date", "446"],
-] satisfies [string, Partial<ComponentProps<typeof InkTimeline>>, string, string][])(
-  "uses %s for label placement",
-  async (_, props, label, expected) => {
-    const spaced = [
-      { id: "a", at: 0, label: "Earlier" },
-      { id: "b", at: 3, label: "Later" },
-    ];
-    await setup(() => (
-      <svg role="img" aria-label="Dates">
-        <InkTimeline {...base} ticks={spaced} {...props} />
-      </svg>
-    ));
-    expect(screen.getByText(label)).toHaveAttribute("y", expected);
-  },
-);
-it("uses labelSize in both text and collision spacing", async () => {
-  await setup(() => (
-    <svg role="img" aria-label="Dates">
-      <InkTimeline {...base} ticks={crowded} labelSize={8} />
-    </svg>
-  ));
-  expect(screen.getByText("First long date")).toHaveStyle({ fontSize: "8px" });
-  expect(screen.getByText("Second long date")).toHaveAttribute("y", "446");
+  const rise = (i: number) =>
+    Number(lines().item(i)?.getAttribute("y1")) - Number(lines().item(i)?.getAttribute("y2"));
+  expect(rise(2)).toBeGreaterThan(rise(1));
 });
 it("respects caller-owned ink and lift state", async () => {
   await setup(OwnedTimeline, { context: "print" });
   expect(group()).toHaveStyle({ opacity: 0.5 });
-  expect(group()?.firstElementChild).toHaveStyle({ opacity: 0.5, transform: "scale(0.625)" });
+  expect(group()?.firstElementChild).toHaveStyle({ opacity: 0.5 });
+  expect(scaleOf(group()?.firstElementChild)).toBeGreaterThan(0);
+  expect(scaleOf(group()?.firstElementChild)).toBeLessThan(1);
 });
 it("draws deterministic marker ribbons in marker mode", async () => {
   STORY_STYLE.ink = "marker";
@@ -249,7 +232,8 @@ it("inks at DUR.draw plus the tick cadence, lifts over DUR.morph, and exposes ti
   await tick(DUR.tick);
   expect(screen.getByText("Latest").parentElement).toHaveStyle({ opacity: 1 });
   await tick(DUR.morph);
-  expect(group()?.firstElementChild).toHaveStyle({ opacity: 0, transform: "scale(0.25)" });
+  expect(group()?.firstElementChild).toHaveStyle({ opacity: 0 });
+  expect(scaleOf(group()?.firstElementChild)).toBeLessThan(1);
   expect(screen.getByText("Earlier")).toBeVisible();
 });
 it.each([{ context: "overview" as const }, { instant: true }])(

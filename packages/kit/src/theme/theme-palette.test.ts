@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it, onTestFinished } from "vitest";
 import { CANVAS, CATEGORICAL_COLORS, installTheme, resolveTheme } from "../index";
 
 it("provides default palette and canvas before setup installs a theme", () => {
@@ -12,6 +12,7 @@ it("updates values imported before installation when a deck recolors a ramp", ()
     categorical: ["{ramps.cyan.2}", "{ramps.rose.3}"],
     surfaces: { canvas: "#010203" },
   });
+  onTestFinished(() => installTheme(resolveTheme()));
   installTheme(overridden);
   expect(CATEGORICAL_COLORS[0]).toBe("#345678");
   expect(CATEGORICAL_COLORS).toEqual(overridden.categorical);

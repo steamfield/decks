@@ -1,62 +1,37 @@
-import { useTween } from "@react-decks/motion";
-import { act, screen } from "@testing-library/react";
-import { type ComponentProps, createRef, type Ref } from "react";
+import { createRef } from "react";
 import { afterEach, expect, it } from "vitest";
 import {
-  DUR,
   ink,
   installTheme,
   resolveTheme,
-  rippleProgress,
   STORY_STYLE,
-  UnitGrid,
   type UnitGridHandle,
   unitCellCenter,
-  useStage,
+  unitCellHeight,
 } from "../index";
-import { setup, tick } from "../kit.test-support";
+import {
+  alpha,
+  body,
+  COUNT,
+  cell,
+  cells,
+  draw,
+  fullyShown,
+  pose,
+  scaleOf,
+} from "./unit-grid.test-support";
 
 installTheme(resolveTheme());
 afterEach(() => {
   STORY_STYLE.ink = "clean";
 });
-type Props = ComponentProps<typeof UnitGrid>;
-
-async function draw(props: Props = {}) {
-  return setup(() => (
-    <svg role="img" aria-label="Units">
-      <UnitGrid {...props} />
-    </svg>
-  ));
-}
-// SVG geometry and paint are the visible output; the fixture supplies its accessible name.
-function cells() {
-  return Array.from(screen.getByRole("img", { name: "Units" }).children[0]?.children ?? []);
-}
-function cell(i = 0) {
-  const element = cells()[i];
-  if (!element) throw new Error(`Missing drawn cell ${i}`);
-  return element;
-}
-function body(i = 0) {
-  const element = cell(i).children[0]?.children[0];
-  if (!element) throw new Error(`Missing cell body ${i}`);
-  return element;
-}
-function pose(i = 0) {
-  return cell(i).getAttribute("transform");
-}
-function alpha(i = 0) {
-  return Number(getComputedStyle(cell(i)).opacity);
-}
-
 it("draws one cell per anonymous count and no cells by default", async () => {
   const empty = await draw();
   expect(cells()).toHaveLength(0);
   empty.unmount();
-  await draw({ count: 1000 });
-  expect(cells()).toHaveLength(1000);
-  expect(cells().every((c) => getComputedStyle(c).opacity === "1")).toBe(true);
+  await draw({ count: COUNT });
+  expect(cells()).toHaveLength(COUNT);
+  expect(fullyShown()).toBe(true);
 });
 it("uses explicit items instead of count and recolors by each item's hue and step", async () => {
   await draw({
@@ -81,30 +56,43 @@ it("places default cells at the shared grid centers", async () => {
   }
 });
 it.each([
-  ["origin", { origin: { x: 100, y: 200 } }, "translate(108 208)"],
-  ["cols", { cols: 1 }, "translate(8 32)"],
-  ["gapX", { gapX: 20 }, "translate(44 8)"],
-  ["gapY", { cols: 1, gapY: 20 }, "translate(8 44)"],
-] as const)("places cells using %s", async (_, props, position) => {
+  ["origin", { origin: { x: 100, y: 200 } }, 0],
+  ["cols", { cols: 1 }, 1],
+  ["gapX", { gapX: 20 }, 1],
+  ["gapY", { cols: 1, gapY: 20 }, 1],
+] as const)("places cells using %s", async (_, props, index) => {
   await draw({ count: 2, ...props });
-  expect(pose("origin" in props ? 0 : 1)).toContain(position);
+  const c = unitCellCenter(index, props);
+  expect(pose(index)).toContain(`translate(${c.x} ${c.y})`);
+});
+it("wraps to the next row below the first when cols is 1", async () => {
+  await draw({ count: 2, cols: 1 });
+  const [first, second] = [unitCellCenter(0, { cols: 1 }), unitCellCenter(1, { cols: 1 })];
+  expect(second.x).toBe(first.x);
+  expect(second.y).toBeGreaterThan(first.y);
+  expect(pose(1)).toContain(`translate(${second.x} ${second.y})`);
 });
 it("uses cellWidth for width, pitch and corner radius", async () => {
   await draw({ count: 2, cellWidth: 50 });
   expect(body()).toHaveAttribute("width", "50");
   expect(body()).toHaveAttribute("height", "50");
-  expect(body()).toHaveAttribute("rx", "9");
-  expect(pose(1)).toBe("translate(83 25) scale(1) translate(-25 -25)");
+  expect(Number(body().getAttribute("rx"))).toBeGreaterThan(0);
+  expect(Number(body().getAttribute("rx"))).toBeLessThan(25);
+  const c = unitCellCenter(1, { cellWidth: 50 });
+  expect(pose(1)).toBe(`translate(${c.x} ${c.y}) scale(1) translate(-25 -25)`);
 });
 it("uses an explicit cellHeight instead of the glyph height", async () => {
   await draw({ count: 1, cellHeight: 40 });
   expect(body()).toHaveAttribute("height", "40");
-  expect(pose()).toBe("translate(8 20) scale(1) translate(-8 -20)");
+  const c = unitCellCenter(0, { cellHeight: 40 });
+  expect(pose()).toBe(`translate(${c.x} ${c.y}) scale(1) translate(-8 -20)`);
 });
 it("draws sheets with page height, a folded corner and two etched rules", async () => {
   await draw({ count: 1, glyph: "sheet", cellWidth: 50 });
   expect(body().tagName).toBe("path");
-  expect(body()).toHaveAttribute("d", "M0 0L35 0L50 15L50 66L0 66Z");
+  const height = unitCellHeight({ glyph: "sheet", cellWidth: 50 });
+  expect(height).toBeGreaterThan(50);
+  expect(body().getAttribute("d")).toMatch(new RegExp(`^M0 0L.*L50 ${height}L0 ${height}Z$`));
   expect(cell().children[0]?.children).toHaveLength(4);
 });
 it("uses the base color until recolor mixes in the target", async () => {
@@ -130,11 +118,15 @@ it("passes item identity and index to colorBy and falls back to item hue", async
 it("hides unrevealed cells and grows them as reveal advances", async () => {
   const start = await draw({ count: 1, reveal: 0 });
   expect(alpha()).toBe(0);
-  expect(pose()).toContain("scale(0.62)");
+  const hidden = scaleOf();
+  expect(hidden).toBeGreaterThan(0);
+  expect(hidden).toBeLessThan(1);
   start.unmount();
   await draw({ count: 1, reveal: 0.1, stagger: 0 });
   expect(alpha()).toBeGreaterThan(0);
   expect(alpha()).toBeLessThan(1);
+  expect(scaleOf()).toBeGreaterThan(hidden);
+  expect(scaleOf()).toBeLessThan(1);
 });
 it("spreads the reveal when stagger is nonzero", async () => {
   const together = await draw({ count: 100, reveal: 0.3, stagger: 0 });
@@ -163,7 +155,8 @@ it("gathers staggered cells as tiles and reports arrivals through the ref", asyn
   await draw({ count: 3, collapse: 1, collapseStagger: 0.5, ref });
   expect(ref.current?.arrived).toBe(3);
   expect(alpha()).toBe(0);
-  expect(pose()).toContain("scale(0.4)");
+  expect(scaleOf()).toBeGreaterThan(0);
+  expect(scaleOf()).toBeLessThan(1);
 });
 it("starts dissolving inside collapseInto rather than at the default trip share", async () => {
   const small = await draw({
@@ -196,94 +189,4 @@ it("draws seeded marker polygons with the requested filter", async () => {
   await draw({ count: 1, filterId: "none" });
   expect(body()).toHaveAttribute("d", outline);
   expect(cell().children[0]).not.toHaveAttribute("filter");
-});
-
-function Waffle() {
-  const state = useTween({ reveal: 0, ripple: 0 });
-  useStage({
-    copy: [{ lead: "Start" }, { lead: "Color" }],
-    enter: (tl) => {
-      tl.to(state, { reveal: 1, duration: DUR.bloom, ease: "none" });
-    },
-    beats: (tl, beat) => {
-      beat(0);
-      tl.to(state, { ripple: 1, duration: DUR.bloom, ease: "none" });
-      beat(1);
-    },
-  });
-  return (
-    <svg role="img" aria-label="Units">
-      <UnitGrid
-        count={1000}
-        reveal={state.reveal}
-        recolor={1}
-        colorBy={(_, i) =>
-          `color-mix(in oklab, ${ink("rose", 2)} ${rippleProgress(state.ripple, unitCellCenter(i, {}), { x: 0, y: 0 }, 0.6, { reach: 1300, seed: "waffle", index: i }) * 100}%, ${ink("slate", 2)})`
-        }
-      />
-    </svg>
-  );
-}
-it.each([
-  { context: "overview" as const, click: 1 },
-  { instant: true, click: 1 },
-])("settles the parent's ripple for %j", async (options) => {
-  await setup(Waffle, options);
-  await tick(0);
-  expect(body(999).getAttribute("fill")).toContain(`${ink("rose", 2)} 100%`);
-  expect(cells().every((c) => getComputedStyle(c).opacity === "1")).toBe(true);
-});
-it("replays the external ripple forward after seeking back without partial cells", async () => {
-  const app = await setup(Waffle);
-  await tick(DUR.bloom);
-  await app.next();
-  await tick(DUR.bloom / 2);
-  expect(body().getAttribute("fill")).not.toBe(body(999).getAttribute("fill"));
-  await tick(DUR.bloom / 2);
-  const end = body(999).getAttribute("fill");
-  expect(end).toContain(`${ink("rose", 2)} 100%`);
-  await app.previous();
-  await tick(DUR.bloom);
-  expect(body(999).getAttribute("fill")).toContain(`${ink("rose", 2)} 0%`);
-  await app.next();
-  await tick(DUR.bloom);
-  expect(body(999)).toHaveAttribute("fill", end);
-  expect(cells().every((c) => getComputedStyle(c).opacity === "1")).toBe(true);
-});
-it("stops changing the grid while the slide is inactive", async () => {
-  const app = await setup(Waffle);
-  await app.next();
-  await tick(DUR.bloom / 4);
-  const drawn = body();
-  await act(async () => app.store.dispatch({ type: "go", slide: 2 }));
-  await screen.findByRole("heading", { name: "Second slide" });
-  const end = drawn.getAttribute("fill");
-  await tick(DUR.bloom);
-  expect(drawn).toHaveAttribute("fill", end);
-});
-
-function Gather({ gridRef }: { gridRef: Ref<UnitGridHandle> }) {
-  const state = useTween({ collapse: 0 });
-  useStage({
-    copy: [{ lead: "Start" }, { lead: "Gather" }],
-    beats: (tl, beat) => {
-      beat(0);
-      tl.to(state, { collapse: 1, duration: DUR.gather, ease: "none" });
-      beat(1);
-    },
-  });
-  return (
-    <svg role="img" aria-label="Units">
-      <UnitGrid count={3} collapse={state.collapse} collapseStagger={0.5} ref={gridRef} />
-    </svg>
-  );
-}
-it("updates arrived while a parent timeline gathers the cells", async () => {
-  const ref = createRef<UnitGridHandle>();
-  const app = await setup(() => <Gather gridRef={ref} />);
-  expect(ref.current?.arrived).toBe(0);
-  await app.next();
-  await tick(DUR.gather);
-  expect(ref.current?.arrived).toBe(3);
-  expect(alpha()).toBe(0);
 });

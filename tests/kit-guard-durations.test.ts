@@ -37,13 +37,15 @@ it("rejects a raw pace, including a quoted property, and permits tokens and zero
   expect(
     durations("gsap.to(el, { duration: DUR.grow }); const b = { duration: 0 }; // duration: .6"),
   ).toEqual([]);
+  expect(durations("export const enter = { duration: 900 };", "fixture.ts")).toEqual([900]);
 });
 
-it("uses duration tokens in every kit component", () => {
+it("uses duration tokens in every kit module outside the token table", () => {
   const root = fileURLToPath(new URL("../packages/kit/src/", import.meta.url));
-  const files = globSync("**/*.tsx", { cwd: root }).filter(
-    (file) => !/\.(test|test-support)\.tsx$/.test(file),
-  );
+  const files = [
+    ...globSync("**/*.ts", { cwd: root }),
+    ...globSync("**/*.tsx", { cwd: root }),
+  ].filter((file) => !/\.(test|test-support)\.tsx?$/.test(file) && file !== "theme/easings.ts");
   expect(files.length).toBeGreaterThan(0);
   expect(
     files.flatMap((file) =>

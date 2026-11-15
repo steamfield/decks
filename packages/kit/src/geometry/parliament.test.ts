@@ -196,9 +196,13 @@ describe("thresholdAngle", () => {
     }
   });
 
-  it("finds ties in real layouts, so the refusal is exercised", () => {
-    // 10 and 14 seats share a factor of two: both have a seat at 45 degrees.
-    const { seats } = layout(31, { radius: 360, rows: 3, rowGap: 83 });
-    expect(seats.some((seat, i) => i > 0 && sameAngle(seats[i - 1], seat))).toBe(true);
+  it("refuses a threshold that falls between two seats at the same angle", () => {
+    const { seats } = layout(31, { radius: RADIUS });
+    const first = seats[0];
+    const second = seats[1];
+    assert(first && second);
+    const tied = [first, { ...second, angle: first.angle }, ...seats.slice(2)];
+    expect(() => thresholdAngle(tied, 1)).toThrow(RangeError);
+    expect(() => thresholdAngle(tied, 1)).toThrow(/same angle/);
   });
 });

@@ -77,6 +77,7 @@ it("resolves numeric, label, recent, end and relative positions before group ins
 
 it("reads the runtime's live or instant motion policy", async () => {
   await setup(Probe);
+  onTestFinished(() => document.documentElement.removeAttribute("data-deck-motion"));
   expect(prefersReducedMotion()).toBe(false);
   document.documentElement.setAttribute("data-deck-motion", "instant");
   expect(prefersReducedMotion()).toBe(true);

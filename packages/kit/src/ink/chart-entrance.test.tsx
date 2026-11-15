@@ -4,12 +4,16 @@ import { expect, it, onTestFinished, vi } from "vitest";
 import { advance } from "../kit.test-support";
 import { useChartEntrance } from "./chart-entrance";
 
+const ANIMATION = { enter: { duration: 900 }, annotationDelay: 350 };
+// Declared in milliseconds, advanced in seconds.
+const TOTAL = (ANIMATION.enter.duration + ANIMATION.annotationDelay) / 1000;
+
 function Animated() {
-  useChartEntrance({ enter: { duration: 900 }, annotationDelay: 350 }, true, 1);
+  useChartEntrance(ANIMATION, true, 1);
   return <p>Animated chart</p>;
 }
 function Static() {
-  useChartEntrance({ enter: { duration: 900 }, annotationDelay: 350 }, false, 1);
+  useChartEntrance(ANIMATION, false, 1);
   return <p>Static chart</p>;
 }
 
@@ -46,9 +50,9 @@ it.each([true, false])(
     const completion = window.__deck?.settled().then(() => {
       complete = true;
     });
-    await advance(enabled ? 1.249 : 0.04);
+    await advance(TOTAL / 2);
     expect(complete).toBe(!enabled);
-    await advance(0.041);
+    await advance(TOTAL);
     await completion;
     expect(complete).toBe(true);
   },

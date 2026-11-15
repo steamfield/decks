@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import { expect, it } from "vitest";
-import { setup, tick } from "../kit.test-support";
+import { setup } from "../kit.test-support";
 import { useScriptedDemo } from "../story/scripted-demo";
 import { Underline } from "./underline";
 
@@ -13,15 +13,14 @@ it.each([
 ])("preserves inline content without waiting for motion: %j", async (options) => {
   await setup(
     () => (
-      <p>
+      <p role="note" aria-label="Sentence">
         Austin is <Underline>last</Underline>.
       </p>
     ),
     options,
   );
   expect(screen.getByText("last")).toBeVisible();
-  await tick(1);
-  expect(screen.getByText("last")).toBeVisible();
+  expect(screen.getByRole("note", { name: "Sentence" })).toHaveTextContent(/^Austin is last\.$/);
 });
 
 function Word() {

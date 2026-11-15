@@ -159,7 +159,7 @@ describe("useTimeline", () => {
     await tick(0.1);
     act(() => view.store.dispatch({ type: "nextSlide" }));
     await tick();
-    expect(screen.getByRole("status", { hidden: true })).toHaveTextContent("300.0");
+    expect(screen.getByRole("status", { hidden: true })).toHaveTextContent(/^300\.0$/);
   });
 
   it("kills and rebuilds on changed deps and seeks after the rebuild", async () => {

@@ -18,14 +18,17 @@ describe("installTheme", () => {
     const second = resolveTheme({ ramps: { cyan: ["#112233", "#223344", "#334455", "#445566"] } });
     installTheme(second);
     expect(document.head.querySelectorAll("style")).toHaveLength(initial + 1);
-    expect(getComputedStyle(document.documentElement).getPropertyValue("--od-radius")).toBe("12px");
+    expect(getComputedStyle(document.documentElement).getPropertyValue("--od-radius")).toBe(
+      resolveTheme().shape.radius,
+    );
     expect(getComputedStyle(document.documentElement).getPropertyValue("--od-cyan")).toBe(
       "#223344",
     );
     expect(theme()).toBe(second);
     expect(ink("cyan", 2)).toBe("#223344");
     expect(slideChartTheme.colors.text).toBe(second.chart.text);
-    expect(scaleChartTheme(slideChartTheme, 0.5).fonts.sizes.axisTick).toBe(10);
-    expect(scaleChartTheme(slideChartTheme, 0.5).spacing.xAxisHeight).toBe(26);
+    const half = scaleChartTheme(slideChartTheme, 0.5);
+    expect(half.fonts.sizes.axisTick).toBe(slideChartTheme.fonts.sizes.axisTick * 0.5);
+    expect(half.spacing.xAxisHeight).toBe(slideChartTheme.spacing.xAxisHeight * 0.5);
   });
 });

@@ -251,15 +251,15 @@ describe("step primitives", () => {
     expect(root).not.toHaveAttribute("aria-hidden");
     expect(root).not.toHaveAttribute("inert");
     await view.next();
-    expect(accessible).toHaveTextContent("1,200");
+    expect(accessible).toHaveTextContent(/^1,200$/);
     await tick(duration.slow / 4);
     const middle = Number(animated?.textContent?.replaceAll(",", ""));
     expect(middle).toBeGreaterThan(0);
     expect(middle).toBeLessThan(1200);
     await tick(duration.slow);
-    expect(animated).toHaveTextContent("1,200");
+    expect(animated).toHaveTextContent(/^1,200$/);
     await view.previous();
-    expect(animated).toHaveTextContent("0");
+    expect(animated).toHaveTextContent(/^0$/);
   });
 
   it.each(["instant", "preview", "presenter", "overview", "print"] as const)(

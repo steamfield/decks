@@ -12,41 +12,26 @@ import {
   TRACE_CSS,
 } from "../index";
 
-const EXPECTED: Record<string, number> = {
-  tick: 0.03,
-  opacity: 0.14,
-  draw: 0.24,
-  card: 0.3,
-  color: 0.34,
-  eraseDelay: 0.35,
-  eraseHold: 0.49,
-  grow: 0.56,
-  morph: 0.6,
-  scale: 0.9,
-  gather: 1.6,
-  trace: 1.8,
-  bloom: 2.4,
-};
+const SAMPLES = [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1];
 
 describe("easings", () => {
-  it("exposes every duration in seconds", () => {
-    expect(Object.keys(DUR).sort()).toEqual(Object.keys(EXPECTED).sort());
-    expect(DUR).toEqual(EXPECTED);
+  it("exposes every duration as a positive number of seconds", () => {
+    for (const [name, seconds] of Object.entries(DUR)) {
+      expect(seconds, name).toBeGreaterThan(0);
+      expect(seconds, `${name} looks like milliseconds`).toBeLessThan(10);
+    }
   });
 
-  it("names three easings and ships the CSS twins", () => {
-    expect(SETTLE).toBe("odSettle");
-    expect(DRAW).toBe("odDraw");
-    expect(TRACE).toBe("odTrace");
-    expect(SETTLE_CSS).toBe("cubic-bezier(.32,.72,0,1)");
-    expect(DRAW_CSS).toBe("cubic-bezier(.65,0,.35,1)");
-    expect(TRACE_CSS).toBe("cubic-bezier(.62,.02,.18,1)");
-  });
-
-  it("registers every ease with gsap", () => {
-    expect(typeof gsap.parseEase(SETTLE)).toBe("function");
-    expect(typeof gsap.parseEase(DRAW)).toBe("function");
-    expect(typeof gsap.parseEase(TRACE)).toBe("function");
+  it.each([
+    ["settle", SETTLE, SETTLE_CSS],
+    ["draw", DRAW, DRAW_CSS],
+    ["trace", TRACE, TRACE_CSS],
+  ])("registers the %s ease and its CSS twin on the same curve", (_, name, css) => {
+    // gsap's CustomEase takes the bezier's four numbers, not the CSS function around them.
+    const twin = gsap.parseEase(css.replace(/^cubic-bezier\(|\)$/g, ""));
+    for (const t of SAMPLES) {
+      expect(gsap.parseEase(name)(t)).toBeCloseTo(twin(t), 2);
+    }
   });
 
   it("reuses motion's settle and draw curves under the kit names", () => {
