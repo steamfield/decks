@@ -33,7 +33,7 @@ function LayoutWriteProbe() {
 describe("useTween", () => {
   it("renders a layout-effect write before yielding to async publication", () => {
     render(<LayoutWriteProbe />);
-    expect(screen.getByRole("status")).toHaveTextContent("100");
+    expect(screen.getByRole("status")).toHaveTextContent(/^100$/);
   });
   it("keeps a mount's layout write through StrictMode's subscription cleanup", async () => {
     render(
@@ -42,7 +42,7 @@ describe("useTween", () => {
       </StrictMode>,
     );
     await tick();
-    expect(screen.getByRole("status")).toHaveTextContent("100");
+    expect(screen.getByRole("status")).toHaveTextContent(/^100$/);
   });
   it("copies initial fields and preserves object identity across renders", async () => {
     const initial = { x: 0, y: 0 };
@@ -54,7 +54,7 @@ describe("useTween", () => {
     view.rerender(<TweenProbe initial={{ x: 7, y: 8 }} commit={commit} />);
     expect(values[0]).toBe(values[1]);
     expect(values[0]).not.toBe(initial);
-    expect(screen.getByRole("status")).toHaveTextContent("0/0");
+    expect(screen.getByRole("status")).toHaveTextContent(/^0\/0$/);
   });
 
   it("publishes several changed numeric fields once on the real ticker and stays idle when unchanged", async () => {
@@ -73,9 +73,9 @@ describe("useTween", () => {
     if (!value) throw new Error("Missing tween value");
     value.x = 1;
     value.y = 2;
-    expect(screen.getByRole("status")).toHaveTextContent("0/0");
+    expect(screen.getByRole("status")).toHaveTextContent(/^0\/0$/);
     await tick();
-    expect(screen.getByRole("status")).toHaveTextContent("1/2");
+    expect(screen.getByRole("status")).toHaveTextContent(/^1\/2$/);
     expect(commits).toEqual(["0/0", "1/2"]);
     value.x = 1;
     await tick();
@@ -84,7 +84,7 @@ describe("useTween", () => {
     value.x = 3;
     value.y = 4;
     await tick();
-    expect(screen.getByRole("status")).toHaveTextContent("3/4");
+    expect(screen.getByRole("status")).toHaveTextContent(/^3\/4$/);
     expect(commits).toEqual(["0/0", "1/2", "3/4"]);
   });
 
@@ -109,7 +109,7 @@ describe("useTween", () => {
     await tick(0.5);
     expect(Number(screen.getByRole("status").textContent?.split("/")[0])).toBe(50);
     await tick(0.6);
-    expect(screen.getByRole("status")).toHaveTextContent("100/0");
+    expect(screen.getByRole("status")).toHaveTextContent(/^100\/0$/);
     tween.kill();
   });
 
@@ -130,9 +130,9 @@ describe("useTween", () => {
       value.y = 7;
     }, 500);
     await advance(0.5);
-    expect(screen.getByRole("status")).toHaveTextContent("50/7");
+    expect(screen.getByRole("status")).toHaveTextContent(/^50\/7$/);
     await advance(0.5);
-    expect(screen.getByRole("status")).toHaveTextContent("100/7");
+    expect(screen.getByRole("status")).toHaveTextContent(/^100\/7$/);
   });
 
   it("keeps pending writes safe when its owner unmounts", async () => {

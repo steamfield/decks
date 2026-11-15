@@ -26,23 +26,23 @@ function Stage() {
 it("reveals the first mark when advancing before the slide transition finishes without replaying on return to zero", async () => {
   document.documentElement.setAttribute("data-deck-transition", "");
   const view = await setup(Stage);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("0/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^0\/0$/);
   await view.next();
   expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\//);
   await act(async () => document.documentElement.removeAttribute("data-deck-transition"));
   await view.previous();
   await tick(0);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("1/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\/0$/);
   await tick(DUR.draw / 10);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("1/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\/0$/);
   await tick(DUR.draw);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("1/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\/0$/);
 });
 
 it("finishes an entrance already playing when the next beat starts", async () => {
   const view = await setup(Stage);
   await tick(DUR.draw / 10);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("0.1/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^0\.1\/0$/);
   await view.next();
   expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\//);
 });
@@ -57,10 +57,10 @@ it("cancels the old transition wait after leaving and re-entering", async () => 
   document.documentElement.setAttribute("data-deck-transition", "");
   await act(async () => view.store.dispatch({ type: "go", slide: 1 }));
   await tick(DUR.draw);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("0/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^0\/0$/);
   await act(async () => document.documentElement.removeAttribute("data-deck-transition"));
   await tick(DUR.draw);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("1/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\/0$/);
 });
 
 it.each(["overview", "presenter", "preview", "print"] as const)(
@@ -68,7 +68,7 @@ it.each(["overview", "presenter", "preview", "print"] as const)(
   async (context) => {
     await setup(Stage, { context });
     await tick(0);
-    expect(screen.getByLabelText("Mark")).toHaveTextContent("1/0");
+    expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\/0$/);
   },
 );
 
@@ -77,7 +77,7 @@ it.each([{ instant: true }, { click: 2 }])(
   async (options) => {
     await setup(Stage, options);
     await tick(0);
-    expect(screen.getByLabelText("Mark")).toHaveTextContent(options.click ? "1/1" : "1/0");
+    expect(screen.getByLabelText("Mark")).toHaveTextContent(options.click ? /^1\/1$/ : /^1\/0$/);
   },
 );
 
@@ -94,7 +94,7 @@ it("settles the entrance when the system prefers reduced motion", async () => {
   await setup(Stage);
   await tick(0);
   expect(prefersReducedMotion()).toBe(true);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("1/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\/0$/);
 });
 
 function Child({ ref }: { ref: Ref<{ target: number }> }) {
@@ -119,7 +119,7 @@ function Parent() {
 it("builds after child handles are attached and supports entrance without beats", async () => {
   await setup(Parent, { instant: true });
   await tick(0);
-  expect(screen.getByRole("status")).toHaveTextContent("1");
+  expect(screen.getByRole("status")).toHaveTextContent(/^1$/);
 });
 
 it("plays a rebuilt entrance when React rechecks its layout effects", async () => {
@@ -144,5 +144,5 @@ it("plays a rebuilt entrance when React rechecks its layout effects", async () =
   });
   await screen.findByLabelText("Mark");
   await tick(DUR.draw);
-  expect(screen.getByLabelText("Mark")).toHaveTextContent("1/0");
+  expect(screen.getByLabelText("Mark")).toHaveTextContent(/^1\/0$/);
 });
