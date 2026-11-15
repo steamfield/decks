@@ -20,6 +20,8 @@ CustomEase.create(ease.exit, "0.7,0,0.84,0");
 CustomEase.create(ease.settle, "0.32,0.72,0,1");
 CustomEase.create(ease.draw, "0.65,0,0.35,1");
 gsap.defaults({ ease: ease.settle });
+// Beats keep wall-clock time even when a live WebGL scene stalls frames.
+gsap.ticker.lagSmoothing(0);
 
 export function motionMode(): "live" | "instant" {
   return document.documentElement.getAttribute("data-deck-motion") === "live" ? "live" : "instant";
