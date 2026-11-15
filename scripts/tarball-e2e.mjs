@@ -6,7 +6,7 @@ import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
+import { promisify, stripVTControlCharacters } from "node:util";
 import { chromium, expect } from "@playwright/test";
 import { preview } from "vite";
 
@@ -239,6 +239,8 @@ async function staticBuild(project) {
 }
 
 async function dev(project) {
+  const env = { ...offline, FORCE_COLOR: "1" };
+  delete env.NO_COLOR;
   const socket = createServer();
   socket.listen(0, "127.0.0.1");
   await once(socket, "listening");
@@ -249,7 +251,7 @@ async function dev(project) {
     ["dev", "hello", "--port", String(port)],
     {
       cwd: project,
-      env: offline,
+      env,
       stdio: ["ignore", "pipe", "pipe"],
     },
   );
@@ -266,12 +268,12 @@ async function dev(project) {
       .poll(
         () => {
           assert(child.exitCode === null, `Dev server exited: ${output}`);
-          return output.match(/http:\/\/[^\s]+/)?.[0];
+          return stripVTControlCharacters(output).match(/http:\/\/[^\s]+/)?.[0];
         },
         { timeout: 30_000, message: "Dev server must print its URL" },
       )
       .toBeTruthy();
-    await browse(output.match(/http:\/\/[^\s]+/)[0]);
+    await browse(stripVTControlCharacters(output).match(/http:\/\/[^\s]+/)[0]);
   } finally {
     if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
     await closed;
@@ -300,6 +302,20 @@ async function npmCase(tarball) {
 }
 
 try {
+  await step("repo Chromium is installed", async () => {
+    let browser;
+    try {
+      browser = await chromium.launch();
+    } catch (cause) {
+      if (cause instanceof Error && cause.message.includes("Executable doesn't exist"))
+        throw new Error(
+          "Chromium for the repo's Playwright is not installed. Run bunx --no-install playwright install chromium.",
+          { cause },
+        );
+      throw cause;
+    }
+    await browser.close();
+  });
   const tarball = await pack();
   for (const run of [bunCase, npmCase]) {
     try {

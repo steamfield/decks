@@ -4,17 +4,15 @@ import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { act, render, screen } from "@testing-library/react";
-import { beforeAll, expect, it, onTestFinished, vi } from "vitest";
+import { beforeAll, expect, inject, it, onTestFinished, vi } from "vitest";
 
 let runtime: typeof import("@react-decks/runtime");
 let motion: typeof import("@react-decks/motion");
+const packageDir = inject("builtPackage");
 
 beforeAll(async () => {
-  await promisify(execFile)("node", ["build.mjs"], {
-    cwd: resolve("packages/decks"),
-  });
-  runtime = await vi.importActual("../dist/index.js");
-  motion = await vi.importActual("../dist/motion.js");
+  runtime = await vi.importActual(join(packageDir, "dist/index.js"));
+  motion = await vi.importActual(join(packageDir, "dist/motion.js"));
 }, 30_000);
 
 function Slide() {
@@ -59,7 +57,7 @@ it("shares the deck store and slide context between the built runtime and motion
 });
 
 it("ships compiled entry points, bundled declarations, executable CLI, styles and fonts", async () => {
-  const dist = resolve("packages/decks/dist");
+  const dist = join(packageDir, "dist");
   for (const name of ["index", "motion", "kit", "node", "cli"]) {
     expect((await stat(join(dist, `${name}.js`))).isFile()).toBe(true);
     expect((await stat(join(dist, `${name}.d.ts`))).isFile()).toBe(true);
@@ -76,7 +74,7 @@ it("ships compiled entry points, bundled declarations, executable CLI, styles an
   expect((await stat(join(dist, "kit/fonts/inter-latin-wght-normal.woff2"))).size).toBeGreaterThan(
     0,
   );
-  expect(await readFile(resolve("packages/decks/docs/README.md"), "utf8")).not.toBe("");
+  expect(await readFile(join(packageDir, "docs/README.md"), "utf8")).not.toBe("");
   expect(await readFile(join(dist, "lint/ai-rhetoric-patterns.tsv"), "utf8")).toBe(
     await readFile(resolve("packages/node/lint/ai-rhetoric-patterns.tsv"), "utf8"),
   );
@@ -86,7 +84,7 @@ it("uses the shipped lint patterns and prompt reminder under plain Node", async 
   await mkdir(resolve(".tmp"), { recursive: true });
   const dir = await mkdtemp(resolve(".tmp/published-lint-"));
   onTestFinished(() => rm(dir, { recursive: true, force: true }));
-  const cli = resolve("packages/decks/dist/cli.js");
+  const cli = join(packageDir, "dist/cli.js");
   const lint = spawnSync("node", [cli, "lint", "--stdin"], {
     cwd: dir,
     input: "It's not just a chart, it's a story.",
@@ -123,7 +121,7 @@ it("builds public motion imports and the kit stylesheet with working font URLs u
   await writeFile(join(dir, "styles/index.css"), '@import "@steamfield/decks/kit/styles.css";');
   await promisify(execFile)(
     "node",
-    [resolve("packages/decks/dist/cli.js"), "build", ".", "--out", "site"],
+    [join(packageDir, "dist/cli.js"), "build", ".", "--out", "site"],
     { cwd: dir },
   );
   expect(await readFile(join(dir, "site/index.html"), "utf8")).toContain('src="/talks/x/assets/');

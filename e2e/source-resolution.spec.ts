@@ -2,7 +2,7 @@ import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
 import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { promisify } from "node:util";
+import { promisify, stripVTControlCharacters } from "node:util";
 import { expect, type Page, test } from "@playwright/test";
 import { settled } from "./fixtures/kit.fixture";
 
@@ -25,6 +25,8 @@ async function open(page: Page, url: string, slide: string) {
 async function serve(deck: string, use: (url: string) => Promise<void>) {
   const env = { ...process.env };
   delete env.NODE_OPTIONS;
+  delete env.NO_COLOR;
+  env.FORCE_COLOR = "1";
   const child = spawn("bun", ["run", "decks", "dev", deck, "--port", "0"], {
     env,
     stdio: ["ignore", "pipe", "pipe"],
@@ -40,9 +42,9 @@ async function serve(deck: string, use: (url: string) => Promise<void>) {
   });
   try {
     await expect
-      .poll(() => stdout, { message: stderr, timeout: 10_000 })
+      .poll(() => stripVTControlCharacters(stdout), { message: stderr, timeout: 10_000 })
       .toMatch(/http:\/\/[^\s]+/);
-    const url = stdout.match(/http:\/\/[^\s]+/)?.[0];
+    const url = stripVTControlCharacters(stdout).match(/http:\/\/[^\s]+/)?.[0];
     if (!url) throw new Error(`Source CLI did not print a URL: ${stderr}`);
     await use(url);
   } finally {

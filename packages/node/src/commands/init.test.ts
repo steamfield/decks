@@ -1,13 +1,10 @@
 import { spawnSync } from "node:child_process";
 import { mkdir, readdir, readFile, symlink } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { beforeAll, expect, it } from "vitest";
-import { buildPluginPackage, installedInit, pluginProject } from "./plugin.test-support";
+import { expect, inject, it } from "vitest";
+import { installedInit, pluginProject } from "./plugin.test-support";
 
-let packageDir: string;
-beforeAll(async () => {
-  packageDir = await buildPluginPackage();
-}, 60_000);
+const packageDir = inject("builtPackage");
 
 const installLine =
   "Each collaborator runs once: claude plugin install decks@steamfield --scope project";

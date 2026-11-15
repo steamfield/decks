@@ -1,13 +1,10 @@
 import { spawnSync } from "node:child_process";
 import { rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { beforeAll, expect, it } from "vitest";
-import { buildPluginPackage, pluginProject } from "./plugin.test-support";
+import { expect, inject, it } from "vitest";
+import { pluginProject } from "./plugin.test-support";
 
-let packageDir: string;
-beforeAll(async () => {
-  packageDir = await buildPluginPackage();
-}, 60_000);
+const packageDir = inject("builtPackage");
 
 const script = resolve("plugins/decks/scripts/decks-hook.mjs");
 function hook(

@@ -7,6 +7,12 @@ import { createServer } from "vite";
 import { expect, onTestFinished, vi } from "vitest";
 import { loadDeck, type ResolvedDeck, reactDecks, scanSlides } from "./index";
 
+declare module "vitest" {
+  export interface ProvidedContext {
+    builtPackage: string;
+  }
+}
+
 export const testVite = { optimizeDeps: { noDiscovery: true, include: [] } };
 
 export function cli(cwd: string, args: string[]) {
