@@ -69,7 +69,7 @@ it("rewrites the package, the plugin and the lockfile, allowing the changelog as
   );
   expect(await readFile(`${root}/bun.lock`, "utf8")).toContain('"version": "1.1.0"');
   expect(result.stdout).toContain('git commit -m "chore(release): 1.1.0"');
-  expect(result.stdout).toContain("after that commit exists");
+  expect(result.stdout).toContain("wait for CI to pass on that commit");
 });
 
 it("accepts a prerelease version", async () => {

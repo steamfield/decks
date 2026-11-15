@@ -47,5 +47,5 @@ execFileSync("bun", ["install"], { stdio: "inherit" });
 console.log(`Prepared ${previous} -> ${version}. Next:
   bun run check
   git add -A && git commit -m "chore(release): ${version}"
-  then, after that commit exists, tag it and push:
-  git tag v${version} && git push origin main v${version}`);
+  git push origin main      # then wait for CI to pass on that commit
+  git tag v${version} && git push origin v${version}   # tag that commit, not before`);
