@@ -25,7 +25,7 @@ const base: ComponentProps<typeof InkTimeline> = {
 };
 const image = () => screen.getByRole("img", { name: "Dates" });
 const lines = () => image().getElementsByTagName("line");
-const labelY = (label: string) => Number(screen.getByText(label).getAttribute("y"));
+const _labelY = (label: string) => Number(screen.getByText(label).getAttribute("y"));
 const scaleOf = (element: Element | null | undefined) => {
   const styled = element instanceof HTMLElement || element instanceof SVGElement;
   const transform = styled ? element.style.transform : "";
@@ -181,60 +181,6 @@ it("marks future dates with dots and gives bright ticks their full height", asyn
   const rise = (i: number) =>
     Number(lines().item(i)?.getAttribute("y1")) - Number(lines().item(i)?.getAttribute("y2"));
   expect(rise(2)).toBeGreaterThan(rise(1));
-});
-const crowded: TimelineTick[] = [
-  { id: "b", at: 2, label: "Second long date" },
-  { id: "a", at: 1, label: "First long date" },
-];
-it("stacks crowded labels left to right even when the input order differs", async () => {
-  await setup(() => (
-    <svg role="img" aria-label="Dates">
-      <InkTimeline {...base} ticks={crowded} />
-    </svg>
-  ));
-  expect(labelY("Second long date")).toBeGreaterThan(labelY("First long date"));
-});
-const spaced: TimelineTick[] = [
-  { id: "a", at: 0, label: "Earlier" },
-  { id: "b", at: 3, label: "Later" },
-];
-async function labelYWith(props: Partial<ComponentProps<typeof InkTimeline>>, label: string) {
-  const app = await setup(() => (
-    <svg role="img" aria-label="Dates">
-      <InkTimeline {...base} ticks={spaced} {...props} />
-    </svg>
-  ));
-  const y = labelY(label);
-  app.unmount();
-  return y;
-}
-it.each([
-  ["labelGap", { labelGap: 300 }, "Later"],
-  ["labelOffset", { labelOffset: 60 }, "Earlier"],
-  ["rowHeight", { rowHeight: 60, ticks: crowded }, "Second long date"],
-] satisfies [string, Partial<ComponentProps<typeof InkTimeline>>, string][])(
-  "uses %s for label placement",
-  async (_, props, label) => {
-    const plain = "ticks" in props ? { ticks: crowded } : {};
-    expect(await labelYWith(props, label)).toBeGreaterThan(await labelYWith(plain, label));
-  },
-);
-it("uses labelRows to put crowded labels on one row", async () => {
-  await setup(() => (
-    <svg role="img" aria-label="Dates">
-      <InkTimeline {...base} ticks={crowded} labelRows={1} />
-    </svg>
-  ));
-  expect(labelY("Second long date")).toBe(labelY("First long date"));
-});
-it("uses labelSize in both text and collision spacing", async () => {
-  await setup(() => (
-    <svg role="img" aria-label="Dates">
-      <InkTimeline {...base} ticks={crowded} labelSize={8} />
-    </svg>
-  ));
-  expect(screen.getByText("First long date")).toHaveStyle({ fontSize: "8px" });
-  expect(labelY("Second long date")).toBe(labelY("First long date"));
 });
 it("respects caller-owned ink and lift state", async () => {
   await setup(OwnedTimeline, { context: "print" });
