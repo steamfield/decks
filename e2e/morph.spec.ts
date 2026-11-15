@@ -13,28 +13,38 @@ async function travel(page: Page, name: string, key: string) {
     async ({ name, key }) => {
       const api = window.__deck;
       if (!api) throw new Error("Missing settle API");
+      const start = document.startViewTransition.bind(document);
+      const ready = new Promise<ViewTransition>((resolve) => {
+        document.startViewTransition = (update) => {
+          const transition = start(update);
+          void transition.ready.then(() => resolve(transition));
+          return transition;
+        };
+      });
       window.dispatchEvent(new KeyboardEvent("keydown", { key, code: key }));
       window.dispatchEvent(new KeyboardEvent("keyup", { key, code: key }));
+      const transition = await ready;
+      document.startViewTransition = start;
+      const animations = document.getAnimations();
+      for (const animation of animations) animation.pause();
       const frames: { x: number; y: number; width: number }[] = [];
-      let done = false;
-      const finished = api.settled().then(() => {
-        done = true;
-      });
-      while (!done) {
-        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      for (const progress of [0, 0.25, 0.5, 0.75, 1]) {
+        for (const animation of animations) {
+          const end = animation.effect?.getComputedTiming().endTime;
+          if (typeof end !== "number" || !Number.isFinite(end))
+            throw new Error("Missing finite morph animation");
+          animation.currentTime = end * progress;
+        }
         const style = getComputedStyle(
           document.documentElement,
           `::view-transition-group(${name})`,
         );
-        if (
-          style.transform === "none" ||
-          !document.documentElement.hasAttribute("data-deck-transition")
-        )
-          continue;
         const matrix = new DOMMatrixReadOnly(style.transform);
         frames.push({ x: matrix.e, y: matrix.f, width: Number.parseFloat(style.width) });
       }
-      await finished;
+      for (const animation of animations) animation.finish();
+      await transition.finished;
+      await api.settled();
       return frames;
     },
     { name, key },
@@ -115,17 +125,12 @@ test("settled during a timeline beat resolves after its last visible change", as
   await expect(scene).toBeVisible();
   await settle(page);
   await page.keyboard.press("ArrowRight");
-  await settle(page);
-  await expect(scene.locator("g")).toHaveAttribute("transform", "translate(460 260)");
-  const poses = await scene.locator("g").evaluate(async (group) => {
-    const values: (string | null)[] = [];
-    for (let i = 0; i < 3; i++) {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      values.push(group.getAttribute("transform"));
-    }
-    return values;
+  const pose = await scene.locator("g").evaluate(async (group) => {
+    if (!window.__deck) throw new Error("Missing settle API");
+    await window.__deck.settled();
+    return group.getAttribute("transform");
   });
-  expect(poses).toEqual(Array(3).fill("translate(460 260)"));
+  expect(pose).toBe("translate(460 260)");
 });
 
 test("settled ignores the gallery loop and infinite browser animations", async ({ page }) => {
@@ -151,13 +156,6 @@ test("settled ignores the gallery loop and infinite browser animations", async (
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator("html")).toHaveAttribute("data-deck-motion", "instant");
   await settle(page);
-  const reduced = await loop.evaluate(async (element) => {
-    const frames: string[] = [];
-    for (let i = 0; i < 4; i++) {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      frames.push(getComputedStyle(element).transform);
-    }
-    return frames;
-  });
-  expect(new Set(reduced).size).toBe(1);
+  await expect(loop).toHaveCSS("transform", "none");
+  expect(await loop.evaluate((element) => element.getAnimations().length)).toBe(0);
 });

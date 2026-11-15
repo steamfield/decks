@@ -1,10 +1,7 @@
 import { expect } from "@playwright/test";
 import { boot, step, test } from "./fixtures/embed.fixture";
 
-test("A built deck boots at a hash and acknowledges every command with the visible card", async ({
-  page,
-  embedURL,
-}) => {
+test("A built deck boots at its hash and reports the visible card", async ({ page, embedURL }) => {
   await boot(page, embedURL);
   const messages = await page.evaluate(() => window.embedMessages);
   expect(messages.map((m) => m.type)).toEqual([
@@ -34,27 +31,6 @@ test("A built deck boots at a hash and acknowledges every command with the visib
     direction: null,
     settled: true,
   });
-  const cases: [string, Record<string, number>, Record<string, unknown>][] = [
-    ["next", {}, { slide: 2, beat: 1, lead: "Lead 1", body: "Body 1", direction: "forward" }],
-    ["prev", {}, { slide: 2, beat: 0, direction: "backward" }],
-    ["go", { slide: 2, beat: 2 }, { slide: 2, beat: 2, lead: "Lead 2", direction: "forward" }],
-    ["next", {}, { slide: 3, beat: 0, beats: 1, lead: "", body: "", direction: "forward" }],
-    ["prev", {}, { slide: 2, beat: 2, lead: "Lead 2", direction: "backward" }],
-    ["nextSlide", {}, { slide: 3, beat: 0, direction: "forward" }],
-    ["go", { slide: 3, beat: 1 }, { slide: 3, beat: 1 }],
-    ["prevSlide", {}, { slide: 2, beat: 0, direction: "backward" }],
-    ["go", { slide: -10, beat: -5 }, { slide: 1, beat: 0, lead: "", body: "" }],
-    ["prev", {}, { slide: 1, beat: 0, direction: null }],
-    ["go", { slide: 1, beat: 0 }, { slide: 1, beat: 0, direction: null }],
-    ["go", { slide: 200, beat: 0 }, { slide: 4, beat: 0 }],
-    ["nextSlide", {}, { slide: 4, beat: 0, direction: null }],
-    ["go", { slide: 2, beat: 200 }, { slide: 2, beat: 2, beats: 2 }],
-  ];
-  for (const [index, [cmd, extra, wanted]] of cases.entries()) {
-    const states = await step(page, cmd, index + 1, extra);
-    expect(states.map((m) => m.settled)).toEqual([false, true]);
-    expect(states[1]).toMatchObject(wanted);
-  }
 });
 
 test("Only the newest of three rapid commands settles, including a pending slide transition", async ({

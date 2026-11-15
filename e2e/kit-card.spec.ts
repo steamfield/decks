@@ -1,16 +1,15 @@
 import { expect, test } from "@playwright/test";
-import type { gsap } from "@steamfield/decks/kit";
 import { kitFixture, settled } from "./fixtures/kit.fixture";
 
 test("A card overlaps outgoing copy and eases its top edge to the new height", async ({ page }) => {
   const server = await kitFixture({
     "slides/01-card.mdx": "---\nclicks: 1\n---\n<CardProbe />",
     "components/CardProbe.tsx": `
-import { StoryStage, StoryCard, useScriptedDemo, gsap } from "@steamfield/decks/kit";
-export { gsap };
+import { StoryStage, StoryCard, useScriptedDemo } from "@steamfield/decks/kit";
+export { gsap, DUR } from "@steamfield/decks/kit";
 export function CardProbe() {
  const { clicks } = useScriptedDemo();
- return <StoryStage card={<StoryCard lead={clicks ? "A taller card" : "A short card"} body={clicks ? "A much longer explanation that wraps across several lines inside the card. ".repeat(5) : "One line."} />} />;
+ return <StoryStage card={<section aria-label="Story card" style={{ position: "absolute", left: "6%", bottom: "12%", width: "36%" }}><StoryCard style={{ position: "relative", left: 0, bottom: 0, width: "100%" }} lead={clicks ? "A taller card" : "A short card"} body={clicks ? "A much longer explanation that wraps across several lines inside the card. ".repeat(5) : "One line."} /></section>} />;
 }`,
   });
   try {
@@ -22,31 +21,28 @@ export function CardProbe() {
     });
     await expect(page.getByText("A short card")).toBeVisible();
     await settled(page);
-    const from = await page.evaluate(async () => {
+    const card = page.getByRole("region", { name: "Story card" });
+    const from = await card.evaluate(async (element) => {
       const file = "/components/CardProbe.tsx";
       const { gsap } = await import(file);
-      const card = document.querySelector(".od-story-card");
-      if (!card) throw new Error("Missing card");
       gsap.globalTimeline.pause();
-      const { top, bottom } = card.getBoundingClientRect();
+      const { top, bottom } = element.getBoundingClientRect();
       return { top, bottom };
     });
     await page.keyboard.press("ArrowRight");
     await expect(page.getByText("A taller card")).toBeAttached();
     await expect(page.getByText("A short card")).toBeVisible();
-    const frames = await page.evaluate(async () => {
+    const frames = await card.evaluate(async (element) => {
       const file = "/components/CardProbe.tsx";
-      const { gsap } = await import(file);
-      const card = document.querySelector(".od-story-card");
-      const body = document.querySelector(".od-story-card-body");
-      const height = gsap.getTweensOf(body).find((tween: gsap.core.Tween) => tween.duration() > 0);
-      if (!card || !height?.parent) throw new Error("Missing card height animation");
+      const { gsap, DUR } = await import(file);
+      const start = gsap.globalTimeline.time();
       const samples = [];
       for (const progress of [0, 0.5, 1]) {
-        height.parent.pause().progress(progress);
+        gsap.globalTimeline.time(start + DUR.card * progress);
+        await Promise.resolve();
         samples.push({
-          top: card.getBoundingClientRect().top,
-          bottom: card.getBoundingClientRect().bottom,
+          top: element.getBoundingClientRect().top,
+          bottom: element.getBoundingClientRect().bottom,
         });
       }
       gsap.globalTimeline.resume();

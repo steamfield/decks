@@ -172,6 +172,9 @@ it("uses seed to make repeatable marker frames beneath the code", async () => {
   expect(first).toBeTruthy();
   await app.change();
   expect(frame()?.querySelector("path")?.getAttribute("d")).not.toBe(first);
+  app.unmount();
+  await change({ seed: "first" }, { seed: "second" });
+  expect(frame()?.querySelector("path")?.getAttribute("d")).toBe(first);
 });
 
 it("settles the current click when a reveal is interrupted by leaving the slide", async () => {

@@ -1,5 +1,8 @@
+import { resolve } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
 import { dev, loadDeck } from "@steamfield/decks/node";
+
+export const motionClockURL = `/@fs/${resolve("e2e/fixtures/motion-clock.ts")}`;
 
 export const test = base.extend<object, { motionURL: string }>({
   motionURL: [

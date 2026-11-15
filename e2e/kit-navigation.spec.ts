@@ -63,7 +63,7 @@ test("Arriving from the cover holds scene entrance until the transition finishes
     await window.kitPaused;
   });
   const clip = await page
-    .locator("[data-deck-active] .od-ink-rule")
+    .getByLabel("Tide baseline")
     .evaluate((element) => getComputedStyle(element).getPropertyValue("--od-clip"));
   expect(clip).toBe("100%");
   const early = PNG.sync.read(await page.screenshot());
@@ -100,7 +100,7 @@ test("Arriving from the cover holds scene entrance until the transition finishes
   await settled(page);
   expect(
     await page
-      .locator("[data-deck-active] .od-ink-rule")
+      .getByLabel("Tide baseline")
       .evaluate((element) => getComputedStyle(element).getPropertyValue("--od-clip")),
   ).toBe("0%");
 });
@@ -111,12 +111,12 @@ test("Instant motion updates the beat rail without a CSS transition", async ({ p
   await settled(page);
   await page.keyboard.press("ArrowRight");
   expect(
-    await page.evaluate(
-      () =>
+    await page.getByRole("contentinfo").evaluate(
+      (rail) =>
         document.getAnimations().filter((animation) => {
           const target =
             animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
-          return target instanceof Element && target.closest(".od-story-foot");
+          return target instanceof Element && rail.contains(target);
         }).length,
     ),
   ).toBe(0);
@@ -130,14 +130,14 @@ test("Reloading the last click shows the settled pose in its first rendered fram
     Reflect.set(window, "kitReloadFrames", frames);
     const sample = () => {
       const root = document.querySelector("[data-deck-active]");
-      const rule = root?.querySelector(".od-ink-rule");
-      const dot = root?.querySelector("circle");
-      const card = root?.querySelector(".od-story-card");
+      const rule = root?.querySelector('[aria-label="Tide baseline"]');
+      const dot = root?.querySelector('[aria-label="Tide high"]');
+      const card = root?.querySelector('[aria-label="Story caption"]');
       if (rule && dot && card)
         frames.push({
           clip: getComputedStyle(rule).getPropertyValue("--od-clip"),
           dots: getComputedStyle(dot).opacity,
-          card: card.getAttribute("data-lead") ?? "",
+          card: card.textContent ?? "",
         });
       else requestAnimationFrame(sample);
     };
