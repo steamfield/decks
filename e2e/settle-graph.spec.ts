@@ -1,9 +1,19 @@
 import { resolve } from "node:path";
 import { expect } from "@playwright/test";
+import { loadDeck, scanSlides } from "@steamfield/decks/node";
 import { settled as settle, startSettling, test } from "./fixtures/deck.fixture";
 import { kitFixture } from "./fixtures/kit.fixture";
 
 test.use({ viewport: { width: 390, height: 844 } });
+
+const graphSlide = (await scanSlides(await loadDeck("examples/opendata-pitch"))).find((slide) =>
+  slide.meta.id.endsWith("scale-graph"),
+)?.meta;
+if (!graphSlide) throw new Error("examples/opendata-pitch has no scale-graph slide");
+// Forward through every click, then back to the start.
+const walkClicks = Array.from({ length: graphSlide.clicks * 2 }, (_, i) =>
+  i < graphSlide.clicks ? i + 1 : 2 * graphSlide.clicks - 1 - i,
+);
 
 test("The Dataset Graph settles on two forward and reverse walks while its orbit runs", async ({
   page,
@@ -17,17 +27,17 @@ test("The Dataset Graph settles on two forward and reverse walks while its orbit
     await cdp.send("Emulation.setCPUThrottlingRate", {
       rate: Number(process.env.DECK_E2E_CPU_RATE ?? 4),
     });
-    await page.goto(`${server.url}#/4`);
-    const heading = page.getByRole("heading", {
-      name: "Every dataset we clean joins the Dataset Graph.",
-    });
+    await page.goto(`${server.url}#/${graphSlide.no}`);
+    const heading = page.getByRole("heading", { name: graphSlide.title });
     await expect(heading).toBeVisible();
     await settle(page);
     for (let walk = 0; walk < 2; walk++) {
       let previous = 0;
-      for (const click of [1, 2, 3, 2, 1, 0]) {
+      for (const click of walkClicks) {
         await page.keyboard.press(click > previous ? "ArrowRight" : "ArrowLeft");
-        await expect(page).toHaveURL(new RegExp(`#/4${click ? `\\?clicks=${click}` : ""}$`));
+        await expect(page).toHaveURL(
+          new RegExp(`#/${graphSlide.no}${click ? `\\?clicks=${click}` : ""}$`),
+        );
         await settle(page);
         await expect(heading).toBeVisible();
         if (click === 2)

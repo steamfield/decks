@@ -3,11 +3,15 @@ import { join } from "node:path";
 import { expect } from "@playwright/test";
 
 import { lines, states, test } from "./fixtures/code.fixture";
+import { slideNo } from "./fixtures/motion-gallery";
+
+const code = slideNo("code");
+const codeSteps = slideNo("code-steps");
 
 test("A ts block uses theme variables for distinct keyword and string colors.", async ({
   page,
 }) => {
-  await page.goto("/#/24");
+  await page.goto(`/#/${code}`);
   const block = page.getByRole("figure");
   await expect(block).toContainText("session.ts");
   const keyword = block.getByText("type", { exact: true });
@@ -28,14 +32,14 @@ test("A ts block uses theme variables for distinct keyword and string colors.", 
 test("Three emphasis steps walk forward, reverse, and reload at their counted last click.", async ({
   page,
 }) => {
-  await page.goto("/#/25");
+  await page.goto(`/#/${codeSteps}`);
   for (const [click, active] of [
     [0, [2]],
     [1, [4, 5]],
     [2, [1, 2, 3, 4, 5, 6, 7, 8]],
   ] as const) {
     if (click) await page.keyboard.press("ArrowRight");
-    await expect(page).toHaveURL(new RegExp(`#/25${click ? `\\?clicks=${click}` : ""}$`));
+    await expect(page).toHaveURL(new RegExp(`#/${codeSteps}${click ? `\\?clicks=${click}` : ""}$`));
     await states(page, [...active]);
   }
   await page.reload();
@@ -50,7 +54,7 @@ test("Three emphasis steps walk forward, reverse, and reload at their counted la
 test("at=1 leaves lines unmarked at click zero and instant motion snaps to the step.", async ({
   page,
 }) => {
-  await page.goto("/?motion=instant#/24");
+  await page.goto(`/?motion=instant#/${code}`);
   await expect(lines(page)).toHaveCount(6);
   await expect(page.locator("[data-deck-active] [data-line-state]")).toHaveCount(0);
   await page.keyboard.press("ArrowRight");
@@ -63,7 +67,7 @@ test("at=1 leaves lines unmarked at click zero and instant motion snaps to the s
 test("lines=10 numbers the first physical line 10 without adding selectable text.", async ({
   page,
 }) => {
-  await page.goto("/#/24");
+  await page.goto(`/#/${code}`);
   const first = lines(page).first();
   await expect(first).toBeVisible();
   await expect(first).toHaveAttribute("data-line-number", "10");

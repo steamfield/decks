@@ -3,9 +3,12 @@ import { join, resolve } from "node:path";
 import { expect } from "@playwright/test";
 import { dev, loadDeck } from "@steamfield/decks/node";
 import { test } from "./fixtures/motion.fixture";
+import { slideNo } from "./fixtures/motion-gallery";
+
+const steps = slideNo("steps");
 
 test("The markdown Steps list reveals one top-level item on each click.", async ({ page }) => {
-  await page.goto("/#/8");
+  await page.goto(`/#/${steps}`);
   await expect(page.getByRole("heading", { name: "Steps", exact: true })).toBeVisible();
   const list = page.getByRole("list");
   await expect(list).toHaveCount(1);
@@ -38,7 +41,7 @@ test("Four single-line JSX Steps children reveal without an explicit clicks tota
     );
     const server = await dev(await loadDeck(dir), { port: 0 });
     try {
-      await page.goto(`${server.url}#/8`);
+      await page.goto(`${server.url}#/${steps}`);
       await expect(page.getByRole("heading", { name: "Single-line children" })).toBeVisible();
       for (let click = 0; click <= 4; click++) {
         await expect(page.getByRole("listitem")).toHaveCount(click);

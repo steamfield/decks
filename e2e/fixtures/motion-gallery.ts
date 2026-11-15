@@ -4,6 +4,18 @@ import { settled as settleDeck } from "./deck-driver";
 
 export const gallery = await scanSlides(await loadDeck("examples/motion"));
 
+/**
+ * The 1-based number of a gallery slide, looked up by its file name without the order prefix
+ * ("push" for `17-push.mdx`), so inserting or reordering slides does not move a test. Two files
+ * can share a name (`01-cover`, `27-cover`); `occurrence` picks among them in deck order.
+ */
+export function slideNo(name: string, occurrence = 0) {
+  const matches = gallery.filter((slide) => slide.meta.id.replace(/^\d+-/, "") === name);
+  const match = matches[occurrence];
+  if (!match) throw new Error(`No gallery slide named "${name}" (occurrence ${occurrence})`);
+  return match.meta.no;
+}
+
 export async function position(page: Page, no: number, click = 0) {
   const slide = gallery[no - 1];
   if (!slide) throw new Error(`Unknown gallery slide ${no}`);
@@ -14,15 +26,15 @@ export async function position(page: Page, no: number, click = 0) {
 
 export async function settled(page: Page, no: number, click: number) {
   await settleDeck(page);
-  if (no === 13)
+  if (no === slideNo("count-up"))
     await expect(page.locator('[data-deck-active] span[aria-hidden="true"]')).toHaveText(
       click ? "1,200" : "0",
     );
-  if (no === 15)
+  if (no === slideNo("timeline"))
     await expect(
       page.getByRole("img", { name: "Three beats move and recolor two shapes" }).locator("g"),
     ).toHaveAttribute("transform", `translate(${140 + click * 320} 260)`);
-  if (no === 16)
+  if (no === slideNo("tween"))
     await expect(
       page
         .getByRole("img", { name: "A circle grows from radius 48 to 180" })

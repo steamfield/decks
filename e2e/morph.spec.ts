@@ -1,6 +1,12 @@
 import { expect, type Page } from "@playwright/test";
 import { seekTransition, settled } from "./fixtures/deck.fixture";
 import { test } from "./fixtures/motion.fixture";
+import { slideNo } from "./fixtures/motion-gallery";
+
+const morphStart = slideNo("morph-start");
+const morphSteps = slideNo("morph-steps");
+const timeline = slideNo("timeline");
+const loopSlide = slideNo("loop");
 
 async function travel(page: Page, name: string, key: string) {
   const samples = seekTransition(page, name, [0, 0.25, 0.5, 0.75, 1]);
@@ -11,7 +17,7 @@ async function travel(page: Page, name: string, key: string) {
 test("A shared Morph moves and resizes monotonically between slides in both directions", async ({
   page,
 }) => {
-  await page.goto("/#/20");
+  await page.goto(`/#/${morphStart}`);
   await expect(page.getByRole("heading", { name: "Follow one idea." })).toBeVisible();
   await settled(page);
   for (const [key, sign, heading] of [
@@ -39,7 +45,7 @@ test("A shared Morph moves and resizes monotonically between slides in both dire
 test("A morphSteps click moves monotonically while the root avoids a cross-fade", async ({
   page,
 }) => {
-  await page.goto("/#/22");
+  await page.goto(`/#/${morphSteps}`);
   await expect(page.getByRole("heading", { name: "Move within the frame." })).toBeVisible();
   await settled(page);
   const samplesForward = seekTransition(page, "step-card", [0, 0.5, 1]);
@@ -63,7 +69,7 @@ test("A morphSteps click moves monotonically while the root avoids a cross-fade"
 });
 
 test("settled during a timeline beat resolves after its last visible change", async ({ page }) => {
-  await page.goto("/#/15");
+  await page.goto(`/#/${timeline}`);
   const scene = page.getByRole("img", { name: "Three beats move and recolor two shapes" });
   await expect(scene).toBeVisible();
   await settled(page);
@@ -73,7 +79,7 @@ test("settled during a timeline beat resolves after its last visible change", as
 });
 
 test("settled ignores the gallery loop and infinite browser animations", async ({ page }) => {
-  await page.goto("/#/23");
+  await page.goto(`/#/${loopSlide}`);
   const loop = page.getByRole("img", { name: "Continuously turning ring" });
   await expect(loop).toBeVisible();
   await loop.evaluate((element) => {

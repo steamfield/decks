@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { loadDeck, scanSlides } from "@steamfield/decks/node";
 import { test as motionTest } from "./motion.fixture";
+import { slideNo } from "./motion-gallery";
 
 const gallery = await scanSlides(await loadDeck("examples/motion"));
 const gallerySize = gallery.length;
@@ -21,7 +22,7 @@ export { settled as settle } from "./deck-driver";
 
 import { settled as settle } from "./deck-driver";
 
-export async function open(page: Page, slide = 17, search = "") {
+export async function open(page: Page, slide = slideNo("push"), search = "") {
   await page.goto(`/${search}#/${slide}`);
   await expect(page.locator("[data-deck-active]")).toHaveAttribute(
     "data-deck-slide",

@@ -1,6 +1,8 @@
 import { expect } from "@playwright/test";
-
+import { slideNo } from "./fixtures/motion-gallery";
 import { keys, lastSlide, settle, test } from "./fixtures/transitions";
+
+const push = slideNo("push");
 
 test("End before the final module resolves cuts without an error", async ({ page }) => {
   let release = () => {};
@@ -42,7 +44,7 @@ test("An unresolved target skips a transition whose callback is still pending", 
       await route.continue();
     },
   );
-  await page.goto("/#/17");
+  await page.goto(`/#/${push}`);
   await expect(page.getByRole("heading", { name: "Keep moving." })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Change the scale.", includeHidden: true }),
