@@ -1,7 +1,7 @@
 import { type ParseArgsOptionsConfig, parseArgs, stripVTControlCharacters } from "node:util";
 import { defineCommand, renderUsage, runCommand, showUsage } from "citty";
 import pc from "picocolors";
-import { authorError, DeckError } from "../dev/errors";
+import { authorError, bugNotice, DeckError } from "../dev/errors";
 import { build, dev } from "../dev/server";
 import { check } from "./commands/check";
 import { exportDeck } from "./commands/export";
@@ -164,8 +164,7 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
   } catch (cause) {
     const error = authorError(cause);
     const message =
-      error?.message ??
-      `${cause instanceof Error ? cause.stack : String(cause)}\nThis is a bug in react-decks.`;
+      error?.message ?? `${cause instanceof Error ? cause.stack : String(cause)}\n${bugNotice}`;
     console.error(`decks${command ? ` ${command}` : ""}: ${message}`);
     process.exitCode = 1;
   }

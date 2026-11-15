@@ -1,13 +1,13 @@
 import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
 import { expect, it, onTestFinished } from "vitest";
-import { fixture } from "../../dev/server.test-support";
+import { bugNotice } from "../../dev/errors";
+import { fixture, repoPath } from "../../dev/server.test-support";
 import { lintDecks } from "./lint";
 
 function command(cwd: string, args: string[], input = "") {
   const result = spawnSync(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli/cli.ts"), "lint", ...args],
+    repoPath("node_modules/.bin/tsx"),
+    [repoPath("packages/node/src/cli/cli.ts"), "lint", ...args],
     { cwd, input, encoding: "utf8" },
   );
   if (result.error) throw result.error;
@@ -38,7 +38,10 @@ it("returns hits and counts across MDX, TSX and COPY modules while excluding dat
   });
 });
 
-it("uses the registry for a bare run and accepts several aliases or a deck directory", async () => {
+// Three tsx processes (about 11s each on a loaded 2-vCPU runner); this only bounds a hang.
+it("uses the registry for a bare run and accepts several aliases or a deck directory", {
+  timeout: 120_000,
+}, async () => {
   const { dir } = await fixture(onTestFinished, {
     "decks.json": JSON.stringify({ a: { dir: "a" }, b: { dir: "b" } }),
     "a/deck.config.ts": 'export default {title: "A"};',
@@ -83,7 +86,7 @@ it.each([
   const result = command(dir, args);
   expect(result.status).toBe(1);
   expect(result.stderr).toContain(message);
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it.each(["-h", "--help"])("prints lint usage for %s", async (arg) => {

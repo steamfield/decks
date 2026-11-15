@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
 import { defineDeck, loadDeck } from "../index";
 import { fixture as createFixture } from "./server.test-support";
@@ -49,7 +49,7 @@ describe("loadDeck", () => {
   it("defaults canvas and uses the directory basename as the name", async () => {
     const { dir } = await fixture();
     expect(await loadDeck(dir)).toMatchObject({
-      name: dir.split("/").at(-1),
+      name: basename(dir),
       config: { title: "Test deck", canvas: { width: 1920, height: 1080 } },
     });
   });
@@ -71,7 +71,7 @@ describe("loadDeck", () => {
   it("names the missing config file", async () => {
     const { dir } = await fixture();
     await expect(loadDeck(join(dir, "missing"))).rejects.toThrow(
-      `no deck.config.ts in .tmp/${dir.split("/").at(-1)}/missing.`,
+      `no deck.config.ts in .tmp/${basename(dir)}/missing.`,
     );
   });
 });

@@ -1,7 +1,9 @@
 import { spawnSync } from "node:child_process";
 import { mkdir, readdir, readFile, rm, symlink } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join } from "node:path";
 import { expect, inject, it } from "vitest";
+import { bugNotice } from "../../dev/errors";
+import { repoPath } from "../../dev/server.test-support";
 import { installedInit, pluginProject } from "./plugin.test-support";
 
 const packageDir = inject("builtPackage");
@@ -56,7 +58,11 @@ it("merges project settings, copies skills and appends guidance without changing
   expect(result.stdout).toContain(`Wrote ${skill}`);
 });
 
-it("updates the version and unedited skills while preserving edited skills and section across reruns", async () => {
+// Four `decks init` processes; a loaded 2-vCPU CI runner took about 11s per process, so the
+// default 30s limit is shorter than the work. This only bounds a hang.
+it("updates the version and unedited skills while preserving edited skills and section across reruns", {
+  timeout: 120_000,
+}, async () => {
   // Far from any real release, so the "upgrade" stays one however the package is versioned.
   const upgradedVersion = "99.0.0";
   const { dir, put } = await pluginProject(packageDir);
@@ -241,7 +247,7 @@ it.each([
   const before = await readdir(dir);
   const result = installedInit(dir);
   expect(result.status).toBe(1);
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
   expect(await read(dir, file)).toBe(contents);
   expect(await readdir(dir)).toEqual(before);
 });
@@ -249,13 +255,13 @@ it.each([
 it("resolves the source package version and plugin skills when running the source CLI", async () => {
   const { dir } = await pluginProject();
   const result = spawnSync(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli/cli.ts"), "init"],
+    repoPath("node_modules/.bin/tsx"),
+    [repoPath("packages/node/src/cli/cli.ts"), "init"],
     { cwd: dir, encoding: "utf8" },
   );
   if (result.error) throw result.error;
   expect(result.status, result.stderr).toBe(0);
-  const metadata = JSON.parse(await readFile(resolve("packages/decks/package.json"), "utf8"));
+  const metadata = JSON.parse(await readFile(repoPath("packages/decks/package.json"), "utf8"));
   expect(
     JSON.parse(await read(dir, ".claude/settings.json")).extraKnownMarketplaces.steamfield.source
       .ref,
@@ -268,7 +274,7 @@ it.each([["--bogus"], ["extra"]])(
     const { dir } = await pluginProject(packageDir);
     const result = installedInit(dir, args);
     expect(result.status).toBe(1);
-    expect(result.stderr).not.toContain("This is a bug");
+    expect(result.stderr).not.toContain(bugNotice);
     expect(await readdir(dir)).not.toContain(".claude");
   },
 );

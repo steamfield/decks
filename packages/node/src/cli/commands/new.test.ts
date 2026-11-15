@@ -1,13 +1,14 @@
 import { execFile } from "node:child_process";
 import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { expect, it, onTestFinished } from "vitest";
-import { cli } from "../../dev/server.test-support";
+import { bugNotice } from "../../dev/errors";
+import { cli, repoPath } from "../../dev/server.test-support";
 
 async function project(registry?: Record<string, unknown>) {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const dir = await mkdtemp(resolve(".tmp/new-"));
+  await mkdir(repoPath(".tmp"), { recursive: true });
+  const dir = await mkdtemp(repoPath(".tmp/new-"));
   onTestFinished(() => rm(dir, { recursive: true, force: true }));
   if (registry) await writeFile(join(dir, "decks.json"), JSON.stringify(registry));
   return dir;
@@ -160,19 +161,24 @@ it.each([
   const result = await run(dir, args);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain(args[args.length - 1]);
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
   expect(await readdir(dir)).toEqual([]);
 });
 
-it("reports an unwritable registry before creating an unregistered deck", async () => {
-  const dir = await project({ _config: { decksDir: "decks" } });
-  await chmod(join(dir, "decks.json"), 0o444);
-  const result = await run(dir, ["q3"]);
-  expect(result.code).toBe(1);
-  expect(result.stderr).toContain("decks.json");
-  expect(result.stderr).not.toContain("This is a bug");
-  expect(await readdir(dir)).toEqual(["decks.json"]);
-});
+// Root ignores file modes, and a directory named decks.json fails earlier, while reading it, so
+// no other fixture reaches the write-permission check; same guard as server-build-out-dir.test.ts.
+it.skipIf(process.getuid?.() === 0)(
+  "reports an unwritable registry before creating an unregistered deck",
+  async () => {
+    const dir = await project({ _config: { decksDir: "decks" } });
+    await chmod(join(dir, "decks.json"), 0o444);
+    const result = await run(dir, ["q3"]);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("decks.json");
+    expect(result.stderr).not.toContain(bugNotice);
+    expect(await readdir(dir)).toEqual(["decks.json"]);
+  },
+);
 
 it("reports an invalid destination as an author error naming the path", async () => {
   const dir = await project();
@@ -180,7 +186,7 @@ it("reports an invalid destination as an author error naming the path", async ()
   const result = await run(dir, ["q3"]);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("decks");
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it("prints a shell-safe next command for an alias containing spaces and quotes", async () => {

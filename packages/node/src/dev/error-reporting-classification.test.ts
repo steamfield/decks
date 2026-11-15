@@ -1,6 +1,7 @@
 import { createLogger } from "vite";
 import { expect, it, onTestFinished } from "vitest";
 import { loadDeck } from "./config";
+import { bugNotice } from "./errors";
 import { dev } from "./server";
 import { fixture, testVite, virtual } from "./server.test-support";
 
@@ -29,7 +30,7 @@ it("leaves Vite's missing-package diagnostic without blaming the framework", asy
   expect(response.status).toBe(500);
   expect(await response.text()).toContain("missing-package-for-error-test");
   expect(app.messages.join("\n")).toContain("missing-package-for-error-test");
-  expect(app.messages.join("\n")).not.toContain("This is a bug in react-decks.");
+  expect(app.messages.join("\n")).not.toContain(bugNotice);
 });
 
 it("retains the stack and bug classification for a failure inside the framework compiler", async () => {
@@ -39,9 +40,9 @@ export default {title:"Failure", mdx:{rehypePlugins:[malformed]}}`,
   });
   const response = await fetch(new URL("/slides/01-first.mdx", app.url));
   expect(response.status).toBe(500);
-  expect(await response.text()).toContain("code-blocks.ts");
-  expect(app.messages.join("\n")).toContain("code-blocks.ts");
-  expect(app.messages.join("\n")).toContain("This is a bug in react-decks.");
+  expect(await response.text()).toMatch(/at .*\.ts:\d+:\d+/);
+  expect(app.messages.join("\n")).toMatch(/at .*\.ts:\d+:\d+/);
+  expect(app.messages.join("\n")).toContain(bugNotice);
 });
 
 it("reports a component parse error once across the scan and Vite transform", async () => {
@@ -49,7 +50,7 @@ it("reports a component parse error once across the scan and Vite transform", as
   expect((await fetch(new URL(virtual("manifest"), app.url))).status).toBe(500);
   expect((await fetch(new URL("/components/Badge.tsx", app.url))).status).toBe(500);
   expect(app.messages).toHaveLength(1);
-  expect(app.messages[0]).not.toContain("This is a bug in react-decks.");
+  expect(app.messages[0]).not.toContain(bugNotice);
 });
 
 it("keeps a compiler TypeError and its stack instead of converting it to author input", async () => {

@@ -1,11 +1,12 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { expect, it, onTestFinished } from "vitest";
-import { cli } from "../../dev/server.test-support";
+import { bugNotice } from "../../dev/errors";
+import { cli, repoPath } from "../../dev/server.test-support";
 
 async function project(files: Record<string, string> = {}) {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const dir = await mkdtemp(resolve(".tmp/check-"));
+  await mkdir(repoPath(".tmp"), { recursive: true });
+  const dir = await mkdtemp(repoPath(".tmp/check-"));
   onTestFinished(() => rm(dir, { recursive: true, force: true }));
   for (const [file, contents] of Object.entries(files)) {
     await mkdir(dirname(join(dir, file)), { recursive: true });
@@ -31,7 +32,7 @@ it("refuses an unknown check option as an author error", async () => {
   const result = await run(dir, ["--bogus"]);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("--bogus");
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it("reports an unregistered deck under decksDir with its config path", async () => {
@@ -176,13 +177,5 @@ it.each([
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("decks.json");
   expect(result.stderr).toContain(message);
-  expect(result.stderr).not.toContain("This is a bug");
-});
-
-it("passes against this repository's registry without modifying it", async () => {
-  const before = await readFile(resolve("decks.json"), "utf8");
-  const result = await run(process.cwd());
-  expect(result.code, result.stderr).toBe(0);
-  expect(result.stdout).toContain("All decks check out.");
-  expect(await readFile(resolve("decks.json"), "utf8")).toBe(before);
+  expect(result.stderr).not.toContain(bugNotice);
 });

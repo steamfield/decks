@@ -1,9 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
-import { cli, fixture } from "../dev/server.test-support";
+import { bugNotice } from "../dev/errors";
+import { cli, fixture, skipBrowserTests } from "../dev/server.test-support";
 
-describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("capture defaults", () => {
+describe.skipIf(skipBrowserTests)("capture defaults", () => {
   it("exports a square canvas with a matching PDF MediaBox at the default path", async () => {
     const { dir } = await fixture(onTestFinished, {
       "deck.config.ts":
@@ -59,5 +60,5 @@ it("rejects a nonnumeric shot width with the offending value", async () => {
   const command = cli(dir, ["shot", ".", "1", "--width", "abc"]);
   expect((await command.exit)[0]).toBe(1);
   expect(command.output().stderr).toContain('Invalid width "abc"');
-  expect(command.output().stderr).not.toContain("This is a bug");
+  expect(command.output().stderr).not.toContain(bugNotice);
 });

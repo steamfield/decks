@@ -70,11 +70,14 @@ function config(deck: ResolvedDeck, plugins: Plugin[] = reactDecks(deck)): Inlin
   };
 }
 
+/** The lowest port `decks dev` tries when none is requested. */
+export const firstDevPort = 3030;
+
 export async function dev(
   deck: ResolvedDeck,
   options?: { port?: number; open?: boolean },
 ): Promise<DevServer> {
-  const port = options?.port ?? (await getPort({ port: portNumbers(3030, 65535) }));
+  const port = options?.port ?? (await getPort({ port: portNumbers(firstDevPort, 65535) }));
   const lifecycle = createDeckPlugins(deck);
   let server: Awaited<ReturnType<typeof createServer>> | undefined;
   try {

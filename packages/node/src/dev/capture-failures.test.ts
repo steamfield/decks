@@ -4,9 +4,9 @@ import { describe, expect, it, onTestFinished } from "vitest";
 import { build, loadDeck } from "../index";
 import { launchBrowser, openBuiltDeck, waitForCapture } from "./browser";
 import { DeckError } from "./errors";
-import { cli, fixture } from "./server.test-support";
+import { cli, fixture, skipBrowserTests } from "./server.test-support";
 
-describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("capture failures", () => {
+describe.skipIf(skipBrowserTests)("capture failures", () => {
   it.each(["shot", "export"])("%s does not capture the share image", async (command) => {
     const { dir } = await fixture(onTestFinished, {
       "components/FirstSlide.tsx": `

@@ -1,5 +1,6 @@
 import { describe, expect, it, onTestFinished } from "vitest";
 import { dev, loadDeck } from "../index";
+import { firstDevPort } from "./server";
 import { fixture, testVite } from "./server.test-support";
 
 describe("dev ports", () => {
@@ -11,7 +12,8 @@ describe("dev ports", () => {
     onTestFinished(() => server.close());
     expect(Number(new URL(server.url).port)).toBeGreaterThan(0);
     expect(Number(new URL(server.url).port)).not.toBe(1);
-    if (port === undefined) expect(Number(new URL(server.url).port)).toBeGreaterThanOrEqual(3030);
+    if (port === undefined)
+      expect(Number(new URL(server.url).port)).toBeGreaterThanOrEqual(firstDevPort);
     const response = await fetch(server.url);
     expect(response.status).toBe(200);
     expect(await response.text()).toContain("Port selection");

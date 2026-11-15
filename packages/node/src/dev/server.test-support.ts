@@ -1,6 +1,7 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { createServer, defaultClientConditions } from "vite";
+import { fileURLToPath } from "node:url";
+import { createServer, defaultClientConditions, type ViteDevServer } from "vite";
 import { expect, onTestFinished, vi } from "vitest";
 import { cliProcess } from "../cli/cli-process.test-support";
 import { loadDeck, type ResolvedDeck, reactDecks, scanSlides } from "../index";
@@ -11,6 +12,25 @@ declare module "vitest" {
   }
 }
 
+/** The checkout root, derived from this file so tests do not depend on the process cwd. */
+const repoRoot = fileURLToPath(new URL("../../../../", import.meta.url));
+
+/** An absolute path inside the checkout. */
+export const repoPath = (...parts: string[]) => resolve(repoRoot, ...parts);
+
+/**
+ * True when `DECKS_SKIP_BROWSER_TESTS=1` asks for the Chromium groups to be skipped. Under CI the
+ * variable is an error: a leaked setting would report whole groups green with no assertions.
+ */
+export const skipBrowserTests = (() => {
+  if (process.env.DECKS_SKIP_BROWSER_TESTS !== "1") return false;
+  if (process.env.CI)
+    throw new Error(
+      "DECKS_SKIP_BROWSER_TESTS=1 is set while CI is set, which would skip every browser test silently. Unset DECKS_SKIP_BROWSER_TESTS.",
+    );
+  return true;
+})();
+
 export const testVite = {
   optimizeDeps: { noDiscovery: true, include: [] },
   resolve: { conditions: ["@steamfield/decks/source", ...defaultClientConditions] },
@@ -18,9 +38,10 @@ export const testVite = {
 
 export function cli(cwd: string, args: string[]) {
   const process = cliProcess(
-    resolve("node_modules/.bin/tsx"),
-    ["--conditions=@steamfield/decks/source", resolve("packages/node/src/cli/cli.ts"), ...args],
-    { cwd, env: { ...globalThis.process.env, NO_COLOR: "1" } },
+    repoPath("node_modules/.bin/tsx"),
+    ["--conditions=@steamfield/decks/source", repoPath("packages/node/src/cli/cli.ts"), ...args],
+    // NODE_NO_WARNINGS keeps a Node version's deprecation lines out of exact stderr assertions.
+    { cwd, env: { ...globalThis.process.env, NO_COLOR: "1", NODE_NO_WARNINGS: "1" } },
   );
   onTestFinished(process.close);
   return process;
@@ -33,7 +54,7 @@ export async function fixture(
   cleanup: (callback: () => Promise<void>) => void,
   files: Record<string, string> = {},
 ) {
-  const root = resolve(".tmp");
+  const root = repoPath(".tmp");
   await mkdir(root, { recursive: true });
   const dir = await mkdtemp(join(root, "node-"));
   // A test that replaces deck.config.ts drops the fixture's optimizer setting, and Vite's
@@ -41,7 +62,7 @@ export async function fixture(
   cleanup(() => rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
   await mkdir(join(dir, "node_modules/@react-decks"), { recursive: true });
   for (const name of ["node", "runtime", "motion"])
-    await symlink(resolve("packages", name), join(dir, "node_modules/@react-decks", name), "dir");
+    await symlink(repoPath("packages", name), join(dir, "node_modules/@react-decks", name), "dir");
   const put = async (file: string, text: string) => {
     await mkdir(dirname(join(dir, file)), { recursive: true });
     await writeFile(join(dir, file), text);
@@ -141,4 +162,50 @@ export async function scanMotion(body: string) {
     "slides/01-first.mdx": body,
   });
   return scanSlides(await loadDeck(dir));
+}
+
+interface SlideElement {
+  type: unknown;
+  props: Record<string, unknown>;
+}
+
+const isElement = (value: unknown): value is SlideElement =>
+  typeof value === "object" && value !== null && "type" in value && "props" in value;
+
+/**
+ * The slide module executed: its element tree, whose props are what the page receives. The node
+ * package may not import React, so the tree is read as data instead of rendered.
+ */
+export async function renderSlide(
+  server: ViteDevServer,
+  id: string,
+  components: Record<string, string> = {},
+) {
+  const slide = await server.ssrLoadModule(id);
+  const found: SlideElement[] = [];
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (!isElement(value)) return;
+    found.push(value);
+    walk(value.props.children);
+  };
+  walk(slide.default({ components }));
+  const text = (value: unknown): string =>
+    Array.isArray(value)
+      ? value.map(text).join("")
+      : isElement(value)
+        ? text(value.props.children)
+        : typeof value === "string"
+          ? value
+          : "";
+  return {
+    elements: (type?: string) =>
+      type === undefined ? found : found.filter((element) => element.type === type),
+    text: found.map((element) => text(element.props.children)).join("\n"),
+    props: found.flatMap((element) => Object.keys(element.props)),
+    styles: JSON.stringify(found.map((element) => element.props.style ?? null)),
+  };
 }

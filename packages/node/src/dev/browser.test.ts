@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { runCommand } from "citty";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
@@ -10,11 +10,14 @@ import { exportDeck } from "../cli/commands/export";
 import { shot } from "../cli/commands/shot";
 import { build, dev, loadDeck, scanSlides } from "../index";
 import { launchBrowser, openBuiltDeck } from "./browser";
-import { cli, fixture } from "./server.test-support";
+import { bugNotice } from "./errors";
+import { cli, fixture, repoPath, skipBrowserTests } from "./server.test-support";
+
+const basic = repoPath("examples/basic");
 
 async function output() {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const dir = await mkdtemp(resolve(".tmp/capture-"));
+  await mkdir(repoPath(".tmp"), { recursive: true });
+  const dir = await mkdtemp(repoPath(".tmp/capture-"));
   onTestFinished(() => rm(dir, { recursive: true, force: true }));
   return dir;
 }
@@ -27,7 +30,7 @@ async function cliWithNoBrowser(args: string[]) {
       "--conditions=@steamfield/decks/source",
       "--import",
       "tsx",
-      resolve("packages/node/src/cli/cli.ts"),
+      repoPath("packages/node/src/cli/cli.ts"),
       ...args,
     ],
     { env: { ...globalThis.process.env, PLAYWRIGHT_BROWSERS_PATH: dir, NO_COLOR: "1" } },
@@ -36,6 +39,20 @@ async function cliWithNoBrowser(args: string[]) {
   const [code] = await process.exit;
   return { code, ...process.output() };
 }
+
+/** The fixture's own headings and steps keep these captures independent of any example deck. */
+const stepsSlides = {
+  "slides/01-first.mdx": "# Cover heading\n\n<Notes>Cover speaker note.</Notes>",
+  "slides/02-steps.mdx": [
+    "<Step at={1}>First point</Step>",
+    "<Step at={2}>Second point</Step>",
+    "<Step at={3}>Third point</Step>",
+  ].join("\n\n"),
+  "slides/03-hidden.mdx": "---\nhide: true\n---\n# Hidden slide heading",
+};
+
+// Load, hydration and paint take longer than vi.waitFor's default 1s on a loaded runner.
+const eventually = (assertion: () => Promise<void>) => vi.waitFor(assertion, { timeout: 30_000 });
 
 function expectSameFrame(actual: Buffer, expected: Buffer) {
   const a = PNG.sync.read(actual);
@@ -48,18 +65,18 @@ function expectSameFrame(actual: Buffer, expected: Buffer) {
   ).toBeLessThan(0.002);
 }
 
-describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures", () => {
+describe.skipIf(skipBrowserTests)("browser captures", () => {
   const browserTest = it;
 
   browserTest.each([false, true])(
     "exports the basic deck's PDF frames with final=%s",
     async (final) => {
       const dir = await output();
-      const deck = await loadDeck("examples/basic");
+      const deck = await loadDeck(basic);
       const slides = await scanSlides(deck);
       const path = join(dir, final ? "final.pdf" : "all.pdf");
       await runCommand(exportDeck, {
-        rawArgs: ["examples/basic", "--out", path, ...(final ? ["--final"] : [])],
+        rawArgs: [basic, "--out", path, ...(final ? ["--final"] : [])],
       });
       const pdf = await readFile(path, "latin1");
       expect(pdf.startsWith("%PDF-")).toBe(true);
@@ -76,19 +93,20 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
     "shots the requested frame at $width x $height on its own server",
     async ({ width, height, flags }) => {
       const dir = await output();
-      await cp(resolve("examples/motion"), join(dir, "other"), {
+      const { dir: deckDir } = await fixture(onTestFinished, stepsSlides);
+      await cp(repoPath("examples/motion"), join(dir, "other"), {
         recursive: true,
         filter: (file) => !file.includes("/.vite"),
       });
       const other = await dev(await loadDeck(join(dir, "other")), { port: 0 });
       onTestFinished(() => other.close());
       const path = join(dir, `${width}.png`);
-      await runCommand(shot, { rawArgs: ["examples/basic", "2", "2", "--out", path, ...flags] });
+      await runCommand(shot, { rawArgs: [deckDir, "2", "2", "--out", path, ...flags] });
       const png = await readFile(path);
       expect(png.subarray(1, 4).toString()).toBe("PNG");
       expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([width, height]);
       const outDir = join(dir, "reference");
-      await build(await loadDeck("examples/basic"), { outDir });
+      await build(await loadDeck(deckDir), { outDir });
       const browser = await launchBrowser();
       onTestFinished(() => browser.close());
       const reference = await openBuiltDeck(browser, outDir, "./", "?motion=instant#/2?clicks=2", {
@@ -96,11 +114,15 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
         height,
       });
       onTestFinished(reference.close);
-      await vi.waitFor(async () =>
-        expect(await reference.page.getByText("Second point", { exact: true }).count()).toBe(1),
+      await eventually(async () =>
+        expect(await reference.page.getByText("Second point", { exact: true }).isVisible()).toBe(
+          true,
+        ),
       );
-      await vi.waitFor(async () =>
-        expect(await reference.page.getByText("Third point", { exact: true }).count()).toBe(0),
+      await eventually(async () =>
+        expect(await reference.page.getByText("Third point", { exact: true }).isVisible()).toBe(
+          false,
+        ),
       );
       // The shot must look like the deck does in the same Chromium on this machine.
       expectSameFrame(png, await reference.page.screenshot());
@@ -111,7 +133,12 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
     "builds a letterboxed first-slide preview and adds absolute share metadata",
     async () => {
       const dir = await output();
-      const deck = await loadDeck("examples/basic");
+      const { dir: deckDir } = await fixture(onTestFinished, stepsSlides);
+      const deck = await loadDeck(deckDir);
+      const visibleFrames = (await scanSlides(deck)).reduce(
+        (total, { meta }) => total + meta.clicks + 1,
+        0,
+      );
       const outDir = join(dir, "site");
       await build(
         { ...deck, config: { ...deck.config, info: "summary", url: "https://example.com/talk/" } },
@@ -127,28 +154,22 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
       onTestFinished(() => browser.close());
       const capture = await openBuiltDeck(browser, outDir, "/talk/", "#/print");
       onTestFinished(capture.close);
-      await vi.waitFor(async () =>
-        expect(await capture.page.locator("[data-deck-slide]").count()).toBe(9),
+      await eventually(async () =>
+        expect(await capture.page.locator("[data-deck-slide]").count()).toBe(visibleFrames),
       );
-      await vi.waitFor(async () =>
+      await eventually(async () =>
         expect(
-          await capture.page
-            .getByRole("heading", { name: "This slide is hidden and never numbered." })
-            .count(),
+          await capture.page.getByRole("heading", { name: "Hidden slide heading" }).count(),
         ).toBe(0),
       );
-      await vi.waitFor(async () =>
-        expect(await capture.page.getByText("Welcome everyone. This is the cover.").count()).toBe(
-          0,
-        ),
+      await eventually(async () =>
+        expect(await capture.page.getByText("Cover speaker note.").count()).toBe(0),
       );
       await capture.page.setViewportSize({ width: 1120, height: 630 });
       await capture.page.goto(new URL("?motion=instant#/1", capture.page.url()).href);
-      await vi.waitFor(async () =>
+      await eventually(async () =>
         expect(
-          await capture.page
-            .getByRole("heading", { name: "Basic fixture deck", exact: true })
-            .count(),
+          await capture.page.getByRole("heading", { name: "Cover heading", exact: true }).count(),
         ).toBe(1),
       );
       // The 1200 x 630 preview letterboxes the 16:9 slide; its middle 1120 columns are the
@@ -162,7 +183,7 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
 
   browserTest("leaves a supplied public og.png unchanged", async () => {
     const dir = await output();
-    await cp(resolve("examples/basic"), join(dir, "deck"), {
+    await cp(repoPath("examples/basic"), join(dir, "deck"), {
       recursive: true,
       filter: (file) => !file.includes("/.vite/"),
     });
@@ -181,7 +202,7 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
     "builds a preview locally when the production assets have an absolute CDN base",
     async () => {
       const dir = await output();
-      await build(await loadDeck("examples/basic"), {
+      await build(await loadDeck(basic), {
         outDir: dir,
         base: "https://cdn.example.invalid/talk/",
       });
@@ -207,19 +228,19 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
 });
 
 it.each([
-  ["export", "examples/basic"],
-  ["shot", "examples/basic", "1"],
+  ["export", basic],
+  ["shot", basic, "1"],
 ])("%s explains how to install Chromium and exits 1 without downloading it", async (...args) => {
   const result = await cliWithNoBrowser(args);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("npx playwright install chromium");
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it("build without Chromium succeeds with one warning and no generated image", async () => {
   const dir = await output();
   const outDir = join(dir, "site");
-  const result = await cliWithNoBrowser(["build", "examples/basic", "--out", outDir]);
+  const result = await cliWithNoBrowser(["build", basic, "--out", outDir]);
   expect(result.code).toBe(0);
   expect(result.stderr.trim().split("\n")).toEqual([
     "decks build: og.png skipped. Chromium is not installed. Run npx playwright install chromium.",
@@ -232,19 +253,21 @@ it.each([
   ["99", "0", "Unknown slide 99"],
   ["1", "1", "Slide 1 has 0 clicks"],
 ])("shot rejects slide %s click %s", async (slide, click, error) => {
-  const command = cli(process.cwd(), ["shot", "examples/basic", slide, click]);
+  const { dir } = await fixture(onTestFinished);
+  const command = cli(dir, ["shot", ".", slide, click]);
   const [code] = await command.exit;
   expect(code).toBe(1);
   expect(command.output().stderr).toContain(error);
 });
 
 it.each([
-  ["shot", "examples/basic", "1"],
-  ["export", "examples/basic"],
+  ["shot", ".", "1"],
+  ["export", "."],
 ])("%s rejects unknown options instead of silently writing a file", async (...args) => {
-  const command = cli(process.cwd(), [...args, "--bogus"]);
+  const { dir } = await fixture(onTestFinished);
+  const command = cli(dir, [...args, "--bogus"]);
   const [code] = await command.exit;
   expect(code).toBe(1);
   expect(command.output().stderr).toContain("Unknown option '--bogus'");
-  expect(command.output().stderr).not.toContain("This is a bug");
+  expect(command.output().stderr).not.toContain(bugNotice);
 });
