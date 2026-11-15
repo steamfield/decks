@@ -9,7 +9,8 @@ test("Stagger enters in order with different opacities partway through entry.", 
   await page.goto("/#/9");
   await position(page, 9);
   const items = page.locator("[data-deck-active] [data-step-state] [data-step-state]");
-  expect(await pauseEntry(page)).toBe(await items.count());
+  const paused = await pauseEntry(page);
+  await expect(items).toHaveCount(paused);
   const values = await items.evaluateAll((elements) =>
     elements.map((element) => Number(getComputedStyle(element).opacity)),
   );

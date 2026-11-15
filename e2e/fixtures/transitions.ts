@@ -17,12 +17,9 @@ declare global {
   }
 }
 
-export async function settle(page: Page) {
-  await page.evaluate(() => {
-    if (!window.__deck) throw new Error("Missing deck settle API");
-    return window.__deck.settled();
-  });
-}
+export { settled as settle } from "./deck-driver";
+
+import { settled as settle } from "./deck-driver";
 
 export async function open(page: Page, slide = 17, search = "") {
   await page.goto(`/${search}#/${slide}`);
@@ -50,12 +47,31 @@ export async function open(page: Page, slide = 17, search = "") {
 }
 
 export async function keys(page: Page, names: string[]) {
-  await page.evaluate((names) => {
-    for (const key of names) {
-      window.dispatchEvent(new KeyboardEvent("keydown", { key, code: key, bubbles: true }));
-      window.dispatchEvent(new KeyboardEvent("keyup", { key, code: key, bubbles: true }));
-    }
-  }, names);
+  if (names.length > 1)
+    await page.evaluate(() => {
+      const start = document.startViewTransition.bind(document);
+      const released = new Promise<void>((resolve) =>
+        window.addEventListener("release-key-batch", () => resolve(), { once: true }),
+      );
+      document.startViewTransition = (update) =>
+        start(async () => {
+          await released;
+          if (typeof update === "function") await update();
+        });
+      window.addEventListener(
+        "restore-key-batch",
+        () => {
+          document.startViewTransition = start;
+        },
+        { once: true },
+      );
+    });
+  for (const key of names) await page.keyboard.press(key);
+  if (names.length > 1)
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("restore-key-batch"));
+      window.dispatchEvent(new Event("release-key-batch"));
+    });
 }
 
 export const test = motionTest.extend({

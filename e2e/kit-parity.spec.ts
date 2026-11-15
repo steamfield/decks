@@ -44,11 +44,13 @@ test("The cover has its brand, body and byline rows and uses the installed theme
   ).toBeVisible();
   await expect(page.getByText("Edited by Riley Hilliard")).toBeVisible();
   await settled(page);
-  expect(
-    await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue("--od-cyan").trim(),
-    ),
-  ).toBe("#06b6d4");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--od-cyan").trim(),
+      ),
+    )
+    .toBe("#06b6d4");
   if (process.platform === "darwin") {
     const actual = PNG.sync.read(await page.screenshot());
     const baseline = PNG.sync.read(

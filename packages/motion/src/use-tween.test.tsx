@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { StrictMode, useLayoutEffect } from "react";
-import { describe, expect, it, onTestFinished } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { gsap, motionMode, useTween } from "./index";
-import { tick } from "./motion.test-support";
+import { advance, tick } from "./motion.test-support";
 
 function TweenProbe({
   initial,
@@ -107,10 +107,32 @@ describe("useTween", () => {
     expect(commits).toEqual([0]);
     const tween = gsap.to(value, { x: 100, duration: 1, ease: "none" });
     await tick(0.5);
-    expect(Number(screen.getByRole("status").textContent?.split("/")[0])).toBeCloseTo(50, 0);
+    expect(Number(screen.getByRole("status").textContent?.split("/")[0])).toBe(50);
     await tick(0.6);
     expect(screen.getByRole("status")).toHaveTextContent("100/0");
     tween.kill();
+  });
+
+  it("publishes timer writes together with the tween's halfway pose", async () => {
+    const values: { x: number; y: number }[] = [];
+    render(<TweenProbe initial={{ x: 0, y: 0 }} commit={(value) => values.push(value)} />);
+    const value = values[0];
+    if (!value) throw new Error("Missing tween value");
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const tween = gsap.to(value, { x: 100, duration: 1, ease: "none" });
+    onTestFinished(() => {
+      tween.kill();
+    });
+    setTimeout(() => {
+      value.y = 7;
+    }, 500);
+    await advance(0.5);
+    expect(screen.getByRole("status")).toHaveTextContent("50/7");
+    await advance(0.5);
+    expect(screen.getByRole("status")).toHaveTextContent("100/7");
   });
 
   it("keeps pending writes safe when its owner unmounts", async () => {

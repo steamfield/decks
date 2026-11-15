@@ -1,15 +1,11 @@
-import { resolve } from "node:path";
-import { test as base, expect, type Page } from "@playwright/test";
-import { dev, loadDeck } from "@steamfield/decks/node";
-
-export const motionClockURL = `/@fs/${resolve("e2e/fixtures/motion-clock.ts")}`;
+import { expect, type Page } from "@playwright/test";
+import { loadDeck } from "@steamfield/decks/node";
+import { test as base } from "./deck.fixture";
 
 export const test = base.extend<object, { motionURL: string }>({
   motionURL: [
-    async ({ browserName }, use) => {
-      const server = await dev(await loadDeck("examples/motion", `motion-${browserName}`), {
-        port: 0,
-      });
+    async ({ browserName, deckServer }, use) => {
+      const server = await deckServer(await loadDeck("examples/motion", `motion-${browserName}`));
       try {
         await use(server.url);
       } finally {

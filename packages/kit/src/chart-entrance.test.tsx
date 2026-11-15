@@ -2,6 +2,7 @@ import { mountDeck } from "@react-decks/runtime";
 import { act, screen } from "@testing-library/react";
 import { expect, it, onTestFinished, vi } from "vitest";
 import { useChartEntrance } from "./chart-entrance";
+import { advance } from "./kit.test-support";
 
 function Animated() {
   useChartEntrance({ enter: { duration: 900 }, annotationDelay: 350 }, true, 1);
@@ -45,13 +46,9 @@ it.each([true, false])(
     const completion = window.__deck?.settled().then(() => {
       complete = true;
     });
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(enabled ? 1249 : 40);
-    });
+    await advance(enabled ? 1.249 : 0.04);
     expect(complete).toBe(!enabled);
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(41);
-    });
+    await advance(0.041);
     await completion;
     expect(complete).toBe(true);
   },

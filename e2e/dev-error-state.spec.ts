@@ -69,7 +69,9 @@ test("An invalid config retains the previous deck and resends its overlay after 
   await page.reload();
   await expect(page.getByText(message, { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Three steps", exact: true })).toBeVisible();
+  const restarted = page.waitForEvent("load");
   await app.put("deck.config.ts", original);
+  await restarted;
   await expect(page.getByRole("heading", { name: "Three steps", exact: true })).toBeVisible();
   await expect(page.getByText(message, { exact: true })).not.toBeVisible();
   await expect(page).toHaveURL(`${app.url}#/2?clicks=2`);
@@ -99,7 +101,7 @@ test("An MDX edit keeps the last good content under the overlay and recovers wit
   );
   await expect(page.getByRole("heading", { name: "Saved slide", exact: true })).toBeVisible();
   await expect(page.getByText(/Unexpected end of file in name/)).not.toBeVisible();
-  expect(await page.evaluate(() => window.e2eDocument)).toBe("last good slide");
+  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBe("last good slide");
 });
 
 test("An undefined component is reported in dev with its source position.", async ({

@@ -1,7 +1,8 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { dev, loadDeck } from "@steamfield/decks/node";
+import { test } from "./fixtures/deck.fixture";
 
 test("A deck renders inline and display math as KaTeX markup.", async ({ page }) => {
   await mkdir(resolve(".tmp"), { recursive: true });

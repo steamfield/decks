@@ -14,9 +14,9 @@ test("Presenter controls animate the audience while the presenter stays still", 
   await expect(page).toHaveURL(/#\/18$/);
   await settle(page);
   await settle(presenter);
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toContain("push");
-  expect(await page.evaluate(() => window.e2eNavAttributes)).toContain("forward");
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toContain("push");
+  await expect.poll(() => page.evaluate(() => window.e2eNavAttributes)).toContain("forward");
   await expect(presenter.locator("html")).not.toHaveAttribute("data-deck-transition");
   await expect(presenter.locator("html")).toHaveAttribute("data-deck-motion", "instant");
-  expect(await presenter.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
+  await expect.poll(() => presenter.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
 });

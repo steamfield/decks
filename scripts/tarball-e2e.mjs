@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
-import { execFile, spawn } from "node:child_process";
-import { once } from "node:events";
+import { execFile } from "node:child_process";
 import { mkdir, mkdtemp, readdir, readFile, realpath, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify, stripVTControlCharacters } from "node:util";
+import { promisify } from "node:util";
 import { chromium, expect } from "@playwright/test";
 import { preview } from "vite";
+import { cliProcess } from "../packages/node/src/cli-process.test-support.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const keep = process.argv.includes("--keep");
@@ -247,33 +247,15 @@ async function staticBuild(project) {
 async function dev(project) {
   const env = { ...offline, FORCE_COLOR: "1" };
   delete env.NO_COLOR;
-  const child = spawn(join(project, "node_modules/.bin/decks"), ["dev", "hello", "--port", "0"], {
-    cwd: project,
-    env,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  const closed = once(child, "close");
-  let output = "";
-  child.stdout.on("data", (data) => {
-    output += data;
-  });
-  child.stderr.on("data", (data) => {
-    output += data;
-  });
+  const process = cliProcess(
+    join(project, "node_modules/.bin/decks"),
+    ["dev", "hello", "--port", "0"],
+    { cwd: project, env },
+  );
   try {
-    await expect
-      .poll(
-        () => {
-          assert(child.exitCode === null, `Dev server exited: ${output}`);
-          return stripVTControlCharacters(output).match(/http:\/\/[^\s]+/)?.[0];
-        },
-        { timeout: 30_000, message: "Dev server must print its URL" },
-      )
-      .toBeTruthy();
-    await browse(stripVTControlCharacters(output).match(/http:\/\/[^\s]+/)[0]);
+    await browse(await process.url());
   } finally {
-    if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
-    await closed;
+    await process.close();
   }
 }
 

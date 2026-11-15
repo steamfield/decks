@@ -25,7 +25,7 @@ test("End before the final module resolves cuts without an error", async ({ page
   );
   await expect(page.locator("[data-deck-active]").getByRole("heading").first()).toBeVisible();
   await settle(page);
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
 });
 
 test("An unresolved target skips a transition whose callback is still pending", async ({

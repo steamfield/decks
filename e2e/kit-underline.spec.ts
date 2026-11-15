@@ -1,4 +1,5 @@
-import { expect, type Locator, test } from "@playwright/test";
+import { expect, type Locator } from "@playwright/test";
+import { test } from "./fixtures/deck.fixture";
 import { kitFixture, settled } from "./fixtures/kit.fixture";
 
 async function expectMarkFits(word: Locator) {
@@ -23,9 +24,10 @@ async function expectMarkFits(word: Locator) {
 for (const style of ["clean", "marker"]) {
   test(`The ${style} underline follows its word after font loading and frame resizing`, async ({
     page,
+    deckServer,
   }) => {
     const fonts = Promise.withResolvers<void>();
-    const server = await kitFixture({
+    const server = await kitFixture(deckServer, {
       "setup.ts": `import { installTheme, resolveTheme, STORY_STYLE } from "@steamfield/decks/kit";
 installTheme(resolveTheme()); STORY_STYLE.ink = "${style}";`,
       "slides/01-underline.mdx": "<UnderlineProbe />",

@@ -23,7 +23,7 @@ test("Adding a Step in a running deck makes the new inferred click reachable.", 
   await writeFile(file, `${source}\n<Step at={2}>New counted marker</Step>\n`);
   await loaded;
   await expect(page.getByText("Slide 2 of 5, click 1 of 2, active", { exact: true })).toBeVisible();
-  expect(await page.evaluate(() => window.e2eDocument)).toBeUndefined();
+  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBeUndefined();
   await page.keyboard.press("ArrowRight");
   await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=2`);
   await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
@@ -47,7 +47,7 @@ test("A slide body edit hot-updates without reloading or losing its click.", asy
   await expect(page.getByRole("heading", { name: "Edited steps", exact: true })).toBeVisible();
   await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
   await expect(page).toHaveURL(url);
-  expect(await page.evaluate(() => window.e2eDocument)).toBe("before edit");
+  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBe("before edit");
 });
 
 test("A frontmatter edit reloads while keeping slide two at click two.", async ({
@@ -86,7 +86,10 @@ test("A slide compile failure leaves its neighbour working and recovers after a 
       exact: true,
     }),
   ).toBeVisible();
+  const recovered = page.waitForEvent("load");
   await writeFile(file, original);
+  await recovered;
+  await expect(page.getByRole("heading", { name: "The end", exact: true })).toBeVisible();
   await page.keyboard.press("Home");
   await expect(
     page.getByRole("heading", { name: "Basic fixture deck", exact: true }),

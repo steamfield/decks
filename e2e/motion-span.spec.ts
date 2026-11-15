@@ -1,8 +1,8 @@
 import { expect } from "@playwright/test";
 import { test } from "./fixtures/motion.fixture";
 
-test("A span Step applies its scale to the rendered box.", async ({ page }) => {
-  await page.goto("/#/5");
+test("A span Step applies its scale to the rendered box.", async ({ page, deck }) => {
+  await deck.goto(5);
   await expect(page.getByRole("heading", { name: "Step / scale", exact: true })).toBeVisible();
   const step = page.locator("[data-deck-active] [data-step-state]");
   const before = await step.evaluate((element) => element.getBoundingClientRect().width);

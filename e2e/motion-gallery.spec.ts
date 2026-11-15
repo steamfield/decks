@@ -3,11 +3,11 @@ import { expect } from "@playwright/test";
 import { test } from "./fixtures/motion.fixture";
 import { gallery, pauseEntry, poses, position, settled } from "./fixtures/motion-gallery";
 
-test("Every gallery click reverses to exactly the poses before it.", async ({ page }) => {
-  test.setTimeout(90_000);
-  for (let no = 1; no <= gallery.length; no++) {
+for (let no = 1; no <= gallery.length; no++) {
+  test(`Gallery slide ${no} reverses every click to the pose before it.`, async ({ page }) => {
     const total = gallery[no - 1]?.meta.clicks ?? 0;
     await page.goto(`/#/${no}`);
+    await position(page, no);
     for (let click = 0; click < Math.max(total, no < gallery.length ? 1 : 0); click++) {
       await position(page, no, click);
       await settled(page, no, click);
@@ -22,29 +22,36 @@ test("Every gallery click reverses to exactly the poses before it.", async ({ pa
       await expect.poll(() => poses(page)).toEqual(before);
       if (click + 1 < total) await page.keyboard.press("ArrowRight");
     }
-  }
-});
-
-test("Direct instant loads at the last click match settled live arrival on every slide.", async ({
-  page,
-  context,
-}) => {
-  test.setTimeout(90_000);
-  const instant = await context.newPage();
-  await instant.addInitScript(() => {
-    const firstFrame = () => {
-      if (document.querySelector("[data-deck-active] h1"))
-        Reflect.set(
-          window,
-          "motionFirstMode",
-          document.documentElement.getAttribute("data-deck-motion"),
-        );
-      else requestAnimationFrame(firstFrame);
-    };
-    requestAnimationFrame(firstFrame);
   });
-  await page.goto("/#/1");
-  for (let no = 1; no <= gallery.length; no++) {
+}
+
+for (let no = 1; no <= gallery.length; no++) {
+  test(`Gallery slide ${no}'s instant load matches its settled live arrival.`, async ({
+    page,
+    context,
+  }) => {
+    const instant = await context.newPage();
+    await instant.addInitScript(() => {
+      const firstFrame = () => {
+        if (document.querySelector("[data-deck-active] h1"))
+          Reflect.set(
+            window,
+            "motionFirstMode",
+            document.documentElement.getAttribute("data-deck-motion"),
+          );
+        else requestAnimationFrame(firstFrame);
+      };
+      requestAnimationFrame(firstFrame);
+    });
+    if (no === 1) await page.goto("/#/1");
+    else {
+      const previous = no - 1;
+      const clicks = gallery[previous - 1]?.meta.clicks ?? 0;
+      await page.goto(`/#/${previous}?clicks=${clicks}`);
+      await position(page, previous, clicks);
+      await settled(page, previous, clicks);
+      await page.keyboard.press("ArrowDown");
+    }
     const total = gallery[no - 1]?.meta.clicks ?? 0;
     await position(page, no);
     await settled(page, no, 0);
@@ -60,22 +67,21 @@ test("Direct instant loads at the last click match settled live arrival on every
       .poll(() => instant.evaluate(() => Reflect.get(window, "motionFirstMode")))
       .toBe("instant");
     await settled(instant, no, total);
-    expect(await poses(instant)).toEqual(live);
+    await expect.poll(() => poses(instant)).toEqual(live);
     await expect(instant.locator("html")).toHaveCSS("--deck-dur-base", "0ms");
-    if (no < gallery.length) await page.keyboard.press("ArrowRight");
-  }
-  await instant.close();
-});
+    await instant.close();
+  });
+}
 
 test("The gallery reverses interruptions and fits 4:3.", async ({ page }) => {
-  test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   for (const no of [9, 10, 11]) {
     await page.goto(`/#/${no}`);
     await position(page, no);
     const items = page.locator("[data-deck-active] [data-step-state] [data-step-state]");
-    expect(await pauseEntry(page)).toBe(await items.count());
+    const paused = await pauseEntry(page);
+    await expect(items).toHaveCount(paused);
     const entry = await items.evaluateAll((elements) =>
       elements.map((element) => Number(getComputedStyle(element).opacity)),
     );

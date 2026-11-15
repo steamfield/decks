@@ -10,7 +10,7 @@ import {
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentType } from "react";
-import { onTestFinished } from "vitest";
+import { onTestFinished, vi } from "vitest";
 import { gsap } from "./index";
 
 export async function setupMotion(
@@ -95,5 +95,13 @@ export async function tick(seconds = 0) {
     clock += seconds;
     gsap.updateRoot(clock);
     await Promise.resolve();
+  });
+}
+
+export async function advance(seconds: number) {
+  await act(async () => {
+    clock += seconds;
+    gsap.updateRoot(clock);
+    await vi.advanceTimersByTimeAsync(seconds * 1000);
   });
 }

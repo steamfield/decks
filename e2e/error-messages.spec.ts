@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { expect } from "@playwright/test";
-import { test } from "./fixtures/deck.fixture";
+import { settled, test } from "./fixtures/deck.fixture";
 import { test as errorTest } from "./fixtures/error.fixture";
 
 errorTest(
@@ -54,9 +54,9 @@ test("An exception applying a view transition is reported once and settles.", as
         "forward",
         {},
       );
-      await window.__deck?.settled();
     },
     `/@fs/${resolve("packages/runtime/src/transition.ts")}`,
   );
+  await settled(page);
   expect(errors).toEqual(["Apply failed"]);
 });

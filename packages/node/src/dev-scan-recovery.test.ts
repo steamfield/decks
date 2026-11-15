@@ -16,11 +16,7 @@ describe("scan recovery", { timeout: 60_000 }, () => {
     async (files) => {
       const { dir } = await fixture(onTestFinished, files);
       const process = cli(dir, ["dev", ".", "--port", "0"]);
-      let url = "";
-      await waitForWatcher(() => {
-        url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
-        expect(url, process.output().stderr).not.toBe("");
-      });
+      const url = await process.url();
       expect((await fetch(url)).status).toBe(200);
       expect((await fetch(new URL(virtual("manifest"), url))).status).toBe(500);
       process.child.kill("SIGTERM");

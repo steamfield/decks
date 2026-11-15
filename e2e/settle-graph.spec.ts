@@ -1,35 +1,22 @@
 import { resolve } from "node:path";
-import { expect, type Page, test } from "@playwright/test";
-import { dev, loadDeck } from "@steamfield/decks/node";
+import { expect } from "@playwright/test";
+import { settled as settle, startSettling, test } from "./fixtures/deck.fixture";
 import { kitFixture } from "./fixtures/kit.fixture";
-
-async function settle(page: Page) {
-  const result = await page.evaluateHandle(() => {
-    if (!window.__deck) throw new Error("Missing deck settle API");
-    const result = { done: false };
-    void window.__deck.settled().then(() => {
-      result.done = true;
-    });
-    return result;
-  });
-  try {
-    await page.waitForFunction((result) => result.done, result, { timeout: 15_000 });
-  } finally {
-    await result.dispose();
-  }
-}
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 test("The Dataset Graph settles on two forward and reverse walks while its orbit runs", async ({
   page,
+  deckServer,
 }, testInfo) => {
   test.setTimeout(180_000);
-  const server = await dev(await loadDeck(resolve("examples/opendata-pitch")), { port: 0 });
+  const server = await deckServer(resolve("examples/opendata-pitch"));
   const motion = `/@fs/${resolve("packages/decks/src/motion.ts")}`;
   try {
     const cdp = await page.context().newCDPSession(page);
-    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    await cdp.send("Emulation.setCPUThrottlingRate", {
+      rate: Number(process.env.DECK_E2E_CPU_RATE ?? 4),
+    });
     await page.goto(`${server.url}#/4`);
     const heading = page.getByRole("heading", {
       name: "Every dataset we clean joins the Dataset Graph.",
@@ -104,8 +91,10 @@ test("The Dataset Graph settles on two forward and reverse walks while its orbit
 
 test("A finite beat finishes after skipped frames while an infinite animation keeps running", async ({
   page,
+  motionClock,
+  deckServer,
 }) => {
-  const server = await kitFixture({
+  const server = await kitFixture(deckServer, {
     "slides/01-beat.mdx": "---\nclicks: 1\n---\n<Beat />",
     "components/Beat.tsx": `
 import { gsap, useTimeline, useTween } from "@steamfield/decks/motion";
@@ -126,39 +115,31 @@ export function Beat() {
 }`,
   });
   try {
-    await page.clock.install();
     await page.goto(server.url);
     await expect(page.getByRole("status", { name: "Finite beat" })).toHaveText("0");
     await settle(page);
-    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+    await motionClock.pauseAt();
     await page.keyboard.press("ArrowRight");
-    const result = await page.evaluateHandle(() => {
-      if (!window.__deck) throw new Error("Missing deck settle API");
-      const result = { done: false };
-      void window.__deck.settled().then(() => {
-        result.done = true;
-      });
-      return result;
-    });
+    const result = await startSettling(page);
     try {
-      await page.clock.runFor(400);
-      expect(await result.evaluate((result) => result.done)).toBe(false);
+      await motionClock.step(400);
+      await expect.poll(() => result.evaluate((result) => result.done)).toBe(false);
       const midBeat = Number(await page.getByRole("status", { name: "Finite beat" }).textContent());
       expect(midBeat).toBeGreaterThan(0);
       expect(midBeat).toBeLessThan(100);
       await page.clock.fastForward(2000);
-      await page.clock.runFor(64);
+      await motionClock.step(64);
       await expect(page.getByRole("status", { name: "Finite beat" })).toHaveText("100");
-      expect(await result.evaluate((result) => result.done)).toBe(true);
+      await expect.poll(() => result.evaluate((result) => result.done)).toBe(true);
       const before = await page
         .getByText("Orbit", { exact: true })
         .evaluate((element) => element.style.transform);
-      await page.clock.runFor(100);
-      expect(
-        await page
-          .getByText("Orbit", { exact: true })
-          .evaluate((element) => element.style.transform),
-      ).not.toBe(before);
+      await motionClock.step(100);
+      await expect
+        .poll(() =>
+          page.getByText("Orbit", { exact: true }).evaluate((element) => element.style.transform),
+        )
+        .not.toBe(before);
     } finally {
       await result.dispose();
     }

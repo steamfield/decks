@@ -1,11 +1,12 @@
 import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { test as base, type Page } from "@playwright/test";
-import { dev, loadDeck } from "@steamfield/decks/node";
+import { type DevServer, loadDeck } from "@steamfield/decks/node";
+
+import { test as base } from "./deck.fixture";
 
 export const test = base.extend<object, { kitURL: string }>({
   kitURL: [
-    async ({ browserName: _browserName }, use) => {
+    async ({ browserName: _browserName, deckServer }, use) => {
       await mkdir(resolve(".tmp"), { recursive: true });
       const dir = await mkdtemp(resolve(".tmp/tides-"));
       try {
@@ -36,10 +37,7 @@ export const test = base.extend<object, { kitURL: string }>({
         }
         // The Slidev baselines have no credit and no band for it.
         const deck = await loadDeck(dir, "tides-slide");
-        const server = await dev(
-          { ...deck, config: { ...deck.config, credit: false } },
-          { port: 0 },
-        );
+        const server = await deckServer({ ...deck, config: { ...deck.config, credit: false } });
         try {
           await use(server.url);
         } finally {
@@ -56,15 +54,12 @@ export const test = base.extend<object, { kitURL: string }>({
   },
 });
 
-export async function settled(page: Page) {
-  await page.evaluate(async () => {
-    if (!window.__deck) throw new Error("Missing deck settle API");
-    await window.__deck.settled();
-    await document.fonts.ready;
-  });
-}
+export { settled } from "./deck-driver";
 
-export async function kitFixture(files: Record<string, string>) {
+export async function kitFixture(
+  start: (dir: string) => Promise<DevServer>,
+  files: Record<string, string>,
+) {
   await mkdir(resolve(".tmp"), { recursive: true });
   const dir = await mkdtemp(resolve(".tmp/kit-"));
   for (const [file, content] of Object.entries({
@@ -81,7 +76,7 @@ export async function kitFixture(files: Record<string, string>) {
   await mkdir(join(dir, "node_modules/@steamfield"), { recursive: true });
   await symlink(resolve("packages/decks"), join(dir, "node_modules/@steamfield/decks"), "dir");
   try {
-    const server = await dev(await loadDeck(dir), { port: 0 });
+    const server = await start(dir);
     return {
       ...server,
       dir,
