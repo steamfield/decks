@@ -66,6 +66,7 @@ describe("every current command matches the CLI", () => {
       "config: bun",
       "config: npm",
       "config: pnpm",
+      "config: stacks",
       "page: what you get",
     ])
       expect(files).toContain(file);
@@ -92,8 +93,10 @@ describe("every current command matches the CLI", () => {
     expect(() => expectCommand(line, true)).toThrow();
   });
 
-  it("installs the package and React peers from every tab", () => {
-    for (const option of site.install) {
+  it("installs the package and React peers from every package-manager tab", () => {
+    const managers = site.install.filter((option) => option.label !== "stacks");
+    expect(managers.map((option) => option.label)).toEqual(["bun", "npm", "pnpm"]);
+    for (const option of managers) {
       expect(splitCommands(option.command)[0]?.split(/\s+/).slice(2)).toEqual([
         pkg.name,
         "react",
@@ -102,6 +105,15 @@ describe("every current command matches the CLI", () => {
       expect(option.command).toContain("claude plugin install decks@steamfield --scope project");
     }
     for (const name of [pkg.name, "react", "react-dom"]) expect(guide).toContain(name);
+  });
+
+  it("offers one stacks line that scaffolds the deck the dev command serves", () => {
+    const stacks = site.install.filter((option) => option.label === "stacks");
+    expect(stacks.map((option) => option.command)).toEqual([
+      "npx @steamfield/stacks@latest new decks my-talk",
+    ]);
+    // The decks stack registers the first deck under the project name.
+    expect(site.devCommand.split(" ").at(-1)).toBe("my-talk");
   });
 
   it("uses the plugin and marketplace's current agent setup", () => {

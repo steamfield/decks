@@ -18,6 +18,12 @@ const run = (runner: "bunx" | "npx" | "pnpm", args: string) =>
   runner === "pnpm" ? `pnpm exec decks ${args}` : `${runner} -p @steamfield/decks decks ${args}`;
 const peers = "@steamfield/decks react react-dom";
 const pluginInstall = "claude plugin install decks@steamfield --scope project";
+/**
+ * The stacks CLI's `decks` stack (github.com/steamfield/stacks) writes the project shell and
+ * hands it to the user's coding agent, which installs the package, runs `decks new` and
+ * `decks init`, and checks the result with `stacks verify`. The deck alias is the project name.
+ */
+const stacksNew = "npx @steamfield/stacks@latest new decks my-talk";
 
 /** The agents the installed guidance supports. The requirements row, the hero's fine print and the section lede all read this list. */
 export const agents = ["Claude Code", "Codex"];
@@ -99,6 +105,7 @@ export const site = {
         run("pnpm", "new my-talk --story"),
       ].join("\n"),
     },
+    { label: "stacks", command: stacksNew },
   ] as InstallOption[],
   /** The dev server for the new deck, named in "What you get". */
   devCommand: run("bunx", "dev my-talk"),
