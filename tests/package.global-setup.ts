@@ -11,6 +11,7 @@ export default async function setup(project: TestProject) {
     for (const path of [
       "package.json",
       "bun.lock",
+      "LICENSE",
       "tsconfig.json",
       "packages",
       "docs/guide",
