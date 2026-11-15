@@ -11,7 +11,7 @@
  *   date of the commit that last wrote it:
  *   `git log -1 --format=%ad --date=short -- site/fixtures/hook-denial.json`
  * PATTERNS, DENIED: the rows of packages/node/lint/ai-rhetoric-patterns.tsv,
- *   read the way `loadPatterns` in packages/node/src/commands/prose-patterns.ts reads them.
+ *   read the way `loadPatterns` in packages/node/src/prose/prose-patterns.ts reads them.
  *   A row of severity `error` is one the write hook denies (the file's header
  *   comment, and `errorsOnly` in scan.mjs).
  * SOURCED_FIGURES: the table rows of this deck's data-sources.md and of

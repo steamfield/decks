@@ -33,6 +33,6 @@
     "pngjs": "7.0.0"
   },
   "bin": {
-    "decks": "./src/cli.ts"
+    "decks": "./src/cli/cli.ts"
   }
 }

@@ -1,0 +1,216 @@
+import { spawnSync } from "node:child_process";
+import { mkdir, readdir, readFile, symlink } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
+import { expect, inject, it } from "vitest";
+import { installedInit, pluginProject } from "./plugin.test-support";
+
+const packageDir = inject("builtPackage");
+
+const installLine =
+  "Each collaborator runs once: claude plugin install decks@steamfield --scope project";
+const skill = ".agents/skills/building-a-deck/SKILL.md";
+const shipped = "installed-decks/dist/plugin/skills/building-a-deck/SKILL.md";
+const read = (dir: string, file: string) => readFile(join(dir, file), "utf8");
+
+it("merges project settings, copies skills and appends guidance without changing surrounding text", async () => {
+  const { dir, put } = await pluginProject(packageDir);
+  const previous = {
+    hooks: {
+      PreToolUse: [{ matcher: "Write", hooks: [{ type: "command", command: "my-check" }] }],
+    },
+    permissions: { allow: ["Read"] },
+    extraKnownMarketplaces: { mine: { source: { source: "github", repo: "me/tools" } } },
+    enabledPlugins: { "mine@mine": true },
+  };
+  await put(".claude/settings.json", JSON.stringify(previous));
+  await put("AGENTS.md", "# Project\n\nKeep this guidance.\n");
+  await put(shipped, "# Build a deck\n");
+  await put("installed-decks/dist/plugin/skills/building-a-deck/references/setup.md", "Setup\n");
+  const result = installedInit(dir);
+  expect(result.status, result.stderr).toBe(0);
+  const { version } = JSON.parse(await read(dir, "installed-decks/package.json"));
+  expect(JSON.parse(await read(dir, ".claude/settings.json"))).toEqual({
+    ...previous,
+    extraKnownMarketplaces: {
+      ...previous.extraKnownMarketplaces,
+      steamfield: { source: { source: "github", repo: "steamfield/decks", ref: `v${version}` } },
+    },
+    enabledPlugins: { ...previous.enabledPlugins, "decks@steamfield": true },
+  });
+  expect(await read(dir, skill)).toBe("# Build a deck\n");
+  expect(await read(dir, ".agents/skills/building-a-deck/references/setup.md")).toBe("Setup\n");
+  const agents = await read(dir, "AGENTS.md");
+  expect(agents).toMatch(/^# Project\n\nKeep this guidance.\n\n<!-- decks:start -->/);
+  expect(agents).toContain("node_modules/@steamfield/decks/docs/");
+  for (const name of [
+    "building-a-deck",
+    "writing-slides",
+    "deck-design",
+    "deck-motion",
+    "visualization",
+    "deck-data",
+    "working-with-decks",
+  ])
+    expect(agents).toContain(`\`${name}\``);
+  expect(result.stdout.trimEnd().split("\n").at(-1)).toBe(installLine);
+  expect(result.stdout).toContain(`Wrote ${skill}`);
+});
+
+it("updates the version and unedited skills while preserving edited skills and section across reruns", async () => {
+  const { dir, put } = await pluginProject(packageDir);
+  await put(shipped, "Original skill\n");
+  await put("installed-decks/dist/plugin/skills/deck-data/SKILL.md", "Original data\n");
+  expect(installedInit(dir).status).toBe(0);
+  await put(skill, "My skill\n");
+  const agents = (await read(dir, "AGENTS.md")).replace("## Decks", "## Decks\n\nMy rule.");
+  await put("AGENTS.md", `Before\n${agents}After\n`);
+  const metadata = JSON.parse(await read(dir, "installed-decks/package.json"));
+  await put("installed-decks/package.json", JSON.stringify({ ...metadata, version: "1.0.0-rc.1" }));
+  await put(shipped, "Upgraded skill\n");
+  await put("installed-decks/dist/plugin/skills/deck-data/SKILL.md", "Upgraded data\n");
+  for (let run = 0; run < 2; run++) {
+    const result = installedInit(dir);
+    expect(result.status, result.stderr).toBe(0);
+    expect(await read(dir, skill)).toBe("My skill\n");
+    expect(await read(dir, ".agents/skills/deck-data/SKILL.md")).toBe("Upgraded data\n");
+    expect(await read(dir, "AGENTS.md")).toBe(`Before\n${agents}After\n`);
+    expect(result.stdout).toContain(`Kept ${skill}: edited since last init`);
+    expect(result.stdout).toContain("Kept AGENTS.md Decks section: edited since last init");
+    if (run === 0)
+      expect(result.stdout).toContain("claude plugin update decks@steamfield --scope project");
+  }
+  expect(
+    JSON.parse(await read(dir, ".claude/settings.json")).extraKnownMarketplaces.steamfield.source
+      .ref,
+  ).toBe("v1.0.0-rc.1");
+  const forced = installedInit(dir, ["--force"]);
+  expect(forced.status, forced.stderr).toBe(0);
+  expect(await read(dir, skill)).toBe("Upgraded skill\n");
+  expect(await read(dir, "AGENTS.md")).not.toContain("My rule.");
+  expect(await read(dir, "AGENTS.md")).toMatch(/^Before\n[\s\S]+After\n$/);
+});
+
+it("ships source skills through the package build and copies binary references unchanged", async () => {
+  const { dir } = await pluginProject(packageDir);
+  const result = installedInit(dir);
+  expect(result.status, result.stderr).toBe(0);
+  expect(await read(dir, ".agents/skills/init-fixture/SKILL.md")).toBe("# Packaged fixture\n");
+  expect(await readFile(join(dir, ".agents/skills/init-fixture/references/image.png"))).toEqual(
+    Buffer.from([137, 80, 78, 71, 255, 0]),
+  );
+});
+
+it("updates managed skills and the section after a CRLF checkout without treating it as an edit", async () => {
+  const { dir, put } = await pluginProject(packageDir);
+  await put(shipped, "Original skill\n");
+  expect(installedInit(dir).status).toBe(0);
+  await put(skill, "Original skill\r\n");
+  await put("AGENTS.md", (await read(dir, "AGENTS.md")).replaceAll("\n", "\r\n"));
+  await put(shipped, "Upgraded skill\n");
+  const result = installedInit(dir);
+  expect(result.status, result.stderr).toBe(0);
+  expect(await read(dir, skill)).toBe("Upgraded skill\n");
+  expect(result.stdout).not.toContain("Kept AGENTS.md");
+});
+
+it("recognizes a Windows ownership record when upgrading on another platform", async () => {
+  const { dir, put } = await pluginProject(packageDir);
+  await put(shipped, "Original skill\n");
+  expect(installedInit(dir).status).toBe(0);
+  const manifestPath = ".agents/skills/.decks-init.json";
+  const manifest = JSON.parse(await read(dir, manifestPath));
+  manifest.files = Object.fromEntries(
+    Object.entries(manifest.files).map(([key, value]) => [key.replaceAll("/", "\\"), value]),
+  );
+  await put(manifestPath, JSON.stringify(manifest));
+  await put(shipped, "Upgraded skill\n");
+  const result = installedInit(dir);
+  expect(result.status, result.stderr).toBe(0);
+  expect(await read(dir, skill)).toBe("Upgraded skill\n");
+  expect(
+    Object.keys(JSON.parse(await read(dir, manifestPath)).files).some((key) => key.includes("\\")),
+  ).toBe(false);
+});
+
+it.each([
+  "AGENTS.md",
+  ".claude",
+  ".agents",
+  ".claude/settings.json",
+  ".agents/skills/init-fixture/SKILL.md",
+])("rejects symlink destination %s before writing anything", async (target) => {
+  const { dir } = await pluginProject(packageDir);
+  const external = await pluginProject();
+  await external.put("shared.md", "{}");
+  const file = target.endsWith(".md") || target.endsWith(".json");
+  await mkdir(dirname(join(dir, target)), { recursive: true });
+  await symlink(
+    file ? join(external.dir, "shared.md") : external.dir,
+    join(dir, target),
+    file ? "file" : "dir",
+  );
+  const before = await readdir(external.dir);
+  const result = installedInit(dir, ["--force"]);
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain("symlink");
+  expect(await readdir(external.dir)).toEqual(before);
+  expect(await read(external.dir, "shared.md")).toBe("{}");
+  expect(result.stdout).not.toContain("Wrote");
+});
+
+it("keeps unowned skill and section collisions even with force", async () => {
+  const { dir, put } = await pluginProject(packageDir);
+  await put(shipped, "Package skill");
+  await put(skill, "My existing skill");
+  const agents =
+    "Before\n<!-- decks:start -->\n## Decks\nMy own section\n<!-- decks:end -->\nAfter";
+  await put("AGENTS.md", agents);
+  const result = installedInit(dir, ["--force"]);
+  expect(result.status, result.stderr).toBe(0);
+  expect(await read(dir, skill)).toBe("My existing skill");
+  expect(await read(dir, "AGENTS.md")).toBe(agents);
+  expect(result.stdout).toContain(`Kept ${skill}: not installed by init`);
+});
+
+it.each([
+  [".claude/settings.json", "{broken"],
+  [".claude/settings.json", '{"enabledPlugins":[]}'],
+  [".agents/skills/.decks-init.json", '{"files":{"x":false}}'],
+  ["AGENTS.md", "<!-- decks:start -->\nMy rule"],
+])("reports invalid %s without changing the project", async (file, contents) => {
+  const { dir, put } = await pluginProject(packageDir);
+  await put(file, contents);
+  const before = await readdir(dir);
+  const result = installedInit(dir);
+  expect(result.status).toBe(1);
+  expect(result.stderr).not.toContain("This is a bug");
+  expect(await read(dir, file)).toBe(contents);
+  expect(await readdir(dir)).toEqual(before);
+});
+
+it("resolves the source package version and plugin skills when running the source CLI", async () => {
+  const { dir } = await pluginProject();
+  const result = spawnSync(
+    resolve("node_modules/.bin/tsx"),
+    [resolve("packages/node/src/cli/cli.ts"), "init"],
+    { cwd: dir, encoding: "utf8" },
+  );
+  if (result.error) throw result.error;
+  expect(result.status, result.stderr).toBe(0);
+  const metadata = JSON.parse(await readFile(resolve("packages/decks/package.json"), "utf8"));
+  expect(
+    JSON.parse(await read(dir, ".claude/settings.json")).extraKnownMarketplaces.steamfield.source
+      .ref,
+  ).toBe(`v${metadata.version}`);
+});
+
+it.each([["--bogus"], ["extra"]])(
+  "rejects arguments %j before writing guidance",
+  async (...args) => {
+    const { dir } = await pluginProject(packageDir);
+    const result = installedInit(dir, args);
+    expect(result.status).toBe(1);
+    expect(result.stderr).not.toContain("This is a bug");
+    expect(await readdir(dir)).not.toContain(".claude");
+  },
+);

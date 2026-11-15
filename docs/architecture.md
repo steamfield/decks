@@ -31,7 +31,7 @@ Cross-package imports use the bare package name. A relative import never leaves 
 
 All five packages are private workspaces consumed as TypeScript source: each `package.json`
 exports `./src/index.ts`, the kit also exports `./styles.css`, and `node`'s `bin` is
-`src/cli.ts`, run through `tsx`. Not built yet (planned for 1.0.0-rc): one published package,
+`src/cli/cli.ts`, run through `tsx`. Not built yet (planned for 1.0.0-rc): one published package,
 `@steamfield/decks`, that bundles them into compiled JS and `.d.ts` with subpath exports `.`,
 `/motion`, `/kit`, `/kit/styles.css` and `/node`, and a `decks` bin that runs under plain
 Node. The five source packages and the dependency rule above stay as they are.
@@ -1253,19 +1253,19 @@ with `morphSteps: true`):
 
 ## 6. node (Outline)
 
-- Vite plugins (`plugins.ts`; `reactDecks(deck)` returns them): one `react-decks` plugin
-  that scans `slides/*.mdx` (`slides.ts`), counts clicks (`clicks.ts`), checks components
-  (`components.ts`, `component-check.ts`), reads layers (`layers.ts`), renders notes
-  (`notes.ts`), serves the virtual modules and the generated HTML (`entry.ts`), and reports
-  errors (`errors.ts`, `error-reporting.ts`); the `@mdx-js/rollup` compiler with
-  `remark-frontmatter`, `<Notes>` removal and code highlighting (`code-blocks.ts`,
-  `code-options.ts`); and `@vitejs/plugin-react`. `server.ts` has `dev` and `build`.
+- Vite plugins (`dev/plugins.ts`; `reactDecks(deck)` returns them): one `react-decks` plugin
+  that scans `slides/*.mdx` (`mdx/slides.ts`), counts clicks (`mdx/clicks.ts`), checks components
+  (`dev/components.ts`, `mdx/component-check.ts`), reads layers (`dev/layers.ts`), renders notes
+  (`mdx/notes.ts`), serves the virtual modules and the generated HTML (`dev/entry.ts`), and reports
+  errors (`dev/errors.ts`, `dev/error-reporting.ts`); the `@mdx-js/rollup` compiler with
+  `remark-frontmatter`, `<Notes>` removal and code highlighting (`mdx/code-blocks.ts`,
+  `mdx/code-options.ts`); and `@vitejs/plugin-react`. `dev/server.ts` has `dev` and `build`.
 - Virtual modules: `virtual:react-decks/manifest`, `virtual:react-decks/components`,
   `virtual:react-decks/layers`, `virtual:react-decks/notes`, `virtual:react-decks/entry`
   (section 6.1). There is no theme module: a kit deck installs its theme in `setup.ts`
   (section 7.1).
-- `defineDeck` config, loaded with `jiti` and validated with zod at load (`config.ts`).
-- CLI `decks` (`cli.ts`): `dev` and `build` (section 6.1). Not built yet (planned for
+- `defineDeck` config, loaded with `jiti` and validated with zod at load (`dev/config.ts`).
+- CLI `decks` (`cli/cli.ts`): `dev` and `build` (section 6.1). Not built yet (planned for
   1.0.0-rc): `new` (conventional and story templates; writes `info`), `check`, `lint`,
   `hook` (`lint` and `prompt`), `init` (the agent setup), `export` (PDF through the print
   view), and `shot` (screenshots, also used to generate `public/og.png` at build when the deck
@@ -1394,7 +1394,7 @@ added or removed, frontmatter changed) discards component-local state.
 `build` empties `outDir` first and writes a static site that works from any `base` and from `file:`-relative
 hosting under that base; hash routing needs no server rewrites.
 
-CLI (`packages/node/src/cli.ts`, built with `citty`, run with `tsx`, which runs on Node):
+CLI (`packages/node/src/cli/cli.ts`, built with `citty`, run with `tsx`, which runs on Node):
 
 ```
 decks dev <deck> [--port <n>] [--open]

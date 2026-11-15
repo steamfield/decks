@@ -17,7 +17,7 @@ Pushing needs Riley's go-ahead.
 | Area | State |
 | --- | --- |
 | Packages | `react-decks/packages/{core,runtime,motion,node,kit}`, all private, named `@react-decks/*`, consumed as TypeScript source |
-| CLI | `decks dev` and `decks build` only (`packages/node/src/cli.ts`, run through `tsx`) |
+| CLI | `decks dev` and `decks build` only (`packages/node/src/cli/cli.ts`, run through `tsx`) |
 | Authoring | `deck.config.ts`, `slides/NN-slug.mdx`, `components/*.tsx`, `layers/{above,below,credit}.tsx`, `setup.ts`, `styles/`, `public/` |
 | Runtime | adaptive canvas, play / presenter (own window, `p`) / overview (`o`), two-window sync, slide transitions, layouts, code blocks, error reporting |
 | Motion | tokens, `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph`, `useTween`, `useTimeline`, `settled()` |
@@ -100,7 +100,7 @@ runs `bun dev` and `bun build`, and it works. None of that is true yet.
 - Add a build. Today every package exports `./src/index.ts` and the bin is a `.ts` file run
   by `tsx`. A published package needs compiled JS, `.d.ts`, a `bin` that runs under plain
   Node, `exports`, `files`, `peerDependencies` on `react` and `react-dom`, and the entry module
-  (`packages/node/src/entry.ts`) importing by the published name.
+  (`packages/node/src/dev/entry.ts`) importing by the published name.
 - The consumer layout: `decks.json` at the project root, decks under `decks/`, package
   scripts `dev` and `build`. `react-decks/decks.json` has `_config.decksDir`, which the CLI
   does not read.

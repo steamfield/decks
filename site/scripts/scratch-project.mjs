@@ -12,7 +12,7 @@ import { join, resolve } from "node:path";
 // dist/, import.meta paths no longer point here.
 const PACKAGE = resolve(process.cwd(), "../packages/decks");
 const tsx = createRequire(resolve(process.cwd(), "../package.json")).resolve("tsx");
-export const CLI = resolve(process.cwd(), "../packages/node/src/cli.ts");
+export const CLI = resolve(process.cwd(), "../packages/node/src/cli/cli.ts");
 /** What init and new are called with, in order. */
 const SETUP_ARGS = [["init"], ["new", "my-talk", "--story"]];
 /** The installed package supplies the local decks bin. */

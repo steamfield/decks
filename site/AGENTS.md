@@ -125,7 +125,7 @@ Cloudflare Worker `decks` serving `dist/` as static assets, production at decks.
 | `package.json` | `typescript@^6`: `astro check` refuses TypeScript 7 | `@astrojs/check` supports TypeScript 7 |
 | `tests/build.test.ts` | The probe build copies `site/` into a temp parent and symlinks `packages`, `examples`, `plugins` and root `node_modules` beside it, and copies the package guide so the probe can add a page, because the site reads its parent repo | The site stops reading the parent repo at build time |
 | `src/content-drift.test.ts`, `scripts/demo.mjs` | Import `../../packages/kit/src/theme-resolve.ts` across the package boundary to merge and validate the warm still's theme with the real resolver | The framework publishes the resolver on an export path the site can depend on |
-| `src/lib/tokens.ts`, `scripts/scratch-project.mjs` | Read `packages/kit/src/theme-default.json` and run the source CLI in `packages/node/src/cli.ts` from the parent repo | The site stops reading the parent repo at build time |
+| `src/lib/tokens.ts`, `scripts/scratch-project.mjs` | Read `packages/kit/src/theme-default.json` and run the source CLI in `packages/node/src/cli/cli.ts` from the parent repo | The site stops reading the parent repo at build time |
 
 ## Deferred
 

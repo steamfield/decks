@@ -196,7 +196,7 @@
     "packages/node": {
       "name": "@react-decks/node",
       "bin": {
-        "decks": "./src/cli.ts",
+        "decks": "./src/cli/cli.ts",
       },
       "dependencies": {
         "@mdx-js/rollup": "3.1.1",

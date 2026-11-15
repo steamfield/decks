@@ -37,7 +37,7 @@ export const subcommands = new Set(
 // citty args with TypeScript's parser, excluding positional arguments.
 export function toolFlags(command: string): Set<string> {
   const flags = new Set<string>();
-  const file = `packages/node/src/commands/${command}.ts`;
+  const file = `packages/node/src/cli/commands/${command}.ts`;
   const source = ts.createSourceFile(file, read(file), ts.ScriptTarget.Latest);
   const visit = (node: ts.Node) => {
     if (
