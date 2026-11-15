@@ -1,7 +1,7 @@
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createLogger, type Logger, normalizePath } from "vite";
-import { authorError, type DeckError, displayPath } from "./errors";
+import { authorError, bugNotice, type DeckError, displayPath } from "./errors";
 
 export function errorReporting(base: Logger = createLogger(), deckDir = process.cwd()) {
   const packages = fileURLToPath(
@@ -50,7 +50,7 @@ export function errorReporting(base: Logger = createLogger(), deckDir = process.
           "plugin" in diagnostic &&
           typeof diagnostic.plugin === "string" &&
           diagnostic.plugin.startsWith("react-decks"));
-      logError(ownCode ? `${message}\nThis is a bug in react-decks.` : message, options);
+      logError(ownCode ? `${message}\n${bugNotice}` : message, options);
     }
   };
   return {

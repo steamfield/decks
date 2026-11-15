@@ -1,6 +1,9 @@
 import { relative } from "node:path";
 import type { z } from "zod";
 
+/** Appended to an error that the framework, not the author, caused. */
+export const bugNotice = "This is a bug in react-decks.";
+
 export const displayPath = (file: string) => relative(process.cwd(), file) || ".";
 
 /** Author input is reported at the CLI or Vite boundary, never where it is detected. */

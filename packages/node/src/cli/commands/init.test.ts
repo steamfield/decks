@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { mkdir, readdir, readFile, rm, symlink } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { expect, inject, it } from "vitest";
+import { bugNotice } from "../../dev/errors";
 import { repoPath } from "../../dev/server.test-support";
 import { installedInit, pluginProject } from "./plugin.test-support";
 
@@ -242,7 +243,7 @@ it.each([
   const before = await readdir(dir);
   const result = installedInit(dir);
   expect(result.status).toBe(1);
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
   expect(await read(dir, file)).toBe(contents);
   expect(await readdir(dir)).toEqual(before);
 });
@@ -269,7 +270,7 @@ it.each([["--bogus"], ["extra"]])(
     const { dir } = await pluginProject(packageDir);
     const result = installedInit(dir, args);
     expect(result.status).toBe(1);
-    expect(result.stderr).not.toContain("This is a bug");
+    expect(result.stderr).not.toContain(bugNotice);
     expect(await readdir(dir)).not.toContain(".claude");
   },
 );

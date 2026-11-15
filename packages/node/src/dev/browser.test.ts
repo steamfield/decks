@@ -10,6 +10,7 @@ import { exportDeck } from "../cli/commands/export";
 import { shot } from "../cli/commands/shot";
 import { build, dev, loadDeck, scanSlides } from "../index";
 import { launchBrowser, openBuiltDeck } from "./browser";
+import { bugNotice } from "./errors";
 import { cli, fixture, repoPath, skipBrowserTests } from "./server.test-support";
 
 const basic = repoPath("examples/basic");
@@ -233,7 +234,7 @@ it.each([
   const result = await cliWithNoBrowser(args);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("npx playwright install chromium");
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it("build without Chromium succeeds with one warning and no generated image", async () => {
@@ -268,5 +269,5 @@ it.each([
   const [code] = await command.exit;
   expect(code).toBe(1);
   expect(command.output().stderr).toContain("Unknown option '--bogus'");
-  expect(command.output().stderr).not.toContain("This is a bug");
+  expect(command.output().stderr).not.toContain(bugNotice);
 });

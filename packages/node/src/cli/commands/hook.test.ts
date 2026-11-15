@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { cp, mkdir, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, it, onTestFinished } from "vitest";
+import { bugNotice } from "../../dev/errors";
 import { fixture, repoPath } from "../../dev/server.test-support";
 
 function hook(
@@ -155,7 +156,7 @@ it.each([undefined, "", "x\twarn\tfoo\tbar\n", "x\terorr\tfoo\tbar\n", "x\terror
     if (lint.error) throw lint.error;
     expect(lint.status, lint.stderr).toBe(2);
     expect(lint.stderr).toContain("patterns file missing, unreadable or invalid");
-    expect(lint.stderr).not.toContain("This is a bug");
+    expect(lint.stderr).not.toContain(bugNotice);
     const allowed = hook(dir, write("README.md", "seamless"), undefined, cli);
     expect(allowed.status, allowed.stderr).toBe(0);
     expect(allowed.stdout).toBe("");

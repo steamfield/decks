@@ -1,6 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { expect, it, onTestFinished } from "vitest";
+import { bugNotice } from "../../dev/errors";
 import { cli, repoPath } from "../../dev/server.test-support";
 
 async function project(files: Record<string, string> = {}) {
@@ -31,7 +32,7 @@ it("refuses an unknown check option as an author error", async () => {
   const result = await run(dir, ["--bogus"]);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("--bogus");
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it("reports an unregistered deck under decksDir with its config path", async () => {
@@ -176,5 +177,5 @@ it.each([
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("decks.json");
   expect(result.stderr).toContain(message);
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });

@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import {} from "node:path";
 import { expect, it, onTestFinished } from "vitest";
+import { bugNotice } from "../../dev/errors";
 import { fixture, repoPath } from "../../dev/server.test-support";
 import { lintDecks } from "./lint";
 
@@ -83,7 +84,7 @@ it.each([
   const result = command(dir, args);
   expect(result.status).toBe(1);
   expect(result.stderr).toContain(message);
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it.each(["-h", "--help"])("prints lint usage for %s", async (arg) => {

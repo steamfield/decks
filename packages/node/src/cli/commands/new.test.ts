@@ -3,6 +3,7 @@ import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "n
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { expect, it, onTestFinished } from "vitest";
+import { bugNotice } from "../../dev/errors";
 import { cli, repoPath } from "../../dev/server.test-support";
 
 async function project(registry?: Record<string, unknown>) {
@@ -160,7 +161,7 @@ it.each([
   const result = await run(dir, args);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain(args[args.length - 1]);
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
   expect(await readdir(dir)).toEqual([]);
 });
 
@@ -170,7 +171,7 @@ it("reports an unwritable registry before creating an unregistered deck", async 
   const result = await run(dir, ["q3"]);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("decks.json");
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
   expect(await readdir(dir)).toEqual(["decks.json"]);
 });
 
@@ -180,7 +181,7 @@ it("reports an invalid destination as an author error naming the path", async ()
   const result = await run(dir, ["q3"]);
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("decks");
-  expect(result.stderr).not.toContain("This is a bug");
+  expect(result.stderr).not.toContain(bugNotice);
 });
 
 it("prints a shell-safe next command for an alias containing spaces and quotes", async () => {
