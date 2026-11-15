@@ -12,4 +12,8 @@ it("pins the same Playwright version as the repository root", () => {
   expect(manifest(".").devDependencies["@playwright/test"]).toBe(
     manifest("..").devDependencies["@playwright/test"],
   );
+  // @axe-core/playwright's peer, pinned so no second playwright-core is installed.
+  expect(manifest(".").devDependencies["playwright-core"]).toBe(
+    manifest(".").devDependencies["@playwright/test"],
+  );
 });
