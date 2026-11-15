@@ -1,3 +1,4 @@
+import { EventEmitter, once } from "node:events";
 import { readFile } from "node:fs/promises";
 
 import { join } from "node:path";
@@ -14,6 +15,77 @@ import {
 
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
 describe("config-restart", { timeout: 60_000 }, () => {
+  it("does not resend a repaired config error to clients connecting before restart resolves", async () => {
+    const app = await serve();
+    const original = await readFile(join(app.dir, "deck.config.ts"), "utf8");
+    await app.put("deck.config.ts", "export default { title: 42 }");
+    await waitForWatcher(() =>
+      expect(app.messages.some((message) => message.includes("title must be a string"))).toBe(true),
+    );
+
+    const connect = async () => {
+      const socket = new WebSocket(app.url.replace("http", "ws"), "vite-hmr");
+      const messages: string[] = [];
+      socket.addEventListener("message", (event) => messages.push(String(event.data)));
+      onTestFinished(() => socket.close());
+      await waitForWatcher(() =>
+        expect(messages.some((message) => message.includes('"type":"connected"'))).toBe(true),
+      );
+      return { socket, messages };
+    };
+    const invalid = await connect();
+    await waitForWatcher(() =>
+      expect(invalid.messages.some((message) => message.includes("title must be a string"))).toBe(
+        true,
+      ),
+    );
+    invalid.socket.close();
+    const reconnected = await connect();
+    await waitForWatcher(() =>
+      expect(
+        reconnected.messages.some((message) => message.includes("title must be a string")),
+      ).toBe(true),
+    );
+
+    const events = new EventEmitter();
+    const listening = once(events, "listening");
+    const released = once(events, "release");
+    const completed = once(events, "completed");
+    const restart = app.server.restart.bind(app.server);
+    // Keep Vite's real replacement listening while its caller still awaits restart.
+    app.server.restart = async (forceOptimize) => {
+      await restart(forceOptimize);
+      events.emit("listening");
+      await released;
+    };
+    const info = app.server.config.logger.info;
+    app.server.config.logger.info = (message) => {
+      info(message);
+      if (message === "deck.config.ts is valid again, restarting.") events.emit("completed");
+    };
+    try {
+      await app.put("deck.config.ts", original);
+      await listening;
+      const during = await connect();
+      app.server.ws.send({ type: "custom", event: "during-restart", data: null });
+      await waitForWatcher(() =>
+        expect(during.messages.some((message) => message.includes("during-restart"))).toBe(true),
+      );
+      expect(during.messages.filter((message) => message.includes('"type":"error"'))).toEqual([]);
+      events.emit("release");
+      await completed;
+      const after = await connect();
+      app.server.ws.send({ type: "custom", event: "after-restart", data: null });
+      await waitForWatcher(() => {
+        for (const client of [during, after])
+          expect(client.messages.some((message) => message.includes("after-restart"))).toBe(true);
+      });
+      for (const client of [during, after])
+        expect(client.messages.filter((message) => message.includes('"type":"error"'))).toEqual([]);
+    } finally {
+      events.emit("release");
+    }
+  });
   it("reconciles a config save made while the server is starting", async () => {
     const app = await fixture({
       "release.txt": "Waiting",
