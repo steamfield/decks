@@ -88,15 +88,18 @@ describe("slide scanning and manifest", () => {
       });
     },
   );
-  it("numbers the five visible basic fixture slides from 1 to 5", async () => {
-    const slides = await scanSlides(await loadDeck("examples/basic"));
-    expect(slides.map(({ meta }) => meta.no)).toEqual([1, 2, 3, 4, 5]);
-    expect(slides.map(({ meta }) => meta.id)).toEqual([
-      "01-cover",
-      "02-steps",
-      "03-component",
-      "05-one-click",
-      "06-end",
+  it("numbers visible slides consecutively when a hidden slide sits between them", async () => {
+    const { dir } = await fixture({
+      "slides/01-first.mdx": "# Cover",
+      "slides/02-hidden.mdx": "---\nhide: true\n---\n# Hidden",
+      "slides/03-body.mdx": "# Body",
+      "slides/04-end.mdx": "# End",
+    });
+    const slides = await scanSlides(await loadDeck(dir));
+    expect(slides.map(({ meta }) => [meta.no, meta.id])).toEqual([
+      [1, "01-first"],
+      [2, "03-body"],
+      [3, "04-end"],
     ]);
   });
 });

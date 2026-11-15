@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
-import { cli, fixture } from "../dev/server.test-support";
+import { cli, fixture, skipBrowserTests } from "../dev/server.test-support";
 
-describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("capture defaults", () => {
+describe.skipIf(skipBrowserTests)("capture defaults", () => {
   it("exports a square canvas with a matching PDF MediaBox at the default path", async () => {
     const { dir } = await fixture(onTestFinished, {
       "deck.config.ts":
