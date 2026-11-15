@@ -1,5 +1,5 @@
 import { access, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
 import { cli, fixture as createFixture, waitForWatcher } from "../dev/server.test-support";
 
@@ -27,7 +27,7 @@ describe("decks CLI", () => {
     const { dir } = await fixture();
     const process = cli(dir, ["build", dir]);
     expect((await process.exit)[0], process.output().stderr).toBe(0);
-    expect(await readFile(join(dir, `dist/${dir.split("/").at(-1)}/index.html`), "utf8")).toContain(
+    expect(await readFile(join(dir, `dist/${basename(dir)}/index.html`), "utf8")).toContain(
       'src="./assets/',
     );
   });

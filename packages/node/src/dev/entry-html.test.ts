@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 import { describe, expect, it, onTestFinished } from "vitest";
 import { dev, loadDeck } from "../index";
@@ -25,7 +25,7 @@ describe("html-entry", () => {
     expect(html).not.toContain("og:image");
     expect(html).not.toContain('name="description"');
     expect(html).toContain(`<meta name="decks:entry" content="${app.dir}">`);
-    expect(html).toContain(`<meta name="decks:name" content="${app.dir.split("/").at(-1)}">`);
+    expect(html).toContain(`<meta name="decks:name" content="${basename(app.dir)}">`);
     expect(html).toContain('<div id="deck-root"></div>');
     expect(html).toContain('type="module" src="/virtual:react-decks/entry"');
     expect(html).toContain("/@vite/client");
