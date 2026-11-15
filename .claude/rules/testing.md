@@ -24,6 +24,22 @@ A test that passes on a fast machine and fails under load is encoding timing. Th
 a laptop that is also running dev servers and agents, so every rule below exists because a test
 here broke that way.
 
+## The helpers
+
+Use these before writing anything of your own; add to them rather than beside them.
+
+| Need | Helper |
+| --- | --- |
+| Go to a slide and click, press keys, wait for motion to finish | `deckDriver(page)` (`goto`, `press`, `settled`) and `settled(page)` in `e2e/fixtures/deck-driver.ts` |
+| A warmed dev server for a deck, port 0, colour-safe URL | `deckServer(browser, dir)` in `e2e/fixtures/deck-server.ts` |
+| Prove motion happened and check its shape | `record(...)` then `log()`, `expectMonotone(values, start, end)` in `e2e/fixtures/motion-recorder.ts` |
+| Prove no blank frame between two slides | `noBlankFrame(page, from, to, key)` in the same file |
+| Step gsap in the browser | `motionClock(page)` in `e2e/fixtures/motion-clock.ts` |
+| Sample a View Transition at fixed points | `seekTransition(page, name, points)` in `e2e/fixtures/transition-seek.ts` |
+| Step gsap (and timers) in jsdom | `tick(seconds)`, `advance(seconds)` in `packages/motion/src/motion.test-support.tsx` and `packages/kit/src/kit.test-support.tsx` |
+| Run the CLI as a child process and read its URL | `cliProcess(command, args, options)` in `packages/node/src/cli/cli-process.test-support.ts` |
+| The built package | the shared build from `tests/package.global-setup.ts` |
+
 ## The rule for time
 
 A test touches time only by **controlling** it, and only when time is the subject (an
