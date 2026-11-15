@@ -3,6 +3,22 @@ import { resolve } from "node:path";
 import { expect, it, onTestFinished } from "vitest";
 import { fixture, repoPath } from "../../dev/server.test-support";
 
+// A fixture repository must not read the developer's git config (signing, hooks, templates) or
+// inherit GIT_DIR / GIT_INDEX_FILE from a git hook that is running the suite.
+const gitEnv = (() => {
+  const { GIT_DIR, GIT_INDEX_FILE, GIT_WORK_TREE, ...inherited } = process.env;
+  return { ...inherited, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_SYSTEM: "/dev/null" };
+})();
+
+function git(cwd: string, ...args: string[]) {
+  const result = spawnSync("git", ["-c", "commit.gpgsign=false", ...args], {
+    cwd,
+    encoding: "utf8",
+    env: gitEnv,
+  });
+  expect(result.status, result.stderr).toBe(0);
+}
+
 function prompt(cwd: string, text: string, raw?: string) {
   const result = spawnSync(
     repoPath("node_modules/.bin/tsx"),
@@ -11,7 +27,7 @@ function prompt(cwd: string, text: string, raw?: string) {
       cwd,
       input: raw ?? JSON.stringify({ prompt: text, cwd }),
       encoding: "utf8",
-      env: { ...process.env, CLAUDE_PROJECT_DIR: "" },
+      env: { ...gitEnv, CLAUDE_PROJECT_DIR: "" },
     },
   );
   if (result.error) throw result.error;
@@ -60,19 +76,15 @@ it("recognizes a short revision prompt only when deck prose has uncommitted chan
   const { dir, put } = await fixture(onTestFinished, {
     "src/components/S.tsx": "export const S = () => <p />;",
   });
-  const git = (...args: string[]) => {
-    const result = spawnSync("git", args, { cwd: dir, encoding: "utf8" });
-    expect(result.status, result.stderr).toBe(0);
-  };
-  git("init", "-q");
-  git("add", "-A");
-  git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "Initial");
+  git(dir, "init", "-q");
+  git(dir, "add", "-A");
+  git(dir, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "Initial");
   expect(prompt(dir, "tighten this bullet").stdout).toBe("");
   await put("src/components/S.tsx", "export const S = () => <p>App text.</p>;");
   expect(prompt(dir, "tighten this bullet").stdout).toBe("");
   await put("slides/01-first.mdx", "# Revised.");
   expect(prompt(dir, "tighten this bullet").context).toContain("Deck writing reminder");
-  git("add", "slides/01-first.mdx");
+  git(dir, "add", "slides/01-first.mdx");
   expect(prompt(dir, "tighten this bullet").context).toContain("Deck writing reminder");
 });
 
@@ -86,8 +98,7 @@ it("resolves modified deck paths against the Git root above the project", async 
     ["add", "-A"],
     ["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "Initial"],
   ]) {
-    const result = spawnSync("git", args, { cwd: dir, encoding: "utf8" });
-    expect(result.status, result.stderr).toBe(0);
+    git(dir, ...args);
   }
   await put("project/talk/slides/01.mdx", "# Revised.");
   expect(prompt(resolve(dir, "project"), "tighten this bullet").context).toContain(
@@ -103,8 +114,7 @@ it("recognizes a renamed slide's source path when it moves out of the deck", asy
     ["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "Initial"],
     ["mv", "slides/01-first.mdx", "archived.mdx"],
   ]) {
-    const result = spawnSync("git", args, { cwd: dir, encoding: "utf8" });
-    expect(result.status, result.stderr).toBe(0);
+    git(dir, ...args);
   }
   const result = prompt(dir, "tighten this bullet");
   expect(result.status, result.stderr).toBe(0);
