@@ -1,21 +1,9 @@
 import { execFile } from "node:child_process";
-import {
-  chmod,
-  mkdir,
-  mkdtemp,
-  readdir,
-  readFile,
-  rm,
-  stat,
-  symlink,
-  writeFile,
-} from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { expect, inject, it, onTestFinished } from "vitest";
-import { loadDeck } from "../config";
+import { expect, it, onTestFinished } from "vitest";
 import { cli } from "../deck.test-support";
-import { build } from "../server";
 
 async function project(registry?: Record<string, unknown>) {
   await mkdir(resolve(".tmp"), { recursive: true });
@@ -208,54 +196,3 @@ it("prints a shell-safe next command for an alias containing spaces and quotes",
   ]);
   expect(stdout).toBe(`3\n${alias}`);
 });
-
-it("ships templates, typechecks them and builds both scaffolds with the real Vite pipeline", async () => {
-  const execute = promisify(execFile);
-  const dir = await project();
-  const packageDir = inject("builtPackage");
-  const dist = join(packageDir, "dist");
-  expect((await stat(join(dist, "templates"))).isDirectory()).toBe(true);
-  await execute(resolve("node_modules/.bin/tsc"), [
-    "--noEmit",
-    "--ignoreConfig",
-    "--strict",
-    "--skipLibCheck",
-    "--module",
-    "esnext",
-    "--moduleResolution",
-    "bundler",
-    "--target",
-    "esnext",
-    "--jsx",
-    "react-jsx",
-    "--resolveJsonModule",
-    "--customConditions",
-    "@steamfield/decks/source",
-    // Source resolution compiles the kit itself, whose CSS custom properties need this augmentation.
-    "packages/kit/src/style.d.ts",
-    "packages/node/templates/conventional/deck.config.ts",
-    "packages/node/templates/conventional/setup.ts",
-    "packages/node/templates/story/deck.config.ts",
-    "packages/node/templates/story/setup.ts",
-    "packages/node/templates/story/components/FirstStage.tsx",
-    "packages/node/templates/story/data/01-first.ts",
-  ]);
-  const consumer = join(dir, "consumer");
-  await mkdir(join(consumer, "node_modules/@steamfield"), { recursive: true });
-  await symlink(packageDir, join(consumer, "node_modules/@steamfield/decks"), "dir");
-  for (const { alias, flags } of [
-    { alias: "conventional", flags: [] },
-    { alias: "story", flags: ["--story", "--url", "example.com"] },
-  ]) {
-    const result = await execute("node", [join(dist, "cli.js"), "new", alias, ...flags], {
-      cwd: consumer,
-    });
-    expect(result.stdout).toContain(`decks dev ${alias}`);
-    const deck = await loadDeck(join(consumer, "decks", alias), alias);
-    const outDir = join(dir, "site", alias);
-    await build(deck, { outDir });
-    expect(await readFile(join(outDir, "index.html"), "utf8")).toContain(
-      `<title>${deck.config.title}</title>`,
-    );
-  }
-}, 60_000);

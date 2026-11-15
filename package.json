@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/core/tsconfig.json && tsc --noEmit -p packages/node/tsconfig.json",
     "test": "vitest run",
     "test:tarball": "node scripts/tarball-e2e.mjs",
-    "check": "bun run lint && bun run typecheck && bun run test && bun run test:e2e",
+    "check": "bun run lint && bun run typecheck && bun run test && bun run test:e2e && bun run test:tarball",
     "check:isolated": "node scripts/check-isolated.mjs",
     "decks": "NODE_OPTIONS=--conditions=@steamfield/decks/source tsx packages/node/src/cli.ts",
     "test:e2e": "NODE_OPTIONS=--conditions=@steamfield/decks/source playwright test",

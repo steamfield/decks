@@ -2,12 +2,11 @@ import { chmod, cp, readdir, rm } from "node:fs/promises";
 import { basename } from "node:path";
 import { build } from "tsdown";
 
-await build({
-  entry: ["src/index.ts", "src/motion.ts", "src/kit.ts", "src/node.ts", "src/cli.ts"],
+const config = {
+  entry: ["./src/index.ts", "./src/motion.ts", "./src/kit.ts", "./src/node.ts", "./src/cli.ts"],
   format: "esm",
   fixedExtension: false,
   target: "node22",
-  dts: true,
   deps: {
     alwaysBundle: [/^@react-decks\//],
     neverBundle: (id) =>
@@ -19,7 +18,11 @@ await build({
     paths: (id) =>
       id.endsWith(".css") && (id.startsWith(".") || id.startsWith("/")) ? `./${basename(id)}` : id,
   },
-});
+};
+
+await build({ ...config, dts: false });
+// Declaration-only tree shaking drops CSS side effects without dropping runtime styles.
+await build({ ...config, clean: false, dts: { dtsOnly: true } });
 
 // JS chunks retain relative CSS imports; ship those files at the same level.
 for (const name of ["runtime", "motion"]) {

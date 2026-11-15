@@ -4,10 +4,14 @@ export default defineConfig({
   test: {
     projects: [
       {
+        resolve: {
+          conditions: ["@steamfield/decks/source"],
+        },
         test: {
           name: "unit",
           globalSetup: ["./tests/package.global-setup.ts"],
           environment: "node",
+          execArgv: ["--conditions=@steamfield/decks/source"],
           // Node tests start real Vite servers and builds. The first test in a file pays for
           // loading the compiler and highlighter, which took over five seconds on the slower
           // cluster hosts; the limit bounds a hang, it is not an assertion.
