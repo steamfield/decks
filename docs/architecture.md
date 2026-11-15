@@ -1066,6 +1066,8 @@ Decided at checkpoint 1 (`docs/archive/spikes/parity.md` has the measurements):
 
 ## 5.1 motion, Phase 3 surface: tokens, steps, timelines (Final)
 
+gsap lag smoothing is off (`gsap.ticker.lagSmoothing(0)` in `tokens.ts`): a finite beat keeps elapsed time across stalled frames (a live WebGL scene, a hidden tab) and catches up when rendering resumes, so `settled()` resolves when the beat is done instead of minutes later.
+
 ```ts
 import type { StepState } from "@react-decks/core";
 import type { DependencyList, ReactElement, ReactNode } from "react";
