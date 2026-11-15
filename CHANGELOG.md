@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-rc.1
+
+No changes to the package's code. This release is published by the release workflow through npm trusted publishing, so it is the first version with provenance; `1.0.0-rc.0` was published by hand to create the package.
+
+### Repo
+
+- The release workflow gates a `v*` tag on CI having passed for that commit, builds and packs once, and publishes the built tarball. CI runs in parallel shards.
+- Browser capture tests compare against a screenshot from the same Chromium instead of stored images, and the Playwright suite has Linux baselines, so the gate passes on GitHub's runners.
+
 ## 1.0.0-rc.0
 
 Decks is now its own React framework, published as `@steamfield/decks`. It replaces `slidev-addon-decks`, the Slidev addon this repo built before (never published to npm); the last Slidev version is the git tag `slidev-final`, and `docs/guide/migrating-from-slidev.md` maps a Slidev deck onto Decks.
