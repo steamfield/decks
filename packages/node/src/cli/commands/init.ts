@@ -1,7 +1,7 @@
 import { isUtf8 } from "node:buffer";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { lstat, mkdir, readFile, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import { defineCommand } from "citty";
@@ -120,13 +120,66 @@ export const init = defineCommand({
           content: await readFile(new URL(file, skills)),
         })),
       );
+      const current = new Set(updates.map(({ target }) => target));
+      const obsolete = Object.keys(owned).filter(
+        (target) =>
+          target.startsWith(".agents/skills/") &&
+          !target.split("/").includes("..") &&
+          !current.has(target),
+      );
+      const currentSkills = new Set(
+        [...current].map((target) => target.split("/").slice(0, 3).join("/")),
+      );
+      const retiredSkills = new Set(
+        obsolete
+          .map((target) => target.split("/").slice(0, 3).join("/"))
+          .filter((skill) => !currentSkills.has(skill)),
+      );
       for (const target of [
         settingsPath,
         manifestPath,
         "AGENTS.md",
         ...updates.map(({ target }) => target),
+        ...obsolete,
       ])
         await assertTarget(target);
+      for (const skill of retiredSkills) {
+        if (existsSync(skill)) {
+          let keep = false;
+          for (const file of await glob("**/*", {
+            cwd: skill,
+            dot: true,
+            onlyFiles: false,
+            followSymbolicLinks: false,
+          })) {
+            const target = `${skill}/${file}`;
+            if ((await lstat(target)).isDirectory()) continue;
+            if (!owned[target] || hash(await readFile(target)) !== owned[target]) {
+              keep = true;
+              break;
+            }
+          }
+          if (keep) {
+            console.log(`Kept ${skill}: contains edited or unowned files`);
+            continue;
+          }
+          await rm(skill, { recursive: true });
+          console.log(`Removed ${skill}`);
+        }
+        for (const target of obsolete) if (target.startsWith(`${skill}/`)) delete owned[target];
+      }
+      for (const target of obsolete) {
+        if ([...retiredSkills].some((skill) => target.startsWith(`${skill}/`))) continue;
+        if (existsSync(target)) {
+          if (hash(await readFile(target)) !== owned[target]) {
+            console.log(`Kept ${target}: edited since last init`);
+            continue;
+          }
+          await rm(target);
+          console.log(`Removed ${target}`);
+        }
+        delete owned[target];
+      }
       for (const { target, content } of updates) {
         const current = existsSync(target) ? await readFile(target) : undefined;
         if (
