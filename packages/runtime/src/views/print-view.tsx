@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
+import { SlideFrame } from "../canvas/slide-frame";
 import { useDeckContext } from "../hooks";
-import { SlideFrame } from "../slide-frame";
-import { SlideHost } from "../slide-host";
+import { SlideHost } from "../slides/slide-host";
 import styles from "./print-view.module.css";
 
 export function PrintView(): ReactElement {

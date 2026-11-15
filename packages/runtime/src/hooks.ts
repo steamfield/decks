@@ -1,7 +1,7 @@
 import { clicksForSlide, type DeckView, type SlideMeta } from "@react-decks/core";
 import { createContext, type RefObject, useContext, useMemo, useSyncExternalStore } from "react";
 import type { createSlideModules, DeckSource } from "./source";
-import type { DeckState, DeckStore } from "./store";
+import type { DeckState, DeckStore } from "./store/store";
 
 export const DeckContext = createContext<{
   source: DeckSource;

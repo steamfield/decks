@@ -1,12 +1,12 @@
 import { type ReactElement, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useDeckAttention } from "./deck-attention";
-import { useDeckKeys } from "./deck-keys";
+import { useDeckAttention } from "./embed/deck-attention";
 import { DeckContext, PresentationContext, useDeckContext, useDeckSelector } from "./hooks";
-import { OverviewView } from "./overview-view";
-import { PlayView } from "./play-view";
-import { PresenterView } from "./presenter-view";
+import { useDeckKeys } from "./navigation/deck-keys";
 import { createSlideModules, type DeckSource } from "./source";
-import type { DeckStore } from "./store";
+import type { DeckStore } from "./store/store";
+import { OverviewView } from "./views/overview-view";
+import { PlayView } from "./views/play-view";
+import { PresenterView } from "./views/presenter-view";
 import { PrintView } from "./views/print-view";
 
 function DeckView(): ReactElement {

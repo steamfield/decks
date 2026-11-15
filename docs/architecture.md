@@ -511,7 +511,7 @@ slide's rendered output at compile time and collected into the notes module. Mor
 
 ## 4. runtime (Outline)
 
-- Store (`store.ts`): `createDeckStore(manifest, options?: { transport?, present? })`, a
+- Store (`store/store.ts`): `createDeckStore(manifest, options?: { transport?, present? })`, a
   zustand vanilla store whose only reducer is core's `navigate`; components read it through
   selector hooks. The URL hash is the source of truth: clicks are written with
   `replaceState`, slide changes with `pushState`. Sections 4.1 to 4.3 have the surface.
@@ -524,17 +524,17 @@ slide's rendered output at compile time and collected into the notes module. Mor
   layers and credit (section 6.5).
 - `PlayView` mounts the current, previous and next slide. Inactive slides have the `hidden`
   attribute. Every slide module is prefetched when the browser is idle, without mounting.
-- `transition.ts` owns view-transition state: `createPresenter(source)` (the `present`
+- `transitions/transition.ts` owns view-transition state: `createPresenter(source)` (the `present`
   option `mountDeck` passes), `runTransition`, `transitionInFlight()`, `transitionName`.
   Slide changes transition; a click transitions only on a slide with `morphSteps`
   (section 4.3).
 - One registry, because runtime cannot import the packages above it:
-  `registerSettleProbe(isBusy: () => boolean)` (`settle.ts`). `settled()` resolves when no
+  `registerSettleProbe(isBusy: () => boolean)` (`settle/settle.ts`). `settled()` resolves when no
   finite animation from `document.getAnimations()` is running, no probe reports busy and no
   transition is pending. `motion` and the kit's `OpenChart` register probes.
-- `broadcast-transport.ts`: `createBroadcastTransport(channelId)` (section 4.2).
-- `deck-keys.ts`: the keyboard map. `deck-attention.ts`: wake lock and idle cursor.
-- `text-scale.ts`: text sizing. In the play and presenter views Cmd/Ctrl with `+` or `=` makes
+- `store/broadcast-transport.ts`: `createBroadcastTransport(channelId)` (section 4.2).
+- `navigation/deck-keys.ts`: the keyboard map. `embed/deck-attention.ts`: wake lock and idle cursor.
+- `canvas/text-scale.ts`: text sizing. In the play and presenter views Cmd/Ctrl with `+` or `=` makes
   slide text 1.1 times larger, with `-` 1.1 times smaller, and with `0` restores the authored
   size, between 0.5 and 2.5; the browser's own zoom is prevented, since it would not change a
   fitted canvas. The value is kept in `localStorage` under
@@ -545,7 +545,7 @@ slide's rendered output at compile time and collected into the notes module. Mor
   `calc(<size> * var(--deck-text-scale, 1))`. Boxes do not grow, so a tightly composed slide
   overflows after a step or two; a layout in flex or grid absorbs more.
 - Views and components: `PlayView`, `PresenterView`, `OverviewView`, `Notes`, `DeckCredit`
-  (`deck-credit.tsx`, not exported), and the layouts of section 4.4 (`layouts.tsx`).
+  (`slides/deck-credit.tsx`, not exported), and the layouts of section 4.4 (`layouts/layouts.tsx`).
 - Not built yet (planned for 1.0.0-rc): `PrintView`, rendering the slides in the `print`
   context for `decks export`; and the embed protocol, `decks:*` postMessage between a page
   and a deck opened with `?decks-bridge`, ported from the site's `DeckPlayer`. Today
@@ -982,7 +982,7 @@ and drops its callback, so a deck mounted afterwards is not blocked by it.
 
 ### Presets
 
-`transition.css`, in `@layer react-decks`, styles the root snapshot per name. Durations and
+`transitions/transition.css`, in `@layer react-decks`, styles the root snapshot per name. Durations and
 eases read the motion tokens with fallbacks (`var(--deck-dur-slow, 600ms)`), because runtime
 cannot import the motion package.
 
