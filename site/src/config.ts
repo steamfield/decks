@@ -1,7 +1,7 @@
 // Public product metadata. Every landing section reads from here; a section whose
 // value is empty (null or an empty list) doesn't render. The copy comes from the
 // package guide and plugin, and src/lib/content-commands.test.ts checks every
-// command shown here against packages/node/src/cli-command.ts and the package's
+// command shown here against packages/node/src/cli/cli-command.ts and the package's
 // package.json.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

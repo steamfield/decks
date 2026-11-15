@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && NODE_OPTIONS=--conditions=@steamfield/decks/source node_modules/.bin/tsx packages/node/src/cli.ts hook lint || exit 2"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && NODE_OPTIONS=--conditions=@steamfield/decks/source node_modules/.bin/tsx packages/node/src/cli/cli.ts hook lint || exit 2"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && NODE_OPTIONS=--conditions=@steamfield/decks/source node_modules/.bin/tsx packages/node/src/cli.ts hook prompt"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && NODE_OPTIONS=--conditions=@steamfield/decks/source node_modules/.bin/tsx packages/node/src/cli/cli.ts hook prompt"
           }
         ]
       }
