@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { chromium, expect } from "@playwright/test";
 import { preview } from "vite";
-import { cliProcess } from "../packages/node/src/cli-process.test-support.ts";
+import { cliProcess } from "../packages/node/src/cli/cli-process.test-support.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const keep = process.argv.includes("--keep");

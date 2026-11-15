@@ -17,17 +17,27 @@ const step = (label, command, args, cwd = root) => {
   execFileSync(command, args, { cwd, stdio: "inherit" });
 };
 
-step("gate", "bun", ["run", "check"]);
-step("isolated gate", "bun", ["run", "check:isolated"]);
-step("tarball test", "bun", ["run", "test:tarball"]);
-
+// The tag must name exactly the tree the gates passed on, with the plugin at the package's
+// version (decks init pins the marketplace to that tag). Check both before spending the gates.
+const dirty = execFileSync("git", ["status", "--porcelain"], {
+  cwd: root,
+  encoding: "utf8",
+}).trim();
+if (dirty)
+  throw new Error(`release: the working tree is not clean; commit or stash first:\n${dirty}`);
 const manifestPath = join(root, "plugins/decks/.claude-plugin/plugin.json");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 if (manifest.version !== pkg.version) {
   manifest.version = pkg.version;
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(`release: plugin.json version set to ${pkg.version}; commit it before tagging`);
+  throw new Error(
+    `release: plugins/decks/.claude-plugin/plugin.json did not match the package version; it now says ${pkg.version}. Commit it and run release:prepare again.`,
+  );
 }
+
+// check ends with the tarball test, so it is not run separately.
+step("gate", "bun", ["run", "check"]);
+step("isolated gate", "bun", ["run", "check:isolated"]);
 
 step("build", "bun", ["run", "build"], join(root, "packages/decks"));
 const out = join(root, "dist/release");

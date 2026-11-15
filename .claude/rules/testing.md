@@ -50,7 +50,7 @@ a failure, it never orders events.
 | Layer | How time is controlled |
 | --- | --- |
 | Vitest + jsdom | `motion.test-support.tsx` / `kit.test-support.tsx`: gsap's `updateRoot` is off the ticker and `tick(seconds)` moves it, so mid-tween values are exact (`toBe`). Timers: `vi.useFakeTimers()`, advanced with `vi.advanceTimersByTimeAsync` inside `act`, restored after the test. |
-| Playwright, gsap | `page.clock.install()` before `goto`, `pauseAt`, then `runFor` in steps of 250 ms or less (gsap's lag smoothing compresses one long gap). Under a paused clock `settled()` never resolves on its own: step it. |
+| Playwright, gsap | `page.clock.install()` before `goto`, `pauseAt`, then `runFor` in steps of 250 ms or less, so a recorder sees the intermediate frames (lag smoothing is off, `packages/motion/src/tokens.ts`, so one long step jumps straight to the end pose rather than compressing). Under a paused clock `settled()` never resolves on its own: step it. |
 | Playwright, CSS / WAAPI / View Transitions | These run on the document timeline, which `page.clock` does not drive. Seek them through `document.getAnimations()`: `pause()`, set `currentTime`, read the pose, `finish()`. |
 
 ## Completion signals, in order of preference
