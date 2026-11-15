@@ -36,7 +36,9 @@ it("rejects viewport sizes in TSX and CSS while allowing frame and root drift ru
   expect(viewportUnits("const size = `calc(1vw + $" + "{n}vh)`;")).toHaveLength(1);
   expect(viewportUnits('const size = "calc(64 * var(--sw))"; // 64vw')).toEqual([]);
   expect(viewportUnits("transform: translateY(-1.4vh);", "fixture.css")).toEqual([]);
-  expect(viewportUnits("transform: translateY(-1.4vh); width: 64vw;", "fixture.css")).toHaveLength(1);
+  expect(viewportUnits("transform: translateY(-1.4vh); width: 64vw;", "fixture.css")).toHaveLength(
+    1,
+  );
   expect(viewportUnits("width: var(--sw, 1vw);", "fixture.css")).toHaveLength(1);
 });
 

@@ -179,7 +179,7 @@ it("marks future dates with dots and gives bright ticks their full height", asyn
   expect(lines().item(1)).not.toHaveAttribute("stroke-dasharray");
   expect(lines().item(2)).toHaveAttribute("stroke-dasharray", "0 10");
   const rise = (i: number) =>
-    Number(lines().item(i).getAttribute("y1")) - Number(lines().item(i).getAttribute("y2"));
+    Number(lines().item(i)?.getAttribute("y1")) - Number(lines().item(i)?.getAttribute("y2"));
   expect(rise(2)).toBeGreaterThan(rise(1));
 });
 const crowded: TimelineTick[] = [

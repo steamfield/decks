@@ -67,7 +67,9 @@ describe("useStage", () => {
     async (options) => {
       await setup(Stage, options);
       await tick(0);
-      expect(screen.getByLabelText("Pose")).toHaveTextContent(new RegExp(`^1/${options.click ? 20 : 0}$`));
+      expect(screen.getByLabelText("Pose")).toHaveTextContent(
+        new RegExp(`^1/${options.click ? 20 : 0}$`),
+      );
     },
   );
   it("holds an inactive entrance at zero and plays once on a new visit", async () => {

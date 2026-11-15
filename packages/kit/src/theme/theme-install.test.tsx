@@ -18,7 +18,9 @@ describe("installTheme", () => {
     const second = resolveTheme({ ramps: { cyan: ["#112233", "#223344", "#334455", "#445566"] } });
     installTheme(second);
     expect(document.head.querySelectorAll("style")).toHaveLength(initial + 1);
-    expect(getComputedStyle(document.documentElement).getPropertyValue("--od-radius")).toBe(resolveTheme().shape.radius);
+    expect(getComputedStyle(document.documentElement).getPropertyValue("--od-radius")).toBe(
+      resolveTheme().shape.radius,
+    );
     expect(getComputedStyle(document.documentElement).getPropertyValue("--od-cyan")).toBe(
       "#223344",
     );
