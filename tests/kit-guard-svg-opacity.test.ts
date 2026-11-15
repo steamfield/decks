@@ -9,11 +9,8 @@ function opacityAttributes(source: string, file = "fixture.tsx"): number[] {
   const found: number[] = [];
   new Visitor({
     JSXOpeningElement(node) {
-      if (
-        node.name.type !== "JSXIdentifier" ||
-        !["g", "rect", "path", "text"].includes(node.name.name)
-      )
-        return;
+      // Lowercase names are intrinsic elements: every SVG tag, not a hand-picked few.
+      if (node.name.type !== "JSXIdentifier" || !/^[a-z]/.test(node.name.name)) return;
       for (const attr of node.attributes) {
         if (
           attr.type === "JSXAttribute" &&
@@ -35,6 +32,8 @@ it("requires animated SVG opacity in inline styles, preserving static attributes
   expect(
     opacityAttributes('const ui = <g style={{ opacity: progress }}><rect opacity="1" /></g>;'),
   ).toEqual([]);
+  expect(opacityAttributes("const ui = <circle opacity={node.opacity} />;")).toHaveLength(1);
+  expect(opacityAttributes("const ui = <Mark opacity={progress} />;")).toEqual([]);
 });
 
 it("keeps animated SVG opacity isolated from attribute selectors throughout the kit", () => {
