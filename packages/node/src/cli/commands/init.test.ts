@@ -58,7 +58,11 @@ it("merges project settings, copies skills and appends guidance without changing
   expect(result.stdout).toContain(`Wrote ${skill}`);
 });
 
-it("updates the version and unedited skills while preserving edited skills and section across reruns", async () => {
+// Four `decks init` processes; a loaded 2-vCPU CI runner took about 11s per process, so the
+// default 30s limit is shorter than the work. This only bounds a hang.
+it("updates the version and unedited skills while preserving edited skills and section across reruns", {
+  timeout: 120_000,
+}, async () => {
   // Far from any real release, so the "upgrade" stays one however the package is versioned.
   const upgradedVersion = "99.0.0";
   const { dir, put } = await pluginProject(packageDir);

@@ -165,15 +165,20 @@ it.each([
   expect(await readdir(dir)).toEqual([]);
 });
 
-it("reports an unwritable registry before creating an unregistered deck", async () => {
-  const dir = await project({ _config: { decksDir: "decks" } });
-  await chmod(join(dir, "decks.json"), 0o444);
-  const result = await run(dir, ["q3"]);
-  expect(result.code).toBe(1);
-  expect(result.stderr).toContain("decks.json");
-  expect(result.stderr).not.toContain(bugNotice);
-  expect(await readdir(dir)).toEqual(["decks.json"]);
-});
+// Root ignores file modes, and a directory named decks.json fails earlier, while reading it, so
+// no other fixture reaches the write-permission check; same guard as server-build-out-dir.test.ts.
+it.skipIf(process.getuid?.() === 0)(
+  "reports an unwritable registry before creating an unregistered deck",
+  async () => {
+    const dir = await project({ _config: { decksDir: "decks" } });
+    await chmod(join(dir, "decks.json"), 0o444);
+    const result = await run(dir, ["q3"]);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("decks.json");
+    expect(result.stderr).not.toContain(bugNotice);
+    expect(await readdir(dir)).toEqual(["decks.json"]);
+  },
+);
 
 it("reports an invalid destination as an author error naming the path", async () => {
   const dir = await project();

@@ -1,5 +1,4 @@
 import { spawnSync } from "node:child_process";
-import {} from "node:path";
 import { expect, it, onTestFinished } from "vitest";
 import { bugNotice } from "../../dev/errors";
 import { fixture, repoPath } from "../../dev/server.test-support";

@@ -136,6 +136,8 @@ it("allows a Codex patch which only edits data or deletes a slide", async () => 
 
 it.each([undefined, "", "x\twarn\tfoo\tbar\n", "x\terorr\tfoo\tbar\n", "x\terror\t[\tbar\n"])(
   "refuses pattern file %j only when the write touches deck prose",
+  // Three tsx processes per case (about 11s each on a loaded 2-vCPU runner); this only bounds a hang.
+  { timeout: 120_000 },
   async (source) => {
     const { dir } = await fixture(onTestFinished);
     const copy = resolve(dir, "scanner");

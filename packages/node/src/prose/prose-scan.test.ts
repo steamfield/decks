@@ -1,11 +1,44 @@
 import { readFileSync } from "node:fs";
-import { expect, it, onTestFinished } from "vitest";
-import { fixture } from "../dev/server.test-support";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { afterAll, beforeAll, expect, it, onTestFinished } from "vitest";
+import { fixture, repoPath } from "../dev/server.test-support";
 import { loadPatterns, patternsFile } from "./prose-patterns";
 import { scanSource } from "./prose-scan";
 
+// The scanner is driven by a small pattern file of its own, so retuning the shipped TSV changes
+// only the one test below that reads it.
+const patternRows = [
+  ["em-dash", "error", "[a-zA-Z] —|— [a-zA-Z]|[a-zA-Z]—[a-zA-Z]"],
+  ["banned-phrase", "error", "[Aa]t its core"],
+  ["not-just-reveal", "error", "([Ii]t|[Tt]hat)(('|’)s| is) not (just|only)"],
+  ["ai-vocab", "error", "\\b[Ss]eamless\\b"],
+  ["colon-reveal", "warn", "[Ii]n other words,"],
+].map((row) => [...row, "message"].join("\t"));
+
+let patterns: ReturnType<typeof loadPatterns>;
+let patternsDir: string;
+beforeAll(async () => {
+  await mkdir(repoPath(".tmp"), { recursive: true });
+  patternsDir = await mkdtemp(repoPath(".tmp/prose-patterns-"));
+  const file = join(patternsDir, "patterns.tsv");
+  await writeFile(file, patternRows.join("\n"));
+  patterns = loadPatterns(file);
+});
+afterAll(() => rm(patternsDir, { recursive: true, force: true }));
+
 const scan = (source: string, file = "slide.mdx", errorsOnly = false) =>
-  scanSource(file, source, loadPatterns(), { errorsOnly });
+  scanSource(file, source, patterns, { errorsOnly });
+
+it("the shipped patterns flag an em dash and a banned phrase as errors", () => {
+  const hits = scanSource("slide.mdx", "An em — dash. At its core, tides.", loadPatterns(), {
+    errorsOnly: false,
+  });
+  expect(hits.map((hit) => [hit.id, hit.severity])).toEqual([
+    ["em-dash", "error"],
+    ["banned-phrase", "error"],
+  ]);
+});
 
 it("reads CRLF patterns, blank rows and whitespace without changing the scan", async () => {
   const original = readFileSync(patternsFile, "utf8");
