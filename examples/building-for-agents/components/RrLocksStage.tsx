@@ -1,5 +1,5 @@
 import { useSlide } from "@steamfield/decks";
-import { DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import {
   AGENT_COUNT,
@@ -20,7 +20,7 @@ import {
   sceneAt,
   WAITING_EVENT,
 } from "../data/10-rr-locks";
-import { DIM, OFF, ON } from "./design";
+import { DATA, DIM, GREEN, NEUTRAL, OFF, ON, PINK, PLUMB, QUIET, WAIT } from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import { NamePlate } from "./NamePlate";
 import styles from "./RrLocksStage.module.css";
@@ -111,13 +111,6 @@ const LOCK_SCALE = 1.7;
 const shackle = (locked: boolean) => (locked ? "M3 6V4a3 3 0 0 1 6 0v2" : "M3 6V4a3 3 0 0 1 6 0");
 const lockAt = (x: number, y: number) => `translate(${x} ${y}) scale(${LOCK_SCALE})`;
 
-const PINK = ink("rose", 2);
-const DATA = ink("cyan", 2);
-const PLUMB = ink("violet", 3);
-const WAIT = ink("amber", 2);
-const GREEN = ink("emerald", 2);
-const NEUTRAL = ink("slate", 1);
-const QUIET = ink("slate", 2);
 const CODE = "var(--od-text-secondary)";
 
 type Tone = { text: string; color: string };

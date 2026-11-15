@@ -2,7 +2,6 @@ import {
   clamp01,
   DRAW,
   DUR,
-  ink,
   SETTLE,
   StoryCard,
   StoryStage,
@@ -24,7 +23,7 @@ import {
   TARGETS,
   TREE,
 } from "../data/08-foreman-daemon";
-import { DIM, OFF, ON, type Pt, polyline } from "./design";
+import { DATA, DIM, WAIT as LOCKED, OFF, ON, PINK, PLUMB, type Pt, polyline } from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import { NamePlate } from "./NamePlate";
 import { PacketPath } from "./PacketPath";
@@ -123,10 +122,6 @@ const TO_BINS: Pt[] = [
   [CLI.x + CLI.w / 2, BIN.y],
 ];
 
-const PINK = ink("rose", 2);
-const DATA = ink("cyan", 2);
-const LOCKED = ink("amber", 2);
-const PLUMB = ink("violet", 3);
 const root = `claude-codex/src · ${SRC_LINES.toLocaleString("en-US")} lines`;
 const pinText = `Codex ${CODEX_VERSION} · ${SCHEMA_FILES} schema files, hashed`;
 

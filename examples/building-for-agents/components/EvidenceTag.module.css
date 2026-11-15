@@ -1,0 +1,27 @@
+/* ── Evidence tags: the status word is printed on the object ── */
+:global(.od-slide.is-story) .sf-tag {
+  position: absolute;
+  display: inline-block;
+  padding: var(--sf-tag-pad-y) var(--sf-tag-pad-x);
+  border: var(--sf-hairline) solid currentColor;
+  border-radius: var(--sf-radius-chip);
+  font-family: var(--sf-font-pixel);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
+  line-height: var(--sf-pixel-leading);
+  text-transform: none;
+  white-space: nowrap;
+  color: var(--od-text-muted);
+  text-shadow: var(--sf-fringe);
+}
+:global(.od-slide.is-story) .sf-tag:global(.is-right) {
+  transform: translateX(-100%);
+}
+:global(.od-slide.is-story) .sf-tag:global(.is-recorded) {
+  color: var(--od-amber);
+}
+:global(.od-slide.is-story) .sf-tag:global(.is-schematic) {
+  border-style: dashed;
+}
+:global(.od-slide.is-story) .sf-tag:global(.is-illustrative) {
+  border-style: dotted;
+}

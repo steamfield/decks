@@ -1,0 +1,15 @@
+/* ── CRT frame: a recording plays on a monitor ── */
+:global(.od-slide.is-story) .sf-crt-bezel {
+  fill: var(--od-surface);
+  stroke: var(--od-border-rule);
+  stroke-width: var(--sf-hairline);
+  rx: var(--sf-crt-radius-outer);
+}
+:global(.od-slide.is-story) .sf-crt-screen {
+  fill: var(--od-screen-black);
+  rx: var(--sf-crt-radius-screen);
+}
+:global(.od-slide.is-story) .sf-crt-scanline {
+  fill: var(--od-text-highlight);
+  opacity: var(--sf-crt-scan);
+}

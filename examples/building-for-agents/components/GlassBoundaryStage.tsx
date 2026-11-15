@@ -1,4 +1,4 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import { useId } from "react";
 import {
@@ -24,7 +24,19 @@ import {
   TICK_SCROLL,
 } from "../data/code/12-glass-boundary";
 import { CodePane } from "./CodePane";
-import { DIM, OFF, ON, type Pt, polyline } from "./design";
+import {
+  PINK as ACTOR,
+  DATA,
+  DIM,
+  WAIT as FIGURE,
+  OFF,
+  ON,
+  PLUMB,
+  type Pt,
+  polyline,
+  RUST_INK,
+  QUIET as TS_INK,
+} from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import { NamePlate } from "./NamePlate";
 import { PacketPath } from "./PacketPath";
@@ -131,12 +143,6 @@ const CODE_RUST = { x: 840, y: 334, width: 970, height: 378 };
 const CODE_TS = { x: 840, y: 722, width: 970, height: 228 };
 /** Its longest line is 74 characters. */
 const CODE_TICK = { x: 816, y: 734, width: 994, height: 216 };
-const DATA = ink("cyan", 2);
-const RUST_INK = ink("cyan", 1);
-const TS_INK = ink("slate", 2);
-const PLUMB = ink("violet", 3);
-const ACTOR = ink("rose", 2);
-const FIGURE = ink("amber", 2);
 const REACHED = 0.999;
 const n = (value: number) => value.toLocaleString("en-US");
 

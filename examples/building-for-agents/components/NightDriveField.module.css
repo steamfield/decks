@@ -1,0 +1,88 @@
+/* The cover's picture, behind the cover frame. */
+:global(.od-slide.is-story) .sf-night-drive {
+  position: absolute;
+  inset: var(--sf-zero);
+  width: var(--sf-full);
+  height: var(--sf-full);
+}
+:global(.od-slide.is-story) .sf-sky-top {
+  stop-color: var(--od-canvas);
+}
+:global(.od-slide.is-story) .sf-sky-mid {
+  stop-color: var(--od-hero-mid);
+}
+:global(.od-slide.is-story) .sf-sky-haze {
+  stop-color: var(--od-hero-haze);
+}
+:global(.od-slide.is-story) .sf-sun-halo {
+  stop-color: var(--od-sun-pink);
+}
+:global(.od-slide.is-story) .sf-star {
+  fill: var(--od-text);
+}
+:global(.od-slide.is-story) .sf-ground {
+  fill: var(--od-canvas);
+}
+:global(.od-slide.is-story) .sf-ridge-fill {
+  fill: var(--od-canvas);
+}
+:global(.od-slide.is-story) .sf-ridge-line {
+  fill: none;
+  stroke: var(--od-hero-ridge);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+:global(.od-slide.is-story) .sf-grid-line {
+  fill: none;
+  stroke: var(--od-hero-grid);
+  stroke-width: 1.5;
+}
+:global(.od-slide.is-story) .sf-horizon {
+  stroke: var(--od-hero-grid);
+  stroke-width: 2;
+}
+:global(.od-slide.is-story) .sf-fade-0 {
+  stop-color: var(--od-canvas);
+  stop-opacity: 0;
+}
+:global(.od-slide.is-story) .sf-fade-1 {
+  stop-color: var(--od-canvas);
+  stop-opacity: 1;
+}
+
+/* The cover's live scene: a canvas over the still picture, with the hero's
+   soft-light grain on top. */
+/* The scene is the smallest 16:9 box that covers the window, centred on the frame, so a
+   16:10, 4:3 or ultrawide screen is filled edge to edge and the type stays in the frame. */
+:global(.od-slide.is-story) .sf-night {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* The frame sits above the credit's band, so the scene reaches that much further down. */
+  --sf-night-h: calc(100cqh + var(--deck-credit-space, 0px));
+  width: max(100cqw, var(--sf-night-h) * 16 / 9);
+  height: max(var(--sf-night-h), 56.25cqw);
+  transform: translate(-50%, -50%);
+}
+:global(.od-slide.is-story) .sf-night-canvas {
+  position: absolute;
+  inset: var(--sf-zero);
+  width: var(--sf-full);
+  height: var(--sf-full);
+  opacity: var(--sf-zero);
+  transition: opacity 650ms var(--od-settle);
+}
+:global(.od-slide.is-story) .sf-night:global(.is-live) .sf-night-canvas {
+  opacity: var(--sf-on);
+}
+:global(.od-slide.is-story) .sf-night:global(.is-live)::after {
+  content: "";
+  position: absolute;
+  inset: var(--sf-zero);
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg%20width%3D%22192%22%20height%3D%22192%22%20viewBox%3D%220%200%20192%20192%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22n%22%20color-interpolation-filters%3D%22sRGB%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.72%22%20numOctaves%3D%223%22%20seed%3D%2211%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20type%3D%22saturate%22%20values%3D%220%22%2F%3E%3CfeComponentTransfer%3E%3CfeFuncR%20type%3D%22linear%22%20slope%3D%222.4%22%20intercept%3D%22-.7%22%2F%3E%3CfeFuncG%20type%3D%22linear%22%20slope%3D%222.4%22%20intercept%3D%22-.7%22%2F%3E%3CfeFuncB%20type%3D%22linear%22%20slope%3D%222.4%22%20intercept%3D%22-.7%22%2F%3E%3CfeFuncA%20type%3D%22linear%22%20slope%3D%220%22%20intercept%3D%221%22%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Cpath%20fill%3D%22white%22%20filter%3D%22url%28%23n%29%22%20d%3D%22M0%200h192v192H0z%22%2F%3E%3C%2Fsvg%3E")
+    repeat;
+  background-size: calc(10 * var(--sw)) calc(10 * var(--sw));
+  mix-blend-mode: soft-light;
+  opacity: var(--sf-scene-grain);
+}

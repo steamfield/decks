@@ -1,9 +1,9 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
+import { DUR, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import { countWord } from "../data/03-thread";
 import { HABITS, ROWS_PER_BEAT } from "../data/18-habits";
 import { PRODUCTS } from "../data/products";
-import { DIM, FRAME, OFF, ON } from "./design";
+import { DIM, FRAME, DATA as LIT, OFF, ON } from "./design";
 import { PixelIcon } from "./PixelIcon";
 import { ThreadRail } from "./ThreadRail";
 
@@ -41,7 +41,6 @@ const rows = HABITS.map((habit, i) => ({
   y: ROW.y + i * ROW.height,
   mid: ROW.y + i * ROW.height + ROW.height / 2,
 }));
-const LIT = ink("cyan", 2);
 const key = (k: number) => `p${k}`;
 
 export function HabitsStage() {

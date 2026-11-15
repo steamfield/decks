@@ -1,0 +1,69 @@
+/* ── Thread rail: the seven products, in the order work flows ── */
+:global(.od-slide.is-story) .sf-rail {
+  position: absolute;
+  left: var(--sf-margin-x);
+  right: var(--sf-margin-x);
+  bottom: var(--sf-rail-bottom);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: var(--sf-hairline) solid var(--od-border);
+}
+:global(.od-slide.is-story) .sf-rail-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sf-rail-gap);
+  padding-top: var(--sf-rail-pad);
+  opacity: var(--sf-dim);
+}
+:global(.od-slide.is-story) .sf-rail-item:global(.is-done) {
+  opacity: var(--sf-on);
+}
+:global(.od-slide.is-story) .sf-rail-item:global(.is-current) {
+  opacity: var(--sf-on);
+}
+:global(.od-slide.is-story) .sf-rail-item:global(.is-current)::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--sf-hairline));
+  left: var(--sf-zero);
+  right: var(--sf-rail-gap);
+  height: var(--sf-marker);
+  background: var(--od-pink);
+}
+:global(.od-slide.is-story) .sf-rail-icon {
+  width: var(--sf-rail-icon);
+  height: var(--sf-rail-icon);
+  flex: none;
+}
+:global(.od-slide.is-story) .sf-rail-text {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.3 * var(--sw));
+  min-width: 0;
+}
+:global(.od-slide.is-story) .sf-rail-verb {
+  font-family: var(--sf-font-pixel);
+  font-size: calc(var(--sf-pixel-size) * var(--deck-text-scale, 1));
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--od-text-muted);
+  text-shadow: var(--sf-fringe);
+}
+:global(.od-slide.is-story) .sf-rail-item:global(.is-current) .sf-rail-verb {
+  color: var(--od-amber);
+}
+:global(.od-slide.is-story) .sf-rail-name {
+  font-family: var(--sf-font-display);
+  font-size: calc(var(--sf-rail-name) * var(--deck-text-scale, 1));
+  font-weight: var(--sf-plate-weight);
+  letter-spacing: var(--sf-plate-tracking);
+  line-height: 1;
+  color: var(--od-text-secondary);
+  white-space: nowrap;
+  text-shadow: var(--sf-fringe);
+  text-transform: none;
+}
+:global(.od-slide.is-story) .sf-rail-item:global(.is-current) .sf-rail-name {
+  color: var(--od-text);
+}

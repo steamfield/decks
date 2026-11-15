@@ -1,4 +1,5 @@
 import { type ReactNode, useId } from "react";
+import styles from "./CrtFrame.module.css";
 import { CRT } from "./design";
 
 export function CrtFrame({
@@ -39,14 +40,24 @@ export function CrtFrame({
           height={CRT.scanPeriod}
           patternUnits="userSpaceOnUse"
         >
-          <rect className="sf-crt-scanline" width={CRT.scanPeriod} height={CRT.scanHeight} />
+          <rect
+            className={`sf-crt-scanline ${styles["sf-crt-scanline"]}`}
+            width={CRT.scanPeriod}
+            height={CRT.scanHeight}
+          />
         </pattern>
         <clipPath id={`${id}-clip`}>
-          <rect className="sf-crt-screen" {...screen} />
+          <rect className={`sf-crt-screen ${styles["sf-crt-screen"]}`} {...screen} />
         </clipPath>
       </defs>
-      <rect className="sf-crt-bezel" x={x} y={y} width={width} height={height} />
-      <rect className="sf-crt-screen" {...screen} />
+      <rect
+        className={`sf-crt-bezel ${styles["sf-crt-bezel"]}`}
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+      />
+      <rect className={`sf-crt-screen ${styles["sf-crt-screen"]}`} {...screen} />
       <g clipPath={`url(#${id}-clip)`}>
         <g style={{ opacity: power }}>{children}</g>
         <rect {...screen} fill={`url(#${id}-scan)`} />
