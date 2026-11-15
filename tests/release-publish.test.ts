@@ -8,10 +8,19 @@ import { expect, it } from "vitest";
 const exec = promisify(execFile);
 const release = { name: "@steamfield/decks", version: "1.2.3", filename: "decks.tgz" };
 
-type Mode = "fresh" | "published" | "mismatch" | "registry-error" | "publish-fails" | "unconfirmed";
+type Mode =
+  | "fresh"
+  | "published"
+  | "mismatch"
+  | "registry-error"
+  | "publish-fails"
+  | "unconfirmed"
+  | "flaky"
+  | "auth-error"
+  | "hang";
 
 // The publish step of the workflow, run as the workflow runs it, against a fake `npm` on PATH.
-async function runPublish(mode: Mode, version = release.version) {
+async function runPublish(mode: Mode, version = release.version, env: Record<string, string> = {}) {
   await mkdir(resolve(".tmp"), { recursive: true });
   const root = await realpath(await mkdtemp(resolve(".tmp/release-publish-")));
   await mkdir(`${root}/bin`);
@@ -37,8 +46,14 @@ const mode = ${JSON.stringify(mode)};
 const args = process.argv.slice(2);
 fs.appendFileSync(root + "/calls.jsonl", JSON.stringify(args) + "\\n");
 const registry = JSON.parse(fs.readFileSync(root + "/registry.json"));
+const fail = (code) => { console.log(JSON.stringify({error:{code}})); console.error("npm error code " + code); process.exit(1); };
 if (args[0] === "view") {
-  if (mode === "registry-error") { console.log(JSON.stringify({error:{code:"E503"}})); console.error("npm error code E503"); process.exit(1); }
+  const path = root + "/views";
+  const views = fs.existsSync(path) ? Number(fs.readFileSync(path, "utf8")) : 0;
+  fs.writeFileSync(path, String(views + 1));
+  if (mode === "hang") await new Promise(() => setInterval(() => {}, 1000));
+  if (mode === "auth-error") fail("E401");
+  if (mode === "registry-error" || (mode === "flaky" && views < 2)) fail("E503");
   if (!(args[1] in registry)) { console.log(JSON.stringify({error:{code:"E404"}})); console.error("npm error code E404"); process.exit(1); }
   console.log(JSON.stringify(registry[args[1]]));
 } else if (args[0] === "publish") {
@@ -80,6 +95,8 @@ if (args[0] === "view") {
         RELEASE_CONFIRM_DELAY_MS: "0",
         RELEASE_CONFIRM_ATTEMPTS: "3",
         RELEASE_CONFIRM_INTERVAL_MS: "0",
+        RELEASE_RETRY_BASE_MS: "0",
+        ...env,
       },
     }));
   } catch (error) {
@@ -93,7 +110,8 @@ if (args[0] === "view") {
     .filter(Boolean)
     .map((line) => JSON.parse(line) as string[]);
   const published = calls.filter((call) => call[0] === "publish");
-  return { root, status, stdout, stderr, published };
+  const views = Number(await readFile(`${root}/views`, "utf8").catch(() => "0"));
+  return { root, status, stdout, stderr, published, views };
 }
 
 it("publishes a version the registry does not have, with provenance, and confirms it", async () => {
@@ -133,11 +151,37 @@ it("fails without publishing when the registry holds different contents for the 
   expect(stderr).toContain("Never republish a version");
 });
 
-it("fails without publishing when the registry answers with something other than a 404", async () => {
-  const { status, stderr, published } = await runPublish("registry-error");
+it("retries a registry error that keeps coming and then fails naming how many attempts it made", async () => {
+  const { status, stderr, published, views } = await runPublish("registry-error");
   expect(status).toBe(1);
   expect(published).toEqual([]);
+  expect(views).toBe(4);
   expect(stderr).toContain("npm view @steamfield/decks@1.2.3 failed (E503)");
+  expect(stderr).toContain("gave up after 4 attempts");
+});
+
+it("retries a registry error that clears and then publishes", async () => {
+  const { status, stdout, published } = await runPublish("flaky");
+  expect(status).toBe(0);
+  expect(stdout).toContain("failed with E503; retrying");
+  expect(published).toHaveLength(1);
+});
+
+it("does not retry an auth error", async () => {
+  const { status, stderr, views } = await runPublish("auth-error");
+  expect(status).toBe(1);
+  expect(views).toBe(1);
+  expect(stderr).toContain("(E401)");
+});
+
+it("fails a registry call that hangs instead of waiting for the job timeout", async () => {
+  const { status, stderr } = await runPublish("hang", release.version, {
+    RELEASE_VIEW_TIMEOUT_MS: "1000",
+    RELEASE_VIEW_ATTEMPTS: "1",
+  });
+  expect(status).toBe(1);
+  expect(stderr).toContain("npm view timed out after 1s");
+  expect(stderr).not.toContain("node:internal");
 });
 
 it("explains a failed publish in plain text with the npm error, a hint and what is on npm", async () => {
@@ -151,13 +195,18 @@ it("explains a failed publish in plain text with the npm error, a hint and what 
   expect(stderr).not.toContain("node:internal");
 });
 
-it("annotates the failure for GitHub and says the registry has not shown the version yet", async () => {
-  const { status, stderr } = await runPublish("unconfirmed");
+it("warns, and does not fail, when the registry has not shown a published version yet", async () => {
+  const { status, stdout, stderr } = await runPublish("unconfirmed");
+  expect(status).toBe(0);
+  expect(stdout).toContain("::warning title=Release not yet visible on npm::");
+  expect(stdout).toContain("npm accepted @steamfield/decks@1.2.3");
+  expect(stderr).not.toContain("node:internal");
+});
+
+it("annotates a failure for GitHub", async () => {
+  const { status, stderr } = await runPublish("publish-fails");
   expect(status).toBe(1);
   expect(stderr).toContain("::error title=Release publish failed::");
-  expect(stderr).toContain("Could not confirm @steamfield/decks@1.2.3");
-  expect(stderr).toContain("was published but the registry does not show it yet");
-  expect(stderr).not.toContain("node:internal");
 });
 
 it("packs the package and records the integrity of the exact tarball", async () => {

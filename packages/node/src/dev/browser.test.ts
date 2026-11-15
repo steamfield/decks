@@ -41,7 +41,7 @@ function expectSameFrame(actual: Buffer, expected: Buffer) {
   const a = PNG.sync.read(actual);
   const b = PNG.sync.read(expected);
   expect([a.width, a.height]).toEqual([b.width, b.height]);
-  // Separate Chromium renders can rasterize text edges differently.
+  // Two captures from one Chromium on one machine; tolerates antialiasing, not a layout change.
   expect(
     pixelmatch(a.data, b.data, undefined, a.width, a.height, { threshold: 0.1 }) /
       (a.width * a.height),
@@ -102,10 +102,8 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
       await vi.waitFor(async () =>
         expect(await reference.page.getByText("Third point", { exact: true }).count()).toBe(0),
       );
-      expectSameFrame(
-        png,
-        await readFile(resolve(`tests/fixtures/browser/slide-2-click-2-${width}.png`)),
-      );
+      // The shot must look like the deck does in the same Chromium on this machine.
+      expectSameFrame(png, await reference.page.screenshot());
     },
   );
 
@@ -153,7 +151,12 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
             .count(),
         ).toBe(1),
       );
-      expectSameFrame(png, await readFile(resolve("tests/fixtures/browser/og.png")));
+      // The 1200 x 630 preview letterboxes the 16:9 slide; its middle 1120 columns are the
+      // slide as this Chromium renders it at 1120 x 630.
+      const preview = PNG.sync.read(png);
+      const slide = new PNG({ width: 1120, height: 630 });
+      PNG.bitblt(preview, slide, 40, 0, 1120, 630, 0, 0);
+      expectSameFrame(PNG.sync.write(slide), await capture.page.screenshot());
     },
   );
 

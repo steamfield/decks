@@ -24,12 +24,33 @@ const hints = {
   E422: "npm rejected the provenance. Provenance needs a public repository, a `repository` field in package.json and `id-token: write`.",
 };
 
+// A hung registry call fails the step instead of running until the job's timeout.
+const timeouts = {
+  view: Number(process.env.RELEASE_VIEW_TIMEOUT_MS ?? 60000),
+  publish: Number(process.env.RELEASE_PUBLISH_TIMEOUT_MS ?? 300000),
+  pack: 300000,
+};
+
 // Run npm and fail with the command, npm's own error lines and a hint, not a dump of the child process.
 // stdout is kept on the error because `npm view --json` reports registry errors there.
 function npm(args) {
+  const timeout = timeouts[args[0]];
   try {
-    return execFileSync("npm", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return execFileSync("npm", args, {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout,
+      killSignal: "SIGKILL",
+    });
   } catch (error) {
+    if (error.code === "ETIMEDOUT") {
+      const failure = new Error(
+        `npm ${args[0]} timed out after ${Math.round(timeout / 1000)}s. The registry is slow or unreachable; rerun the failed job.`,
+        { cause: error },
+      );
+      failure.npmCode = "ETIMEDOUT";
+      throw failure;
+    }
     const stderr = String(error.stderr ?? "");
     const code = /^npm error code (\w+)/m.exec(stderr)?.[1];
     const lines = stderr
@@ -73,10 +94,48 @@ function pack(packageDir, artifactDir) {
   );
 }
 
+const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+// Failures worth another try: registry overload (429, 5xx), our own call timeout and network drops.
+// Auth, 404 and anything else npm reports are answers, not hiccups, and fail at once.
+const transient =
+  /^(E429|E5\d\d|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|ENETUNREACH|EPIPE)$/;
+const viewAttempts = Number(process.env.RELEASE_VIEW_ATTEMPTS ?? 4);
+const retryBaseMs = Number(process.env.RELEASE_RETRY_BASE_MS ?? 5000);
+
+function registryCode(error) {
+  try {
+    return JSON.parse(error.stdout).error?.code;
+  } catch {
+    return undefined;
+  }
+}
+
+// `npm view` is a read, so retrying it is safe, with jittered exponential backoff (about 5s, 10s,
+// 20s by default). `npm publish` is never retried here: a rerun of the job re-checks the registry.
+function viewWithRetry(spec) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return npm(["view", spec, "dist.integrity", "--json"]);
+    } catch (error) {
+      const code = error.npmCode ?? registryCode(error);
+      if (!transient.test(code ?? "") || attempt >= viewAttempts) {
+        if (attempt > 1) error.message += `\n(gave up after ${attempt} attempts)`;
+        throw error;
+      }
+      const delay = Math.round(Math.random() * retryBaseMs * 2 ** (attempt - 1));
+      console.log(
+        `npm view ${spec} failed with ${code}; retrying in ${Math.round(delay / 1000)}s (attempt ${attempt + 1} of ${viewAttempts}).`,
+      );
+      sleep(delay);
+    }
+  }
+}
+
 function publishedIntegrity(spec) {
   let output;
   try {
-    output = npm(["view", spec, "dist.integrity", "--json"]);
+    output = viewWithRetry(spec);
   } catch (error) {
     // Only an explicit registry 404 means the version can be published.
     let diagnostic;
@@ -91,9 +150,14 @@ function publishedIntegrity(spec) {
   return JSON.parse(output);
 }
 
-const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+function warn(title, message) {
+  if (process.env.GITHUB_ACTIONS) console.log(`::warning title=${title}::${message}`);
+  else console.log(`warning: ${message}`);
+}
 
-// npm reports a publish well before the registry serves it, usually within 3-5 minutes.
+// npm reports a publish well before the registry serves it, usually within 3-5 minutes. Nothing
+// depends on this package, so a version npm accepted but the registry has not shown yet is a
+// warning, not a failure. A different integrity is a real conflict and fails at once.
 function confirmPublished(release, spec) {
   const delay = Number(process.env.RELEASE_CONFIRM_DELAY_MS ?? 120000);
   const interval = Number(process.env.RELEASE_CONFIRM_INTERVAL_MS ?? 15000);
@@ -106,8 +170,9 @@ function confirmPublished(release, spec) {
     if (found !== null)
       throw new Error(`${spec} is on npm with different contents than the build.`);
     if (attempt >= attempts)
-      throw new Error(
-        `Could not confirm ${spec} on the registry after ${Math.round((delay + attempts * interval) / 1000)}s. npm reported the publish, so rerun the job: it skips a version already published.`,
+      return warn(
+        "Release not yet visible on npm",
+        `npm accepted ${spec} but the registry had not shown it after ${Math.round((delay + attempts * interval) / 1000)}s. Check \`npm view ${release.name} version\` in a few minutes; rerun this job only if it never appears.`,
       );
     sleep(interval);
   }

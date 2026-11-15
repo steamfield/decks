@@ -93,11 +93,13 @@ Need a new export? Give the exact line in the hand-off. Need a dependency? Ask.
 ## Releasing
 
 Releases are tag-driven and CI publishes; agents never run `npm publish`, push a tag or touch
-npm credentials. `.github/workflows/release.yml` runs on a `v*` tag: it checks the tag equals
-`packages/decks/package.json`'s version (and the plugin manifest's, and that the commit is on
-`main`), runs `bun run check`, packs `@steamfield/decks` once into a workflow artifact, and
-publishes that tarball through `scripts/release-publish.mjs` with provenance. Auth is npm
-trusted publishing (OIDC); there is no npm token or `NPM_TOKEN` secret, and none is to be added.
+npm credentials. `.github/workflows/release.yml` runs on a `v*` tag as jobs: `verify` (the tag
+equals `packages/decks/package.json`'s version and the plugin manifest's, the commit is on
+`main`, then `bun run check`) and `build` (packs `@steamfield/decks` once into a workflow
+artifact) in parallel, then `publish`, which publishes that tarball through
+`scripts/release-publish.mjs` with provenance, then `github-release`. Only `publish` gets
+`id-token: write` and it runs one release at a time. Auth is npm trusted publishing (OIDC);
+there is no npm token or `NPM_TOKEN` secret, and none is to be added.
 
 To cut `X.Y.Z` (a prerelease `X.Y.Z-rc.N` publishes under the `rc` dist-tag):
 
@@ -113,8 +115,12 @@ To cut `X.Y.Z` (a prerelease `X.Y.Z-rc.N` publishes under the `rc` dist-tag):
    `npm view @steamfield/decks version dist.integrity`.
 
 If a run fails partway, fix the cause and rerun the failed job (`gh run rerun <id> --failed`):
-it publishes the same artifact and `release-publish.mjs` skips a version already on npm with
-the same integrity. Never move or reuse a published version; bump the patch. A bad tag is
+a failed `publish` reruns alone with the same artifact, and `release-publish.mjs` skips a
+version already on npm with the same integrity. Every npm call has a timeout, and `npm view`
+retries 429, 5xx, timeouts and network drops with backoff (never auth errors, a 404 or
+`npm publish`). The registry takes 3-5 minutes to show a new version; if it still does not
+when the wait ends, the run passes with a warning annotation, so check `npm view` a few
+minutes later. Never move or reuse a published version; bump the patch. A bad tag is
 deleted by the user (`git push origin :refs/tags/vX.Y.Z`); a hook blocks agents from doing it.
 
 The first release (`1.0.0-rc.0`) needs a one-time human bootstrap, because a Trusted Publisher
