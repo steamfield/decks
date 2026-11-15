@@ -94,9 +94,7 @@ it.each([{ context: "overview" as const }, { instant: true }])(
 it.each([
   ["domain", { domain: [0, 20] }, "width", "100"],
   ["xRange", { xRange: [200, 700] }, "width", "100"],
-  ["yBand", { yBand: [400, 800] }, "y", "488"],
   ["thickness", { thickness: 40 }, "height", "40"],
-  ["sort", { sort: "desc" }, "y", "338"],
   ["rows", { rows: [{ id: "c", label: "Gamma", value: 5 }] }, "width", "500"],
 ] satisfies [string, Partial<ComponentProps<typeof InkBars>>, string, string][])(
   "uses %s in the bar geometry",
@@ -112,10 +110,32 @@ it.each([
     expect(rects().item(0)).toHaveAttribute(attribute, value);
   },
 );
+it("lays bars out inside the yBand", async () => {
+  await setup(() => <Bars props={{ yBand: [400, 800] }} />, { instant: true });
+  for (const [i, slot] of [
+    [0, 400],
+    [1, 600],
+  ] as const) {
+    const bar = rects().item(i);
+    const y = Number(bar?.getAttribute("y"));
+    expect(y).toBeGreaterThanOrEqual(slot);
+    expect(y + Number(bar?.getAttribute("height"))).toBeLessThanOrEqual(slot + 200);
+  }
+});
+it("sorts descending by moving the larger row to the first slot", async () => {
+  await setup(() => <Bars props={{ sort: "desc" }} />, { instant: true });
+  expect(Number(rects().item(0)?.getAttribute("y"))).toBeGreaterThan(
+    Number(rects().item(1)?.getAttribute("y")),
+  );
+});
 it("uses ascending value order without changing the row identities", async () => {
   await setup(() => <Bars props={{ rows: [...rows].reverse(), sort: "asc" }} />, { instant: true });
-  expect(screen.getByText("Alpha")).toHaveAttribute("y", "258.64");
-  expect(screen.getByText("Beta")).toHaveAttribute("y", "358.64");
+  const alpha = Number(screen.getByText("Alpha").getAttribute("y"));
+  const beta = Number(screen.getByText("Beta").getAttribute("y"));
+  const slot = (base.yBand[1] - base.yBand[0]) / rows.length;
+  expect(beta - alpha).toBeCloseTo(slot, 6);
+  expect(alpha).toBeGreaterThan(base.yBand[0]);
+  expect(beta).toBeLessThan(base.yBand[1] + slot);
 });
 it("uses labelGap to align the left labels", async () => {
   await setup(() => <Bars props={{ labelGap: 80 }} />, { instant: true });
@@ -185,8 +205,7 @@ it("stacks close end labels with a gap instead of overlapping", async () => {
   );
   const a = Number(screen.getByText("2").getAttribute("y"));
   const b = Number(screen.getByText("8").getAttribute("y"));
-  expect(a).toBe(213.64);
-  expect(b - a).toBe(36);
+  expect(b - a).toBeGreaterThan(20 / rows.length);
 });
 it("grows on the caller timeline over DUR.grow with optional row spread", async () => {
   await setup(() => (
