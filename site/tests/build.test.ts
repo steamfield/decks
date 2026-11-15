@@ -11,6 +11,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import "@testing-library/jest-dom/vitest";
@@ -21,6 +22,15 @@ import { site } from "../src/config";
 import { loadExamples } from "../src/data/examples";
 import { guideId } from "../src/lib/guide";
 import { deckDemoCount } from "./mdx";
+
+// The repository's CLI from source, as scratch-project.mjs runs it: a fresh checkout
+// (Workers Builds) has no packages/decks/dist/.
+const SOURCE_CLI = [
+  "--conditions=@steamfield/decks/source",
+  "--import",
+  createRequire(resolve("../package.json")).resolve("tsx"),
+  resolve("../packages/node/src/cli/cli.ts"),
+];
 
 const parser = new new Window().DOMParser();
 const read = (root: string, path: string) => readFileSync(join(root, path), "utf8");
@@ -376,7 +386,7 @@ describe("the whole site", () => {
   ];
   it("lints visible prose literally even when it describes JSX or theme aliases", () => {
     const text = "Use <v-clicks> and {ramps.cyan.2}. At its core, this is a game-changer.";
-    const lint = spawnSync("node", ["../packages/decks/dist/cli.js", "lint", "--stdin"], {
+    const lint = spawnSync("node", [...SOURCE_CLI, "lint", "--stdin"], {
       input: `<Prose text={${JSON.stringify(text)}} />`,
       encoding: "utf8",
     });
@@ -411,7 +421,7 @@ describe("the whole site", () => {
       .map((line) => line.replace(/\s+/g, " ").trim())
       .filter(Boolean);
     expect(strings.length).toBeGreaterThan(20);
-    const lint = spawnSync("node", ["../packages/decks/dist/cli.js", "lint", "--stdin"], {
+    const lint = spawnSync("node", [...SOURCE_CLI, "lint", "--stdin"], {
       input: strings.map((text) => `<Prose text={${JSON.stringify(text)}} />`).join("\n"),
       encoding: "utf8",
     });
