@@ -3,11 +3,9 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { startFakeAnalytics } from "../../lib/analytics.test-support";
 import { InstallTabs } from "./InstallTabs";
-
-const track = vi.fn();
-vi.mock("../../lib/analytics", () => ({ track: (...args: unknown[]) => track(...args) }));
 
 const install = [
   { label: "bun", command: "bun add -d slidev-addon-decks\nbunx -p slidev-addon-decks decks init" },
@@ -21,8 +19,18 @@ function html(markup: string) {
   return container;
 }
 
+// The real analytics module, started once (it accepts one init) against a fake SDK. Each test
+// reads only the events captured after it began.
+let sdk: Awaited<ReturnType<typeof startFakeAnalytics>>;
+let captured: () => unknown[][];
+
+beforeAll(async () => {
+  sdk = await startFakeAnalytics();
+});
+
 beforeEach(() => {
-  track.mockClear();
+  const seen = sdk.calls.length;
+  captured = () => sdk.calls.slice(seen);
   document.body.innerHTML = "";
 });
 
@@ -52,11 +60,14 @@ describe("InstallTabs", () => {
     render(<InstallTabs options={install} />);
     await user.click(screen.getByRole("button", { name: "Copy" }));
     expect(await navigator.clipboard.readText()).toBe(install[0]?.command);
-    expect(track).toHaveBeenCalledWith("install_copied", { method: "bun" });
+    expect(captured()).toEqual([["capture", "install_copied", { method: "bun" }]]);
     await user.click(screen.getByRole("tab", { name: "npm" }));
     await user.click(screen.getByRole("button", { name: "Copy" }));
     expect(await navigator.clipboard.readText()).toBe("npm i -D slidev-addon-decks");
-    expect(track).toHaveBeenLastCalledWith("install_copied", { method: "npm" });
+    expect(captured()).toEqual([
+      ["capture", "install_copied", { method: "bun" }],
+      ["capture", "install_copied", { method: "npm" }],
+    ]);
   });
 
   it("resets the copied label when the tab changes", async () => {
