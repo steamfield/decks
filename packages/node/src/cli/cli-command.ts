@@ -1,4 +1,4 @@
-import { type ParseArgsOptionsConfig, parseArgs } from "node:util";
+import { type ParseArgsOptionsConfig, parseArgs, stripVTControlCharacters } from "node:util";
 import { defineCommand, renderUsage, runCommand, showUsage } from "citty";
 import pc from "picocolors";
 import { authorError, DeckError } from "../dev/errors";
@@ -10,7 +10,7 @@ import { init } from "./commands/init";
 import { lint } from "./commands/lint";
 import { newDeck } from "./commands/new";
 import { shot } from "./commands/shot";
-import { resolveDeck } from "./registry";
+import { readRegistry, resolveDeck } from "./registry";
 
 const deckArg = {
   type: "positional",
@@ -56,6 +56,33 @@ const main = defineCommand({
   subCommands: { ...commands, ...tools },
 });
 
+/**
+ * Rewrites citty's argument errors ("Missing required positional argument: DECK") into a message
+ * that says what to pass, with the registered decks when the deck is missing. Anything else is
+ * returned unchanged.
+ */
+async function argumentError(command: string, cause: unknown): Promise<unknown> {
+  if (!(cause instanceof Error) || cause.name !== "CLIError") return cause;
+  const message = stripVTControlCharacters(cause.message);
+  const missing = message
+    .match(/^Missing required positional argument: (\w+)$/)?.[1]
+    ?.toLowerCase();
+  if (missing === undefined)
+    return new DeckError(`${message.replace(/\.?$/, ".")} Run decks ${command} --help for usage.`);
+  if (missing === "deck") {
+    const { decks } = await readRegistry();
+    const example = decks[0]
+      ? `decks ${command} ${decks[0].alias}`
+      : `decks ${command} <directory>`;
+    return new DeckError(
+      decks.length
+        ? `which deck? Pass an alias from decks.json or a deck directory. Registered: ${decks.map((deck) => deck.alias).join(", ")}. For example: ${example}`
+        : `which deck? Pass a deck directory (no decks are registered in decks.json; decks new <alias> creates one). For example: ${example}`,
+    );
+  }
+  return new DeckError(`missing <${missing}>. Run decks ${command} --help for usage.`);
+}
+
 export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> {
   const command = rawArgs[0];
   try {
@@ -63,8 +90,7 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
       try {
         await runCommand(main, { rawArgs });
       } catch (cause) {
-        if (cause instanceof Error && cause.name === "CLIError") throw new DeckError(cause.message);
-        throw cause;
+        throw await argumentError(command, cause);
       }
     } else if (command !== "dev" && command !== "build") {
       if (command === undefined) {
@@ -132,8 +158,7 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
       try {
         await runCommand(main, { rawArgs });
       } catch (cause) {
-        if (cause instanceof Error && cause.name === "CLIError") throw new DeckError(cause.message);
-        throw cause;
+        throw await argumentError(command, cause);
       }
     }
   } catch (cause) {

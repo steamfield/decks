@@ -26,33 +26,43 @@ import { PNG } from "pngjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LIMIT = 0.002;
 const args = process.argv.slice(2);
-const alias = args.shift();
-if (!alias) {
-  console.error(
-    "usage: node scripts/parity.mjs <alias> [slide...] [--live sNN-cK,...] [--ready <selector>]",
-  );
+const usage =
+  "usage: node scripts/parity.mjs <alias> [slide...] [--live sNN-cK,...] [--ready <selector>]";
+// A usage mistake gets one line and the usage, not a stack trace.
+const fail = (message) => {
+  console.error(`parity: ${message}\n${usage}`);
   process.exit(2);
-}
+};
+const registry = JSON.parse(await readFile(join(root, "decks.json"), "utf8"));
+const aliases = Object.keys(registry).filter((key) => !key.startsWith("_"));
+const alias = args.shift();
+if (!alias) fail(`which deck? Registered: ${aliases.join(", ")}.`);
 const live = new Set();
 // A layer (a CRT tube, a credit) can be in the slide host before the slide module renders.
 let ready = ".od-story-frame";
 const only = [];
 while (args.length) {
   const arg = args.shift();
-  if (arg === "--ready") ready = args.shift() ?? ready;
-  else if (arg === "--live")
-    for (const name of (args.shift() ?? "").split(",")) live.add(`${name}.png`);
-  else only.push(Number(arg));
+  if (arg === "--ready" || arg === "--live") {
+    const value = args.shift();
+    if (value === undefined || value.startsWith("--")) fail(`${arg} needs a value.`);
+    if (arg === "--ready") ready = value;
+    else for (const name of value.split(",")) live.add(`${name}.png`);
+  } else if (/^\d+$/.test(arg)) only.push(Number(arg));
+  else fail(`${JSON.stringify(arg)} is not a slide number or an option.`);
 }
 
-const registry = JSON.parse(await readFile(join(root, "decks.json"), "utf8"));
-if (!registry[alias]?.dir) throw new Error(`${alias} is not in decks.json`);
+if (!registry[alias]?.dir)
+  fail(`${JSON.stringify(alias)} is not in decks.json. Registered: ${aliases.join(", ")}.`);
 const deck = join(root, registry[alias].dir);
 const findBaseline = () => {
   for (let dir = root; ; dir = dirname(dir)) {
     const candidate = join(dir, ".parity", alias);
     if (existsSync(candidate)) return candidate;
-    if (dirname(dir) === dir) throw new Error(`no .parity/${alias} above ${root}`);
+    if (dirname(dir) === dir)
+      fail(
+        `no .parity/${alias} baseline above ${root}. Capture one from the slidev-final tag, or set PARITY_BASELINE.`,
+      );
   }
 };
 const baseline = process.env.PARITY_BASELINE ?? findBaseline();

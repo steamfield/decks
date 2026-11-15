@@ -75,3 +75,35 @@ it.each([
   expect(process.output().stdout).toContain(first);
   expect(process.output().stdout).toContain(second);
 });
+
+it.each(["dev", "build", "export", "shot"])(
+  "names the registered decks when %s is given no deck",
+  async (command) => {
+    const { dir } = await fixture(onTestFinished, {
+      "decks.json": JSON.stringify({ talk: { dir: "." }, demo: { dir: "." } }),
+    });
+    const process = cli(dir, [command]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toBe(
+      `decks ${command}: which deck? Pass an alias from decks.json or a deck directory. Registered: talk, demo. For example: decks ${command} talk\n`,
+    );
+  },
+);
+
+it("suggests decks new when no deck is registered and none is given", async () => {
+  const { dir } = await fixture(onTestFinished);
+  const process = cli(dir, ["dev"]);
+  expect((await process.exit)[0]).toBe(1);
+  expect(process.output().stderr).toBe(
+    "decks dev: which deck? Pass a deck directory (no decks are registered in decks.json; decks new <alias> creates one). For example: decks dev <directory>\n",
+  );
+});
+
+it("names a missing argument after the deck and points at help", async () => {
+  const { dir } = await fixture(onTestFinished);
+  const process = cli(dir, ["shot", "."]);
+  expect((await process.exit)[0]).toBe(1);
+  expect(process.output().stderr).toBe(
+    "decks shot: missing <slide>. Run decks shot --help for usage.\n",
+  );
+});
