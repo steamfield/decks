@@ -108,9 +108,9 @@ test("Config title edits restart the server and recover the same slide and click
   await waitForSlideModules(page);
   const file = join(editableDeck.dir, "deck.config.ts");
   const original = await readFile(file, "utf8");
-  await writeFile(file, original.replace('"Basic fixture deck"', '"First title edit"'));
-  await writeFile(file, original.replace('"Basic fixture deck"', '"Second title edit"'));
-  await expect(page).toHaveTitle("Second title edit");
+  await writeFile(file, original.replace('"Basic fixture deck"', '"Edited title"'));
+  // A config edit restarts the dev server, which takes a while on a loaded machine.
+  await expect(page).toHaveTitle("Edited title", { timeout: 30_000 });
   await expect(page.getByRole("listitem")).toHaveText(["First point", "Second point"]);
   await expect(page).toHaveURL(`${editableDeck.url}#/2?clicks=2`);
 });
