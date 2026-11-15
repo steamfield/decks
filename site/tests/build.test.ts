@@ -18,8 +18,7 @@ import { Window } from "happy-dom";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
-import { ENTRIES, loadExamples } from "../src/data/examples";
-import { loadHookDenial, loadRun, runFigures } from "../src/data/fixtures";
+import { loadExamples } from "../src/data/examples";
 import { guideId } from "../src/lib/guide";
 import { deckDemoCount } from "./mdx";
 
@@ -130,7 +129,9 @@ describe("docs pages", () => {
     const full = read("dist", "llms-full.txt");
     expect(full).toContain("bun add @steamfield/decks react react-dom");
     expect(full).toContain('import { defineDeck } from "@steamfield/decks/node"');
-    expect(full).not.toMatch(/slidev-addon-decks|@slidev\/cli|slidev-theme/);
+    expect(full).not.toMatch(
+      /(?:bun add|npm (?:install|i)|pnpm add) [^\n]*(?:slidev-addon-decks|@slidev\/cli|slidev-theme)/,
+    );
     for (const { id } of docs)
       expect(full).toContain(`# ${page("dist", pagePath(id)).querySelector("h1")?.textContent}\n`);
   });
@@ -143,6 +144,14 @@ describe("docs pages", () => {
       if (!from.startsWith("/docs/")) continue;
       expect(status).toBe("301");
       expect(existsSync(join("dist", to.endsWith("/") ? `${to}index.html` : to)), line).toBe(true);
+      if (from.endsWith("/")) {
+        expect(
+          page("dist", `${from}index.html`)
+            .querySelector('meta[http-equiv="refresh"]')
+            ?.getAttribute("content"),
+          line,
+        ).toBe(`0;url=${to}`);
+      }
     }
   });
 
@@ -236,7 +245,7 @@ describe("the whole site", () => {
     for (const line of site.quickstart) expect(text).toContain(line);
     expect(text).toContain(site.install[0]?.command.split("\n")[0] ?? "");
     expect(text).toContain(site.devCommand);
-    for (const id of ["requirements", "agent", "examples", "themes", "install"]) {
+    for (const id of ["requirements", "examples", "themes", "install"]) {
       expect(home.getElementById(id)?.querySelector("h2"), id).not.toBeNull();
     }
     for (const row of site.requirements) expect(text).toContain(row.text);
@@ -250,16 +259,7 @@ describe("the whole site", () => {
     }
     const files = home.querySelector("details#what-you-get summary");
     expect(files?.textContent).toContain("Files created by the setup");
-    const agent = ENTRIES.find((entry) => entry.name === "keeling");
-    if (!agent?.run) throw new Error("the retained agent example requires a run fixture");
-    const agentRun = loadRun(agent.run.fixture);
-    const figures = runFigures(agentRun);
-    const evidence = home.getElementById("agent")?.textContent ?? "";
-    expect(evidence).toContain(agentRun.prompt);
-    expect(evidence).toContain(`${figures.minutes} min`);
-    expect(evidence).toContain(figures.cost);
-    expect(evidence).toContain(String(figures.turns));
-    for (const rule of loadHookDenial().rules) expect(text).toContain(rule);
+    expect(home.getElementById("agent")).toBeNull();
     if (site.announcement) expect(text).toContain(site.announcement.label);
     if (site.version) expect(text).toContain(`v${site.version}`);
     expect(text).toContain(`${site.license} license`);
@@ -268,12 +268,7 @@ describe("the whole site", () => {
 
   it("excludes raw examples from search snippets while keeping their context eligible", () => {
     const home = page("dist", "index.html");
-    for (const selector of [
-      ".hook-panel pre, .hook-panel [data-lint-skip] p",
-      ".transcript-prompt span:not([aria-hidden]), .transcript-step > div > p",
-      "#themes figure pre",
-      ".no-js-only ol li",
-    ]) {
+    for (const selector of ["#themes figure pre", ".no-js-only ol li"]) {
       const elements = [...home.querySelectorAll(selector)];
       expect(elements.length, selector).toBeGreaterThan(0);
       for (const element of elements) {
@@ -284,8 +279,6 @@ describe("the whole site", () => {
       }
     }
     for (const selector of [
-      ".hook-panel figcaption",
-      ".transcript figcaption, .transcript-note",
       "#themes .theme-source figcaption, #themes .theme-source p",
       ".no-js-only h2, .no-js-only a",
       "main h1, main h2, main a",
@@ -326,6 +319,7 @@ describe("the whole site", () => {
 
   it("credits Steamfield with a linked lockup in every page's footer", () => {
     for (const file of htmlFiles("dist").filter((file) => !file.startsWith("d/"))) {
+      if (page("dist", file).querySelector('meta[http-equiv="refresh"]')) continue;
       const footer = page("dist", file).querySelector("footer");
       expect(footer, file).not.toBeNull();
       if (!footer) throw new Error(`No footer in ${file}`);

@@ -554,10 +554,20 @@
     line-height: 18px;
   }
 }
-/* The narrowest phones keep the two featured decks; the gallery lists the rest. */
 @container deck-player (max-width: 379px) {
   .more-examples {
-    display: none;
+    position: static;
+  }
+  .more-examples-list {
+    left: 8px;
+    right: 8px;
+    min-width: 0;
+  }
+  .more-examples-list .example-selector {
+    height: auto;
+    min-height: 44px;
+    white-space: normal;
+    text-align: left;
   }
 }
 

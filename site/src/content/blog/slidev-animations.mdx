@@ -9,9 +9,10 @@ relatedDocs:
   - kit
 ---
 
+import Figure from "../../components/blog/Figure.astro";
+
 > This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
-import DeckDemo from "../../components/blog/DeckDemo.astro";
 
 Slidev animations start with `v-click`: reveal an element when you advance, or hide it with `v-click.hide`. Use `<v-clicks>` for a list and `v-after` for content that appears alongside the preceding reveal.
 
@@ -103,7 +104,9 @@ The timeline deliberately skips animation in some situations. It seeks directly 
 
 Use the generated stage as the starting point for your chart. Replace its series with your figures, then change what each step draws or emphasizes. Put the figures in a `data/` module and record their sources in `data-sources.md`, as the starter guide describes. Keeping the values separate from the transition script makes it easier to review whether a change is in the data or in its presentation. For the chart itself, see [how to add charts to Slidev](/blog/slidev-charts/).
 
-<DeckDemo example="od-story-templates" caption="Story stage patterns from the Decks templates: a minimal stage, bars, labelled cards and a hand-off between slides. Step forward and back to compare." />
+<Figure src="/posters/od-story-templates-1280.webp" alt="Story templates in the original Slidev deck" caption="The Slidev version of story templates; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 ## How do you keep the caption in sync with the chart?
 

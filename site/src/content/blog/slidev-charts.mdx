@@ -9,9 +9,10 @@ relatedDocs:
   - motion
 ---
 
+import Figure from "../../components/blog/Figure.astro";
+
 > This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
-import DeckDemo from "../../components/blog/DeckDemo.astro";
 
 To add charts to Slidev, put a Vue component that wraps your chart library in the deck's `components/` directory, then use its tag in your Markdown. Slidev discovers it automatically.
 
@@ -150,7 +151,9 @@ Each observation needs a `date` and a numeric `value`; `yDomain` is a pair of ax
 
 Decks requires Node 20.19+ or 22.12+, and its slides are dark only. It pins OpenChart 9.0.0. For registered decks using OpenChart, set `"animated": true` in `decks.json`; the [PDF export guide](/docs/cli/) explains the export settings.
 
-<DeckDemo example="state-of-js" caption="A story deck whose chart redraws at each step. Press the right arrow to advance and the left arrow to play the transition back." />
+<Figure src="/posters/state-of-js-1280.webp" alt="JavaScript tooling in the original Slidev deck" caption="The Slidev version of JavaScript tooling; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 ## How do you build a chart that changes at each step?
 

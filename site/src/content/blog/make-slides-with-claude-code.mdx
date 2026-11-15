@@ -9,9 +9,10 @@ relatedDocs:
   - cli
 ---
 
+import Figure from "../../components/blog/Figure.astro";
+
 > This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
-import DeckDemo from "../../components/blog/DeckDemo.astro";
 
 To make slides with Claude Code, ask it to write a Markdown presentation for Slidev or Marp, run the preview, and revise the rendered slides before exporting. Specify the output format in your first prompt.
 
@@ -71,9 +72,11 @@ Open Claude Code in the project and ask it to use the installed deck-author guid
 bunx -p slidev-addon-decks decks dev my-talk
 ```
 
-The Keeling curve example shows the chart and its changing captions. Claude Code drafted it from one prompt in a fresh project prepared with init; a second Claude Code session revised it.
+The Keeling curve still below comes from the historical Slidev deck. Claude Code drafted it from one prompt in a fresh project prepared with init; a second Claude Code session revised it.
 
-<DeckDemo example="keeling" caption="A story deck about the Keeling curve, drafted by Claude Code and revised in a second Claude Code session. Use the arrow keys to step through it." />
+<Figure src="/posters/keeling-1280.webp" alt="The Keeling curve in the original Slidev deck" caption="The Slidev version of the Keeling curve; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 ## What should you ask Claude Code for?
 

@@ -190,7 +190,7 @@ describe("valid article shapes", () => {
   });
   it("accepts > in a caption regardless of prop order", () => {
     expect(() =>
-      expectDemoSource('<DeckDemo caption="Values > 400" example="keeling" />'),
+      expectDemoSource('<DeckDemo caption="Values > 400" example="aisd-showcase" />'),
     ).not.toThrow();
   });
   it("counts live components while ignoring fenced and inline syntax and comments", () => {

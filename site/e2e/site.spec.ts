@@ -4,21 +4,34 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { site } from "../src/config";
 import { loadExamples } from "../src/data/examples";
+import { guideId } from "../src/lib/guide";
 
 // The first two docs pages on disk stand in for every docs page.
-const [firstDoc, secondDoc] = readdirSync("src/content/docs", {
-  recursive: true,
+const [firstDoc, secondDoc] = readdirSync("../docs/guide", {
   encoding: "utf8",
 })
   .filter((file) => file.endsWith(".md"))
   .sort()
-  .map((file) => `/docs/${file.replace(/\.md$/, "")}/`);
+  .map((file) => `/docs/${guideId(file)}/`);
 const DOC = firstDoc ?? "/docs/";
 const [firstInstall, secondInstall] = site.install;
 const examples = loadExamples();
 // A docs page with code blocks, each with a copy button.
 const FENCED_DOC = "/docs/getting-started/quickstart/";
 const warmTheme = readFileSync("demo/warm-theme.json", "utf8");
+
+test("the docs index and retired CLI URL lead to the current CLI guide", async ({ page }) => {
+  await page.goto("/docs/");
+  await page
+    .getByRole("article")
+    .getByRole("link", { name: "The decks command", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/docs\/cli\/$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The decks command");
+  await page.goto("/docs/reference/cli/");
+  await expect(page).toHaveURL(/\/docs\/cli\/$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The decks command");
+});
 
 /** Copy controls exist in the HTML but none is visible: without JavaScript they would be dead. */
 async function expectNoCopyControl(page: Page) {
@@ -472,12 +485,9 @@ test("hovering and focusing real campus marks pauses the live deck", async ({ pa
   await page.goto("/");
   await player(page).scrollIntoViewIfNeeded();
   await expect(player(page)).toHaveAttribute("data-phase", "ready");
-  await page.getByRole("button", { name: "Austin schools", exact: true }).click();
-  await expect(player(page)).toHaveAttribute("data-phase", "ready");
   const frame = page.frameLocator("iframe");
   const campus = frame.getByRole("button", { name: /: grade [A-F],/ }).first();
   const label = await campus.getAttribute("aria-label");
-  await page.getByRole("button", { name: "Play", exact: true }).click();
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
   await campus.hover();
   await expect(frame.getByRole("tooltip")).toBeVisible();

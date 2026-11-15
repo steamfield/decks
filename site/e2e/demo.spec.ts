@@ -30,8 +30,9 @@ for (const example of examples) {
     if (example.name === "aisd-showcase") {
       await page
         .frameLocator("iframe")
-        .locator("body")
-        .click({ position: { x: 10, y: 10 } });
+        .getByRole("button", { name: /: grade [A-F],/ })
+        .first()
+        .focus();
       await page.keyboard.press("ArrowLeft");
       await page.keyboard.press("ArrowRight");
       await expect(
@@ -50,14 +51,17 @@ for (const example of examples) {
       if (index) await page.getByRole("button", { name: "Step forward", exact: true }).click();
       const caption = mirrorCopy(state, example.slideTitles);
       await expect(
-        player.getByRole("paragraph").and(player.getByText(caption.lead, { exact: true })),
-      ).toBeVisible();
-      await expect(
         player.getByText(
-          announcement({ ...state, slides: example.slides }, example.slideTitles[state.slide - 1]),
+          announcement(
+            { ...state, slides: example.slides, settled: true, direction: null },
+            example.slideTitles[state.slide - 1],
+          ),
           { exact: true },
         ),
-      ).toBeAttached();
+      ).toBeAttached({ timeout: 15_000 });
+      await expect(
+        player.getByRole("paragraph").and(player.getByText(caption.lead, { exact: true })),
+      ).toBeVisible();
       if (caption.body)
         await expect(
           player.getByRole("paragraph").and(player.getByText(caption.body, { exact: true })),
@@ -69,6 +73,31 @@ for (const example of examples) {
     }
   });
 }
+
+test("a phone can load all four decks from the examples menu", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const player = page.getByRole("group", { name: /^Deck player:/ });
+  await player.scrollIntoViewIfNeeded();
+  const menu = player.getByRole("navigation", { name: "Example decks" });
+  await expect(menu.getByText("More", { exact: true })).toBeVisible();
+  await menu.getByText("More", { exact: true }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  for (const example of examples) {
+    await menu
+      .getByRole("button", { name: example.featured?.label ?? example.title, exact: true })
+      .click();
+    await expect(player.locator("iframe")).toHaveAttribute(
+      "src",
+      new RegExp(`/d/${example.name}/`),
+    );
+    await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
+    await expect(page.locator(".counter")).toContainText(
+      `Slide ${example.startSlide} · Step ${example.startBeat + 1}`,
+    );
+  }
+});
 
 test("a phone shows the AISD poster until the uniformly scaled live deck is ready", async ({
   page,

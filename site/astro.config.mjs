@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { satteri, satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
@@ -26,6 +27,14 @@ export default defineConfig({
   // docs/install/index.html, so canonicals, links and the sitemap agree as-is.
   trailingSlash: "always",
   build: { format: "directory" },
+  // Static preview hosts do not interpret Cloudflare's _redirects file.
+  redirects: Object.fromEntries(
+    [
+      ...readFileSync(new URL("./public/_redirects", import.meta.url), "utf8").matchAll(
+        /^(\/docs\/\S+\/) (\/docs\/\S+\/) 301$/gm,
+      ),
+    ].map(([, from, to]) => [from, to]),
+  ),
   fonts: [
     local(
       "Inter",

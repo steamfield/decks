@@ -12,7 +12,6 @@ relatedDocs:
 
 > This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
-import DeckDemo from "../../components/blog/DeckDemo.astro";
 import Figure from "../../components/blog/Figure.astro";
 
 Start with the [official Slidev showcase](https://sli.dev/resources/showcases) for Slidev examples of real talks. Use the [theme gallery](https://sli.dev/resources/theme-gallery) to compare visual styles. Slidev's starter project also includes feature demonstrations in its `slides.md` file.
@@ -57,15 +56,17 @@ The repository's `examples/` directory contains the nine decks below. The [first
 
 A story slide keeps one visualization in place while each step advances its explanation. The stage component contains the visualization and the caption card's text for each step. A conventional slide holds material such as bullets, tables or charts. The [story and conventional deck comparison](/docs/kit/) calls story steps "beats" and explains where the prose lives in each format.
 
-The tides player below gives you a Slidev story deck example to inspect before opening the files. Step through the explanation and compare the visualization with the changing caption. Go back a step to see how the preceding view supports the next part of the explanation. [How to build a data storytelling presentation](/blog/data-storytelling-presentation/) covers the structure these decks follow.
+The tides still below shows the historical Slidev story deck. [How to build a data storytelling presentation](/blog/data-storytelling-presentation/) covers the structure these decks follow.
 
-<DeckDemo example="tides" caption="The tides story deck, drafted from one prompt by Claude Code, then fact-checked and edited by hand. Step through it with the arrow keys." />
+<Figure src="/posters/tides-1280.webp" alt="Ocean tides in the original Slidev deck" caption="The Slidev version of ocean tides; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 ## Which examples were made by an agent?
 
 The registry labels `keeling`, `state-of-js` and `tides` as agent drafts. It defines that label as drafted by Claude Code, then edited. The editing history differs between examples: keeling records later Claude Code edits, while tides records a hand edit. State of JS records fact-checking and editing in the session that dispatched its subagent. [How to make slides with Claude Code](/blog/make-slides-with-claude-code/) walks through that workflow.
 
-Tides began with one `claude -p` prompt: `make a 5-slide story deck about how ocean tides work`. The run used the repository's shared deck-writing setup, loaded the building skill and fetched sources from NOAA, the US Naval Observatory and NASA. It finished with the recorded checks passing. Fact-checking and hand editing followed, so the player shows the reviewed deck.
+Tides began with one `claude -p` prompt: `make a 5-slide story deck about how ocean tides work`. The run used the repository's shared deck-writing setup, loaded the building skill and fetched sources from NOAA, the US Naval Observatory and NASA. It finished with the recorded checks passing. Fact-checking and hand editing followed, so the still shows the reviewed deck.
 
 The package includes the guidance behind that workflow. Initialization installs a deck-author role and skills for building and fact-checking decks. The fact-checking skill uses the sources recorded in `data-sources.md` to check figures against the data arrays and slide copy. When reading an example, compare a figure in its data module with its source entry and the claim made on the slide.
 
@@ -112,7 +113,9 @@ The scaffold goes in `decks/my-talk/`, and `my-talk` is added to `decks.json`. I
 
 Use agent-experience as the prose reference for a conventional talk. Its purpose is to show slide writing and word counts. It is also one of the packaged exemplars, so you can compare the rendered material with the files while drafting your own slides.
 
-<Figure src="/posters/agent-experience-1280.webp" alt="A conventional slide from the agent-experience example deck" caption="Agent-experience is the conventional reference for slide prose and word counts." width={1280} height={720} />
+<Figure src="/posters/agent-experience-1280.webp" alt="A conventional slide from the agent-experience example deck" caption="The Slidev version of agent-experience; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 Use tides when you need a source example of a story explanation. Use opendata-pitch as the repository's story architecture reference, and od-story-templates when you need to compare specific stage patterns. The conventional od-templates deck includes a story slide, so a talk can combine the two formats.
 

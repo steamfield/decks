@@ -10,9 +10,10 @@ relatedDocs:
   - getting-started/quickstart
 ---
 
+import Figure from "../../components/blog/Figure.astro";
+
 > This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
-import DeckDemo from "../../components/blog/DeckDemo.astro";
 
 Choose Marp for a straightforward Markdown deck you can export to PDF or PowerPoint. Choose Slidev when your talk needs Vue components or interactive demonstrations.
 
@@ -94,7 +95,9 @@ That reveals an element when you advance. A custom chart component can handle mo
 
 Decks is a free, Apache-2.0-licensed Slidev addon and runner for data talks. It adds a story-slide pattern with one pinned visualization and a caption that changes at each step. This excerpt comes from Riley Hilliard's OpenData pitch, September 2026:
 
-<DeckDemo example="opendata-showcase" caption="An excerpt from a Slidev talk built with Decks: files become a dataset, then join a graph. Step through it with the arrow keys." />
+<Figure src="/posters/opendata-showcase-1280.webp" alt="The OpenData excerpt in the original Slidev deck" caption="The Slidev version of the OpenData excerpt; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 Slidev's own [export guide](https://sli.dev/guide/exporting) includes PDF and PPTX options. Decks' runner supports PDF export through Chromium only, with no PowerPoint or Keynote files. That narrower export support belongs in the decision if you adopt the addon.
 

@@ -134,10 +134,7 @@ describe("DeckPlayer", () => {
         "Drafted in 8 minutes from this prompt with this repository's agent setup, then edited by hand (+49/−11 in 6 files).",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open deck" })).toHaveAttribute(
-      "href",
-      "/d/tides/#/2",
-    );
+    expect(screen.getByRole("link", { name: "Open deck" })).toHaveAttribute("href", "/d/tides/#/2");
   });
 
   it("automatically opens a titled interactive deck and stays paused under reduced motion", () => {
@@ -300,10 +297,7 @@ describe("DeckPlayer", () => {
     act(() => vi.advanceTimersByTime(BOOT_TIMEOUT_MS + 1));
     expect(player).toHaveAttribute("data-phase", "failed");
     expect(document.querySelector("iframe")).toBeNull();
-    expect(screen.getByRole("link", { name: "Open deck" })).toHaveAttribute(
-      "href",
-      "/d/tides/#/2",
-    );
+    expect(screen.getByRole("link", { name: "Open deck" })).toHaveAttribute("href", "/d/tides/#/2");
     // The dropped deck answering late changes nothing.
     d.state({ lead: "Too late." });
     expect(player).toHaveAttribute("data-phase", "failed");
