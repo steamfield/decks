@@ -39,7 +39,7 @@ test("the files and graph slides survive two complete forward and reverse walks"
         await expect(
           player.getByText(
             announcement(
-              { ...state, slides: example.slides },
+              { ...state, slides: example.slides, settled: true, direction: null },
               example.slideTitles[state.slide - 1],
             ),
             { exact: true },

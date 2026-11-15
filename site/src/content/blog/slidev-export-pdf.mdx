@@ -9,9 +9,10 @@ relatedDocs:
   - getting-started/quickstart
 ---
 
+import Figure from "../../components/blog/Figure.astro";
+
 > This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
-import DeckDemo from "../../components/blog/DeckDemo.astro";
 
 To export Slidev to PDF, install `playwright-chromium` in your presentation project, then run `slidev export`. Add `--with-clicks` when the PDF needs a separate page for each click step.
 
@@ -66,9 +67,11 @@ Check each exported chart against the statement beside it. If the caption descri
 
 For a repeatable check, export only the affected slide with `--range`, then return to the full deck after choosing a suitable delay. Keep `--with-clicks` on during that check if the problem occurs between reveals; testing only the final state leaves those pages unexamined.
 
-The Keeling curve example below lets you inspect a story deck's chart and changing captions. Its live transitions help show which states a PDF needs to preserve; the PDF itself contains still pages.
+The Keeling curve still below shows the historical Slidev deck. A PDF preserves the chart and caption at each step as still pages.
 
-<DeckDemo example="keeling" caption="An animated story deck. Each step you click through becomes its own PDF page when exported with clicks." />
+<Figure src="/posters/keeling-1280.webp" alt="The Keeling curve in the original Slidev deck" caption="The Slidev version of the Keeling curve; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 ## How do you fix export timeouts?
 

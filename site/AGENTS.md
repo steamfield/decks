@@ -24,14 +24,14 @@ Run these from `site/`. They are the only supported way to build, test, and run 
 | `make demo` | Lint and check the decks, build every example in `src/data/examples.json` into `public/d/`, record them into `fixtures/examples/`, shoot each poster at its start step, film the hero loop into `public/loops/` (needs ffmpeg), and take the normal and warm stills with the repo's `shot` (about 6 minutes) |
 | `node scripts/demo.mjs --no-shots` | Builds and recordings only, keeping posters, loops and stills |
 | `node scripts/demo.mjs --loops` | Builds, recordings and loops only |
-| `node scripts/demo.mjs --only opendata-showcase,aisd-showcase` | Regenerate only the featured excerpts and their media |
+| `node scripts/demo.mjs --only aisd-showcase,texas-2026` | Regenerate only those two examples and their media |
 | `node scripts/edits.mjs` | Write each agent example's edit fixture from git |
 | `node scripts/excerpt-run.mjs keeling-1 <log.jsonl>` | Write a run's transcript fixture from its stream-json log (the logs stay outside the repo) |
 | `make demo-build` | Deck builds only, into `public/d/` (what a deploy needs) |
 | `make deploy-check` | Serve `dist/` through `wrangler dev`; checks headers, canonical URLs, 404 |
 | `stacks verify` | The definition of done (install through serve) |
 
-Each target also has a `bun run <target>` alias in `package.json`. `make demo` needs the parent repo's dependencies (`bun install` at the repo root) and Playwright's Chromium.
+Each target also has a `bun run <target>` alias in `package.json`. `make demo` needs the parent repo's dependencies (`bun install` at the repo root) and both Chromium revisions: run `bunx playwright install chromium` from the repo root for the framework's screenshot CLI (Playwright 1.65.1), and from `site/` for the recorder (1.64.1). `make demo-build` needs no browser.
 
 ## Architecture map
 

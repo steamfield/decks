@@ -9,9 +9,10 @@ relatedDocs:
   - getting-started/quickstart
 ---
 
+import Figure from "../../components/blog/Figure.astro";
+
 > This article covers the earlier Slidev addon. Decks has moved to its own React framework, published as `@steamfield/decks`. See the [current documentation](/docs/) for setup and commands.
 
-import DeckDemo from "../../components/blog/DeckDemo.astro";
 
 To make presentations with Codex, ask it to write a Markdown slide deck in your project, run the preview, and revise the rendered slides. Slidev is one format you can use for this workflow.
 
@@ -84,7 +85,9 @@ A story slide keeps one visualization on screen while the caption card changes a
 
 The JavaScript tooling deck below shows the story format. A Claude Code subagent drafted it with the repository's agent guidance; it was then fact-checked and edited.
 
-<DeckDemo example="state-of-js" caption="A story deck about JavaScript tooling, drafted by a coding agent with the Decks guidance and then fact-checked. Step through it with the arrow keys." />
+<Figure src="/posters/state-of-js-1280.webp" alt="JavaScript tooling in the original Slidev deck" caption="The Slidev version of JavaScript tooling; no longer live." width={1280} height={720}>
+  <a href="/docs/">Current documentation</a>.
+</Figure>
 
 ## What do you ask Codex for?
 

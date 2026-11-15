@@ -12,7 +12,7 @@ describe("social cards", () => {
   });
 
   it("renders the title over a real slide still in the product's colors", async () => {
-    const still = await stillDataUrl(join(process.cwd(), "public/posters/tides-1280.webp"));
+    const still = await stillDataUrl(join(process.cwd(), "public/posters/aisd-showcase-1280.webp"));
     expect(still.startsWith("data:image/png;base64,")).toBe(true);
     const card = ogCard(
       { title: "Installation", description: "Install it.", siteName: "Acme" },

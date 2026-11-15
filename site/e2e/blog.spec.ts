@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { loadExamples } from "../src/data/examples";
 
-const post = readFileSync("src/content/blog/make-slides-with-claude-code.mdx", "utf8");
+const post = readFileSync("src/content/blog/data-storytelling-presentation.mdx", "utf8");
 const exampleName = /<DeckDemo\s[^>]*\bexample="([^"]+)"/.exec(post)?.[1];
 const example = loadExamples().find((entry) => entry.name === exampleName);
 if (!example) throw new Error("Missing reference post example");
@@ -14,13 +14,37 @@ const stub = readFileSync("e2e/fixtures/stub-deck.html", "utf8").replace(
   'window.STUB_CARD = { lead: "Stub lead.", body: "Stub body." };\nconst SETTLE_MS =',
 );
 
+test("a historical post keeps its original Slidev poster with current documentation", async ({
+  page,
+}) => {
+  await page.goto("/blog/make-slides-with-claude-code/");
+  await expect(page.getByText(/This article covers the earlier Slidev addon/)).toBeVisible();
+  const poster = page
+    .getByRole("figure")
+    .filter({ hasText: "The Slidev version of the Keeling curve; no longer live." });
+  const image = poster.getByRole("img");
+  await image.scrollIntoViewIfNeeded();
+  await expect(image).toBeVisible();
+  await expect
+    .poll(() =>
+      image.evaluate((element: HTMLImageElement) => element.complete && element.naturalWidth > 0),
+    )
+    .toBe(true);
+  await expect(image).toHaveAttribute("src", "/posters/keeling-1280.webp");
+  await expect(poster.getByRole("link", { name: "Current documentation" })).toHaveAttribute(
+    "href",
+    "/docs/",
+  );
+  await expect(page.locator("iframe")).toHaveCount(0);
+});
+
 for (const scheme of ["light", "dark"] as const) {
   test(`a blog post in ${scheme} passes axe`, async ({ page }) => {
     await page.route("**/d/*/index.html*", (route) =>
       route.fulfill({ contentType: "text/html", body: stub }),
     );
     await page.emulateMedia({ colorScheme: scheme });
-    await page.goto("/blog/make-slides-with-claude-code/");
+    await page.goto("/blog/data-storytelling-presentation/");
     await page.locator("[data-player]").scrollIntoViewIfNeeded();
     await expect(page.locator("[data-player]")).toHaveAttribute("data-phase", "ready");
     await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${scheme}\\b`));
@@ -50,7 +74,7 @@ test("the blog player shows its poster and stays at the registered start step wi
     await route.fulfill({ contentType: "text/html", body: stub });
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/blog/make-slides-with-claude-code/", { waitUntil: "domcontentloaded" });
+  await page.goto("/blog/data-storytelling-presentation/", { waitUntil: "domcontentloaded" });
   const player = page.locator("[data-player]");
   await player.scrollIntoViewIfNeeded();
   await expect(player.locator("picture img")).toBeVisible();
@@ -72,7 +96,7 @@ test("the blog fits a narrow viewport and its toolbar follows its own container"
     route.fulfill({ contentType: "text/html", body: stub }),
   );
   await page.setViewportSize({ width: 360, height: 800 });
-  await page.goto("/blog/make-slides-with-claude-code/");
+  await page.goto("/blog/data-storytelling-presentation/");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.locator("[data-player]").scrollIntoViewIfNeeded();
@@ -93,7 +117,7 @@ test("a single-example player aligns its desktop controls and retains its brand 
     route.fulfill({ contentType: "text/html", body: stub }),
   );
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/blog/make-slides-with-claude-code/");
+  await page.goto("/blog/data-storytelling-presentation/");
   await page.locator("[data-player]").scrollIntoViewIfNeeded();
   await expect(page.locator("[data-player]")).toHaveAttribute("data-phase", "ready");
   const geometry = await page.locator(".player-toolbar").evaluate((bar) => ({
@@ -104,7 +128,7 @@ test("a single-example player aligns its desktop controls and retains its brand 
 });
 
 test("a blog player carries the landing's colored top rule", async ({ page }) => {
-  await page.goto("/blog/make-slides-with-claude-code/");
+  await page.goto("/blog/data-storytelling-presentation/");
   const rule = await page.locator("[data-player]").evaluate((el) => ({
     image: getComputedStyle(el, "::before").backgroundImage,
     height: getComputedStyle(el, "::before").height,
