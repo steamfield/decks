@@ -1,0 +1,77 @@
+name: Release
+
+# Releasing is: bump packages/decks/package.json, commit to main, then
+#   git tag v<version> && git push origin v<version>
+# This workflow gates the tagged commit, publishes @steamfield/decks to npm with
+# provenance, and creates the GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # the GitHub release
+  id-token: write # npm provenance
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # A required-reviewer rule on this environment makes every publish wait for approval.
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Tag matches the package version and main
+        id: release
+        run: |
+          version=$(node -p "require('./packages/decks/package.json').version")
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match packages/decks/package.json version ${version}"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+            echo "::error::${GITHUB_REF_NAME} is not on main; tag a commit that has been merged"
+            exit 1
+          fi
+          # 1.0.0-rc.0 publishes under the "rc" dist-tag, a plain version under "latest".
+          case "$version" in
+            *-*) npm_tag=$(echo "$version" | cut -d- -f2 | cut -d. -f1); prerelease=true ;;
+            *) npm_tag=latest; prerelease=false ;;
+          esac
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "npm_tag=${npm_tag}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+
+      # Both gates, the build and npm pack into dist/release/. It publishes nothing.
+      - run: bun run release:prepare
+
+      - name: Publish to npm
+        run: >
+          npm publish "dist/release/steamfield-decks-${{ steps.release.outputs.version }}.tgz"
+          --tag "${{ steps.release.outputs.npm_tag }}" --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: GitHub release
+        run: >
+          gh release create "${GITHUB_REF_NAME}"
+          --title "${GITHUB_REF_NAME}" --generate-notes
+          $( [ "${{ steps.release.outputs.prerelease }}" = true ] && echo --prerelease )
+        env:
+          GH_TOKEN: ${{ github.token }}

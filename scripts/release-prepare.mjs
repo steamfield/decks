@@ -17,21 +17,40 @@ const step = (label, command, args, cwd = root) => {
   execFileSync(command, args, { cwd, stdio: "inherit" });
 };
 
+// A refused precondition is an expected outcome, not a crash: print what to do and exit 1
+// without the stack trace, which buries the message under Node internals.
+const refuse = (title, detail, fix) => {
+  console.error(`\nrelease: STOPPED, ${title}\n\n${detail}\n\nFix: ${fix}\n`);
+  process.exit(1);
+};
+
 // The tag must name exactly the tree the gates passed on, with the plugin at the package's
 // version (decks init pins the marketplace to that tag). Check both before spending the gates.
 const dirty = execFileSync("git", ["status", "--porcelain"], {
   cwd: root,
   encoding: "utf8",
 }).trim();
-if (dirty)
-  throw new Error(`release: the working tree is not clean; commit or stash first:\n${dirty}`);
+if (dirty) {
+  const lines = dirty.split("\n");
+  const untracked = lines.filter((line) => line.startsWith("??")).length;
+  const shown = lines.slice(0, 20).join("\n");
+  const more = lines.length > 20 ? `\n... and ${lines.length - 20} more` : "";
+  refuse(
+    "the working tree is not clean, so the tag would not match the tree the gates ran on.",
+    `${lines.length} path(s) differ from HEAD (${untracked} untracked):\n\n${shown}${more}`,
+    "commit them, or `git stash -u` to set them aside, then run `bun run release:prepare` again.",
+  );
+}
 const manifestPath = join(root, "plugins/decks/.claude-plugin/plugin.json");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 if (manifest.version !== pkg.version) {
+  const was = manifest.version;
   manifest.version = pkg.version;
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-  throw new Error(
-    `release: plugins/decks/.claude-plugin/plugin.json did not match the package version; it now says ${pkg.version}. Commit it and run release:prepare again.`,
+  refuse(
+    "the plugin version did not match the package version.",
+    `plugins/decks/.claude-plugin/plugin.json said ${was}; the package is ${pkg.version}. The script has rewritten it to ${pkg.version}.`,
+    "commit plugins/decks/.claude-plugin/plugin.json, then run `bun run release:prepare` again.",
   );
 }
 
