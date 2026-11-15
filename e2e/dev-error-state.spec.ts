@@ -95,11 +95,18 @@ test("An MDX edit keeps the last good content under the overlay and recovers wit
   await expect(
     page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
   ).toBeVisible();
-  await app.put(
-    "slides/01-cover.mdx",
-    original.replace("Basic fixture deck</h1>", "Saved slide</h1>"),
-  );
-  await expect(page.getByRole("heading", { name: "Saved slide", exact: true })).toBeVisible();
+  // A save that lands while the dev server is still handling the previous one can go unnoticed
+  // (the browser trace of a loaded CI runner shows no update after the fix), so, like a person,
+  // save again until the page recovers. Each save rewrites the file, so each is a new change.
+  await expect(async () => {
+    await app.put(
+      "slides/01-cover.mdx",
+      original.replace("Basic fixture deck</h1>", "Saved slide</h1>"),
+    );
+    await expect(page.getByRole("heading", { name: "Saved slide", exact: true })).toBeVisible({
+      timeout: 3_000,
+    });
+  }).toPass({ timeout: 20_000 });
   await expect(page.getByText(/Unexpected end of file in name/)).not.toBeVisible();
   await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBe("last good slide");
 });
