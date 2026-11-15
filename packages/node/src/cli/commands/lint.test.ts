@@ -38,7 +38,10 @@ it("returns hits and counts across MDX, TSX and COPY modules while excluding dat
   });
 });
 
-it("uses the registry for a bare run and accepts several aliases or a deck directory", async () => {
+// Three tsx processes (about 11s each on a loaded 2-vCPU runner); this only bounds a hang.
+it("uses the registry for a bare run and accepts several aliases or a deck directory", {
+  timeout: 120_000,
+}, async () => {
   const { dir } = await fixture(onTestFinished, {
     "decks.json": JSON.stringify({ a: { dir: "a" }, b: { dir: "b" } }),
     "a/deck.config.ts": 'export default {title: "A"};',
