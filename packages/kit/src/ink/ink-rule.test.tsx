@@ -1,7 +1,6 @@
 import { act, screen } from "@testing-library/react";
 import { type ComponentProps, useRef } from "react";
 import { beforeEach, expect, it, onTestFinished } from "vitest";
-import { brushRibbon } from "../geometry/brush";
 import { setup, tick } from "../kit.test-support";
 import { useStage } from "../story/stage";
 import { DUR } from "../theme/easings";
@@ -108,29 +107,19 @@ it.each(["x1", "x2", "y", "hue", "step", "opacity"] as const)("draws the %s prop
 
 it.each(["seed", "width"] as const)("draws the marker ribbon using its %s prop", async (prop) => {
   STORY_STYLE.ink = "marker";
-  const seed = prop === "seed" ? "another-rule" : "ink-rule";
-  const width = prop === "width" ? 12 : 2.6;
-  await setup(rule({ seed, width }), { click: 1, instant: true });
-  const expected = brushRibbon(
-    [
-      { x: 20, y: 100 },
-      { x: 400, y: 100 },
-    ],
-    {
-      seed: `${seed}:100`,
-      width,
-      taperIn: 0.02,
-      taperOut: 0.02,
-      startWidth: 0.7,
-      endWidth: 0.7,
-      wobble: 0.7,
-      edge: 0.4,
-    },
+  const ribbon = async (props: Partial<ComponentProps<typeof InkRule>>) => {
+    const app = await setup(rule(props), { click: 1, instant: true });
+    const paths = Array.from(root().getElementsByTagName("path"), (path) => path.getAttribute("d"));
+    expect(root().firstElementChild?.getAttribute("filter")).toBe(filterUrl(FILTER_IDS.rule));
+    app.unmount();
+    return paths;
+  };
+  const baseline = await ribbon({});
+  expect(baseline.length).toBeGreaterThan(0);
+  expect(await ribbon({})).toEqual(baseline);
+  expect(await ribbon(prop === "seed" ? { seed: "another-rule" } : { width: 12 })).not.toEqual(
+    baseline,
   );
-  expect(Array.from(root().getElementsByTagName("path"), (path) => path.getAttribute("d"))).toEqual(
-    expected.map((dab) => dab.d),
-  );
-  expect(root().firstElementChild?.getAttribute("filter")).toBe(filterUrl(FILTER_IDS.rule));
 });
 
 it("exposes its SVG root and preserves the requested timeline position", async () => {

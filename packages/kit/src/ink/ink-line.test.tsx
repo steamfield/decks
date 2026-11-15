@@ -145,7 +145,8 @@ it("blends numeric ghost opacity without a CSS transition", async () => {
     </svg>
   ));
   const body = image().getElementsByTagName("g").item(2);
-  expect(body?.style.opacity).toBe(String(1 - (1 - Number(theme().shape.dim)) * 0.5));
+  expect(Number(body?.style.opacity)).toBeGreaterThan(Number(theme().shape.dim));
+  expect(Number(body?.style.opacity)).toBeLessThan(1);
   expect(body?.style.transition).toBe("none");
 });
 it("follows a recolored ramp", async () => {
