@@ -1,13 +1,13 @@
 import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
+import {} from "node:path";
 import { expect, it, onTestFinished } from "vitest";
-import { fixture } from "../../dev/server.test-support";
+import { fixture, repoPath } from "../../dev/server.test-support";
 import { lintDecks } from "./lint";
 
 function command(cwd: string, args: string[], input = "") {
   const result = spawnSync(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli/cli.ts"), "lint", ...args],
+    repoPath("node_modules/.bin/tsx"),
+    [repoPath("packages/node/src/cli/cli.ts"), "lint", ...args],
     { cwd, input, encoding: "utf8" },
   );
   if (result.error) throw result.error;

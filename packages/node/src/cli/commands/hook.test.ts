@@ -2,15 +2,15 @@ import { spawnSync } from "node:child_process";
 import { cp, mkdir, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { expect, it, onTestFinished } from "vitest";
-import { fixture } from "../../dev/server.test-support";
+import { fixture, repoPath } from "../../dev/server.test-support";
 
 function hook(
   cwd: string,
   payload: unknown,
   raw?: string,
-  cli = resolve("packages/node/src/cli/cli.ts"),
+  cli = repoPath("packages/node/src/cli/cli.ts"),
 ) {
-  const result = spawnSync(resolve("node_modules/.bin/tsx"), [cli, "hook", "lint"], {
+  const result = spawnSync(repoPath("node_modules/.bin/tsx"), [cli, "hook", "lint"], {
     cwd,
     input: raw ?? JSON.stringify(payload),
     encoding: "utf8",
@@ -138,8 +138,8 @@ it.each([undefined, "", "x\twarn\tfoo\tbar\n", "x\terorr\tfoo\tbar\n", "x\terror
   async (source) => {
     const { dir } = await fixture(onTestFinished);
     const copy = resolve(dir, "scanner");
-    await cp(resolve("packages/node/src"), resolve(copy, "src"), { recursive: true });
-    await symlink(resolve("packages/node/node_modules"), resolve(copy, "node_modules"), "dir");
+    await cp(repoPath("packages/node/src"), resolve(copy, "src"), { recursive: true });
+    await symlink(repoPath("packages/node/node_modules"), resolve(copy, "node_modules"), "dir");
     await mkdir(resolve(copy, "lint"), { recursive: true });
     const cli = resolve(copy, "src/cli/cli.ts");
     if (source !== undefined)
@@ -147,7 +147,7 @@ it.each([undefined, "", "x\twarn\tfoo\tbar\n", "x\terorr\tfoo\tbar\n", "x\terror
     const refused = hook(dir, write("slides/03-x.mdx", "Clean prose."), undefined, cli);
     expect(refused.status, refused.stderr).toBe(2);
     expect(refused.stderr).toContain("refused");
-    const lint = spawnSync(resolve("node_modules/.bin/tsx"), [cli, "lint", "--stdin"], {
+    const lint = spawnSync(repoPath("node_modules/.bin/tsx"), [cli, "lint", "--stdin"], {
       cwd: dir,
       input: "Clean.",
       encoding: "utf8",
@@ -175,8 +175,8 @@ it("finds the deck config above an agent's current subdirectory", async () => {
 it("rejects unknown hook options", async () => {
   const { dir } = await fixture(onTestFinished);
   const result = spawnSync(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli/cli.ts"), "hook", "lint", "--bogus"],
+    repoPath("node_modules/.bin/tsx"),
+    [repoPath("packages/node/src/cli/cli.ts"), "hook", "lint", "--bogus"],
     { cwd: dir, input: "{}", encoding: "utf8" },
   );
   if (result.error) throw result.error;

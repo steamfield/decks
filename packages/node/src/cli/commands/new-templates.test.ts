@@ -1,13 +1,14 @@
 import { execFile } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, stat, symlink } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { expect, inject, it, onTestFinished } from "vitest";
 import { loadDeck } from "../../dev/config";
 import { build } from "../../dev/server";
+import { repoPath } from "../../dev/server.test-support";
 
 it("typechecks the conventional and story templates", async () => {
-  await promisify(execFile)(resolve("node_modules/.bin/tsc"), [
+  await promisify(execFile)(repoPath("node_modules/.bin/tsc"), [
     "--noEmit",
     "--ignoreConfig",
     "--strict",
@@ -38,8 +39,8 @@ it.each([
   { alias: "conventional", flags: [] },
   { alias: "story", flags: ["--story", "--url", "example.com"] },
 ])("ships and builds the $alias scaffold with the real Vite pipeline", async ({ alias, flags }) => {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const dir = await mkdtemp(resolve(".tmp/new-template-"));
+  await mkdir(repoPath(".tmp"), { recursive: true });
+  const dir = await mkdtemp(repoPath(".tmp/new-template-"));
   onTestFinished(() => rm(dir, { recursive: true, force: true }));
   const packageDir = inject("builtPackage");
   const dist = join(packageDir, "dist");

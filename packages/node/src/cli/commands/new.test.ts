@@ -1,13 +1,13 @@
 import { execFile } from "node:child_process";
 import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { expect, it, onTestFinished } from "vitest";
-import { cli } from "../../dev/server.test-support";
+import { cli, repoPath } from "../../dev/server.test-support";
 
 async function project(registry?: Record<string, unknown>) {
-  await mkdir(resolve(".tmp"), { recursive: true });
-  const dir = await mkdtemp(resolve(".tmp/new-"));
+  await mkdir(repoPath(".tmp"), { recursive: true });
+  const dir = await mkdtemp(repoPath(".tmp/new-"));
   onTestFinished(() => rm(dir, { recursive: true, force: true }));
   if (registry) await writeFile(join(dir, "decks.json"), JSON.stringify(registry));
   return dir;

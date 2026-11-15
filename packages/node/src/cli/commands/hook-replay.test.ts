@@ -1,12 +1,12 @@
 import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
+import {} from "node:path";
 import { expect, it, onTestFinished } from "vitest";
-import { fixture } from "../../dev/server.test-support";
+import { fixture, repoPath } from "../../dev/server.test-support";
 
 function hook(cwd: string, payload: unknown) {
   const result = spawnSync(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli/cli.ts"), "hook", "lint"],
+    repoPath("node_modules/.bin/tsx"),
+    [repoPath("packages/node/src/cli/cli.ts"), "hook", "lint"],
     {
       cwd,
       input: JSON.stringify(payload),

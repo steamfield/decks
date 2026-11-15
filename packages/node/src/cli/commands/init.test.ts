@@ -1,7 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { mkdir, readdir, readFile, rm, symlink } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join } from "node:path";
 import { expect, inject, it } from "vitest";
+import { repoPath } from "../../dev/server.test-support";
 import { installedInit, pluginProject } from "./plugin.test-support";
 
 const packageDir = inject("builtPackage");
@@ -249,13 +250,13 @@ it.each([
 it("resolves the source package version and plugin skills when running the source CLI", async () => {
   const { dir } = await pluginProject();
   const result = spawnSync(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli/cli.ts"), "init"],
+    repoPath("node_modules/.bin/tsx"),
+    [repoPath("packages/node/src/cli/cli.ts"), "init"],
     { cwd: dir, encoding: "utf8" },
   );
   if (result.error) throw result.error;
   expect(result.status, result.stderr).toBe(0);
-  const metadata = JSON.parse(await readFile(resolve("packages/decks/package.json"), "utf8"));
+  const metadata = JSON.parse(await readFile(repoPath("packages/decks/package.json"), "utf8"));
   expect(
     JSON.parse(await read(dir, ".claude/settings.json")).extraKnownMarketplaces.steamfield.source
       .ref,

@@ -1,12 +1,13 @@
 import { spawnSync } from "node:child_process";
 import { mkdir, rename, rm, symlink } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { expect, inject, it } from "vitest";
+import { repoPath } from "../../dev/server.test-support";
 import { pluginProject } from "./plugin.test-support";
 
 const packageDir = inject("builtPackage");
 
-const script = resolve("plugins/decks/scripts/decks-hook.mjs");
+const script = repoPath("plugins/decks/scripts/decks-hook.mjs");
 function hook(
   dir: string,
   payload: unknown,
