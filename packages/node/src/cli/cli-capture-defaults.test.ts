@@ -17,7 +17,11 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("capture defaults"
     expect(pdf).toMatch(/\/MediaBox\s*\[0 0 810 810\]/);
   });
 
-  it("preserves the PDF and built site across export, build and export", async () => {
+  // Three CLI processes in a row. Each took about 11s when the full suite saturated a 2-vCPU CI
+  // runner, so the default 30s limit is shorter than the work; this one only bounds a hang.
+  it("preserves the PDF and built site across export, build and export", {
+    timeout: 120_000,
+  }, async () => {
     const { dir } = await fixture(onTestFinished, { "decks.json": '{"talk":{"dir":"."}}' });
     const first = cli(dir, ["export", "talk"]);
     expect((await first.exit)[0], first.output().stderr).toBe(0);
