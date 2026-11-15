@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import { test, waitForSlideModules } from "./fixtures/deck.fixture";
+import { noBlankFrame, test, waitForSlideModules } from "./fixtures/deck.fixture";
 
 const headings = ["Basic fixture deck", "Three steps", "A deck component", "One click", "The end"];
 const points = ["First point", "Second point", "Third point"];
@@ -56,46 +56,25 @@ test("A cold start loads once without console errors or outdated dependencies.",
   await expect(
     page.getByRole("heading", { name: "Basic fixture deck", exact: true }),
   ).toBeVisible();
-  expect(await page.evaluate(() => window.e2eDocument)).toBe("first paint");
+  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBe("first paint");
   expect(documents).toHaveLength(1);
   expect(outdated).toEqual([]);
   expect(errors).toEqual([]);
 });
 
-test("Prefetched slides paint in the next animation frame when jumping with instant motion.", async ({
+test("Prefetched slides stay visible on every frame when jumping with instant motion.", async ({
   page,
 }) => {
-  const loaded = new Set<string>();
-  page.on("requestfinished", (request) => {
-    if (/\/slides\/.*\.mdx(?:\?|$)/.test(request.url()))
-      loaded.add(new URL(request.url()).pathname);
-  });
   await page.goto("/?motion=instant");
   await position(page, 1);
-  await expect.poll(() => loaded.size).toBe(5);
-  for (const [key, heading] of [
-    ["End", "The end"],
-    ["Home", "Basic fixture deck"],
-    ["End", "The end"],
+  await waitForSlideModules(page);
+  for (const [key, from, to] of [
+    ["End", 1, 5],
+    ["Home", 5, 1],
+    ["End", 1, 5],
   ] as const) {
-    await page.evaluate((name) => {
-      window.e2eFrame = undefined;
-      window.addEventListener(
-        "keydown",
-        () => {
-          requestAnimationFrame(() => {
-            const heading = Array.from(document.querySelectorAll("h1")).find(
-              (node) => node.textContent === name,
-            );
-            window.e2eFrame = Boolean(heading?.checkVisibility());
-          });
-        },
-        { once: true },
-      );
-    }, heading);
-    await page.keyboard.press(key);
-    await page.evaluate(() => window.__deck?.settled());
-    expect(await page.evaluate(() => window.e2eFrame)).toBe(true);
+    await noBlankFrame(page, from, to, key);
+    await position(page, to);
   }
 });
 
@@ -250,5 +229,5 @@ test("The canvas fills each window and live resizing preserves the document.", a
     expect(heading.x + heading.width).toBeLessThanOrEqual(width);
     expect(heading.y + heading.height).toBeLessThanOrEqual(height);
   }
-  expect(await page.evaluate(() => window.e2eDocument)).toBe("before resize");
+  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBe("before resize");
 });

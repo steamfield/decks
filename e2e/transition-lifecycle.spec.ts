@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect } from "@playwright/test";
-import { test } from "./fixtures/deck.fixture";
+import { settled, test } from "./fixtures/deck.fixture";
 
 declare global {
   interface Window {
@@ -46,7 +46,7 @@ window.addEventListener("replace-deck", () => {
   await expect(page.getByRole("heading", { name: "Lifecycle 2", includeHidden: true })).toHaveCount(
     1,
   );
-  await page.evaluate(() => window.__deck?.settled());
+  await settled(page);
   await page.evaluate(() => {
     const start = document.startViewTransition.bind(document);
     let first = true;
@@ -69,7 +69,7 @@ window.addEventListener("replace-deck", () => {
   await expect(page).toHaveURL(/#\/2$/);
   await page.waitForFunction(() => typeof window.releaseLifecycleSnapshot === "function");
   await page.evaluate(() => window.releaseLifecycleSnapshot?.());
-  await page.evaluate(() => window.__deck?.settled());
+  await settled(page);
   await expect(page.getByRole("heading", { name: "Lifecycle 2" })).toBeVisible();
   expect(errors).toEqual([]);
 });

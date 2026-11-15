@@ -1,12 +1,14 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "./fixtures/deck.fixture";
 import { kitFixture } from "./fixtures/kit.fixture";
 
 test("Setup installs before component modules evaluate and editing it reloads the page", async ({
   page,
+  deckServer,
 }) => {
-  const server = await kitFixture({
+  const server = await kitFixture(deckServer, {
     "setup.ts":
       'document.documentElement.dataset.setup = document.getElementById("deck-root")?.childElementCount === 0 ? "before mount" : "too late";',
     "slides/01-setup.mdx": "<SetupProbe />",

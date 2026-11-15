@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { settled } from "./fixtures/deck.fixture";
 import { boot, step, test } from "./fixtures/embed.fixture";
 
 test("A built deck boots at its hash and reports the visible card", async ({ page, embedURL }) => {
@@ -69,17 +70,19 @@ test("Only the newest of three rapid commands settles, including a pending slide
     window.embedMessages.filter((m) => m.settled === true && typeof m.requestId === "number"),
   );
   expect(settled).toEqual([expect.objectContaining({ requestId: 103, slide: 3, beat: 0 })]);
-  expect(
-    await page.evaluate(() =>
-      window.embedMessages
-        .filter((m) => m.settled === false && [101, 102, 103].includes(Number(m.requestId)))
-        .map((m) => [m.requestId, m.slide, m.beat]),
-    ),
-  ).toEqual([
-    [101, 2, 1],
-    [102, 2, 2],
-    [103, 3, 0],
-  ]);
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.embedMessages
+          .filter((m) => m.settled === false && [101, 102, 103].includes(Number(m.requestId)))
+          .map((m) => [m.requestId, m.slide, m.beat]),
+      ),
+    )
+    .toEqual([
+      [101, 2, 1],
+      [102, 2, 2],
+      [103, 3, 0],
+    ]);
   await step(page, "go", 104, { slide: 2, beat: 0 });
   await page.evaluate(() => {
     window.sendEmbed({ type: "decks:cmd", cmd: "nextSlide", requestId: 105 });
@@ -88,16 +91,20 @@ test("Only the newest of three rapid commands settles, including a pending slide
   await page.waitForFunction(() =>
     window.embedMessages.some((m) => m.requestId === 106 && m.settled === true),
   );
-  expect(
-    await page.evaluate(() =>
-      window.embedMessages.filter((m) => m.requestId === 105 && m.settled === true),
-    ),
-  ).toEqual([]);
-  expect(
-    await page.evaluate(() =>
-      window.embedMessages.find((m) => m.requestId === 106 && m.settled === true),
-    ),
-  ).toMatchObject({ slide: 2, beat: 2, lead: "Lead 2" });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.embedMessages.filter((m) => m.requestId === 105 && m.settled === true),
+      ),
+    )
+    .toEqual([]);
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.embedMessages.find((m) => m.requestId === 106 && m.settled === true),
+      ),
+    )
+    .toMatchObject({ slide: 2, beat: 2, lead: "Lead 2" });
 });
 
 test("A move reversed before it presents still acknowledges the final request", async ({
@@ -112,11 +119,13 @@ test("A move reversed before it presents still acknowledges the final request", 
   await page.waitForFunction(() =>
     window.embedMessages.some((m) => m.requestId === 109 && m.settled === true),
   );
-  expect(
-    await page.evaluate(() =>
-      window.embedMessages.find((m) => m.requestId === 109 && m.settled === true),
-    ),
-  ).toMatchObject({ slide: 2, beat: 0, lead: "Lead 0" });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.embedMessages.find((m) => m.requestId === 109 && m.settled === true),
+      ),
+    )
+    .toMatchObject({ slide: 2, beat: 0, lead: "Lead 0" });
 });
 
 test("Arrow keys ask the parent, inputs retain their keys, and an owning stage uses the routing helper", async ({
@@ -130,7 +139,7 @@ test("Arrow keys ask the parent, inputs retain their keys, and an owning stage u
   await frame.getByRole("heading", { name: "Story slide" }).click();
   for (const key of ["ArrowRight", "ArrowLeft", "Shift+ArrowRight", "Shift+ArrowLeft"]) {
     await page.keyboard.press(key);
-    await deck.evaluate(() => window.__deck?.settled());
+    await settled(deck);
     expect(deck.url()).toMatch(/#\/2$/);
   }
   await frame.getByRole("textbox", { name: "Caption input" }).fill("typing");
@@ -138,7 +147,7 @@ test("Arrow keys ask the parent, inputs retain their keys, and an owning stage u
   await step(page, "go", 201, { slide: 3, beat: 0 });
   await frame.getByRole("button", { name: "Stage keys" }).focus();
   await page.keyboard.press("ArrowRight");
-  await deck.evaluate(() => window.__deck?.settled());
+  await settled(deck);
   expect(deck.url()).toMatch(/#\/3$/);
   await step(page, "go", 202, { slide: 3, beat: 0 });
   const messages = await page.evaluate(() => window.embedMessages);
@@ -176,7 +185,7 @@ test("A directly opened bridge URL keeps normal keys and the owning stage naviga
   await page.getByRole("button", { name: "Stage keys" }).focus();
   await page.keyboard.press("ArrowRight");
   await expect(page).toHaveURL(/#\/3\?clicks=1$/);
-  await page.evaluate(() => window.__deck?.settled());
+  await settled(page);
   expect(messages).toEqual([]);
 });
 
@@ -196,8 +205,8 @@ for (const mode of ["no flag", "cross origin"]) {
     await expect(frame.getByText("Lead 1", { exact: true })).toBeVisible();
     const deck = page.frames().find((candidate) => candidate.parentFrame());
     if (!deck) throw new Error("Missing iframe");
-    await deck.evaluate(() => window.__deck?.settled());
-    expect(await page.evaluate(() => window.embedMessages)).toEqual([]);
+    await settled(deck);
+    await expect.poll(() => page.evaluate(() => window.embedMessages)).toEqual([]);
   });
 }
 
@@ -211,9 +220,9 @@ test("A thrown render error is reported to the host and the deck can navigate aw
   await expect(
     page.frameLocator("iframe").getByText(/failed to render: Fixture render failed/),
   ).toBeVisible();
-  expect(
-    await page.evaluate(() => window.embedMessages.filter((m) => m.type === "decks:error")),
-  ).toEqual([{ type: "decks:error", message: "Fixture render failed" }]);
+  await expect
+    .poll(() => page.evaluate(() => window.embedMessages.filter((m) => m.type === "decks:error")))
+    .toEqual([{ type: "decks:error", message: "Fixture render failed" }]);
   const states = await step(page, "go", 403, { slide: 2, beat: 1 });
   expect(states[1]).toMatchObject({ lead: "Lead 1", body: "Body 1" });
 });
@@ -241,9 +250,9 @@ test("Messages from another sender and malformed commands do not navigate or ack
   });
   const states = await step(page, "next", 502);
   expect(states[1]).toMatchObject({ slide: 2, beat: 1 });
-  expect(
-    await page.evaluate(() => window.embedMessages.filter((m) => m.type === "decks:state")),
-  ).toHaveLength(4);
+  await expect
+    .poll(() => page.evaluate(() => window.embedMessages.filter((m) => m.type === "decks:state")))
+    .toHaveLength(4);
   expect(errors).toEqual([]);
 });
 

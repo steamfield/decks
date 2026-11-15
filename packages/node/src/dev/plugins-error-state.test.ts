@@ -9,11 +9,7 @@ describe("dev error state", { timeout: 60_000 }, () => {
   it("keeps invalid frontmatter reported after a reload and reports its repair", async () => {
     const { dir, put } = await fixture(onTestFinished);
     const process = cli(dir, ["dev", ".", "--port", "0"]);
-    let url = "";
-    await waitForWatcher(() => {
-      url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
-      expect(url, process.output().stderr).not.toBe("");
-    });
+    const url = await process.url();
     await fetch(new URL(virtual("manifest"), url));
     await fetch(new URL("/slides/01-first.mdx", url));
     await put("slides/01-first.mdx", '---\nclicks: "two"\n---\n# First slide');
@@ -54,11 +50,7 @@ describe("dev error state", { timeout: 60_000 }, () => {
     async ({ source, message }) => {
       const { dir, put } = await fixture(onTestFinished);
       const process = cli(dir, ["dev", ".", "--port", "0"]);
-      let url = "";
-      await waitForWatcher(() => {
-        url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
-        expect(url).not.toBe("");
-      });
+      const url = await process.url();
       await fetch(new URL(virtual("manifest"), url));
       await put("deck.config.ts", source);
       await waitForWatcher(() => expect(process.output().stderr).toBe(`${message}\n`));

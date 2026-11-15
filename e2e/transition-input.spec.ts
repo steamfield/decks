@@ -72,7 +72,7 @@ test("Two arrows in one frame cross two boundaries with one transition", async (
   await settle(page);
   await expect(page).toHaveURL(/#\/19$/);
   await expect(page.getByRole("heading", { name: "Make a clean cut." })).toBeVisible();
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual(["push"]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual(["push"]);
 });
 
 test("Opposite arrows in one frame leave both windows and the URL at the original position", async ({
@@ -89,13 +89,13 @@ test("Opposite arrows in one frame leave both windows and the URL at the origina
     if (frame === other.mainFrame()) received.push(new URL(frame.url()).hash);
   });
   await keys(page, ["ArrowRight", "ArrowLeft"]);
+  await settle(page);
   const outcome = await page.evaluate(async () => {
     const transition = window.e2eTransition;
     const result = await transition?.ready.then(
       () => "animated",
       () => "skipped",
     );
-    await window.__deck?.settled();
     return {
       result,
       transition: document.documentElement.getAttribute("data-deck-transition"),
@@ -125,12 +125,16 @@ test("Opening overview in the same frame as navigation shows overview and clears
 
 test("Back in the frame after navigation restores the earlier slide and URL", async ({ page }) => {
   await open(page);
-  await page.evaluate(async () => {
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", code: "ArrowRight" }));
-    window.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowRight", code: "ArrowRight" }));
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    history.back();
+  await page.evaluate(() => {
+    window.addEventListener(
+      "keydown",
+      () => {
+        requestAnimationFrame(() => history.back());
+      },
+      { once: true },
+    );
   });
+  await page.keyboard.press("ArrowRight");
   await expect(page).toHaveURL(/#\/17$/);
   await settle(page);
   await expect(page.getByRole("heading", { name: "Keep moving." })).toBeVisible();
@@ -159,7 +163,7 @@ test("A second arrow after the callback replaces the transition without lingerin
   await settle(page);
   await expect(page).toHaveURL(/#\/19$/);
   await expect(page.getByRole("heading", { name: "Make a clean cut." })).toBeVisible();
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual(["push", "zoom"]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual(["push", "zoom"]);
   await expect(page.locator("html")).not.toHaveAttribute("data-deck-transition");
 });
 
@@ -176,6 +180,6 @@ test("A regular click after the callback skips the slide transition and presents
     "data-step-state",
     "current",
   );
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual(["fade"]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual(["fade"]);
   await expect(page.locator("html")).not.toHaveAttribute("data-deck-transition");
 });

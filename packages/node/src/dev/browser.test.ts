@@ -1,11 +1,11 @@
-import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { runCommand } from "citty";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
-import { describe, expect, it, onTestFinished } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
+import { cliProcess } from "../cli/cli-process.test-support";
 import { exportDeck } from "../cli/commands/export";
 import { shot } from "../cli/commands/shot";
 import { build, dev, loadDeck, scanSlides } from "../index";
@@ -21,8 +21,8 @@ async function output() {
 
 async function cliWithNoBrowser(args: string[]) {
   const dir = await output();
-  const child = spawn(
-    process.execPath,
+  const process = cliProcess(
+    globalThis.process.execPath,
     [
       "--conditions=@steamfield/decks/source",
       "--import",
@@ -30,29 +30,11 @@ async function cliWithNoBrowser(args: string[]) {
       resolve("packages/node/src/cli/cli.ts"),
       ...args,
     ],
-    {
-      env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: dir, NO_COLOR: "1" },
-      stdio: ["ignore", "pipe", "pipe"],
-    },
+    { env: { ...globalThis.process.env, PLAYWRIGHT_BROWSERS_PATH: dir, NO_COLOR: "1" } },
   );
-  let stdout = "";
-  let stderr = "";
-  child.stdout.on("data", (data) => {
-    stdout += String(data);
-  });
-  child.stderr.on("data", (data) => {
-    stderr += String(data);
-  });
-  const completion = new Promise<number | null>((done, reject) => {
-    child.on("error", reject);
-    child.on("close", done);
-  });
-  onTestFinished(async () => {
-    if (child.exitCode === null && child.signalCode === null) child.kill();
-    await completion;
-  });
-  const code = await completion;
-  return { code, stdout, stderr };
+  onTestFinished(process.close);
+  const [code] = await process.exit;
+  return { code, ...process.output() };
 }
 
 function expectSameFrame(actual: Buffer, expected: Buffer) {
@@ -114,9 +96,16 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
         height,
       });
       onTestFinished(reference.close);
-      expect(await reference.page.getByText("Second point", { exact: true }).count()).toBe(1);
-      expect(await reference.page.getByText("Third point", { exact: true }).count()).toBe(0);
-      expectSameFrame(await reference.page.screenshot(), png);
+      await vi.waitFor(async () =>
+        expect(await reference.page.getByText("Second point", { exact: true }).count()).toBe(1),
+      );
+      await vi.waitFor(async () =>
+        expect(await reference.page.getByText("Third point", { exact: true }).count()).toBe(0),
+      );
+      expectSameFrame(
+        png,
+        await readFile(resolve(`tests/fixtures/browser/slide-2-click-2-${width}.png`)),
+      );
     },
   );
 
@@ -140,28 +129,31 @@ describe.skipIf(process.env.DECKS_SKIP_BROWSER_TESTS === "1")("browser captures"
       onTestFinished(() => browser.close());
       const capture = await openBuiltDeck(browser, outDir, "/talk/", "#/print");
       onTestFinished(capture.close);
-      expect(await capture.page.locator("[data-deck-slide]").count()).toBe(9);
-      expect(
-        await capture.page
-          .getByRole("heading", { name: "This slide is hidden and never numbered." })
-          .count(),
-      ).toBe(0);
-      expect(await capture.page.getByText("Welcome everyone. This is the cover.").count()).toBe(0);
+      await vi.waitFor(async () =>
+        expect(await capture.page.locator("[data-deck-slide]").count()).toBe(9),
+      );
+      await vi.waitFor(async () =>
+        expect(
+          await capture.page
+            .getByRole("heading", { name: "This slide is hidden and never numbered." })
+            .count(),
+        ).toBe(0),
+      );
+      await vi.waitFor(async () =>
+        expect(await capture.page.getByText("Welcome everyone. This is the cover.").count()).toBe(
+          0,
+        ),
+      );
       await capture.page.setViewportSize({ width: 1120, height: 630 });
       await capture.page.goto(new URL("?motion=instant#/1", capture.page.url()).href);
-      await capture.page.waitForFunction("window.__deck !== undefined");
-      await capture.page.evaluate("window.__deck.settled()");
-      expect(
-        await capture.page
-          .getByRole("heading", { name: "Basic fixture deck", exact: true })
-          .count(),
-      ).toBe(1);
-      const cover = await capture.page.screenshot();
-      const reference = await browser.newPage({ viewport: { width: 1200, height: 630 } });
-      await reference.setContent(
-        `<body style="margin:0;background:rgb(11,13,18)"><img style="margin-left:40px;width:1120px;height:630px;display:block" src="data:image/png;base64,${cover.toString("base64")}"></body>`,
+      await vi.waitFor(async () =>
+        expect(
+          await capture.page
+            .getByRole("heading", { name: "Basic fixture deck", exact: true })
+            .count(),
+        ).toBe(1),
       );
-      expectSameFrame(await reference.screenshot(), png);
+      expectSameFrame(png, await readFile(resolve("tests/fixtures/browser/og.png")));
     },
   );
 

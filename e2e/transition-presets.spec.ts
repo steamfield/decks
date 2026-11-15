@@ -11,8 +11,12 @@ test("Attribute logs preserve two changes delivered in one mutation batch", asyn
     html.setAttribute("data-deck-transition", "zoom");
     html.setAttribute("data-deck-nav", "backward");
   });
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toEqual(["fade", "zoom"]);
-  expect(await page.evaluate(() => window.e2eNavAttributes)).toEqual(["forward", "backward"]);
+  await expect
+    .poll(() => page.evaluate(() => window.e2eTransitionAttributes))
+    .toEqual(["fade", "zoom"]);
+  await expect
+    .poll(() => page.evaluate(() => window.e2eNavAttributes))
+    .toEqual(["forward", "backward"]);
 });
 
 test("A fade boundary publishes its URL immediately and removes its forward attributes before settling", async ({
@@ -22,8 +26,8 @@ test("A fade boundary publishes its URL immediately and removes its forward attr
   await keys(page, ["ArrowRight"]);
   await expect(page).toHaveURL(/#\/2$/);
   await settle(page);
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toContain("fade");
-  expect(await page.evaluate(() => window.e2eNavAttributes)).toContain("forward");
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toContain("fade");
+  await expect.poll(() => page.evaluate(() => window.e2eNavAttributes)).toContain("forward");
   await expect(page.locator("html")).not.toHaveAttribute("data-deck-transition");
   await expect(page.locator("html")).not.toHaveAttribute("data-deck-nav");
 });
@@ -32,8 +36,8 @@ test("Going back across a fade boundary uses its backward direction", async ({ p
   await open(page, 2);
   await keys(page, ["ArrowLeft"]);
   await settle(page);
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toContain("fade");
-  expect(await page.evaluate(() => window.e2eNavAttributes)).toContain("backward");
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toContain("fade");
+  await expect.poll(() => page.evaluate(() => window.e2eNavAttributes)).toContain("backward");
   await expect(page).toHaveURL(/#\/1$/);
 });
 
@@ -72,8 +76,8 @@ test("A cut boundary never sets transition attributes", async ({ page }) => {
   await keys(page, ["ArrowRight"]);
   await settle(page);
   await expect(page.getByRole("heading", { name: "Follow one idea." })).toBeVisible();
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
 });
 
 test("Instant and live reduced-motion changes disable transitions", async ({ page }) => {
@@ -81,25 +85,25 @@ test("Instant and live reduced-motion changes disable transitions", async ({ pag
   await keys(page, ["ArrowRight"]);
   await settle(page);
   await expect(page.locator("html")).toHaveAttribute("data-deck-motion", "instant");
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
   await open(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator("html")).toHaveAttribute("data-deck-motion", "instant");
   await keys(page, ["ArrowRight"]);
   await settle(page);
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toEqual([]);
 });
 
 test("Only clicks marked morphSteps start a step transition", async ({ page }) => {
   await open(page, 2);
   await keys(page, ["ArrowRight"]);
   await settle(page);
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual([]);
   await open(page, 22);
   await keys(page, ["ArrowRight"]);
   await settle(page);
-  expect(await page.evaluate(() => window.e2eTransitionAttributes)).toContain("step");
-  expect(await page.evaluate(() => window.e2eTransitionNames)).toEqual(["fade", "step"]);
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionAttributes)).toContain("step");
+  await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual(["fade", "step"]);
 });

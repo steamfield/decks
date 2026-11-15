@@ -67,12 +67,14 @@ test("lines=10 numbers the first physical line 10 without adding selectable text
   const first = lines(page).first();
   await expect(first).toBeVisible();
   await expect(first).toHaveAttribute("data-line-number", "10");
-  expect(await first.evaluate((node) => getComputedStyle(node, "::before").content)).toBe('"10"');
-  expect(await first.evaluate((node) => getComputedStyle(node, "::before").userSelect)).toBe(
-    "none",
-  );
+  await expect
+    .poll(() => first.evaluate((node) => getComputedStyle(node, "::before").content))
+    .toBe('"10"');
+  await expect
+    .poll(() => first.evaluate((node) => getComputedStyle(node, "::before").userSelect))
+    .toBe("none");
   await expect(first).toHaveAttribute("data-line", "1");
-  expect(await first.textContent()).not.toContain("10");
+  await expect.poll(() => first.textContent()).not.toContain("10");
 });
 
 test("maxHeight reveals a below-fold active line within the block at any canvas scale.", async ({
@@ -103,7 +105,7 @@ test("maxHeight reveals a below-fold active line within the block at any canvas 
       }),
     )
     .toBe(true);
-  expect(await page.evaluate(() => [scrollX, scrollY])).toEqual(before);
+  await expect.poll(() => page.evaluate(() => [scrollX, scrollY])).toEqual(before);
   await pre.evaluate((node) => {
     node.scrollTop = 0;
   });
@@ -242,11 +244,13 @@ test("Code edits hot-update and new steps reload the manifest without losing the
   await page.evaluate(() => Reflect.set(window, "codeDocument", "original"));
   await writeFile(file, source.replace('"line 1"', '"edited line"'));
   await expect(page.getByText('"edited line"', { exact: true })).toBeVisible();
-  expect(await page.evaluate(() => Reflect.get(window, "codeDocument"))).toBe("original");
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "codeDocument")))
+    .toBe("original");
   const reloaded = page.waitForEvent("load");
   await writeFile(file, source.replace("{2|9}", "{2|9|all}"));
   await reloaded;
-  expect(await page.evaluate(() => Reflect.get(window, "codeDocument"))).toBeUndefined();
+  await expect.poll(() => page.evaluate(() => Reflect.get(window, "codeDocument"))).toBeUndefined();
   await states(page, [9]);
   await expect(page).toHaveURL(/#\/1\?clicks=1$/);
   await page.keyboard.press("ArrowRight");

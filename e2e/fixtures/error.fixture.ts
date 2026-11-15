@@ -1,8 +1,8 @@
 import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { test as base } from "@playwright/test";
-import { dev, loadDeck } from "@steamfield/decks/node";
+import { loadDeck } from "@steamfield/decks/node";
 import { createLogger } from "vite";
+import { test as base } from "./deck.fixture";
 
 export const test = base.extend<{
   errorDeck: (files?: Record<string, string>) => Promise<{
@@ -12,7 +12,7 @@ export const test = base.extend<{
     put(file: string, text: string): Promise<void>;
   }>;
 }>({
-  errorDeck: async ({ browserName }, use) => {
+  errorDeck: async ({ browserName, deckServer }, use) => {
     const cleanups: (() => Promise<void>)[] = [];
     try {
       await use(async (files = {}) => {
@@ -33,13 +33,10 @@ export const test = base.extend<{
         logger.error = (message) => terminal.push(message);
         logger.info = (message) => terminal.push(message);
         const deck = await loadDeck(dir);
-        const server = await dev(
-          {
-            ...deck,
-            config: { ...deck.config, vite: { ...deck.config.vite, customLogger: logger } },
-          },
-          { port: 0 },
-        );
+        const server = await deckServer({
+          ...deck,
+          config: { ...deck.config, vite: { ...deck.config.vite, customLogger: logger } },
+        });
         cleanups.push(() => server.close());
         return { dir, url: server.url, terminal, put };
       });

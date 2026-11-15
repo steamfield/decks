@@ -1,7 +1,8 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { dev, loadDeck } from "@steamfield/decks/node";
+import { test } from "./fixtures/deck.fixture";
 import { settled } from "./fixtures/kit.fixture";
 
 test("An OpenChart fills its counter-scaled host on a cold 1280x720 load", async ({ page }) => {

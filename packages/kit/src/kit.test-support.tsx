@@ -11,7 +11,7 @@ import {
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentType } from "react";
-import { onTestFinished } from "vitest";
+import { onTestFinished, vi } from "vitest";
 
 gsap.ticker.remove(gsap.updateRoot);
 let clock = gsap.globalTimeline.time();
@@ -19,6 +19,14 @@ export async function tick(seconds: number) {
   await act(async () => {
     clock += seconds;
     gsap.updateRoot(clock);
+  });
+}
+
+export async function advance(seconds: number) {
+  await act(async () => {
+    clock += seconds;
+    gsap.updateRoot(clock);
+    await vi.advanceTimersByTimeAsync(seconds * 1000);
   });
 }
 

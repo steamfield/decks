@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { settled } from "./fixtures/deck.fixture";
 import { test } from "./fixtures/error.fixture";
 
 test("A rendering failure names the slide, file and cause, and a component fix recovers at the same URL.", async ({
@@ -56,7 +57,7 @@ test("A cold compile failure recovers on save without manual reload and keeps it
   await expect(page.getByText(/Unexpected end of file in name/)).not.toBeVisible();
   await page.keyboard.press("End");
   await expect(page.getByRole("heading", { name: "The end", exact: true })).toBeVisible();
-  await page.evaluate(() => window.__deck?.settled());
+  await settled(page);
   expect(app.terminal.join("\n")).not.toMatch(/This is a bug|\n\s+at /);
 });
 
@@ -89,7 +90,7 @@ test("A new tab opened during a syntax error recovers while the original tab kee
     page.getByRole("heading", { name: "Recovered in both tabs", exact: true }),
   ).toBeVisible();
   await expect(newcomer).toHaveURL(url);
-  expect(await page.evaluate(() => window.e2eDocument)).toBe("original tab");
+  await expect.poll(() => page.evaluate(() => window.e2eDocument)).toBe("original tab");
 });
 
 test("A failed load retries on the next successful hot update even when the slide module did not change.", async ({

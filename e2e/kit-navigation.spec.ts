@@ -1,5 +1,4 @@
 import { expect } from "@playwright/test";
-import { PNG } from "pngjs";
 import { settled, test } from "./fixtures/kit.fixture";
 
 test.use({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
@@ -35,7 +34,7 @@ declare global {
 
 test("Arriving from the cover holds scene entrance until the transition finishes without hiding head or card", async ({
   page,
-}, info) => {
+}) => {
   await page.addInitScript(() => {
     const start = document.startViewTransition.bind(document);
     document.startViewTransition = (update) => {
@@ -66,43 +65,28 @@ test("Arriving from the cover holds scene entrance until the transition finishes
     .getByLabel("Tide baseline")
     .evaluate((element) => getComputedStyle(element).getPropertyValue("--od-clip"));
   expect(clip).toBe("100%");
-  const early = PNG.sync.read(await page.screenshot());
-  for (const [x, y] of [
-    [0, 0],
-    [1919, 0],
-    [960, 540],
-  ]) {
-    if (x === undefined || y === undefined) throw new Error("Missing sample point");
-    const offset = (y * early.width + x) * 4;
-    expect(Math.max(...early.data.subarray(offset, offset + 3))).toBeLessThan(30);
-  }
+  await expect(page).toHaveScreenshot("tide-arrival-early.png", {
+    animations: "allow",
+    maxDiffPixelRatio: 0.002,
+  });
   await page.evaluate(() => {
     for (const animation of document.getAnimations()) animation.currentTime = 600;
   });
-  const snapshot = await page.screenshot();
-  await info.attach("paused arrival head and card", { body: snapshot, contentType: "image/png" });
-  const pixels = PNG.sync.read(snapshot);
-  for (const region of [
-    { left: 400, top: 75, right: 800, bottom: 116 },
-    { left: 145, top: 810, right: 750, bottom: 850 },
-  ]) {
-    let foreground = 0;
-    for (let y = region.top; y < region.bottom; y++)
-      for (let x = region.left; x < region.right; x++) {
-        const offset = (y * pixels.width + x) * 4;
-        if (Math.min(...pixels.data.subarray(offset, offset + 3)) > 100) foreground++;
-      }
-    expect(foreground).toBeGreaterThan(0);
-  }
+  await expect(page).toHaveScreenshot("tide-arrival-copy.png", {
+    animations: "allow",
+    maxDiffPixelRatio: 0.002,
+  });
   await page.evaluate(() => {
     for (const animation of document.getAnimations()) animation.finish();
   });
   await settled(page);
-  expect(
-    await page
-      .getByLabel("Tide baseline")
-      .evaluate((element) => getComputedStyle(element).getPropertyValue("--od-clip")),
-  ).toBe("0%");
+  await expect
+    .poll(() =>
+      page
+        .getByLabel("Tide baseline")
+        .evaluate((element) => getComputedStyle(element).getPropertyValue("--od-clip")),
+    )
+    .toBe("0%");
 });
 
 test("Instant motion updates the beat rail without a CSS transition", async ({ page }) => {
@@ -110,16 +94,18 @@ test("Instant motion updates the beat rail without a CSS transition", async ({ p
   await expect(page.getByText("Water level, hour by hour, for two days.")).toBeVisible();
   await settled(page);
   await page.keyboard.press("ArrowRight");
-  expect(
-    await page.getByRole("contentinfo").evaluate(
-      (rail) =>
-        document.getAnimations().filter((animation) => {
-          const target =
-            animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
-          return target instanceof Element && rail.contains(target);
-        }).length,
-    ),
-  ).toBe(0);
+  await expect
+    .poll(() =>
+      page.getByRole("contentinfo").evaluate(
+        (rail) =>
+          document.getAnimations().filter((animation) => {
+            const target =
+              animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
+            return target instanceof Element && rail.contains(target);
+          }).length,
+      ),
+    )
+    .toBe(0);
 });
 
 test("Reloading the last click shows the settled pose in its first rendered frame", async ({
@@ -149,7 +135,7 @@ test("Reloading the last click shows the settled pose in its first rendered fram
   await page.reload();
   await expect(page.getByText("The schedule follows the Moon.")).toBeVisible();
   await settled(page);
-  expect(await page.evaluate(() => Reflect.get(window, "kitReloadFrames"))).toEqual([
-    { clip: "0%", dots: "1", card: "The schedule follows the Moon." },
-  ]);
+  await expect
+    .poll(() => page.evaluate(() => Reflect.get(window, "kitReloadFrames")))
+    .toEqual([{ clip: "0%", dots: "1", card: "The schedule follows the Moon." }]);
 });

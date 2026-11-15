@@ -1,13 +1,12 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { expect, type Page } from "@playwright/test";
-import { dev, loadDeck } from "@steamfield/decks/node";
 import { test as motionTest } from "./motion.fixture";
 
 export const test = motionTest.extend<{
   freshDeck: { dir: string; url: string };
 }>({
-  freshDeck: async ({ browserName }, use) => {
+  freshDeck: async ({ browserName, deckServer }, use) => {
     await mkdir(resolve(".tmp"), { recursive: true });
     const dir = await mkdtemp(resolve(`.tmp/code-${browserName}-`));
     await mkdir(join(dir, "node_modules/@steamfield"), { recursive: true });
@@ -23,7 +22,7 @@ export const test = motionTest.extend<{
         Array.from({ length: 12 }, (_, i) => `const value${i + 1} = "line ${i + 1}";`).join("\n") +
         "\n```",
     );
-    const server = await dev(await loadDeck(dir), { port: 0 });
+    const server = await deckServer(dir);
     try {
       await use({ dir, url: server.url });
     } finally {

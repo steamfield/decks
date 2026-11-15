@@ -1,9 +1,10 @@
-import { execFile, spawn } from "node:child_process";
-import { once } from "node:events";
+import { execFile } from "node:child_process";
 import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { promisify, stripVTControlCharacters } from "node:util";
-import { expect, type Page, test } from "@playwright/test";
+import { promisify } from "node:util";
+import { expect, type Page } from "@playwright/test";
+import { cliProcess } from "../packages/node/src/cli/cli-process.test-support";
+import { test } from "./fixtures/deck.fixture";
 import { settled } from "./fixtures/kit.fixture";
 
 async function open(page: Page, url: string, slide: string) {
@@ -27,29 +28,11 @@ async function serve(deck: string, use: (url: string) => Promise<void>) {
   delete env.NODE_OPTIONS;
   delete env.NO_COLOR;
   env.FORCE_COLOR = "1";
-  const child = spawn("bun", ["run", "decks", "dev", deck, "--port", "0"], {
-    env,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  const closed = once(child, "close");
-  let stdout = "";
-  let stderr = "";
-  child.stdout.on("data", (data) => {
-    stdout += String(data);
-  });
-  child.stderr.on("data", (data) => {
-    stderr += String(data);
-  });
+  const server = cliProcess("bun", ["run", "decks", "dev", deck, "--port", "0"], { env });
   try {
-    await expect
-      .poll(() => stripVTControlCharacters(stdout), { message: stderr, timeout: 10_000 })
-      .toMatch(/http:\/\/[^\s]+/);
-    const url = stripVTControlCharacters(stdout).match(/http:\/\/[^\s]+/)?.[0];
-    if (!url) throw new Error(`Source CLI did not print a URL: ${stderr}`);
-    await use(url);
+    await use(await server.url());
   } finally {
-    if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
-    await closed;
+    await server.close();
   }
 }
 
@@ -101,14 +84,16 @@ test("A public-only source deck loads motion and Inter without built package out
       await open(page, url, "01-first");
       await expect(page.getByRole("heading", { name: "Public source deck" })).toBeVisible();
       await expect(page.getByText("Public slide 1", { exact: true })).toBeVisible();
-      expect(
-        await page.evaluate(async () => {
-          await document.fonts.load("16px Inter", "Public source deck");
-          return Array.from(document.fonts).some(
-            (font) => font.family === "Inter" && font.status === "loaded",
-          );
-        }),
-      ).toBe(true);
+      await expect
+        .poll(() =>
+          page.evaluate(async () => {
+            await document.fonts.load("16px Inter", "Public source deck");
+            return Array.from(document.fonts).some(
+              (font) => font.family === "Inter" && font.status === "loaded",
+            );
+          }),
+        )
+        .toBe(true);
     });
     const env = { ...process.env };
     delete env.NODE_OPTIONS;

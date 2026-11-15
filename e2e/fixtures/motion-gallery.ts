@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { loadDeck, scanSlides } from "@steamfield/decks/node";
+import { settled as settleDeck } from "./deck-driver";
 
 export const gallery = await scanSlides(await loadDeck("examples/motion"));
 
@@ -12,7 +13,7 @@ export async function position(page: Page, no: number, click = 0) {
 }
 
 export async function settled(page: Page, no: number, click: number) {
-  await page.evaluate(() => window.__deck?.settled());
+  await settleDeck(page);
   if (no === 13)
     await expect(page.locator('[data-deck-active] span[aria-hidden="true"]')).toHaveText(
       click ? "1,200" : "0",
@@ -61,11 +62,13 @@ export async function poses(page: Page) {
 
 export async function pauseEntry(page: Page) {
   const items = page.locator("[data-deck-active] [data-step-state] [data-step-state]");
-  return items.evaluateAll(async (elements) => {
+  await items.evaluateAll((elements) => {
     for (const element of elements) getComputedStyle(element).opacity;
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", code: "ArrowRight" }));
-    window.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowRight", code: "ArrowRight" }));
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  });
+  const ready = page.waitForFunction(() => {
+    const elements = Array.from(
+      document.querySelectorAll("[data-deck-active] [data-step-state] [data-step-state]"),
+    );
     const animations = document.getAnimations().filter((animation) => {
       const target = animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
       return (
@@ -74,10 +77,18 @@ export async function pauseEntry(page: Page) {
         elements.some((element) => element === target)
       );
     });
+    if (!animations.length) return 0;
     for (const animation of animations) {
       animation.pause();
       animation.currentTime = 90;
     }
-    return animations.filter((animation) => animation.playState === "paused").length;
+    return animations.length;
   });
+  await page.keyboard.press("ArrowRight");
+  const count = await ready;
+  try {
+    return await count.jsonValue();
+  } finally {
+    await count.dispose();
+  }
 }

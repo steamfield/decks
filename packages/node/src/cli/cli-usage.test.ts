@@ -1,13 +1,11 @@
 import { createServer } from "node:net";
 import { expect, it, onTestFinished } from "vitest";
-import { cli, fixture, waitForWatcher } from "../dev/server.test-support";
+import { cli, fixture } from "../dev/server.test-support";
 
 it("accepts boolean negation while serving a deck", async () => {
   const { dir } = await fixture(onTestFinished);
   const process = cli(dir, ["dev", ".", "--no-open", "--port", "0"]);
-  await waitForWatcher(() =>
-    expect(process.output().stdout, process.output().stderr).toContain("http:"),
-  );
+  await process.url();
   expect(process.output().stderr).toBe("");
 });
 

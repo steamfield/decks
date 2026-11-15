@@ -1,10 +1,11 @@
 import { expect } from "@playwright/test";
 import { test } from "./fixtures/motion.fixture";
 
-test("Character reveals preserve visible line breaks.", async ({ page }) => {
+test("Character reveals preserve visible line breaks.", async ({ page, deck }) => {
   await page.goto("/#/11");
   await expect(page.getByRole("heading", { name: "TextReveal / char", exact: true })).toBeVisible();
   await page.keyboard.press("ArrowRight");
+  await deck.settled();
   const first = page.getByText("S", { exact: true });
   const second = page.getByText("c", { exact: true });
   await expect(first).toBeVisible();

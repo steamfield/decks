@@ -1,9 +1,8 @@
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { createServer, defaultClientConditions } from "vite";
 import { expect, onTestFinished, vi } from "vitest";
+import { cliProcess } from "../cli/cli-process.test-support";
 import { loadDeck, type ResolvedDeck, reactDecks, scanSlides } from "../index";
 
 declare module "vitest" {
@@ -18,31 +17,13 @@ export const testVite = {
 };
 
 export function cli(cwd: string, args: string[]) {
-  const child = spawn(
+  const process = cliProcess(
     resolve("node_modules/.bin/tsx"),
     ["--conditions=@steamfield/decks/source", resolve("packages/node/src/cli/cli.ts"), ...args],
-    {
-      cwd,
-      env: { ...process.env, NO_COLOR: "1" },
-      stdio: ["ignore", "pipe", "pipe"],
-    },
+    { cwd, env: { ...globalThis.process.env, NO_COLOR: "1" } },
   );
-  let stdout = "";
-  let stderr = "";
-  child.stdout.on("data", (data) => {
-    stdout += String(data);
-  });
-  child.stderr.on("data", (data) => {
-    stderr += String(data);
-  });
-  const exit = once(child, "close");
-  onTestFinished(async () => {
-    if (child.exitCode === null && child.signalCode === null) {
-      child.kill("SIGTERM");
-      await exit;
-    }
-  });
-  return { child, exit, output: () => ({ stdout, stderr }) };
+  onTestFinished(process.close);
+  return process;
 }
 
 export const waitForWatcher = (assertion: () => void | Promise<void>) =>

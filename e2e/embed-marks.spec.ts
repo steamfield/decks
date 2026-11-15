@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { settled } from "./fixtures/deck.fixture";
 import { boot, step, test } from "./fixtures/embed.fixture";
 
 test("Hovering an OpenChart bar tells the host about the interaction", async ({
@@ -50,7 +51,7 @@ for (const view of ["overview", "presenter"]) {
         .locator(`[data-deck-slide="2"][data-deck-context="${view}"]`)
         .getByRole("heading", { name: "Story slide" }),
     ).toBeVisible();
-    await deck.evaluate(() => window.__deck?.settled());
+    await settled(deck);
     await page.waitForFunction(() =>
       window.embedMessages.some((message) => message.settled === true),
     );
@@ -66,12 +67,14 @@ for (const view of ["overview", "presenter"]) {
     await page.waitForFunction(() =>
       window.embedMessages.some((message) => message.type === "decks:sentinel"),
     );
-    await deck.evaluate(() => window.__deck?.settled());
+    await settled(deck);
     expect(deck.url()).toMatch(new RegExp(`#/${view}/2$`));
-    expect(
-      await page.evaluate(() =>
-        window.embedMessages.filter((message) => message.type !== "decks:sentinel"),
-      ),
-    ).toEqual(before);
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.embedMessages.filter((message) => message.type !== "decks:sentinel"),
+        ),
+      )
+      .toEqual(before);
   });
 }

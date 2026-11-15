@@ -1,33 +1,11 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { loadDeck, scanSlides } from "@steamfield/decks/node";
-import { test as editableTest } from "./fixtures/deck.fixture";
+import { test as editableTest, seekTransition, settled } from "./fixtures/deck.fixture";
 import { test } from "./fixtures/motion.fixture";
 
 const total = (await scanSlides(await loadDeck("examples/motion"))).length;
-
-async function pixels(page: Page, blueX: number) {
-  const data = (await page.screenshot({ animations: "allow" })).toString("base64");
-  return page.evaluate(
-    async ({ data, blueX }) => {
-      const image = new Image();
-      image.src = `data:image/png;base64,${data}`;
-      await image.decode();
-      const canvas = document.createElement("canvas");
-      canvas.width = image.width;
-      canvas.height = image.height;
-      const context = canvas.getContext("2d");
-      if (!context) throw new Error("Missing canvas context");
-      context.drawImage(image, 0, 0);
-      return [
-        Array.from(context.getImageData(blueX, 110, 1, 1).data),
-        Array.from(context.getImageData(400, 400, 1, 1).data),
-      ];
-    },
-    { data, blueX },
-  );
-}
 
 test("Every gallery slide and each overview and presenter instance shows its own number", async ({
   page,
@@ -68,47 +46,17 @@ test("The layer holds its box still throughout a push transition", async ({ page
   await expect(
     page.getByRole("heading", { name: "Change the scale.", includeHidden: true }),
   ).toHaveCount(1);
-  await page.evaluate(() => window.__deck?.settled());
-  const frames = await page.evaluate(async () => {
-    const start = document.startViewTransition.bind(document);
-    let captured: ViewTransition | undefined;
-    document.startViewTransition = (update) => {
-      captured = start(update);
-      return captured;
-    };
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", code: "ArrowRight" }));
-    window.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowRight", code: "ArrowRight" }));
-    if (!captured) throw new Error("No transition started");
-    await captured.ready;
-    const animations = document.getAnimations();
-    const samples = [];
-    for (const fraction of [0, 0.25, 0.5, 0.75, 1]) {
-      for (const animation of animations) {
-        animation.pause();
-        animation.currentTime = Number(animation.effect?.getComputedTiming().duration) * fraction;
-      }
-      const group = getComputedStyle(
-        document.documentElement,
-        "::view-transition-group(deck-layer-above)",
-      );
-      const root = getComputedStyle(document.documentElement, "::view-transition-new(root)");
-      samples.push({
-        transform: group.transform,
-        width: group.width,
-        height: group.height,
-        root: root.transform,
-      });
-    }
-    for (const animation of animations) animation.finish();
-    await captured.finished;
-    return samples;
-  });
-  expect(frames).toHaveLength(5);
-  expect(
-    new Set(frames.map(({ transform, width, height }) => `${transform}/${width}/${height}`)).size,
-  ).toBe(1);
-  expect(new Set(frames.map(({ root }) => root)).size).toBeGreaterThan(1);
-  expect(frames[0]?.width).toBe("1920px");
+  await settled(page);
+  const samples = seekTransition(page, "deck-layer-above", [0, 0.25, 0.5, 0.75, 1]);
+  await page.keyboard.press("ArrowRight");
+  const frames = await samples;
+  for (const frame of frames) {
+    expect(frame.transform).toBe(frames[0]?.transform);
+    expect(frame.width).toBe(frames[0]?.width);
+    expect(frame.height).toBe(frames[0]?.height);
+  }
+  expect(frames[0]?.root).not.toBe(frames.at(-1)?.root);
+  expect(frames[0]?.width).toBe(1920);
   expect(frames[0]?.height).toBe("1080px");
   await expect(page.locator("[data-deck-active]").getByLabel("Slide number")).toHaveText(
     `18 / ${total}`,
@@ -176,43 +124,45 @@ editableTest(
     await page.goto(editableDeck.url);
     await page.locator("[data-deck-active]").getByRole("button", { name: "Press me" }).click();
     await expect(page.getByRole("button", { name: "Pressed" })).toBeVisible();
-    const colors = [
-      [0, 0, 255, 255],
-      [255, 0, 0, 255],
-    ];
-    expect(await pixels(page, 110)).toEqual(colors);
+    await expect(page).toHaveScreenshot("below-layer-before.png", {
+      animations: "allow",
+      maxDiffPixelRatio: 0.002,
+    });
     await expect(
       page
         .locator('[data-deck-slide="2"]')
         .getByRole("button", { name: "Press me", includeHidden: true }),
     ).toBeAttached();
-    const blueX = await page.evaluate(async () => {
+    await page.evaluate(() => {
       const start = document.startViewTransition.bind(document);
-      let captured: ViewTransition | undefined;
       document.startViewTransition = (update) => {
-        captured = start(update);
-        return captured;
+        const transition = start(update);
+        window.e2eTransition = transition;
+        return transition;
       };
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", code: "ArrowRight" }));
-      window.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowRight", code: "ArrowRight" }));
+    });
+    await page.keyboard.press("ArrowRight");
+    await page.evaluate(async () => {
+      const captured = window.e2eTransition;
       if (!captured) throw new Error("Missing push transition");
       await captured.ready;
       for (const animation of document.getAnimations()) {
         animation.pause();
         animation.currentTime = Number(animation.effect?.getComputedTiming().duration) * 0.5;
       }
-      const transform = getComputedStyle(
-        document.documentElement,
-        "::view-transition-new(root)",
-      ).transform;
-      return new DOMMatrixReadOnly(transform).e + 110;
     });
-    expect(await pixels(page, blueX)).toEqual(colors);
+    await expect(page).toHaveScreenshot("below-layer-during.png", {
+      animations: "allow",
+      maxDiffPixelRatio: 0.002,
+    });
     await page.evaluate(async () => {
       for (const animation of document.getAnimations()) animation.finish();
-      await window.__deck?.settled();
     });
+    await settled(page);
     await expect(page).toHaveURL(/#\/2$/);
-    expect(await pixels(page, 110)).toEqual(colors);
+    await expect(page).toHaveScreenshot("below-layer-after.png", {
+      animations: "allow",
+      maxDiffPixelRatio: 0.002,
+    });
   },
 );

@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createLogger, createServer } from "vite";
@@ -218,11 +219,15 @@ it("serves a completed config save without reporting the temporary empty file", 
   // Model an editor's truncate/write, with the write after the watcher saw truncation.
   const completed = new Promise<void>((resolve, reject) => {
     app.server.watcher.once("change", () => {
-      setTimeout(() => {
-        app
-          .put("deck.config.ts", 'export default { title: "Completed save" };')
-          .then(resolve, reject);
-      }, 20);
+      try {
+        writeFileSync(
+          join(app.dir, "deck.config.ts"),
+          'export default { title: "Completed save" };',
+        );
+        resolve();
+      } catch (cause) {
+        reject(cause);
+      }
     });
   });
   await app.put("deck.config.ts", "");

@@ -1,35 +1,9 @@
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { access, readFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
-import { fixture as createFixture, waitForWatcher } from "../dev/server.test-support";
+import { cli, fixture as createFixture, waitForWatcher } from "../dev/server.test-support";
 
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
-
-function cli(cwd: string, args: string[]) {
-  const child = spawn(
-    resolve("node_modules/.bin/tsx"),
-    [resolve("packages/node/src/cli/cli.ts"), ...args],
-    { cwd, env: { ...process.env, NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] },
-  );
-  let stdout = "";
-  let stderr = "";
-  child.stdout.on("data", (data) => {
-    stdout += String(data);
-  });
-  child.stderr.on("data", (data) => {
-    stderr += String(data);
-  });
-  const exit = once(child, "exit");
-  onTestFinished(async () => {
-    if (child.exitCode === null && child.signalCode === null) {
-      child.kill("SIGTERM");
-      await exit;
-    }
-  });
-  return { child, exit, output: () => ({ stdout, stderr }) };
-}
 
 describe("decks CLI", () => {
   it.each(["1.5", "1e3", "abc", "65536"])("rejects --port %s with its value", async (port) => {
@@ -61,11 +35,7 @@ describe("decks CLI", () => {
     const { dir, put } = await fixture();
     await put("decks.json", JSON.stringify({ talk: { dir: "." } }));
     const process = cli(dir, ["dev", "talk", "--port", "0"]);
-    let url = "";
-    await waitForWatcher(() => {
-      url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
-      expect(url, process.output().stderr).not.toBe("");
-    });
+    const url = await process.url();
     const response = await fetch(url);
     expect(response.status).toBe(200);
     expect(await response.text()).toContain('<meta name="decks:name" content="talk">');
@@ -86,11 +56,7 @@ describe("decks CLI", () => {
   it("reports an invalid config edit and recovers after the next valid save", async () => {
     const { dir, put } = await fixture();
     const process = cli(dir, ["dev", dir, "--port", "0"]);
-    let url = "";
-    await waitForWatcher(() => {
-      url = process.output().stdout.match(/http:\/\/[^\s]+/)?.[0] ?? "";
-      expect(url).not.toBe("");
-    });
+    const url = await process.url();
     expect((await fetch(url)).status).toBe(200);
     await put("deck.config.ts", "export default {title:42};");
     await waitForWatcher(() => expect(process.output().stderr).toContain("deck.config.ts"));

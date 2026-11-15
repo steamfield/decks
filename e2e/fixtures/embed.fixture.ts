@@ -1,8 +1,9 @@
 import { copyFile, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { test as base, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { build, loadDeck } from "@steamfield/decks/node";
 import { preview } from "vite";
+import { test as base } from "./deck.fixture";
 
 declare global {
   interface Window {

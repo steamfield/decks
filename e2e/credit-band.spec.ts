@@ -1,4 +1,5 @@
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
+import { test } from "./fixtures/deck.fixture";
 import { kitFixture } from "./fixtures/kit.fixture";
 
 const slides = {
@@ -18,8 +19,11 @@ async function bottoms(page: Page, content: Locator) {
   return { slide: slide.y + slide.height, content: target.y + target.height };
 }
 
-test("A story frame and a layout's content both end above the credit.", async ({ page }) => {
-  const deck = await kitFixture(slides);
+test("A story frame and a layout's content both end above the credit.", async ({
+  page,
+  deckServer,
+}) => {
+  const deck = await kitFixture(deckServer, slides);
   try {
     await page.goto(`${deck.url}#/1`);
     const credit = page.locator("[data-deck-active]").getByRole("link", {
@@ -42,8 +46,9 @@ test("A story frame and a layout's content both end above the credit.", async ({
 
 test("With the credit turned off a story frame reaches the bottom of a 16:9 window.", async ({
   page,
+  deckServer,
 }) => {
-  const deck = await kitFixture({
+  const deck = await kitFixture(deckServer, {
     ...slides,
     "deck.config.ts": 'export default { title: "Kit test", credit: false };',
   });
