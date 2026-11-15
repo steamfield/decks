@@ -41,7 +41,7 @@ import { createServer as createNetServer } from "node:net";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 import sharp from "sharp";
-import { deepMerge, resolveTheme } from "../../packages/kit/src/theme-resolve.ts";
+import { deepMerge, resolveTheme } from "../../packages/kit/src/theme/theme-resolve.ts";
 
 const site = resolve(import.meta.dirname, "..");
 const repo = resolve(site, "..");
@@ -436,7 +436,7 @@ function warmCopy(name) {
   const own = join(copy, "theme.json");
   const warm = JSON.parse(readFileSync(join(site, "demo/warm-theme.json"), "utf8"));
   const defaults = JSON.parse(
-    readFileSync(join(repo, "packages/kit/src/theme-default.json"), "utf8"),
+    readFileSync(join(repo, "packages/kit/src/theme/theme-default.json"), "utf8"),
   );
   const override = existsSync(own) ? deepMerge(JSON.parse(readFileSync(own, "utf8")), warm) : warm;
   const theme = resolveTheme(defaults, override);

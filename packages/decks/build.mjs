@@ -1,4 +1,4 @@
-import { chmod, cp, readdir, rm } from "node:fs/promises";
+import { chmod, cp, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 import { build } from "tsdown";
 
@@ -32,13 +32,11 @@ for (const name of ["runtime", "motion"]) {
       await cp(new URL(file, source), new URL(`dist/${basename(file)}`, import.meta.url));
   }
 }
-await cp(new URL("../kit/src/styles/", import.meta.url), new URL("dist/kit/", import.meta.url), {
+await cp(new URL("../kit/src/", import.meta.url), new URL("dist/kit/", import.meta.url), {
   recursive: true,
+  filter: async (source) => (await stat(source)).isDirectory() || /\.(css|woff2)$/.test(source),
 });
-await cp(
-  new URL("dist/kit/index.css", import.meta.url),
-  new URL("dist/kit/styles.css", import.meta.url),
-);
+await writeFile(new URL("dist/kit/styles.css", import.meta.url), '@import "./styles/index.css";\n');
 await cp(
   new URL("../node/templates/", import.meta.url),
   new URL("dist/templates/", import.meta.url),
