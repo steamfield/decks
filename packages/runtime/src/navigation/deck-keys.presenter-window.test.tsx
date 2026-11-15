@@ -1,7 +1,8 @@
+import { syncChannelId } from "@react-decks/core";
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, it, onTestFinished, vi } from "vitest";
-import { install, setup } from "../deck.test-support";
+import { install, makeSource, setup } from "../deck.test-support";
 
 it("Space on Reset timer uses native button activation and never advances the talk", async () => {
   vi.useFakeTimers();
@@ -37,10 +38,8 @@ it("p opens a named presenter window, not a tab, at this URL and position and fo
   });
   setup("?custom=kept#/2?clicks=2");
   await userEvent.setup().keyboard("p");
-  expect(events).toEqual([
-    "|react-decks-presenter:react-decks:fixture:/|popup,width=1280,height=800",
-    "focus",
-  ]);
+  const channel = syncChannelId(makeSource().manifest.name, "/");
+  expect(events).toEqual([`|react-decks-presenter:${channel}|popup,width=1280,height=800`, "focus"]);
   expect(popup.location.href).toBe(`${window.location.origin}/?custom=kept#/presenter/2?clicks=2`);
 });
 
