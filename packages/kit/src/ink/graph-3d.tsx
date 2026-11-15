@@ -12,7 +12,8 @@ import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from
 import { hashSigned } from "../geometry/hash";
 import { CATEGORICAL_COLORS, theme } from "../theme/theme";
 
-const MAX_NODES = 2000;
+/** The most nodes drawn; a larger graph is truncated to this many. */
+export const MAX_NODES = 2000;
 const ORBIT_SECONDS = 90;
 const SETTLE_DRIFT = 0.01;
 const SETTLE_QUIET_MS = 600;

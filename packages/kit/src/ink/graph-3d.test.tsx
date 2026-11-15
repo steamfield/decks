@@ -4,7 +4,7 @@ import { type ComponentProps, useState } from "react";
 import { beforeEach, expect, it, onTestFinished, vi } from "vitest";
 import { setup } from "../kit.test-support";
 import { ink, installTheme, resolveTheme } from "../theme/theme";
-import { Graph3D } from "./graph-3d";
+import { Graph3D, MAX_NODES } from "./graph-3d";
 
 beforeEach(() => {
   installTheme(resolveTheme());
@@ -108,11 +108,13 @@ it("shallow-merges spec overrides into both graph renderings", async () => {
   const app = await change({
     spec: { nodeOverrides: { a: { fill: ink("rose", 3), radius: 12 } } },
   });
+  const circle = (label: string) => screen.getByLabelText(label).querySelector("circle");
+  const alphaBefore = circle("Alpha")?.getAttribute("r");
+  const betaBefore = circle("Beta")?.getAttribute("r");
   await app.change();
-  expect(screen.getByLabelText("Alpha").querySelector("circle")).toHaveAttribute(
-    "fill",
-    ink("rose", 3),
-  );
+  expect(circle("Alpha")).toHaveAttribute("fill", ink("rose", 3));
+  expect(circle("Alpha")?.getAttribute("r")).not.toBe(alphaBefore);
+  expect(circle("Beta")?.getAttribute("r")).toBe(betaBefore);
 });
 
 it("shows categories and counts when legend is enabled", async () => {
@@ -152,15 +154,15 @@ it("does not orbit a still even when orbit is true", async () => {
 });
 
 it("truncates above the WebGL ceiling and drops dangling edges in the still", async () => {
-  const many = Array.from({ length: 2001 }, (_, i) => ({
+  const many = Array.from({ length: MAX_NODES + 1 }, (_, i) => ({
     id: String(i),
     label: `Node ${i}`,
     category: "First",
   }));
-  const app = await change({ nodes: many, edges: [{ source: "0", target: "2000" }] });
+  const app = await change({ nodes: many, edges: [{ source: "0", target: String(MAX_NODES) }] });
   await app.change();
-  expect(screen.queryByLabelText("Node 2000")).not.toBeInTheDocument();
-  expect(screen.getByLabelText("Node 1999")).toBeInTheDocument();
+  expect(screen.queryByLabelText(`Node ${MAX_NODES}`)).not.toBeInTheDocument();
+  expect(screen.getByLabelText(`Node ${MAX_NODES - 1}`)).toBeInTheDocument();
   expect(
     screen.getByRole("img", { name: "Similarity graph" }).querySelectorAll("path"),
   ).toHaveLength(0);
