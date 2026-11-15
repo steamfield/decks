@@ -1,13 +1,13 @@
 import { parseLocation, syncChannelId } from "@react-decks/core";
 import { useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { createBroadcastTransport } from "./broadcast-transport";
 import { Deck } from "./deck";
-import { installEmbed } from "./embed";
-import { settled } from "./settle";
+import { installEmbed } from "./embed/embed";
+import { settled } from "./settle/settle";
 import type { DeckSource } from "./source";
-import { createDeckStore } from "./store";
-import { createPresenter } from "./transition";
+import { createBroadcastTransport } from "./store/broadcast-transport";
+import { createDeckStore } from "./store/store";
+import { createPresenter } from "./transitions/transition";
 
 export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
   const element = root ?? document.getElementById("deck-root");

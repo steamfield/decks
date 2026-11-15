@@ -56,7 +56,7 @@ test("An exception applying a view transition is reported once and settles.", as
       );
       await window.__deck?.settled();
     },
-    `/@fs/${resolve("packages/runtime/src/transition.ts")}`,
+    `/@fs/${resolve("packages/runtime/src/transitions/transition.ts")}`,
   );
   expect(errors).toEqual(["Apply failed"]);
 });

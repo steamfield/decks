@@ -1,5 +1,5 @@
 // The embed contract between the landing page and an example deck in an iframe.
-// The deck side lives in the framework (packages/runtime/src/embed.ts, tested by
+// The deck side lives in the framework (packages/runtime/src/embed/embed.ts, tested by
 // e2e/embed*.spec.ts at the repo root); this file is the page side. Both sides are
 // same-origin: the page sends commands with postMessage, and the deck answers
 // with decks:ready, decks:meta, then decks:state on load and on every navigation
@@ -8,38 +8,15 @@
 // does. `prev` from beat 0 lands on the previous slide's last beat; nextSlide and
 // prevSlide land on beat 0; `go` takes a 1-based slide and clamps it.
 
-export type Command = { requestId?: number } & (
-  | { type: "decks:cmd"; cmd: "next" | "prev" | "nextSlide" | "prevSlide" }
-  | { type: "decks:cmd"; cmd: "go"; slide: number; beat: number }
-);
+import type {
+  EmbedCommand as Command,
+  EmbedMessage as DeckMessage,
+  EmbedMeta as DeckMeta,
+  EmbedState as DeckState,
+  EmbedDirection as Direction,
+} from "../../../../packages/runtime/src/index";
 
-export type Direction = "forward" | "backward" | null;
-
-export type DeckState = {
-  requestId?: number;
-  /** 1-based slide number. */
-  slide: number;
-  slides: number;
-  /** 0-based beat within the slide. */
-  beat: number;
-  /** The slide's last beat index (Slidev's clicksTotal): 0 without clicks, 2 for three cards. */
-  beats: number;
-  /** The story card's text; empty on a slide without a card. */
-  lead: string;
-  body: string;
-  settled: boolean;
-  direction: Direction;
-};
-
-export type DeckMeta = { title: string; slides: number; slideTitles: string[] };
-
-export type DeckMessage =
-  | { type: "decks:ready" }
-  | { type: "decks:navigate"; cmd: "next" | "prev" | "nextSlide" | "prevSlide" }
-  | { type: "decks:interaction" }
-  | { type: "decks:error"; message: string }
-  | ({ type: "decks:meta" } & DeckMeta)
-  | ({ type: "decks:state" } & DeckState);
+export type { Command, DeckMessage, DeckMeta, DeckState, Direction };
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
