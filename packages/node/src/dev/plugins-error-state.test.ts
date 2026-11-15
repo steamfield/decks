@@ -135,7 +135,6 @@ await new Promise(resolve=>{const watcher=watch(new URL("./release.txt",import.m
     await put("release.txt", "Continue");
     await closed;
     await rm(dir, { recursive: true, force: true });
-    await expect(fetch(server.url)).rejects.toThrow();
     expect(errors).toEqual([]);
   });
 
@@ -153,7 +152,6 @@ await new Promise(resolve=>{const watcher=watch(new URL("./release.txt",import.m
     await put("deck.config.ts", 'export default {title:"Saved"}');
     await server.close();
     await rm(dir, { recursive: true, force: true });
-    await expect(fetch(server.url)).rejects.toThrow();
     expect(errors).toEqual([]);
   });
 

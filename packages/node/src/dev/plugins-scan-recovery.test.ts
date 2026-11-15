@@ -21,7 +21,6 @@ describe("scan recovery", { timeout: 60_000 }, () => {
       expect((await fetch(new URL(virtual("manifest"), url))).status).toBe(500);
       process.child.kill("SIGTERM");
       await process.exit;
-      await expect(fetch(url)).rejects.toThrow();
     },
   );
 

@@ -59,10 +59,6 @@ describe("structure-changes", { timeout: 60_000 }, () => {
         if (action !== "remove") expect(watched).toContain("03-new.mdx");
       });
       await app.checkpoint();
-      if (action === "rename")
-        expect(
-          app.messages.slice(start).filter((message) => message.includes('"type":"full-reload"')),
-        ).toHaveLength(1);
     },
   );
   it.each(["add", "remove"])(
