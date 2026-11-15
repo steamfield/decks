@@ -31,7 +31,7 @@ Run these from `site/`. They are the only supported way to build, test, and run 
 | `make deploy-check` | Serve `dist/` through `wrangler dev`; checks headers, canonical URLs, 404 |
 | `stacks verify` | The definition of done (install through serve) |
 
-Each target also has a `bun run <target>` alias in `package.json`. `make demo` needs the parent repo's dependencies (`bun install` at the repo root) and both Chromium revisions: run `bunx playwright install chromium` from the repo root for the framework's screenshot CLI (Playwright 1.65.1), and from `site/` for the recorder (1.64.1). `make demo-build` needs no browser.
+Each target also has a `bun run <target>` alias in `package.json`. `make demo` needs the parent repo's dependencies (`bun install` at the repo root) and Playwright's Chromium (`make install`). The site pins the same Playwright version as the repo root, so both share one Chromium revision; a site install on a different version would delete the root's browser, which `src/lib/playwright-version.test.ts` prevents. `make demo-build` needs no browser.
 
 ## Architecture map
 
