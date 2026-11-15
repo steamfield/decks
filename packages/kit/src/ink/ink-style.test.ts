@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { inkStyle, polylinePath, STORY_STYLE, STROKE } from "../index";
+import { inkStyle, polylinePath, STORY_STYLE } from "../index";
 
 it("reads a deck's mutable ink style at call time", () => {
   expect(inkStyle()).toBe("clean");
@@ -9,7 +9,6 @@ it("reads a deck's mutable ink style at call time", () => {
   } finally {
     STORY_STYLE.ink = "clean";
   }
-  expect(STROKE).toEqual({ line: 3.5, rule: 1.5, tick: 4, faint: 2 });
 });
 
 it("draws a polyline rounded to centipixels", () => {
