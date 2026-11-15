@@ -20,6 +20,20 @@ const local = (name, cssVariable, src, fallbacks, weight = "400") => ({
   options: { variants: [{ src: [src], weight, style: "normal" }] },
 });
 
+// The example decks are static builds in public/d/<slug>/. A static host serves /d/<slug>/ from
+// its index.html; Astro's dev server only serves the file by its full name, so rewrite it here.
+const exampleDeckIndex = () => ({
+  name: "example-deck-index",
+  configureServer(server) {
+    server.middlewares.use((request, _response, next) => {
+      const path = request.url?.split(/[?#]/)[0];
+      if (path && /^\/d\/[^/]+\/$/.test(path))
+        request.url = request.url.replace(path, `${path}index.html`);
+      next();
+    });
+  },
+});
+
 export default defineConfig({
   site: site.url,
   output: "static",
@@ -68,5 +82,5 @@ export default defineConfig({
       transformers: docsShikiTransformers,
     },
   },
-  vite: { plugins: [tailwind()] },
+  vite: { plugins: [tailwind(), exampleDeckIndex()] },
 });

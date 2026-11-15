@@ -101,7 +101,7 @@ Claude Code reads `CLAUDE.md`, which imports this file. Hooks in `.claude/` bloc
 
 - If a fix hasn't worked after two attempts with no new diagnostic step in between, stop and list other hypotheses.
 - Under an agent, `astro dev` started through `bunx` may miss file changes; restart it or run `node node_modules/.bin/astro dev`.
-- The Astro dev server serves no directory index from `public/`, so the player loads `/d/<name>/index.html`.
+- The Astro dev server serves no directory index from `public/`; `astro.config.mjs` rewrites `/d/<slug>/` to its `index.html` in dev. The player loads `/d/<name>/index.html` either way.
 
 ## Analytics
 
