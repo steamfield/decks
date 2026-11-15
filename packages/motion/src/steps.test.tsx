@@ -1,7 +1,17 @@
 import { render, screen, within } from "@testing-library/react";
 import { cloneElement } from "react";
 import { describe, expect, it } from "vitest";
-import { CountUp, Draw, Highlight, Stagger, Step, Steps, TextReveal, useStepState } from "./index";
+import {
+  CountUp,
+  Draw,
+  duration,
+  Highlight,
+  Stagger,
+  Step,
+  Steps,
+  TextReveal,
+  useStepState,
+} from "./index";
 import { setupMotion, tick } from "./motion.test-support";
 
 function InvalidStep({ until }: { until: number }) {
@@ -242,11 +252,11 @@ describe("step primitives", () => {
     expect(root).not.toHaveAttribute("inert");
     await view.next();
     expect(accessible).toHaveTextContent("1,200");
-    await tick(0.15);
+    await tick(duration.slow / 4);
     const middle = Number(animated?.textContent?.replaceAll(",", ""));
     expect(middle).toBeGreaterThan(0);
     expect(middle).toBeLessThan(1200);
-    await tick(1);
+    await tick(duration.slow);
     expect(animated).toHaveTextContent("1,200");
     await view.previous();
     expect(animated).toHaveTextContent("0");

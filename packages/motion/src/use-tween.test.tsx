@@ -106,11 +106,13 @@ describe("useTween", () => {
     await tick();
     expect(commits).toEqual([0]);
     const tween = gsap.to(value, { x: 100, duration: 1, ease: "none" });
+    onTestFinished(() => {
+      tween.kill();
+    });
     await tick(0.5);
     expect(Number(screen.getByRole("status").textContent?.split("/")[0])).toBe(50);
     await tick(0.6);
     expect(screen.getByRole("status")).toHaveTextContent("100/0");
-    tween.kill();
   });
 
   it("publishes timer writes together with the tween's halfway pose", async () => {
