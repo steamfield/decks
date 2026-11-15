@@ -14,24 +14,18 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
-# verify and build run in parallel; publish needs both. Rerunning a failed publish job reruns only
+# verify, check (the sharded gate) and build run in parallel; publish needs all three. Rerunning a failed publish job reruns only
 # that job and reuses the tarball the build job uploaded, so the same bytes go to npm.
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # Full history, so the tagged commit can be checked against main.
           fetch-depth: 0
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: 1.4.2
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
       - name: Verify release version
         run: |
           version=$(node -p "require('./packages/decks/package.json').version")
@@ -50,10 +44,10 @@ jobs:
             echo "::error title=Tag is not on main::Tag ${GITHUB_REF_NAME} points at ${GITHUB_SHA}, which is not on main. Release from main: delete the tag with git push origin :refs/tags/${GITHUB_REF_NAME}, merge the change to main, and tag that commit."
             exit 1
           fi
-      - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium
-      # lint, typecheck, unit and dom tests, browser tests, tarball test
-      - run: bun run check
+
+  # The same sharded gate CI runs on every push.
+  check:
+    uses: ./.github/workflows/check.yml
 
   build:
     runs-on: ubuntu-latest
@@ -79,7 +73,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: [verify, build]
+    needs: [verify, check, build]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # One publish at a time across tags; a second release queues instead of racing the first.

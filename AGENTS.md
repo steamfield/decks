@@ -90,13 +90,21 @@ Playwright in the repo (root, `packages/node`, `site/`) stays on one version: a
 otherwise, `biome.json`, every `tsconfig.json`, `vitest.config.ts`, `decks.json`, this file.
 Need a new export? Give the exact line in the hand-off. Need a dependency? Ask.
 
+CI (`.github/workflows/ci.yml`, on pushes to `main` and pull requests) and the release both
+call `.github/workflows/check.yml`: `bun run check` split into parallel jobs, namely lint and
+typecheck, unit/dom tests in 3 shards (`bun run test --shard=N/3`), browser tests in 3 shards
+(`bun run test:e2e --shard=N/3`) and the tarball test. A failed e2e shard uploads its
+`test-results/` (actual screenshots, traces) as an artifact. Playwright's Linux screenshot
+baselines (`*-chromium-linux.png`) come from that artifact, because the runner's rendering is
+the one that has to match; the `-darwin` ones come from a Mac.
+
 ## Releasing
 
 Releases are tag-driven and CI publishes; agents never run `npm publish`, push a tag or touch
 npm credentials. `.github/workflows/release.yml` runs on a `v*` tag as jobs: `verify` (the tag
-equals `packages/decks/package.json`'s version and the plugin manifest's, the commit is on
-`main`, then `bun run check`) and `build` (packs `@steamfield/decks` once into a workflow
-artifact) in parallel, then `publish`, which publishes that tarball through
+equals `packages/decks/package.json`'s version and the plugin manifest's, and the commit is on
+`main`), `check` (the same sharded gate CI runs, described above) and `build` (packs `@steamfield/decks`
+once into a workflow artifact) in parallel, then `publish`, which publishes that tarball through
 `scripts/release-publish.mjs` with provenance, then `github-release`. Only `publish` gets
 `id-token: write` and it runs one release at a time. Auth is npm trusted publishing (OIDC);
 there is no npm token or `NPM_TOKEN` secret, and none is to be added.
