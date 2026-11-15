@@ -1,0 +1,16 @@
+/* ── Pixel icons: one rect per pixel, colors from the theme ── */
+:global(.od-slide.is-story) .sf-px-p {
+  fill: var(--od-pink);
+}
+:global(.od-slide.is-story) .sf-px-c {
+  fill: var(--od-cyan);
+}
+:global(.od-slide.is-story) .sf-px-y {
+  fill: var(--od-amber);
+}
+:global(.od-slide.is-story) .sf-px-v {
+  fill: var(--od-violet);
+}
+:global(.od-slide.is-story) .sf-px-w {
+  fill: var(--od-text);
+}

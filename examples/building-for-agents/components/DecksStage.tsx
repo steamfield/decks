@@ -1,13 +1,4 @@
-import {
-  clamp01,
-  DRAW,
-  DUR,
-  ink,
-  SETTLE,
-  StoryCard,
-  StoryStage,
-  useStage,
-} from "@steamfield/decks/kit";
+import { clamp01, DRAW, DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import {
   DENIAL,
@@ -23,7 +14,7 @@ import type { Excerpt } from "../data/code/types";
 import { CodePane } from "./CodePane";
 import styles from "./DecksStage.module.css";
 import source from "./DecksStage.tsx?raw";
-import { DIM, OFF, ON } from "./design";
+import { WAIT as COUNTED, DATA, DIM, NEUTRAL, OFF, ON, PINK } from "./design";
 import { NamePlate } from "./NamePlate";
 import { TermPane } from "./TermPane";
 import { ThreadRail } from "./ThreadRail";
@@ -74,10 +65,6 @@ const denied = PATTERN_ROWS.filter((row) => row.denied).map((row) => ({
   hit: DENIAL_RULES.includes(row.id),
 }));
 const idLines = [denied.slice(0, 3), denied.slice(3)];
-const PINK = ink("rose", 2);
-const DATA = ink("cyan", 2);
-const COUNTED = ink("amber", 2);
-const NEUTRAL = ink("slate", 1);
 
 export function DecksStage() {
   const s = useTween({ at: OFF, count: OFF });

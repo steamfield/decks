@@ -1,4 +1,4 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
+import { DUR, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import {
   AGENT_LINES,
@@ -12,7 +12,7 @@ import {
   RECORDED,
   SCRIPT_LINES,
 } from "../data/06-stacks-output";
-import { DIM, FRAME, OFF, ON } from "./design";
+import { ACTION_INK, DIM, FRAME, OFF, ON, PINK, QUIET, WAIT } from "./design";
 import { NamePlate } from "./NamePlate";
 import { TermPane } from "./TermPane";
 import { ThreadRail } from "./ThreadRail";
@@ -53,10 +53,6 @@ const wrapAction = (text: string) =>
     return rows;
   }, []);
 
-const PINK = ink("rose", 2);
-const WAIT = ink("amber", 2);
-const NEUTRAL = ink("slate", 2);
-const ACTION_INK = ink("slate", 3);
 const ACTION_SIZE = 26;
 
 const tiles = EXIT_CODES.map((exit, i) => ({
@@ -64,7 +60,7 @@ const tiles = EXIT_CODES.map((exit, i) => ({
   x: SIDE.x + (i % TILE.cols) * (tileWidth + TILE.gap),
   y: SIDE.y + Math.floor(i / TILE.cols) * (TILE.height + TILE.gap),
   rows: wrapAction(exit.action),
-  color: exit.code === READ_REPORT ? PINK : exit.code === ASK_PERSON ? WAIT : NEUTRAL,
+  color: exit.code === READ_REPORT ? PINK : exit.code === ASK_PERSON ? WAIT : QUIET,
   lit: exit.code === READ_REPORT || exit.code === ASK_PERSON,
 }));
 const tag = `Recorded ${RECORDED} · stacks ${CLI}`;

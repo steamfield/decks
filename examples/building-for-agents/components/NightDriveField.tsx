@@ -5,6 +5,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import { RIDGE, RIDGE_WINDOW } from "../data/01-cover";
 import { MARK_PATH, MARK_SIZE, SUNSET_STOPS } from "../data/brand";
 import { FIELD, FRAME, noise, OFF, ON } from "./design";
+import styles from "./NightDriveField.module.css";
+import markStyles from "./SfMark.module.css";
 
 const LIVE_TIMEOUT_MS = 3000;
 // PlayView unmounts distant slides; returning still skips the one-time sunrise.
@@ -151,17 +153,17 @@ export function NightDriveField({ low = false }: { low?: boolean }) {
   });
 
   return (
-    <div className={`sf-night${mode === "live" ? " is-live" : ""}`}>
+    <div className={`sf-night ${styles["sf-night"]}${mode === "live" ? " is-live" : ""}`}>
       {/* Disposed WebGL contexts cannot be reused: every activation gets a fresh canvas. */}
       <canvas
         key={`${playCount}-${motion}`}
         ref={canvas}
-        className="sf-night-canvas"
+        className={`sf-night-canvas ${styles["sf-night-canvas"]}`}
         tabIndex={-1}
         aria-hidden="true"
       />
       <svg
-        className="sf-night-drive"
+        className={`sf-night-drive ${styles["sf-night-drive"]}`}
         viewBox={FRAME.viewBox}
         preserveAspectRatio="xMidYMid slice"
         role="img"
@@ -169,26 +171,38 @@ export function NightDriveField({ low = false }: { low?: boolean }) {
       >
         <defs>
           <linearGradient id={`${prefix}-sf-sky`} x1="0" y1="0" x2="0" y2="1">
-            <stop className="sf-sky-top" offset="0" stopOpacity={OFF} />
+            <stop className={`sf-sky-top ${styles["sf-sky-top"]}`} offset="0" stopOpacity={OFF} />
             <stop
-              className="sf-sky-mid"
+              className={`sf-sky-mid ${styles["sf-sky-mid"]}`}
               offset={FIELD.skyMidAt}
               stopOpacity={FIELD.skyMidOpacity}
             />
-            <stop className="sf-sky-haze" offset="1" stopOpacity={FIELD.skyHazeOpacity} />
+            <stop
+              className={`sf-sky-haze ${styles["sf-sky-haze"]}`}
+              offset="1"
+              stopOpacity={FIELD.skyHazeOpacity}
+            />
           </linearGradient>
           <linearGradient id={`${prefix}-sf-sunset`} x1="0" y1="0" x2="0" y2="1">
             {SUNSET_STOPS.map((offset, i) => (
-              <stop key={offset} className={`sf-sun-${i + 1}`} offset={offset} />
+              <stop
+                key={offset}
+                className={`sf-sun-${i + 1} ${markStyles[`sf-sun-${i + 1}`]}`}
+                offset={offset}
+              />
             ))}
           </linearGradient>
           <radialGradient id={`${prefix}-sf-halo`}>
-            <stop className="sf-sun-halo" offset="0" stopOpacity={FIELD.haloOpacity} />
-            <stop className="sf-sun-halo" offset="1" stopOpacity={OFF} />
+            <stop
+              className={`sf-sun-halo ${styles["sf-sun-halo"]}`}
+              offset="0"
+              stopOpacity={FIELD.haloOpacity}
+            />
+            <stop className={`sf-sun-halo ${styles["sf-sun-halo"]}`} offset="1" stopOpacity={OFF} />
           </radialGradient>
           <linearGradient id={`${prefix}-sf-floor-fade`} x1="0" y1="0" x2="0" y2="1">
-            <stop className="sf-fade-0" offset="0" />
-            <stop className="sf-fade-1" offset="1" />
+            <stop className={`sf-fade-0 ${styles["sf-fade-0"]}`} offset="0" />
+            <stop className={`sf-fade-1 ${styles["sf-fade-1"]}`} offset="1" />
           </linearGradient>
         </defs>
         <g style={{ opacity: mode === "still" ? ON : OFF }}>
@@ -202,7 +216,7 @@ export function NightDriveField({ low = false }: { low?: boolean }) {
           {stars.map((star) => (
             <circle
               key={star.x}
-              className="sf-star"
+              className={`sf-star ${styles["sf-star"]}`}
               cx={star.x}
               cy={star.y}
               r={star.r}
@@ -219,10 +233,16 @@ export function NightDriveField({ low = false }: { low?: boolean }) {
           <g transform={sunTransform} style={{ opacity: s.sun }}>
             <path d={MARK_PATH} fill={`url(#${prefix}-sf-sunset)`} />
           </g>
-          <rect className="sf-ground" x="0" y={FIELD.horizon} width={FRAME.width} height={floor} />
-          <path className="sf-ridge-fill" d={ridgeArea} />
+          <rect
+            className={`sf-ground ${styles["sf-ground"]}`}
+            x="0"
+            y={FIELD.horizon}
+            width={FRAME.width}
+            height={floor}
+          />
+          <path className={`sf-ridge-fill ${styles["sf-ridge-fill"]}`} d={ridgeArea} />
           <path
-            className="sf-ridge-line"
+            className={`sf-ridge-line ${styles["sf-ridge-line"]}`}
             d={ridgeLine}
             pathLength="1"
             strokeDasharray="1"
@@ -233,7 +253,7 @@ export function NightDriveField({ low = false }: { low?: boolean }) {
             {fan.map((d) => (
               <path
                 key={d}
-                className="sf-grid-line"
+                className={`sf-grid-line ${styles["sf-grid-line"]}`}
                 d={d}
                 style={{ opacity: FIELD.gridFar + FIELD.gridFar }}
               />
@@ -241,7 +261,7 @@ export function NightDriveField({ low = false }: { low?: boolean }) {
             {cross.map((line) => (
               <line
                 key={line.id}
-                className="sf-grid-line"
+                className={`sf-grid-line ${styles["sf-grid-line"]}`}
                 x1="0"
                 x2={FRAME.width}
                 y1={line.y}
@@ -250,7 +270,7 @@ export function NightDriveField({ low = false }: { low?: boolean }) {
               />
             ))}
             <line
-              className="sf-horizon"
+              className={`sf-horizon ${styles["sf-horizon"]}`}
               x1="0"
               x2={FRAME.width}
               y1={FIELD.horizon}

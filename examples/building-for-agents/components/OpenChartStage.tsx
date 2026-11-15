@@ -1,7 +1,6 @@
 import {
   DRAW,
   DUR,
-  ink,
   OpenChart,
   SETTLE,
   STAGE,
@@ -28,7 +27,7 @@ import {
   VERDICT,
 } from "../data/16-openchart";
 import { CodePane } from "./CodePane";
-import { DIM, OFF, ON } from "./design";
+import { DATA, DIM, NEUTRAL, OFF, ON } from "./design";
 import { NamePlate } from "./NamePlate";
 import styles from "./OpenChartStage.module.css";
 import { ThreadRail } from "./ThreadRail";
@@ -65,8 +64,6 @@ const rows = PACKAGES.map((p, i) => ({
   top: p.lines === widest,
 }));
 
-const DATA = ink("cyan", 2);
-const NEUTRAL = ink("slate", 1);
 const place = (box: { x: number; y: number; width: number; height: number }) => ({
   left: `${(box.x / STAGE.width) * 100}%`,
   top: `${(box.y / STAGE.height) * 100}%`,

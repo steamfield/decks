@@ -1,5 +1,6 @@
 import type { SVGProps } from "react";
 import { type ProductId, product } from "../data/products";
+import styles from "./PixelIcon.module.css";
 
 /** A product's 12×12 icon; the palette classes follow the deck theme. */
 export function PixelIcon({
@@ -14,7 +15,7 @@ export function PixelIcon({
       {pixels.map((p) => (
         <rect
           key={`${p.x}-${p.y}`}
-          className={`sf-px-${p.ch}`}
+          className={`sf-px-${p.ch} ${styles[`sf-px-${p.ch}`]}`}
           x={p.x}
           y={p.y}
           width="1"

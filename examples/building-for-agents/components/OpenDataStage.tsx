@@ -1,7 +1,6 @@
 import {
   DRAW,
   DUR,
-  ink,
   OpenChart,
   SETTLE,
   STAGE,
@@ -27,7 +26,7 @@ import {
 } from "../data/15-opendata";
 import { TOOL_REGISTRY, WORKFLOW } from "../data/code/15-opendata";
 import { CodePane } from "./CodePane";
-import { DIM, OFF, ON, type Pt } from "./design";
+import { DATA, DIM, OFF, ON, PINK, type Pt, QUIET } from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import { NamePlate } from "./NamePlate";
 import styles from "./OpenDataStage.module.css";
@@ -81,9 +80,6 @@ const via = (from: Pt, to: Pt): Pt[] => [from, [from[0], JOIN_Y], [to[0], JOIN_Y
 const TO_MODEL = via(partFoot(0), modelTop);
 const TO_IFRAME = [via(partFoot(1), iframeTop), via(partFoot(2), iframeTop)];
 
-const PINK = ink("rose", 2);
-const DATA = ink("cyan", 2);
-const NEUTRAL = ink("slate", 2);
 const chartBox = {
   left: `${(CHART.x / STAGE.width) * 100}%`,
   top: `${(CHART.y / STAGE.height) * 100}%`,
@@ -173,7 +169,7 @@ export function OpenDataStage() {
                 className="sf-mono"
                 x={part.x + 16}
                 y={PART.y + 42}
-                style={{ fill: i === 0 ? NEUTRAL : DATA }}
+                style={{ fill: i === 0 ? QUIET : DATA }}
               >
                 {part.id}
               </text>

@@ -1,4 +1,4 @@
-import { DRAW, DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { DRAW, DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import {
   AXIS_TICKS,
@@ -18,7 +18,7 @@ import {
   THRESHOLDS,
 } from "../data/11-monitor-to-glass";
 import { CrtFrame } from "./CrtFrame";
-import { DIM, OFF, ON } from "./design";
+import { DATA, DIM, NEUTRAL, OFF, ON, PINK, PLUMB, QUIET, WAIT } from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import styles from "./MonitorToGlassStage.module.css";
 import { NamePlate } from "./NamePlate";
@@ -59,12 +59,6 @@ const TAG_Y = 562;
 
 const cardX = (i: number) => CARD.x + i * (CARD.w + CARD.gap);
 
-const PINK = ink("rose", 2);
-const DATA = ink("cyan", 2);
-const PLUMB = ink("violet", 3);
-const WAIT = ink("amber", 2);
-const NEUTRAL = ink("slate", 1);
-const QUIET = ink("slate", 2);
 const BRIGHT = "var(--od-text)";
 const SEVERITY: Record<Severity, string> = { healthy: DATA, warning: PLUMB, critical: PINK };
 

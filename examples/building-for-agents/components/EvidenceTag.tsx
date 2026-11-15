@@ -1,5 +1,6 @@
 import { STAGE } from "@steamfield/decks/kit";
 import type { ReactNode } from "react";
+import styles from "./EvidenceTag.module.css";
 
 /** Figure status, positioned in the stage's viewBox coordinates. */
 export function EvidenceTag({
@@ -19,7 +20,7 @@ export function EvidenceTag({
 }) {
   return (
     <span
-      className={`sf-tag is-${kind}${align === "right" ? " is-right" : ""}`}
+      className={`sf-tag ${styles["sf-tag"]} is-${kind}${align === "right" ? " is-right" : ""}`}
       style={{
         left: `${(x / STAGE.width) * 100}%`,
         top: `${(y / STAGE.height) * 100}%`,

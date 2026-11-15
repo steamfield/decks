@@ -1,14 +1,5 @@
 import { useSlide } from "@steamfield/decks";
-import {
-  DRAW,
-  DUR,
-  ink,
-  SETTLE,
-  STAGE,
-  StoryCard,
-  StoryStage,
-  useStage,
-} from "@steamfield/decks/kit";
+import { DRAW, DUR, SETTLE, STAGE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef, useState } from "react";
 import {
@@ -22,7 +13,7 @@ import {
 } from "../data/13-glass-browser";
 import { TRANSPORT_INTERFACE } from "../data/code/13-glass-browser";
 import { CodePane } from "./CodePane";
-import { DIM, OFF, ON, type Pt, polyline } from "./design";
+import { DATA, DIM, OFF, ON, type Pt, polyline } from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import styles from "./GlassBrowserStage.module.css";
 import { NamePlate } from "./NamePlate";
@@ -72,7 +63,6 @@ const TO_FRAME: Pt[] = [
   [mockX + IMPL.w, IMPL.y + IMPL.h / 2],
   [BROWSER.x, IMPL.y + IMPL.h / 2],
 ];
-const DATA = ink("cyan", 2);
 const FOCUS: readonly (readonly [number, number])[] = [
   [1, 2],
   [4, 4],

@@ -1,8 +1,20 @@
 /**
  * Night drive, on stage: JS-side constants. SVG geometry is in the story
- * frame's 1920x1080 viewBox units. Colors are never here: they come from
- * theme.json through ink() or the --od-* custom properties.
+ * frame's 1920x1080 viewBox units. Colors come from theme.json through ink()
+ * or the --od-* custom properties.
  */
+import { ink } from "@steamfield/decks/kit";
+
+/** Stage colours retain their original theme ramp and shade. */
+export const PINK = ink("rose", 2);
+export const DATA = ink("cyan", 2);
+export const PLUMB = ink("violet", 3);
+export const WAIT = ink("amber", 2);
+export const GREEN = ink("emerald", 2);
+export const NEUTRAL = ink("slate", 1);
+export const QUIET = ink("slate", 2);
+export const RUST_INK = ink("cyan", 1);
+export const ACTION_INK = ink("slate", 3);
 
 /** Earlier evidence stays readable. Mirror in tokens.css: --sf-dim. */
 export const DIM = 0.45;

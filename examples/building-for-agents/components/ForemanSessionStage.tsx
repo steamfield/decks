@@ -1,4 +1,4 @@
-import { DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import {
   ANSWER,
@@ -18,7 +18,19 @@ import {
   wrap,
 } from "../data/07-foreman-session";
 import { CrtFrame } from "./CrtFrame";
-import { DIM, OFF, ON, type Pt, polyline } from "./design";
+import {
+  DIM,
+  WAIT as HELD,
+  OFF,
+  ON,
+  GREEN as PASSED,
+  PINK,
+  PLUMB,
+  type Pt,
+  polyline,
+  QUIET,
+  DATA as WORK,
+} from "./design";
 import { NamePlate } from "./NamePlate";
 import { PacketPath } from "./PacketPath";
 import { ThreadRail } from "./ThreadRail";
@@ -80,19 +92,13 @@ function route(from: Endpoint, to: Endpoint): Pt[] {
   throw new Error(`No foreman session route from ${from} to ${to}`);
 }
 
-const PINK = ink("rose", 2);
-const WORK = ink("cyan", 2);
-const HELD = ink("amber", 2);
-const PASSED = ink("emerald", 2);
-const PLUMB = ink("violet", 3);
-const NEUTRAL = ink("slate", 2);
 const stateInk: Record<SessionState, string> = {
-  queued: NEUTRAL,
+  queued: QUIET,
   starting: WORK,
   running: WORK,
   waiting: HELD,
   done: PASSED,
-  archived: NEUTRAL,
+  archived: QUIET,
 };
 const contracts = SESSION.delegates.map((d, i) => ({
   file: d.contract,

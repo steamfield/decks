@@ -2,7 +2,6 @@ import {
   clamp01,
   DRAW,
   DUR,
-  ink,
   SETTLE,
   StoryCard,
   StoryStage,
@@ -28,7 +27,22 @@ import {
   TIMELINE_END,
 } from "../data/04-stacks-loop";
 import { CrtFrame } from "./CrtFrame";
-import { along, DIM, LOOP, OFF, ON, type Pt, polyline } from "./design";
+import {
+  along,
+  DATA,
+  DIM,
+  GREEN,
+  LOOP,
+  NEUTRAL,
+  OFF,
+  ON,
+  PINK,
+  PLUMB,
+  type Pt,
+  polyline,
+  QUIET,
+  WAIT,
+} from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import { NamePlate } from "./NamePlate";
 import { ThreadRail } from "./ThreadRail";
@@ -96,13 +110,7 @@ const ticks = [
   ...RUNS.map((run) => ({ at: run.at, name: run.outcome, tone: run.outcome })),
 ];
 
-const PINK = ink("rose", 2);
-const GREEN = ink("emerald", 2);
-const WAIT = ink("amber", 2);
-const PLUMB = ink("violet", 3);
-const DATA = ink("cyan", 2);
-const NEUTRAL = ink("slate", 1);
-const toneInk = { start: ink("slate", 2), failed: PINK, green: GREEN };
+const toneInk = { start: QUIET, failed: PINK, green: GREEN };
 
 const packet = (path: Pt[], t: number) => {
   const [x, y] = along(path, t);

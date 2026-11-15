@@ -1,0 +1,29 @@
+/* ── Name plate: product icon, Orbitron name, language chip ── */
+:global(.od-slide.is-story) .sf-plate {
+  position: absolute;
+  top: var(--sf-head-top);
+  right: var(--sf-margin-x);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sf-plate-gap);
+}
+:global(.od-slide.is-story) .sf-plate-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-plate-gap);
+}
+:global(.od-slide.is-story) .sf-plate-icon {
+  width: var(--sf-plate-icon);
+  height: var(--sf-plate-icon);
+}
+:global(.od-slide.is-story) .sf-plate-name {
+  font-family: var(--sf-font-display);
+  font-size: calc(var(--sf-plate-name) * var(--deck-text-scale, 1));
+  font-weight: var(--sf-plate-weight);
+  letter-spacing: var(--sf-plate-tracking);
+  line-height: 1;
+  text-transform: none;
+  color: var(--od-text);
+  text-shadow: var(--sf-fringe);
+}

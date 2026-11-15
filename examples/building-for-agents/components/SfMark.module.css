@@ -1,0 +1,12 @@
+:global(.od-slide.is-story) .sf-sun-1 {
+  stop-color: var(--od-sun-yellow);
+}
+:global(.od-slide.is-story) .sf-sun-2 {
+  stop-color: var(--od-sun-orange);
+}
+:global(.od-slide.is-story) .sf-sun-3 {
+  stop-color: var(--od-sun-pink);
+}
+:global(.od-slide.is-story) .sf-sun-4 {
+  stop-color: var(--od-sun-violet);
+}

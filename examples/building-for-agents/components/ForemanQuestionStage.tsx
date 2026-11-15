@@ -1,4 +1,4 @@
-import { DRAW, DUR, ink, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { DRAW, DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import {
   FAKE_SERVER_LINES,
@@ -11,7 +11,7 @@ import {
 import { HOLD_QUESTION, RESPOND, TIMEOUT_TEST, WAKE } from "../data/code/09-foreman-question";
 import type { Excerpt } from "../data/code/types";
 import { CodePane } from "./CodePane";
-import { DIM, OFF, ON, type Pt } from "./design";
+import { DATA, DIM, WAIT as HELD, OFF, ON, GREEN as PASSED, PINK, PLUMB, type Pt } from "./design";
 import { EvidenceTag } from "./EvidenceTag";
 import { NamePlate } from "./NamePlate";
 import { PacketPath } from "./PacketPath";
@@ -64,12 +64,6 @@ const BAR = 16;
 const TERM = { x: 110, y: 556, w: 690, h: 132 };
 const CODE_BOX = { x: 840, y: 530, width: 970, height: 420 };
 const HEAD_PT = 12;
-
-const PINK = ink("rose", 2);
-const DATA = ink("cyan", 2);
-const HELD = ink("amber", 2);
-const PASSED = ink("emerald", 2);
-const PLUMB = ink("violet", 3);
 
 const heads = [
   { id: "claude", x: X.claude, name: "Claude", sub: "orchestrator", mono: false },
