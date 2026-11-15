@@ -30,7 +30,7 @@ The agent hooks. `hook lint` reads a Claude Code PreToolUse payload or a Codex `
 
 ## `decks export <deck> [--out file.pdf] [--final]`
 
-Builds the deck, opens its print view (`#/print`) in Chromium and writes a PDF with one page per click step of every visible slide, each settled. `--final` prints one page per slide at its last click. The default path is `<outDir>/<name>.pdf`. It needs a Chromium for `playwright-core`; without one it exits 1 and prints `npx playwright install chromium`.
+Builds the deck, opens its print view (`#/print`) in Chromium and writes a PDF with one page per click step of every visible slide, each settled. `--final` prints one page per slide at its last click. The default path is `<name>.pdf` beside the build directory (`dist/<name>.pdf` with the default `outDir`), so `decks build` never deletes it. It needs a Chromium for `playwright-core`; without one it exits 1 and prints `npx playwright install chromium`.
 
 ## `decks shot <deck> <slide> [clicks] [--out file.png] [--width 1920] [--height 1080]`
 
