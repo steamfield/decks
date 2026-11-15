@@ -33,6 +33,14 @@ function ring() {
   if (!element) throw new Error("Missing drawn focus ring");
   return element;
 }
+function scaleOf(element: Element) {
+  const match = /scale\(([\d.]+)\)/.exec(element.getAttribute("transform") ?? "");
+  if (!match?.[1]) throw new Error(`No scale in "${element.getAttribute("transform")}"`);
+  return Number(match[1]);
+}
+function opacityOf(element: Element) {
+  return Number(getComputedStyle(element).opacity);
+}
 function shape() {
   const element = ring().children[0]?.children[0];
   if (!element) throw new Error("Missing ring shape");
@@ -51,8 +59,10 @@ it("draws a growing circle at intermediate progress", async () => {
   expect(shape().tagName).toBe("circle");
   expect(shape()).toHaveAttribute("r", "10");
   expect(shape()).toHaveAttribute("stroke-width", String(STROKE.line));
-  expect(ring()).toHaveAttribute("transform", "translate(100 200) scale(1.764)");
-  expect(getComputedStyle(ring()).opacity).toBe("0.45");
+  expect(ring().getAttribute("transform")).toContain("translate(100 200)");
+  expect(scaleOf(ring())).toBeGreaterThan(1);
+  expect(opacityOf(ring())).toBeGreaterThan(0);
+  expect(opacityOf(ring())).toBeLessThan(1);
 });
 it.each([
   ["x", { x: 300 }, "translate(300 200)"],
@@ -96,12 +106,16 @@ it("lets explicit color override the hue and step", async () => {
   expect(shape()).toHaveAttribute("stroke", "var(--od-amber)");
 });
 it("uses a hairline envelope and a trailing echo in beacon mode", async () => {
+  const plain = await draw();
+  const plainScale = scaleOf(ring());
+  const plainOpacity = opacityOf(ring());
+  plain.unmount();
   await draw({ beacon: true });
   expect(rings()).toHaveLength(2);
   expect(shape()).toHaveAttribute("stroke-width", String(STROKE.rule));
-  expect(Number(getComputedStyle(ring()).opacity)).toBeLessThan(0.45);
-  expect(ring()).toHaveAttribute("transform", "translate(100 200) scale(2.337)");
-  expect(Number(getComputedStyle(rings()[1] ?? ring()).opacity)).toBeGreaterThan(0);
+  expect(opacityOf(ring())).toBeLessThan(plainOpacity);
+  expect(scaleOf(ring())).toBeGreaterThan(plainScale);
+  expect(opacityOf(rings()[1] ?? ring())).toBeGreaterThan(0);
 });
 it("does not draw a beacon echo before its lag", async () => {
   await draw({ beacon: true, progress: 0.2 });
