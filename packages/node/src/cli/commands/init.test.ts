@@ -57,6 +57,8 @@ it("merges project settings, copies skills and appends guidance without changing
 });
 
 it("updates the version and unedited skills while preserving edited skills and section across reruns", async () => {
+  // Far from any real release, so the "upgrade" stays one however the package is versioned.
+  const upgradedVersion = "99.0.0";
   const { dir, put } = await pluginProject(packageDir);
   await put(shipped, "Original skill\n");
   await put("installed-decks/dist/plugin/skills/deck-data/SKILL.md", "Original data\n");
@@ -65,7 +67,10 @@ it("updates the version and unedited skills while preserving edited skills and s
   const agents = (await read(dir, "AGENTS.md")).replace("## Decks", "## Decks\n\nMy rule.");
   await put("AGENTS.md", `Before\n${agents}After\n`);
   const metadata = JSON.parse(await read(dir, "installed-decks/package.json"));
-  await put("installed-decks/package.json", JSON.stringify({ ...metadata, version: "1.0.0-rc.1" }));
+  await put(
+    "installed-decks/package.json",
+    JSON.stringify({ ...metadata, version: upgradedVersion }),
+  );
   await put(shipped, "Upgraded skill\n");
   await put("installed-decks/dist/plugin/skills/deck-data/SKILL.md", "Upgraded data\n");
   for (let run = 0; run < 2; run++) {
@@ -82,7 +87,7 @@ it("updates the version and unedited skills while preserving edited skills and s
   expect(
     JSON.parse(await read(dir, ".claude/settings.json")).extraKnownMarketplaces.steamfield.source
       .ref,
-  ).toBe("v1.0.0-rc.1");
+  ).toBe(`v${upgradedVersion}`);
   const forced = installedInit(dir, ["--force"]);
   expect(forced.status, forced.stderr).toBe(0);
   expect(await read(dir, skill)).toBe("Upgraded skill\n");
