@@ -134,14 +134,21 @@ test("activating an overview slide and Back move both windows while preserving p
 
 test("after Reset timer, arrows and PageDown navigate while Space activates the button", async ({
   page,
+  context,
 }) => {
+  // Installed on the context so the presenter popup opens under the same fake clock.
+  await context.clock.install();
   const presenter = await openPresenter(page);
   await presenter.getByRole("button", { name: "Reset timer" }).click();
   await presenter.keyboard.press("ArrowRight");
   await expect(page).toHaveURL(/#\/2\?clicks=2$/);
   await expect(presenter).toHaveURL(/#\/presenter\/2\?clicks=2$/);
+  // The first navigation starts the talk; let the timer run so Space has something to reset.
+  const timer = presenter.getByLabel("Elapsed time");
+  await context.clock.runFor(3000);
+  await expect(timer).not.toHaveText("00:00");
   await presenter.keyboard.press("Space");
-  await expect(presenter.getByLabel("Elapsed time")).toHaveText("00:00");
+  await expect(timer).toHaveText("00:00");
   await expect(presenter).toHaveURL(/#\/presenter\/2\?clicks=2$/);
   await presenter.keyboard.press("PageDown");
   await expect(page).toHaveURL(/#\/2\?clicks=3$/);
