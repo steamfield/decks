@@ -62,7 +62,7 @@ Search isn't part of this site yet. `BaseLayout` has an empty `search` slot in t
 
 ## Running servers
 
-Dev and preview pass `--ignore-lock` so they stay in the foreground under an agent. Stop an Astro-managed background instance with `bunx astro dev stop` or `bunx astro preview stop`. The browser tests serve `dist/` with `astro preview` on `PORT_E2E`.
+Dev and preview pass `--ignore-lock` so they stay in the foreground under an agent. Stop an Astro-managed background instance with `bunx astro dev stop` or `bunx astro preview stop`. The browser tests serve `dist/` with `astro preview` on a free port, or on `PORT_E2E` when it is set.
 
 ## The player and its data
 

@@ -20,7 +20,7 @@ Run these from `site/`. They are the only supported way to build, test, and run 
 | `make test` | Unit, component and content-drift tests (vitest) |
 | `bunx vitest run src/lib/player/format.test.ts` | One test file |
 | `make build` | Static build into `dist/`, then `tests/build.test.ts` over it |
-| `make e2e` | Playwright and axe against the production build (`PORT_E2E`, 4322) |
+| `make e2e` | Playwright and axe against the production build, on a free port (or `PORT_E2E`) |
 | `make demo` | Lint and check the decks, build every example in `src/data/examples.json` into `public/d/`, record them into `fixtures/examples/`, shoot each poster at its start step, film the hero loop into `public/loops/` (needs ffmpeg), and take the normal and warm stills with the repo's `shot` (about 6 minutes) |
 | `node scripts/demo.mjs --no-shots` | Builds and recordings only, keeping posters, loops and stills |
 | `node scripts/demo.mjs --loops` | Builds, recordings and loops only |
@@ -28,6 +28,7 @@ Run these from `site/`. They are the only supported way to build, test, and run 
 | `node scripts/edits.mjs` | Write each agent example's edit fixture from git |
 | `node scripts/excerpt-run.mjs keeling-1 <log.jsonl>` | Write a run's transcript fixture from its stream-json log (the logs stay outside the repo) |
 | `make demo-build` | Deck builds only, into `public/d/` (what a deploy needs) |
+| `make ci-fresh` | The committed HEAD built in a fresh clone with `WORKERS_CI=1`, as Workers Builds does; run it before pushing main |
 | `make deploy-check` | Serve `dist/` through `wrangler dev`; checks headers, canonical URLs, 404 |
 | `stacks verify` | The definition of done (install through serve) |
 

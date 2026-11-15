@@ -6,6 +6,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node -e 'let s=\"\";process.stdin.on(\"data\",c=>s+=c).on(\"end\",()=>{const f=JSON.parse(s).tool_input?.file_path??\"\";if(/(^|\\/)bun\\.lock$/.test(f)){console.error(\"bun.lock is generated: change dependencies with bun add, bun update or bun install, never by editing the lockfile.\");process.exit(2)}})'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && NODE_OPTIONS=--conditions=@steamfield/decks/source node_modules/.bin/tsx packages/node/src/cli/cli.ts hook lint || exit 2"
           }
         ]

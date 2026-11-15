@@ -6,6 +6,7 @@
 import { spawnSync } from "node:child_process";
 import { accessSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
+import { createServer } from "node:net";
 
 function chromiumInstalled() {
   try {
@@ -28,6 +29,18 @@ const run = (command, args) => {
   const result = spawnSync(command, args, { stdio: "inherit" });
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
+
+// A free port unless PORT_E2E names one, so two checkouts (or a gate and a dev's run)
+// can run their browser tests at the same time.
+if (!process.env.PORT_E2E) {
+  process.env.PORT_E2E = await new Promise((resolve, reject) => {
+    const server = createServer().once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const { port } = server.address();
+      server.close(() => resolve(String(port)));
+    });
+  });
+}
 
 if (!existsSync("dist/index.html")) run("bunx", ["--no-install", "astro", "build"]);
 run("bunx", ["--no-install", "playwright", "test"]);

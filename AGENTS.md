@@ -78,6 +78,11 @@ node scripts/parity.mjs <alias>      # compare a ported deck with its Slidev bas
 `rr rd-test`, `rr rd-e2e` and `rr rd-check` run the same on the hosts in `.rr.yaml`; sync a
 committed tree.
 
+A `bun.lock` changes only through `bun add`, `bun update` or `bun install`; never edit it, and
+never delete lines to force a re-resolve (that re-resolves unrelated packages). Every
+Playwright in the repo (root, `packages/node`, `site/`) stays on one version: a
+`playwright install` from another version deletes the other's Chromium.
+
 ## Files only the orchestrator edits
 
 `docs/`, every `package.json`, every `packages/*/src/index.ts` unless the contract says

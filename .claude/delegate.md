@@ -26,6 +26,19 @@ procedure around it.
   and `bun run check:isolated` and `bun run test:tarball`: integration faults surface there.
 - Run gates in a worktree, not the main checkout, when anyone may be editing the checkout:
   Playwright's dev servers watch the source.
+- Your own inline edits get the delegate's discipline: after changing a package, run
+  `bun run test packages/<pkg>` (not only the test file you touched) before committing.
+- Before pushing main, run `make -C site ci-fresh`: it builds the committed HEAD in a fresh
+  clone the way Workers Builds does, so nothing left in this checkout (a built `dist/`, an
+  installed package) can make a gate pass that the deploy fails.
+- The rr lock queues gates but nothing else on the machine. Before starting runs that gate,
+  stop any gate of yours they would queue behind, and when a run reports it is waiting on the
+  lock, find the holder (`ps -o command -p <pid>`, `lsof -p <pid> | grep cwd`) before answering.
+  A session you start that runs site tests uses `rr run --local` and never runs
+  `playwright install` outside the repo root or `site/`.
+- `foreman wait` also returns on a command error inside a run. To wait for a hand-off or a
+  question, loop until the run leaves `running`:
+  `until [ "$(foreman status <run> --json | jq -r '.digests[0].state')" != running ]; do foreman wait <run> --timeout 60m >/dev/null; done`
 
 ### Worktrees and setup
 

@@ -4,11 +4,10 @@
 # lint, check, test, build, e2e and dev, and CI should call the same targets.
 
 PORT_WEB ?= 4321
-PORT_E2E ?= 4322
-export PORT_WEB PORT_E2E
+export PORT_WEB
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev lint format check test coverage build ci-prepare preview e2e clean demo demo-build deploy-check deploy-preview deploy
+.PHONY: help install dev lint format check test coverage build ci-prepare ci-fresh preview e2e clean demo demo-build deploy-check deploy-preview deploy
 
 help: ## List targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -53,6 +52,9 @@ ci-prepare: ## Workers Builds only: install the parent repo, then build the deck
 build: $(if $(WORKERS_CI),ci-prepare) ## Static build into dist/, then the acceptance tests over it
 	bunx astro build
 	bunx vitest run --config vitest.build.config.ts
+
+ci-fresh: ## Build the committed HEAD in a fresh clone with WORKERS_CI=1, as a deploy does
+	node scripts/ci-fresh.mjs
 
 preview: ## Serve the production build on PORT_WEB
 	bunx astro preview --port $(PORT_WEB) --ignore-lock

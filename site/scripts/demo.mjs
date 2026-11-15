@@ -450,6 +450,9 @@ function warmCopy(name) {
 
 async function main() {
   run("bun", ["run", "decks", "check"], { cwd: repo });
+  // A full run owns public/d/: a build left by a renamed or removed example would still be
+  // served. --only rebuilds just its decks and leaves the others.
+  if (!only) rmSync(join(site, "public/d"), { recursive: true, force: true });
   for (const name of NAMES) build(name);
   if (buildOnly) return;
 
