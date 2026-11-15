@@ -7,65 +7,13 @@ import { act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import { type CopyBlockProps, copyBlockHtml } from "../components/CopyBlock.fixture";
+import { startFakeAnalytics } from "../lib/analytics.test-support";
 import { docsHastPlugins, docsShikiTransformers } from "../lib/markdown";
-
-const track = vi.fn();
-vi.mock("../lib/analytics", () => ({ track: (...args: unknown[]) => track(...args) }));
-
-type Observed = { callback: IntersectionObserverCallback; targets: Set<Element> };
-let observers: Observed[] = [];
-
-class FakeObserver {
-  readonly entry: Observed;
-  constructor(callback: IntersectionObserverCallback) {
-    this.entry = { callback, targets: new Set() };
-    observers.push(this.entry);
-  }
-  observe(target: Element) {
-    this.entry.targets.add(target);
-  }
-  unobserve(target: Element) {
-    this.entry.targets.delete(target);
-  }
-  disconnect() {
-    this.entry.targets.clear();
-  }
-  takeRecords() {
-    return [];
-  }
-}
-
-/** Reports `target` as intersecting (or not) to every observer watching it. */
-function intersect(target: Element, isIntersecting = true) {
-  for (const observer of observers) {
-    if (!observer.targets.has(target)) continue;
-    observer.callback(
-      [{ target, isIntersecting } as IntersectionObserverEntry],
-      observer as unknown as IntersectionObserver,
-    );
-  }
-}
-
-/** Whether matchMedia reports reduced motion. */
-function stubMotion(reduce: boolean) {
-  vi.spyOn(window, "matchMedia").mockImplementation(
-    (query: string) =>
-      ({
-        matches: query.includes(": reduce")
-          ? reduce
-          : query.includes(": no-preference")
-            ? !reduce
-            : false,
-        media: query,
-        addEventListener() {},
-        removeEventListener() {},
-        addListener() {},
-        removeListener() {},
-        onchange: null,
-        dispatchEvent: () => false,
-      }) as unknown as MediaQueryList,
-  );
-}
+import {
+  installIntersectionObserver,
+  installMotionPreference,
+  removeDocumentListenersAfterTest,
+} from "./site.test-support";
 
 /**
  * A block waiting to rise in: data-pending before the migration; after it, the motion gate
@@ -81,36 +29,29 @@ function belowFold(el: Element) {
     ({ top: window.innerHeight + 200, bottom: window.innerHeight + 400 }) as DOMRect;
 }
 
+let analytics: Awaited<ReturnType<typeof startFakeAnalytics>>;
+let intersect: ReturnType<typeof installIntersectionObserver>;
+
+/** The `capture` calls the real analytics module made through the fake SDK. */
+const captured = () => analytics.calls;
+
+/** Builds the DOM, starts the real analytics against a fake SDK, then imports a fresh site.ts. */
 async function load(html: string, before?: () => void) {
   document.body.innerHTML = html;
   before?.();
   vi.resetModules();
+  analytics = await startFakeAnalytics();
   await import("./site");
 }
 
-/** Listeners site.ts adds to document; each test imports a fresh copy of it. */
-let documentListeners: Parameters<typeof document.addEventListener>[] = [];
-
 beforeEach(() => {
-  documentListeners = [];
-  const add = document.addEventListener.bind(document);
-  vi.spyOn(document, "addEventListener").mockImplementation((...args) => {
-    documentListeners.push(args);
-    add(...args);
-  });
-  observers = [];
-  track.mockClear();
-  vi.stubGlobal("IntersectionObserver", FakeObserver);
-  stubMotion(false);
+  removeDocumentListenersAfterTest();
+  intersect = installIntersectionObserver();
+  installMotionPreference(false);
 });
 
 afterEach(() => {
-  vi.restoreAllMocks();
-  for (const [type, listener, options] of documentListeners) {
-    document.removeEventListener(type, listener, options);
-  }
   vi.useRealTimers();
-  vi.unstubAllGlobals();
   document.body.innerHTML = "";
   document.documentElement.className = "";
   for (const name of [...document.documentElement.getAttributeNames()]) {
@@ -146,7 +87,7 @@ describe("scroll reveals", () => {
   });
 
   it("hide nothing under reduced motion", async () => {
-    stubMotion(true);
+    installMotionPreference(true);
     await load('<div id="a" data-reveal>Hi</div>', () =>
       belowFold(document.getElementById("a") as HTMLElement),
     );
@@ -223,7 +164,7 @@ describe("copy blocks (CopyBlock.astro)", () => {
     expect(await navigator.clipboard.readText()).toBe(lines.join("\n"));
     expect(button).toHaveTextContent(/^\s*Copied\s*$/);
     expect(result()).toHaveTextContent("Copied to clipboard.");
-    expect(track.mock.calls).toEqual([["install_copied", { method: "hero" }]]);
+    expect(captured()).toEqual([["capture", "install_copied", { method: "hero" }]]);
     await act(() => vi.advanceTimersByTimeAsync(1400));
     expect(button).toHaveTextContent(/^\s*Copied\s*$/);
     await act(() => vi.advanceTimersByTimeAsync(200));
@@ -236,7 +177,7 @@ describe("copy blocks (CopyBlock.astro)", () => {
     await load(copyBlock({ lines, label: "Copy" }));
     await user.click(document.querySelector("button") as HTMLButtonElement);
     expect(await navigator.clipboard.readText()).toBe(lines.join("\n"));
-    expect(track).not.toHaveBeenCalled();
+    expect(captured()).toEqual([]);
   });
 
   it("show without the Clipboard API and copy through execCommand", async () => {
@@ -271,7 +212,7 @@ describe("copy blocks (CopyBlock.astro)", () => {
       "Copy failed. The command list is selected; press Cmd+C or Ctrl+C.",
     );
     expect(document.getSelection()?.toString()).toBe(lines.join("\n"));
-    expect(track).not.toHaveBeenCalled();
+    expect(captured()).toEqual([]);
   });
 });
 

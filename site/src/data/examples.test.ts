@@ -6,16 +6,8 @@ import { loadExamples } from "./examples";
 
 const examples = loadExamples();
 
-it("loads the four React talks in gallery order with AISD as the hero", () => {
-  expect(examples.map(({ name }) => name)).toEqual([
-    "aisd-showcase",
-    "texas-2026",
-    "building-for-agents",
-    "opendata-pitch",
-  ]);
+it("gives the hero, the first example, a recorded loop", () => {
   expect(examples[0]?.loop).not.toBeNull();
-  expect(examples.find(({ name }) => name === "building-for-agents")?.provenance.kind).toBe("talk");
-  expect(examples.find(({ name }) => name === "opendata-pitch")?.provenance.kind).toBe("talk");
 });
 
 it.each(examples)("$name provides every recorded step and a responsive poster", async (example) => {

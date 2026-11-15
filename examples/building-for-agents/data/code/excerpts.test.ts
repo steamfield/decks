@@ -2,14 +2,12 @@
  * Drift test for the code on the slides. For every excerpt module in this
  * directory, each shown line (elision lines aside) must appear, in order,
  * within the cited line range of the cited file. A line cut short with a
- * trailing ` …` must be the start of its source line. Skipped per excerpt when the
- * sibling repo is not checked out at ~/Projects/<repo>, so the suite still
- * passes on a machine that has only this repo.
+ * trailing ` …` must be the start of its source line. The source is read from the excerpt's
+ * pinned commit with `git show`, so it does not depend on the sibling repo's working tree.
+ * The source checks run only with DECKS_SOURCE_REPOS=1 and fail when a repo or commit is missing.
  */
-import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { describeSourceRepos, readAtCommit } from "../source-repos.test-support";
 import { cutLine, type Excerpt, isElision } from "./types";
 
 const modules = import.meta.glob<Record<string, unknown>>("./*.ts", { eager: true });
@@ -32,32 +30,30 @@ const excerpts = Object.entries(modules)
       .map(([name, value]) => ({ id: `${file}#${name}`, excerpt: value as Excerpt })),
   );
 
-describe("code excerpts match their sources", () => {
-  it("finds excerpt modules", () => {
-    expect(Array.isArray(excerpts)).toBe(true);
+describe("excerpt modules", () => {
+  it("are found", () => {
+    expect(excerpts.length).toBeGreaterThan(0);
   });
+});
 
+describeSourceRepos("code excerpts match their sources", () => {
   for (const { id, excerpt } of excerpts) {
-    const source = join(homedir(), "Projects", excerpt.repo, excerpt.path);
-    it.skipIf(!existsSync(source))(
-      `${id} (${excerpt.repo}/${excerpt.path}:${excerpt.start}-${excerpt.end})`,
-      () => {
-        const lines = readFileSync(source, "utf8")
-          .split("\n")
-          .slice(excerpt.start - 1, excerpt.end);
-        let cursor = 0;
-        for (const shown of excerpt.code.split("\n")) {
-          if (isElision(shown) || shown.trim() === "") continue;
-          const kept = cutLine(shown);
-          const at = lines.findIndex(
-            (line, i) =>
-              i >= cursor &&
-              (kept === null ? line.trim() === shown.trim() : line.trim().startsWith(kept)),
-          );
-          expect(at, `not found in order: ${shown.trim()}`).toBeGreaterThanOrEqual(0);
-          cursor = at + 1;
-        }
-      },
-    );
+    it(`${id} (${excerpt.repo}/${excerpt.path}@${excerpt.commit}:${excerpt.start}-${excerpt.end})`, () => {
+      const lines = readAtCommit(excerpt.repo, excerpt.commit, excerpt.path)
+        .split("\n")
+        .slice(excerpt.start - 1, excerpt.end);
+      let cursor = 0;
+      for (const shown of excerpt.code.split("\n")) {
+        if (isElision(shown) || shown.trim() === "") continue;
+        const kept = cutLine(shown);
+        const at = lines.findIndex(
+          (line, i) =>
+            i >= cursor &&
+            (kept === null ? line.trim() === shown.trim() : line.trim().startsWith(kept)),
+        );
+        expect(at, `not found in order: ${shown.trim()}`).toBeGreaterThanOrEqual(0);
+        cursor = at + 1;
+      }
+    });
   }
 });

@@ -130,7 +130,7 @@ test("the sitemap alias redirects through Worker assets", async () => {
 });
 
 test("embedded decks are noindex while pages remain indexable", async () => {
-  const deck = readdirSync("dist/demo").find((name) => name !== ".DS_Store");
+  const deck = readdirSync("dist/d").find((name) => name !== ".DS_Store");
   assert.ok(deck);
   const response = await get(`/d/${deck}/`);
   assert.equal(response.status, 200);

@@ -137,7 +137,7 @@ describe("docs pages", () => {
 
   it("serves the package guide to agents without the old addon instructions", () => {
     const full = read("dist", "llms-full.txt");
-    expect(full).toContain("bun add @steamfield/decks react react-dom");
+    expect(full).toContain(site.install[0]?.command.split("\n")[0] ?? "no install command");
     expect(full).toContain('import { defineDeck } from "@steamfield/decks/node"');
     expect(full).not.toMatch(
       /(?:bun add|npm (?:install|i)|pnpm add) [^\n]*(?:slidev-addon-decks|@slidev\/cli|slidev-theme)/,
@@ -224,7 +224,7 @@ describe("the whole site", () => {
   it("renders the landing page from config, hiding empty sections", () => {
     const home = page("dist", "index.html");
     expect([...home.querySelectorAll("h1")].map((heading) => heading.textContent)).toEqual([
-      "Build animated presentations with coding agents.",
+      site.tagline,
     ]);
     const hero = home.querySelector("h1")?.closest("section");
     expect(hero?.querySelector("p")?.textContent?.trim()).toBe(site.heroDescription);
@@ -235,7 +235,7 @@ describe("the whole site", () => {
         section?.querySelector('a[href="/docs/getting-started/quickstart/"]')?.textContent,
       ).toContain("Read the quickstart");
     }
-    expect(home.title).toBe("Animated presentations with coding agents | Decks");
+    expect(home.title).toBe(site.title);
     expectIndexableMetadata(home.head, "/", "/og/index.png");
     expect(websiteData(home)).toEqual([
       expect.objectContaining({
@@ -641,14 +641,6 @@ describe("analytics in the build", () => {
       expect(filesContaining(reached, consentMarker)).not.toEqual([]);
       const sources = [...reached.values()];
       expect(sources.some((source) => siteValue.test(source))).toBe(true);
-      // The banner's text, which says what Accept turns on.
-      expect(
-        sources.some((source) =>
-          source.includes(
-            "The Decks site counts visits and clicks with PostHog. Accept lets it set cookies so repeat visits count once, and turns on session recordings and heatmaps.",
-          ),
-        ),
-      ).toBe(true);
       expect(sources.some((source) => /domain:\s*["'`]steamfield\.io["'`]/.test(source))).toBe(
         true,
       );

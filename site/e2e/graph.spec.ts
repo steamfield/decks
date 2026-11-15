@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { loadExamples } from "../src/data/examples";
 import { announcement } from "../src/lib/player/format";
@@ -25,7 +26,12 @@ test("the files and graph slides survive two complete forward and reverse walks"
   await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
   await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
   const frame = page.frameLocator("iframe");
-  const graphSlide = 4;
+  // The scale-graph slide's number, from the deck's own slide files (sorted, as the deck numbers them).
+  const graphSlide =
+    readdirSync("../examples/opendata-pitch/slides")
+      .sort()
+      .findIndex((file) => /^\d+-scale-graph\./.test(file)) + 1;
+  if (graphSlide === 0) throw new Error("opendata-pitch has no scale-graph slide");
   const ordered = example.states.filter(
     ({ slide }) => slide >= example.startSlide && slide <= graphSlide,
   );

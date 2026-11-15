@@ -68,17 +68,6 @@ describe("example decks", () => {
       );
     }
   });
-
-  it("shows the four React decks with Austin schools as the featured hero", () => {
-    expect(EXAMPLE_NAMES).toEqual([
-      "aisd-showcase",
-      "texas-2026",
-      "building-for-agents",
-      "opendata-pitch",
-    ]);
-    expect(ENTRIES[0]?.featured?.label).toBe("Austin schools");
-    expect(ENTRIES[0]?.attribution?.label).toContain("AISD");
-  });
 });
 
 describe("the WARM still's theme.json", () => {

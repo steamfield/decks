@@ -1,13 +1,17 @@
 // @vitest-environment node
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { type Browser, chromium } from "@playwright/test";
 import { type DevServer, dev, loadDeck } from "@steamfield/decks/node";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { faviconSvg, ico, MARK, markColors, markColorsDark, markPng, markSvg } from "./brand";
 import { productTheme } from "./tokens";
+
+// The repo root's node_modules, found from this file so the test runs from any directory.
+const repoNodeModules = fileURLToPath(new URL("../../../node_modules", import.meta.url));
 
 describe("brand mark", () => {
   it("takes its colors from the product theme's cyan and violet ramps", () => {
@@ -56,7 +60,7 @@ describe("the framework's visible mark", () => {
     let browser: Browser | undefined;
     try {
       mkdirSync(join(dir, "slides"));
-      symlinkSync(resolve("../node_modules"), join(dir, "node_modules"), "dir");
+      symlinkSync(repoNodeModules, join(dir, "node_modules"), "dir");
       writeFileSync(join(dir, "deck.config.ts"), 'export default { title: "Brand mark" };');
       writeFileSync(join(dir, "slides/01-cover.mdx"), "# Brand mark.\n");
       server = await dev(await loadDeck(dir), { port: 0 });
@@ -83,5 +87,6 @@ describe("the framework's visible mark", () => {
       await server?.close();
       rmSync(dir, { recursive: true, force: true });
     }
-  }, 30_000);
+    // Cold-starts a Vite dev server and Chromium, as tests/build.test.ts does for its own builds.
+  }, 180_000);
 });

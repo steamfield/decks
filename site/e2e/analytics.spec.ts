@@ -209,6 +209,9 @@ test("records nothing and keeps no heatmaps after Decline", async ({ page, siteU
   await banner(page).getByRole("button", { name: "Decline" }).click();
   await useSite(page, siteURL);
   await expect.poll(() => named(sent, "$pageview").length, delivery).toBeGreaterThan(1);
+  // Web vitals are the last thing a leaving page flushes, so once one arrives, any recording
+  // or heatmap that was going to be sent has been too.
+  await expect.poll(() => named(sent, "$web_vitals").length, delivery).toBeGreaterThan(0);
   expect(named(sent, "$snapshot")).toEqual([]);
   expect(named(sent, "$$heatmap")).toEqual([]);
 });
@@ -291,6 +294,8 @@ test("stops after a decline on another steamfield.io site, on the next page load
   await typeIntoAField(page);
   await page.goto(`${siteURL}${DOC}`);
   await expect.poll(() => named(sent, "$pageview", since).length, delivery).toBeGreaterThan(0);
+  // The flush sentinel: see the Decline test above.
+  await expect.poll(() => named(sent, "$web_vitals", since).length, delivery).toBeGreaterThan(0);
   expect(named(sent, "$snapshot", since)).toEqual([]);
   expect(named(sent, "$$heatmap", since)).toEqual([]);
 });

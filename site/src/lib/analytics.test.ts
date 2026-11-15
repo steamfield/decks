@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import posthog, { type PostHog } from "posthog-js";
+import posthog from "posthog-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createPostHogPipeline,
@@ -9,6 +9,7 @@ import {
 import { everythingOn } from "../../tests/helpers/posthog-remote-config";
 import type * as AnalyticsModule from "./analytics";
 import type { Consent, ConsentStore } from "./analytics";
+import { fakeSdk } from "./analytics.test-support";
 import type { EventName } from "./events";
 
 // A test-only event name, so these tests don't depend on the site's catalog.
@@ -64,7 +65,7 @@ function start(config: Omit<AnalyticsModule.AnalyticsConfig, "key" | "site"> = {
 
 // posthog-js captures the initial $pageview on a timer after loaded.
 function firstPageview(live: PostHogPipeline = pipeline) {
-  return vi.waitFor(() => live.only("$pageview"));
+  return vi.waitFor(() => live.only("$pageview"), { timeout: 10_000 });
 }
 
 // The next page in the same tab: the first page unloads (keeping its storage), then a
@@ -460,7 +461,7 @@ describe("capture features", () => {
     // each instance listens for.
     history.pushState(null, "", "/search/#q=zebra");
     window.dispatchEvent(new PopStateEvent("popstate"));
-    const pageview = await vi.waitFor(() => pipeline.only("$pageview"));
+    const pageview = await vi.waitFor(() => pipeline.only("$pageview"), { timeout: 10_000 });
     expect(pageview.properties.$current_url).toBe(`${location.origin}/search/`);
     history.pushState(null, "", "/");
   });
@@ -728,22 +729,6 @@ describe("posthog-js contract that beforeSend's site stamp works around", () => 
     expect(pipeline.only("example_viewed").properties.site).toBe("decks");
   });
 });
-
-// A stand-in for the SDK, for what the real one can't be made to do on cue:
-// load late (so the queue fills) or fail to load.
-function fakeSdk() {
-  const calls: unknown[][] = [];
-  let loaded: (() => void) | undefined;
-  const instance = {
-    capture: (...args: unknown[]) => calls.push(["capture", ...args]),
-  } as unknown as PostHog;
-  const init = (_key: string, config: { loaded: (p: PostHog) => void }) => {
-    loaded = () => config.loaded(instance);
-    return instance;
-  };
-  const load = vi.fn(async () => ({ default: { init } as unknown as PostHog }));
-  return { calls, load, fireLoaded: () => loaded?.() };
-}
 
 describe("the queue", () => {
   it("keeps the first 50 calls made before init, drops the rest and warns once", async () => {

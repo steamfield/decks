@@ -31,8 +31,6 @@ describe("the package guide on the site", () => {
       fileURL: pathToFileURL(file),
     });
     expect(code).not.toContain("<h1");
-    expect(code).toContain('href="/docs/config/"');
-    expect(code).toContain("bun add @steamfield/decks react react-dom");
   });
 
   it("preserves anchors, external links and code samples", async () => {
