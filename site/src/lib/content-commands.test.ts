@@ -70,9 +70,14 @@ describe("every current command matches the CLI", () => {
       "page: what you get",
     ])
       expect(files).toContain(file);
-    expect(
-      shown.filter(({ file }) => file === "cli.md").map(({ line }) => line.split(" ")[1]),
-    ).toEqual(["new", "check", "lint", "hook", "export", "shot", "init"]);
+    // cli.md documents every command except dev and build, which getting-started.md covers.
+    const documented = shown
+      .filter(({ file }) => file === "cli.md")
+      .map(({ line }) => line.split(" ")[1])
+      .sort();
+    expect(documented).toEqual(
+      [...subcommands].filter((name) => !["dev", "build"].includes(name)).sort(),
+    );
   });
 
   it.each(shown.filter(({ line }) => deckInvocation.test(line)))(
@@ -137,10 +142,14 @@ describe("copy matches the repository", () => {
   it("shows the package's version, name, runtime and React requirements", () => {
     expect(site.version).toBe(pkg.version);
     expect(site.packageName).toBe(pkg.name);
-    expect(pkg.engines.node).toBe(">=22.12.0");
+    const minNode = /^>=(\d+\.\d+)/.exec(pkg.engines.node)?.[1];
+    expect(
+      minNode,
+      `engines.node ${pkg.engines.node} is not a ">=major.minor" range`,
+    ).toBeDefined();
     expect(pkg.peerDependencies.react).toMatch(/^\^19\./);
     const requirements = site.requirements.map((row) => row.text).join(" ");
-    expect(requirements).toContain("Node 22.12+");
+    expect(requirements).toContain(`Node ${minNode}+`);
     expect(requirements).toContain("React 19");
     expect(requirements).toContain(`OpenChart ${pkg.dependencies["@opendata-ai/openchart-core"]}`);
   });
