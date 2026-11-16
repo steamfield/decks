@@ -107,7 +107,13 @@ export function StacksTourStage() {
             root={root}
           />
           {step.excerpt && (
-            <CodePane excerpt={step.excerpt} focus={step.lines} progress={s.code} {...CODE_BOX} />
+            <CodePane
+              excerpt={step.excerpt}
+              focus={step.lines}
+              progress={s.code}
+              size={21}
+              {...CODE_BOX}
+            />
           )}
           <ThreadRail current="stacks" />
         </>

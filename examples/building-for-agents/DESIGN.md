@@ -169,7 +169,9 @@ and switch on at a beat.
 
 Beat motion: durations come from `DUR`, easings from `SETTLE`, `DRAW` and
 `TRACE`. Each beat changes one thing, and what a beat is no longer about drops
-to `DIM` (`--sf-dim`, 0.45). The tube's ambient layers and the live scene run
+to `DIM` (`--sf-dim`, 0.45). Code outside a pane's focus range dims less
+(`--sf-code-dim`, 0.7), so its syntax colors stay readable from the back of
+the room. The tube's ambient layers and the live scene run
 on their own clocks, never gate content, and stop under reduced motion. No
 large area changes luminance quickly: the grain is 3.5% opaque, the hum bar
 peaks at 2.5% white, and the power-on wash peaks at 6% and plays once.
