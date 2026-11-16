@@ -1,0 +1,59 @@
+{
+  "recorded": "2026-11-16",
+  "tool": "stacks 0.12.0",
+  "how": "Each command typed into zsh -f on a 24x92 pseudo-terminal (term/shell_pty.py) in an empty temp directory, DO_NOT_TRACK=1. Escape sequences removed; text otherwise as printed.",
+  "steps": [
+    {
+      "command": "stacks new typescript-cli demo-cli --sandbox --no-launch --offline",
+      "ms": 1477,
+      "lines": [
+        "Created demo-cli from typescript-cli (sandbox).",
+        "Fragments: agent-ops, ci-github, claude-harness, claude-harness-docs, code-docs, effect-schema, effect, git-hooks",
+        "Agents: claude",
+        "Git: new repository, nothing committed",
+        "Brief: .stacks/BRIEF.md (4065 words)",
+        "",
+        "NEXT STEP FOR THE AGENT: read .stacks/BRIEF.md now and carry it out, working in demo-cli. Loop on stacks verify until it passes. Don't stop here to report back; the brief says when to ask the user."
+      ]
+    },
+    {
+      "command": "cd demo-cli && stacks verify | tail -5; echo \"exit=$pipestatus[1]\"",
+      "ms": 1045,
+      "lines": [
+        "> install",
+        "> lint",
+        "> typecheck",
+        "> test",
+        "> config-logging",
+        "> binary",
+        "> schema-conventions",
+        "> no-standalone-schema",
+        "> effect-testkit",
+        "> effect-api-reference",
+        "Verify failed.",
+        "      | Node.js v24.21.0",
+        "",
+        "Skipped 12 hygiene checks (fill markers, harness, CI, hooks); stacks verify --all runs them.",
+        "",
+        "Next: fix the code or config these steps exercise, not the steps, then run stacks verify again.",
+        "exit=5"
+      ]
+    },
+    {
+      "command": "stacks verify --json 2>/dev/null | jq '{outcome, totals, firstGreen, tamperCheck}'",
+      "ms": 876,
+      "lines": [
+        "{",
+        "  \"outcome\": \"failed\",",
+        "  \"totals\": {",
+        "    \"passed\": 2,",
+        "    \"failed\": 8,",
+        "    \"skipped\": 12",
+        "  },",
+        "  \"firstGreen\": false,",
+        "  \"tamperCheck\": \"full\"",
+        "}"
+      ]
+    }
+  ]
+}
