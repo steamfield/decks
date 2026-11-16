@@ -3,7 +3,8 @@ import type { Handoff } from "../components/HandoffStage";
 /**
  * Authored demo handoffs, copied byte for byte from scratchpad/handoff/*.txt
  * in session 2a6690f7-c66a-42b3-8ce1-765d0c11f34e (2026-11-16).
- * The prompts specify three agents; the rr demo's four hosts are author-reported.
+ * The prompts specify three agents and three remote hosts; the hosts are the three
+ * remote rows of `rr monitor --once` in this repo (data-sources.md, slide 14).
  * Source rows to merge: data-sources.md, "Demo hand-offs".
  */
 
@@ -25,11 +26,11 @@ export const FOREMAN_HANDOFF: Handoff = {
 };
 
 export const RR_HANDOFF: Handoff = {
-  headline: "One command runs a suite across four hosts.",
+  headline: "One prompt shards the app's tests across three hosts.",
   product: "rr",
-  where: "GHOSTTY",
-  kind: "shell",
-  text: "cd ~/Projects/stacks && (rr check > /tmp/rr-check.log 2>&1 &) && rr monitor\n",
+  where: "CLAUDE CODE · SAME SESSION AS THE BUILD",
+  kind: "prompt",
+  text: "When Horse Tinder is built, put its tests on rr. Don't ask me anything.\n\n1. Add integration tests for the API, following the ce:writing-tests skill, until each of three groups takes a few seconds to run.\n2. Use the rr:rr skill to set up rr for this repo: one parallel task that splits the tests into three shards, one on each of my three remote hosts.\n3. Run it. Then give me the command, so I can run it again with `rr monitor` open.\n",
 };
 
 export const STATGLASS_HANDOFF: Handoff = {

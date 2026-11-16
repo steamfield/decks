@@ -1,21 +1,22 @@
 ---
-title: One command runs a suite across four hosts.
+title: One prompt shards the app's tests across three hosts.
 clicks: 0
 ---
 
 import { RR_HANDOFF } from '../data/handoffs'
 
-{/* SLIDE 15 · RR HAND-OFF: one command for Ghostty that runs the Stacks suite across the hosts and opens rr monitor */}
+{/* SLIDE 15 · RR HAND-OFF: a prompt for the session building Horse Tinder, to add integration tests and shard them across the remote hosts with rr */}
 
 <HandoffStage handoff={RR_HANDOFF} />
 
 <Notes>
 OPENING
-- Copy this, paste into Ghostty, leave rr monitor on screen for a moment, come back.
-- It runs the Stacks test suite in the background and puts rr monitor in front.
-- Seven partitions across the four machines.
-- From here every host is locked until the suite ends, so the in-deck rr demo comes before this slide.
+- Copy this, paste into the session that is building Horse Tinder, come back. It queues behind the build.
+- The agent adds integration tests, then sets up rr for that repo with the rr skill.
+- Three shards, one on each remote machine. This laptop stays free.
+- It hands back the command, so I can run it again with rr monitor open.
 
 IF ASKED
-- The suite's output goes to /tmp/rr-check.log.
+- The rr skill writes the repo's config and checks each host can run the tests before the first run.
+- The shards are groups the config names. rr does not split a suite on its own.
 </Notes>
