@@ -1,6 +1,6 @@
 ---
 title: Stacks briefs the agent and checks its work.
-clicks: 3
+clicks: 4
 ---
 
 {/* SLIDE 4 · STACKS LOOP: a command writes a brief, the agent builds, verify decides when it is done */}
@@ -21,9 +21,13 @@ OPENING
 [click] CLICK 2
 - tea-dashboard: a SvelteKit dashboard Claude Code built from a Stacks brief.
 - First verify, 393 seconds in: five of fifteen steps failed (lint, plus four README and agent-docs checks).
-- Next run, 501 seconds: all fifteen pass.
+- The failed result goes back to the agent.
 
 [click] CLICK 3
+- Claude Code fixes the failures and runs stacks verify again.
+- At 501 seconds, all fifteen steps pass. That is the completion rule from the prompt.
+
+[click] CLICK 4
 - An agent that can't pass a check can edit the check instead.
 - Stacks stores a hash of the verify steps outside the project.
 - If a step changes, verify exits without running until a person accepts.

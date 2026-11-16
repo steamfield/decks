@@ -153,6 +153,8 @@ export function GlassBoundaryStage() {
     bar: OFF,
     rust: ON,
     ts: ON,
+    detail: OFF,
+    widgetFocus: OFF,
     seam: OFF,
     code1: OFF,
     toTransport: OFF,
@@ -167,30 +169,29 @@ export function GlassBoundaryStage() {
   const { clicks, copy, beats } = useStage({
     copy: COPY,
     enter: (tl) => {
-      tl.to(s, { frame: ON, duration: DUR.grow, ease: SETTLE });
-      tl.to(s, { bar: ON, duration: DUR.scale, ease: SETTLE }, `-=${DUR.card}`);
+      tl.to(s, { frame: ON, duration: DUR.morph, ease: SETTLE });
+      tl.to(s, { bar: ON, duration: DUR.scale, ease: SETTLE }, `-=${DUR.opacity}`);
     },
     beats: (tl, beat) => {
       beat(0);
-      tl.to(s, { rust: DIM, ts: OFF, duration: DUR.card, ease: SETTLE });
-      tl.to(s, { seam: ON, code1: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { rust: DIM, ts: OFF, detail: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { seam: ON, code1: ON, duration: DUR.morph, ease: SETTLE }, `+=${DUR.eraseHold}`);
       beat(1);
 
-      tl.to(s, { code1: OFF, seam: OFF, duration: DUR.opacity, ease: SETTLE });
-      tl.to(s, { rust: ON, ts: ON, duration: DUR.card, ease: SETTLE });
-      tl.to(s, { toTransport: ON, duration: DUR.scale, ease: "none" });
-      tl.to(s, { msg: ON, duration: DUR.card, ease: SETTLE }, `-=${DUR.grow}`);
+      tl.to(s, { code1: OFF, seam: OFF, rust: ON, ts: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { toTransport: ON, duration: DUR.gather, ease: "none" });
+      tl.to(s, { msg: ON, duration: DUR.morph, ease: SETTLE }, `+=${DUR.eraseHold}`);
       beat(2);
 
-      tl.to(s, { rust: DIM, msg: DIM, duration: DUR.card, ease: SETTLE });
-      tl.to(s, { toWidget: ON, duration: DUR.grow, ease: "none" });
-      tl.to(s, { chart: ON, code3: ON, duration: DUR.card, ease: SETTLE });
-      tl.to(s, { t: CHART_START + 4, duration: DUR.trace, ease: "none" });
+      tl.to(s, { rust: DIM, msg: DIM, widgetFocus: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { toWidget: ON, duration: DUR.gather, ease: "none" });
+      tl.to(s, { chart: ON, code3: ON, duration: DUR.morph, ease: SETTLE }, "<");
+      tl.to(s, { t: CHART_START + 1, duration: DUR.morph, ease: "none" }, `+=${DUR.eraseHold}`);
       beat(3);
 
       tl.to(s, { code3: OFF, msg: OFF, ts: DIM, rust: ON, duration: DUR.card, ease: SETTLE });
-      tl.to(s, { toSeam: ON, duration: DUR.grow, ease: "none" });
-      tl.to(s, { idle: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { toSeam: ON, duration: DUR.gather, ease: "none" });
+      tl.to(s, { idle: ON, duration: DUR.morph, ease: SETTLE }, `+=${DUR.eraseHold}`);
       beat(4);
     },
   });
@@ -232,7 +233,7 @@ export function GlassBoundaryStage() {
               <rect x={CHART.x} y={CHART.y - 4} width={CHART.w} height={CHART.h + 4} />
             </clipPath>
           </defs>
-          <g style={{ opacity: s.frame }}>
+          <g style={{ opacity: s.frame * (ON - s.detail * (ON - DIM)) }}>
             <rect
               x={SEAM_X - BAR.rust * s.bar}
               y={BAR.y}
@@ -301,9 +302,15 @@ export function GlassBoundaryStage() {
               </text>
             </g>
           </g>
-          <g style={{ opacity: s.rust * s.frame, color: DATA }}>
+          <g style={{ opacity: s.frame, color: DATA }}>
             {rustBoxes.map((box) => (
-              <g key={box.id}>
+              <g
+                key={box.id}
+                style={{
+                  opacity:
+                    box.id === "store" ? Math.min(s.rust, ON - s.detail * (ON - DIM)) : s.rust,
+                }}
+              >
                 <rect
                   className={`sf-box${isLit(box.id) ? " is-lit" : ""}`}
                   x={box.x}
@@ -320,7 +327,12 @@ export function GlassBoundaryStage() {
               </g>
             ))}
           </g>
-          <g style={{ opacity: s.rust * s.frame, color: ACTOR }}>
+          <g
+            style={{
+              opacity: Math.max(DIM, s.rust - s.detail * (ON - DIM), s.idle) * s.frame,
+              color: ACTOR,
+            }}
+          >
             <rect
               className={`sf-box${s.idle > 0.5 ? " is-lit" : ""}`}
               x={tray.x}
@@ -337,7 +349,13 @@ export function GlassBoundaryStage() {
           </g>
           <g style={{ opacity: s.ts * s.frame, color: DATA }}>
             {tsBoxes.map((box) => (
-              <g key={box.id}>
+              <g
+                key={box.id}
+                style={{
+                  opacity:
+                    box.id === "transport" ? ON : ON - s.detail * (ON - s.widgetFocus) * (ON - DIM),
+                }}
+              >
                 <rect
                   className={`sf-box${isLit(box.id) ? " is-lit" : ""}`}
                   x={TS.x}
