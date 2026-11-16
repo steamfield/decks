@@ -11,3 +11,7 @@
 .skin {
   display: contents;
 }
+
+.skin :global(.sf-panel-label) {
+  z-index: 1;
+}

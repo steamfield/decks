@@ -60,10 +60,19 @@ function commandTokens(command: string) {
 }
 
 export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
+  const width = (FRAME.right - FRAME.left - (demo.panes.length - 1) * PANE.gap) / demo.panes.length;
+  const columns = demo.panes.length === 2 ? 80 : 92;
   for (const { pane } of demo.panes) {
-    if (demo.panes.length === 2 && pane.cols > 80)
+    const size = Math.min(28, (width - 80) / ((Math.min(pane.cols, columns) + 2) / 2));
+    const rows = Math.floor((PANE.height - 2 * CRT.pad - CRT.tagBand - 48) / (size * 1.12));
+    const cols = Math.min(
+      demo.panes.length === 2 ? 80 : Infinity,
+      // VT323's fixed column advance is 0.4em.
+      Math.floor((width - 80) / (size * 0.4)),
+    );
+    if (pane.rows > rows || pane.cols > cols)
       throw new Error(
-        `Pane "${pane.id}" has ${pane.cols} columns; two-pane demos allow at most 80.`,
+        `Pane "${pane.id}" exceeds the largest readable grid: ${rows} rows by ${cols} columns at ${size}px.`,
       );
   }
   const deck = useDeck();
@@ -77,7 +86,6 @@ export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
       for (let n = 1; n < demo.copy.length; n++) beat(n);
     },
   });
-  const width = (FRAME.right - FRAME.left - (demo.panes.length - 1) * PANE.gap) / demo.panes.length;
 
   return (
     <StoryStage
@@ -90,11 +98,7 @@ export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
           <NamePlate id={demo.product} chipOnly />
           {demo.panes.map(({ pane, recording, label }, index) => {
             const x = FRAME.left + index * (width + PANE.gap);
-            const size = Math.min(28, (width - 80) / ((pane.cols + 2) / 2));
-            const rows = Math.min(
-              pane.rows,
-              Math.floor((PANE.height - 2 * CRT.pad - CRT.tagBand - 48) / (size * 1.12)),
-            );
+            const size = Math.min(28, (width - 80) / ((Math.min(pane.cols, columns) + 2) / 2));
             return (
               <div key={pane.id}>
                 <div
@@ -107,7 +111,7 @@ export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
                 >
                   <LiveTerm
                     pane={pane}
-                    recording={viewport(recording, clicks, rows)}
+                    recording={viewport(recording, clicks, pane.rows)}
                     click={clicks}
                     x={x}
                     y={PANE.y}
