@@ -38,5 +38,5 @@ export const STATGLASS_HANDOFF: Handoff = {
   product: "statglass",
   where: "CLAUDE CODE · VS CODE",
   kind: "prompt",
-  text: "My laptop's fans are loud. Use the statglass CLI to find out what has been loading this machine over the last 30 minutes. Start with `statglass --help`, and ask for JSON where a command offers it.\n\nTell me:\n1. When CPU peaked, and how high.\n2. Which processes were running at the peak.\n3. Whether memory or temperature was under pressure too.\n4. What you would stop first, and why.\n\nRead only: don't kill or change anything. Don't ask me questions.\n",
+  text: "My laptop's fans are loud. Use the statglass CLI to find out what has been loading this machine over the last 30 minutes.\n\nTell me:\n1. When CPU peaked, and how high.\n2. Which processes were running at the peak.\n3. Whether memory or temperature was under pressure too.\n4. What you would stop first, and why.\n\nRead only: don't kill or change anything. Don't ask me questions.\n",
 };
