@@ -2,10 +2,13 @@ import { clamp01 } from "@steamfield/decks/kit";
 import { product } from "../../data/products";
 import { Cells } from "./Cells";
 
-const MONITOR = product("rr").icon;
+const MARK = product("rr").icon;
+/** The mark's dots in the order the spinner's gap travels: down the left column, up the right. */
+const DOTS = ["0", "7", "6", "5", "4", "3", "2", "1"];
+const only = (ch: string) => MARK.map((row) => row.replace(/[^.]/g, (c) => (c === ch ? c : ".")));
 const HOST_Y = [3, 11, 19];
 const HOST = ["cccccccc", "c......c", "c......c", "c......c", "cccccccc"];
-const WIRE = 16;
+const WIRE = 13;
 
 export function RrFigure({ t }: { t: number }) {
   const draw = clamp01(t / 0.3);
@@ -21,7 +24,7 @@ export function RrFigure({ t }: { t: number }) {
         const at = Math.round(length * packet);
         return (
           <g key={y}>
-            <Cells x={12} y={13} rows={["v".repeat(Math.min(WIRE, drawn))]} />
+            <Cells x={15} y={13} rows={["v".repeat(Math.min(WIRE, drawn))]} />
             {Array.from(
               { length: Math.max(0, drawn - WIRE) },
               (_, i) => 13 + Math.sign(offset) * (i + 1),
@@ -31,7 +34,7 @@ export function RrFigure({ t }: { t: number }) {
             <Cells x={28} y={y} rows={HOST} />
             <g opacity={packet > 0 && packet < 1 ? 1 : 0}>
               <Cells
-                x={at < WIRE ? 12 + at : 27}
+                x={at < WIRE ? 15 + at : 27}
                 y={at < WIRE ? 13 : 13 + Math.sign(offset) * (at - WIRE)}
                 rows={["y"]}
               />
@@ -48,7 +51,13 @@ export function RrFigure({ t }: { t: number }) {
           </g>
         );
       })}
-      <Cells x={1} y={9} rows={MONITOR} />
+      <g transform="translate(-5 2) scale(2)">
+        {DOTS.map((ch, i) => (
+          <g key={ch} opacity={draw * DOTS.length > i ? 1 : 0}>
+            <Cells x={0} y={0} rows={only(ch)} />
+          </g>
+        ))}
+      </g>
     </g>
   );
 }

@@ -9,8 +9,11 @@ export const SECTIONS: Record<ProductId, string> = {
   decks: "Decks made the Horse Tinder pitch we started with.",
 };
 
-/** Illustrative cell heights, not CPU measurements: section-title contract's spike motif. */
-export const SECTION_HISTORY = [2, 3, 2, 4, 3, 2, 3, 4, 2, 3, 4, 3, 5, 9, 4, 3];
+/**
+ * Illustrative heat levels, not measurements: five older columns of history drawn to the left
+ * of the StatGlass mark, one string per row, in the mark's opacity letters (data/products.ts).
+ */
+export const SECTION_HEAT = ["BDACF", "EAGBD", "CHBFA", "GCEAH"];
 
 /** Illustrative chart cells, not data: the Decks title's slide-and-beats motif. */
 export const SECTION_BARS = [3, 5, 7];

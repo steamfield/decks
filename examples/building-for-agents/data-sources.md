@@ -21,7 +21,8 @@ where each stage's author wrote them; this file is the merged copy the fact-chec
 | rr language chip | Go | `~/Projects/rr/go.mod` |
 | StatGlass language chip | Rust + TypeScript | `~/Projects/statglass`: `find crates src-tauri -name '*.rs' \| xargs cat \| wc -l` against `find src \( -name '*.ts' -o -name '*.tsx' \) \| xargs cat \| wc -l` |
 | Decks language chip | TypeScript · React | this repo, `packages/decks/` |
-| Pixel icons | 12x12, one per product | `~/Projects/steamfield/src/data/pixel-icons.ts` (steamfield commit 53a1a06), copied into `data/products.ts` |
+| Pixel icons, foreman and Decks | 12x12 | `~/Projects/steamfield/src/data/pixel-icons.ts` (steamfield commit 53a1a06), copied into `data/products.ts` |
+| Pixel icons, Stacks, rr and StatGlass | 12x12, each product's own mark in its own colours | `~/Projects/stacks-api/apps/web/public/brand/stacks-mark.svg` (commit 650fa76), `~/Projects/rr/site/public/brand/rr-mark-dark.svg` (commit 3e91603), `~/Projects/statglass/brand/statglass-icon-dark.svg` (commit d82ce259), read 2026-11-16 and redrawn on the pixel grid in `data/products.ts`; colours in `theme.json` accents |
 
 ## Slide 1: Cover
 

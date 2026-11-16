@@ -1,63 +1,43 @@
-import { clamp01, stagger } from "@steamfield/decks/kit";
-import { SECTION_HISTORY } from "../../data/sections";
+import { clamp01 } from "@steamfield/decks/kit";
+import { product } from "../../data/products";
+import { SECTION_HEAT } from "../../data/sections";
 import { DIM } from "../design";
-import styles from "../PixelIcon.module.css";
 import { Cells } from "./Cells";
 
-const RING = [
-  "...cccc...",
-  "..c....c..",
-  ".c......c.",
-  "c........c",
-  "c........c",
-  "c........c",
-  "c........c",
-  ".c......c.",
-  "..c....c..",
-  "...cccc...",
-];
-const HANDLE = ["y...", "yy..", ".yy.", "..yy", "...y"];
-const BASE = 18;
-const LENS_Y = 8;
+/** The mark's four rows of levels, read back from the icon: one letter per two-pixel cell. */
+const MARK = [0, 3, 6, 9].map((row) =>
+  (product("statglass").icon[row] ?? "").replace(/(.)\1\.?/g, "$1"),
+);
+/** History, then the mark as its newest four columns. */
+const ROWS = SECTION_HEAT.map((older, i) => older + (MARK[i] ?? ""));
+const OLDER = SECTION_HEAT[0]?.length ?? 0;
+const COLUMNS = ROWS[0]?.length ?? 0;
+const SIZE = 3;
+const PITCH = 4;
+const block = (ch: string) => Array.from({ length: SIZE }, () => ch.repeat(SIZE));
 
 export function GlassFigure({ t }: { t: number }) {
-  const history = clamp01(t / 0.45);
-  const scan = clamp01((t - 0.45) / 0.55);
-  const lensX = Math.round(-11 + 34 * scan);
+  const fill = clamp01(t / 0.7);
+  const settle = clamp01((t - 0.7) / 0.3);
   return (
     <g>
-      {SECTION_HISTORY.map((height, i) => {
-        const x = 2 + i * 2;
-        const grown = Math.round(height * stagger(history, i, SECTION_HISTORY.length, 0.05));
+      {Array.from({ length: COLUMNS }, (_, column) => {
+        const shown = fill * COLUMNS > column ? 1 : 0;
+        const level = column < OLDER ? 1 - settle * (1 - DIM) : 1;
         return (
-          <g key={x}>
-            {Array.from({ length: grown }, (_, j) => {
-              const y = BASE - j - 1;
-              const ringRow = RING[y - LENS_Y] ?? "";
-              const left = ringRow.indexOf("c");
-              const right = ringRow.lastIndexOf("c");
-              const inside = scan > 0 && left >= 0 && x > lensX + left && x < lensX + right;
-              return (
-                <rect
-                  key={y}
-                  x={x}
-                  y={y}
-                  width="1"
-                  height="1"
-                  className={
-                    inside ? `sf-px-p ${styles["sf-px-p"]}` : `sf-px-c ${styles["sf-px-c"]}`
-                  }
-                  opacity={inside ? 1 : DIM}
-                />
-              );
-            })}
+          // biome-ignore lint/suspicious/noArrayIndexKey: the columns are fixed.
+          <g key={column} opacity={shown * level}>
+            {ROWS.map((row, i) => (
+              <Cells
+                key={row}
+                x={1 + column * PITCH}
+                y={5 + i * PITCH}
+                rows={block(row[column] ?? ".")}
+              />
+            ))}
           </g>
         );
       })}
-      <g opacity={scan > 0 ? 1 : 0}>
-        <Cells x={lensX} y={LENS_Y} rows={RING} />
-        <Cells x={lensX + 8} y={LENS_Y + 9} rows={HANDLE} />
-      </g>
     </g>
   );
 }
