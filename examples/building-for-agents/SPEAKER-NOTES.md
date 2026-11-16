@@ -2,7 +2,7 @@
 
 The full script for each slide, moved out of the slide files. The slides carry a bullet version of the same points for use on stage. Each slide has what the slide shows, the spoken script (opening, then one paragraph per click), and answers for likely questions.
 
-Section numbers follow the slide filename prefixes. In the current 18-slide cut, the thread plays at position 3, habits at 17 and the close at 18; OUTLINE.md section 8 gives the full mapping.
+Section numbers follow the slide filename prefixes. The deck has 20 slide files, and slide 17 has `hide: true`, so the default cut is 19 slides. In that cut the thread plays at position 3, habits at 18 and the close at 19; OUTLINE.md section 8 gives the full mapping.
 
 ## 1. Building for agents
 
@@ -288,6 +288,33 @@ rr is written in Go. My agents use it all day to run tests. It copies the workin
 - Is this load balancing? rr takes the first host it can lock, in config order. It does not measure load.
 - Are those your hosts? The names are the simulation's. OpenData's config lists mbp, m4-mini and m1-mini, and it sets worktree_isolation to false so all worktrees share one remote copy.
 
+## 12. rr runs this task across my machines.
+
+Clicks: 2
+
+### What the slide shows
+
+One terminal pane above two command cards, built the same way as slide 5. The commands run at the root of this repo against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, the laptop I present from. By default the pane plays a recording made on November 16 with rr 0.30.0. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
+
+The recording drops the second command's four leading progress lines and its blank lines. The Parallel Execution Summary is complete and its text is unchanged.
+
+Source: data-sources.md, Slide 12.
+
+### Say
+
+The previous slide simulated the locks. Here are the machines configured for this repo, including the laptop I am presenting from. I'll query their status, then run the demo task across them.
+
+**[click]** Every host is online. The dash in each LOCK cell means no command holds that machine. The mbp row is this laptop. That is the fleet the next command will use.
+
+**[click]** The repo's config defines demo as a parallel task. rr locked and synced the hosts, then ran a shard on each. The summary names the host each shard ran on.
+
+### If asked
+
+- Why the no-color flag? rr 0.30.0 truncates coloured table cells in a terminal, and the flag avoids that.
+- Why the pretty flag? rr prints JSON by default, and pretty asks for the display meant for a person.
+- Did rr split the test suite? The config defines four tasks, demo-1 to demo-4, each running one shard of the core package's tests, and lists them under demo's parallel key. rr does not split a suite on its own.
+- Is the recording trimmed? It leaves out blank lines and the progress lines printed before the complete summary.
+
 ## 13. StatGlass started as the rr monitor command.
 
 Clicks: 2
@@ -382,6 +409,36 @@ StatGlass ships a command-line tool named statglass that a coding agent can run.
 
 - How big is the CLI binary? I have not measured it. The 550 KB in the quote is the helper binary next to it.
 - Which commands does it have? guide, hosts, now, metrics, history, events, top, doctor, schema and skill.
+
+## 17. StatGlass reports this laptop's CPU history.
+
+Hidden in the default cut (`hide: true`). Remove that line from `slides/17-glass-live.mdx` to show it.
+
+Clicks: 3
+
+### What the slide shows
+
+One terminal pane above three command cards, built the same way as slide 5. The commands run in a temp directory and ask the StatGlass app running on this laptop for its CPU history and events. By default the pane plays a recording made on November 16 with statglass 0.10.0, taken while this repo's test gate was running. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live, and the readings are the laptop's own from the last half hour. If the live connection fails, the tag says so and the recording plays.
+
+The recording keeps every output line, wrapped at 92 columns. The host name is the laptop's, as the app printed it.
+
+Source: data-sources.md, Slide 17.
+
+### Say
+
+The last slide showed how the CLI talks to the app. Here I'll ask the running app about this laptop. The app has been sampling since I opened the laptop, so there is some CPU activity to inspect.
+
+**[click]** History asks for the recent CPU total. The first line gives the time range, bucket size and measurement coverage. The next reports the average and peak, including which bucket contained that peak.
+
+**[click]** The fans ramped while bun and editor processes were running. A sustained-process event records bun holding more than a core. Each event names the processes running then, so an agent can see what was active.
+
+**[click]** The history command asks for JSON, and jq selects the summary. A script gets named fields for the same readings, including the peak's bucket size. Measured fraction says how much of the window was observed.
+
+### If asked
+
+- Whose machine is that? The laptop I am presenting from. The host name is exactly what the app printed.
+- Did bun cause the fan ramp? The events list the processes running around each event. They do not show which process caused it.
+- What does the jq filter leave out? The full JSON response also holds the series. jq selects only its summary.
 
 ## 18. A Decks hook blocks AI-sounding sentences.
 

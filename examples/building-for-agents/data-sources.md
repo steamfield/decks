@@ -6,7 +6,7 @@ recorded run, a published article or a named document. This is the fact-check in
 One section per visible slide, in manifest order. A figure with no source yet carries
 `FLAG:` and the sentence that says what to confirm before presenting.
 
-Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3, 5 to 11, 13 to 16 and 18 to 20 are also kept one per file under `data/sources/`,
+Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3 and 5 to 20 are also kept one per file under `data/sources/`,
 where each stage's author wrote them; this file is the merged copy the fact-check reads.
 
 ---
@@ -94,7 +94,7 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 
 ## Slide 5: Stacks gives a failed check an exit code.
 
-Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/05-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/05-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -252,6 +252,30 @@ The diagram is a schematic; the result strip is a recording. rr was read at comm
 
 Not stated, by decision: any rr speedup; "load balanced"; automatic sharding.
 
+## Slide 12: rr runs this task across my machines.
+
+Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/12-rr-live.json`. Each command was typed into `zsh -f` on a 24-row, 104-column pseudo-terminal (`term/server/shell_pty.py`) at the repository root, against the four hosts in the root `.rr.yaml`. Escape sequences were removed and runs of blank lines collapsed; the second command keeps the final frame of rr's redrawing progress display. The text is otherwise as printed. Playback uses an 11-row, 104-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+
+| Figure | Value | Source |
+|---|---|---|
+| PANE.commands | `rr monitor --once --no-color`, `rr demo --pretty` | fixture `steps[].command`, in order and unchanged, through `data/12-rr-live.ts` |
+| RECORDING | step 1 complete; step 2 without its four leading progress lines and its blank lines | fixture `steps[].lines`, through `data/12-rr-live.ts` |
+| RECORDING.tag | Recorded 2026-11-16 · rr 0.30.0 | fixture `recorded` and `tool` |
+| Hosts in the snapshot (card 1, notes) | m1-linux, m1-mini, m4-mini, mbp; each `online` with LOCK `-` | fixture step 1, host rows |
+| Snapshot readings | CPU 4%, 13%, 9%, 37%; RAM 28%, 62%, 70%, 57%; latency 70ms, 94ms, 62ms and `-` for mbp | fixture step 1, host rows, as printed; no card or note repeats them |
+| Snapshot time | 2026-11-16T15:58:25Z | fixture step 1, last line |
+| The demo task's shards | demo-1 to demo-4 under `parallel`, each `bun run test packages/core --shard=N/4`, `fail_fast: false` | root `.rr.yaml`, `tasks.demo` and `tasks.demo-1` to `demo-4` |
+| Shard hosts and times (card 2, notes) | demo-1 on m1-linux 5.1s, demo-2 on m1-mini 7.0s, demo-3 on m4-mini 6.2s, demo-4 on mbp 2.8s | fixture step 2, Parallel Execution Summary |
+| Run totals | 4 passed, 0 failed, 4 total, 10.0s | fixture step 2 |
+| "locks the hosts and syncs the repo before running its configured subtasks" (card 2, notes) | claim | rr's parallel workflow, sourced on slide 11 (`~/Projects/rr/README.md` line 24; the `flow.ts` header). Not visible in the summary itself |
+| "The config defines the shards; rr does not split the suite automatically" (notes) | claim | root `.rr.yaml`; `~/Projects/rr/README.md` lines 234 and 264 to 271, as on slide 11 |
+| "rr prints JSON by default" (notes) | claim | `~/Projects/rr/README.md` line 104, as on slide 2 |
+| mbp is the presenter's laptop (card 0, notes) | mbp | root `.rr.yaml` comment ("mbp is this laptop"). `FLAG: author-reported` |
+| "no-color avoids rr 0.30.0 truncating coloured table cells" (notes, IF ASKED) | claim | `FLAG: author-reported` |
+| Command times in SPEAKER-GUIDE.md | about 2 s for the snapshot, about 11 s for the run | measured live on 2026-11-16, `FLAG: author-reported`. The fixture's own `ms` fields are 8,144 and 15,047 |
+
+Step 2 leaves out its four leading lines (`◉ demo-1 [m1-linux]`, `◉ demo-2 [m1-mini]`, `◉ demo-3 [m4-mini]`, `◉ demo-4 [mbp]`) and every blank line. Both separator rules and every line of the Parallel Execution Summary are kept, including the timings, the host names and the logs path. No line's text is rewritten. No speedup is calculated or claimed.
+
 ## Slide 13: StatGlass started as the rr monitor command.
 
 Beats 0 and 1 are a recording; beat 2's cards are illustrative. rr read at commit 536948d, statglass at 5db8622a (both 2026-11-13).
@@ -344,6 +368,27 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`. The session on
 | "The Stacks CLI's errors have the same tag, retryable and next fields" (notes) | | this deck's `data/code/06-stacks.ts`, `LAYER_TEST` (`packages/cli/tests/update.test.ts` in stacks) |
 
 Banned on this slide (checked): any size for the CLI's own binary (the RFC gives none and none was measured); "a compiled TypeScript binary came to about 55 MB" (the RFC's figure is an estimate of 55 to 60).
+
+## Slide 17: StatGlass reports this laptop's CPU history. (hidden)
+
+The slide has `hide: true` and is out of the default cut; its sources stay here so it can be restored. Recorded for this deck on 2026-11-16 with statglass 0.10.0 and kept in `data/fixtures/17-glass-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) with `DO_NOT_TRACK=1`, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences were removed; the text is otherwise as printed. Playback uses a 12-row, 92-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`.
+
+| Figure | Value | Source |
+|---|---|---|
+| PANE.commands | `statglass history cpu.total --since 30m`, `statglass events --since 2h`, `statglass history cpu.total --since 30m --json \| jq '.series[0].summary'` | fixture `steps[].command`, unchanged, through `data/17-glass-live.ts` |
+| RECORDING | every output line, wrapped every 92 characters | fixture `steps[].lines`, through `data/17-glass-live.ts` |
+| RECORDING.tag | Recorded 2026-11-16 · statglass 0.10.0 | fixture `recorded` and `tool` |
+| History range and coverage (card 1, notes) | 08:27 to 08:57, 10 s buckets, 100% measured | fixture step 1, line 1 |
+| History summary (notes) | min 22.9%, mean 36.8%, max 100.0% in the 10 s from 08:54:00, last 69.8% at 08:57:20 | fixture step 1, line 2 |
+| Events | 5 events, 06:57 to 08:57: `fans_ramped` at 07:21, 08:25 and 08:54; `sustained_process` for bun at 08:28 and 08:57 | fixture step 2 |
+| "bun holding more than a core" (notes) | cpu_pct=149 (secs=120) and cpu_pct=148 (secs=128) | fixture step 2, the two `sustained_process` lines |
+| Process names on the events (card 2) | bun, node, Code Helper (Renderer), Code Helper (Plugin) | fixture step 2 |
+| "bun and editor processes" (notes) | Code Helper read as the editor's helper processes | fixture step 2 process names; that Code Helper is the editor is `FLAG: author-reported` |
+| JSON summary (card 3, notes) | min 22.873037338256836, max 100.0, max_at 2026-11-16T08:54:00-06:00, max_bucket_s 10, mean 36.83559671767131, mean_approximate false, last 69.83473205566406, last_at 2026-11-16T08:57:20-06:00, measured_fraction 1.0 | fixture step 3 |
+| Host name and the test gate running during capture | the laptop's name as printed | fixture `how` and the author's capture description. `FLAG: author-reported` |
+| "The app has been sampling since I opened the laptop" (notes) | claim | `FLAG: author-reported` |
+
+All output lines are kept and wrapped at 92 characters; no line's text is rewritten and the recorded host name is preserved. The events give the processes running around each event; they do not establish what caused a fan ramp, and the notes say so.
 
 ## Slide 18: A Decks hook blocks AI-sounding sentences.
 
