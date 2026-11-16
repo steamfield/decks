@@ -240,7 +240,7 @@ Source: data-sources.md, Demo hand-offs.
 - Copy this, paste into a second Claude Code session, come back.
 - Claude picks the stack with the stacks CLI, then uses the foreman skill to run three Codex agents in parallel.
 - One builds the API, one the swipe screen, one the horse profiles and photos.
-- Claude owns the contract between them and the merge. We look at the app when it is done.
+- Claude first writes a short RFC with the endpoints and shared types, so the API and the screen are built to one spec. It owns the merge.
 
 ### If asked
 
