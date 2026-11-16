@@ -1,0 +1,37 @@
+---
+title: foreman is a short-lived CLI and a daemon.
+clicks: 3
+---
+
+{/* SLIDE 11 · FOREMAN DAEMON: the processes between Claude Code and Codex, with the source tree alongside */}
+
+<ForemanDaemonStage />
+
+<Notes>
+OPENING
+- Two processes. The CLI runs once per command and exits. The daemon supervises.
+- Daemon needed because a Codex turn lasts minutes and the starting command is long gone.
+- Daemon exits after 30 idle minutes.
+- About 9,000 lines of TypeScript, same Effect layout as Stacks (scaffolded from the typescript-cli stack).
+
+[click] CLICK 1
+- CLI talks to the daemon over a Unix socket, foreman.sock in foreman's home.
+- One line of JSON per message. Request has id and body, response repeats the id.
+- Socket missing: CLI starts the daemon and reconnects.
+- One daemon per home directory, enforced by an exclusive SQLite transaction on a guard file.
+
+[click] CLICK 2
+- Daemon starts one process, codex app-server, and speaks JSON-RPC over stdin and stdout.
+- Protocol ships in the Codex CLI. foreman's client speaks it without an SDK.
+- thread/start for a run, turn/start per turn, turn/steer to change a running turn.
+- Each run is one thread. Supervisor routes by thread id.
+
+[click] CLICK 3
+- Written against Codex 0.166.0. Its protocol is 467 JSON schema files. foreman stores a SHA-256 of them.
+- Daemon regenerates and hashes at startup. foreman doctor reports whether it matches.
+- CLI ships as a compiled binary for four platforms, bun build --compile.
+
+IF ASKED
+- Why a daemon? A held question and a running turn both outlive the command that started them.
+- How long did it take? 111 commits, November 5 to 7.
+</Notes>

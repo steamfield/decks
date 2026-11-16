@@ -1,0 +1,23 @@
+---
+title: StatGlass reports this laptop's CPU history.
+hide: true
+clicks: 3
+---
+
+import { DEMO } from "../data/21-glass-live";
+
+<LiveDemoStage demo={DEMO} />
+
+<Notes>
+SAY
+The last slide showed how the CLI talks to the app. Here I'll ask the running app about this laptop. The app has been sampling since I opened the laptop, so there is some CPU activity to inspect.
+
+[click] History asks for the recent CPU total. The first line gives the time range, bucket size and measurement coverage. The next reports the average and peak, including which bucket contained that peak.
+
+[click] The fans ramped while bun and editor processes were running. A sustained-process event records bun holding more than a core. Each event names the processes running then, so an agent can see what was active.
+
+[click] The history command asks for JSON, and jq selects the summary. A script gets named fields for the same readings, including the peak's bucket size. Measured fraction says how much of the window was observed.
+
+IF ASKED
+The host name is the presenter's laptop, exactly as the app printed it. Process names show what was running around an event; they do not establish which process caused a fan ramp. The full JSON response also contains the series; jq selects only its summary here. These recordings run when a live shell is unavailable. This slide is hidden by default; restore it when the talk has a minute to spare.
+</Notes>

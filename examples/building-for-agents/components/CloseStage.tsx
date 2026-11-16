@@ -1,7 +1,7 @@
 import { OdQrCard, StoryCover } from "@steamfield/decks/kit";
 import { BYLINE } from "../data/01-cover";
 import { countWord } from "../data/03-thread";
-import { INSTALL, PRODUCT_COUNT, SITE } from "../data/20-close";
+import { INSTALL, PRODUCT_COUNT, SITE } from "../data/24-close";
 import styles from "./CloseStage.module.css";
 import { NightDriveField } from "./NightDriveField";
 import { SfMark } from "./SfMark";

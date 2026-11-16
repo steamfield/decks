@@ -1,13 +1,13 @@
 import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
-import { SRC_FILES, SRC_LINES, TREE } from "../data/06-stacks-tour";
+import { SRC_FILES, SRC_LINES, TREE } from "../data/07-stacks-tour";
 import {
   APP_LAYER,
   ERROR_TABLE,
   HOST_SERVICE,
   LAYER_TEST,
   RUNS_COMMAND,
-} from "../data/code/06-stacks";
+} from "../data/code/07-stacks";
 import type { Excerpt } from "../data/code/types";
 import { CodePane } from "./CodePane";
 import { OFF, ON } from "./design";

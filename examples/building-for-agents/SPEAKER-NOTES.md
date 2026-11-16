@@ -2,7 +2,7 @@
 
 The full script for each slide, moved out of the slide files. The slides carry a bullet version of the same points for use on stage. Each slide has what the slide shows, the spoken script (opening, then one paragraph per click), and answers for likely questions.
 
-Section numbers follow the slide filename prefixes. The deck has 20 slide files, and slide 17 has `hide: true`, so the default cut is 19 slides. In that cut the thread plays at position 3, habits at 18 and the close at 19; OUTLINE.md section 8 gives the full mapping.
+Section numbers follow the slide filename prefixes. The deck has 20 slide files, and slide 21 has `hide: true`, so the default cut is 19 slides. In that cut the thread plays at position 3, habits at 18 and the close at 19; OUTLINE.md section 8 gives the full mapping.
 
 ## 1. Building for agents
 
@@ -66,7 +66,7 @@ These are the five tools, in the order I use them on one change. I start a proje
 
 - Where does fourteen thousand come from? It is the figure published on rr's site and in the Steamfield launch post.
 
-## 4. Stacks briefs the agent and checks its work.
+## 5. Stacks briefs the agent and checks its work.
 
 Clicks: 4
 
@@ -74,7 +74,7 @@ Clicks: 4
 
 The top half is a diagram of how Stacks works. The monitor underneath shows the verify runs of tea-dashboard, a SvelteKit project scaffolded with stacks 0.5.0 on October 29, 2026 and built by Claude Code. Times are seconds since the scaffold command. The failed run and the passing run each get their own click.
 
-Source: data-sources.md, Slide 4.
+Source: data-sources.md, Slide 5.
 
 ### Say
 
@@ -94,7 +94,7 @@ Stacks starts a project. I pick a stack, which is a Markdown recipe, and run one
 - Which agents does it start? Claude Code, Codex, OpenCode, Cursor and Copilot. When it is already running inside an agent, or in CI, it prints the prompt and starts nothing.
 - Which doc checks failed? readme-filled, agents-md-filled, claude-readme-filled and harness-doc-filled.
 
-## 5. Stacks gives a failed check an exit code.
+## 6. Stacks gives a failed check an exit code.
 
 Clicks: 3
 
@@ -104,7 +104,7 @@ One terminal pane above three command cards. Each card has a play button, and th
 
 The recording drops ten leading progress lines from the second command's output; the report text is unchanged.
 
-Source: data-sources.md, Slide 5.
+Source: data-sources.md, Slide 6.
 
 ### Say
 
@@ -122,7 +122,7 @@ Let's run those commands. This pane uses a shell when the live connection is ava
 - What does the JSON command drop? It sends stderr away from the pane and uses jq to select the four fields shown.
 - Is the recording trimmed? It drops the second command's ten leading progress lines. The report text is unchanged.
 
-## 6. The Stacks CLI is written with Effect.
+## 7. The Stacks CLI is written with Effect.
 
 Clicks: 5
 
@@ -130,7 +130,7 @@ Clicks: 5
 
 The left side is the layout of the Stacks CLI's source. The right side is code from the file named above it. A line that reads only as three dots marks lines left out.
 
-Source: data-sources.md, Slide 6.
+Source: data-sources.md, Slide 7.
 
 ### Say
 
@@ -151,7 +151,7 @@ This is the source of that CLI: 203 files and about twenty-four thousand lines o
 - Why Effect? Its errors are typed and the compiler checks its dependencies. The CLI's output is a contract with the agents that call it, and typed errors let me list every way a command can fail.
 - Which Effect? Effect 4, with the CLI module that ships inside the effect package. The published CLI runs on Node 22 or newer, and Bun builds and bundles it.
 
-## 7. Stacks output differs for people and agents.
+## 8. Stacks output differs for people and agents.
 
 Clicks: 3
 
@@ -159,7 +159,7 @@ Clicks: 3
 
 Three recordings of the same failed stacks verify, made on November 13 with stacks 0.7.0 in a scratch project that had not been built: on a terminal, with an agent marker in the environment, and with the JSON flag. The tiles on the last beat are the exit table from the CLI's output reference.
 
-Source: data/sources/07-stacks-output.md.
+Source: data/sources/08-stacks-output.md.
 
 ### Say
 
@@ -176,7 +176,7 @@ This is a failed stacks verify on my terminal. Passed steps are green and failed
 - Why not always print JSON? People run these commands too. All three formats are rendered from the same result value.
 - What exits 6? A write the CLI refuses, a failed update, or an agent passing the flag that accepts changed verify steps.
 
-## 8. foreman runs each Codex task in its own worktree.
+## 9. foreman runs each Codex task in its own worktree.
 
 Clicks: 4
 
@@ -184,7 +184,7 @@ Clicks: 4
 
 foreman's landing-page session, redrawn. Claude is on the left, the daemon's board is the monitor in the middle, and each card on the right is one Codex delegate in its worktree. The commands, file writes, question and answer come from three runs recorded on November 6 while building foreman's own site. The timeline they are spread over is shortened and scripted.
 
-Source: data/sources/08-foreman-session.md.
+Source: data/sources/09-foreman-session.md.
 
 ### Say
 
@@ -203,7 +203,7 @@ foreman is a CLI that lets Claude Code delegate coding work to Codex models. Thi
 - Does every delegate ask a question? The site-e2e run finished without one. The contract tells a delegate to ask only when it is blocked by something the contract and the repo do not settle.
 - Is the timeline real? The commands, file writes, question and answer are recorded. The timing is compressed, and the third run started 23 minutes after the first two.
 
-## 9. foreman is a short-lived CLI and a daemon.
+## 11. foreman is a short-lived CLI and a daemon.
 
 Clicks: 3
 
@@ -211,7 +211,7 @@ Clicks: 3
 
 A schematic of foreman's processes, left to right: Claude Code, the foreman CLI, a Unix socket, the daemon, one codex app-server, and a thread per run. The tree on the right is foreman's src folder, and the highlighted row is the folder that implements the lit box.
 
-Source: data/sources/09-foreman-daemon.md.
+Source: data/sources/11-foreman-daemon.md.
 
 ### Say
 
@@ -228,7 +228,7 @@ foreman has two processes of its own. The foreman CLI runs once per command and 
 - Why a daemon? A held question and a running turn both have to outlive the command that started them.
 - How long did foreman take to build? The repo has 111 commits, dated November 5 to 7.
 
-## 10. Codex waits until Claude answers its question.
+## 12. Codex waits until Claude answers its question.
 
 Clicks: 3
 
@@ -236,7 +236,7 @@ Clicks: 3
 
 A sequence diagram with four participants: Claude, a foreman wait running as a background task, the daemon, and Codex. The pane under it shows code from foreman, a different file on each beat. The two terminal lines at the lower left are the example in foreman's design doc.
 
-Source: data/sources/10-foreman-question.md.
+Source: data/sources/12-foreman-question.md.
 
 ### Say
 
@@ -252,7 +252,7 @@ A delegate asks a question by calling a tool. foreman registers one tool with Co
 
 - What if Claude is busy when the question arrives? The question stays pending in the run's question log, and foreman status lists it.
 
-## 11. rr runs each agent's tests on its own machine.
+## 13. rr runs each agent's tests on its own machine.
 
 Clicks: 7
 
@@ -262,7 +262,7 @@ The diagram is a schematic. It is the simulation of rr's lock rules from rr's ow
 
 The simulation's hosts are m4-mini, m1-linux and m1-mini. OpenData's config lists mbp, m4-mini and m1-mini and sets worktree_isolation to false, so the card on beat 5 describes rr's default.
 
-Source: data-sources.md, Slide 11.
+Source: data-sources.md, Slide 13.
 
 ### Say
 
@@ -288,17 +288,17 @@ rr is written in Go. My agents use it all day to run tests. It copies the workin
 - Is this load balancing? rr takes the first host it can lock, in config order. It does not measure load.
 - Are those your hosts? The names are the simulation's. OpenData's config lists mbp, m4-mini and m1-mini, and it sets worktree_isolation to false so all worktrees share one remote copy.
 
-## 12. rr runs this task across my machines.
+## 14. rr runs this task across my machines.
 
 Clicks: 2
 
 ### What the slide shows
 
-One terminal pane above two command cards, built the same way as slide 5. The commands run at the root of this repo against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, the laptop I present from. By default the pane plays a recording made on November 16 with rr 0.30.0. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
+One terminal pane above two command cards, built the same way as slide 6. The commands run at the root of this repo against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, the laptop I present from. By default the pane plays a recording made on November 16 with rr 0.30.0. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
 
 The recording drops the second command's four leading progress lines and its blank lines. The Parallel Execution Summary is complete and its text is unchanged.
 
-Source: data-sources.md, Slide 12.
+Source: data-sources.md, Slide 14.
 
 ### Say
 
@@ -315,7 +315,7 @@ The previous slide simulated the locks. Here are the machines configured for thi
 - Did rr split the test suite? The config defines four tasks, demo-1 to demo-4, each running one shard of the core package's tests, and lists them under demo's parallel key. rr does not split a suite on its own.
 - Is the recording trimmed? It leaves out blank lines and the progress lines printed before the complete summary.
 
-## 13. StatGlass started as the rr monitor command.
+## 16. StatGlass started as the rr monitor command.
 
 Clicks: 2
 
@@ -325,7 +325,7 @@ Beats 0 and 1 replay a recording of rr monitor snapshots for three hosts, taken 
 
 That StatGlass came from watching rr monitor is my own account, and no repo records it.
 
-Source: data-sources.md, Slide 13.
+Source: data-sources.md, Slide 16.
 
 ### Say
 
@@ -340,7 +340,7 @@ rr monitor is a terminal dashboard that ships with rr. It shows one card per hos
 - Is 30 days guaranteed? History has a size limit. When it is reached, the oldest per-process detail is removed first and the resource charts after that.
 - Does StatGlass need rr? It monitors any Apple Silicon Mac it can reach over SSH. The rr job is an extra reading on hosts that have an rr lock.
 
-## 14. Rust collects the data and TypeScript draws it.
+## 17. Rust collects the data and TypeScript draws it.
 
 Clicks: 4
 
@@ -348,7 +348,7 @@ Clicks: 4
 
 A schematic of the StatGlass repo. Rust crates are on the left, the TypeScript layers on the right, and the generated bindings file is between them. The bar is line counts at commit 5db8622a, with tests and generated code included. The chart inside the widget box uses made-up values. On beat 3 the sample reaches the widget first, and then the chart advances by one sample. The code is quoted from the files named above each pane.
 
-Source: data-sources.md, Slide 14.
+Source: data-sources.md, Slide 17.
 
 ### Say
 
@@ -367,7 +367,7 @@ StatGlass is a Tauri app, and 58 percent of its lines are Rust. The Rust crates 
 - Do the line counts include tests? Yes. Inline Rust tests, TypeScript tests and the generated bindings are all counted.
 - Are the chart values recorded? They are made-up values from cpuAt, as the chart's Illustrative tag says.
 
-## 15. The StatGlass UI also runs in a browser tab.
+## 18. The StatGlass UI also runs in a browser tab.
 
 Clicks: 1
 
@@ -375,7 +375,7 @@ Clicks: 1
 
 The left side is a schematic of the two Transport implementations. The code is the Transport interface from src/core/transport/contracts.ts, trimmed where a line reads only as three dots. On the second beat the frame holds the hosted StatGlass demo in an iframe: the real React app on its mock transport, with the multi-host scenario and simulated readings. It needs a network connection, and it loads only in the slide view. Clicking inside the frame moves keyboard focus into it, so click the slide outside the frame before pressing an arrow key.
 
-Source: data-sources.md, Slide 15.
+Source: data-sources.md, Slide 18.
 
 ### Say
 
@@ -387,7 +387,7 @@ The React code under src/app calls an interface named Transport for everything i
 
 - Is the frame live? Yes. Timeline and Hosts are in its sidebar.
 
-## 16. Agents read StatGlass history through a CLI.
+## 19. Agents read StatGlass history through a CLI.
 
 Clicks: 2
 
@@ -395,7 +395,7 @@ Clicks: 2
 
 The terminal is an illustrative session that nobody recorded. The history output and the error envelope are the exact strings the CLI's tests assert. The output of now is made-up values in the real JSON shape, wrapped at 100 columns the way a terminal would wrap it. The quote on the last beat is plan/rfc-agent-cli.md, lines 106 to 109, word for word.
 
-Source: data-sources.md, Slide 16.
+Source: data-sources.md, Slide 19.
 
 ### Say
 
@@ -410,19 +410,19 @@ StatGlass ships a command-line tool named statglass that a coding agent can run.
 - How big is the CLI binary? I have not measured it. The 550 KB in the quote is the helper binary next to it.
 - Which commands does it have? guide, hosts, now, metrics, history, events, top, doctor, schema and skill.
 
-## 17. StatGlass reports this laptop's CPU history.
+## 21. StatGlass reports this laptop's CPU history.
 
-Hidden in the default cut (`hide: true`). Remove that line from `slides/17-glass-live.mdx` to show it.
+Hidden in the default cut (`hide: true`). Remove that line from `slides/21-glass-live.mdx` to show it.
 
 Clicks: 3
 
 ### What the slide shows
 
-One terminal pane above three command cards, built the same way as slide 5. The commands run in a temp directory and ask the StatGlass app running on this laptop for its CPU history and events. By default the pane plays a recording made on November 16 with statglass 0.10.0, taken while this repo's test gate was running. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live, and the readings are the laptop's own from the last half hour. If the live connection fails, the tag says so and the recording plays.
+One terminal pane above three command cards, built the same way as slide 6. The commands run in a temp directory and ask the StatGlass app running on this laptop for its CPU history and events. By default the pane plays a recording made on November 16 with statglass 0.10.0, taken while this repo's test gate was running. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live, and the readings are the laptop's own from the last half hour. If the live connection fails, the tag says so and the recording plays.
 
 The recording keeps every output line, wrapped at 92 columns. The host name is the laptop's, as the app printed it.
 
-Source: data-sources.md, Slide 17.
+Source: data-sources.md, Slide 21.
 
 ### Say
 
@@ -440,7 +440,7 @@ The last slide showed how the CLI talks to the app. Here I'll ask the running ap
 - Did bun cause the fan ramp? The events list the processes running around each event. They do not show which process caused it.
 - What does the jq filter leave out? The full JSON response also holds the series. jq selects only its summary.
 
-## 18. A Decks hook blocks AI-sounding sentences.
+## 22. A Decks hook blocks AI-sounding sentences.
 
 Clicks: 2
 
@@ -448,7 +448,7 @@ Clicks: 2
 
 The code on the left is this slide's own source, read from the component file at build time. The terminal that replaces it replays site/fixtures/hook-denial.json: a test line sent to the write hook, and the hook's answer. The pattern counts come from the lint's pattern file and the figure count from this deck's source tables, all computed at build time.
 
-Source: data/sources/18-decks.md.
+Source: data/sources/22-decks.md.
 
 ### Say
 
@@ -462,7 +462,7 @@ Decks is the tool these slides are built with. Each slide is a React component w
 
 - Where do the patterns come from? A TSV file in the Decks package, with one regular expression per row.
 
-## 19. Each tool has some of the same six habits.
+## 23. Each tool has some of the same six habits.
 
 Clicks: 3
 
@@ -470,7 +470,7 @@ Clicks: 3
 
 Six habits down the side and the five products across the top. A cell is lit where a file in that product's repo shows the habit, and the word in the cell is the flag, field or command. Cells with no file behind them are dark.
 
-Source: data/sources/19-habits.md, one row per lit cell.
+Source: data/sources/23-habits.md, one row per lit cell.
 
 ### Say
 
@@ -486,7 +486,7 @@ This matrix lists six habits and shows which of the five tools has each one. I l
 
 - Why are some cells dark? I lit a cell only where I could point to a file. rr returns the remote command's exit code, so it has no exit table.
 
-## 20. The five tools are at steamfield.io.
+## 24. The five tools are at steamfield.io.
 
 Clicks: 0
 
@@ -494,7 +494,7 @@ Clicks: 0
 
 The cover's picture with the sun lower. It shows the site's address, the install commands for three of the tools and a QR code to steamfield.io, and it stays up during questions.
 
-Source: data/sources/20-close.md.
+Source: data/sources/24-close.md.
 
 ### Say
 

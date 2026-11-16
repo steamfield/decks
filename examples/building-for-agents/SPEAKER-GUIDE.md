@@ -17,7 +17,7 @@ bun install
 DECKS_LIVE_TERM=1 bun run decks dev agents
 ```
 
-`DECKS_LIVE_TERM=1` gives slides 5, 12 and 17 a real shell. Without it, `bun run decks dev agents` runs the same deck and the demo slides play their recordings.
+`DECKS_LIVE_TERM=1` gives slides 6, 14 and 21 a real shell. Without it, `bun run decks dev agents` runs the same deck and the demo slides play their recordings.
 
 The command prints the deck's address, normally `http://localhost:3030`. Open it in one browser window on the projector and press `f` for fullscreen. Press `p` to open the presenter window and drag it to the laptop screen. The presenter window shows the current slide, the next state, the notes with the current click marked, the position ("5 / 19"), the click count and a timer that starts at the first key press.
 
@@ -30,39 +30,39 @@ The command prints the deck's address, normally `http://localhost:3030`. Open it
 
 ## Timing
 
-Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 17 is hidden, so files 18 to 20 play as positions 17 to 19. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
+Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 21 is hidden, so files 22 to 24 play as positions 17 to 19; prefixes 04, 10, 15 and 20 are reserved. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
 
 | Position | File | Slide | Clicks | Minutes | Clock |
 |---|---|---|---|---|---|
 | 1 | 01 | Cover | 0 | 0.5 | 0.5 |
 | 2 | 02 | Two users | 2 | 1.25 | 1.75 |
 | 3 | 03 | The thread | 2 | 1.25 | 3.0 |
-| 4 | 04 | Stacks: the loop | 4 | 1.75 | 4.75 |
-| 5 | 05 | Stacks: live | 3 | 1.0 | 5.75 |
-| 6 | 06 | Stacks: the repo tour | 5 | 2.75 | 8.5 |
-| 7 | 07 | Stacks: output for people and agents | 3 | 1.5 | 10.0 |
-| 8 | 08 | foreman: the session | 4 | 2.0 | 12.0 |
-| 9 | 09 | foreman: the daemon | 3 | 1.5 | 13.5 |
-| 10 | 10 | foreman: the held question | 3 | 1.5 | 15.0 |
-| 11 | 11 | rr: host locks | 7 | 2.0 | 17.0 |
-| 12 | 12 | rr: live | 2 | 0.75 | 17.75 |
-| 13 | 13 | From rr monitor to StatGlass | 2 | 1.0 | 18.75 |
-| 14 | 14 | StatGlass: Rust and TypeScript | 4 | 2.0 | 20.75 |
-| 15 | 15 | StatGlass in a browser tab | 1 | 1.0 | 21.75 |
-| 16 | 16 | StatGlass: the agent CLI | 2 | 1.25 | 23.0 |
-| 17 | 18 | Decks | 2 | 1.25 | 24.25 |
-| 18 | 19 | Six habits | 3 | 1.5 | 25.75 |
-| 19 | 20 | Close | 0 | 0.5 | 26.25 |
+| 4 | 05 | Stacks: the loop | 4 | 1.75 | 4.75 |
+| 5 | 06 | Stacks: live | 3 | 1.0 | 5.75 |
+| 6 | 07 | Stacks: the repo tour | 5 | 2.75 | 8.5 |
+| 7 | 08 | Stacks: output for people and agents | 3 | 1.5 | 10.0 |
+| 8 | 09 | foreman: the session | 4 | 2.0 | 12.0 |
+| 9 | 11 | foreman: the daemon | 3 | 1.5 | 13.5 |
+| 10 | 12 | foreman: the held question | 3 | 1.5 | 15.0 |
+| 11 | 13 | rr: host locks | 7 | 2.0 | 17.0 |
+| 12 | 14 | rr: live | 2 | 0.75 | 17.75 |
+| 13 | 16 | From rr monitor to StatGlass | 2 | 1.0 | 18.75 |
+| 14 | 17 | StatGlass: Rust and TypeScript | 4 | 2.0 | 20.75 |
+| 15 | 18 | StatGlass in a browser tab | 1 | 1.0 | 21.75 |
+| 16 | 19 | StatGlass: the agent CLI | 2 | 1.25 | 23.0 |
+| 17 | 22 | Decks | 2 | 1.25 | 24.25 |
+| 18 | 23 | Six habits | 3 | 1.5 | 25.75 |
+| 19 | 24 | Close | 0 | 0.5 | 26.25 |
 
 Total: about 26.25 minutes, which leaves about 3.75 minutes of the 30 for the demos running slow.
 
 Clock checks:
 
-- About a third of the way: leaving slide 6 (the repo tour) at about 8.5 minutes.
-- Halfway: leaving slide 9 (the foreman daemon) at about 13.5 minutes.
-- Before the close: leaving slide 18 (six habits) at about 25.75 minutes.
+- About a third of the way: leaving slide 7 (the repo tour) at about 8.5 minutes.
+- Halfway: leaving slide 11 (the foreman daemon) at about 13.5 minutes.
+- Before the close: leaving position 18 (six habits) at about 25.75 minutes.
 
-Slides 4 and 11 gained clicks after these minutes were planned: slide 4 went from four beats to five and slide 11 from five to eight. Read at 140 words a minute, the script runs about 28 to 30 minutes, so the plan above is short by two to four minutes. Time the talk in rehearsal, adjust the clock checks, and decide beforehand which of the beats under "If you are running long" to drop.
+Slides 5 and 13 gained clicks after these minutes were planned: slide 5 went from four beats to five and slide 13 from five to eight. Read at 140 words a minute, the script runs about 28 to 30 minutes, so the plan above is short by two to four minutes. Time the talk in rehearsal, adjust the clock checks, and decide beforehand which of the beats under "If you are running long" to drop.
 
 ## The live demos
 
@@ -77,7 +77,7 @@ To recover on any demo slide:
 - A browser reload keeps the shell session.
 - If the pane plays the recording, say the recording sentence below and carry on.
 
-### Slide 5: Stacks
+### Slide 6: Stacks
 
 ```bash
 stacks new typescript-cli demo-cli --sandbox --no-launch --offline
@@ -93,7 +93,7 @@ Each command took under one and a half seconds when it was recorded.
 
 If the pane shows the recording: "This is a recording of the same three commands from November 16."
 
-### Slide 12: rr
+### Slide 14: rr
 
 ```bash
 rr monitor --once --no-color
@@ -110,7 +110,7 @@ If the pane shows the recording: "This is a recording of the same two commands f
 
 If a remote host is offline, the snapshot shows it, and the run takes longer or fails. Say what the recording would have shown: all four hosts online and unlocked, and four shards passing, one on each host, in about ten seconds. Then move on. If the LOCK column shows a command, something else is holding rr on that host, and the run will wait for it; say so and move on.
 
-### Slide 17: StatGlass (hidden)
+### Slide 21: StatGlass (hidden)
 
 This slide is out of the default cut. To use it, see "If you are running short" below.
 
@@ -134,7 +134,7 @@ If StatGlass is not running, the commands fail. Say what the recording showed: h
 
 ### Optional: foreman outside the deck
 
-A live foreman run is the one demo that leaves the deck. It is optional, comes after slide 8, takes about 3 minutes and is outside the timing above. `OUTLINE.md` section 12 has the commands. Rehearse it, because whether a delegate asks a question depends on the model. If it fails, say that slide 8 showed a recorded session and move on.
+A live foreman run is the one demo that leaves the deck. It is optional, comes after slide 9, takes about 3 minutes and is outside the timing above. `OUTLINE.md` section 12 has the commands. Rehearse it, because whether a delegate asks a question depends on the model. If it fails, say that slide 9 showed a recorded session and move on.
 
 ## Before you present
 
@@ -143,8 +143,8 @@ A live foreman run is the one demo that leaves the deck. It is optional, comes a
 - Run `rr demo --pretty` once to warm the hosts.
 - Run any `stacks` command once, so the first-run notice does not appear on stage.
 - `stacks`, `rr`, `statglass` and `jq` are on the PATH of the shell you start the deck from.
-- If slide 17 is in, StatGlass has been running for at least 30 minutes.
-- Slide 15's frame loads the hosted StatGlass demo, so the laptop needs a network connection for that beat.
+- If slide 21 is in, StatGlass has been running for at least 30 minutes.
+- Slide 18's frame loads the hosted StatGlass demo, so the laptop needs a network connection for that beat.
 - The deck is open in one audience window, with the presenter window on the laptop.
 - The projector is at the resolution you rehearsed at.
 - The PDF from `bun run decks export agents` is on a USB drive.
@@ -155,16 +155,16 @@ Four beats can go. Each slide still makes its point without the beat.
 
 | Slide | Beat | Card | How to skip |
 |---|---|---|---|
-| 6 | 3 | One function composes the layers. | It sits mid-slide: press through it with one sentence. |
-| 9 | 3 | foreman checks the Codex protocol by hash. | It is the last beat: press the down arrow from beat 2. |
-| 14 | 4 | Idle CPU was 0.67 percent of one core. | It is the last beat: press the down arrow from beat 3. |
-| 19 | 2 | Agents run in parallel and read bundled docs. | It sits mid-slide: press through it with one sentence. |
+| 7 | 3 | One function composes the layers. | It sits mid-slide: press through it with one sentence. |
+| 11 | 3 | foreman checks the Codex protocol by hash. | It is the last beat: press the down arrow from beat 2. |
+| 17 | 4 | Idle CPU was 0.67 percent of one core. | It is the last beat: press the down arrow from beat 3. |
+| 23 | 2 | Agents run in parallel and read bundled docs. | It sits mid-slide: press through it with one sentence. |
 
-Slide 17 is already hidden.
+Slide 21 is already hidden.
 
 ## If you are running short
 
-Restore slide 17 by removing the `hide: true` line from `slides/17-glass-live.mdx` before the talk. It adds four beats and about one minute, which brings the total to about 27.25 minutes. Positions after it shift by one: habits plays at 19 and the close at 20. StatGlass then has to be running, as in the checklist.
+Restore slide 21 by removing the `hide: true` line from `slides/21-glass-live.mdx` before the talk. It adds four beats and about one minute, which brings the total to about 27.25 minutes. Positions after it shift by one: habits plays at 19 and the close at 20. StatGlass then has to be running, as in the checklist.
 
 ## Where things live
 
@@ -172,6 +172,6 @@ Restore slide 17 by removing the `hide: true` line from `slides/17-glass-live.md
 |---|---|
 | Speaker notes | each slide's `<Notes>` block in `slides/*.mdx`, and `SPEAKER-NOTES.md` |
 | Every figure and its source | `data/*.ts` and `data-sources.md` |
-| The demo recordings | `data/fixtures/05-stacks-live.json`, `12-rr-live.json`, `17-glass-live.json` |
+| The demo recordings | `data/fixtures/06-stacks-live.json`, `14-rr-live.json`, `21-glass-live.json` |
 | Slide order, click counts, hidden slides | the frontmatter of each file in `slides/` |
 | The plan, timings and per-slide spec | `OUTLINE.md` |

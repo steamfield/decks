@@ -2,7 +2,7 @@
 
 The deck looks and feels like steamfield.io's hero: one CRT tube, a tape
 playing on it, and a night drive toward the Steamfield mark as a rising sun.
-Every slide is that same tube. The cover and slide 4 are the approval samples.
+Every slide is that same tube. The cover and slide 5 are the approval samples.
 
 The source is `~/Projects/steamfield/DESIGN.md` and the hero's code under
 `~/Projects/steamfield/src/scripts/night-drive/`. Where this file and that one
