@@ -4,7 +4,7 @@ import type { Handoff } from "../components/HandoffStage";
  * Authored demo handoffs, copied byte for byte from scratchpad/handoff/*.txt
  * in session 2a6690f7-c66a-42b3-8ce1-765d0c11f34e (2026-11-16).
  * The prompts specify three agents and three remote hosts; the hosts are the three
- * remote rows of `rr monitor --once` in this repo (data-sources.md, slide 14).
+ * remote rows of `rr monitor --once` in this repo (data-sources.md, slide 17).
  * Source rows to merge: data-sources.md, "Demo hand-offs".
  */
 

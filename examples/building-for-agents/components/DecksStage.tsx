@@ -9,7 +9,7 @@ import {
   SOURCED_FIGURES as FIGURES,
   PATTERN_ROWS,
   PATTERNS,
-} from "../data/22-decks";
+} from "../data/27-decks";
 import type { Excerpt } from "../data/code/types";
 import { CodePane } from "./CodePane";
 import styles from "./DecksStage.module.css";

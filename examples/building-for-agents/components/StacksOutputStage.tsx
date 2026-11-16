@@ -11,7 +11,7 @@ import {
   READ_REPORT,
   RECORDED,
   SCRIPT_LINES,
-} from "../data/08-stacks-output";
+} from "../data/09-stacks-output";
 import { ACTION_INK, DIM, FRAME, OFF, ON, PINK, QUIET, WAIT } from "./design";
 import { NamePlate } from "./NamePlate";
 import { TermPane } from "./TermPane";
