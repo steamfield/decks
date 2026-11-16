@@ -28,7 +28,7 @@ browserTest(
   "the opening caption stays visible with the screen off, including after stepping back",
   async () => {
     const { page, url } = await openDemo();
-    await page.goto(`${url}?motion=instant#/6`);
+    await page.goto(`${url}?motion=instant#/7`);
     await expect(
       page.getByRole("heading", { name: "Stacks gives a failed check an exit code." }),
     ).toBeVisible();
@@ -58,7 +58,7 @@ browserTest(
 
 browserTest("all sixteen ANSI colors remain visually distinct in the live pane", async () => {
   const { page, url } = await openDemo();
-  await page.goto(`${url}#/6?clicks=1`);
+  await page.goto(`${url}#/7?clicks=1`);
   const terminal = page.getByRole("application", { name: "Live terminal" });
   await expect(terminal.getByText("$", { exact: true })).toBeVisible();
   await terminal.click();

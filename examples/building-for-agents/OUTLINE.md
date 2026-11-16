@@ -235,29 +235,29 @@ The numbers below are filename prefixes. A hidden slide is dropped before number
 | 1 | `01-cover` / `StoryCover` + `NightDriveField` | Building for agents | | 1 | 0.5 |
 | 2 | `02-two-users` / `TwoUsersStage` | Every tool I ship has two users. | | 3 | 1.25 |
 | 3 | `03-thread` / `ThreadStage` | I ship a change with five tools I built. | | 3 | 1.25 |
-| 4 | reserved: Stacks section title | | | | |
+| 4 | `04-stacks-title` / `SectionStage` | Stacks starts a project an agent can finish. | Start | 1 | 0.25 |
 | 5 | `05-stacks-handoff` / `HandoffStage` | One prompt scaffolds a deck and writes it. | Start | 1 | 0.5 |
 | 6 | `06-stacks-loop` / `StacksLoopStage` | Stacks hands the agent a brief and a finish line. | Start | 5 | 1.75 |
 | 7 | `07-stacks-live` / `LiveDemoStage` | Stacks gives a failed check an exit code. | Start | 4 | 1.0 |
 | 8 | `08-stacks-tour` / `StacksTourStage` | An Effect CLI is commands, services and one error table. | Start | 6 | 2.75 |
 | 9 | `09-stacks-output` / `StacksOutputStage` | Stacks prints the same result three ways. | Start | 4 | 1.5 |
-| 10 | reserved: foreman section title | | | | |
+| 10 | `10-foreman-title` / `SectionStage` | foreman delegates the coding to Codex agents. | Delegate | 1 | 0.25 |
 | 11 | `11-foreman-session` / `ForemanSessionStage` | Claude delegates to Codex, one worktree per task. | Delegate | 5 | 2.0 |
 | 12 | `12-foreman-handoff` / `HandoffStage` | One prompt has three Codex agents build an app in parallel. | Delegate | 1 | 0.5 |
 | 13 | `13-foreman-daemon` / `ForemanDaemonStage` | A daemon sits between the two agents. | Delegate | 4 | 1.5 |
 | 14 | `14-foreman-question` / `ForemanQuestionStage` | A held question is an unanswered request. | Delegate | 4 | 1.5 |
-| 15 | reserved: rr section title | | | | |
+| 15 | `15-rr-title` / `SectionStage` | rr runs the tests on machines that sit idle. | Test | 1 | 0.25 |
 | 16 | `16-rr-locks` / `RrLocksStage` | rr gives every run its own machine. | Test | 8 | 2.0 |
 | 17 | `17-rr-live` / `LiveDemoStage` | rr runs this task across my machines. | Test | 3 | 0.75 |
 | 18 | `18-rr-handoff` / `HandoffStage` | One prompt shards the app's tests across three hosts. | Test | 1 | 0.5 |
-| 19 | reserved: StatGlass section title | | | | |
+| 19 | `19-statglass-title` / `SectionStage` | StatGlass shows what those machines are doing. | Watch | 1 | 0.25 |
 | 20 | `20-monitor-to-glass` / `MonitorToGlassStage` | I kept rr monitor open all day, so I built an app. | Watch | 3 | 1.0 |
 | 21 | `21-glass-boundary` / `GlassBoundaryStage` | Rust owns the data. TypeScript draws it. | Watch | 5 | 2.0 |
 | 22 | `22-glass-browser` / `GlassBrowserStage` | The whole app runs in a browser tab. | Watch | 2 | 1.0 |
 | 23 | `23-glass-cli` / `GlassCliStage` | Agents ask StatGlass what happened at 3pm. | Watch | 3 | 1.25 |
 | 24 | `24-statglass-handoff` / `HandoffStage` | An agent reads this laptop's load from StatGlass. | Watch | 1 | 0.5 |
 | 25 | `25-glass-live` / `LiveDemoStage` (hidden) | StatGlass reports this laptop's CPU history. | Watch | 4 | 1.0 |
-| 26 | reserved: Decks section title | | | | |
+| 26 | `26-decks-title` / `SectionStage` | Decks made the Horse Tinder pitch we started with. | Present | 1 | 0.75 |
 | 27 | `27-decks` / `DecksStage` | Decks rejects a sentence before it reaches a slide. | Present | 3 | 1.25 |
 | 28 | `28-habits` / `HabitsStage` | Each tool has some of the same six habits. | | 4 | 1.5 |
 | 29 | `29-close` / `CloseStage` | Start at steamfield.io. | | 1 | 0.5 |

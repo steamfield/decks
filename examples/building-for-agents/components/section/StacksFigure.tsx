@@ -29,7 +29,7 @@ export function StacksFigure({ t }: { t: number }) {
           </g>
         );
       })}
-      <Cells x={15} y={18} rows={["v".repeat(wire)]} />
+      <Cells x={15} y={18} rows={["c".repeat(wire)]} />
       <g opacity={wire === 12 ? 1 : 0}>
         <Cells x={27} y={15} rows={GATE} />
         <g opacity={passed} fill="var(--od-phosphor)">

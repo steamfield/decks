@@ -66,6 +66,20 @@ These are the five tools, in the order I use them on one change. I start a proje
 
 - Where does fourteen thousand come from? It is the figure published on rr's site and in the Steamfield launch post.
 
+## 4. Stacks starts a project an agent can finish.
+
+Clicks: 0
+
+### What the slide shows
+
+A section title: the verb Start, the name Stacks, one sentence, and a pixel-art picture of the tool that plays once on arrival. The rail marks Stacks. Nothing on it is a figure.
+
+### Say
+
+- Stacks starts a project from a Markdown stack recipe.
+- The next slides show the brief it writes and the checks the agent must pass.
+- Let the audience picture finish before advancing.
+
 ## 05. One prompt scaffolds a deck and writes it.
 
 Clicks: 0
@@ -198,6 +212,20 @@ This is a failed stacks verify on my terminal. Passed steps are green and failed
 - Why not always print JSON? People run these commands too. All three formats are rendered from the same result value.
 - What exits 6? A write the CLI refuses, a failed update, or an agent passing the flag that accepts changed verify steps.
 
+## 10. foreman delegates the coding to Codex agents.
+
+Clicks: 0
+
+### What the slide shows
+
+A section title: the verb Delegate, the name foreman, one sentence, and a pixel-art picture of the tool that plays once on arrival. The rail marks foreman. Nothing on it is a figure.
+
+### Say
+
+- foreman is a CLI that lets Claude Code delegate coding work to Codex models.
+- The next slides show the worktrees, a delegate's question and the answer that lets it continue.
+- Let the audience picture finish before advancing.
+
 ## 11. foreman runs each Codex task in its own worktree.
 
 Clicks: 4
@@ -296,6 +324,20 @@ A delegate asks a question by calling a tool. foreman registers one tool with Co
 
 - What if Claude is busy when the question arrives? The question stays pending in the run's question log, and foreman status lists it.
 
+## 15. rr runs the tests on machines that sit idle.
+
+Clicks: 0
+
+### What the slide shows
+
+A section title: the verb Test, the name rr, one sentence, and a pixel-art picture of the tool that plays once on arrival. The rail marks rr. Nothing on it is a figure.
+
+### Say
+
+- rr copies the working tree to another machine and runs the command over SSH.
+- The next slides show how host locks keep agents' test runs apart.
+- Let the audience picture finish before advancing.
+
 ## 16. rr runs each agent's tests on its own machine.
 
 Clicks: 7
@@ -383,6 +425,20 @@ Source: data-sources.md, Demo hand-offs.
 
 - The rr skill writes the repo's config and checks each host can run the tests before the first run.
 - The shards are groups the config names. rr does not split a suite on its own.
+
+## 19. StatGlass shows what those machines are doing.
+
+Clicks: 0
+
+### What the slide shows
+
+A section title: the verb Watch, the name StatGlass, one sentence, and a pixel-art picture of the tool that plays once on arrival. The rail marks StatGlass. Nothing on it is a figure.
+
+### Say
+
+- StatGlass is a menu bar app that monitors Apple Silicon Macs, locally and over SSH.
+- The next slides follow its start in rr monitor, its Rust and TypeScript boundary, and its CLI.
+- Let the audience picture finish before advancing.
 
 ## 20. StatGlass started as the rr monitor command.
 
@@ -529,6 +585,21 @@ The last slide showed how the CLI talks to the app. Here I'll ask the running ap
 - Whose machine is that? The laptop I am presenting from. The host name is exactly what the app printed.
 - Did bun cause the fan ramp? The events list the processes running around each event. They do not show which process caused it.
 - What does the jq filter leave out? The full JSON response also holds the series. jq selects only its summary.
+
+## 26. Decks made the Horse Tinder pitch we started with.
+
+Clicks: 0
+
+### What the slide shows
+
+A section title: the verb Present, the name Decks, one sentence, and a pixel-art picture of the tool that plays once on arrival. The rail marks Decks. Nothing on it is a figure.
+
+### Say
+
+- The first prompt tonight asked for an investor pitch for Horse Tinder.
+- That deck was built with Decks. Switch to the browser and show it.
+- Decks also built these slides. The next slide shows its own source and a recorded prose-hook denial.
+- Let the audience picture finish before advancing.
 
 ## 27. A Decks hook blocks AI-sounding sentences.
 

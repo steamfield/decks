@@ -30,40 +30,45 @@ The command prints the deck's address, normally `http://localhost:3030`. Open it
 
 ## Timing
 
-Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 25 is hidden, so files 01 to 24 play as positions 1 to 24 and files 26 to 29 play as positions 25 to 28. Files 05, 12, 18 and 24 are hand-off slides: one beat each, no clicks. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
+Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 25 is hidden, so files 01 to 24 play as positions 1 to 24 and files 26 to 29 play as positions 25 to 28. Files 05, 12, 18 and 24 are hand-off slides: one beat each, no clicks. Files 04, 10, 15, 19 and 26 are section title slides: no clicks, and a picture that plays once. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
 
 | Position | File | Slide | Clicks | Minutes | Clock |
 |---|---|---|---|---|---|
 | 1 | 01 | Cover | 0 | 0.5 | 0.5 |
 | 2 | 02 | Two users | 2 | 1.25 | 1.75 |
-| 3 | 03 | The thread | 2 | 1.25 | 3.0 |
-| 5 | 05 | Stacks hand-off | 0 | 0.5 | 3.5 |
-| 6 | 06 | Stacks: the loop | 4 | 1.75 | 5.25 |
-| 7 | 07 | Stacks: live | 3 | 1.0 | 6.25 |
-| 8 | 08 | Stacks: the repo tour | 5 | 2.75 | 9.0 |
-| 9 | 09 | Stacks: output for people and agents | 3 | 1.5 | 10.5 |
-| 11 | 11 | foreman: the session | 4 | 2.0 | 12.5 |
-| 12 | 12 | foreman hand-off | 0 | 0.5 | 13.0 |
-| 13 | 13 | foreman: the daemon | 3 | 1.5 | 14.5 |
-| 14 | 14 | foreman: the held question | 3 | 1.5 | 16.0 |
-| 16 | 16 | rr: host locks | 7 | 2.0 | 18.0 |
-| 17 | 17 | rr: live | 2 | 0.75 | 18.75 |
-| 18 | 18 | rr hand-off | 0 | 0.5 | 19.25 |
-| 20 | 20 | From rr monitor to StatGlass | 2 | 1.0 | 20.25 |
-| 21 | 21 | StatGlass: Rust and TypeScript | 4 | 2.0 | 22.25 |
-| 22 | 22 | StatGlass in a browser tab | 1 | 1.0 | 23.25 |
-| 23 | 23 | StatGlass: the agent CLI | 2 | 1.25 | 24.5 |
-| 24 | 24 | StatGlass hand-off | 0 | 0.5 | 25.0 |
-| 26 | 27 | Decks | 2 | 1.25 | 26.25 |
-| 27 | 28 | Six habits | 3 | 1.5 | 27.75 |
-| 28 | 29 | Close | 0 | 0.5 | 28.25 |
-Total: about 28.25 minutes, which leaves about 1.75 minutes of the 30 for the demos running slow. The four hand-off slides added 2.0 minutes to a plan that was already tight (see below), and nothing has been rehearsed against the new total.
+| 3 | 03 | The thread | 2 | 1.25 | 3 |
+| 4 | 04 | Stacks title | 0 | 0.25 | 3.25 |
+| 5 | 05 | Stacks hand-off | 0 | 0.5 | 3.75 |
+| 6 | 06 | Stacks: the loop | 4 | 1.75 | 5.5 |
+| 7 | 07 | Stacks: live | 3 | 1 | 6.5 |
+| 8 | 08 | Stacks: the repo tour | 5 | 2.75 | 9.25 |
+| 9 | 09 | Stacks: output for people and agents | 3 | 1.5 | 10.75 |
+| 10 | 10 | foreman title | 0 | 0.25 | 11 |
+| 11 | 11 | foreman: the session | 4 | 2 | 13 |
+| 12 | 12 | foreman hand-off | 0 | 0.5 | 13.5 |
+| 13 | 13 | foreman: the daemon | 3 | 1.5 | 15 |
+| 14 | 14 | foreman: the held question | 3 | 1.5 | 16.5 |
+| 15 | 15 | rr title | 0 | 0.25 | 16.75 |
+| 16 | 16 | rr: host locks | 7 | 2 | 18.75 |
+| 17 | 17 | rr: live | 2 | 0.75 | 19.5 |
+| 18 | 18 | rr hand-off | 0 | 0.5 | 20 |
+| 19 | 19 | StatGlass title | 0 | 0.25 | 20.25 |
+| 20 | 20 | From rr monitor to StatGlass | 2 | 1 | 21.25 |
+| 21 | 21 | StatGlass: Rust and TypeScript | 4 | 2 | 23.25 |
+| 22 | 22 | StatGlass in a browser tab | 1 | 1 | 24.25 |
+| 23 | 23 | StatGlass: the agent CLI | 2 | 1.25 | 25.5 |
+| 24 | 24 | StatGlass hand-off | 0 | 0.5 | 26 |
+| 25 | 26 | Decks title | 0 | 0.75 | 26.75 |
+| 26 | 27 | Decks | 2 | 1.25 | 28 |
+| 27 | 28 | Six habits | 3 | 1.5 | 29.5 |
+| 28 | 29 | Close | 0 | 0.5 | 30 |
+Total: about 30 minutes, which is the whole 30-minute slot with nothing left for the demos running slow. The four hand-off slides added 2.0 minutes and the five section title slides 1.75 (0.25 each, and 0.75 for the Decks title, where the Horse Tinder pitch is shown in the browser) to a plan that was already tight (see below). Nothing has been rehearsed against the new total.
 
 Clock checks:
 
-- About a third of the way: leaving slide 8 (the repo tour) at about 9.0 minutes.
-- Halfway: leaving slide 13 (the foreman daemon) at about 14.5 minutes.
-- Before the close: leaving position 27 (six habits) at about 27.75 minutes.
+- About a third of the way: leaving slide 8 (the repo tour) at about 9.25 minutes.
+- Halfway: leaving slide 13 (the foreman daemon) at about 15 minutes.
+- Before the close: leaving position 27 (six habits) at about 29.5 minutes.
 
 Slides 6 and 16 gained clicks after these minutes were planned: slide 6 went from four beats to five and slide 16 from five to eight. Read at 140 words a minute, the script runs about 28 to 30 minutes, so the plan above was short by two to four minutes before the hand-off slides. That estimate was not redone with them, and they add 2.0 minutes to the plan. Time the talk in rehearsal, adjust the clock checks, and decide beforehand which of the beats under "If you are running long" to drop.
 

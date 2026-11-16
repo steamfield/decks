@@ -2,7 +2,7 @@
   position: absolute;
   left: var(--sf-margin-x);
   top: calc(44.444444 * var(--sh));
-  width: calc(46 * var(--sw));
+  width: calc(48 * var(--sw));
   transform: translateY(-50%);
 }
 
@@ -30,10 +30,10 @@
 
 :global(.od-slide.is-story) .sentence {
   margin: 0;
-  max-width: calc(41 * var(--sw));
+  white-space: nowrap;
   color: var(--od-text);
   font-family: var(--sf-font-term);
-  font-size: calc(2.1875 * var(--sw) * var(--deck-text-scale, 1));
+  font-size: calc(2 * var(--sw) * var(--deck-text-scale, 1));
   line-height: 1.25;
   letter-spacing: 0.02em;
 }

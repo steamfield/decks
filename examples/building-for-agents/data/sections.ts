@@ -6,7 +6,7 @@ export const SECTIONS: Record<ProductId, string> = {
   foreman: "foreman delegates the coding to Codex agents.",
   rr: "rr runs the tests on machines that sit idle.",
   statglass: "StatGlass shows what those machines are doing.",
-  decks: "Decks turns the work into slides like these.",
+  decks: "Decks made the Horse Tinder pitch we started with.",
 };
 
 /** Illustrative cell heights, not CPU measurements: section-title contract's spike motif. */
