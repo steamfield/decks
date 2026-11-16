@@ -80,6 +80,9 @@ export function XtermHost({
         onKeyDown={(event) => event.stopPropagation()}
         onKeyUp={(event) => event.stopPropagation()}
         style={{
+          // xterm measures a glyph's width from a run of that glyph. A font with an "ff"
+          // ligature (VT323) makes "f" measure half a cell, and xterm pads every f to match.
+          fontVariantLigatures: "none",
           width: `${scale * 100}%`,
           height: `${scale * 100}%`,
           transform: `scale(${1 / scale})`,
