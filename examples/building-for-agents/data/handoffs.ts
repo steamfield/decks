@@ -12,7 +12,7 @@ export const STACKS_HANDOFF: Handoff = {
   product: "stacks",
   where: "CLAUDE CODE · VS CODE",
   kind: "prompt",
-  text: "/ce:build Timebox: 10 minutes. Don't ask me anything: skip the grill, take your recommended option for every decision, and list them as assumptions. Don't use rr: run checks directly.\n\nMake a pitch deck for Horse Tinder, a dating app for horses, in ~/demo/horse-tinder-deck.\n\n1. Scaffold it with the Stacks CLI: `stacks new decks ~/demo/horse-tinder-deck --sandbox --no-launch`. Read .stacks/BRIEF.md and follow it. You are done when `stacks verify` passes.\n2. Three slides only: a cover, the problem with one animated figure, and the ask.\n3. Use the Decks skills the scaffold installs for every headline, card and speaker note. Label any number you make up as illustrative.\n4. When verify passes, start the dev server and open the deck in my browser.\n",
+  text: "/ce:build Timebox: 10 minutes. Don't ask me anything: take your recommended option for every decision. Don't use rr.\n\nUse stacks to make a pitch deck for Horse Tinder, a dating app for horses, in ~/demo/horse-tinder-deck. Three slides, local only. Open it in my browser when it's done.\n",
 };
 
 export const FOREMAN_HANDOFF: Handoff = {

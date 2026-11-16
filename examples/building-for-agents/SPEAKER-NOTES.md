@@ -79,14 +79,14 @@ Source: data-sources.md, Demo hand-offs.
 ### Say
 
 - Copy this, switch to VS Code, paste into Claude Code, come back.
-- Stacks scaffolds a pitch deck from its decks stack. Claude writes three slides with the Decks skills.
+- The prompt names the tool and the job, nothing else. Claude finds the decks stack, and Stacks tells it what to do next.
 - It is done when stacks verify passes. We leave it running.
 - We look at the result when we reach Decks.
 
 ### If asked
 
 - The ten-minute timebox is an instruction to the agent, not a limit the tool enforces.
-- Any number on those slides is made up and labelled illustrative.
+- The prompt has no commands in it. The scaffold's brief carries the steps and the finish line.
 
 ## 5. Stacks briefs the agent and checks its work.
 
