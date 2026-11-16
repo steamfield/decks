@@ -123,6 +123,7 @@ test.skipIf(process.platform !== "darwin" || process.env.DECKS_LIVE_TERM !== "1"
             id: "real",
             busy: false,
             ran: [1],
+            queued: [],
           });
         },
         { timeout: 10_000 },

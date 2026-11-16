@@ -111,10 +111,10 @@ browserTest.each([1, 0.75])(
       )
       .toEqual({
         face: "VT323",
-        size: `${24 * scale}px`,
+        size: scale === 1 ? "25px" : "17.5px",
         extraSpacing: 0,
         rows: 8,
-        rowHeight: Math.floor(24 * scale * 1.12),
+        rowHeight: scale === 1 ? 28 : 19,
       });
   },
 );

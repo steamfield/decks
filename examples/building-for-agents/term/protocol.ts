@@ -63,6 +63,8 @@ export interface TermState {
   id: string;
   /** True from a command being sent until the shell prints its prompt marker again. */
   busy: boolean;
+  /** The clicks waiting for a prompt, in execution order. */
+  queued: readonly number[];
   /** The clicks whose commands have run in this session. */
   ran: readonly number[];
 }

@@ -8,6 +8,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import type { TermLine } from "../data/types";
 import { useLiveTerm } from "../term/client/use-live-term";
@@ -36,6 +37,15 @@ export type TermRecording =
       from: number;
       tag: string;
     };
+
+function subscribeMotion(notify: () => void) {
+  const observer = new MutationObserver(notify);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-deck-motion"],
+  });
+  return () => observer.disconnect();
+}
 
 /**
  * One terminal pane on a demo slide. It shows `recording` stepped by `click`; when the deck is
@@ -66,19 +76,13 @@ export function LiveTerm({
   const { renderContext, isActive } = useSlide();
   const { view, embedded } = useDeck();
   const scale = useFrameScale();
-  const [motion, setMotion] = useState<boolean>();
-  useLayoutEffect(() => {
-    const sync = () => setMotion(motionMode() === "live");
-    sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-deck-motion"],
-    });
-    return () => observer.disconnect();
-  }, []);
-  const audience = renderContext === "slide" && isActive && view === "play" && !embedded;
-  const eligible = audience ? motion : false;
+  const motion = useSyncExternalStore(
+    subscribeMotion,
+    () => motionMode() === "live",
+    () => false,
+  );
+  const eligible = renderContext === "slide" && isActive && view === "play" && !embedded && motion;
+  const terminalBox = useRef<HTMLDivElement>(null);
   const live = useLiveTerm(import.meta.hot, pane, eligible, click);
   const [Host, setHost] = useState<ComponentType<Parameters<typeof XtermHost>[0]>>();
   useEffect(() => {
@@ -106,7 +110,6 @@ export function LiveTerm({
       cancelled = true;
     };
   }, [live.live, live.connection, size]);
-  const terminalBox = useRef<HTMLDivElement>(null);
   const [face, setFace] = useState<{
     font: string;
     size: number;
@@ -155,9 +158,10 @@ export function LiveTerm({
     return () => observer.disconnect();
   }, [size]);
   const showingLive = live.live && Host && face && live.connection;
+  const queued = live.queued.length > 0;
   const tag = showingLive
-    ? `Live${live.busy ? " · busy" : ""}`
-    : `${recording.tag}${live.reason ? ` · live unavailable: ${live.reason}` : ""}`;
+    ? `Live${queued ? " · queued" : live.busy ? " · busy" : ""}`
+    : `${recording.tag}${queued ? " · live queued" : ""}${live.reason ? ` · live unavailable: ${live.reason}` : ""}`;
   const box = { x, y, width, height, label, tag };
   let content: ReactNode;
   if (showingLive && Host && face && live.connection) {

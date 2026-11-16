@@ -19,7 +19,7 @@ test("attach starts one shell and both early clients become ready at its first s
   expect(a.received).toEqual([
     { event: TERM_READY, data: { id: "demo", buffer: "" } },
     { event: TERM_DATA, data: { id: "demo", chunk: `${marker}$ ` } },
-    { event: TERM_STATE, data: { id: "demo", busy: false, ran: [] } },
+    { event: TERM_STATE, data: { id: "demo", busy: false, ran: [], queued: [] } },
   ]);
   expect(b.received).toEqual(a.received);
 });
@@ -37,7 +37,7 @@ test("a later attach replays the bounded buffer and state without resetting the 
   expect(shell().spec.cwd).toBe("/repository");
   expect(b.received).toEqual([
     { event: TERM_READY, data: { id: "demo", buffer: `${"λ".repeat(100 * 1024 - 2)}tail` } },
-    { event: TERM_STATE, data: { id: "demo", busy: true, ran: [1] } },
+    { event: TERM_STATE, data: { id: "demo", busy: true, ran: [1], queued: [] } },
   ]);
   shell().data("shared");
   expect(a.received.at(-1)).toEqual(b.received.at(-1));
@@ -50,7 +50,7 @@ test("a step types once and waits before its carriage return, and a prompt makes
   sessions.step("demo", 1, a.socket);
   expect(a.received.at(-1)).toEqual({
     event: TERM_STATE,
-    data: { id: "demo", busy: true, ran: [1] },
+    data: { id: "demo", busy: true, ran: [1], queued: [] },
   });
   expect(shell().writes).toEqual(["sleep 3"]);
   await vi.advanceTimersByTimeAsync(599);
@@ -62,26 +62,8 @@ test("a step types once and waits before its carriage return, and a prompt makes
   expect(shell().writes).toEqual(["sleep 3", "\r"]);
   expect(a.received.at(-1)).toEqual({
     event: TERM_STATE,
-    data: { id: "demo", busy: false, ran: [1] },
+    data: { id: "demo", busy: false, ran: [1], queued: [] },
   });
-});
-
-test("a busy step can be retried after the prompt and runs only then", () => {
-  const { sessions, shell, a } = setup();
-  sessions.attach(pane, a.socket);
-  sessions.step("demo", 1, a.socket);
-  expect(shell().writes).toEqual([]);
-  expect(a.received.at(-1)).toEqual({
-    event: TERM_STATE,
-    data: { id: "demo", busy: true, ran: [] },
-  });
-  shell().data(marker);
-  sessions.step("demo", 1, a.socket);
-  sessions.step("demo", 2, a.socket);
-  expect(shell().writes).toEqual(["sleep 3"]);
-  shell().data(marker);
-  sessions.step("demo", 2, a.socket);
-  expect(shell().writes).toEqual(["sleep 3", "echo done"]);
 });
 
 test("input reaches the shell and a detached client stops receiving output", () => {
@@ -115,7 +97,7 @@ test("reset while busy kills the old shell, forgets ran clicks and uses a new te
   shell().data(marker);
   expect(a.received.at(-1)).toEqual({
     event: TERM_STATE,
-    data: { id: "demo", busy: false, ran: [] },
+    data: { id: "demo", busy: false, ran: [], queued: [] },
   });
   expect(a.received).toEqual(b.received);
   sessions.reset("demo", b.socket);
