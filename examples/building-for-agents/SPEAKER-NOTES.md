@@ -372,8 +372,9 @@ Source: data-sources.md, Demo hand-offs.
 
 ### Say
 
-- Copy this, paste into the session that is building Horse Tinder, come back. It queues behind the build.
-- The agent adds integration tests, then sets up rr for that repo with the rr skill.
+- Copy this, paste into the session that is building Horse Tinder, come back. The build is still running.
+- The agent sets up rr for that repo with the rr skill, mid-build.
+- A hook rewrites every test command to go through rr, so the agents still working use it too.
 - Three shards, one on each remote machine. This laptop stays free.
 - It hands back the command, so I can run it again with rr monitor open.
 

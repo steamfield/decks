@@ -30,7 +30,7 @@ export const RR_HANDOFF: Handoff = {
   product: "rr",
   where: "CLAUDE CODE · SAME SESSION AS THE BUILD",
   kind: "prompt",
-  text: "When Horse Tinder is built, put its tests on rr. Don't ask me anything.\n\n1. Add integration tests for the API, following the ce:writing-tests skill, until each of three groups takes a few seconds to run.\n2. Use the rr:rr skill to set up rr for this repo: one parallel task that splits the tests into three shards, one on each of my three remote hosts.\n3. Run it. Then give me the command, so I can run it again with `rr monitor` open.\n",
+  text: "Put this repo on rr now, while the agents are still building. Don't ask me anything.\n\n1. Use the rr:rr skill to set up rr for this repo: one parallel task that splits the tests into three shards, one on each of my three remote hosts.\n2. Add a Claude Code hook that rewrites every test command to run through rr, and tell the agents still working to run their tests through rr too.\n3. Once the API exists, add integration tests for it, following the ce:writing-tests skill, until each shard takes a few seconds to run.\n4. Run it. Then give me the command, so I can run it again with `rr monitor` open.\n",
 };
 
 export const STATGLASS_HANDOFF: Handoff = {
