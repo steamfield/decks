@@ -1,14 +1,19 @@
-.stage:global(.od-slide.is-story) :global(.od-story-card) {
-  width: calc(64 * var(--lw));
-}
 .tube {
   position: absolute;
   inset: 0;
+}
+.off :global(.sf-panel-screen) {
+  opacity: var(--sf-dim);
+}
+.off :global(.sf-panel-fig) {
+  text-transform: none;
+  color: var(--od-text);
 }
 .commands {
   position: absolute;
   display: flex;
   gap: calc(1.145833 * var(--sw));
+  min-height: calc(6.4 * var(--sw));
 }
 .command {
   flex: 1;

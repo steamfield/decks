@@ -58,6 +58,8 @@ export interface TermReady {
 export interface TermData {
   id: string;
   chunk: string;
+  /** Prepared-command echo bypasses output pacing to preserve its reading pause. */
+  immediate?: boolean;
 }
 export interface TermState {
   id: string;

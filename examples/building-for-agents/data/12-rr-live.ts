@@ -5,7 +5,7 @@
  * complete Parallel Execution Summary. No retained line's text is changed.
  * FLAG: author-reported: mbp is the presenter's laptop, as noted in .rr.yaml.
  */
-import type { LiveDemo } from "../components/LiveDemoStage";
+import { type LiveDemo, paneGrid } from "../components/LiveDemoStage";
 import type { TermRecording } from "../components/LiveTerm";
 import type { TermPaneSpec } from "../term/protocol";
 import fixture from "./fixtures/12-rr-live.json";
@@ -13,17 +13,24 @@ import type { TermLine } from "./types";
 
 export const PANE: TermPaneSpec = {
   id: "rr",
-  rows: 11,
-  cols: 104,
+  rows: paneGrid(1).rows,
+  cols: paneGrid(1).cols,
   cwd: "repo",
   commands: fixture.steps.map((step) => step.command),
 };
 
 const exchanges = fixture.steps.map((step, index): TermLine[] => [
+  ...(index > 0 ? [{ text: "" }] : []),
   { text: step.command, tone: "cmd" },
   ...step.lines
     .filter((line, row) => index === 0 || (row >= 4 && line !== ""))
-    .map((text): TermLine => ({ text, tone: /passed|online/.test(text) ? "ok" : "out" })),
+    .flatMap((text): TermLine[] => {
+      const tone = /passed|online/.test(text) ? "ok" : "out";
+      return (text.match(new RegExp(`.{1,${PANE.cols}}`, "gu")) ?? [""]).map((row) => ({
+        text: row,
+        tone,
+      }));
+    }),
 ]);
 
 export const RECORDING: TermRecording = {
@@ -36,15 +43,12 @@ export const RECORDING: TermRecording = {
 export const COPY = [
   {
     lead: "These hosts include this laptop.",
-    body: "The shell queries the machines configured for this repo.",
   },
   {
-    lead: "Every host is online and unlocked.",
-    body: "The LOCK column shows that no command holds a host.",
+    lead: "The snapshot reports each host's lock.",
   },
   {
     lead: "Each shard ran on a named host.",
-    body: "The demo task locks the hosts and syncs the repo before running its configured subtasks.",
   },
 ];
 

@@ -53,10 +53,20 @@ test("a step types once and waits before its carriage return, and a prompt makes
     data: { id: "demo", busy: true, ran: [1], queued: [] },
   });
   expect(shell().writes).toEqual(["sleep 3"]);
+  shell().data("sleep 3");
+  expect(a.received.at(-1)).toEqual({
+    event: TERM_DATA,
+    data: { id: "demo", chunk: "sleep 3", immediate: true },
+  });
   await vi.advanceTimersByTimeAsync(599);
   expect(shell().writes).toEqual(["sleep 3"]);
   await vi.advanceTimersByTimeAsync(1);
   expect(shell().writes).toEqual(["sleep 3", "\r"]);
+  shell().data("\r\ndone\r\n");
+  expect(a.received.at(-1)).toEqual({
+    event: TERM_DATA,
+    data: { id: "demo", chunk: "\r\ndone\r\n" },
+  });
   shell().data(marker);
   sessions.step("demo", 1, a.socket);
   expect(shell().writes).toEqual(["sleep 3", "\r"]);

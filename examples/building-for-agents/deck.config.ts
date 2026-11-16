@@ -12,7 +12,7 @@ export default defineDeck({
       liveTerm({
         enabled: process.env.DECKS_LIVE_TERM === "1",
         dirs: { repo: fileURLToPath(new URL("../../", import.meta.url)) },
-        shell: ["zsh", "-f"],
+        shell: ["zsh", "-d"],
         promptMarker: "\u001b]133;A\u0007",
       }),
     ],

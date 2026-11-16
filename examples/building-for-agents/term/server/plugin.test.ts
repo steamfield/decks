@@ -1,7 +1,9 @@
 // Run by hand on macOS with python3: DECKS_LIVE_TERM=1 bun run test examples/building-for-agents/term/server/plugin.test.ts
 
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { createLogger, createServer } from "vite";
-import { expect, test, vi } from "vitest";
+import { expect, onTestFinished, test, vi } from "vitest";
 import { TERM_ATTACH, TERM_DATA, TERM_READY, TERM_STATE, TERM_STEP } from "../protocol";
 import { liveTerm } from "./plugin";
 
@@ -22,7 +24,7 @@ test.each([
       customLogger: logger,
       server: { host, port: 0 },
       plugins: [
-        liveTerm({ enabled, dirs: {}, shell: ["zsh", "-f"], promptMarker: "\u001b]133;A\u0007" }),
+        liveTerm({ enabled, dirs: {}, shell: ["zsh", "-d"], promptMarker: "\u001b]133;A\u0007" }),
       ],
     });
     let socket: WebSocket | undefined;
@@ -63,6 +65,15 @@ test.each([
 test.skipIf(process.platform !== "darwin" || process.env.DECKS_LIVE_TERM !== "1")(
   "a real HMR socket runs a prepared command in a real shell and returns to its prompt",
   async () => {
+    const scratch = resolve(import.meta.dirname, "../../../../.tmp");
+    await mkdir(scratch, { recursive: true });
+    const home = await mkdtemp(join(scratch, "shell-home-"));
+    await writeFile(join(home, ".zshrc"), "print PERSONAL_RC_LOADED\n");
+    vi.stubEnv("HOME", home);
+    onTestFinished(async () => {
+      vi.unstubAllEnvs();
+      await rm(home, { recursive: true, force: true });
+    });
     const server = await createServer({
       configFile: false,
       root: import.meta.dirname,
@@ -72,7 +83,7 @@ test.skipIf(process.platform !== "darwin" || process.env.DECKS_LIVE_TERM !== "1"
         liveTerm({
           enabled: true,
           dirs: {},
-          shell: ["zsh", "-f"],
+          shell: ["zsh", "-d"],
           promptMarker: "\u001b]133;A\u0007",
         }),
       ],
@@ -118,6 +129,8 @@ test.skipIf(process.platform !== "darwin" || process.env.DECKS_LIVE_TERM !== "1"
             .map((e) => e.data.chunk)
             .join("");
           expect(output).toContain("\r\ndeck-42\r\n");
+          expect(output).not.toContain("PERSONAL_RC_LOADED");
+          expect(output).toContain("\u001b[32m");
           expect(output.split("\u001b]133;A\u0007").length).toBeGreaterThanOrEqual(3);
           expect(events.filter((e) => e.event === TERM_STATE).at(-1)?.data).toEqual({
             id: "real",
