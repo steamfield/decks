@@ -1,0 +1,45 @@
+{
+  "recorded": "2026-11-16",
+  "tool": "rr 0.30.0",
+  "how": "Each command typed into zsh -f on a 24x104 pseudo-terminal (term/server/shell_pty.py) at the repository root, against the four hosts in .rr.yaml. Escape sequences removed and runs of blank lines collapsed; the second step keeps the final frame of rr's redrawing progress display. Text otherwise as printed.",
+  "steps": [
+    {
+      "command": "rr monitor --once --no-color",
+      "ms": 8144,
+      "lines": [
+        " HOST            STATUS    CPU      RAM      GPU      DISK     LATENCY    LOCK",
+        "───────────────────────────────────────────────────────────────────────────────────────────────────",
+        " m1-linux        online    4%       28%      -        74%      70ms       -",
+        " m1-mini         online    13%      62%      0%       21%      94ms       -",
+        " m4-mini         online    9%       70%      0%       41%      62ms       -",
+        " mbp             online    37%      57%      2%       7%       -          -",
+        "Snapshot at 2026-11-16T15:58:25Z"
+      ]
+    },
+    {
+      "command": "rr demo --pretty",
+      "ms": 15047,
+      "lines": [
+        "◉ demo-1 [m1-linux]",
+        "◉ demo-2 [m1-mini]",
+        "◉ demo-3 [m4-mini]",
+        "◉ demo-4 [mbp]",
+        "",
+        "────────────────────────────────────────────────────────────",
+        "",
+        "Parallel Execution Summary",
+        "",
+        "  ◉ demo-1 on m1-linux (5.1s)",
+        "  ◉ demo-2 on m1-mini (7.0s)",
+        "  ◉ demo-3 on m4-mini (6.2s)",
+        "  ◉ demo-4 on mbp (2.8s)",
+        "",
+        "  ◉ 4 passed  ✕ 0 failed  ● 4 total  (10.0s)",
+        "  Hosts: m1-linux, m1-mini, m4-mini, mbp",
+        "  Logs: /Users/riley/.rr/logs/demo-20261116-095830",
+        "",
+        "────────────────────────────────────────────────────────────"
+      ]
+    }
+  ]
+}

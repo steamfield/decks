@@ -292,3 +292,10 @@ counter-scaled xterm host and an Esc handler; holds moved off segment ends; Phas
 rail CSS, stale slide numbers and the kit.md rewrite; the terminal unit split into `demo-stage`
 and `term-bridge` behind a seam I commit first; fallback captures moved to me; the time budget
 restated at 30 to 31 minutes with slide 17 hidden by default.
+
+Slide 12 changed during the build, 2026-11-16: `rr monitor` needs about 240 columns to show
+four hosts, which is unreadable in a slide pane, so the slide is one pane that runs
+`rr monitor --once --no-color` (the four-host table) and then `rr demo --pretty`. No second
+pane and no monitor poster. `--no-color` works around rr 0.30.0 truncating coloured cells in
+that table on a terminal. Live steps that arrive before the shell is ready or while it is busy
+are held and run at the next prompt instead of being dropped.
