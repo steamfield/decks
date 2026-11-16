@@ -1,0 +1,44 @@
+{
+  "recorded": "2026-11-16",
+  "tool": "statglass 0.10.0",
+  "how": "Each command typed into zsh -f on a 24x92 pseudo-terminal (term/server/shell_pty.py), DO_NOT_TRACK=1, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences removed; text otherwise as printed.",
+  "steps": [
+    {
+      "command": "statglass history cpu.total --since 30m",
+      "ms": 8,
+      "lines": [
+        "cpu.total on Riley’s MacBook Pro, 08:27 to 08:57 (10 s buckets, 100% measured)",
+        "min 22.9%  mean 36.8%  max 100.0% in the 10 s from 08:54:00  last 69.8% at 08:57:20"
+      ]
+    },
+    {
+      "command": "statglass events --since 2h",
+      "ms": 8,
+      "lines": [
+        "5 events on Riley’s MacBook Pro, 06:57 to 08:57",
+        "07:21 (from 07:20) fans_ramped from_rpm=1419 to_rpm=2462; processes: bun, node",
+        "08:25 (from 08:24) fans_ramped from_rpm=1439 to_rpm=2504; processes: bun, Code Helper (Renderer)",
+        "08:28 (from 08:26) sustained_process cpu_pct=149 process=bun secs=120; processes: bun",
+        "08:54 (from 08:54) fans_ramped from_rpm=1449 to_rpm=2708; processes: bun, Code Helper (Plugin)",
+        "08:57 (from 08:55) sustained_process cpu_pct=148 process=bun secs=128; processes: bun"
+      ]
+    },
+    {
+      "command": "statglass history cpu.total --since 30m --json | jq '.series[0].summary'",
+      "ms": 12,
+      "lines": [
+        "{",
+        "  \"min\": 22.873037338256836,",
+        "  \"max\": 100.0,",
+        "  \"max_at\": \"2026-11-16T08:54:00-06:00\",",
+        "  \"max_bucket_s\": 10,",
+        "  \"mean\": 36.83559671767131,",
+        "  \"mean_approximate\": false,",
+        "  \"last\": 69.83473205566406,",
+        "  \"last_at\": \"2026-11-16T08:57:20-06:00\",",
+        "  \"measured_fraction\": 1.0",
+        "}"
+      ]
+    }
+  ]
+}
