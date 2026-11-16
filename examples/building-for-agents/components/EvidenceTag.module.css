@@ -25,3 +25,8 @@
 :global(.od-slide.is-story) .sf-tag:global(.is-illustrative) {
   border-style: dotted;
 }
+:global(.od-slide.is-story) .sf-tag:global(.is-live) {
+  color: var(--od-phosphor);
+  border-style: double;
+  border-width: calc(3 * var(--sf-hairline));
+}

@@ -1,0 +1,22 @@
+---
+title: Stacks gives a failed check an exit code.
+clicks: 3
+---
+
+import { DEMO } from "../data/05-stacks-live";
+
+<LiveDemoStage demo={DEMO} />
+
+<Notes>
+SAY
+Let's run those commands. This pane uses a shell when the live connection is available, and a recording of the same commands otherwise. Watch the exit code when I check the fresh project.
+
+[click] That command wrote the project and its brief. The last line is the hand-off to the agent: read the brief, carry it out, and keep running verify until it passes. I have not built anything yet.
+
+[click] Verify fails on the fresh scaffold because the work in the brief is still waiting for the agent. The final line says exit equals five. That gives a caller a result it can branch on, alongside the report.
+
+[click] Here is the same failed check through JSON. A script can read the outcome, the totals and the gate state from named fields. The terminal text and the structured output describe the same unfinished project.
+
+IF ASKED
+The second command uses zsh's pipestatus to preserve verify's exit code through tail. The JSON command keeps stderr out of the pane and uses jq to select the fields shown. The recording drops the second command's leading progress lines; the report text is unchanged.
+</Notes>
