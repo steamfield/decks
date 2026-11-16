@@ -39,7 +39,7 @@ test("an unanswered attach keeps the recording without an error", () => {
   const { connection, sent, pane } = setup();
   connection.navigate(true, 0);
   expect(sent).toEqual([{ event: TERM_ATTACH, data: { pane } }]);
-  expect(connection.getSnapshot()).toEqual({ live: false, busy: false, reason: "" });
+  expect(connection.getSnapshot()).toEqual({ live: false, busy: false, reason: "", queued: [] });
 });
 
 test("an ineligible pane never attaches, steps or accepts input", () => {
@@ -57,8 +57,8 @@ test("ready swaps to live and replays output; busy state changes the tag state",
   emit(TERM_READY, { id: "demo", buffer: "old output" });
   connection.subscribeOutput((chunk) => output.push(chunk));
   emit(TERM_DATA, { id: "demo", chunk: "new output" });
-  emit(TERM_STATE, { id: "demo", busy: true, ran: [1] });
-  expect(connection.getSnapshot()).toEqual({ live: true, busy: true, reason: "" });
+  emit(TERM_STATE, { id: "demo", busy: true, ran: [1], queued: [] });
+  expect(connection.getSnapshot()).toEqual({ live: true, busy: true, reason: "", queued: [] });
   expect(output).toEqual(["\u001bcold output", "new output"]);
   emit(TERM_READY, { id: "demo", buffer: "fresh" });
   expect(output.at(-1)).toBe("\u001bcfresh");
@@ -85,20 +85,63 @@ test("arrival at the last click sends no step, including after inactive changes"
   expect(sent).toEqual([{ event: TERM_ATTACH, data: { pane } }]);
 });
 
-test("one forward click sends one step while live, including a busy attempt for the server to reject", () => {
+test("each adjacent forward click sends one step while attached, including before readiness", () => {
   const { connection, sent, pane, emit } = setup();
   connection.navigate(true, 0);
   connection.navigate(true, 1);
   emit(TERM_READY, { id: "demo", buffer: "" });
   connection.navigate(true, 2);
   connection.navigate(true, 2);
-  emit(TERM_STATE, { id: "demo", busy: true, ran: [2] });
+  emit(TERM_STATE, { id: "demo", busy: true, ran: [2], queued: [] });
   connection.navigate(true, 3);
   expect(sent).toEqual([
     { event: TERM_ATTACH, data: { pane } },
+    { event: TERM_STEP, data: { id: "demo", click: 1 } },
     { event: TERM_STEP, data: { id: "demo", click: 2 } },
     { event: TERM_STEP, data: { id: "demo", click: 3 } },
   ]);
+});
+
+test("the queue survives readiness and backward navigation, drains with server state and clears on exit", () => {
+  const { connection, sent, pane, emit } = setup();
+  connection.navigate(true, 0);
+  connection.navigate(true, 1);
+  connection.navigate(true, 2);
+  connection.navigate(true, 3);
+  emit(TERM_STATE, { id: "demo", busy: true, ran: [], queued: [1, 2, 3] });
+  expect(connection.getSnapshot()).toEqual({
+    live: false,
+    busy: true,
+    reason: "",
+    queued: [1, 2, 3],
+  });
+  connection.navigate(true, 2);
+  expect(sent).toEqual([
+    { event: TERM_ATTACH, data: { pane } },
+    { event: TERM_STEP, data: { id: "demo", click: 1 } },
+    { event: TERM_STEP, data: { id: "demo", click: 2 } },
+    { event: TERM_STEP, data: { id: "demo", click: 3 } },
+  ]);
+  expect(connection.getSnapshot().queued).toEqual([1, 2, 3]);
+  emit(TERM_READY, { id: "demo", buffer: "" });
+  expect(connection.getSnapshot()).toEqual({
+    live: true,
+    busy: true,
+    reason: "",
+    queued: [1, 2, 3],
+  });
+  emit(TERM_STATE, { id: "demo", busy: true, ran: [1], queued: [2, 3] });
+  expect(connection.getSnapshot()).toEqual({ live: true, busy: true, reason: "", queued: [2, 3] });
+  emit(TERM_STATE, { id: "demo", busy: false, ran: [1, 2, 3], queued: [] });
+  expect(connection.getSnapshot()).toEqual({ live: true, busy: false, reason: "", queued: [] });
+  emit(TERM_STATE, { id: "demo", busy: true, ran: [], queued: [1, 2] });
+  emit(TERM_GONE, { id: "demo", reason: "Shell exited (1)" });
+  expect(connection.getSnapshot()).toEqual({
+    live: false,
+    busy: false,
+    reason: "Shell exited (1)",
+    queued: [],
+  });
 });
 
 test("observed activation at click zero attaches then resets, but a mount or reload only attaches", () => {
@@ -134,10 +177,16 @@ test("gone and a dropped socket return to the recording with a reason", () => {
     live: false,
     busy: false,
     reason: "Shell exited (1)",
+    queued: [],
   });
   emit(TERM_READY, { id: "demo", buffer: "" });
   emit("vite:ws:disconnect", {});
-  expect(connection.getSnapshot()).toEqual({ live: false, busy: false, reason: "connection lost" });
+  expect(connection.getSnapshot()).toEqual({
+    live: false,
+    busy: false,
+    reason: "connection lost",
+    queued: [],
+  });
 });
 
 test("input is sent while live and leaving the slide or unmounting detaches all handlers", () => {
@@ -149,7 +198,7 @@ test("input is sent while live and leaving the slide or unmounting detaches all 
   emit(TERM_READY, { id: "demo", buffer: "stale" });
   emit(TERM_GONE, { id: "demo", reason: "stale" });
   connection.input("ignored");
-  expect(connection.getSnapshot()).toEqual({ live: false, busy: false, reason: "" });
+  expect(connection.getSnapshot()).toEqual({ live: false, busy: false, reason: "", queued: [] });
   connection.navigate(true, 2);
   connection.detach();
   emit(TERM_READY, { id: "demo", buffer: "stale" });
@@ -168,8 +217,8 @@ test("messages for other panes never change the pane or its output", () => {
   connection.navigate(true, 0);
   emit(TERM_READY, { id: "other", buffer: "wrong" });
   emit(TERM_DATA, { id: "other", chunk: "wrong" });
-  emit(TERM_STATE, { id: "other", busy: true, ran: [1] });
+  emit(TERM_STATE, { id: "other", busy: true, ran: [1], queued: [] });
   emit(TERM_GONE, { id: "other", reason: "wrong" });
-  expect(connection.getSnapshot()).toEqual({ live: false, busy: false, reason: "" });
+  expect(connection.getSnapshot()).toEqual({ live: false, busy: false, reason: "", queued: [] });
   expect(output).toEqual(["\u001bc"]);
 });

@@ -17,7 +17,12 @@ export interface TermTransport {
 }
 
 export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
-  let snapshot = { live: false, busy: false, reason: "" };
+  let snapshot: { live: boolean; busy: boolean; reason: string; queued: readonly number[] } = {
+    live: false,
+    busy: false,
+    reason: "",
+    queued: [],
+  };
   let buffer = "";
   let active = false;
   let previous: { active: boolean; click: number } | undefined;
@@ -34,7 +39,7 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
     buffer = message.buffer;
     // RIS shares xterm's write queue, so pending old output is cleared before the replay.
     for (const receive of output) receive(`\u001bc${buffer}`);
-    update({ live: true, busy: false, reason: "" });
+    update({ ...snapshot, live: true, reason: "" });
   };
   const data = (message: unknown) => {
     if (!matches(message) || typeof message.chunk !== "string") return;
@@ -42,14 +47,25 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
     for (const receive of output) receive(message.chunk);
   };
   const state = (message: unknown) => {
-    if (matches(message) && typeof message.busy === "boolean")
-      update({ ...snapshot, busy: message.busy });
+    if (
+      matches(message) &&
+      typeof message.busy === "boolean" &&
+      Array.isArray(message.queued) &&
+      message.queued.every((click: unknown) => typeof click === "number")
+    )
+      update({
+        live: snapshot.live,
+        busy: message.busy,
+        reason: snapshot.reason,
+        queued: [...message.queued],
+      });
   };
   const gone = (message: unknown) => {
     if (matches(message) && typeof message.reason === "string")
-      update({ live: false, busy: false, reason: message.reason });
+      update({ live: false, busy: false, reason: message.reason, queued: [] });
   };
-  const disconnect = () => update({ live: false, busy: false, reason: "connection lost" });
+  const disconnect = () =>
+    update({ live: false, busy: false, reason: "connection lost", queued: [] });
   const handlers = [
     { event: TERM_READY, receive: ready },
     { event: TERM_DATA, receive: data },
@@ -61,7 +77,7 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
     if (!active) return;
     active = false;
     for (const { event, receive } of handlers) transport.off(event, receive);
-    update({ live: false, busy: false, reason: "" });
+    update({ live: false, busy: false, reason: "", queued: [] });
   };
   return {
     getSnapshot: () => snapshot,
@@ -88,9 +104,10 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
         transport.send(TERM_ATTACH, { pane });
       }
       if (before && click === 0 && (!before.active || before.click !== 0)) {
-        // Replay suppression belongs to one session; navigation back to zero starts another.
+        // Arriving at click 0, or stepping back to it, starts a clean session and drops any
+        // waiting steps. Stepping back to a later click leaves the queue alone.
         transport.send(TERM_RESET, { id: pane.id });
-      } else if (before?.active && snapshot.live && click === before.click + 1) {
+      } else if (before?.active && click === before.click + 1) {
         transport.send(TERM_STEP, { id: pane.id, click });
       }
     },
@@ -98,7 +115,7 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
       if (active && snapshot.live) transport.send(TERM_INPUT, { id: pane.id, data });
     },
     unavailable(reason: string) {
-      update({ live: false, busy: false, reason });
+      update({ live: false, busy: false, reason, queued: [] });
     },
     detach,
   };

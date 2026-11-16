@@ -2,13 +2,18 @@ import { useEffect, useMemo, useSyncExternalStore } from "react";
 import type { TermPaneSpec } from "../protocol";
 import { createConnection, type TermTransport } from "./connection";
 
-const recording = { live: false, busy: false, reason: "" };
+const recording: { live: boolean; busy: boolean; reason: string; queued: readonly number[] } = {
+  live: false,
+  busy: false,
+  reason: "",
+  queued: [],
+};
 const noop = () => () => {};
 
 export function useLiveTerm(
   transport: TermTransport | undefined,
   pane: TermPaneSpec,
-  eligible: boolean | undefined,
+  eligible: boolean,
   click: number,
 ) {
   const connection = useMemo(
@@ -21,7 +26,7 @@ export function useLiveTerm(
     () => recording,
   );
   useEffect(() => {
-    if (eligible !== undefined) connection?.navigate(eligible, click);
+    connection?.navigate(eligible, click);
   }, [connection, eligible, click]);
   useEffect(() => () => connection?.detach(), [connection]);
   return { ...state, live: eligible && state.live, connection };

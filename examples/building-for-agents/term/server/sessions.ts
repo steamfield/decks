@@ -33,17 +33,24 @@ export function createSessions(options: {
     busy: boolean;
     inputReceived: boolean;
     ran: Set<number>;
+    queued: number[];
     buffer: string;
     tail: string;
     cancel?: () => void;
   };
   const sessions = new Map<string, Session>();
-  const state = (s: Session) => ({ id: s.pane.id, busy: s.busy, ran: [...s.ran] });
+  const state = (s: Session) => ({
+    id: s.pane.id,
+    busy: s.busy,
+    ran: [...s.ran],
+    queued: [...s.queued],
+  });
   const broadcast = (s: Session, event: string, data: unknown) => {
     for (const client of s.clients) client.send(event, data);
   };
   const stop = (s: Session) => {
     sessions.delete(s.pane.id);
+    s.queued = [];
     s.cancel?.();
     s.pty?.kill();
   };
@@ -54,6 +61,18 @@ export function createSessions(options: {
     broadcast(s, TERM_GONE, { id: s.pane.id, reason });
     options.log(`${s.pane.id}: ${reason}`);
   };
+  const run = (s: Session, click: number) => {
+    const command = s.pane.commands[click - 1];
+    if (!s.pty || command === undefined) return;
+    s.busy = true;
+    s.pty.write(command);
+    s.ran.add(click);
+    broadcast(s, TERM_STATE, state(s));
+    s.cancel = options.clock.later(() => {
+      s.cancel = undefined;
+      if (sessions.get(s.pane.id) === s) s.pty?.write("\r");
+    }, 600);
+  };
   const start = (pane: TermPaneSpec, clients: Set<TermClient>) => {
     const s: Session = {
       pane,
@@ -62,6 +81,7 @@ export function createSessions(options: {
       busy: true,
       inputReceived: false,
       ran: new Set(),
+      queued: [],
       buffer: "",
       tail: "",
     };
@@ -94,8 +114,12 @@ export function createSessions(options: {
         }
         broadcast(s, TERM_DATA, { id: pane.id, chunk: printed });
         if (prompted) {
+          s.cancel?.();
+          s.cancel = undefined;
           s.busy = false;
-          broadcast(s, TERM_STATE, state(s));
+          const next = s.queued.shift();
+          if (next !== undefined) run(s, next);
+          else broadcast(s, TERM_STATE, state(s));
         }
       });
     } catch (error) {
@@ -114,25 +138,27 @@ export function createSessions(options: {
       s.clients.add(client);
       if (s.ready) {
         client.send(TERM_READY, { id: pane.id, buffer: s.buffer });
-        client.send(TERM_STATE, state(s));
       }
+      if (s.ready || s.queued.length > 0) client.send(TERM_STATE, state(s));
     },
     step(id: string, click: number, client: TermClient) {
       const s = find(id, client);
       if (!s) return;
-      const command = s.pane.commands[click - 1];
-      if (s.busy || s.ran.has(click) || command === undefined || !Number.isInteger(click)) {
+      if (
+        !Number.isInteger(click) ||
+        click < 1 ||
+        s.pane.commands[click - 1] === undefined ||
+        s.ran.has(click) ||
+        s.queued.includes(click) ||
+        (click > 1 && !s.ran.has(click - 1) && !s.queued.includes(click - 1))
+      ) {
         client.send(TERM_STATE, state(s));
         return;
       }
-      s.ran.add(click);
-      s.busy = true;
-      broadcast(s, TERM_STATE, state(s));
-      s.pty?.write(command);
-      s.cancel = options.clock.later(() => {
-        s.cancel = undefined;
-        if (sessions.get(id) === s) s.pty?.write("\r");
-      }, 600);
+      if (s.busy || !s.ready || s.queued.length > 0) {
+        s.queued.push(click);
+        broadcast(s, TERM_STATE, state(s));
+      } else run(s, click);
     },
     input(id: string, data: string, client: TermClient) {
       const s = find(id, client);
@@ -153,6 +179,8 @@ export function createSessions(options: {
       }
       stop(s);
       start(s.pane, s.clients);
+      const fresh = sessions.get(id);
+      if (fresh) broadcast(fresh, TERM_STATE, state(fresh));
     },
     detach(client: TermClient) {
       for (const s of sessions.values()) s.clients.delete(client);

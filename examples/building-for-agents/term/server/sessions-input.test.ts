@@ -3,7 +3,7 @@ import { TERM_STATE } from "../protocol";
 import { marker, pane, setup } from "./sessions.test-support";
 
 test.each(["\r", "\n"])(
-  "typed input with %j stays busy until the prompt and rejects a prepared step",
+  "typed input with %j holds a prepared step until the prompt",
   async (enter) => {
     const { sessions, shell, a, b } = setup();
     sessions.attach(pane, a.socket);
@@ -12,7 +12,7 @@ test.each(["\r", "\n"])(
     sessions.input("demo", `sleep 30${enter}`, a.socket);
     expect(a.received.at(-1)).toEqual({
       event: TERM_STATE,
-      data: { id: "demo", busy: true, ran: [] },
+      data: { id: "demo", busy: true, ran: [], queued: [] },
     });
     expect(b.received).toEqual(a.received);
     sessions.step("demo", 1, b.socket);
@@ -21,10 +21,17 @@ test.each(["\r", "\n"])(
     shell().data(marker);
     expect(a.received.at(-1)).toEqual({
       event: TERM_STATE,
-      data: { id: "demo", busy: false, ran: [] },
+      data: { id: "demo", busy: true, ran: [1], queued: [] },
     });
     sessions.step("demo", 1, a.socket);
     expect(shell().writes).toEqual([`sleep 30${enter}`, "sleep 3"]);
+    await vi.advanceTimersByTimeAsync(600);
+    shell().data(marker);
+    expect(shell().writes).toEqual([`sleep 30${enter}`, "sleep 3", "\r"]);
+    expect(a.received.at(-1)).toEqual({
+      event: TERM_STATE,
+      data: { id: "demo", busy: false, ran: [1], queued: [] },
+    });
   },
 );
 
