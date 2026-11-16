@@ -72,7 +72,7 @@ export const FIELD = {
 /** CRT frame: bezel thickness, the bezel's tag band and one scanline period. */
 export const CRT = { pad: 14, tagBand: 44, scanPeriod: 6, scanHeight: 3 } as const;
 
-/** Slide 4, the Stacks loop. */
+/** Slide 5, the Stacks loop. */
 export const LOOP = {
   boundary: { x: 664, y: 236, w: 1146, h: 318 },
   command: { x: 110, y: 342, w: 500, h: 64 },

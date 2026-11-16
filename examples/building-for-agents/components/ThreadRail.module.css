@@ -1,11 +1,11 @@
-/* ── Thread rail: the seven products, in the order work flows ── */
+/* ── Thread rail: the five products, in the order work flows ── */
 :global(.od-slide.is-story) .sf-rail {
   position: absolute;
   left: var(--sf-margin-x);
   right: var(--sf-margin-x);
   bottom: var(--sf-rail-bottom);
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border-top: var(--sf-hairline) solid var(--od-border);
 }
 :global(.od-slide.is-story) .sf-rail-item {
@@ -15,6 +15,12 @@
   gap: var(--sf-rail-gap);
   padding-top: var(--sf-rail-pad);
   opacity: var(--sf-dim);
+  /* Each station links to its product's site. The story overlay ignores the pointer. */
+  pointer-events: auto;
+  color: inherit;
+  text-decoration: none;
+  /* The kit underlines slide links with a dashed bottom border. */
+  border-bottom: none;
 }
 :global(.od-slide.is-story) .sf-rail-item:global(.is-done) {
   opacity: var(--sf-on);

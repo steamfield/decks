@@ -51,6 +51,8 @@
   --sf-full: 100%;
   --sf-on: 1;
   --sf-dim: 0.45;
+  /* Unfocused code stays readable as the same syntax theme, so it dims less. */
+  --sf-code-dim: 0.7;
   --sf-faint: 0.22;
 
   /* Radii from the site: chips, controls, cards, then the CRT bezel. */

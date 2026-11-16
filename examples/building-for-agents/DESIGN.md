@@ -2,7 +2,7 @@
 
 The deck looks and feels like steamfield.io's hero: one CRT tube, a tape
 playing on it, and a night drive toward the Steamfield mark as a rising sun.
-Every slide is that same tube. The cover and slide 4 are the approval samples.
+Every slide is that same tube. The cover and slide 5 are the approval samples.
 
 The source is `~/Projects/steamfield/DESIGN.md` and the hero's code under
 `~/Projects/steamfield/src/scripts/night-drive/`. Where this file and that one
@@ -86,7 +86,14 @@ There is no red. The sunset (yellow, orange, pink, violet, top to bottom) fills
 the mark and nothing else; its stops are `accents.sun-*` and keep the site's
 full-strength values. The hero's sky and scene colors are `accents.hero-*`, and
 the chrome title's stops are `accents.chrome-1` to `chrome-7`. Product brand
-colors are never accents.
+colors are never accents, with one exception: a product's own mark keeps its
+own colors (Riley, 2026-11-16), as the Steamfield wordmark keeps its face.
+Stacks, rr and StatGlass are drawn as their real marks on the 12 x 12 pixel
+grid: the shaded stack in three greens (`accents.stacks-*`), the braille
+spinner in its eight-dot gradient (`accents.rr-0` to `rr-7`) and the 4 x 4
+heat grid in one cyan at the mark's opacities (`accents.statglass-cell`).
+Those colors appear in the icon and its title picture and nowhere else.
+foreman and Decks keep the palette icons from the Steamfield site.
 
 ## Type
 
@@ -131,12 +138,19 @@ and switch on at a beat.
 
 ## Recurring parts
 
-- `ThreadRail`: the seven products along the bottom, under the card. Past
+- `ThreadRail`: the five products along the bottom, under the card. Past
   products at full strength, the current one with a pink marker and a yellow
   verb, the rest at the dim level. The beat rail sits below it.
 - `NamePlate`: pixel icon, Orbitron name and language chip, top right, on a
   product's first slide; `chip-only` on its later ones.
 - `SfMark`: the mark with the sunset gradient.
+- `SectionStage`: a title slide before each product's first slide, so a
+  change of tool is visible from the back of the room. It has no headline, card
+  or diagram: the verb in yellow pixel type, the name in the cover's chrome
+  title, one sentence with the pink prompt, the rail, and the product's icon
+  enlarged into a pixel-art picture of what the tool does. The picture plays
+  once on arrival, moves in whole cells, and rests as a still. It is the icon
+  set in motion, so it carries no evidence tag.
 - Boxes in a diagram use `sf-box`, wires `sf-wire`, a project boundary
   `sf-boundary`. A lit box takes `is-lit` and the `color` of its meaning.
 
@@ -155,7 +169,9 @@ and switch on at a beat.
 
 Beat motion: durations come from `DUR`, easings from `SETTLE`, `DRAW` and
 `TRACE`. Each beat changes one thing, and what a beat is no longer about drops
-to `DIM` (`--sf-dim`, 0.45). The tube's ambient layers and the live scene run
+to `DIM` (`--sf-dim`, 0.45). Code outside a pane's focus range dims less
+(`--sf-code-dim`, 0.7), so its syntax colors stay readable from the back of
+the room. The tube's ambient layers and the live scene run
 on their own clocks, never gate content, and stop under reduced motion. No
 large area changes luminance quickly: the grain is 3.5% opaque, the hum bar
 peaks at 2.5% white, and the power-on wash peaks at 6% and plays once.

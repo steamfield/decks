@@ -11,7 +11,7 @@ export function EvidenceTag({
   progress = 1,
   children,
 }: {
-  kind: "recorded" | "schematic" | "illustrative";
+  kind: "recorded" | "schematic" | "illustrative" | "live";
   x: number;
   y: number;
   align?: "left" | "right";
@@ -27,7 +27,7 @@ export function EvidenceTag({
         opacity: progress,
       }}
     >
-      {children ?? kind}
+      {children ?? (kind === "live" ? "Live" : kind)}
     </span>
   );
 }

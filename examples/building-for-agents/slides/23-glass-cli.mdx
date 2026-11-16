@@ -1,0 +1,34 @@
+---
+title: Agents read StatGlass history through a CLI.
+clicks: 2
+---
+
+{/* SLIDE 23 · GLASS CLI: an agent reads StatGlass history through the statglass CLI, and why that CLI is Rust */}
+
+<GlassCliStage />
+
+<Notes>
+OPENING
+- statglass is a CLI an agent can run. It asks the running app over a local socket.
+- Agent runs now with the all flag: latest CPU for both hosts, as JSON.
+- Then history for cpu.total on m1-linux, last three hours.
+- Text output is three lines: range and bucket size; min, mean, max, last; gaps.
+- CPU on that host hit 97 percent in the minute from 15:12.
+
+[click] CLICK 1
+- Third line: host offline 14:31 to 14:37. StatGlass stores gaps explicitly and the CLI prints each cause.
+- The command below failed because the app was busy.
+- With the json flag an error is one object: tag, message, retryable, next.
+- Same fields as the Stacks CLI's errors.
+
+[click] CLICK 2
+- This CLI is Rust. Stacks and foreman are TypeScript. The RFC gives the reasons.
+- Compiled TypeScript CLI estimated at 55 to 60 MB per architecture. The whole app is 36.
+- It would need the JIT entitlement under the hardened runtime.
+- It would repeat by hand types Rust already defines.
+- RFC defers an MCP server and says it could be a TypeScript package.
+
+IF ASKED
+- Binary size? Not measured. The 550 KB in the quote is the helper binary next to it.
+- Commands: guide, hosts, now, metrics, history, events, top, doctor, schema, skill.
+</Notes>

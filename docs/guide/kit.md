@@ -72,11 +72,11 @@ installTheme(resolveTheme(deckTheme));
 | `theme()` | Returns the active theme. Throws if none is installed. |
 | `ink(hue, step)` | One color of a ramp. `hue` is `"cyan"`, `"amber"`, `"rose"`, `"emerald"`, `"violet"` or `"slate"`; `step` is 1 to 4, darkest to lightest. |
 
-`setup.ts` runs before any component module, so a component may call `ink()` at module level, as `examples/building-for-agents/components/OpenChartStage.tsx` does:
+`setup.ts` runs before any component module, so a component may call `ink()` at module level, as `examples/opendata-pitch/components/BootstrapStage.tsx` does:
 
 ```tsx
-const DATA = ink("cyan", 2);
-const NEUTRAL = ink("slate", 1);
+const RULE_INK = ink("slate", 1);
+const DISK_WALL = ink("amber", 3);
 ```
 
 ### A deck's `theme.json`
@@ -330,15 +330,15 @@ The chart animates in when its slide is arrived at on click 0 in the play view, 
 
 The chart draws at screen size, not canvas size, so font sizes in a spec are screen pixels. Multiply them by the frame scale: `useFrameScale()` returns it, and `scaleChartTheme(theme, scale)` applies it to a chart theme's font sizes and axis spacing. `slideChartTheme` is a chart theme that reads its colors and fonts from the installed kit theme, and `slideChartAnimation` is the entrance timing for slides.
 
-Condensed from `examples/building-for-agents/components/OpenChartStage.tsx`:
+A stage that draws one chart from a module-level `SPEC`, colored with a module-level `DATA = ink("cyan", 2)`:
 
 ```tsx
 const scale = useFrameScale();
 const chartSpec = useMemo<ComponentProps<typeof OpenChart>["spec"]>(() => {
   const base = scaleChartTheme(slideChartTheme, scale);
   return {
-    ...README_SPEC,
-    data: [...README_SPEC.data],
+    ...SPEC,
+    data: [...SPEC.data],
     theme: { ...base, colors: { ...base.colors, categorical: [DATA] } },
     animation: slideChartAnimation,
   };

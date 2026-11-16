@@ -1,0 +1,77 @@
+.tube {
+  position: absolute;
+  inset: 0;
+}
+.off :global(.sf-panel-screen) {
+  opacity: var(--sf-dim);
+}
+.off :global(.sf-panel-fig) {
+  text-transform: none;
+  color: var(--od-text);
+}
+.commands {
+  position: absolute;
+  display: flex;
+  gap: calc(1.145833 * var(--sw));
+  min-height: calc(6.4 * var(--sw));
+}
+.command {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(0.7 * var(--sw));
+  padding: calc(0.8 * var(--sw));
+  border: var(--sf-hairline) solid var(--od-border-rule);
+  border-radius: var(--sf-radius-card);
+  background: var(--od-surface);
+}
+.command code {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--od-font-mono);
+  font-size: calc(1.09375 * var(--sw) * var(--deck-text-scale, 1));
+  line-height: 1.42;
+  color: var(--od-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* A flag or path moves to the next line whole; only a token wider than the card wraps inside. */
+.word {
+  display: inline-block;
+  max-width: 100%;
+}
+.waiting {
+  opacity: var(--sf-dim);
+}
+.next {
+  border-color: var(--od-amber);
+}
+.control {
+  pointer-events: auto;
+  flex: none;
+  width: calc(2.3 * var(--sw));
+  height: calc(2.3 * var(--sw));
+  border: var(--sf-hairline) solid var(--od-border-rule);
+  border-radius: var(--sf-radius-control);
+  background: var(--od-screen-black);
+  color: var(--od-text-muted);
+  font-size: calc(1.25 * var(--sw) * var(--deck-text-scale, 1));
+  cursor: default;
+  display: grid;
+  place-items: center;
+}
+.next .control {
+  color: var(--od-amber);
+  border-color: currentColor;
+  cursor: pointer;
+}
+.done .control {
+  color: var(--od-phosphor);
+  border-color: transparent;
+  background: transparent;
+}
+.control:focus-visible {
+  outline: var(--sf-marker) solid var(--od-cyan);
+  outline-offset: var(--sf-marker);
+}

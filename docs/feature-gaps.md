@@ -23,6 +23,7 @@ purpose.
 | Zoom and scale helpers ([steamfield/decks#10](https://github.com/steamfield/decks/issues/10)) | `zoom` frontmatter, `<Transform>` | Scaling one slide's content, or one block, without touching CSS. | Small |
 | PDF and images at build ([steamfield/decks#11](https://github.com/steamfield/decks/issues/11)) | Generate PDF when building, PNG export | `decks export` is planned (Phase 5). Emitting the PDF into the built site, and a per-slide PNG export, are small additions on top. | Small |
 | Open Graph image ([steamfield/decks#12](https://github.com/steamfield/decks/issues/12)) | Open Graph Image | SEO meta tags are planned with the entry plugin; generating the image from slide 1 with `shot` is the missing piece. | Small |
+| Live terminal ([RFC 0008](rfcs/0008-live-terminal.md)) | (none; `slidev-addon-liveshell` wraps ttyd and breaks in a build) | A talk about CLI tools has to leave the deck to run one. `examples/building-for-agents/term/` runs prepared commands in a real shell from the dev server, with a recording everywhere else, and is written to move into `core`, `node` and `kit` unchanged. | Medium: the code exists; the work is the config field, the kit component split and a Windows answer |
 
 ## Recipe (ecosystem, needs docs and a fixture)
 

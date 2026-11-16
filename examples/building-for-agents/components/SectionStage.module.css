@@ -1,0 +1,39 @@
+.title {
+  position: absolute;
+  left: var(--sf-margin-x);
+  top: calc(44.444444 * var(--sh));
+  width: calc(48 * var(--sw));
+  transform: translateY(-50%);
+}
+
+.verb {
+  color: var(--od-amber);
+  font-family: var(--sf-font-pixel);
+  font-size: calc(1.25 * var(--sw) * var(--deck-text-scale, 1));
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: var(--sf-fringe);
+}
+
+:global(.od-slide.is-story) .name {
+  margin: calc(2 * var(--sh)) 0 calc(2.5 * var(--sh));
+  font-size: min(calc(7.5 * var(--sw) * var(--deck-text-scale, 1)), calc(7.8 * var(--sw)));
+  line-height: var(--sf-cover-leading);
+  letter-spacing: var(--sf-cover-tracking);
+  white-space: nowrap;
+}
+
+.chrome {
+  font-family: var(--sf-font-display);
+  font-weight: var(--sf-cover-weight);
+}
+
+:global(.od-slide.is-story) .sentence {
+  margin: 0;
+  white-space: nowrap;
+  color: var(--od-text);
+  font-family: var(--sf-font-term);
+  font-size: calc(2 * var(--sw) * var(--deck-text-scale, 1));
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}

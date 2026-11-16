@@ -1,7 +1,7 @@
 /**
  * Slide 3: the thread. Sourced in data/sources/03-thread.md.
  *
- * The seven stations, their order, verbs, names, icons and language chips are
+ * The five stations, their order, verbs, names, icons and language chips are
  * data/products.ts; nothing about a product is restated here.
  *
  * OPENDATA_TESTS: the published figure, not a count made for this deck.
@@ -29,7 +29,7 @@ export const OPENDATA_TESTS = 14000;
 /** The products that get more than one slide. */
 export const FEATURED: readonly ProductId[] = ["stacks", "foreman", "statglass"];
 
-/** How many of the seven have TypeScript on their language chip. */
+/** How many of the five have TypeScript on their language chip. */
 export const TYPESCRIPT_PRODUCTS = PRODUCTS.filter((p) => p.lang.includes("TypeScript")).length;
 
 /** A language chip, split where products.ts puts a middle dot, one part per line. */

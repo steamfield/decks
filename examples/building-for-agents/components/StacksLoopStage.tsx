@@ -5,7 +5,6 @@ import {
   SETTLE,
   StoryCard,
   StoryStage,
-  stagger,
   useStage,
   xScale,
 } from "@steamfield/decks/kit";
@@ -25,7 +24,7 @@ import {
   FIRST_GREEN as recordedFirstGreen,
   STEPS,
   TIMELINE_END,
-} from "../data/04-stacks-loop";
+} from "../data/05-stacks-loop";
 import { CrtFrame } from "./CrtFrame";
 import {
   along,
@@ -64,7 +63,11 @@ const COPY = [
   },
   {
     lead: "The first verify run failed.",
-    body: `${AGENT} ran it ${FIRST_FAIL.at} seconds in and ${FIRST_FAIL.failed.length} of ${STEPS.length} steps failed. The next run passed at ${FIRST_GREEN.at} seconds.`,
+    body: `${AGENT} ran it ${FIRST_FAIL.at} seconds in and ${FIRST_FAIL.failed.length} of ${STEPS.length} steps failed.`,
+  },
+  {
+    lead: "The next verify run passed.",
+    body: `The agent fixed the failures and all ${STEPS.length} steps passed at ${FIRST_GREEN.at} seconds.`,
   },
   {
     lead: "Stacks refuses to verify edited checks.",
@@ -137,12 +140,17 @@ export function StacksLoopStage() {
     toAgent: OFF,
     agent: OFF,
     crt: OFF,
+    recordFocus: ON,
     toGate: OFF,
     cursor: OFF,
+    checks1: OFF,
     run1: OFF,
     back: OFF,
+    checks2: OFF,
     run2: OFF,
-    rest: OFF,
+    rest: ON,
+    agentFocus: DIM,
+    gateFocus: DIM,
     lock: OFF,
     digest: OFF,
   });
@@ -150,41 +158,49 @@ export function StacksLoopStage() {
     copy: COPY,
     enter: (tl) => {
       tl.to(s, { frame: ON, duration: DUR.grow, ease: SETTLE });
-      tl.to(s, { cmd: ON, duration: DUR.scale, ease: "none" }, `-=${DUR.card}`);
-      tl.to(s, { files: ON, duration: DUR.grow, ease: SETTLE });
+      tl.to(s, { cmd: ON, duration: DUR.trace, ease: "none" }, `-=${DUR.card}`);
+      tl.to(s, { files: ON, duration: DUR.gather, ease: "none" });
     },
     beats: (tl, beat) => {
       beat(0);
-      tl.to(s, { prompt: ON, duration: DUR.card, ease: SETTLE });
-      tl.to(s, { toAgent: ON, duration: DUR.grow, ease: DRAW });
-      tl.to(s, { agent: ON, duration: DUR.color, ease: SETTLE }, `-=${DUR.opacity}`);
+      tl.to(s, { rest: DIM, prompt: ON, agentFocus: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { toAgent: ON, duration: DUR.gather, ease: DRAW });
+      tl.to(s, { agent: ON, duration: DUR.color, ease: SETTLE });
       beat(1);
 
-      tl.to(s, { crt: ON, duration: DUR.card, ease: SETTLE });
-      tl.to(s, { toGate: ON, duration: DUR.scale, ease: DRAW });
-      tl.to(s, { cursor: FIRST_FAIL.at, duration: DUR.scale, ease: DRAW }, "<");
-      tl.to(s, { run1: ON, duration: DUR.color, ease: SETTLE });
-      tl.to(s, { back: ON, duration: DUR.grow, ease: DRAW }, `+=${DUR.eraseDelay}`);
-      tl.to(s, { cursor: FIRST_GREEN.at, duration: DUR.grow, ease: DRAW }, "<");
-      tl.to(s, { run2: ON, duration: DUR.color, ease: SETTLE });
+      tl.to(s, { crt: ON, gateFocus: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { toGate: ON, cursor: FIRST_FAIL.at, duration: DUR.gather, ease: DRAW });
+      tl.to(s, { checks1: ON, duration: DUR.gather, ease: "none" }, "<");
+      tl.to(s, { run1: ON, duration: DUR.morph, ease: SETTLE }, `+=${DUR.eraseHold}`);
+      // The return is secondary to the verdict; keep this beat below four seconds.
+      tl.to(s, { back: ON, duration: DUR.scale, ease: DRAW });
       beat(2);
 
-      tl.to(s, { rest: ON, duration: DUR.color, ease: SETTLE });
-      tl.to(s, { lock: ON, duration: DUR.card, ease: SETTLE }, "<");
-      tl.to(s, { digest: ON, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { agent: OFF, duration: DUR.card, ease: SETTLE });
+      tl.to(s, {
+        agent: ON,
+        toGate: ON + ON,
+        cursor: FIRST_GREEN.at,
+        duration: DUR.gather,
+        ease: DRAW,
+      });
+      tl.to(s, { checks2: ON, duration: DUR.gather, ease: "none" }, "<");
+      tl.to(s, { run2: ON, duration: DUR.morph, ease: SETTLE }, `+=${DUR.eraseHold}`);
       beat(3);
+
+      tl.to(s, { agentFocus: DIM, recordFocus: DIM, duration: DUR.card, ease: SETTLE });
+      tl.to(s, { lock: ON, duration: DUR.morph, ease: SETTLE }, `+=${DUR.eraseHold}`);
+      tl.to(s, { digest: ON, duration: DUR.card, ease: SETTLE });
+      beat(4);
     },
   });
   const typed = COMMAND.slice(0, Math.round(s.cmd * COMMAND.length));
-  const fileProgress = (i: number) => stagger(s.files, i, files.length, 0.18);
-  const rest = ON - s.rest * (ON - DIM);
-  const gateInk = s.run2 > 0.5 ? GREEN : s.run1 > 0.5 ? PINK : NEUTRAL;
-  const gateStatus =
-    s.run2 > 0.5
-      ? `green · ${STEPS.length} of ${STEPS.length}`
-      : s.run1 > 0.5
-        ? `${FIRST_FAIL.failed.length} of ${STEPS.length} failed`
-        : `${STEPS.length} steps`;
+  const fileProgress = (i: number) => clamp01(s.files * files.length - i);
+  const rest = s.rest;
+  const retry = clamp01(s.checks2 * STEPS.length);
+  const failedVerdict = s.run1 * (ON - retry);
+  const gateInk = `color-mix(in srgb, ${GREEN} ${s.run2 * 100}%, color-mix(in srgb, ${PINK} ${failedVerdict * 100}%, ${NEUTRAL}))`;
+  const docFailures = FIRST_FAIL.failed.filter((name) => name !== "lint").length;
   const tickProgress = (at: number) => (at === 0 ? ON : clamp01((s.cursor - at + 30) / 30));
 
   return (
@@ -241,7 +257,7 @@ export function StacksLoopStage() {
             <g
               key={f.name}
               style={{
-                opacity: fileProgress(i) * (f.manifest ? ON : rest),
+                opacity: fileProgress(i) * (f.manifest ? Math.max(rest, s.lock) : rest),
                 transform: `translate(0, ${(ON - fileProgress(i)) * -16}px)`,
                 color: WAIT,
               }}
@@ -264,7 +280,7 @@ export function StacksLoopStage() {
           </g>
           <g
             style={{
-              opacity: s.prompt * rest,
+              opacity: s.prompt * (ON - s.crt * (ON - DIM)),
               transform: `translate(0, ${(ON - s.prompt) * 12}px)`,
             }}
           >
@@ -283,7 +299,7 @@ export function StacksLoopStage() {
               {HANDOFF_PROMPT[1]}
             </text>
           </g>
-          <g style={{ opacity: s.frame * rest, color: PINK }}>
+          <g style={{ opacity: s.frame * s.agentFocus, color: PINK }}>
             <rect
               className={`sf-box${s.agent > 0.5 ? " is-lit" : ""}`}
               x={agent.x}
@@ -308,7 +324,7 @@ export function StacksLoopStage() {
               builds the project
             </text>
           </g>
-          <g style={{ opacity: s.frame, color: gateInk }}>
+          <g style={{ opacity: s.frame * s.gateFocus, color: gateInk }}>
             <rect
               className={`sf-box${s.run1 > 0.5 ? " is-lit" : ""}`}
               x={gate.x}
@@ -319,7 +335,7 @@ export function StacksLoopStage() {
             <text className="sf-mono" x={gate.x + 22} y={gate.y + 40}>
               stacks verify
             </text>
-            {squares.map((sq) => (
+            {squares.map((sq, i) => (
               <g key={sq.name}>
                 <rect
                   x={sq.x}
@@ -337,7 +353,7 @@ export function StacksLoopStage() {
                   height={step.size}
                   rx="2"
                   fill={sq.failed ? PINK : GREEN}
-                  style={{ opacity: s.run1 * (ON - s.run2) }}
+                  style={{ opacity: clamp01(s.checks1 * STEPS.length - i) * (ON - retry) }}
                 />
                 <rect
                   x={sq.x}
@@ -346,17 +362,35 @@ export function StacksLoopStage() {
                   height={step.size}
                   rx="2"
                   fill={GREEN}
-                  style={{ opacity: s.run2 }}
+                  style={{ opacity: clamp01(s.checks2 * STEPS.length - i) }}
                 />
               </g>
+            ))}
+            {[
+              { text: `${STEPS.length} steps`, opacity: ON - Math.max(failedVerdict, s.run2) },
+              {
+                text: `${FIRST_FAIL.failed.length} of ${STEPS.length} failed`,
+                opacity: failedVerdict,
+              },
+              { text: `green · ${STEPS.length} of ${STEPS.length}`, opacity: s.run2 },
+            ].map((status) => (
+              <text
+                key={status.text}
+                className="sf-mono is-small"
+                x={gate.x + 22}
+                y={gate.y + gate.h + 28}
+                style={{ fill: gateInk, opacity: status.opacity }}
+              >
+                {status.text}
+              </text>
             ))}
             <text
               className="sf-mono is-small"
               x={gate.x + 22}
-              y={gate.y + gate.h + 28}
-              style={{ fill: gateInk }}
+              y={gate.y + gate.h + 54}
+              style={{ fill: PINK, opacity: failedVerdict }}
             >
-              {gateStatus}
+              lint + {docFailures} doc checks
             </text>
           </g>
           <g style={{ opacity: s.lock, color: WAIT }}>
@@ -388,7 +422,7 @@ export function StacksLoopStage() {
             </text>
           </g>
           <circle r={LOOP.packet} fill={PINK} {...packet(TO_AGENT, s.toAgent)} />
-          <circle r={LOOP.packet} fill={DATA} {...packet(TO_GATE, s.toGate)} />
+          <circle r={LOOP.packet} fill={DATA} {...packet(TO_GATE, s.toGate % ON)} />
           <circle r={LOOP.packet} fill={PINK} {...packet(BACK, s.back)} />
           <CrtFrame
             x={crt.x}
@@ -398,7 +432,7 @@ export function StacksLoopStage() {
             fig="Fig. 2"
             tag={`Recorded ${RECORDED} · stacks ${CLI} · .stacks/state/runs.jsonl`}
             progress={s.frame}
-            power={s.crt}
+            power={s.crt * s.recordFocus}
           >
             <text className="sf-pixel is-small" x={axis.x0} y={crt.y + 62}>
               Seconds since stacks new

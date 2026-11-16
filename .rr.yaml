@@ -2,7 +2,9 @@ version: 1
 
 # Remote test runs for the framework. `rr <task> --repeat N` spreads
 # N runs across the hosts, which is how intermittent failures are hunted.
-hosts: [m4-mini, m1-mini, m1-linux]
+# mbp is this laptop (a local host in ~/.rr/config.yaml). It is last because rr takes the
+# first host it can lock, in this order, so gates still land on the minis.
+hosts: [m4-mini, m1-mini, m1-linux, mbp]
 
 require: [bun, node]
 
@@ -44,3 +46,18 @@ tasks:
   rd-check:
     description: The react-decks gate (lint, typecheck, tests, browser tests).
     run: bun run playwright install chromium && bun run check
+
+  # The live rr demo in examples/building-for-agents: one run fanned out over all four hosts.
+  demo:
+    description: The core package tests in four shards, one per host (the live demo in the agents talk).
+    parallel: [demo-1, demo-2, demo-3, demo-4]
+    fail_fast: false
+
+  demo-1:
+    run: bun run test packages/core --shard=1/4
+  demo-2:
+    run: bun run test packages/core --shard=2/4
+  demo-3:
+    run: bun run test packages/core --shard=3/4
+  demo-4:
+    run: bun run test packages/core --shard=4/4

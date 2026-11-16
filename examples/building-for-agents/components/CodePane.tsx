@@ -81,10 +81,13 @@ export function CodePane({
           const n = i + 1;
           const lit = ranges.length === 0 || ranges.some(([a, b]) => n >= a && n <= b);
           let offset = 0;
+          // A line too long for the pane wraps under itself, two columns past its own indent.
+          const hang = `${line.length - line.trimStart().length + 2}ch`;
           return (
             <span
               key={n}
               className={`sf-code-line ${styles["sf-code-line"]}${lit ? "" : " is-cold"}`}
+              style={{ paddingLeft: hang, textIndent: `-${hang}` }}
             >
               {tokenizeLine(line, source.lang).map((token) => {
                 const start = offset;
@@ -98,7 +101,6 @@ export function CodePane({
                   </span>
                 );
               })}
-              {"\n"}
             </span>
           );
         })}

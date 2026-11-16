@@ -14,3 +14,90 @@
 :global(.od-slide.is-story) .sf-px-w {
   fill: var(--od-text);
 }
+/* The Stacks mark keeps its own three greens: it is that product's logo. */
+:global(.od-slide.is-story) .sf-px-t {
+  fill: var(--od-stacks-top);
+}
+:global(.od-slide.is-story) .sf-px-l {
+  fill: var(--od-stacks-left);
+}
+:global(.od-slide.is-story) .sf-px-r {
+  fill: var(--od-stacks-right);
+}
+/* rr's mark keeps its spinner gradient, and StatGlass's its cyan at the mark's opacities. */
+:global(.od-slide.is-story) .sf-px-0 {
+  fill: var(--od-rr-0);
+}
+:global(.od-slide.is-story) .sf-px-1 {
+  fill: var(--od-rr-1);
+}
+:global(.od-slide.is-story) .sf-px-2 {
+  fill: var(--od-rr-2);
+}
+:global(.od-slide.is-story) .sf-px-3 {
+  fill: var(--od-rr-3);
+}
+:global(.od-slide.is-story) .sf-px-4 {
+  fill: var(--od-rr-4);
+}
+:global(.od-slide.is-story) .sf-px-5 {
+  fill: var(--od-rr-5);
+}
+:global(.od-slide.is-story) .sf-px-6 {
+  fill: var(--od-rr-6);
+}
+:global(.od-slide.is-story) .sf-px-7 {
+  fill: var(--od-rr-7);
+}
+:global(.od-slide.is-story) .sf-px-A {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.36;
+}
+:global(.od-slide.is-story) .sf-px-B {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.4;
+}
+:global(.od-slide.is-story) .sf-px-C {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.44;
+}
+:global(.od-slide.is-story) .sf-px-D {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.48;
+}
+:global(.od-slide.is-story) .sf-px-E {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.52;
+}
+:global(.od-slide.is-story) .sf-px-F {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.56;
+}
+:global(.od-slide.is-story) .sf-px-G {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.6;
+}
+:global(.od-slide.is-story) .sf-px-H {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.64;
+}
+:global(.od-slide.is-story) .sf-px-I {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.68;
+}
+:global(.od-slide.is-story) .sf-px-J {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.76;
+}
+:global(.od-slide.is-story) .sf-px-K {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.84;
+}
+:global(.od-slide.is-story) .sf-px-L {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 0.88;
+}
+:global(.od-slide.is-story) .sf-px-M {
+  fill: var(--od-statglass-cell);
+  fill-opacity: 1;
+}

@@ -29,7 +29,7 @@ const COPY = [
   },
   {
     lead: `${countWord(TYPESCRIPT_PRODUCTS)} of the ${countWord(PRODUCTS.length).toLowerCase()} use TypeScript.`,
-    body: "rr is Go. StatGlass samples the system in Rust, and OpenData’s engine is Python.",
+    body: "rr is Go, and StatGlass samples the system in Rust and draws its interface in TypeScript.",
   },
   {
     lead: `${countWord(FEATURED.length)} get several slides tonight.`,
@@ -155,7 +155,9 @@ export function ThreadStage() {
       }
       overlay={
         <>
-          <h2 className="od-story-head">I ship a change with seven tools I built.</h2>
+          <h2 className="od-story-head">
+            I ship a change with {countWord(PRODUCTS.length).toLowerCase()} tools I built.
+          </h2>
           <EvidenceTag
             kind="schematic"
             x={FRAME.right}

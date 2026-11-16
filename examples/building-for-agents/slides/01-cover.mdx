@@ -3,6 +3,8 @@ title: Building for agents
 ---
 import { StoryCover } from '@steamfield/decks/kit'
 import { BYLINE, RIDGE_WINDOW } from '../data/01-cover'
+import { countWord } from '../data/03-thread'
+import { PRODUCTS } from '../data/products'
 import { NightDriveField } from '../components/NightDriveField'
 import { SfMark } from '../components/SfMark'
 
@@ -15,15 +17,15 @@ export const since = new Date(`${RIDGE_WINDOW.start}T00:00:00Z`).toLocaleDateStr
   field={<NightDriveField />}
   head={<div className="sf-cover-head od-enter-a"><span className="sf-wordmark"><SfMark className="sf-wordmark-mark" />steamfield</span><span className="sf-cover-nav"><span>{BYLINE.event}</span><span>{month}</span></span></div>}
   title={<><span className="sf-chrome">Building for agents</span><span className="sf-script">in TypeScript</span></>}
-  lede={<><span className="sf-prompt">❯</span> Seven tools I built for working with coding agents.</>}
+  lede={<><span className="sf-prompt">❯</span> {countWord(PRODUCTS.length)} tools I built for working with coding agents.</>}
   byline={<><span className="sf-fig"><span className="sf-fig-no">Fig. 1</span> The mountains are commits per day across {RIDGE_WINDOW.repos} product repositories since {since}, as a seven-day average peaking at {RIDGE_WINDOW.peakPerDay} a day. The sun is the Steamfield mark. Source: git history.</span><span className="sf-cover-by"><span>{BYLINE.speaker}</span><span className="is-alt">{BYLINE.studio}</span></span></>}
 />
 
 <Notes>
 OPENING
 - I'm Riley. I run Steamfield, a studio that builds its own products and takes no client work.
-- Each product started as a tool I needed for my own work. I use all seven every day.
-- Tonight: seven of them, mostly TypeScript.
+- Each product started as a tool I needed for my own work. I use all five every day.
+- Tonight: five of them, mostly TypeScript.
 - Coding agents run some of them more than I do, and that changed how I build CLIs.
 
 IF ASKED

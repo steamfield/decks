@@ -31,10 +31,12 @@
   overflow-wrap: anywhere;
 }
 .sf-code-line {
+  display: block;
+  min-height: 1lh;
   transition: opacity var(--od-dur-card) var(--od-settle);
 }
 .sf-code-line:global(.is-cold) {
-  opacity: var(--sf-dim);
+  opacity: var(--sf-code-dim);
 }
 .sf-tok-keyword {
   color: var(--od-pink);

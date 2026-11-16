@@ -1,13 +1,13 @@
 import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
-import { SRC_FILES, SRC_LINES, TREE } from "../data/05-stacks-tour";
+import { SRC_FILES, SRC_LINES, TREE } from "../data/08-stacks-tour";
 import {
   APP_LAYER,
   ERROR_TABLE,
   HOST_SERVICE,
   LAYER_TEST,
   RUNS_COMMAND,
-} from "../data/code/05-stacks";
+} from "../data/code/08-stacks";
 import type { Excerpt } from "../data/code/types";
 import { CodePane } from "./CodePane";
 import { OFF, ON } from "./design";
@@ -107,7 +107,13 @@ export function StacksTourStage() {
             root={root}
           />
           {step.excerpt && (
-            <CodePane excerpt={step.excerpt} focus={step.lines} progress={s.code} {...CODE_BOX} />
+            <CodePane
+              excerpt={step.excerpt}
+              focus={step.lines}
+              progress={s.code}
+              size={21}
+              {...CODE_BOX}
+            />
           )}
           <ThreadRail current="stacks" />
         </>
