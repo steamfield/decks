@@ -2,6 +2,12 @@ import { useSlide } from "@steamfield/decks";
 import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import {
+  AGENT_1_TEST_START,
+  AGENT_2_RETRY_END,
+  AGENT_2_TEST_START,
+  AGENT_2_WAITING_AT,
+  AGENT_3_RETRY_START,
+  AGENT_4_ARRIVAL,
   AGENT_COUNT,
   type ChipView,
   FLOW_HOSTS,
@@ -37,12 +43,24 @@ const COPY = [
     body: "Its shards are tasks the config lists under parallel. rsync copies the files and SSH runs the command.",
   },
   {
+    lead: "Files sync before the tests start.",
+    body: "Each host runs its configured subtask while the parallel run holds every lock.",
+  },
+  {
     lead: "A run waits when every host is locked.",
+    body: "Each process tries hosts in config order, then waits on the laptop when every lock is held.",
+  },
+  {
+    lead: "A failed retry names the lock holder.",
     body: `It retries every ${POLL_MS / 1000} seconds and prints a waiting event with the command that holds the lock.`,
   },
   {
     lead: "A retry locks the first free host.",
     body: "Each git worktree syncs to its own remote directory unless the config turns that off.",
+  },
+  {
+    lead: "Agent 4 locks a host without waiting.",
+    body: "Its process tries the occupied hosts first, then locks the next host in config order.",
   },
   {
     lead: "The result event gives file and line.",
@@ -148,7 +166,21 @@ function hostView(view: HostView, i: number) {
 
 export function RrLocksStage() {
   const { renderContext } = useSlide();
-  const s = useTween({ frame: OFF, t: STILLS[0], dim: OFF, strip: OFF, lines: OFF });
+  const s = useTween({
+    frame: OFF,
+    t: STILLS[0],
+    dim: OFF,
+    strip: OFF,
+    lines: OFF,
+    waiting: OFF,
+    a0: ON,
+    a1: ON,
+    a2: ON,
+    a3: ON,
+    h0: ON,
+    h1: ON,
+    h2: ON,
+  });
   const { clicks, copy, beats } = useStage({
     copy: COPY,
     enter: (tl) => {
@@ -156,23 +188,49 @@ export function RrLocksStage() {
     },
     beats: (tl, beat) => {
       beat(0);
+      tl.to(s, { a1: DIM, a2: DIM, a3: DIM, duration: DUR.opacity, ease: SETTLE });
       tl.to(s, { t: STILLS[1], duration: DUR.gather, ease: "none" });
       beat(1);
 
-      tl.to(s, { t: STILLS[2], duration: DUR.trace, ease: "none" });
+      tl.to(s, { a0: ON, duration: DUR.opacity, ease: SETTLE });
+      tl.to(s, { t: AGENT_1_TEST_START, duration: DUR.scale, ease: "none" });
+      tl.to(s, { t: STILLS[2], duration: DUR.grow, ease: "none" });
       beat(2);
 
-      tl.to(s, { t: STILLS[3], duration: DUR.bloom, ease: "none" });
+      tl.to(s, { a0: DIM, a1: ON, duration: DUR.opacity, ease: SETTLE });
+      tl.to(s, { t: AGENT_2_WAITING_AT, duration: DUR.gather + DUR.card, ease: "none" });
+      tl.to(s, { a1: DIM, a2: ON, duration: DUR.eraseHold, ease: SETTLE });
+      // The fixed arrivals overlap. The second move uses the approved merged-beat exception.
+      tl.to(s, { t: STILLS[3], duration: DUR.scale + DUR.opacity, ease: "none" });
       beat(3);
 
-      tl.to(s, { dim: ON, duration: DUR.color, ease: SETTLE });
-      tl.to(s, { strip: ON, duration: DUR.card, ease: SETTLE }, "<");
-      tl.to(s, { lines: RESULT_LINES.length, duration: DUR.grow, ease: "none" });
+      tl.to(s, { a1: ON, waiting: ON, duration: DUR.opacity, ease: SETTLE });
+      tl.to(s, { t: AGENT_2_RETRY_END, duration: DUR.morph, ease: "none" });
+      tl.to(s, { t: STILLS[4], duration: DUR.gather, ease: "none" });
       beat(4);
+
+      tl.to(s, { a0: ON, a2: DIM, waiting: OFF, duration: DUR.opacity, ease: SETTLE });
+      tl.to(s, { t: AGENT_2_TEST_START, duration: DUR.gather, ease: "none" });
+      tl.to(s, { a0: DIM, a1: DIM, a2: ON, h2: DIM, duration: DUR.eraseHold, ease: SETTLE });
+      tl.to(s, { t: AGENT_3_RETRY_START, duration: DUR.opacity, ease: "none" });
+      tl.to(s, { t: STILLS[5], duration: DUR.scale + DUR.opacity, ease: "none" });
+      beat(5);
+
+      tl.to(s, { a2: DIM, a3: ON, h2: ON, duration: DUR.opacity, ease: SETTLE });
+      tl.to(s, { t: AGENT_4_ARRIVAL, duration: DUR.grow, ease: "none" });
+      tl.to(s, { t: STILLS[6], duration: DUR.trace, ease: "none" });
+      beat(6);
+
+      tl.to(s, { dim: ON, a0: ON, a1: ON, a2: ON, duration: DUR.color, ease: SETTLE });
+      tl.to(s, { strip: ON, duration: DUR.card, ease: SETTLE }, "<");
+      tl.to(s, { lines: RESULT_LINES.length, duration: DUR.gather, ease: "none" });
+      beat(7);
     },
   });
   const scene: Scene = sceneAt(SEGMENTS, FLOW_RUNS, HOST_COUNT, s.t);
   const diagram = s.frame * (ON - s.dim * (ON - DIM));
+  const agentFocus = [s.a0, s.a1, s.a2, s.a3];
+  const hostFocus = [s.h0, s.h1, s.h2];
   const agents = FLOW_RUNS.map((run, i) => {
     const result = scene.results[i];
     const chip = scene.chips[i];
@@ -295,7 +353,7 @@ export function RrLocksStage() {
     const kind = `${segment.run}-${segment.kind.startsWith("probe") ? "probe" : segment.kind}`;
     const label = !labelled.has(kind);
     labelled.add(kind);
-    return link(segment, at, label);
+    return { ...link(segment, at, label), opacity: agentFocus[segment.run] };
   });
   const tags = scene.tags.map((tag) => {
     const port = hostPort(tag.host);
@@ -304,13 +362,14 @@ export function RrLocksStage() {
     return {
       key: `${tag.run}-${tag.host}-${tag.ok}`,
       fade: Math.min(1, (tag.ms - tag.age) / 200),
+      opacity: agentFocus[tag.run],
       pill: pill(at, text, tag.ok ? GREEN : WAIT),
     };
   });
   const anyone = scene.chips.some(
     (chip) => chip.visible && chip.state === "waiting" && chip.slot > 0.99,
   );
-  const waitingNote = { box: chipBox(AGENT_COUNT - 1, 1), opacity: anyone ? ON : OFF };
+  const waitingNote = { box: chipBox(AGENT_COUNT - 1, 1), opacity: anyone ? s.waiting : OFF };
 
   return (
     <StoryStage
@@ -356,8 +415,11 @@ export function RrLocksStage() {
             height={WAITING.h}
             style={{ stroke: WAIT, opacity: DIM }}
           />
-          {hosts.map((host) => (
-            <g key={host.name} style={{ color: host.locked ? WAIT : NEUTRAL }}>
+          {hosts.map((host, i) => (
+            <g
+              key={host.name}
+              style={{ color: host.locked ? WAIT : NEUTRAL, opacity: hostFocus[i] }}
+            >
               <rect
                 className={`sf-box is-well${host.locked ? " is-lit" : ""}`}
                 x={host.box.x}
@@ -421,7 +483,7 @@ export function RrLocksStage() {
           ))}
           <g fill="none">
             {links.map((l) => (
-              <g key={l.key}>
+              <g key={l.key} style={{ opacity: l.opacity }}>
                 <path
                   d={l.d}
                   stroke={l.color}
@@ -468,8 +530,8 @@ export function RrLocksStage() {
               </g>
             ))}
           </g>
-          {agents.map((a) => (
-            <g key={a.run.agent} style={{ color: a.lit }}>
+          {agents.map((a, i) => (
+            <g key={a.run.agent} style={{ color: a.lit, opacity: agentFocus[i] }}>
               <rect
                 className={`sf-box is-well${a.lit ? " is-lit" : ""}`}
                 x={a.box.x}
@@ -527,7 +589,7 @@ export function RrLocksStage() {
             </text>
           </g>
           {chips.map((c) => (
-            <g key={c.i} style={{ opacity: c.enter, color: c.stroke }}>
+            <g key={c.i} style={{ opacity: c.enter * (agentFocus[c.i] ?? ON), color: c.stroke }}>
               <path
                 d={c.call}
                 fill="none"
@@ -580,7 +642,7 @@ export function RrLocksStage() {
             </g>
           ))}
           {tags.map((tag) => (
-            <g key={tag.key} style={{ opacity: tag.fade }}>
+            <g key={tag.key} style={{ opacity: tag.fade * (tag.opacity ?? ON) }}>
               <rect
                 className={`rr-pill ${styles["rr-pill"]}`}
                 x={tag.pill.x}

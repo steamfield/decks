@@ -361,21 +361,51 @@ export const HOST_COUNT = FLOW_HOSTS.length;
 const lockEnd = (run: number) =>
   SEGMENTS.find((s) => s.run === run && s.kind === "probe-ok")?.end ?? 0;
 
+/** Agent 1's sync ends and its tests start. */
+export const AGENT_1_TEST_START =
+  SEGMENTS.find((s) => s.run === 0 && s.kind === "test")?.start ?? 0;
+/** Agent 2 has reached the waiting column after its first failed lock sweep. */
+export const AGENT_2_WAITING_AT = (waitSpans(SEGMENTS, 1)[0]?.[0] ?? 0) + SLIDE_MS;
+/** Agent 2's first retry has tried every host and failed to lock one. */
+export const AGENT_2_RETRY_END =
+  SEGMENTS.find(
+    (s) =>
+      s.run === 1 &&
+      s.kind === "probe-locked" &&
+      s.host === HOST_COUNT - 1 &&
+      s.start > AGENT_2_WAITING_AT,
+  )?.end ?? 0;
+/** Agent 3's last failed lock probe before agent 1 releases has finished. */
+export const AGENT_3_FAILED_RETRY_END =
+  SEGMENTS.filter(
+    (s) => s.run === 2 && s.kind === "probe-locked" && s.end < (STEPS[2]?.at ?? 0),
+  ).at(-1)?.end ?? 0;
+/** Agent 2's sync ends and its tests start on the first host. */
+export const AGENT_2_TEST_START =
+  SEGMENTS.find((s) => s.run === 1 && s.kind === "test")?.start ?? 0;
+/** Agent 3 starts the retry that finds agent 2 holding the first host. */
+export const AGENT_3_RETRY_START = STEPS[3]?.at ?? 0;
+/** Agent 4 arrives and starts trying hosts in config order. */
+export const AGENT_4_ARRIVAL = STEPS[4]?.at ?? 0;
+
 /**
  * The moment each beat rests on, in simulation milliseconds. Each is derived
  * from the simulation, so a change to the scenario moves them with it.
  *   0  before any agent calls rr: every host free.
- *   1  agent 1 holds every host and its tests are running, just before agent
- *      2 arrives (STEPS[1]).
- *   2  agents 2 and 3 are both waiting: halfway between agent 3 giving up and
- *      agent 1 releasing (STEPS[2]).
- *   3  agents 2 and 3 run on the first two hosts and agent 4 has just locked
- *      the third and is syncing to it.
+ *   1  agent 1 has just locked every host; sync starts here.
+ *   2  sync is over and tests run, before agent 2 arrives.
+ *   3  both waiting-column moves have finished; agent 2 is already retrying.
+ *   4  agent 3's failed retry ends, before agent 1 releases.
+ *   5  waiting agents hold the first two hosts and their tests have started.
+ *   6  agent 4 has locked the third host, before agent 2 releases.
  */
 export const STILLS = [
   0,
-  (STEPS[1]?.at ?? 0) - 400,
-  Math.round(((waitSpans(SEGMENTS, 2)[0]?.[0] ?? 0) + (STEPS[2]?.at ?? 0)) / 200) * 100,
+  lockEnd(0),
+  (STEPS[1]?.at ?? 0) - 100,
+  (waitSpans(SEGMENTS, 2)[0]?.[0] ?? 0) + SLIDE_MS,
+  AGENT_3_FAILED_RETRY_END,
+  SEGMENTS.find((s) => s.run === 2 && s.kind === "test")?.start ?? 0,
   lockEnd(FLOW_RUNS.length - 1) + 200,
 ] as const;
 
