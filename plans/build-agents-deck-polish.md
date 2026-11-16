@@ -124,6 +124,10 @@ Behaviour (revised after the devil's advocate review; see the log at the end):
 - xterm sits in a counter-scaled host (the fix `docs/architecture.md:1818-1823` records for
   OpenChart), with a font size from the frame scale, fixed rows and columns, no fit addon and
   no cursor blink. Esc is caught with `attachCustomKeyEventHandler` and blurs the terminal.
+- Command cards (added 2026-11-16 at Riley's request): each prepared command is shown as a
+  syntax-highlighted snippet with a play button. Play advances the slide by one click, the same
+  path as the arrow key. The terminal opens on the first play, the command sits at the prompt
+  for about 0.6 s, then runs.
 - This is what makes presenter mode work: keys go to the presenter window, the click syncs to
   the audience window over BroadcastChannel, and the audience window's slide sends the command.
 - Error model: pty spawn failure, native module load failure, a dropped socket or a shell that
