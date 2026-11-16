@@ -466,6 +466,17 @@ Departures from the outline: row labels and cards were rewritten to PROSE.md (pl
 
 ---
 
+## Demo hand-offs
+
+Slides 4, 10, 15 and 20. The four texts in `data/handoffs.ts` were authored by the speaker on 2026-11-16. They are instructions to an agent or a shell, not measurements, so no row below checks them against a source. Numbers inside them (the 10-minute timebox, three slides, three agents, the last 30 minutes) specify the work requested.
+
+| Figure | Value | Source |
+|---|---|---|
+| "four hosts" (slide 15 headline) | m1-linux, m1-mini, m4-mini, mbp | `rr monitor --once --no-color` run in this repo on 2026-11-16, the same source as the host rows in Slide 14 |
+| Slide 15 notes: seven partitions; suite length in `SPEAKER-GUIDE.md` | 7 partitions on 4 hosts, 128 s | `rr check` run in `~/Projects/stacks` on 2026-11-16, timed with the shell |
+
+---
+
 ## Numbers refresh (2026-11-13)
 
 Every value above was read on 2026-11-13. Rerun each command in the week of the talk.

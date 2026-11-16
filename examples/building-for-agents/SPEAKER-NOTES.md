@@ -2,7 +2,7 @@
 
 The full script for each slide, moved out of the slide files. The slides carry a bullet version of the same points for use on stage. Each slide has what the slide shows, the spoken script (opening, then one paragraph per click), and answers for likely questions.
 
-Section numbers follow the slide filename prefixes. The deck has 20 slide files, and slide 21 has `hide: true`, so the default cut is 19 slides. In that cut the thread plays at position 3, habits at 18 and the close at 19; OUTLINE.md section 8 gives the full mapping.
+Section numbers follow the slide filename prefixes. The deck has 24 slide files, and slide 21 has `hide: true`, so the default cut is 23 slides. In that cut the thread plays at position 3, habits at 22 and the close at 23; OUTLINE.md section 8 gives the full mapping.
 
 ## 1. Building for agents
 
@@ -65,6 +65,28 @@ These are the five tools, in the order I use them on one change. I start a proje
 ### If asked
 
 - Where does fourteen thousand come from? It is the figure published on rr's site and in the Steamfield launch post.
+
+## 04. One prompt scaffolds a deck and writes it.
+
+Clicks: 0
+
+### What the slide shows
+
+A prompt for Claude Code in VS Code, with a Copy button. It is a hand-off slide: no clicks, and nothing runs in the deck. The prompt text is in `data/handoffs.ts`.
+
+Source: data-sources.md, Demo hand-offs.
+
+### Say
+
+- Copy this, switch to VS Code, paste into Claude Code, come back.
+- Stacks scaffolds a pitch deck from its decks stack. Claude writes three slides with the Decks skills.
+- It is done when stacks verify passes. We leave it running.
+- We look at the result when we reach Decks.
+
+### If asked
+
+- The ten-minute timebox is an instruction to the agent, not a limit the tool enforces.
+- Any number on those slides is made up and labelled illustrative.
 
 ## 5. Stacks briefs the agent and checks its work.
 
@@ -203,6 +225,27 @@ foreman is a CLI that lets Claude Code delegate coding work to Codex models. Thi
 - Does every delegate ask a question? The site-e2e run finished without one. The contract tells a delegate to ask only when it is blocked by something the contract and the repo do not settle.
 - Is the timeline real? The commands, file writes, question and answer are recorded. The timing is compressed, and the third run started 23 minutes after the first two.
 
+## 10. One prompt starts three Codex agents in parallel.
+
+Clicks: 0
+
+### What the slide shows
+
+A prompt for a second Claude Code session in VS Code, with a Copy button. Hand-off slide: no clicks, nothing runs in the deck.
+
+Source: data-sources.md, Demo hand-offs.
+
+### Say
+
+- Copy this, paste into a second Claude Code session, come back.
+- Claude gets a spec for a cron function and starts three Codex runs through foreman.
+- One writes the code. Two write tests, and none sees another's work.
+- Claude merges them and decides from the spec whether a failing test or the code is wrong.
+
+### If asked
+
+- Each run has its own worktree. Claude owns the merge and the final table of what each agent got wrong.
+
 ## 11. foreman is a short-lived CLI and a daemon.
 
 Clicks: 3
@@ -315,6 +358,27 @@ The previous slide simulated the locks. Here are the machines configured for thi
 - Did rr split the test suite? The config defines four tasks, demo-1 to demo-4, each running one shard of the core package's tests, and lists them under demo's parallel key. rr does not split a suite on its own.
 - Is the recording trimmed? It leaves out blank lines and the progress lines printed before the complete summary.
 
+## 15. One command runs a suite across four hosts.
+
+Clicks: 0
+
+### What the slide shows
+
+A shell command for Ghostty, with a Copy button. Hand-off slide: no clicks, nothing runs in the deck.
+
+Source: data-sources.md, Demo hand-offs.
+
+### Say
+
+- Copy this, paste into Ghostty, leave rr monitor on screen for a moment, come back.
+- It runs the Stacks test suite in the background and puts rr monitor in front.
+- Seven partitions across the four machines.
+- From here every host is locked until the suite ends, so the in-deck rr demo comes before this slide.
+
+### If asked
+
+- The suite's output goes to /tmp/rr-check.log.
+
 ## 16. StatGlass started as the rr monitor command.
 
 Clicks: 2
@@ -409,6 +473,27 @@ StatGlass ships a command-line tool named statglass that a coding agent can run.
 
 - How big is the CLI binary? I have not measured it. The 550 KB in the quote is the helper binary next to it.
 - Which commands does it have? guide, hosts, now, metrics, history, events, top, doctor, schema and skill.
+
+## 20. An agent reads this laptop's load from StatGlass.
+
+Clicks: 0
+
+### What the slide shows
+
+A prompt for Claude Code in VS Code, with a Copy button. Hand-off slide: no clicks, nothing runs in the deck.
+
+Source: data-sources.md, Demo hand-offs.
+
+### Say
+
+- Copy this, paste into Claude Code, come back.
+- The laptop has been busy: a deck build, three Codex agents, a test suite.
+- The agent finds the CPU peak and what was running then, using the CLI from the last slide.
+- Read only. It says what it would stop and stops nothing.
+
+### If asked
+
+- StatGlass has to be running so there is history to read.
 
 ## 21. StatGlass reports this laptop's CPU history.
 

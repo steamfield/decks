@@ -6,7 +6,7 @@ This guide is for anyone presenting this deck. Read it once, then run the deck i
 
 Every tool in this talk has two users: the person at the terminal, and a coding agent that reads every byte the tool prints. The talk follows one change through five tools the speaker built, in the order work moves through them: Stacks starts a project and checks the agent's work, foreman delegates tasks from Claude Code to Codex, rr runs tests on other machines, StatGlass watches those machines, and Decks presents the result. Stacks, foreman and StatGlass get a closer look with their source on screen; rr and Decks get about ninety seconds each. Three slides run the tools live in a terminal. The agent support in all five comes from ordinary decisions about output, errors, exit codes and running several agents at once, and the talk ends on six habits any CLI can adopt and the address steamfield.io.
 
-Audience: working JavaScript and TypeScript developers at Austin JS who have used a coding agent such as Claude Code, Codex or Cursor. Do not assume they know Effect, Tauri, MCP or any Steamfield product. Length: 19 slides, about 26 minutes by the plan below, in a 30-minute slot, plus questions.
+Audience: working JavaScript and TypeScript developers at Austin JS who have used a coding agent such as Claude Code, Codex or Cursor. Do not assume they know Effect, Tauri, MCP or any Steamfield product. Length: 23 slides, about 28 minutes by the plan below, in a 30-minute slot, plus questions.
 
 ## Running the deck
 
@@ -19,7 +19,7 @@ DECKS_LIVE_TERM=1 bun run decks dev agents
 
 `DECKS_LIVE_TERM=1` gives slides 6, 14 and 21 a real shell. Without it, `bun run decks dev agents` runs the same deck and the demo slides play their recordings.
 
-The command prints the deck's address, normally `http://localhost:3030`. Open it in one browser window on the projector and press `f` for fullscreen. Press `p` to open the presenter window and drag it to the laptop screen. The presenter window shows the current slide, the next state, the notes with the current click marked, the position ("5 / 19"), the click count and a timer that starts at the first key press.
+The command prints the deck's address, normally `http://localhost:3030`. Open it in one browser window on the projector and press `f` for fullscreen. Press `p` to open the presenter window and drag it to the laptop screen. Each station in the thread rail along the bottom links to that product's site (`https://<product>.steamfield.io`) and opens in a new tab, so a click on the rail leaves the deck window. The presenter window shows the current slide, the next state, the notes with the current click marked, the position ("5 / 23"), the click count and a timer that starts at the first key press.
 
 - Right arrow or space: next click, or the next slide after the last click. Left arrow: back one click.
 - Down arrow: next slide at click 0. Up arrow: previous slide at click 0.
@@ -30,39 +30,42 @@ The command prints the deck's address, normally `http://localhost:3030`. Open it
 
 ## Timing
 
-Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 21 is hidden, so files 22 to 24 play as positions 17 to 19; prefixes 04, 10, 15 and 20 are reserved. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
+Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 21 is hidden, so files 01 to 20 play as positions 1 to 20 and files 22 to 24 play as positions 21 to 23. Files 04, 10, 15 and 20 are hand-off slides: one beat each, no clicks. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
 
 | Position | File | Slide | Clicks | Minutes | Clock |
 |---|---|---|---|---|---|
 | 1 | 01 | Cover | 0 | 0.5 | 0.5 |
 | 2 | 02 | Two users | 2 | 1.25 | 1.75 |
 | 3 | 03 | The thread | 2 | 1.25 | 3.0 |
-| 4 | 05 | Stacks: the loop | 4 | 1.75 | 4.75 |
-| 5 | 06 | Stacks: live | 3 | 1.0 | 5.75 |
-| 6 | 07 | Stacks: the repo tour | 5 | 2.75 | 8.5 |
-| 7 | 08 | Stacks: output for people and agents | 3 | 1.5 | 10.0 |
-| 8 | 09 | foreman: the session | 4 | 2.0 | 12.0 |
-| 9 | 11 | foreman: the daemon | 3 | 1.5 | 13.5 |
-| 10 | 12 | foreman: the held question | 3 | 1.5 | 15.0 |
-| 11 | 13 | rr: host locks | 7 | 2.0 | 17.0 |
-| 12 | 14 | rr: live | 2 | 0.75 | 17.75 |
-| 13 | 16 | From rr monitor to StatGlass | 2 | 1.0 | 18.75 |
-| 14 | 17 | StatGlass: Rust and TypeScript | 4 | 2.0 | 20.75 |
-| 15 | 18 | StatGlass in a browser tab | 1 | 1.0 | 21.75 |
-| 16 | 19 | StatGlass: the agent CLI | 2 | 1.25 | 23.0 |
-| 17 | 22 | Decks | 2 | 1.25 | 24.25 |
-| 18 | 23 | Six habits | 3 | 1.5 | 25.75 |
-| 19 | 24 | Close | 0 | 0.5 | 26.25 |
-
-Total: about 26.25 minutes, which leaves about 3.75 minutes of the 30 for the demos running slow.
+| 4 | 04 | Stacks hand-off | 0 | 0.5 | 3.5 |
+| 5 | 05 | Stacks: the loop | 4 | 1.75 | 5.25 |
+| 6 | 06 | Stacks: live | 3 | 1.0 | 6.25 |
+| 7 | 07 | Stacks: the repo tour | 5 | 2.75 | 9.0 |
+| 8 | 08 | Stacks: output for people and agents | 3 | 1.5 | 10.5 |
+| 9 | 09 | foreman: the session | 4 | 2.0 | 12.5 |
+| 10 | 10 | foreman hand-off | 0 | 0.5 | 13.0 |
+| 11 | 11 | foreman: the daemon | 3 | 1.5 | 14.5 |
+| 12 | 12 | foreman: the held question | 3 | 1.5 | 16.0 |
+| 13 | 13 | rr: host locks | 7 | 2.0 | 18.0 |
+| 14 | 14 | rr: live | 2 | 0.75 | 18.75 |
+| 15 | 15 | rr hand-off | 0 | 0.5 | 19.25 |
+| 16 | 16 | From rr monitor to StatGlass | 2 | 1.0 | 20.25 |
+| 17 | 17 | StatGlass: Rust and TypeScript | 4 | 2.0 | 22.25 |
+| 18 | 18 | StatGlass in a browser tab | 1 | 1.0 | 23.25 |
+| 19 | 19 | StatGlass: the agent CLI | 2 | 1.25 | 24.5 |
+| 20 | 20 | StatGlass hand-off | 0 | 0.5 | 25.0 |
+| 21 | 22 | Decks | 2 | 1.25 | 26.25 |
+| 22 | 23 | Six habits | 3 | 1.5 | 27.75 |
+| 23 | 24 | Close | 0 | 0.5 | 28.25 |
+Total: about 28.25 minutes, which leaves about 1.75 minutes of the 30 for the demos running slow. The four hand-off slides added 2.0 minutes to a plan that was already tight (see below), and nothing has been rehearsed against the new total.
 
 Clock checks:
 
-- About a third of the way: leaving slide 7 (the repo tour) at about 8.5 minutes.
-- Halfway: leaving slide 11 (the foreman daemon) at about 13.5 minutes.
-- Before the close: leaving position 18 (six habits) at about 25.75 minutes.
+- About a third of the way: leaving slide 7 (the repo tour) at about 9.0 minutes.
+- Halfway: leaving slide 11 (the foreman daemon) at about 14.5 minutes.
+- Before the close: leaving position 22 (six habits) at about 27.75 minutes.
 
-Slides 5 and 13 gained clicks after these minutes were planned: slide 5 went from four beats to five and slide 13 from five to eight. Read at 140 words a minute, the script runs about 28 to 30 minutes, so the plan above is short by two to four minutes. Time the talk in rehearsal, adjust the clock checks, and decide beforehand which of the beats under "If you are running long" to drop.
+Slides 5 and 13 gained clicks after these minutes were planned: slide 5 went from four beats to five and slide 13 from five to eight. Read at 140 words a minute, the script runs about 28 to 30 minutes, so the plan above was short by two to four minutes before the hand-off slides. That estimate was not redone with them, and they add 2.0 minutes to the plan. Time the talk in rehearsal, adjust the clock checks, and decide beforehand which of the beats under "If you are running long" to drop.
 
 ## The live demos
 
@@ -136,6 +139,24 @@ If StatGlass is not running, the commands fail. Say what the recording showed: h
 
 A live foreman run is the one demo that leaves the deck. It is optional, comes after slide 9, takes about 3 minutes and is outside the timing above. `OUTLINE.md` section 12 has the commands. Rehearse it, because whether a delegate asks a question depends on the model. If it fails, say that slide 9 showed a recorded session and move on.
 
+## External sessions
+
+Slides 4, 10, 15 and 20 are hand-off slides. Each shows one prompt or shell command with a Copy button and no clicks. You paste it into a session outside the deck and leave it running while the talk goes on. Nothing in the deck checks that the session worked.
+
+Before the talk:
+
+- VS Code is open with two Claude Code sessions ready: one for the Stacks prompt, one for the foreman prompt. The StatGlass prompt can go into either.
+- Ghostty is open.
+- `~/demo` is empty or does not exist. The Stacks prompt writes `~/demo/horse-tinder-deck` and the foreman prompt writes `~/demo/cron-next`.
+- StatGlass is running and has about 30 minutes of history, so the slide 20 prompt has something to read.
+- Nothing else is using rr. The slide 15 command runs the Stacks suite on all four hosts.
+
+At each hand-off slide, click Copy, switch to the app named on the slide, paste, and switch back to the deck. Slide 4 and slide 20 go into Claude Code in VS Code, slide 10 into the second Claude Code session, and slide 15 into Ghostty. The rr command also opens `rr monitor`; leave it on screen for a moment, then come back.
+
+The rr hand-off has to come after the in-deck rr demo on slide 14. The suite locks all four hosts for about two minutes (128 seconds when run on 2026-11-16), and `rr demo` on slide 14 needs them free. Do not move slide 15 earlier, and do not run the slide 15 command before the slide 14 demo has finished.
+
+At the Decks slide (file 22), switch to VS Code and show the Horse Tinder deck that the slide 4 prompt built. If that session has not finished or verify did not pass, say so and carry on with the slide.
+
 ## Before you present
 
 - Tailscale is up, and `rr monitor --once --no-color` from the repo root shows all four hosts online with an empty LOCK column (a dash on every row).
@@ -143,7 +164,8 @@ A live foreman run is the one demo that leaves the deck. It is optional, comes a
 - Run `rr demo --pretty` once to warm the hosts.
 - Run any `stacks` command once, so the first-run notice does not appear on stage.
 - `stacks`, `rr`, `statglass` and `jq` are on the PATH of the shell you start the deck from.
-- If slide 21 is in, StatGlass has been running for at least 30 minutes.
+- StatGlass has been running for at least 30 minutes, for the slide 20 hand-off and for slide 21 if it is in.
+- VS Code is open with two Claude Code sessions ready, Ghostty is open, `~/demo` is empty or absent, and nothing else is using rr (see "External sessions").
 - Slide 18's frame loads the hosted StatGlass demo, so the laptop needs a network connection for that beat.
 - The deck is open in one audience window, with the presenter window on the laptop.
 - The projector is at the resolution you rehearsed at.
@@ -151,7 +173,7 @@ A live foreman run is the one demo that leaves the deck. It is optional, comes a
 
 ## If you are running long
 
-Four beats can go. Each slide still makes its point without the beat.
+Four beats can go. Each slide still makes its point without the beat. Any hand-off slide can also be skipped with one arrow press, since each is a single beat; the external session it starts then does not run.
 
 | Slide | Beat | Card | How to skip |
 |---|---|---|---|
@@ -164,7 +186,7 @@ Slide 21 is already hidden.
 
 ## If you are running short
 
-Restore slide 21 by removing the `hide: true` line from `slides/21-glass-live.mdx` before the talk. It adds four beats and about one minute, which brings the total to about 27.25 minutes. Positions after it shift by one: habits plays at 19 and the close at 20. StatGlass then has to be running, as in the checklist.
+Restore slide 21 by removing the `hide: true` line from `slides/21-glass-live.mdx` before the talk. It adds four beats and about one minute, which brings the total to about 29.25 minutes. Positions after it shift by one: habits plays at 23 and the close at 24. StatGlass then has to be running, as in the checklist.
 
 ## Where things live
 

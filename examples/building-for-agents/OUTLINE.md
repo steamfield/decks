@@ -226,32 +226,32 @@ New animated diagrams this deck builds because none exists: the Stacks loop with
 
 ## 8. The arc
 
-Default cut: 19 slides, 71 beats, about 26.25 minutes by the Min column. Slides 06, 14 and 21 are live demos (section 10). Slide 21 has `hide: true`; restoring it makes 20 slides, 75 beats and about 27.25 minutes.
+Default cut: 23 slides, 75 beats, about 28.25 minutes by the Min column. Slides 06, 14 and 21 are live demos (section 10). Slides 04, 10, 15 and 20 are hand-off slides: each is one beat (no clicks) that shows one prompt or shell command with a Copy button, for pasting into an external session. Slide 21 has `hide: true`; restoring it makes 24 slides, 79 beats and about 29.25 minutes.
 
-The numbers below are filename prefixes. A hidden slide is dropped before numbering, so playback positions are consecutive: filenames 01-03 play as 1-3, 05-09 as 4-8, 11-14 as 9-12, 16-19 as 13-16 and 22-24 as 17-19. For `decks shot` or presenter navigation, use 3 for the thread, 18 for habits and 19 for the close. With slide 21 restored, it plays at position 17 and files 22-24 play as positions 18-20. Reserved prefixes 04, 10, 15 and 20 have no slide files yet.
+The numbers below are filename prefixes. A hidden slide is dropped before numbering, so playback positions are consecutive: filenames 01-20 play as 1-20 and 22-24 as 21-23. For `decks shot` or presenter navigation, use 3 for the thread, 22 for habits and 23 for the close. With slide 21 restored, it plays at position 21 and files 22-24 play as positions 22-24.
 
 | # | Page / stage | Headline (draft) | Step | Beats | Min |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `01-cover` / `StoryCover` + `NightDriveField` | Building for agents | | 1 | 0.5 |
 | 2 | `02-two-users` / `TwoUsersStage` | Every tool I ship has two users. | | 3 | 1.25 |
 | 3 | `03-thread` / `ThreadStage` | I ship a change with five tools I built. | | 3 | 1.25 |
-| 4 | reserved: Stacks hand-off | | | | |
+| 4 | `04-stacks-handoff` / `HandoffStage` | One prompt scaffolds a deck and writes it. | Start | 1 | 0.5 |
 | 5 | `05-stacks-loop` / `StacksLoopStage` | Stacks hands the agent a brief and a finish line. | Start | 5 | 1.75 |
 | 6 | `06-stacks-live` / `LiveDemoStage` | Stacks gives a failed check an exit code. | Start | 4 | 1.0 |
 | 7 | `07-stacks-tour` / `StacksTourStage` | An Effect CLI is commands, services and one error table. | Start | 6 | 2.75 |
 | 8 | `08-stacks-output` / `StacksOutputStage` | Stacks prints the same result three ways. | Start | 4 | 1.5 |
 | 9 | `09-foreman-session` / `ForemanSessionStage` | Claude delegates to Codex, one worktree per task. | Delegate | 5 | 2.0 |
-| 10 | reserved: foreman hand-off | | | | |
+| 10 | `10-foreman-handoff` / `HandoffStage` | One prompt starts three Codex agents in parallel. | Delegate | 1 | 0.5 |
 | 11 | `11-foreman-daemon` / `ForemanDaemonStage` | A daemon sits between the two agents. | Delegate | 4 | 1.5 |
 | 12 | `12-foreman-question` / `ForemanQuestionStage` | A held question is an unanswered request. | Delegate | 4 | 1.5 |
 | 13 | `13-rr-locks` / `RrLocksStage` | rr gives every run its own machine. | Test | 8 | 2.0 |
 | 14 | `14-rr-live` / `LiveDemoStage` | rr runs this task across my machines. | Test | 3 | 0.75 |
-| 15 | reserved: rr hand-off | | | | |
+| 15 | `15-rr-handoff` / `HandoffStage` | One command runs a suite across four hosts. | Test | 1 | 0.5 |
 | 16 | `16-monitor-to-glass` / `MonitorToGlassStage` | I kept rr monitor open all day, so I built an app. | Watch | 3 | 1.0 |
 | 17 | `17-glass-boundary` / `GlassBoundaryStage` | Rust owns the data. TypeScript draws it. | Watch | 5 | 2.0 |
 | 18 | `18-glass-browser` / `GlassBrowserStage` | The whole app runs in a browser tab. | Watch | 2 | 1.0 |
 | 19 | `19-glass-cli` / `GlassCliStage` | Agents ask StatGlass what happened at 3pm. | Watch | 3 | 1.25 |
-| 20 | reserved: StatGlass hand-off | | | | |
+| 20 | `20-statglass-handoff` / `HandoffStage` | An agent reads this laptop's load from StatGlass. | Watch | 1 | 0.5 |
 | 21 | `21-glass-live` / `LiveDemoStage` (hidden) | StatGlass reports this laptop's CPU history. | Watch | 4 | 1.0 |
 | 22 | `22-decks` / `DecksStage` | Decks rejects a sentence before it reaches a slide. | Present | 3 | 1.25 |
 | 23 | `23-habits` / `HabitsStage` | Each tool has some of the same six habits. | | 4 | 1.5 |
