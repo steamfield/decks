@@ -238,7 +238,7 @@ Source: data-sources.md, Demo hand-offs.
 ### Say
 
 - Copy this, paste into a second Claude Code session, come back.
-- Claude gets a spec for a cron function and starts three Codex runs through foreman.
+- Claude picks a stack with Stacks, gets a spec for the Horse Tinder matching function, and starts three Codex runs through foreman.
 - One writes the code. Two write tests, and none sees another's work.
 - Claude merges them and decides from the spec whether a failing test or the code is wrong.
 

@@ -149,7 +149,7 @@ Before the talk:
 
 - VS Code is open with two Claude Code sessions ready: one for the Stacks prompt, one for the foreman prompt. The StatGlass prompt can go into either.
 - Ghostty is open.
-- `~/demo` is empty or does not exist. The Stacks prompt writes `~/demo/horse-tinder-deck` and the foreman prompt writes `~/demo/cron-next`.
+- `~/demo` is empty or does not exist. The Stacks prompt writes `~/demo/horse-tinder-deck` and the foreman prompt writes `~/demo/horse-tinder-match`.
 - StatGlass is running and has about 30 minutes of history, so the slide 20 prompt has something to read.
 - Nothing else is using rr. The slide 15 command runs the Stacks suite on all four hosts.
 
