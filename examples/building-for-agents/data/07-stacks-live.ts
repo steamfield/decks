@@ -57,7 +57,7 @@ export const RECORDING: TermRecording = {
 
 export const COPY = [
   {
-    lead: "Watch the exit code.",
+    lead: "Verify reports failure as an exit code.",
   },
   {
     lead: "The scaffold includes the agent's next step.",

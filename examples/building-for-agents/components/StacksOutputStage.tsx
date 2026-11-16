@@ -28,7 +28,7 @@ const COPY = [
   },
   {
     lead: "With --json, stdout is one object.",
-    body: "The last line of stderr is an error envelope whose next field says what to do.",
+    body: "On failure, the last stderr line is JSON whose next field says what to do.",
   },
   {
     lead: "Each exit code has one meaning.",

@@ -53,15 +53,15 @@ const COPY = [
   },
   {
     lead: "Rust sends samples over a Tauri Channel.",
-    body: "Each tick is one message whose values are an array, ordered by a layout sent earlier.",
+    body: "Each tick is one message holding an array of numbers. An earlier layout message names each position.",
   },
   {
-    lead: "Each tick runs one transform animation.",
-    body: "d3 computes the path and React renders it as SVG. The animation slides the redrawn chart one slot.",
+    lead: "Each tick slides the chart one slot.",
+    body: "d3 computes the path and React renders it as SVG. Only a transform animates.",
   },
   {
     lead: `Idle CPU was ${IDLE.cpuPercent} percent of one core.`,
-    body: `Rust draws the menu bar item. Measured once, ${IDLE.state}, on an ${IDLE.machine} in ${IDLE.month}.`,
+    body: `Measured once, ${IDLE.state}, on an ${IDLE.machine} in ${IDLE.month}.`,
   },
 ];
 

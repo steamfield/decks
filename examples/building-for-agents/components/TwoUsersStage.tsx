@@ -15,15 +15,15 @@ import { ThreadRail } from "./ThreadRail";
 const COPY = [
   {
     lead: "rr --pretty prints a summary for a person.",
-    body: "One line per task with its host and time, then totals. Designing this view is developer experience, DX.",
+    body: "It prints each task's host and time, then totals. Designing output for people is developer experience, DX.",
   },
   {
-    lead: "A coding agent receives every byte.",
-    body: "The colour codes are part of the text, and each one uses space in the agent’s context.",
+    lead: "The agent reads the colour codes as text.",
+    body: "Each escape code takes up space in its context.",
   },
   {
     lead: "Without the flag, rr prints JSON events.",
-    body: "The last event lists each failing test. Designing this output is agent experience, AX.",
+    body: "The last event lists each failing test. Designing output for agents is agent experience, AX.",
   },
 ];
 

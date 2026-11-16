@@ -15,16 +15,16 @@ const COPY = [
     body: `The same ${countWord(count("next")).toLowerCase()} also print the next step, as a field or a line of text.`,
   },
   {
-    lead: "A command checks when work is finished.",
-    body: `Stacks has verify, and Decks has check and lint; ${countWord(count("exit")).toLowerCase()} tools document one action per exit code.`,
+    lead: "A command checks whether the work is done.",
+    body: `Stacks has verify and Decks has check and lint. ${countWord(count("exit"))} tools document one action per exit code.`,
   },
   {
     lead: "Agents run in parallel and read bundled docs.",
-    body: `rr locks a host and foreman uses a worktree per task; ${countWord(count("docs")).toLowerCase()} tools ship their own guide or skill.`,
+    body: `rr locks a host and foreman uses a worktree per task. ${countWord(count("docs"))} tools ship their own guide or skill.`,
   },
   {
-    lead: "Any CLI or library can adopt these habits.",
-    body: "The six habits are output formats, exit codes, locks and bundled docs; none of them calls a model.",
+    lead: "Any CLI can adopt these six habits.",
+    body: "None of them calls a model.",
   },
 ];
 

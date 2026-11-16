@@ -48,7 +48,7 @@ export const COPY = [
     lead: "The summary includes its measurement coverage.",
   },
   {
-    lead: "Events name the processes running then.",
+    lead: "Each event names the processes running at the time.",
   },
   {
     lead: "A script can read the same summary.",

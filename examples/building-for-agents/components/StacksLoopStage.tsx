@@ -70,8 +70,8 @@ const COPY = [
     body: `The agent fixed the failures and all ${STEPS.length} steps passed at ${FIRST_GREEN.at} seconds.`,
   },
   {
-    lead: "Stacks refuses to verify edited checks.",
-    body: "Stacks keeps a hash of the steps outside the project and refuses to run if one was edited.",
+    lead: "A person approves any change to the checks.",
+    body: "Stacks stores a hash of the steps outside the project and refuses an agent's accept flag.",
   },
 ];
 

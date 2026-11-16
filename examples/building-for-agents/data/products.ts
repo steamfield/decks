@@ -9,7 +9,8 @@
  * empty; p, c, y, v, w are pink, cyan, yellow, violet and white.
  * Stacks differs from that file: it is the product's own mark, the shaded
  * stack in ~/Projects/stacks-api/apps/web/public/brand/stacks-mark.svg (read
- * 2026-11-16, stacks-api commit 650fa76), sampled onto the 12-pixel grid.
+ * 2026-11-16, stacks-api commit 650fa76), sampled onto the 12-pixel grid with
+ * the top face one row shorter than the mark's, so the bottom tip fits.
  * t, l and r are the mark's top, left and right faces in its own greens
  * (theme.json accents stacks-top, stacks-left, stacks-right).
  * rr differs too: it is rr's mark, the braille spinner frame in
@@ -50,7 +51,6 @@ export const PRODUCTS: readonly Product[] = [
     icon: [
       ".....tt.....",
       "...tttttt...",
-      ".tttttttttt.",
       ".llttttttrr.",
       ".llllttrrrr.",
       "...lllrrr...",
@@ -60,6 +60,7 @@ export const PRODUCTS: readonly Product[] = [
       ".ll..lr..rr.",
       ".llll..rrrr.",
       "...lllrrr...",
+      ".....lr.....",
     ],
   },
   {

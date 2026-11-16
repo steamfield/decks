@@ -40,15 +40,15 @@ const COPY = [
   },
   {
     lead: "A parallel task locks every host.",
-    body: "Its shards are tasks the config lists under parallel. rsync copies the files and SSH runs the command.",
+    body: "Its shards are the tasks the config lists under parallel.",
   },
   {
     lead: "Files sync before the tests start.",
-    body: "Each host runs its configured subtask while the parallel run holds every lock.",
+    body: "rsync copies the files to each host, then SSH runs that host's subtask.",
   },
   {
     lead: "A run waits when every host is locked.",
-    body: "Each process tries hosts in config order, then waits on the laptop when every lock is held.",
+    body: "Agents 2 and 3 try the hosts in config order, then wait on the laptop.",
   },
   {
     lead: "A failed retry names the lock holder.",
@@ -56,7 +56,7 @@ const COPY = [
   },
   {
     lead: "A retry locks the first free host.",
-    body: "Each git worktree syncs to its own remote directory unless the config turns that off.",
+    body: "By default each git worktree syncs to its own directory on the host, so agents' files stay separate.",
   },
   {
     lead: "Agent 4 locks a host without waiting.",

@@ -25,12 +25,12 @@ const COPY = [
     body: "The slide is a React component with a GSAP timeline. Stepping back plays the same tweens in reverse.",
   },
   {
-    lead: `The write hook enforces ${DENIED} lint patterns.`,
-    body: `The lint has ${PATTERNS} patterns. A write matching one of the ${DENIED} errors is refused with the pattern's id.`,
+    lead: "A hook refuses writes that hit a lint error.",
+    body: `Of the lint's ${PATTERNS} patterns, ${DENIED} are errors. The hook prints each match's pattern id.`,
   },
   {
     lead: "This deck lists a source for each figure.",
-    body: "Each row names the file or command that produces the figure.",
+    body: "A sources file has one row per figure, naming the file or command behind it.",
   },
 ];
 

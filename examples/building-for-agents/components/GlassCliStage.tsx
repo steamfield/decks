@@ -22,8 +22,8 @@ const COPY = [
     body: "The gap line gives the time range and the cause. Errors come back as JSON with a next step.",
   },
   {
-    lead: "The CLI is written in Rust.",
-    body: `The RFC estimates a compiled TypeScript binary at ${TS_LOW} to ${TS_HIGH} MB, for a ${RFC_SIZES.appMb} MB app.`,
+    lead: "The RFC chose Rust for the CLI.",
+    body: `It estimates a compiled TypeScript CLI at ${TS_LOW} to ${TS_HIGH} MB, against a ${RFC_SIZES.appMb} MB app.`,
   },
 ];
 

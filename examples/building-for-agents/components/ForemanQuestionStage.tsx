@@ -24,10 +24,10 @@ const COPY = [
   },
   {
     lead: "A background foreman wait exits with the question.",
-    body: "Claude Code reports the finished background task to Claude, which reads the question from its output.",
+    body: "Claude Code tells Claude the task finished, and Claude reads the question from its output.",
   },
   {
-    lead: "Claude's answer is returned as the tool result.",
+    lead: "Claude's answer goes back as the tool result.",
     body: `After ${QUESTION_TIMEOUT_MIN} minutes without an answer, the daemon returns a message telling Codex to continue.`,
   },
   {

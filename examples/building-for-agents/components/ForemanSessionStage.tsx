@@ -38,7 +38,7 @@ import { ThreadRail } from "./ThreadRail";
 const COPY = [
   {
     lead: "Claude writes one contract per task.",
-    body: "Each contract is a Markdown file. foreman reads its May change line for the paths the delegate may edit.",
+    body: "Each contract is a Markdown file. Its May change line lists the paths the delegate may edit.",
   },
   {
     lead: "foreman creates a worktree and branch per delegate.",
@@ -50,7 +50,7 @@ const COPY = [
   },
   {
     lead: `Claude answered after ${ANSWER_DELAY_S} seconds.`,
-    body: "The answer is returned inside the same Codex turn, so the delegate continues with its context.",
+    body: "The answer arrives in the same Codex turn, so the delegate keeps its context.",
   },
   {
     lead: "Claude reviews each diff and commits it.",
