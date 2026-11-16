@@ -1,5 +1,5 @@
 import { useDeck, useSlide } from "@steamfield/decks";
-import { useFrameScale } from "@steamfield/decks/kit";
+import { ink, useFrameScale } from "@steamfield/decks/kit";
 import { motionMode } from "@steamfield/decks/motion";
 import {
   type ComponentType,
@@ -11,6 +11,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { TermLine } from "../data/types";
+import { terminalFace } from "../term/client/terminal-face";
 import { useLiveTerm } from "../term/client/use-live-term";
 import type { XtermHost } from "../term/client/xterm-host";
 import type { TermPaneSpec } from "../term/protocol";
@@ -61,6 +62,7 @@ export function LiveTerm({
   width,
   height,
   label = "",
+  caption,
   size,
 }: {
   pane: TermPaneSpec;
@@ -71,6 +73,7 @@ export function LiveTerm({
   width: number;
   height: number;
   label?: string;
+  caption: string;
   size?: number;
 }) {
   const { renderContext, isActive } = useSlide();
@@ -111,8 +114,10 @@ export function LiveTerm({
     };
   }, [live.live, live.connection, size]);
   const [face, setFace] = useState<{
+    key: string;
     font: string;
     size: number;
+    layout: ReturnType<typeof terminalFace>;
     colors: Parameters<typeof XtermHost>[0]["colors"];
   }>();
   useLayoutEffect(() => {
@@ -120,49 +125,100 @@ export function LiveTerm({
     if (!element) return;
     // Resolve TermPane's frame-relative type before handing screen pixels to xterm.
     element.style.fontSize = `calc(${(size ?? 31) / 19.2} * var(--sw))`;
+    let disposed = false;
     const measure = () => {
+      if (disposed) return;
       const css = getComputedStyle(element);
       const fontSize = Number.parseFloat(css.fontSize);
       const token = (name: string) => css.getPropertyValue(name).trim();
+      const content = element.querySelector(".sf-panel-content");
+      if (!content) return;
+      const bounds = content.getBoundingClientRect();
+      if (scale <= 0 || bounds.width <= 0 || bounds.height <= 0) return;
+      const padding = getComputedStyle(content);
+      const font = token("--sf-font-term");
+      const layout = terminalFace({
+        fontFamily: font,
+        fontSize,
+        scale,
+        devicePixelRatio: window.devicePixelRatio,
+        rows: pane.rows,
+        cols: pane.cols,
+        width:
+          bounds.width -
+          (Number.parseFloat(padding.paddingLeft) + Number.parseFloat(padding.paddingRight)) *
+            scale,
+        height:
+          bounds.height -
+          (Number.parseFloat(padding.paddingTop) + Number.parseFloat(padding.paddingBottom)) *
+            scale,
+      });
+      element.style.setProperty(
+        "--live-term-width",
+        `${(layout.gridWidth * layout.residual) / scale}px`,
+      );
+      element.style.setProperty(
+        "--live-term-height",
+        `${(layout.gridHeight * layout.residual) / scale}px`,
+      );
+      element.style.setProperty("--live-term-margin", `${layout.margin / scale}px`);
+      element.style.setProperty(
+        "--live-term-line-height",
+        `${(layout.rowHeight * layout.residual) / scale}px`,
+      );
+      const key = `${font}:${fontSize}:${scale}:${bounds.width}:${bounds.height}:${window.devicePixelRatio}:${layout.fontSize}`;
       setFace((current) =>
-        current?.size === fontSize
+        current?.key === key
           ? current
           : {
-              font: token("--sf-font-term"),
+              key,
+              font,
               size: fontSize,
+              layout,
               colors: {
                 background: token("--od-screen-black"),
-                foreground: token("--od-phosphor"),
+                foreground: token("--od-text"),
                 cursor: token("--od-phosphor"),
-                black: token("--od-screen-black"),
+                black: token("--od-text-faint"),
+                red: ink("rose", 1),
                 green: token("--od-phosphor"),
                 yellow: token("--od-amber"),
-                blue: token("--od-violet"),
+                blue: ink("violet", 2),
                 magenta: token("--od-pink"),
                 cyan: token("--od-cyan"),
-                white: token("--od-text"),
-                brightBlack: token("--od-text-faint"),
-                brightGreen: token("--od-phosphor"),
-                brightYellow: token("--od-amber"),
-                brightBlue: token("--od-violet"),
-                brightMagenta: token("--od-pink"),
-                brightCyan: token("--od-cyan"),
-                brightWhite: token("--od-text"),
+                white: token("--od-text-secondary"),
+                brightBlack: token("--od-text-muted"),
+                brightRed: ink("rose", 3),
+                brightGreen: ink("emerald", 3),
+                brightYellow: ink("amber", 3),
+                brightBlue: ink("violet", 3),
+                brightMagenta: ink("rose", 4),
+                brightCyan: ink("cyan", 3),
+                brightWhite: token("--od-text-highlight"),
+                scrollbarSliderBackground: token("--od-text-faint"),
+                scrollbarSliderHoverBackground: token("--od-text-muted"),
+                scrollbarSliderActiveBackground: token("--od-cyan"),
               },
             },
       );
     };
     measure();
+    void document.fonts.ready.then(measure);
     const observer = new ResizeObserver(measure);
     if (element.parentElement) observer.observe(element.parentElement);
-    return () => observer.disconnect();
-  }, [size]);
+    window.addEventListener("resize", measure);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [size, scale, pane.rows, pane.cols]);
   const showingLive = live.live && Host && face && live.connection;
   const queued = live.queued.length > 0;
   const tag = showingLive
     ? `Live${queued ? " · queued" : live.busy ? " · busy" : ""}`
     : `${recording.tag}${queued ? " · live queued" : ""}${live.reason ? ` · live unavailable: ${live.reason}` : ""}`;
-  const box = { x, y, width, height, label, tag };
+  const box = { x, y, width, height, label, tag, fig: caption };
   let content: ReactNode;
   if (showingLive && Host && face && live.connection) {
     content = (
@@ -176,6 +232,7 @@ export function LiveTerm({
             fontFamily={face.font}
             fontSize={face.size}
             colors={face.colors}
+            wheelTarget={terminalBox.current ?? undefined}
           />
         </div>
       </CrtPanel>
@@ -189,7 +246,19 @@ export function LiveTerm({
   } else {
     const shown = recording.shownAt[Math.min(click, recording.shownAt.length - 1)];
     if (shown === undefined) throw new Error(`LiveTerm recording for ${box.label} has no shownAt`);
-    content = <TermPane {...box} lines={recording.lines} shown={shown} size={size} />;
+    content = (
+      <TermPane
+        {...box}
+        lines={recording.lines}
+        shown={shown}
+        size={
+          face
+            ? ((size ?? 31) * face.layout.fontSize * face.layout.residual) / (face.size * scale)
+            : size
+        }
+        follow={false}
+      />
+    );
   }
   return (
     <div ref={terminalBox} className={styles.skin}>

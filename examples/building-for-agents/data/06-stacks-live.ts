@@ -2,10 +2,10 @@
  * Slide 06: recorded Stacks shell demo, from fixtures/06-stacks-live.json.
  * Captured 2026-11-16 on a 24x92 zsh pseudo-terminal with stacks 0.12.0.
  * Source record: sources/06-stacks-live.md; data-sources.md row supplied in the hand-off.
- * Lines wrap at 92 columns without changing their text. Step 2 drops its ten leading
+ * Lines wrap at the demo grid without changing their text. Step 2 drops its ten leading
  * progress lines so the command and complete report fit at presentation size.
  */
-import type { LiveDemo } from "../components/LiveDemoStage";
+import { type LiveDemo, paneGrid } from "../components/LiveDemoStage";
 import type { TermRecording } from "../components/LiveTerm";
 import type { TermPaneSpec } from "../term/protocol";
 import fixture from "./fixtures/06-stacks-live.json";
@@ -13,8 +13,8 @@ import type { TermLine } from "./types";
 
 export const PANE: TermPaneSpec = {
   id: "stacks",
-  rows: 11,
-  cols: 92,
+  rows: paneGrid(1).rows,
+  cols: paneGrid(1).cols,
   cwd: "temp",
   commands: fixture.steps.map((step) => step.command),
 };
@@ -42,6 +42,7 @@ function output(text: string): TermLine[] {
 }
 
 const exchanges = fixture.steps.map((step, index): TermLine[] => [
+  ...(index > 0 ? [{ text: "" }] : []),
   { text: step.command, tone: "cmd" },
   ...step.lines.filter((line) => index !== 1 || !line.startsWith("> ")).flatMap(output),
 ]);
@@ -56,19 +57,15 @@ export const RECORDING: TermRecording = {
 export const COPY = [
   {
     lead: "Watch the exit code.",
-    body: "These commands run in a shell, with a recording available.",
   },
   {
     lead: "The scaffold includes the agent's next step.",
-    body: "Stacks wrote the project and brief, then printed the hand-off.",
   },
   {
     lead: "Fresh scaffolds fail verify.",
-    body: `The unbuilt project exits ${VERIFY_EXIT}; the report tells the agent what to fix.`,
   },
   {
     lead: "Scripts can read the same result.",
-    body: "JSON reports the outcome, check totals and gate state.",
   },
 ];
 

@@ -1,12 +1,12 @@
 import { useDeck, useSlide } from "@steamfield/decks";
-import { DUR, SETTLE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+import { DUR, SETTLE, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import type { ProductId } from "../data/products";
 import type { TermPaneSpec } from "../term/protocol";
 import codeStyles from "./CodePane.module.css";
 import { CrtPanel } from "./CrtPanel";
 import { tokenizeLine } from "./code-tokens";
-import { CRT, DIM, FRAME, OFF, ON } from "./design";
+import { CRT, FRAME, OFF, ON } from "./design";
 import styles from "./LiveDemoStage.module.css";
 import { LiveTerm, type TermRecording } from "./LiveTerm";
 import { NamePlate } from "./NamePlate";
@@ -15,29 +15,30 @@ import { ThreadRail } from "./ThreadRail";
 export interface LiveDemo {
   headline: string;
   product: ProductId;
-  /** One or two panes; a two-pane demo allows at most 80 columns per pane. */
+  /** One or two panes, sized by paneGrid. */
   panes: readonly {
     pane: TermPaneSpec;
     recording: TermRecording;
     label: string;
   }[];
-  copy: readonly { lead: string; body: string }[];
+  copy: readonly { lead: string }[];
 }
 
-const PANE = { y: 174, height: 470, gap: 22 };
+const PANE = { y: 154, height: 684, gap: 22 };
 const COMMANDS_Y = PANE.y + PANE.height + PANE.gap;
 
-function paneSize(pane: TermPaneSpec, width: number, columns: number) {
-  const size = Math.min(
-    28,
-    (width - 80) / ((pane.cols + 2) * 0.4),
-    (PANE.height - 2 * CRT.pad - CRT.tagBand - 48) / (pane.rows * 1.12),
-  );
-  if (pane.cols > columns || size < 24)
-    throw new Error(
-      `Pane "${pane.id}" at ${pane.rows} rows by ${pane.cols} columns needs ${size}px type; use at least 24px and at most ${columns} columns.`,
-    );
-  return size;
+/** VT323 advances 0.4em; reserve the next whole-pixel cell for xterm's font snapping. */
+export function paneGrid(count: number) {
+  if (count !== 1 && count !== 2) throw new Error(`Demo pane count ${count} must be 1 or 2`);
+  const width = (FRAME.right - FRAME.left - (count - 1) * PANE.gap) / count;
+  const size = count === 1 ? 28 : 24;
+  const cell = Math.ceil(size * 0.4);
+  return {
+    width,
+    size,
+    cols: Math.floor((width - 80) / cell),
+    rows: Math.floor((PANE.height - 2 * CRT.pad - CRT.tagBand - 38.4) / ((cell / 0.4) * 1.12)),
+  };
 }
 
 /** Keep whole exchanges, including the newest command, inside the readable viewport. */
@@ -74,11 +75,13 @@ function commandTokens(command: string) {
 }
 
 export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
-  const width = (FRAME.right - FRAME.left - (demo.panes.length - 1) * PANE.gap) / demo.panes.length;
-  const panes = demo.panes.map((entry) => ({
-    ...entry,
-    size: paneSize(entry.pane, width, demo.panes.length === 2 ? 80 : Infinity),
-  }));
+  const { width, size, rows, cols } = paneGrid(demo.panes.length);
+  const panes = demo.panes;
+  for (const { pane } of panes)
+    if (pane.rows !== rows || pane.cols !== cols)
+      throw new Error(
+        `Pane "${pane.id}" must use paneGrid(${panes.length}): ${rows} rows by ${cols} columns`,
+      );
   const deck = useDeck();
   const slide = useSlide();
   const s = useTween({ power: OFF });
@@ -93,26 +96,26 @@ export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
 
   return (
     <StoryStage
-      className={styles.stage}
       beats={beats}
       click={clicks}
       overlay={
         <>
           <h2 className="od-story-head">{demo.headline}</h2>
           <NamePlate id={demo.product} chipOnly />
-          {panes.map(({ pane, recording, label, size }, index) => {
+          {panes.map(({ pane, recording, label }, index) => {
             const x = FRAME.left + index * (width + PANE.gap);
             return (
               <div key={pane.id}>
-                <div className={styles.tube} aria-hidden="true">
+                <div className={`${styles.tube} ${styles.off}`} aria-hidden={clicks !== 0}>
                   <CrtPanel
                     x={x}
                     y={PANE.y}
                     width={width}
                     height={PANE.height}
                     label={label}
+                    fig={copy.lead}
                     power={OFF}
-                    progress={(ON - s.power) * DIM}
+                    progress={ON - s.power}
                   />
                 </div>
                 <div
@@ -132,6 +135,7 @@ export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
                     width={width}
                     height={PANE.height}
                     label={label}
+                    caption={copy.lead}
                     size={size}
                   />
                 </div>
@@ -197,7 +201,6 @@ export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
           <ThreadRail current={demo.product} />
         </>
       }
-      card={<StoryCard anchor="left" hue="rose" lead={copy.lead} body={copy.body} />}
     />
   );
 }

@@ -1,17 +1,40 @@
 .terminal {
   height: 100%;
   width: 100%;
-  color: var(--od-phosphor);
+  color: var(--od-text);
   font-family: var(--sf-font-term);
 }
 
-.terminal :global(.xterm-viewport) {
-  overflow: hidden;
-}
 .skin {
   display: contents;
+  pointer-events: auto;
 }
 
 .skin :global(.sf-panel-label) {
   z-index: 1;
+}
+
+.skin :global(.sf-panel-fig) {
+  text-transform: none;
+  color: var(--od-text);
+}
+
+.skin :global(.sf-term-lines) {
+  color: var(--od-text);
+  font-variant-ligatures: none;
+  width: var(--live-term-width, 100%);
+  height: var(--live-term-height, 100%);
+  margin-left: var(--live-term-margin, 0px);
+  line-height: var(--live-term-line-height, 1.12);
+}
+
+.skin :global(.sf-term-line) {
+  flex: none;
+  min-height: var(--live-term-line-height, 1.12em);
+}
+
+.skin :global(.sf-term-line.is-cmd),
+.skin :global(.sf-term-line.is-cmd .sf-term-prefix) {
+  color: var(--od-phosphor);
+  font-weight: bold;
 }

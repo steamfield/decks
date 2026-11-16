@@ -112,7 +112,11 @@ export function createSessions(options: {
           broadcast(s, TERM_READY, { id: pane.id, buffer: "" });
           printed = s.buffer;
         }
-        broadcast(s, TERM_DATA, { id: pane.id, chunk: printed });
+        broadcast(s, TERM_DATA, {
+          id: pane.id,
+          chunk: printed,
+          ...(s.cancel ? { immediate: true } : {}),
+        });
         if (prompted) {
           s.cancel?.();
           s.cancel = undefined;

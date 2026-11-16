@@ -1,6 +1,7 @@
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import {
   TERM_ATTACH,
@@ -12,6 +13,7 @@ import {
   type TermReset,
   type TermStep,
 } from "../protocol";
+import { shellEnvironment } from "./environment";
 import { createSessions } from "./sessions";
 import { shellSpawn } from "./shell";
 
@@ -44,11 +46,11 @@ export function liveTerm(options: {
           tempDir: () => mkdtempSync(join(tmpdir(), "deck-term-")),
           dirs: options.dirs,
           env: {
-            ...process.env,
+            ...shellEnvironment(process.env),
             TERM: "xterm-256color",
             DO_NOT_TRACK: "1",
-            PROMPT_EOL_MARK: "",
-            PS1: `%{${options.promptMarker}%}$ `,
+            ZDOTDIR: fileURLToPath(new URL("./zsh", import.meta.url)),
+            DECK_TERM_PROMPT_MARKER: options.promptMarker,
           },
           promptMarker: options.promptMarker,
           log: (reason) => server.config.logger.warn(`Live terminal: ${reason}`),

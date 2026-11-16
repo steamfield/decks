@@ -27,7 +27,7 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
   let active = false;
   let previous: { active: boolean; click: number } | undefined;
   const listeners = new Set<() => void>();
-  const output = new Set<(chunk: string) => void>();
+  const output = new Set<(chunk: string, replay: boolean, immediate: boolean) => void>();
   const update = (next: typeof snapshot) => {
     snapshot = next;
     for (const listener of listeners) listener();
@@ -38,13 +38,13 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
     if (!matches(message) || typeof message.buffer !== "string") return;
     buffer = message.buffer;
     // RIS shares xterm's write queue, so pending old output is cleared before the replay.
-    for (const receive of output) receive(`\u001bc${buffer}`);
+    for (const receive of output) receive(`\u001bc${buffer}`, true, false);
     update({ ...snapshot, live: true, reason: "" });
   };
   const data = (message: unknown) => {
     if (!matches(message) || typeof message.chunk !== "string") return;
     buffer = (buffer + message.chunk).slice(-200 * 1024);
-    for (const receive of output) receive(message.chunk);
+    for (const receive of output) receive(message.chunk, false, message.immediate === true);
   };
   const state = (message: unknown) => {
     if (
@@ -87,9 +87,9 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
         listeners.delete(receive);
       };
     },
-    subscribeOutput(receive: (chunk: string) => void) {
+    subscribeOutput(receive: (chunk: string, replay: boolean, immediate: boolean) => void) {
       output.add(receive);
-      receive(`\u001bc${buffer}`);
+      receive(`\u001bc${buffer}`, true, false);
       return () => {
         output.delete(receive);
       };
