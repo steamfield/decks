@@ -55,6 +55,6 @@ export const COPY = [
 export const DEMO: LiveDemo = {
   headline: "rr runs this task across my machines.",
   product: "rr",
-  panes: [{ pane: PANE, recording: RECORDING, label: "SHELL" }],
+  panes: [{ pane: PANE, recording: RECORDING, label: "" }],
   copy: COPY,
 };

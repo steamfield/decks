@@ -32,9 +32,13 @@ term/protocol.ts            event names and message shapes; no logic, no imports
 term/server/sessions.ts     session rules: one shell per pane id, steps, queue, reset, replay
 term/server/shell.ts        spawns the pty helper
 term/server/shell_pty.py    a pty in Python's standard library; no native module
+term/server/environment.ts  the shell's environment, without the package runner's variables
+term/server/zsh/.zshrc      the private shell setup: prompt, prompt marker, spacing
 term/server/plugin.ts       Vite plugin: wires sessions to custom events on the HMR socket
 term/client/connection.ts   one pane's connection: attach, navigate, output, state
 term/client/use-live-term.ts  the React hook over a connection
+term/client/output-pacer.ts paces bursts of output
+term/client/terminal-face.ts the snapped font size and the fit of the grid to the pane
 term/client/xterm-host.tsx  xterm in a counter-scaled host
 components/LiveTerm.tsx     the pane: recording, or the host when live (deck-specific skin)
 components/LiveDemoStage.tsx  the demo slide: panes, command cards (deck-specific)
@@ -61,8 +65,20 @@ version keeps them.
   output.
 - The session resets only when the slide becomes active at click 0 or navigation returns to
   click 0, and only if something ran or was typed. A mount or a reload only attaches.
-- The shell is `zsh -f` in a fresh temporary directory outside the repo, or a directory the
-  deck's config names. The browser never sends a path.
+- The shell is `zsh -d` with a private `ZDOTDIR`, in a fresh temporary directory outside the
+  repo or a directory the deck's config names. The private `.zshrc` sets the prompt, its
+  marker and the blank line before each prompt; no personal or global rc file is read, so
+  nothing personal reaches the projector. The browser never sends a path.
+- The shell's environment is the dev server's with the package runner's additions removed
+  (`npm_*`, `NODE`, `NODE_OPTIONS`, `INIT_CWD`, and `node_modules/.bin` entries on `PATH`).
+  Without that, `bun` and `node` in the pane behaved differently from the speaker's own
+  terminal.
+- Output of more than three lines in a frame is paced at about 30 lines a second and never
+  falls more than 1.5 s behind; a replay on attach, a typed key and the echo of a prepared
+  command are not paced. A burst that lands in one frame cannot be followed from the back
+  of a room.
+- The pane's grid is fixed by the deck (135 by 17 here) and the recording wraps at the same
+  width. The host scales the snapped grid to fill the pane; the shell is never resized.
 
 ## Plan
 

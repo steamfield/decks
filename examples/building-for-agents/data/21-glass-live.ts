@@ -58,6 +58,6 @@ export const COPY = [
 export const DEMO: LiveDemo = {
   headline: "StatGlass reports this laptop's CPU history.",
   product: "statglass",
-  panes: [{ pane: PANE, recording: RECORDING, label: "SHELL" }],
+  panes: [{ pane: PANE, recording: RECORDING, label: "" }],
   copy: COPY,
 };

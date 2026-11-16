@@ -72,6 +72,6 @@ export const COPY = [
 export const DEMO: LiveDemo = {
   headline: "Stacks gives a failed check an exit code.",
   product: "stacks",
-  panes: [{ pane: PANE, recording: RECORDING, label: "SHELL" }],
+  panes: [{ pane: PANE, recording: RECORDING, label: "" }],
   copy: COPY,
 };
