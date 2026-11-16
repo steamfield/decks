@@ -1,7 +1,7 @@
 import { OdQrCard, StoryCover } from "@steamfield/decks/kit";
 import { BYLINE } from "../data/01-cover";
 import { countWord } from "../data/03-thread";
-import { INSTALL, PRODUCT_COUNT, SITE } from "../data/19-close";
+import { INSTALL, PRODUCT_COUNT, SITE } from "../data/20-close";
 import styles from "./CloseStage.module.css";
 import { NightDriveField } from "./NightDriveField";
 import { SfMark } from "./SfMark";
@@ -32,8 +32,7 @@ export function CloseStage() {
       title={<span className="sf-chrome">{host}</span>}
       lede={
         <>
-          <span className="sf-prompt">❯</span> {countWord(PRODUCT_COUNT)} products, most of them
-          open source.
+          <span className="sf-prompt">❯</span> {countWord(PRODUCT_COUNT)} products, all open source.
         </>
       }
       byline={

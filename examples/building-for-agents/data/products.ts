@@ -1,5 +1,5 @@
 /**
- * The seven products, in the order work flows through them. The one source
+ * The five products, in the order work flows through them. The one source
  * for names, verbs, language chips and pixel icons: the thread rail and every
  * name plate read this file.
  *
@@ -11,14 +11,7 @@
  * under "Every slide: product chips".
  */
 
-export type ProductId =
-  | "stacks"
-  | "foreman"
-  | "rr"
-  | "statglass"
-  | "opendata"
-  | "openchart"
-  | "decks";
+export type ProductId = "stacks" | "foreman" | "rr" | "statglass" | "decks";
 
 export interface Product {
   id: ProductId;
@@ -109,46 +102,6 @@ export const PRODUCTS: readonly Product[] = [
       "........yy..",
       ".........yy.",
       "..........y.",
-    ],
-  },
-  {
-    id: "opendata",
-    name: "OpenData",
-    verb: "Ask",
-    lang: "TypeScript · Python engine",
-    icon: [
-      "............",
-      ".........yy.",
-      "......cc.yy.",
-      "......cc.yy.",
-      "...pp.cc.yy.",
-      "...pp.cc.yy.",
-      "vv.pp.cc.yy.",
-      "vv.pp.cc.yy.",
-      "vv.pp.cc.yy.",
-      "vv.pp.cc.yy.",
-      "wwwwwwwwwwww",
-      "............",
-    ],
-  },
-  {
-    id: "openchart",
-    name: "OpenChart",
-    verb: "Chart",
-    lang: "TypeScript",
-    icon: [
-      "............",
-      "..........yy",
-      ".........y..",
-      "........y...",
-      "...pp..y....",
-      "..p..pp.....",
-      ".p..........",
-      "p...........",
-      "c...........",
-      "c...........",
-      "cccccccccccc",
-      "............",
     ],
   },
   {

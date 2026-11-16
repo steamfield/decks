@@ -131,7 +131,7 @@ and switch on at a beat.
 
 ## Recurring parts
 
-- `ThreadRail`: the seven products along the bottom, under the card. Past
+- `ThreadRail`: the five products along the bottom, under the card. Past
   products at full strength, the current one with a pink marker and a yellow
   verb, the rest at the dim level. The beat rail sits below it.
 - `NamePlate`: pixel icon, Orbitron name and language chip, top right, on a

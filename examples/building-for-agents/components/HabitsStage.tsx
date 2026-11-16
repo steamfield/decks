@@ -1,7 +1,7 @@
 import { DUR, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import { countWord } from "../data/03-thread";
-import { HABITS, ROWS_PER_BEAT } from "../data/18-habits";
+import { HABITS, ROWS_PER_BEAT } from "../data/19-habits";
 import { PRODUCTS } from "../data/products";
 import { DIM, FRAME, DATA as LIT, OFF, ON } from "./design";
 import { PixelIcon } from "./PixelIcon";
@@ -16,15 +16,15 @@ const COPY = [
   },
   {
     lead: "A command checks when work is finished.",
-    body: `Stacks has verify, and Decks has check and lint. ${countWord(count("exit"))} tools document one action per exit code.`,
+    body: `Stacks has verify, and Decks has check and lint; ${countWord(count("exit")).toLowerCase()} tools document one action per exit code.`,
   },
   {
     lead: "Agents run in parallel and read bundled docs.",
-    body: `rr locks a host and foreman uses a worktree per task. ${countWord(count("docs"))} tools ship their own guide or skill.`,
+    body: `rr locks a host and foreman uses a worktree per task; ${countWord(count("docs")).toLowerCase()} tools ship their own guide or skill.`,
   },
   {
     lead: "Any CLI or library can adopt these habits.",
-    body: "The six habits are output formats, exit codes, locks and bundled docs. None of them calls a model.",
+    body: "The six habits are output formats, exit codes, locks and bundled docs; none of them calls a model.",
   },
 ];
 

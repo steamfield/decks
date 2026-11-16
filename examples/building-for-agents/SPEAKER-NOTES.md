@@ -2,6 +2,8 @@
 
 The full script for each slide, moved out of the slide files. The slides carry a bullet version of the same points for use on stage. Each slide has what the slide shows, the spoken script (opening, then one paragraph per click), and answers for likely questions.
 
+Section numbers follow the slide filename prefixes. In the current 17-slide cut, the thread plays at position 3, habits at 16 and the close at 17; OUTLINE.md section 8 gives the full mapping.
+
 ## 1. Building for agents
 
 Clicks: 0
@@ -14,7 +16,7 @@ Source: data-sources.md, Slide 1.
 
 ### Say
 
-I'm Riley. I run Steamfield, a studio that builds its own products and takes no client work. Each product started as a tool I needed for my own work, and I still use all of them every day. Tonight I'll show seven of them. Most are written in TypeScript, and coding agents run some of them more often than I do, which changed how I build command line tools.
+I'm Riley. I run Steamfield, a studio that builds its own products and takes no client work. Each product started as a tool I needed for my own work, and I still use all of them every day. Tonight I'll show five of them. Most are written in TypeScript, and coding agents run some of them more often than I do, which changed how I build command line tools.
 
 ### If asked
 
@@ -42,27 +44,26 @@ My tools have two users, and the first one is me. This is rr running OpenData's 
 
 - Why do the two sides show different totals? The capture script runs the suite twice, once per format, 32 minutes apart. The end-to-end task failed in the first run and passed in the second.
 
-## 3. I ship a change with seven tools I built.
+## 3. I ship a change with five tools I built.
 
 Clicks: 2
 
 ### What the slide shows
 
-A schematic. The seven stations are the seven products in the order I use them on one change, which is also the order of the rail along the bottom of every later slide.
+A schematic. The five stations are the five products in the order I use them on one change, which is also the order of the rail along the bottom of every later slide.
 
 Source: data/sources/03-thread.md.
 
 ### Say
 
-These are the seven tools, in the order I use them on one change. I start a project with Stacks, delegate work with foreman, run the tests on other machines with rr and watch those machines with StatGlass. Then I query data with OpenData, chart it with OpenChart and present it with Decks. I built each one for my own work, and most of them started inside OpenData, whose test suite is about fourteen thousand tests.
+These are the five tools, in the order I use them on one change. I start a project with Stacks, delegate work with foreman, run the tests on other machines with rr and watch those machines with StatGlass. I present the change with Decks. I built each one for my own work, and most of them started inside OpenData, whose test suite is about fourteen thousand tests.
 
-**[click]** Six of the seven use TypeScript. Stacks and foreman are TypeScript with Effect, and rr is Go. StatGlass samples the system in Rust and draws its interface in TypeScript, and OpenData has a Python engine behind a TypeScript server.
+**[click]** Four of the five use TypeScript. Stacks and foreman are TypeScript with Effect, and rr is Go. StatGlass samples the system in Rust and draws its interface in TypeScript.
 
-**[click]** Stacks, foreman and StatGlass get several slides tonight, with the source code on screen. The other four get about ninety seconds each. The same seven are listed along the bottom of every slide, with the current one marked.
+**[click]** Stacks, foreman and StatGlass get several slides tonight, with the source code on screen. The other two, rr and Decks, get about ninety seconds each. The same five are listed along the bottom of every slide, with the current one marked.
 
 ### If asked
 
-- Are they all open source? Six of the seven are. OpenData is open core.
 - Where does fourteen thousand come from? It is the figure published on rr's site and in the Steamfield launch post.
 
 ## 4. Stacks briefs the agent and checks its work.
@@ -90,7 +91,7 @@ Stacks starts a project. I pick a stack, which is a Markdown recipe, and run one
 - What is in the brief? The stack's guidance, a section for each add-on, the ground rules, and a table of every verify step. A composed brief is capped at six thousand words.
 - Which agents does it start? Claude Code, Codex, OpenCode, Cursor and Copilot. When it is already running inside an agent, or in CI, it prints the prompt and starts nothing.
 
-## 5. The Stacks CLI is written with Effect.
+## 6. The Stacks CLI is written with Effect.
 
 Clicks: 5
 
@@ -98,7 +99,7 @@ Clicks: 5
 
 The left side is the layout of the Stacks CLI's source. The right side is code from the file named above it. A line that reads only as three dots marks lines left out.
 
-Source: data-sources.md, Slide 5.
+Source: data-sources.md, Slide 6.
 
 ### Say
 
@@ -119,7 +120,7 @@ This is the source of that CLI: 203 files and about twenty-four thousand lines o
 - Why Effect? Its errors are typed and the compiler checks its dependencies. The CLI's output is a contract with the agents that call it, and typed errors let me list every way a command can fail.
 - Which Effect? Effect 4, with the CLI module that ships inside the effect package. The published CLI runs on Node 22 or newer, and Bun builds and bundles it.
 
-## 6. Stacks output differs for people and agents.
+## 7. Stacks output differs for people and agents.
 
 Clicks: 3
 
@@ -127,7 +128,7 @@ Clicks: 3
 
 Three recordings of the same failed stacks verify, made on November 13 with stacks 0.7.0 in a scratch project that had not been built: on a terminal, with an agent marker in the environment, and with the JSON flag. The tiles on the last beat are the exit table from the CLI's output reference.
 
-Source: data/sources/06-stacks-output.md.
+Source: data/sources/07-stacks-output.md.
 
 ### Say
 
@@ -144,7 +145,7 @@ This is a failed stacks verify on my terminal. Passed steps are green and failed
 - Why not always print JSON? People run these commands too. All three formats are rendered from the same result value.
 - What exits 6? A write the CLI refuses, a failed update, or an agent passing the flag that accepts changed verify steps.
 
-## 7. foreman runs each Codex task in its own worktree.
+## 8. foreman runs each Codex task in its own worktree.
 
 Clicks: 4
 
@@ -152,7 +153,7 @@ Clicks: 4
 
 foreman's landing-page session, redrawn. Claude is on the left, the daemon's board is the monitor in the middle, and each card on the right is one Codex delegate in its worktree. The commands, file writes, question and answer come from three runs recorded on November 6 while building foreman's own site. The timeline they are spread over is shortened and scripted.
 
-Source: data/sources/07-foreman-session.md.
+Source: data/sources/08-foreman-session.md.
 
 ### Say
 
@@ -171,7 +172,7 @@ foreman is a CLI that lets Claude Code delegate coding work to Codex models. Thi
 - Does every delegate ask a question? The site-e2e run finished without one. The contract tells a delegate to ask only when it is blocked by something the contract and the repo do not settle.
 - Is the timeline real? The commands, file writes, question and answer are recorded. The timing is compressed, and the third run started 23 minutes after the first two.
 
-## 8. foreman is a short-lived CLI and a daemon.
+## 9. foreman is a short-lived CLI and a daemon.
 
 Clicks: 3
 
@@ -179,7 +180,7 @@ Clicks: 3
 
 A schematic of foreman's processes, left to right: Claude Code, the foreman CLI, a Unix socket, the daemon, one codex app-server, and a thread per run. The tree on the right is foreman's src folder, and the highlighted row is the folder that implements the lit box.
 
-Source: data/sources/08-foreman-daemon.md.
+Source: data/sources/09-foreman-daemon.md.
 
 ### Say
 
@@ -196,7 +197,7 @@ foreman has two processes of its own. The foreman CLI runs once per command and 
 - Why a daemon? A held question and a running turn both have to outlive the command that started them.
 - How long did foreman take to build? The repo has 111 commits, dated November 5 to 7.
 
-## 9. Codex waits until Claude answers its question.
+## 10. Codex waits until Claude answers its question.
 
 Clicks: 3
 
@@ -204,7 +205,7 @@ Clicks: 3
 
 A sequence diagram with four participants: Claude, a foreman wait running as a background task, the daemon, and Codex. The pane under it shows code from foreman, a different file on each beat. The two terminal lines at the lower left are the example in foreman's design doc.
 
-Source: data/sources/09-foreman-question.md.
+Source: data/sources/10-foreman-question.md.
 
 ### Say
 
@@ -220,7 +221,7 @@ A delegate asks a question by calling a tool. foreman registers one tool with Co
 
 - What if Claude is busy when the question arrives? The question stays pending in the run's question log, and foreman status lists it.
 
-## 10. rr runs each agent's tests on its own machine.
+## 11. rr runs each agent's tests on its own machine.
 
 Clicks: 4
 
@@ -230,7 +231,7 @@ The diagram is a schematic. It is the simulation of rr's lock rules from rr's ow
 
 The simulation's hosts are m4-mini, m1-linux and m1-mini. OpenData's config lists mbp, m4-mini and m1-mini and sets worktree_isolation to false, so the card on beat 3 describes rr's default.
 
-Source: data-sources.md, Slide 10.
+Source: data-sources.md, Slide 11.
 
 ### Say
 
@@ -250,7 +251,7 @@ rr is written in Go. My agents use it all day to run tests. It copies the workin
 - Is this load balancing? rr takes the first host it can lock, in config order. It does not measure load.
 - Are those your hosts? The names are the simulation's. OpenData's config lists mbp, m4-mini and m1-mini, and it sets worktree_isolation to false so all worktrees share one remote copy.
 
-## 11. StatGlass started as the rr monitor command.
+## 13. StatGlass started as the rr monitor command.
 
 Clicks: 2
 
@@ -260,7 +261,7 @@ Beats 0 and 1 replay a recording of rr monitor snapshots for three hosts, taken 
 
 That StatGlass came from watching rr monitor is my own account, and no repo records it.
 
-Source: data-sources.md, Slide 11.
+Source: data-sources.md, Slide 13.
 
 ### Say
 
@@ -275,7 +276,7 @@ rr monitor is a terminal dashboard that ships with rr. It shows one card per hos
 - Is 30 days guaranteed? History has a size limit. When it is reached, the oldest per-process detail is removed first and the resource charts after that.
 - Does StatGlass need rr? It monitors any Apple Silicon Mac it can reach over SSH. The rr job is an extra reading on hosts that have an rr lock.
 
-## 12. Rust collects the data and TypeScript draws it.
+## 14. Rust collects the data and TypeScript draws it.
 
 Clicks: 4
 
@@ -283,7 +284,7 @@ Clicks: 4
 
 A schematic of the StatGlass repo. Rust crates are on the left, the TypeScript layers on the right, and the generated bindings file is between them. The bar is line counts at commit 5db8622a, with tests and generated code included. The chart inside the widget box uses made-up values. The code is quoted from the files named above each pane.
 
-Source: data-sources.md, Slide 12.
+Source: data-sources.md, Slide 14.
 
 ### Say
 
@@ -301,7 +302,7 @@ StatGlass is a Tauri app, and 58 percent of its lines are Rust. The Rust crates 
 
 - Do the line counts include tests? Yes. Inline Rust tests, TypeScript tests and the generated bindings are all counted.
 
-## 13. The StatGlass UI also runs in a browser tab.
+## 15. The StatGlass UI also runs in a browser tab.
 
 Clicks: 1
 
@@ -309,7 +310,7 @@ Clicks: 1
 
 The left side is a schematic of the two Transport implementations. The code is the Transport interface from src/core/transport/contracts.ts, trimmed where a line reads only as three dots. On the second beat the frame holds the hosted StatGlass demo in an iframe: the real React app on its mock transport, with the multi-host scenario and simulated readings. It needs a network connection, and it loads only in the slide view. Clicking inside the frame moves keyboard focus into it, so click the slide outside the frame before pressing an arrow key.
 
-Source: data-sources.md, Slide 13.
+Source: data-sources.md, Slide 15.
 
 ### Say
 
@@ -321,7 +322,7 @@ The React code under src/app calls an interface named Transport for everything i
 
 - Is the frame live? Yes. Timeline and Hosts are in its sidebar.
 
-## 14. Agents read StatGlass history through a CLI.
+## 16. Agents read StatGlass history through a CLI.
 
 Clicks: 2
 
@@ -329,7 +330,7 @@ Clicks: 2
 
 The terminal is an illustrative session that nobody recorded. The history output and the error envelope are the exact strings the CLI's tests assert. The output of now is made-up values in the real JSON shape, wrapped at 100 columns the way a terminal would wrap it. The quote on the last beat is plan/rfc-agent-cli.md, lines 106 to 109, word for word.
 
-Source: data-sources.md, Slide 14.
+Source: data-sources.md, Slide 16.
 
 ### Say
 
@@ -344,58 +345,7 @@ StatGlass ships a command-line tool named statglass that a coding agent can run.
 - How big is the CLI binary? I have not measured it. The 550 KB in the quote is the helper binary next to it.
 - Which commands does it have? guide, hosts, now, metrics, history, events, top, doctor, schema and skill.
 
-## 15. OpenData sends text to the model, rows to the UI.
-
-Clicks: 3
-
-### What the slide shows
-
-The monitor on the left replays the first turn of the OpenData session shown on steamfield.io, whose queries ran on November 4. The code on the right is quoted from OpenData's MCP server. The diagram that replaces it is a schematic of one chart result. The chart on the last beat is drawn from eight rows of the session's query result.
-
-Source: data/sources/15-opendata.md.
-
-### Say
-
-OpenData is a catalog of public data sources that an agent can search and query with SQL. The query engine is Python and DuckDB. The part an agent talks to is an MCP server written in TypeScript, running on Bun with Hono. The code on the right is the server's tool list, one register call per tool, fourteen in total. The model can call eleven of them. The last three are marked app only, so the chart interface can call them and the model is never shown them.
-
-**[click]** When a client connects, the server sends it a block of instructions, and the highlighted line sets the order of tool calls: search, then SQL, then chart. The same line says search results already include column schemas, so the model can write SQL without a describe call first. In the recorded session on the left the model made one search and one query, and the query returned fifty-one rows in eleven milliseconds. I tune these instructions from transcripts of real sessions.
-
-**[click]** The model then calls the chart tool, and its result has three fields. Content is text, which the model reads. Structured content holds the chart spec and the first twenty-four rows. The rows the chart is drawn from, up to a hundred and twenty, are in underscore meta, which the host passes to the interface and keeps out of the model's context. Query results are limited the same way, to sixty rows for the model.
-
-**[click]** The interface is a React app that the server publishes as a ui resource, and the host loads it in an iframe inside the conversation. The eight bars are rows from the query on this slide, the eight jurisdictions that query labels PJM-core. OpenChart draws the chart.
-
-### If asked
-
-- Why keep rows out of the model's context? Rows cost tokens. The model needs enough text to describe the result, and the chart needs all of its rows.
-- What if a host drops underscore meta? The interface draws from the twenty-four rows in structured content.
-- Are the sources all government? No. A few providers are not government agencies, so I say public data sources.
-
-## 16. OpenChart validation reports which field is wrong.
-
-Clicks: 3
-
-### What the slide shows
-
-The spec on the left is the bar chart from OpenChart's README, printed as JSON with the data rows and the chrome block dropped. The middle tile is what the engine's validateSpec returned for it in this browser when the slide loaded. The chart on the right is the same spec drawn by the Vue wrapper.
-
-Source: data/sources/16-openchart.md.
-
-### Say
-
-OpenChart is the charting library OpenData uses. A chart is a JSON object, and this one is the bar chart from the README. It names a mark, bar, and maps the popularity column to x and the language column to y. The engine computes scales, tick labels and layout from that. Because the chart is data, it can be validated before anything is drawn.
-
-**[click]** In this spec the y field is misspelled as langauge. The tile in the middle shows what validateSpec returned for it when this page loaded. The path is a JSON Pointer to the field, the code is a fixed string an agent can match on, and the suggestion lists the data's columns and proposes the closest one by edit distance. The validator is about thirty-four hundred lines of TypeScript and uses no schema library.
-
-**[click]** With the field spelled language, validateSpec returns valid with no errors, and the Vue component draws the chart on the right from the same object. The spec is also published as a JSON Schema file. That file is generated from the TypeScript types, and CI fails when it is out of date.
-
-**[click]** OpenChart is six packages, and the bars show how many lines of TypeScript each has, excluding tests. Core holds the types and the theme. The engine is the largest at about fifty thousand lines; it validates specs and computes layout, and it has no DOM code. Vanilla draws the engine's layout to the DOM, and it can also render SVG on a server. The React, Vue and Svelte packages wrap vanilla, and the React package is about five percent of the engine's size. The spec type has nineteen marks.
-
-### If asked
-
-- Is there a CLI or an MCP server for OpenChart? No. It is a library, and agents reach it through OpenData's MCP server.
-- Which version is this? 9.0.0.
-
-## 17. A Decks hook blocks AI-sounding sentences.
+## 18. A Decks hook blocks AI-sounding sentences.
 
 Clicks: 2
 
@@ -403,7 +353,7 @@ Clicks: 2
 
 The code on the left is this slide's own source, read from the component file at build time. The terminal that replaces it replays site/fixtures/hook-denial.json: a test line sent to the write hook, and the hook's answer. The pattern counts come from the lint's pattern file and the figure count from this deck's source tables, all computed at build time.
 
-Source: data/sources/17-decks.md.
+Source: data/sources/18-decks.md.
 
 ### Say
 
@@ -411,25 +361,25 @@ Decks is the tool these slides are built with. Each slide is a React component w
 
 **[click]** Decks also has a hook that runs before an agent writes a file. The terminal shows a recorded run of it. The input was a test sentence containing two stock phrases, and the hook denied the write and printed the two pattern ids. The lint has twenty-seven patterns. Five are errors, which the hook refuses, and twenty-two are warnings that appear only in the lint report.
 
-**[click]** Each figure in this deck has a row in a sources file that names the file or command it came from. The number on the right is the count of those rows, computed when the deck was built. The outline for this talk gave the OpenChart engine as fifty thousand and ninety-seven lines. The command returned fifty thousand three hundred and sixty-nine when the slide was built, and the slide uses that.
+**[click]** Each figure in this deck has a row in a sources file that names the file or command it came from. The number on the right is the count of those rows, computed when the deck was built.
 
 ### If asked
 
 - Where do the patterns come from? A TSV file in the Decks package, with one regular expression per row.
 
-## 18. Each tool has some of the same six habits.
+## 19. Each tool has some of the same six habits.
 
 Clicks: 3
 
 ### What the slide shows
 
-Six habits down the side and the seven products across the top. A cell is lit where a file in that product's repo shows the habit, and the word in the cell is the flag, field or command. Cells with no file behind them are dark.
+Six habits down the side and the five products across the top. A cell is lit where a file in that product's repo shows the habit, and the word in the cell is the flag, field or command. Cells with no file behind them are dark.
 
-Source: data/sources/18-habits.md, one row per lit cell.
+Source: data/sources/19-habits.md, one row per lit cell.
 
 ### Say
 
-This matrix lists six habits and shows which of the seven tools has each one. I lit a cell only where I could point to a file in that product's repo. The first two rows are about output. Six of the tools print JSON that a program can parse, behind a flag or by default, and the same six print the next step. Stacks and StatGlass put a next field in the error, foreman ends a result with the next command, and OpenChart's validation errors suggest the field name you probably meant.
+This matrix lists six habits and shows which of the five tools has each one. I lit a cell only where I could point to a file in that product's repo. The first two rows are about output. Four of the tools print JSON that a program can parse, behind a flag or by default, and the same four print the next step. Stacks and StatGlass put a next field in the error, foreman ends a result with the next command.
 
 **[click]** The next two rows are about finishing. Stacks, foreman and StatGlass document their exit codes so that each code means one action. Three tools have a command that checks the work: Stacks has verify, a foreman contract lists the commands that must pass, and Decks has check and lint.
 
@@ -439,9 +389,9 @@ This matrix lists six habits and shows which of the seven tools has each one. I 
 
 ### If asked
 
-- Why are some cells dark? I lit a cell only where I could point to a file. rr returns the remote command's exit code, so it has no exit table. OpenChart's validator is a function with no command around it.
+- Why are some cells dark? I lit a cell only where I could point to a file. rr returns the remote command's exit code, so it has no exit table.
 
-## 19. The seven tools are at steamfield.io.
+## 20. The five tools are at steamfield.io.
 
 Clicks: 0
 
@@ -449,11 +399,11 @@ Clicks: 0
 
 The cover's picture with the sun lower. It shows the site's address, the install commands for three of the tools and a QR code to steamfield.io, and it stays up during questions.
 
-Source: data/sources/19-close.md.
+Source: data/sources/20-close.md.
 
 ### Say
 
-The seven products are at steamfield.io, and six of them are open source. OpenData is open core. These three install with one command each. Stacks starts a project, foreman delegates work to Codex, and rr runs tests on another machine. The QR code opens steamfield.io.
+The five products are at steamfield.io. These three install with one command each. Stacks starts a project, foreman delegates work to Codex, and rr runs tests on another machine. The QR code opens steamfield.io.
 
 ### If asked
 

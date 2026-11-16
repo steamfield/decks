@@ -6,7 +6,7 @@ recorded run, a published article or a named document. This is the fact-check in
 One section per visible slide, in manifest order. A figure with no source yet carries
 `FLAG:` and the sentence that says what to confirm before presenting.
 
-Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3 and 5 to 19 are also kept one per file under `data/sources/`,
+Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3, 6 to 11, 13 to 16 and 18 to 20 are also kept one per file under `data/sources/`,
 where each stage's author wrote them; this file is the merged copy the fact-check reads.
 
 ---
@@ -15,13 +15,11 @@ where each stage's author wrote them; this file is the merged copy the fact-chec
 
 | Figure | Value | Source |
 |---|---|---|
-| Product order and verbs | Start, Delegate, Test, Watch, Ask, Chart, Present | `OUTLINE.md` section 3 (Riley's decision, 2026-11-13) |
+| Product order and verbs | Start, Delegate, Test, Watch, Present | `OUTLINE.md` section 3 (Riley's decision, 2026-11-13) |
 | Stacks language chip | TypeScript · Effect 4 | `~/Projects/stacks/package.json` catalog `"effect": "^4.0.6"`; `bun.lock` pins `effect@4.0.6` |
 | foreman language chip | TypeScript · Effect 4 | `~/Projects/claude-codex/package.json` `"effect": "^4.1.2"` |
 | rr language chip | Go | `~/Projects/rr/go.mod` |
 | StatGlass language chip | Rust + TypeScript | `~/Projects/statglass`: `find crates src-tauri -name '*.rs' \| xargs cat \| wc -l` against `find src \( -name '*.ts' -o -name '*.tsx' \) \| xargs cat \| wc -l` |
-| OpenData language chip | TypeScript · Python engine | `~/Projects/opendata/mcp/package.json` (the MCP server) and `opendata/pyproject.toml` (the engine) |
-| OpenChart language chip | TypeScript | `~/Projects/openchart/packages/*/package.json` |
 | Decks language chip | TypeScript · React | this repo, `packages/decks/` |
 | Pixel icons | 12x12, one per product | `~/Projects/steamfield/src/data/pixel-icons.ts` (steamfield commit 53a1a06), copied into `data/products.ts` |
 
@@ -58,7 +56,7 @@ All from rr's site fixtures, `~/Projects/rr/site/fixtures/` (rr commit 536948d, 
 
 Departure from the outline, recorded so it is not undone: the outline calls the two files "the same run". They are the same command on the same tree, run twice, and their totals differ (2 failed against 3). The slide's tags name each command, and the notes say why the totals differ. The outline's first card said "spinners and a progress line redrawn on every tick"; the capture was taken through a pipe and holds no redraws, only colour codes (12 escape sequences in 43 lines), so the cards talk about colour codes.
 
-## Slide 3: I ship a change with seven tools I built.
+## Slide 3: I ship a change with five tools I built.
 
 Station order, verbs, names, icons and language chips are `data/products.ts` (see "Every slide: product chips").
 
@@ -66,13 +64,11 @@ Station order, verbs, names, icons and language chips are `data/products.ts` (se
 |---|---|---|
 | OPENDATA_TESTS | "about 14,000" | Published figure: `~/Projects/rr/README.md` line 58 ("around 14,000 tests", rr commit 536948d) and `~/Projects/steamfield/src/content/blog/why-steamfield.mdx` line 26 ("about 14,000 tests", steamfield commit 1b001f9). `FLAG:` replace with a collected count before the talk (`pytest --collect-only -q` in `opendata/` and `backend/`, `vitest list` in the TypeScript packages, or the totals of one `rr test` run); the outline's static count on 2026-11-13 was higher |
 | "Most started inside OpenData" | claim | `FLAG: author-reported` |
-| "Six of the seven use TypeScript" | 6 of the 7 language chips name TypeScript | `TYPESCRIPT_PRODUCTS` in `data/03-thread.ts`, computed from `data/products.ts` |
+| "Four of the five use TypeScript" | 4 of the 5 language chips name TypeScript | `TYPESCRIPT_PRODUCTS` in `data/03-thread.ts`, computed from `data/products.ts` |
 | "rr is Go" | claim | `~/Projects/rr/go.mod` |
 | "StatGlass samples the system in Rust" | claim | `~/Projects/statglass/crates/statglass-collect/src/` (Rust sources, statglass commit 5db8622a) |
 | FEATURED | Stacks, foreman, StatGlass | `OUTLINE.md` section 3 (Riley's decision, 2026-11-13) |
 | BRIEF_SECONDS (notes: "about ninety seconds each") | 90 | `FLAG: author-reported` (`OUTLINE.md` section 10) |
-| "OpenData's engine is Python" | claim | `~/Projects/opendata/pyproject.toml` (see "Every slide: product chips") |
-| "Six of the seven are open source; OpenData is open core" (IF ASKED) | claim | `license` fields in `~/Projects/steamfield/src/data/projects.ts` (line 41 for OpenData) |
 
 ## Slide 4: Stacks briefs the agent and checks its work.
 
@@ -95,7 +91,7 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 | "coding agents run some of them more often than I do" (slide 1 notes) | claim | `~/Projects/steamfield/src/content/blog/design-cli-for-ai-agents.mdx`: "two CLIs that agents call more than people do" (rr and Stacks) |
 | Notes: "six thousand for a composed brief" | 6,000 words | `~/Projects/stacks/AGENTS.md` line 126 |
 
-## Slide 5: The Stacks CLI is written with Effect.
+## Slide 6: The Stacks CLI is written with Effect.
 
 All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
 
@@ -105,7 +101,7 @@ All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
 | SRC_LINES | 24,386 | `find src -name '*.ts' \| xargs cat \| wc -l` |
 | TEST_FILES (notes) | 209 | `find tests -name '*.test.ts' \| wc -l` |
 | Tree rows | bin.ts, main.ts, cli.ts, runtime.ts, errors.ts, commands/, services/, platform/, schemas/, core/, tests/ | `ls src` and `ls`; the notes paraphrase `~/Projects/stacks/AGENTS.md`'s architecture map |
-| RUNS_COMMAND | `src/commands/runs.ts` lines 8 to 25 | `data/code/05-stacks.ts`, checked by `data/code/excerpts.test.ts` |
+| RUNS_COMMAND | `src/commands/runs.ts` lines 8 to 25 | `data/code/06-stacks.ts`, checked by `data/code/excerpts.test.ts` |
 | HOST_SERVICE | `src/services/host.ts` lines 29 to 49 | same |
 | APP_LAYER | `src/runtime.ts` lines 11 to 19 | same |
 | ERROR_TABLE | `src/errors.ts` lines 425 to 443 | same |
@@ -115,9 +111,9 @@ All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
 | "Effect 4, with the CLI module that ships inside the effect package" (notes) | claim | root `package.json` catalog `"effect": "^4.0.6"`; `bun.lock` pins `effect@4.0.6`; imports from `"effect/cli"` in `src/` |
 | "runs on Node 22 or newer; Bun builds and bundles it" (notes) | claim | `package.json` `engines`; `scripts/build.ts` lines 34 to 49; `dist/stacks` refuses Bun |
 
-## Slide 6: Stacks output differs for people and agents.
+## Slide 7: Stacks output differs for people and agents.
 
-The three panes were recorded for this deck on 2026-11-13 with the installed `stacks` 0.7.0 (`stacks --version`), in a scratch project made with `stacks new typescript-cli proj --sandbox --no-launch --offline` and never built. `stacks verify` was then run three times there with `DO_NOT_TRACK=1`, stdout and stderr captured separately. The lines shown are in `data/fixtures/06-stacks-verify.json`. Other sources are `~/Projects/stacks/packages/cli` at commit a952e96.
+The three panes were recorded for this deck on 2026-11-13 with the installed `stacks` 0.7.0 (`stacks --version`), in a scratch project made with `stacks new typescript-cli proj --sandbox --no-launch --offline` and never built. `stacks verify` was then run three times there with `DO_NOT_TRACK=1`, stdout and stderr captured separately. The lines shown are in `data/fixtures/07-stacks-verify.json`. Other sources are `~/Projects/stacks/packages/cli` at commit a952e96.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -127,7 +123,7 @@ The three panes were recorded for this deck on 2026-11-13 with the installed `st
 | SCRIPT pane | the first 44 of stdout's 15,886 characters; the first 211 of the 1,148-character envelope that ends stderr's 45 lines | `stacks verify --json >out 2>err` |
 | Totals in the panes | 6 passed, 16 failed, 0 skipped | the report's first line in each capture |
 | VERIFY_EXIT | 5 | `$?` after each of the three runs |
-| How rows are fitted | long lines wrap between words; step rows are cut with `…`; a lone `…` row stands for dropped lines; JSON rows are broken by hand and checked against the capture at build time | `data/06-stacks-output.ts` |
+| How rows are fitted | long lines wrap between words; step rows are cut with `…`; a lone `…` row stands for dropped lines; JSON rows are broken by hand and checked against the capture at build time | `data/07-stacks-output.ts` |
 | AUDIENCE_RULE (first card) | human only when stdout is a TTY, no agent is detected and CI is unset; otherwise agent; `--json` wins | `src/services/output.ts` lines 24 to 32 |
 | AGENT_MARKERS | CLAUDECODE, CODEX_SANDBOX, OPENCODE, CURSOR_AGENT, AI_AGENT (5 of the 10 markers, one per agent plus the cross-agent one) | `src/config.ts` lines 62 to 73 |
 | "prints no colour codes and no live step output" | claim | the AGENT capture: stderr is one `> step` line per step; the terminal capture streams each step's output |
@@ -139,14 +135,14 @@ The three panes were recorded for this deck on 2026-11-13 with the installed `st
 
 Departures from the outline: the panes are three runs of one command in one project (the totals match; the elapsed time differs by a tenth of a second), recorded in a scratch project and not in tea-dashboard, so that project's run record is untouched. The exit strip shows all eight rows of the table, including 1, which the outline left out. Titles, cards and notes were rewritten to PROSE.md. The second card says "no colour codes and no live step output" where the outline said "drops colour and progress", because the agent rendering still prints one `> step` line per step.
 
-## Slide 7: foreman, the session
+## Slide 8: foreman, the session
 
 Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. One batch of runs is used for the whole slide: three of the `site-*` runs in `site/fixtures/runs/` (`site-console`, `site-commands`, `site-e2e`), the same three `site/src/pages/index.astro` line 134 passes to `buildSession`. No figure comes from the `fix-*` batch.
 
 | Figure | Value | Source |
 |---|---|---|
-| The session model (`sceneAt`, `stepAt`, timing constants) | ported | `site/src/data/session.ts`, into `data/07-foreman-session.ts`. Geometry follows `site/src/components/landing/session/SessionCanvas.tsx` |
-| Session data (delegates, activity, packets, question) | `data/fixtures/07-foreman-session.json` | written by `bun examples/building-for-agents/data/fixtures/07-foreman-session.gen.mjs <out>`, which calls the site's own `buildSession` over the three run fixtures and `site/fixtures/cli/answer.json` |
+| The session model (`sceneAt`, `stepAt`, timing constants) | ported | `site/src/data/session.ts`, into `data/08-foreman-session.ts`. Geometry follows `site/src/components/landing/session/SessionCanvas.tsx` |
+| Session data (delegates, activity, packets, question) | `data/fixtures/08-foreman-session.json` | written by `bun examples/building-for-agents/data/fixtures/08-foreman-session.gen.mjs <out>`, which calls the site's own `buildSession` over the three run fixtures and `site/fixtures/cli/answer.json` |
 | Recorded date in the monitor's tag | 2026-11-06 | `createdAt` of all three runs (`RECORDED`) |
 | "timeline shortened" | the 54-second timeline, start order, steer and follow-up are scripted by the site's model | `site/src/data/session.ts` (`activityFor` compresses each recording); in the recordings `site-e2e` was created at 09:47:40 UTC, 23 minutes after `site-console` (09:24:19) and `site-commands` (09:24:25) |
 | Delegates | 3 | `DELEGATES`, the three lanes |
@@ -164,7 +160,7 @@ Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. One batch of
 
 Departures recorded here: the packet from the daemon to Claude is labelled "wait returns: …" (the site labels it "question q1" and "done"), because foreman sends Claude nothing; the Claude status line is rewritten without the site's arrow glyph. The ambient "events" dots are the model's own and are frozen in a still.
 
-## Slide 8: foreman, the daemon
+## Slide 9: foreman, the daemon
 
 Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The diagram is a schematic; every label on it is from the file named here.
 
@@ -190,9 +186,9 @@ Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The diagram 
 
 Not used: the outline's "44 test files". `find src tests -name '*.test.ts' \| wc -l` gives 40; 44 counts every `*.test.ts` outside `site/` and `node_modules/`. Neither is on the slide or in the notes.
 
-## Slide 9: foreman, the held question
+## Slide 10: foreman, the held question
 
-Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The sequence diagram is a schematic. The code is quoted through `data/code/09-foreman-question.ts` and checked by `data/code/excerpts.test.ts`.
+Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The sequence diagram is a schematic. The code is quoted through `data/code/10-foreman-question.ts` and checked by `data/code/excerpts.test.ts`.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -210,16 +206,16 @@ Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The sequence
 
 Wording: nothing on the slide or in the notes says foreman pushes to or notifies Claude.
 
-## Slide 10: rr runs each agent's tests on its own machine.
+## Slide 11: rr runs each agent's tests on its own machine.
 
 The diagram is a schematic; the result strip is a recording. rr was read at commit 536948d (2026-11-13); the fixtures were last changed in rr commit 9a0dab1 (2026-11-02). Latest rr tag: v0.29.4.
 
 | Figure | Value | Source |
 |---|---|---|
-| The simulation (`simulate`, `sceneAt`, `flowSteps`, `waitSpans`) | ported unchanged | `~/Projects/rr/site/src/lib/flow.ts`; `data/10-rr-locks.test.ts` compares segments, steps and scenes with the source when `~/Projects/rr` is present |
+| The simulation (`simulate`, `sceneAt`, `flowSteps`, `waitSpans`) | ported unchanged | `~/Projects/rr/site/src/lib/flow.ts`; `data/11-rr-locks.test.ts` compares segments, steps and scenes with the source when `~/Projects/rr` is present |
 | Diagram layout | laptop, four agent rows, waiting column, three hosts | wide geometry of `~/Projects/rr/site/src/components/landing/FlowDiagram.tsx`, re-proportioned for the stage |
 | FLOW_RUNS, FLOW_HOSTS | four agents; `m4-mini`, `m1-linux`, `m1-mini`; commands, subtask names, "3/3 passed", "86 passed", pids, test percentages | `flow.ts`. Made up by rr's site; covered by the `Schematic` tag |
-| STILLS | 0, 3,600, 8,900 and 17,000 ms of simulation time | derived in `data/10-rr-locks.ts` from `flowSteps` and the segments; `data/10-rr-locks.test.ts` asserts what each frame shows |
+| STILLS | 0, 3,600, 8,900 and 17,000 ms of simulation time | derived in `data/11-rr-locks.ts` from `flowSteps` and the segments; `data/11-rr-locks.test.ts` asserts what each frame shows |
 | POLL_MS (card 2: "every 2 seconds") | 2,000 ms | `~/Projects/rr/internal/cli/loadbalance.go` line 477, `time.NewTimer(2 * time.Second)` |
 | "Each rr call is a separate process", "rr has no server", lock on each host | claim | `~/Projects/rr/README.md` line 353: the lock is a directory created atomically under `/tmp` on the remote |
 | "A parallel task locks every host" | claim | `flow.ts` header (one worker per host, each holding its lock until the task ends, `internal/parallel`) |
@@ -228,7 +224,7 @@ The diagram is a schematic; the result strip is a recording. rr was read at comm
 | First host it can lock, in config order | claim | `~/Projects/rr/internal/cli/loadbalance.go` (`roundRobinWait`, line 385) and README line 353; `~/Projects/opendata/.rr.yaml` comment: "rr takes the first unlocked host in this order" |
 | WAITING_EVENT | `"status":"waiting"` and `"command":"rr test"` | event shape from `loadbalance.go` lines 398 to 407 (`details.holders[].command`) and `~/Projects/rr/plugins/rr/skills/rr/reference/machine-interface.md` line 35; the holder's command is the simulation's, so the label is schematic |
 | "Each git worktree syncs to its own remote directory unless the config turns that off" | claim | `~/Projects/rr/README.md` line 330 (`sync.worktree_isolation: false` turns it off); default on in `internal/config/expand.go` line 168 |
-| Result event | line 4 of `run.jsonl` | `data/fixtures/10-rr-result.json`, a byte copy of line 4 of `~/Projects/rr/site/fixtures/run.jsonl`; the test checks both the copy and that every quoted line is a substring |
+| Result event | line 4 of `run.jsonl` | `data/fixtures/11-rr-result.json`, a byte copy of line 4 of `~/Projects/rr/site/fixtures/run.jsonl`; the test checks both the copy and that every quoted line is a substring |
 | RUN.recorded | 2026-11-02 | the event's `ts` |
 | RUN.shards, passed, failed (notes: eight tasks, five passed, three failed) | 8, 5, 3 | the event's `details.total`, `details.passed`, `details.failed` |
 | FAILURE_AT | `src/data/articles/charts-json.test.ts:74` | the event's `details.failures[0].tests[2].file` |
@@ -239,15 +235,15 @@ The diagram is a schematic; the result strip is a recording. rr was read at comm
 
 Not stated, by decision: any rr speedup; "load balanced"; automatic sharding.
 
-## Slide 11: StatGlass started as the rr monitor command.
+## Slide 13: StatGlass started as the rr monitor command.
 
 Beats 0 and 1 are a recording; beat 2's cards are illustrative. rr read at commit 536948d, statglass at 5db8622a (both 2026-11-13).
 
 | Figure | Value | Source |
 |---|---|---|
 | The origin claim (title, notes) | StatGlass came from keeping `rr monitor` open | `FLAG: author-reported` (Riley). Nothing in either repo records it |
-| Notes: "a debugging aid", "always open", "why the fans were going at three" | Riley's account | `FLAG: author-reported`, from `OUTLINE.md` section 10, slide 11 |
-| Monitor recording | 193 snapshots, 2026-11-02 16:41:08Z to 16:48:56Z, hosts m1-mini, m4-mini, mbp | `data/fixtures/11-monitor.json`: the lines of `~/Projects/rr/site/fixtures/monitor.jsonl` (rr commit 9a0dab1) as one JSON array; the test compares them |
+| Notes: "a debugging aid", "always open", "why the fans were going at three" | Riley's account | `FLAG: author-reported`, from `OUTLINE.md` section 10, slide 13 |
+| Monitor recording | 193 snapshots, 2026-11-02 16:41:08Z to 16:48:56Z, hosts m1-mini, m4-mini, mbp | `data/fixtures/13-monitor.json`: the lines of `~/Projects/rr/site/fixtures/monitor.jsonl` (rr commit 9a0dab1) as one JSON array; the test compares them |
 | RECORDED | 2026-11-02 | first snapshot's `timestamp` |
 | BUSIEST | frame 111, 281 s into the recording, all three hosts holding a lock | `busiestFrame`, ported from `~/Projects/rr/site/src/lib/monitor/timeline.ts`; the test compares the port's timeline and frame with the source |
 | Card readings (CPU, 1m load, RAM, latency, lock command, held time, alias) | per host at frame 111 | the fixture, through `buildTimeline` |
@@ -267,7 +263,7 @@ Beats 0 and 1 are a recording; beat 2's cards are illustrative. rr read at commi
 | Notes: size limit, oldest per-process detail removed first | claim | `~/Projects/statglass/README.md` lines 213 to 222 |
 | StatGlass cards and menu bar item on beat 2 | the recording's CPU, RAM and GPU histories, in StatGlass's metric colors | Illustrative. Colors follow `~/Projects/steamfield/src/components/home/StatGlassDemo.tsx` (CPU cyan, memory violet, GPU pink). StatGlass did not record these readings |
 
-## Slide 12: StatGlass, the boundary
+## Slide 14: StatGlass, the boundary
 
 Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a` (version 0.12.0, `package.json`).
 
@@ -275,7 +271,7 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a` (version 0.12.0
 |---|---|---|
 | RUST_LINES | 153,401 | `find crates src-tauri -name '*.rs' -print0 \| xargs -0 cat \| wc -l`. Inline tests included. |
 | TS_LINES | 111,644 | `find src \( -name '*.ts' -o -name '*.tsx' \) -print0 \| xargs -0 cat \| wc -l`. Tests and `src/core/generated` included. |
-| RUST_PERCENT, TS_PERCENT | 58, 42 | `RUST_LINES / (RUST_LINES + TS_LINES)`, rounded, in `data/12-glass-boundary.ts`. The outline said "about 60". |
+| RUST_PERCENT, TS_PERCENT | 58, 42 | `RUST_LINES / (RUST_LINES + TS_LINES)`, rounded, in `data/14-glass-boundary.ts`. The outline said "about 60". |
 | COMMANDS | 92 | `grep -o '__TAURI_INVOKE[<(]' src/core/generated/bindings.ts \| wc -l`; the `collect_commands!` block in `src-tauri/src/lib.rs` (from line 79) lists the same 92. The outline said 81, which is `grep -c '__TAURI_INVOKE("'` and misses the 11 calls written `__TAURI_INVOKE<T>(`. `grep -c __TAURI_INVOKE` prints 93 because it counts the import line. |
 | EVENTS | 10 | the `collect_events!` block, `src-tauri/src/lib.rs` lines 143 to 154 |
 | "A pre-push hook fails if the file is stale" | | `Makefile` lines 235 to 250 (`bindings`, `bindings-check`) and its help text for `make check` |
@@ -284,18 +280,18 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a` (version 0.12.0
 | IDLE.backgroundTickS (notes only) | 2 s | `README.md` line 184; decision D-094 in `plan/decisions.md` line 3111 |
 | Box names and notes | crate and directory names | `AGENTS.md` lines 26 to 40; "one-hour ring" from `crates/statglass-engine/src/lib.rs` line 3; the tray from `src-tauri/src/tray/mod.rs` lines 1 to 19 |
 | FRAME_MESSAGE | `{ kind: "frame", values: [ … ], … }` | abridged from the `frame` variant of `LiveMsg`, `src/core/generated/bindings.ts` line 1951; the layout message it depends on is documented at lines 1917 to 1921 |
-| Code: `subscribe_live` | lines 75 to 85 | `src-tauri/src/commands.rs`, through `data/code/12-glass-boundary.ts` (drift test) |
+| Code: `subscribe_live` | lines 75 to 85 | `src-tauri/src/commands.rs`, through `data/code/14-glass-boundary.ts` (drift test) |
 | Code: `subscribeLive` | line 150 | `src/core/generated/bindings.ts`, same module |
 | Code: `el.animate` | lines 33 to 36 | `src/app/widgets/lib/use-tick-scroll.ts`, same module |
 | "d3 computes the path and React renders it as SVG" | | `src/app/widgets` imports `area` and `line` from `d3-shape`; `use-tick-scroll.ts` header comment |
 | "A test counts renders" (notes) | | `src/app/stores/live-selectors.test.tsx` lines 7 to 32 |
 | "Rust decides what a value means" (notes) | | `.claude/rules/data-boundary.md` line 10, "Rust Owns Meaning, the Client Presents" |
 | "Rust stops sending frames with no window visible" (notes) | | `src-tauri/src/live.rs` lines 6 to 9 |
-| The widget chart | illustrative | `cpuAt` in `data/12-glass-boundary.ts`, ported from `~/Projects/steamfield/src/lib/statglass-demo.ts` (steamfield commit 1b001f9). Tagged Illustrative on the slide. |
+| The widget chart | illustrative | `cpuAt` in `data/14-glass-boundary.ts`, ported from `~/Projects/steamfield/src/lib/statglass-demo.ts` (steamfield commit 1b001f9). Tagged Illustrative on the slide. |
 
 Banned on this slide (checked): "about 60 percent Rust" (it is 58); "81 commands" (it is 92); the idle figure without "one run" beside it; any ratio against Stats (one run each, different modules enabled).
 
-## Slide 13: StatGlass in a browser tab
+## Slide 15: StatGlass in a browser tab
 
 Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`.
 
@@ -306,12 +302,12 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`.
 | "React code calls a Transport interface" with two implementations | | `src/core/transport/contracts.ts` lines 1 to 9; `src/core/transport/native.ts`; `createMockTransport` in `src/core/mock-transport.ts` line 99 |
 | "A lint rule bans Tauri imports under src/app" | enforced | `biome.json`: `noRestrictedImports` overrides for `src/app/**`, `src/app/widgets/**` and the `src/app` tests each restrict the group `@tauri-apps/**`. `AGENTS.md` lines 49 to 53 state the rule and say a write hook enforces it too. |
 | "Vitest, Playwright, the browser dev server and the docs site demo all use it" | | `src/core/transport/contracts.ts` lines 4 to 5 (dev server, Vitest, Playwright); `docs-site/src/lib/demo.ts` lines 1 to 6 and `docs-site/scripts/build-demo.mjs` (the demo is the app built on its mock transport) |
-| Code: the `Transport` interface | lines 121 to 471, trimmed | `src/core/transport/contracts.ts`, through `data/code/13-glass-browser.ts` (drift test) |
+| Code: the `Transport` interface | lines 121 to 471, trimmed | `src/core/transport/contracts.ts`, through `data/code/15-glass-browser.ts` (drift test) |
 | "I can change a screen in a browser without starting the native shell" (notes) | | follows from the dev server using the mock. The outline's stronger "I do most UI work in a browser" is `FLAG: author-reported` and is not in the notes. |
 
 Open decision for Riley: the frame loads the hosted demo, so the beat needs venue network. No copy of the demo build is checked in.
 
-## Slide 14: StatGlass, the agent CLI
+## Slide 16: StatGlass, the agent CLI
 
 Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`. The session on the slide is illustrative and tagged so; its parts are sourced below.
 
@@ -324,75 +320,15 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`. The session on
 | BUSY_ENVELOPE | `{"error":{"tag":"Busy","message":"StatGlass is busy; retry shortly.","retryable":true,"next":"retry in a second"}}` | the value asserted by `cli_envelope_shape`, `crates/statglass-query/src/tests.rs` lines 383 to 399 |
 | "StatGlass stores gaps explicitly" (notes) | | `AGENTS.md` line 54: "Gaps are explicit; never interpolate." |
 | "over a local socket" (notes) | | `plan/rfc-agent-cli.md` lines 96 to 103 and 172 (`cli/query.sock`) |
-| RFC_SIZES.compiledTsBinaryMb | 55 to 60 MB per architecture, an estimate ("about") | `plan/rfc-agent-cli.md` lines 106 to 109, quoted on the slide through `data/code/14-glass-cli.ts` (drift test) |
+| RFC_SIZES.compiledTsBinaryMb | 55 to 60 MB per architecture, an estimate ("about") | `plan/rfc-agent-cli.md` lines 106 to 109, quoted on the slide through `data/code/16-glass-cli.ts` (drift test) |
 | RFC_SIZES.appMb | 36 MB | same lines |
 | RFC_SIZES.helperBinaryKb | 550 KB, the helper binary beside the CLI | same lines. It appears only inside the quote and in IF ASKED. |
 | "The RFC defers an MCP server and says it could be a TypeScript package" (notes) | | `plan/rfc-agent-cli.md` lines 365 to 375 |
-| "The Stacks CLI's errors have the same tag, retryable and next fields" (notes) | | this deck's `data/code/05-stacks.ts`, `LAYER_TEST` (`packages/cli/tests/update.test.ts` in stacks) |
+| "The Stacks CLI's errors have the same tag, retryable and next fields" (notes) | | this deck's `data/code/06-stacks.ts`, `LAYER_TEST` (`packages/cli/tests/update.test.ts` in stacks) |
 
 Banned on this slide (checked): any size for the CLI's own binary (the RFC gives none and none was measured); "a compiled TypeScript binary came to about 55 MB" (the RFC's figure is an estimate of 55 to 60).
 
-## Slide 15: One OpenData result has text and a chart.
-
-The session is the first turn of steamfield.io's scripted OpenData session, copied 2026-11-13 from `~/Projects/steamfield` (commit 1b001f9). The server figures were read 2026-11-13 from `~/Projects/opendata/mcp` (commit d9b5ee7c4).
-
-| Figure | Value | Source |
-|---|---|---|
-| RECORDED | 2026-11-04 | `steamfield/src/data/opendata-demo.ts` `checked`; the file's header says its figures are "from live queries through the OpenData connector on 2026-11-04" |
-| QUESTION | "Are AI data centers driving up electricity bills?" | `steamfield/src/lib/opendata-demo.ts` `QUESTIONS[0]` |
-| SEARCH_TERMS, SEARCH_MATCHES | 3 terms, 3 datasets found | `opendata-demo.ts` `searchTerms`, `searchMatches` |
-| QUERY_ROWS, QUERY_MS, QUERY_COLUMNS | 51 rows, 11 ms, five columns | `opendata-demo.ts` `pricesQuery.rows.length`, `.ms`, `.columns` |
-| PJM_ROWS (two shown in the transcript, eight in the chart) | D.C. 70.3, Maryland 55.2, New Jersey 40.9, Ohio 32.3, Pennsylvania 30.2, Delaware 30.1, Virginia 24.2, West Virginia 17 | `opendata-demo.ts` `pricesQuery.rows` where `grid` is `PJM-core`, in returned order |
-| CHART_TITLE | "Bills rose fastest on the PJM grid" | `steamfield/src/lib/figures.ts` line 352 |
-| The chart on beat 3 | eight bars, percent change since 2022 | drawn by this deck's `<OpenChart>` from PJM_ROWS. The session's own chart adds a ninth bar, the mean of the other 43 states, which this slide leaves out |
-| TOOLS_REGISTERED | 14 | `opendata/mcp/src/tools/index.ts` lines 23 to 36: fourteen register calls, quoted on the slide; each tool file has exactly one `registerAppTool(` call |
-| TOOLS_APP_ONLY, TOOLS_FOR_MODEL | 3 and 11 | `grep -l 'visibility: \["app"\]' mcp/src/tools/*.ts`: save-chart-draft, fetch-query-result, publish-figure |
-| "on Bun and Hono" | claim | `opendata/mcp/package.json`: `"start": "bun run src/index.ts"`, `"hono": "^4.12.18"` |
-| "a Python and DuckDB engine" | claim | `opendata/pyproject.toml` (the engine); `mcp/src/server.ts` line 57, "DuckDB SQL" |
-| WORKFLOW instruction line | quoted from its start to "enum values", then cut with … | `opendata/mcp/src/server.ts` line 54, inside `SERVER_INSTRUCTIONS` (lines 52 to 62). The cut drops the rest of the line, which contains a dash (Riley, 2026-11-13) |
-| MODEL_ROW_BUDGET (notes) | 60 rows | `opendata/mcp/src/core/constants.ts` line 4; applied in `tools/query-sql.ts` lines 116 to 120 |
-| CHART_SAMPLE_ROWS | 120 rows in `_meta` | `opendata/mcp/src/tools/openchart.ts` line 29; sent at lines 417 and 435 to 437 under the key `opendata/chartRows` |
-| CHART_MODEL_SAMPLE_ROWS | 24 rows in structuredContent | `openchart.ts` line 32; line 418 |
-| "which the host shows only to the interface" | claim | `openchart.ts` lines 26 to 28 and `core/view-data.ts` lines 387 to 392: hosts hand `_meta` to the App and keep it out of model context. The 24-row sample in structuredContent is one "hosts may show the model", so the notes say so |
-| CHART_RESOURCE | `ui://opendata/chart` | `openchart.ts`, the tool's `_meta.ui.resourceUri`; listed in `server.ts` line 13 |
-| "A React app" | claim | `opendata/mcp/src/mcp-app/main.tsx` imports React; `mcp/package.json` `"react": "19.2.8"` |
-| "The host loads it in an iframe" | claim | the MCP Apps host model (`@modelcontextprotocol/ext-apps` 1.7.5 in `mcp/package.json`); `mcp/src/mcp-app/index.html` is the page served for the `ui://` resources |
-| Notes: "a few providers are not government agencies" | claim | `FLAG:` from `OUTLINE.md` section 10, slide 15; not re-derived here |
-| Notes: "I tune these instructions from transcripts" | claim | `FLAG: author-reported` (`OUTLINE.md` section 10, slide 15, beat 1) |
-
-Departures from the outline: the catalog size (1,046 datasets, 214 providers) is not stated anywhere on the slide or in the notes, so it has no row.
-
-## Slide 16: OpenChart tells the agent which field is wrong.
-
-Read 2026-11-13 from `~/Projects/openchart` (commit 26bd0ba6). The verdict is computed, not recorded: `data/16-openchart.ts` calls `validateSpec` from the installed `@opendata-ai/openchart-engine` when it loads.
-
-| Figure | Value | Source |
-|---|---|---|
-| README_SPEC | the bar chart spec | `openchart/README.md` lines 26 to 44, as an object. The slide prints `JSON.stringify(spec, null, 2)` with the data rows and the chrome block dropped |
-| TYPO | `language` written as `langauge` | this deck's own edit, in the manner of `packages/engine/src/compiler/__tests__/validate-did-you-mean.test.ts` lines 25 to 40 (`revenue` as `reveune`) |
-| VERDICT.path | `/encoding/y/field` | `validateSpec(BAD_SPEC).errors[0].path`, at module load |
-| VERDICT.code | `DATA_FIELD_MISSING` | `validateSpec(BAD_SPEC).errors[0].code`, at module load |
-| VERDICT.suggestion | Use one of the available data columns: language, popularity. Did you mean "language"? | `validateSpec(BAD_SPEC).errors[0].suggestion`, at module load |
-| FIXED | valid, 0 errors | `validateSpec(README_SPEC)`, at module load |
-| "by edit distance" | claim | `openchart/packages/engine/src/compiler/validation/helpers.ts` (the did-you-mean helper) |
-| ENGINE_VERSION | 9.0.0 | this repo's `package.json` pins `@opendata-ai/openchart-engine` 9.0.0; every `openchart/packages/*/package.json` says 9.0.0 |
-| PACKAGES: core | 13,668 lines | `find packages/core/src -name '*.ts*' -not -path '*__tests__*' -not -name '*.test.*' \| xargs cat \| wc -l` |
-| PACKAGES: engine | 50,369 lines | the same command on `packages/engine/src`. The outline said 50,097 |
-| PACKAGES: vanilla | 42,424 lines | the same command on `packages/vanilla/src` |
-| PACKAGES: react | 2,639 lines | the same command on `packages/react/src` |
-| PACKAGES: vue | 2,502 lines | the same command on `packages/vue/src`. `.vue` files are not matched by the glob |
-| PACKAGES: svelte | 864 lines | the same command on `packages/svelte/src`. `.svelte` files are not matched by the glob; the two wrappers hold 1,339 lines of `.vue` and `.svelte` between them |
-| REACT_SHARE (notes) | 5 percent | 2,639 / 50,369, rounded, computed in the data module |
-| MARKS (notes) | 19 | entries of `MARK_TYPES` in `packages/core/src/types/spec.ts` lines 3486 to 3506. Two comments in the repo say 16 |
-| VALIDATOR_LINES (notes: "about thirty-four hundred") | 3,369 | `find packages/engine/src -path '*validat*' -not -path '*__tests__*' -name '*.ts' \| xargs wc -l` |
-| Notes: "no schema library behind it" | claim | the validator's files import only relative modules and `@opendata-ai/*` |
-| Notes: JSON Schema generated from the types, checked in CI | claim | `openchart/package.json` scripts `generate:schema` and `check:generated`; `.github/workflows/ci.yml` lines 44 to 46 |
-| "Drawing is a separate package from the engine" | claim | `openchart/README.md` lines 126 to 128: core and engine are "(no DOM)", vanilla is "DOM rendering" |
-| Notes: vanilla can render SVG on a server | claim | `openchart/README.md` line 159: `renderStaticSVG` from `@opendata-ai/openchart-vanilla/static`, "No browser or DOM shim is required" |
-| Notes: wrappers sit on vanilla | claim | `packages/{react,vue,svelte}/package.json` each depend on core, engine and vanilla |
-| Role labels in the package list | types and theme; computes layout; draws to the DOM; wrapper | `openchart/README.md` lines 126 to 128, shortened |
-
-## Slide 17: A Decks hook blocks AI-sounding sentences.
+## Slide 18: A Decks hook blocks AI-sounding sentences.
 
 Everything on this slide is computed at build time from files in this repository (read 2026-11-13, commit 811fe91).
 
@@ -407,13 +343,12 @@ Everything on this slide is computed at build time from files in this repository
 | Notes: 22 warnings | 22 | PATTERNS minus DENIED |
 | SOURCED_FIGURES | computed at build | distinct table rows (header and separator rows left out) in `data-sources.md` and `data/sources/*.md`. It counts every table row, including claim rows and the banned-content table once that exists |
 | "a React component on a GSAP timeline" | claim | `packages/kit/src/story/stage.ts` builds the timeline with `gsap` from `@react-decks/motion`; `components/DecksStage.tsx` calls `useStage` |
-| Notes: the engine count in the outline against the derived one | 50,097 and 50,369 | `OUTLINE.md` line 545; `data/16-openchart.ts` PACKAGES |
 
 Left out: the outline's note that the drafting agent "was refused more than once". No denial was recorded during this build.
 
-## Slide 18: The seven tools share most of six habits.
+## Slide 19: Each tool has some of the same six habits.
 
-One row per lit cell. Every file was opened on 2026-11-13 at: stacks a952e96, foreman (`~/Projects/claude-codex`) 9413fa8, rr 536948d, statglass 5db8622a, opendata d9b5ee7c4, openchart 26bd0ba6, decks 811fe91. Paths are under `~/Projects/<repo>`, or this repository for Decks. `data/18-habits.ts` holds the same list.
+One row per lit cell. Every file was opened on 2026-11-13 at: stacks a952e96, foreman (`~/Projects/claude-codex`) 9413fa8, rr 536948d, statglass 5db8622a, decks 811fe91. Paths are under `~/Projects/<repo>`, or this repository for Decks. `data/19-habits.ts` holds the same list.
 
 | Habit | Product | Cell prints | Source |
 |---|---|---|---|
@@ -421,14 +356,10 @@ One row per lit cell. Every file was opened on 2026-11-13 at: stacks a952e96, fo
 | Output a program can parse | foreman | `--json` | `claude-codex/README.md` line 67 ("All commands accept `--json`") |
 | Output a program can parse | rr | JSON events | `rr/README.md` line 104 ("Output is structured by default") |
 | Output a program can parse | StatGlass | `--json` | `statglass/crates/statglass-cli/src/cli.rs` lines 297 to 315 (`statglass schema`) |
-| Output a program can parse | OpenData | `outputSchema` | `opendata/mcp/src/tools/query-sql.ts` line 75; 14 files under `mcp/src/tools/` set one |
-| Output a program can parse | OpenChart | JSON Schema | `openchart/packages/core/package.json` lines 29 to 32 (the `./schema` exports) |
 | The next step is printed | Stacks | `next` | `stacks/packages/cli/tests/errors.test.ts` lines 373 to 380 |
 | The next step is printed | foreman | `next:` `or:` | `claude-codex/src/core/command-output.ts` lines 171 to 172. These end a command's result, not its error |
 | The next step is printed | rr | suggestion | `rr/internal/errors/errors.go` lines 29 to 49; `README.md` line 118 |
 | The next step is printed | StatGlass | `next` | `statglass/crates/statglass-cli/src/failure.rs` lines 123 to 125 |
-| The next step is printed | OpenData | Retry after | `opendata/mcp/src/tools/error.ts` lines 30 to 53 |
-| The next step is printed | OpenChart | suggestion | `openchart/packages/engine/src/compiler/validation/helpers.ts` lines 91 to 96 |
 | Every exit code is documented | Stacks | 5 = report | `stacks/packages/cli/docs/reference/output.md` lines 70 to 83 |
 | Every exit code is documented | foreman | 7 = not found | `claude-codex/README.md` lines 119 to 134 |
 | Every exit code is documented | StatGlass | 6 = ask user | `statglass/crates/statglass-cli/src/cli.rs` lines 20 to 22 |
@@ -446,30 +377,28 @@ One row per lit cell. Every file was opened on 2026-11-13 at: stacks a952e96, fo
 
 | Figure | Value | Source |
 |---|---|---|
-| LIT_CELLS | 26 | `data/18-habits.ts`, the count of rows above |
+| LIT_CELLS | 22 | `data/19-habits.ts`, the count of rows above |
 | AGENTS_AT_ONCE (notes: "two to four agents at a time") | 2 to 4 | `FLAG: author-reported` (`OUTLINE.md` section 11) |
-| Counts on the cards (six, six, three, five) | lit cells per row | computed in `HabitsStage.vue` from `HABITS` in `data/18-habits.ts` |
+| Counts on the cards (four, four, three, five) | lit cells per row | computed in `HabitsStage.tsx` from `HABITS` in `data/19-habits.ts` |
 | "None of them calls a model" | claim about the six habits, not about the products | each habit's sources above are flags, fields, exit codes, locks and bundled text |
 
-Cells the outline lists that are left unlit, with the reason (also in `data/18-habits.ts`):
+Cells the outline lists that are left unlit, with the reason (also in `data/19-habits.ts`):
 
 | Habit | Product | Why it is dark |
 |---|---|---|
 | Every exit code is documented | rr | rr returns the remote command's exit code unchanged (`rr/docs/configuration.md` lines 417 to 419). Its codes are the string `error.code` |
-| A command checks the work | OpenChart | `validateSpec` is an imported function (`openchart/packages/engine/src/compiler/validate.ts` line 298); the repo ships no command for it |
 | Several agents can run it | Stacks | the state record outside the project guards verify steps against edits; nothing found is about two agents in one project |
-| Docs ship with the tool | OpenChart | `llms.txt` is at the repo root; the published package's `files` are `dist` and `schema` (`openchart/packages/core/package.json` lines 34 to 37) |
 
-Departures from the outline: row labels and cards were rewritten to PROSE.md (plain statements). The second row is "The next step is printed" (the outline's "Errors name the next step"), because foreman's `next:` lines end results. The sixth is "Docs ship with the tool" (the outline's "in the binary"), because rr's skill ships as a plugin in its repo and Decks' rules ship in its package. The outline's "None of these tools calls a model" was not checked across seven repos; the last card makes the claim about the habits.
+Departures from the outline: row labels and cards were rewritten to PROSE.md (plain statements). The second row is "The next step is printed" (the outline's "Errors name the next step"), because foreman's `next:` lines end results. The sixth is "Docs ship with the tool" (the outline's "in the binary"), because rr's skill ships as a plugin in its repo and Decks' rules ship in its package. The outline's "None of these tools calls a model" was not checked across the product repos; the last card makes the claim about the habits.
 
-## Slide 19: Close
+## Slide 20: Close
 
 | Figure | Value | Source |
 |---|---|---|
 | SITE | https://steamfield.io | the studio's home page; `~/Projects/steamfield/AGENTS.md` overview |
 | INSTALL | `npm install -g @steamfield/stacks`, `npm install -g @steamfield/foreman`, `brew install rileyhilliard/tap/rr` | `~/Projects/steamfield/src/data/projects.ts` lines 99, 154 and 117 (steamfield commit 1b001f9, read 2026-11-13) |
-| PRODUCT_COUNT in the lede | Seven | `PRODUCTS.length` in `data/products.ts` |
-| OPEN_SOURCE ("most of them open source"; notes: "six of them") | 6 of 7 | `license` fields in `~/Projects/steamfield/src/data/projects.ts`: Apache-2.0 or MIT for six, "Open core" for OpenData (line 41) |
+| PRODUCT_COUNT in the lede | Five | `PRODUCTS.length` in `data/products.ts` |
+| OPEN_SOURCE (unused historical constant) | 6, retained with FLAG | Historical source: the licence fields in ~/Projects/steamfield/src/data/projects.ts named Apache-2.0 or MIT for six and Open core for OpenData. Removing OpenChart from the licensed six implies 5 of 5 remain; FLAG: the source is outside this repository, so verify the five licences before changing OPEN_SOURCE. The close retains "most" pending verification. |
 | Event, month, speaker | Austin JS, November 2026, Riley Hilliard, Steamfield | `BYLINE` in `data/01-cover.ts` (`FLAG: author-reported`) |
 | Adapters for Claude Code, Codex, OpenCode and Cursor (IF ASKED) | claim | `~/Projects/stacks/packages/cli/README.md` line 59 |
 
