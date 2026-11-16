@@ -1,6 +1,20 @@
+import { useDeck, useSlide } from "@steamfield/decks";
+import { useFrameScale } from "@steamfield/decks/kit";
+import { motionMode } from "@steamfield/decks/motion";
+import {
+  type ComponentType,
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { TermLine } from "../data/types";
+import { useLiveTerm } from "../term/client/use-live-term";
+import type { XtermHost } from "../term/client/xterm-host";
 import type { TermPaneSpec } from "../term/protocol";
 import { CrtPanel } from "./CrtPanel";
+import styles from "./LiveTerm.module.css";
 import { TermPane } from "./TermPane";
 
 /** What a pane shows whenever it is not live. */
@@ -29,7 +43,7 @@ export type TermRecording =
  * real shell instead.
  */
 export function LiveTerm({
-  pane: _pane,
+  pane,
   click,
   recording,
   x,
@@ -49,15 +63,120 @@ export function LiveTerm({
   label?: string;
   size?: number;
 }) {
-  const box = { x, y, width, height, label, tag: recording.tag };
-  if (recording.kind === "poster") {
-    return (
+  const { renderContext, isActive } = useSlide();
+  const { view, embedded } = useDeck();
+  const scale = useFrameScale();
+  const [motion, setMotion] = useState<boolean>();
+  useLayoutEffect(() => {
+    const sync = () => setMotion(motionMode() === "live");
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-deck-motion"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  const audience = renderContext === "slide" && isActive && view === "play" && !embedded;
+  const eligible = audience ? motion : false;
+  const live = useLiveTerm(import.meta.hot, pane, eligible, click);
+  const [Host, setHost] = useState<ComponentType<Parameters<typeof XtermHost>[0]>>();
+  useEffect(() => {
+    if (!import.meta.hot || !live.live) return;
+    const element = terminalBox.current;
+    if (!element) return;
+    const font = getComputedStyle(element).getPropertyValue("--sf-font-term").trim();
+    let cancelled = false;
+    void Promise.all([
+      import("../term/client/xterm-host"),
+      document.fonts.load(`${size ?? 31}px ${font}`),
+      document.fonts.ready,
+    ])
+      .then(([{ XtermHost }]) => {
+        if (!cancelled) setHost(() => XtermHost);
+      })
+      .catch(
+        (error: unknown) =>
+          !cancelled &&
+          live.connection?.unavailable(
+            `terminal could not load: ${error instanceof Error ? error.message : String(error)}`,
+          ),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [live.live, live.connection, size]);
+  const terminalBox = useRef<HTMLDivElement>(null);
+  const [face, setFace] = useState<{
+    font: string;
+    colors: Parameters<typeof XtermHost>[0]["colors"];
+  }>();
+  useLayoutEffect(() => {
+    const element = terminalBox.current;
+    if (!element) return;
+    const css = getComputedStyle(element);
+    const token = (name: string) => css.getPropertyValue(name).trim();
+    setFace({
+      font: token("--sf-font-term"),
+      colors: {
+        background: token("--od-screen-black"),
+        foreground: token("--od-phosphor"),
+        cursor: token("--od-phosphor"),
+        black: token("--od-screen-black"),
+        red: token("--od-pink"),
+        green: token("--od-phosphor"),
+        yellow: token("--od-amber"),
+        blue: token("--od-violet"),
+        magenta: token("--od-pink"),
+        cyan: token("--od-cyan"),
+        white: token("--od-text"),
+        brightBlack: token("--od-text-faint"),
+        brightRed: token("--od-pink"),
+        brightGreen: token("--od-phosphor"),
+        brightYellow: token("--od-amber"),
+        brightBlue: token("--od-violet"),
+        brightMagenta: token("--od-pink"),
+        brightCyan: token("--od-cyan"),
+        brightWhite: token("--od-text"),
+      },
+    });
+  }, []);
+  const showingLive = live.live && Host && face && live.connection;
+  const tag = showingLive
+    ? `Live${live.busy ? " · busy" : ""}`
+    : `${recording.tag}${live.reason ? ` · live unavailable: ${live.reason}` : ""}`;
+  const box = { x, y, width, height, label, tag };
+  let content: ReactNode;
+  if (showingLive && Host && face && live.connection) {
+    content = (
+      <CrtPanel {...box}>
+        <div className={styles.terminal}>
+          <Host
+            connection={live.connection}
+            rows={pane.rows}
+            cols={pane.cols}
+            scale={scale}
+            fontFamily={face.font}
+            fontSize={size ?? 31}
+            colors={face.colors}
+          />
+        </div>
+      </CrtPanel>
+    );
+  } else if (recording.kind === "poster") {
+    content = (
       <CrtPanel {...box} power={click >= recording.from ? 1 : 0}>
         <img src={recording.src} alt={recording.alt} />
       </CrtPanel>
     );
+  } else {
+    const shown = recording.shownAt[Math.min(click, recording.shownAt.length - 1)];
+    if (shown === undefined) throw new Error(`LiveTerm recording for ${box.label} has no shownAt`);
+    content = <TermPane {...box} lines={recording.lines} shown={shown} size={size} />;
   }
-  const shown = recording.shownAt[Math.min(click, recording.shownAt.length - 1)];
-  if (shown === undefined) throw new Error(`LiveTerm recording for ${box.label} has no shownAt`);
-  return <TermPane {...box} lines={recording.lines} shown={shown} size={size} />;
+  return (
+    <div ref={terminalBox} className={styles.skin}>
+      {content}
+    </div>
+  );
 }
