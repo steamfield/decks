@@ -468,12 +468,11 @@ Departures from the outline: row labels and cards were rewritten to PROSE.md (pl
 
 ## Demo hand-offs
 
-Slides 4, 10, 15 and 20. The four texts in `data/handoffs.ts` were authored by the speaker on 2026-11-16. They are instructions to an agent or a shell, not measurements, so no row below checks them against a source. Numbers inside them (the 10-minute timebox, three slides, three agents, the last 30 minutes) specify the work requested.
+Slides 4, 10, 15 and 20. The four texts in `data/handoffs.ts` were authored by the speaker on 2026-11-16. They are instructions to an agent or a shell, not measurements, so no row below checks them against a source. Numbers inside them (the 10-minute and 15-minute timeboxes, three slides, three agents, twelve profiles, three shards, three hosts, the last 30 minutes) specify the work requested.
 
 | Figure | Value | Source |
 |---|---|---|
-| "four hosts" (slide 15 headline) | m1-linux, m1-mini, m4-mini, mbp | `rr monitor --once --no-color` run in this repo on 2026-11-16, the same source as the host rows in Slide 14 |
-| Slide 15 notes: seven partitions; suite length in `SPEAKER-GUIDE.md` | 7 partitions on 4 hosts, 128 s | `rr check` run in `~/Projects/stacks` on 2026-11-16, timed with the shell |
+| "three hosts" (slide 15 headline and prompt) | m1-linux, m1-mini, m4-mini (the three remote hosts; the fourth row, mbp, is the presenter's laptop) | `rr monitor --once --no-color` run in this repo on 2026-11-16, the same source as the host rows in Slide 14 |
 
 ---
 

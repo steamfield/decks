@@ -143,23 +143,22 @@ A live foreman run is the one demo that leaves the deck. It is optional, comes a
 
 ## External sessions
 
-Slides 4, 10, 15 and 20 are hand-off slides. Each shows one prompt or shell command with a Copy button and no clicks. You paste it into a session outside the deck and leave it running while the talk goes on. Nothing in the deck checks that the session worked.
+Slides 4, 10, 15 and 20 are hand-off slides. Each shows one prompt with a Copy button and no clicks. You paste it into a Claude Code session outside the deck and leave it running while the talk goes on. Nothing in the deck checks that the session worked, and none of the three agent prompts (slides 4, 10 and 15) has been run end to end.
 
 Before the talk:
 
-- VS Code is open with two Claude Code sessions ready: one for the Stacks prompt, one for the foreman prompt. The StatGlass prompt can go into either.
-- Ghostty is open.
-- `~/demo` is empty or does not exist. The Stacks prompt writes `~/demo/horse-tinder-deck` and the foreman prompt writes `~/demo/horse-tinder`.
+- VS Code is open with two Claude Code sessions ready: one for slide 4 (and slide 20), one for slide 10 and then slide 15.
+- `~/demo` is empty or does not exist. It ends up holding `horse-tinder-deck` (slide 4) and `horse-tinder` (slide 10).
+- Ghostty is optional. Use it only to run `rr monitor` when you rerun the command the agent hands back after slide 15.
 - StatGlass is running and has about 30 minutes of history, so the slide 20 prompt has something to read.
-- Nothing else is using rr. The slide 15 command runs the Stacks suite on all four hosts.
 
-At each hand-off slide, click Copy, switch to the app named on the slide, paste, and switch back to the deck. Slide 4 and slide 20 go into Claude Code in VS Code, slide 10 into the second Claude Code session, and slide 15 into Ghostty. The rr command also opens `rr monitor`; leave it on screen for a moment, then come back.
+At each hand-off slide, click Copy, switch to the app named on the slide, paste, and switch back to the deck. Slide 4 and slide 20 go into the first Claude Code session, and slide 10 into the second. Slide 15 is pasted into that same second session, the one building Horse Tinder, and waits behind the build.
 
-The rr hand-off has to come after the in-deck rr demo on slide 14. The suite locks all four hosts for about two minutes (128 seconds when run on 2026-11-16), and `rr demo` on slide 14 needs them free. Do not move slide 15 earlier, and do not run the slide 15 command before the slide 14 demo has finished.
+The slide 15 work starts only after the Horse Tinder build finishes. With a 15-minute timebox started at about 12 minutes, that is near or after the end of the talk, so the sharded run is most likely something to show during questions. If it does run earlier, it uses only the three remote hosts. The in-deck rr demo on slide 14 needs the hosts free, so an agent running tests through rr during slide 14 would make that demo wait.
 
 At the Decks slide (file 22), switch to VS Code and show the Horse Tinder deck that the slide 4 prompt built. If that session has not finished or verify did not pass, say so and carry on with the slide.
 
-The slide 10 prompt builds the Horse Tinder web app in `~/demo/horse-tinder` and opens it in the browser when it finishes. It starts at about 12 minutes with a 15-minute timebox, so it may not be done before the close. Show it at the Decks slide beside the pitch deck if it is ready, or after the close during questions.
+The slide 10 prompt builds the Horse Tinder web app in `~/demo/horse-tinder` and opens it in the browser when it finishes. It starts at about 12 minutes with a 15-minute timebox, so it may not be done before the close, and it is the prompt most likely to run long. Show it at the Decks slide beside the pitch deck if it is ready, or after the close during questions.
 
 ## Before you present
 
@@ -169,7 +168,7 @@ The slide 10 prompt builds the Horse Tinder web app in `~/demo/horse-tinder` and
 - Run any `stacks` command once, so the first-run notice does not appear on stage.
 - `stacks`, `rr`, `statglass` and `jq` are on the PATH of the shell you start the deck from.
 - StatGlass has been running for at least 30 minutes, for the slide 20 hand-off and for slide 21 if it is in.
-- VS Code is open with two Claude Code sessions ready, Ghostty is open, `~/demo` is empty or absent, and nothing else is using rr (see "External sessions").
+- VS Code is open with two Claude Code sessions ready, `~/demo` is empty or absent, and Ghostty is open only if you want `rr monitor` for the slide 15 rerun (see "External sessions").
 - Slide 18's frame loads the hosted StatGlass demo, so the laptop needs a network connection for that beat.
 - The deck is open in one audience window, with the presenter window on the laptop.
 - The projector is at the resolution you rehearsed at.

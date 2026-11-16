@@ -225,20 +225,20 @@ foreman is a CLI that lets Claude Code delegate coding work to Codex models. Thi
 - Does every delegate ask a question? The site-e2e run finished without one. The contract tells a delegate to ask only when it is blocked by something the contract and the repo do not settle.
 - Is the timeline real? The commands, file writes, question and answer are recorded. The timing is compressed, and the third run started 23 minutes after the first two.
 
-## 10. One prompt starts three Codex agents in parallel.
+## 10. One prompt has three Codex agents build an app in parallel.
 
 Clicks: 0
 
 ### What the slide shows
 
-A prompt for a second Claude Code session in VS Code, with a Copy button. Hand-off slide: no clicks, nothing runs in the deck.
+A prompt for a second Claude Code session in VS Code, with a Copy button. Hand-off slide: no clicks, nothing runs in the deck. The prompt runs under /ce:build with a 15-minute timebox and asks for Horse Tinder, a full-stack web app (Effect backend, React frontend) in ~/demo/horse-tinder. The text is in `data/handoffs.ts`.
 
 Source: data-sources.md, Demo hand-offs.
 
 ### Say
 
 - Copy this, paste into a second Claude Code session, come back.
-- Claude picks a stack with Stacks for an Effect backend and a React frontend, then starts three Codex runs through foreman.
+- Claude picks the stack with the stacks CLI, then uses the foreman skill to run three Codex agents in parallel.
 - One builds the API, one the swipe screen, one the horse profiles and photos.
 - Claude owns the contract between them and the merge. We look at the app when it is done.
 
@@ -360,26 +360,27 @@ The previous slide simulated the locks. Here are the machines configured for thi
 - Is the recording trimmed? It leaves out blank lines and the progress lines printed before the complete summary.
 - Why is a host locked? A locked host is already doing other work. The snapshot reflects the machines at this moment; the recorded fallback reflects the earlier capture.
 
-## 15. One command runs a suite across four hosts.
+## 15. One prompt shards the app's tests across three hosts.
 
 Clicks: 0
 
 ### What the slide shows
 
-A shell command for Ghostty, with a Copy button. Hand-off slide: no clicks, nothing runs in the deck.
+A prompt for the Claude Code session that is building Horse Tinder, with a Copy button. Hand-off slide: no clicks, nothing runs in the deck. The prompt asks for integration tests for the API, rr set up for that repo with one parallel task of three shards, one on each remote host, and the command back. The text is in `data/handoffs.ts`.
 
 Source: data-sources.md, Demo hand-offs.
 
 ### Say
 
-- Copy this, paste into Ghostty, leave rr monitor on screen for a moment, come back.
-- It runs the Stacks test suite in the background and puts rr monitor in front.
-- Seven partitions across the four machines.
-- From here every host is locked until the suite ends, so the in-deck rr demo comes before this slide.
+- Copy this, paste into the session that is building Horse Tinder, come back. It queues behind the build.
+- The agent adds integration tests, then sets up rr for that repo with the rr skill.
+- Three shards, one on each remote machine. This laptop stays free.
+- It hands back the command, so I can run it again with rr monitor open.
 
 ### If asked
 
-- The suite's output goes to /tmp/rr-check.log.
+- The rr skill writes the repo's config and checks each host can run the tests before the first run.
+- The shards are groups the config names. rr does not split a suite on its own.
 
 ## 16. StatGlass started as the rr monitor command.
 

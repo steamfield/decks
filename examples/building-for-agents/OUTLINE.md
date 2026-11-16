@@ -226,7 +226,7 @@ New animated diagrams this deck builds because none exists: the Stacks loop with
 
 ## 8. The arc
 
-Default cut: 23 slides, 75 beats, about 28.25 minutes by the Min column. Slides 06, 14 and 21 are live demos (section 10). Slides 04, 10, 15 and 20 are hand-off slides: each is one beat (no clicks) that shows one prompt or shell command with a Copy button, for pasting into an external session. Slide 21 has `hide: true`; restoring it makes 24 slides, 79 beats and about 29.25 minutes.
+Default cut: 23 slides, 75 beats, about 28.25 minutes by the Min column. Slides 06, 14 and 21 are live demos (section 10). Slides 04, 10, 15 and 20 are hand-off slides: each is one beat (no clicks) that shows one prompt with a Copy button, for pasting into an external Claude Code session. Slide 21 has `hide: true`; restoring it makes 24 slides, 79 beats and about 29.25 minutes.
 
 The numbers below are filename prefixes. A hidden slide is dropped before numbering, so playback positions are consecutive: filenames 01-20 play as 1-20 and 22-24 as 21-23. For `decks shot` or presenter navigation, use 3 for the thread, 22 for habits and 23 for the close. With slide 21 restored, it plays at position 21 and files 22-24 play as positions 22-24.
 
@@ -241,12 +241,12 @@ The numbers below are filename prefixes. A hidden slide is dropped before number
 | 7 | `07-stacks-tour` / `StacksTourStage` | An Effect CLI is commands, services and one error table. | Start | 6 | 2.75 |
 | 8 | `08-stacks-output` / `StacksOutputStage` | Stacks prints the same result three ways. | Start | 4 | 1.5 |
 | 9 | `09-foreman-session` / `ForemanSessionStage` | Claude delegates to Codex, one worktree per task. | Delegate | 5 | 2.0 |
-| 10 | `10-foreman-handoff` / `HandoffStage` | One prompt starts three Codex agents in parallel. | Delegate | 1 | 0.5 |
+| 10 | `10-foreman-handoff` / `HandoffStage` | One prompt has three Codex agents build an app in parallel. | Delegate | 1 | 0.5 |
 | 11 | `11-foreman-daemon` / `ForemanDaemonStage` | A daemon sits between the two agents. | Delegate | 4 | 1.5 |
 | 12 | `12-foreman-question` / `ForemanQuestionStage` | A held question is an unanswered request. | Delegate | 4 | 1.5 |
 | 13 | `13-rr-locks` / `RrLocksStage` | rr gives every run its own machine. | Test | 8 | 2.0 |
 | 14 | `14-rr-live` / `LiveDemoStage` | rr runs this task across my machines. | Test | 3 | 0.75 |
-| 15 | `15-rr-handoff` / `HandoffStage` | One command runs a suite across four hosts. | Test | 1 | 0.5 |
+| 15 | `15-rr-handoff` / `HandoffStage` | One prompt shards the app's tests across three hosts. | Test | 1 | 0.5 |
 | 16 | `16-monitor-to-glass` / `MonitorToGlassStage` | I kept rr monitor open all day, so I built an app. | Watch | 3 | 1.0 |
 | 17 | `17-glass-boundary` / `GlassBoundaryStage` | Rust owns the data. TypeScript draws it. | Watch | 5 | 2.0 |
 | 18 | `18-glass-browser` / `GlassBrowserStage` | The whole app runs in a browser tab. | Watch | 2 | 1.0 |
