@@ -7,6 +7,8 @@
  * Icons: copied from ~/Projects/steamfield/src/data/pixel-icons.ts (read
  * 2026-11-13, steamfield commit 53a1a06). One character per pixel: "." is
  * empty; p, c, y, v, w are pink, cyan, yellow, violet and white.
+ * foreman differs from that file: its chevrons sit one pixel closer, because
+ * the original runs the third chevron's point off the 12-pixel grid.
  * Languages: read from each repo on 2026-11-13; sourced in data-sources.md
  * under "Every slide: product chips".
  */
@@ -55,15 +57,15 @@ export const PRODUCTS: readonly Product[] = [
     site: "https://foreman.steamfield.io",
     icon: [
       "............",
-      "vv..cc..pp..",
-      ".vv..cc..pp.",
-      "..vv..cc..pp",
-      "...vv..cc..p",
-      "....vv..cc.p",
-      "...vv..cc..p",
-      "..vv..cc..pp",
-      ".vv..cc..pp.",
-      "vv..cc..pp..",
+      "vv.cc.pp....",
+      ".vv.cc.pp...",
+      "..vv.cc.pp..",
+      "...vv.cc.pp.",
+      "....vv.cc.pp",
+      "...vv.cc.pp.",
+      "..vv.cc.pp..",
+      ".vv.cc.pp...",
+      "vv.cc.pp....",
       "............",
       "............",
     ],
