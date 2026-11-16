@@ -14,3 +14,13 @@
 :global(.od-slide.is-story) .sf-px-w {
   fill: var(--od-text);
 }
+/* The Stacks mark keeps its own three greens: it is that product's logo. */
+:global(.od-slide.is-story) .sf-px-t {
+  fill: var(--od-stacks-top);
+}
+:global(.od-slide.is-story) .sf-px-l {
+  fill: var(--od-stacks-left);
+}
+:global(.od-slide.is-story) .sf-px-r {
+  fill: var(--od-stacks-right);
+}

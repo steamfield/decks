@@ -7,6 +7,11 @@
  * Icons: copied from ~/Projects/steamfield/src/data/pixel-icons.ts (read
  * 2026-11-13, steamfield commit 53a1a06). One character per pixel: "." is
  * empty; p, c, y, v, w are pink, cyan, yellow, violet and white.
+ * Stacks differs from that file: it is the product's own mark, the shaded
+ * stack in ~/Projects/stacks-api/apps/web/public/brand/stacks-mark.svg (read
+ * 2026-11-16, stacks-api commit 650fa76), sampled onto the 12-pixel grid.
+ * t, l and r are the mark's top, left and right faces in its own greens
+ * (theme.json accents stacks-top, stacks-left, stacks-right).
  * foreman differs from that file: its chevrons sit one pixel closer, because
  * the original runs the third chevron's point off the 12-pixel grid.
  * Languages: read from each repo on 2026-11-13; sourced in data-sources.md
@@ -35,18 +40,18 @@ export const PRODUCTS: readonly Product[] = [
     lang: "TypeScript · Effect 4",
     site: "https://stacks.steamfield.io",
     icon: [
-      "....yyyy....",
-      "....yyyy....",
-      "............",
-      "..pppppppp..",
-      "..pppppppp..",
-      "............",
-      ".cccccccccc.",
-      ".cccccccccc.",
-      "............",
-      "vvvvvvvvvvvv",
-      "vvvvvvvvvvvv",
-      "............",
+      ".....tt.....",
+      "...tttttt...",
+      ".tttttttttt.",
+      ".llttttttrr.",
+      ".llllttrrrr.",
+      "...lllrrr...",
+      ".ll..lr..rr.",
+      ".llll..rrrr.",
+      "...lllrrr...",
+      ".ll..lr..rr.",
+      ".llll..rrrr.",
+      "...lllrrr...",
     ],
   },
   {
