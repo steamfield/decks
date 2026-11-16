@@ -8,6 +8,8 @@ import styles from "../styles/above.module.css";
 const POWER_KEY = "sf-tube-power";
 /** Slightly longer than --sf-tube-power, as in the Slidev tube. */
 const POWER_MS = 700;
+/** The barrel filter's pixel budget: a 16:10 laptop window at 2x is about 9.6 MP, a phone 25-55. */
+const MAX_WARP_PIXELS = 4096 * 4096;
 
 /** The glass stays in screen pixels; the picture's filter uses canvas coordinates. */
 export default function Above() {
@@ -33,16 +35,6 @@ export default function Above() {
     });
     return () => observer.disconnect();
   }, [on]);
-
-  useLayoutEffect(() => {
-    if (!on || !map) return;
-    const slide = host.current?.closest<HTMLElement>("[data-deck-slide]");
-    if (!slide) return;
-    slide.style.setProperty("--sf-barrel-filter", `url("#${id}")`);
-    return () => {
-      slide.style.removeProperty("--sf-barrel-filter");
-    };
-  }, [on, map, id]);
 
   useLayoutEffect(() => {
     if (!on) return;
@@ -98,6 +90,22 @@ export default function Above() {
     observer.observe(el);
     return () => observer.disconnect();
   }, [on, scale]);
+
+  // WebKit filters the frame in canvas units at the device pixel ratio. A phone (3x, and in
+  // portrait a window three frames tall) needs a buffer iOS will not allocate, and the frame
+  // then draws nothing, or the cover's WebGL takes the tab down. Past the budget the picture
+  // goes without the warp.
+  const warp =
+    box.windowWidth * box.windowHeight * window.devicePixelRatio ** 2 <= MAX_WARP_PIXELS;
+  useLayoutEffect(() => {
+    if (!on || !map || !warp) return;
+    const slide = host.current?.closest<HTMLElement>("[data-deck-slide]");
+    if (!slide) return;
+    slide.style.setProperty("--sf-barrel-filter", `url("#${id}")`);
+    return () => {
+      slide.style.removeProperty("--sf-barrel-filter");
+    };
+  }, [on, map, id, warp]);
 
   if (!on || scale <= 0) return null;
   const style: CSSProperties & Record<`--${string}`, string> = {
