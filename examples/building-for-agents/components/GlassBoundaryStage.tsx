@@ -272,6 +272,10 @@ export function GlassBoundaryStage() {
             <path className="sf-wire" d={polyline(TO_STORE)} />
             <path className="sf-wire" d={polyline(TO_TRAY)} />
           </g>
+          {/* Packets ride the wires, so they pass under the boxes drawn after them. */}
+          <PacketPath points={TO_TRANSPORT} progress={s.toTransport} color={DATA} />
+          <PacketPath points={TO_WIDGET} progress={s.toWidget} color={DATA} />
+          <PacketPath points={TO_SEAM} progress={s.toSeam} color={DATA} />
           <g style={{ opacity: s.frame }}>
             <line
               x1={SEAM_X}
@@ -443,9 +447,6 @@ export function GlassBoundaryStage() {
               style={{ opacity: s.toSeam > REACHED ? ON : OFF }}
             />
           </g>
-          <PacketPath points={TO_TRANSPORT} progress={s.toTransport} color={DATA} />
-          <PacketPath points={TO_WIDGET} progress={s.toWidget} color={DATA} />
-          <PacketPath points={TO_SEAM} progress={s.toSeam} color={DATA} />
         </>
       }
       overlay={
