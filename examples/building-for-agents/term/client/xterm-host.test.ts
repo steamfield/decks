@@ -4,6 +4,10 @@ import { type Browser, chromium, expect } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
 import { onTestFinished, test } from "vitest";
 
+// These start a browser and a dev server, which the unit run should not carry. Run by hand:
+// DECKS_LIVE_TERM=1 bun run test examples/building-for-agents/term/client/xterm-host.test.ts
+const browserTest = test.skipIf(process.env.DECKS_LIVE_TERM !== "1");
+
 async function openTerminal() {
   const root = resolve(import.meta.dirname, "../../../..");
   const scratch = resolve(import.meta.dirname, "../../.tmp");
@@ -73,46 +77,53 @@ async function openTerminal() {
   return { page, terminal };
 }
 
-test("a terminal refits when its display pixel ratio changes without a CSS resize", async () => {
-  const { page, terminal } = await openTerminal();
-  // Complete a resize before moving displays, so no initial ResizeObserver callback can mask the bug.
-  await page.evaluate(`document.getElementById("root").style.width = "900px"`);
-  await expect
-    .poll(() => terminal.evaluate((element) => element.querySelector(".xterm-screen")?.clientWidth))
-    .toBe(900);
-  await page.evaluate(`document.getElementById("root").style.width = "827px"`);
-  await expect
-    .poll(() => terminal.evaluate((element) => element.querySelector(".xterm-screen")?.clientWidth))
-    .toBe(827);
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send("Emulation.setDeviceMetricsOverride", {
-    width: 1024,
-    height: 768,
-    deviceScaleFactor: 2,
-    mobile: false,
-  });
-  // CDP changes the ratio without sending the display's window event.
-  await page.evaluate(() => window.dispatchEvent(new Event("resize")));
-  await page.evaluate(
-    `window.receive("deck-term:ready", {id:"test",buffer:"pixel-ratio-sentinel"})`,
-  );
-  await expect(terminal.getByText("pixel-ratio-sentinel", { exact: true })).toBeVisible();
-  await expect
-    .poll(() =>
-      terminal.evaluate((element) => {
-        const screen = element.querySelector(".xterm-screen");
-        if (!(screen instanceof HTMLElement)) throw new Error("Missing rendered terminal screen");
-        return {
-          host: element.clientWidth,
-          grid: screen.clientWidth,
-          ratio: window.devicePixelRatio,
-        };
-      }),
-    )
-    .toEqual({ host: 827, grid: 827, ratio: 2 });
-});
+browserTest(
+  "a terminal refits when its display pixel ratio changes without a CSS resize",
+  async () => {
+    const { page, terminal } = await openTerminal();
+    // Complete a resize before moving displays, so no initial ResizeObserver callback can mask the bug.
+    await page.evaluate(`document.getElementById("root").style.width = "900px"`);
+    await expect
+      .poll(() =>
+        terminal.evaluate((element) => element.querySelector(".xterm-screen")?.clientWidth),
+      )
+      .toBe(900);
+    await page.evaluate(`document.getElementById("root").style.width = "827px"`);
+    await expect
+      .poll(() =>
+        terminal.evaluate((element) => element.querySelector(".xterm-screen")?.clientWidth),
+      )
+      .toBe(827);
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: 1024,
+      height: 768,
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
+    // CDP changes the ratio without sending the display's window event.
+    await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+    await page.evaluate(
+      `window.receive("deck-term:ready", {id:"test",buffer:"pixel-ratio-sentinel"})`,
+    );
+    await expect(terminal.getByText("pixel-ratio-sentinel", { exact: true })).toBeVisible();
+    await expect
+      .poll(() =>
+        terminal.evaluate((element) => {
+          const screen = element.querySelector(".xterm-screen");
+          if (!(screen instanceof HTMLElement)) throw new Error("Missing rendered terminal screen");
+          return {
+            host: element.clientWidth,
+            grid: screen.clientWidth,
+            ratio: window.devicePixelRatio,
+          };
+        }),
+      )
+      .toEqual({ host: 827, grid: 827, ratio: 2 });
+  },
+);
 
-test("a new session clears old output that was still queued for rendering", async () => {
+browserTest("a new session clears old output that was still queued for rendering", async () => {
   const { page, terminal } = await openTerminal();
   await page.evaluate(`
     window.receive("deck-term:data", {id:"test",chunk:"old-output\\r\\n".repeat(20000) + "old-marker\\r\\n"});
