@@ -4,8 +4,9 @@ import { useTween } from "@steamfield/decks/motion";
 import type { ProductId } from "../data/products";
 import type { TermPaneSpec } from "../term/protocol";
 import codeStyles from "./CodePane.module.css";
+import { CrtPanel } from "./CrtPanel";
 import { tokenizeLine } from "./code-tokens";
-import { CRT, FRAME, OFF, ON } from "./design";
+import { CRT, DIM, FRAME, OFF, ON } from "./design";
 import styles from "./LiveDemoStage.module.css";
 import { LiveTerm, type TermRecording } from "./LiveTerm";
 import { NamePlate } from "./NamePlate";
@@ -25,6 +26,19 @@ export interface LiveDemo {
 
 const PANE = { y: 174, height: 470, gap: 22 };
 const COMMANDS_Y = PANE.y + PANE.height + PANE.gap;
+
+function paneSize(pane: TermPaneSpec, width: number, columns: number) {
+  const size = Math.min(
+    28,
+    (width - 80) / ((pane.cols + 2) * 0.4),
+    (PANE.height - 2 * CRT.pad - CRT.tagBand - 48) / (pane.rows * 1.12),
+  );
+  if (pane.cols > columns || size < 24)
+    throw new Error(
+      `Pane "${pane.id}" at ${pane.rows} rows by ${pane.cols} columns needs ${size}px type; use at least 24px and at most ${columns} columns.`,
+    );
+  return size;
+}
 
 /** Keep whole exchanges, including the newest command, inside the readable viewport. */
 function viewport(recording: TermRecording, click: number, rows: number): TermRecording {
@@ -61,20 +75,10 @@ function commandTokens(command: string) {
 
 export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
   const width = (FRAME.right - FRAME.left - (demo.panes.length - 1) * PANE.gap) / demo.panes.length;
-  const columns = demo.panes.length === 2 ? 80 : 92;
-  for (const { pane } of demo.panes) {
-    const size = Math.min(28, (width - 80) / ((Math.min(pane.cols, columns) + 2) / 2));
-    const rows = Math.floor((PANE.height - 2 * CRT.pad - CRT.tagBand - 48) / (size * 1.12));
-    const cols = Math.min(
-      demo.panes.length === 2 ? 80 : Infinity,
-      // VT323's fixed column advance is 0.4em.
-      Math.floor((width - 80) / (size * 0.4)),
-    );
-    if (pane.rows > rows || pane.cols > cols)
-      throw new Error(
-        `Pane "${pane.id}" exceeds the largest readable grid: ${rows} rows by ${cols} columns at ${size}px.`,
-      );
-  }
+  const panes = demo.panes.map((entry) => ({
+    ...entry,
+    size: paneSize(entry.pane, width, demo.panes.length === 2 ? 80 : Infinity),
+  }));
   const deck = useDeck();
   const slide = useSlide();
   const s = useTween({ power: OFF });
@@ -96,11 +100,21 @@ export function LiveDemoStage({ demo }: { demo: LiveDemo }) {
         <>
           <h2 className="od-story-head">{demo.headline}</h2>
           <NamePlate id={demo.product} chipOnly />
-          {demo.panes.map(({ pane, recording, label }, index) => {
+          {panes.map(({ pane, recording, label, size }, index) => {
             const x = FRAME.left + index * (width + PANE.gap);
-            const size = Math.min(28, (width - 80) / ((Math.min(pane.cols, columns) + 2) / 2));
             return (
               <div key={pane.id}>
+                <div className={styles.tube} aria-hidden="true">
+                  <CrtPanel
+                    x={x}
+                    y={PANE.y}
+                    width={width}
+                    height={PANE.height}
+                    label={label}
+                    power={OFF}
+                    progress={(ON - s.power) * DIM}
+                  />
+                </div>
                 <div
                   className={styles.tube}
                   aria-hidden={clicks === 0}

@@ -120,10 +120,10 @@ browserTest.each([1, 0.75])(
 );
 
 test.each([
-  { rows: 12, cols: 92 },
-  { rows: 11, cols: 145 },
+  { rows: 14, cols: 92 },
+  { rows: 11, cols: 167 },
 ])(
-  "a pane with $rows rows and $cols columns reports the largest readable grid",
+  "a pane with $rows rows and $cols columns rejects type below the readable minimum",
   async ({ rows, cols }) => {
     await import("../../setup");
     const { LiveDemoStage } = await import("../../components/LiveDemoStage");
@@ -140,7 +140,7 @@ test.each([
       ],
     };
     expect(() => renderToString(createElement(LiveDemoStage, { demo }))).toThrow(
-      'Pane "oversize" exceeds the largest readable grid: 11 rows by 144 columns at 28px.',
+      /Pane "oversize".*use at least 24px/,
     );
   },
 );
