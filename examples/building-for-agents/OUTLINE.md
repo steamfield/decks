@@ -228,21 +228,21 @@ New animated diagrams this deck builds because none exists: the Stacks loop with
 
 Phase 0 cut: 17 slides, 60 beats, about 24.5 minutes of script. Slots 05, 12 and 17 are reserved for later live demos and have no spec in this phase.
 
-The numbers below are filename prefixes for the planned arc. Current playback positions are consecutive: filenames 01-04 play as 1-4, 06-11 as 5-10, 13-16 as 11-14, and 18-20 as 15-17. For `decks shot` or presenter navigation, use 3 for the thread, 16 for habits and 17 for the close.
+Slot 05 now holds the Stacks live demo (section 10). The numbers below are filename prefixes for the planned arc. Current playback positions are consecutive: filenames 01-11 play as 1-11, 13-16 as 12-15, and 18-20 as 16-18. For `decks shot` or presenter navigation, use 3 for the thread, 17 for habits and 18 for the close.
 
 | # | Page / stage | Headline (draft) | Step | Beats | Min |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `01-cover` / `StoryCover` + `NightDriveField` | Building for agents | | 1 | 0.5 |
 | 2 | `02-two-users` / `TwoUsersStage` | Every tool I ship has two users. | | 3 | 1.25 |
 | 3 | `03-thread` / `ThreadStage` | I ship a change with five tools I built. | | 3 | 1.25 |
-| 4 | `04-stacks-loop` / `StacksLoopStage` | Stacks hands the agent a brief and a finish line. | Start | 4 | 1.75 |
-| 05 | reserved: live demo | | | | |
+| 4 | `04-stacks-loop` / `StacksLoopStage` | Stacks hands the agent a brief and a finish line. | Start | 5 | 1.75 |
+| 5 | `05-stacks-live` / `LiveDemoStage` | Stacks gives a failed check an exit code. | Start | 4 | 1.0 |
 | 6 | `06-stacks-tour` / `StacksTourStage` | An Effect CLI is commands, services and one error table. | Start | 6 | 2.75 |
 | 7 | `07-stacks-output` / `StacksOutputStage` | Stacks prints the same result three ways. | Start | 4 | 1.5 |
 | 8 | `08-foreman-session` / `ForemanSessionStage` | Claude delegates to Codex, one worktree per task. | Delegate | 5 | 2.0 |
 | 9 | `09-foreman-daemon` / `ForemanDaemonStage` | A daemon sits between the two agents. | Delegate | 4 | 1.5 |
 | 10 | `10-foreman-question` / `ForemanQuestionStage` | A held question is an unanswered request. | Delegate | 4 | 1.5 |
-| 11 | `11-rr-locks` / `RrLocksStage` | rr gives every run its own machine. | Test | 5 | 2.0 |
+| 11 | `11-rr-locks` / `RrLocksStage` | rr gives every run its own machine. | Test | 8 | 2.0 |
 | 12 | reserved: live demo | | | | |
 | 13 | `13-monitor-to-glass` / `MonitorToGlassStage` | I kept rr monitor open all day, so I built an app. | Watch | 3 | 1.0 |
 | 14 | `14-glass-boundary` / `GlassBoundaryStage` | Rust owns the data. TypeScript draws it. | Watch | 5 | 2.0 |
@@ -322,12 +322,28 @@ Data: `~/Projects/stacks-tests/tea-dashboard/.stacks/state/runs.jsonl` (a real C
 
 | Beat | Stage | Card | Say |
 | --- | --- | --- | --- |
-| 0 | The command chip types in; the file chips drop out of it one by one. | One command writes the brief. / Starter files, agent instructions and a 4,481-word BRIEF.md. It runs nothing from the stack. | A stack is a Markdown recipe. The CLI never calls a model and pins no versions. |
-| 1 | The hand-off prompt appears over a `PacketPath` from the files to the agent box. | The hand-off is one sentence. / Read .stacks/BRIEF.md and carry it out. You are done when stacks verify passes. | That sentence is the entire prompt. Everything else is in the brief. |
-| 2 | The cursor glides along the timeline to 393 s: the gate shows a pink ✕ and a packet returns to the agent. Then to 501 s: the gate turns phosphor. | Verify failed once, then passed. / A real Claude Code build: failed at 393 seconds, green at 501. | This is a real run record. The agent was not done at six and a half minutes, and verify said so. |
-| 3 | The manifest chip gets a lock; a digest chip appears outside the project box, in a region labelled "your machine". | The agent cannot move the finish line. / Steps are hashed outside the project. Edit one and verify refuses to run. | An agent that cannot make a test pass will sometimes delete the test. This is the answer to that. |
+| 0 | The command types over `DUR.trace`. Four files drop separately over `DUR.gather`. | One command writes the brief. / It writes starter files, agent instructions and a 4,481-word BRIEF.md. | A stack is a Markdown recipe. Stacks makes no model calls and runs nothing from it. |
+| 1 | The prompt appears. A packet crosses to the agent over `DUR.gather`, then the agent lights. Earlier setup dims. | The agent’s prompt is two sentences. / It names the brief and says the work is done when stacks verify passes. | The brief is a file I can review and change. |
+| 2 | The cursor and outbound packet travel over `DUR.gather` while the fifteen squares resolve in order. After `DUR.eraseHold`, the failure appears over `DUR.morph` with the label "lint + 4 doc checks". The return packet takes `DUR.scale`. | The first verify run failed. / Claude Code ran it 393 seconds in and 5 of 15 steps failed. | Lint and four documentation checks failed. The result returns to the agent. |
+| 3 | The agent works. The outbound packet and cursor travel to 501 seconds over `DUR.gather` while the squares resolve again. After `DUR.eraseHold`, the gate passes over `DUR.morph`. | The next verify run passed. / The agent fixed the failures and all 15 steps passed at 501 seconds. | The completion rule from the prompt has now been met. |
+| 4 | The agent and recording dim. After `DUR.eraseHold`, the manifest and gate locks appear over `DUR.morph`, followed by the outside digest. | Stacks refuses to verify edited checks. / Stacks keeps a hash of the steps outside the project and refuses to run if one was edited. | A person must accept a change to the verify steps. |
 
 Release valve A (2 minutes, after this slide): `stacks search`, `stacks show typescript-cli`, `stacks new typescript-cli demo-cli --sandbox --no-launch`, `stacks verify --json; echo "exit=$?"` in a scratch directory with `--offline`. Script in `SPEAKER-GUIDE.md`.
+
+### 5. Stacks: live
+
+Purpose: run the Stacks commands in front of the room and show that a failed verify ends in exit code 5, which a caller can branch on.
+
+Layout: `LiveDemoStage` with one terminal pane (`LiveTerm`, 11 rows by 92 columns, label SHELL) above three command cards, card bottom left. Each command card has a play button; on the next command it advances the slide one click, and in overview, preview and print it is a static icon. The pane plays the recording in `data/fixtures/05-stacks-live.json` (tag `Recorded 2026-11-16 · stacks 0.12.0`). When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads `Live`. The viewport keeps complete exchanges and always shows the newest command with its output. Name plate: Stacks.
+
+Data: `data/05-stacks-live.ts` over the fixture; source record `data/sources/05-stacks-live.md`. The second command's ten leading progress lines are left out of the recording; no other line is cut or rewritten.
+
+| Beat | Stage | Card | Say |
+| --- | --- | --- | --- |
+| 0 | Terminal off; the first command card is next. | Watch the exit code. / These commands run in a shell, with a recording available. | The pane is live when the connection is up and a recording otherwise. |
+| 1 | `stacks new typescript-cli demo-cli --sandbox --no-launch --offline` and its output. | The scaffold includes the agent's next step. / Stacks wrote the project and brief, then printed the hand-off. | Nothing is built yet. |
+| 2 | `stacks verify` piped through `tail -5`, the report and `exit=5`. | Fresh scaffolds fail verify. / The unbuilt project exits 5; the report tells the agent what to fix. | A caller can branch on the exit code. |
+| 3 | `stacks verify --json` through `jq`: outcome, totals, firstGreen, tamperCheck. | Scripts can read the same result. / JSON reports the outcome, check totals and gate state. | Named fields describe the same unfinished project. |
 
 ### 6. Stacks: the repo tour
 
@@ -431,17 +447,20 @@ Purpose: how test runs are spread across a fleet of agents. rr is the one Go too
 
 Layout: port `FlowDiagram.tsx`'s wide geometry: a laptop region at left holding four agent rows (each labelled with its worktree), a "Waiting for a host" column, and three host boxes at right. Each agent's rr process is a pink chip that moves between the agent row, the waiting column and a host. Colors follow the site's Fig. 6: pink the rr process, cyan its output, violet rsync, yellow waiting, phosphor a passing exit code. Name plate: rr, Go. Tag: `Schematic`, source line "rr's own simulation of its lock rules".
 
-Data: `rr/site/src/lib/flow.ts` (`FLOW_HOSTS` is `m4-mini`, `m1-linux`, `m1-mini`; `FLOW_RUNS` has four agents; poll interval 2,000 ms). For beat 4, line 4 of `rr/site/fixtures/run.jsonl`: a real result event from an OpenData run with a Vitest failure at `src/data/articles/charts-json.test.ts:74`.
+Data: `rr/site/src/lib/flow.ts` (`FLOW_HOSTS` is `m4-mini`, `m1-linux`, `m1-mini`; `FLOW_RUNS` has four agents; poll interval 2,000 ms). For beat 7, line 4 of `rr/site/fixtures/run.jsonl`: a real result event from an OpenData run with a Vitest failure at `src/data/articles/charts-json.test.ts:74`.
 
 | Beat | Stage (`t` still) | Card | Say |
 | --- | --- | --- | --- |
-| 0 | Laptop, four agents, three hosts draw. All hosts free. | Four agents, three hosts, no server. / Each rr call is its own process. They coordinate only through a lock on each host. | rr is Go, the one tool tonight that is not TypeScript. It is here because the agents use it all day. |
-| 1 | Agent 1 runs a parallel `rr test`: its chips lock all three hosts; violet rsync bars, then cyan test bars. | A parallel task takes every host. / One shard per machine, synced by rsync and run over SSH. | A shard is just a task I define. OpenData's `rr test` fans out to eight. |
-| 2 | Agents 2 and 3 arrive, find every lock held, move to the waiting column and tick every 2 s. A chip shows `"status":"waiting"` with the holder's command. | Late runs wait and say why. / The waiting event names the holder, so the agent does not kill a healthy run. | A silent wait looks like a hang. An agent that thinks a command hung will do something worse. |
-| 3 | Agent 1 finishes (phosphor tags). Agent 2 takes the first host, agent 3 the second; agent 4 arrives and takes the third without waiting. | A freed host goes to the next retry. / Each worktree syncs to its own remote directory by default. | I usually have two to four agents going. They never collide. |
-| 4 | The diagram dims; a `TermPane` strip rises along the bottom third showing the real result event, with `"file":"…charts-json.test.ts:74"` in pink. Tag on the strip: `Recorded`. | The result names the failing line. / rr parses pytest, Jest, Vitest and Go output into file, line and message. | The agent reads one line instead of scrolling a log. |
+| 0 | 0 ms. Every host free; no rr process yet. | Each rr call is a separate process. / The only state they share is a lock on each host. rr has no server. | rr is Go. These processes share host locks. |
+| 1 | 1000 ms. Agent 1 has locked every host; sync starts. | A parallel task locks every host. / Its shards are tasks the config lists under parallel. rsync copies the files and SSH runs the command. | Shards are tasks I define under parallel. |
+| 2 | 3900 ms. Sync has finished and every host runs its configured subtask. | Files sync before the tests start. / Each host runs its configured subtask while the parallel run holds every lock. | rsync copies files; SSH runs the configured command. |
+| 3 | 7950 ms. Both agents have moved into waiting; agent 2's retry is already starting dimly. Hold between the two waiting moves. | A run waits when every host is locked. / Each process tries hosts in config order, then waits on the laptop when every lock is held. | They try every host before waiting. |
+| 4 | 10250 ms. Failed retry, every lock still held by agent 1. The waiting event names rr test. | A failed retry names the lock holder. / It retries every 2 seconds and prints a waiting event with the command that holds the lock. | Independent retry timers; output names the holder. |
+| 5 | 13550 ms. Agent 1's result has returned. Agents 2 and 3 run on the first two hosts; third host free. Hold between acquisitions. | A retry locks the first free host. / Each git worktree syncs to its own remote directory unless the config turns that off. | Agent 2 checks first; agent 3 takes the next host in config order. |
+| 6 | 17000 ms. Agent 4 holds the third host and syncs. Agents 2 and 3 still run. | Agent 4 locks a host without waiting. / Its process tries the occupied hosts first, then locks the next host in config order. | Agent 4 probes the occupied hosts and skips the waiting column. |
+| 7 | 17000 ms unchanged. Diagram dims; recorded result strip shows file and line. | The result event gives file and line. / rr parses pytest, Go test, Jest and Vitest output and reports each failed test's file, line and message. | Recorded Vitest failure, line 74, missing tooltip field. |
 
-Notes also carry: the hosts in OpenData's real config are `mbp`, `m4-mini` and `m1-mini` (`~/Projects/opendata/.rr.yaml` lines 34 to 60), which differs from the simulation's host names; OpenData sets `worktree_isolation: false`, so beat 3's body describes rr's default, which is why it says "by default". Release valve C (2 minutes): two worktrees running `rr test` at once with `rr monitor` in a third pane.
+Notes also carry: the hosts in OpenData's real config are `mbp`, `m4-mini` and `m1-mini` (`~/Projects/opendata/.rr.yaml` lines 34 to 60), which differs from the simulation's host names; OpenData sets `worktree_isolation: false`, so beat 5's body describes rr's default, which is why it says "by default". Release valve C (2 minutes): two worktrees running `rr test` at once with `rr monitor` in a third pane.
 
 ### 13. From rr monitor to StatGlass
 
@@ -463,13 +482,13 @@ Layout: two columns with a seam between them. Left (x 110 to 800), three Rust bo
 
 | Beat | Stage | Code pane | Card | Say |
 | --- | --- | --- | --- | --- |
-| 0 | Both columns draw; the proportion bar grows from the centre. | | It is about 60 percent Rust. / Samplers, storage, remote hosts and the menu bar item. TypeScript is the React UI. | The project rule is written down: Rust owns meaning, the client presents. |
-| 1 | The seam lights. | Top: `src-tauri/src/commands.rs` lines 68 to 100, trimmed to the attributes and the `subscribe_live` signature. Bottom: the matching line from `bindings.ts` line 150. | One builder emits both sides. / tauri-specta writes bindings.ts: 81 commands and 10 events, checked before every push. | The Rust doc comments come through as TSDoc. |
-| 2 | The dot leaves the sampler, passes the ring, crosses the seam as a `frame` message, and repeats on the ambient one-second tick. A chip shows `{ kind: "frame", values: [ … ] }`. | | Samples arrive on a Channel. / One message a tick, with values as a positional array against an announced layout. | Tauri events would work. Channels are built for streams and Rust owns when they stop. |
-| 3 | The dot continues: reducer, store, widget. A small live area chart at lower right slides one slot per tick. | `src/app/widgets/lib/use-tick-scroll.ts` lines 24 to 38, trimmed to the `el.animate` call. | One transform animates each tick. / d3 computes the path, React renders SVG, and a single translateX slides it left. | Selectors return flat primitives, so a CPU change does not re-render the memory card. A test counts the renders. |
-| 4 | The right column dims and the dot stops at the seam; a menu bar tile on the Rust side stays lit. A chip: "0.67% of one core". | | Idle costs 0.67 percent of a core. / The menu bar item is drawn in Rust. One run on an M3 Max, October 2026. | When no window is open, Rust closes the channel and ticks every two seconds. |
+| 0 | Both columns draw and the language-share bar grows. | | StatGlass is 58 percent Rust by lines. / Rust has the samplers, the SQLite store, remote hosts and the menu bar item. The React UI is TypeScript. | Rust owns meaning; the client formats and draws. |
+| 1 | The language-share comparison and unrelated actors dim. After `DUR.eraseHold`, the bindings tile and code appear over `DUR.morph`. | Rust `subscribe_live` and its generated TypeScript binding. | tauri-specta generates bindings.ts. / It writes 92 commands and 10 events from the Rust source. A pre-push hook fails if the file is stale. | Both signatures come from the Rust source. |
+| 2 | The sample travels from sampler through engine to transport over `DUR.gather`. After `DUR.eraseHold`, the frame-message chip appears over `DUR.morph`. Storage, tray and downstream boxes stay dim. | | Rust sends samples over a Tauri Channel. / Each tick is one message whose values are an array, ordered by a layout sent earlier. | Series names go once per layout. |
+| 3 | The packet travels to the widget over `DUR.gather`. The chart and tick code appear during travel. After a landing hold of `DUR.eraseHold`, the chart advances one sample over `DUR.morph`. | The real `use-tick-scroll.ts` animation call. | Each tick runs one transform animation. / d3 computes the path and React renders it as SVG. The animation slides the redrawn chart one slot. | The sample lands before the chart ticks. |
+| 4 | TypeScript dims. A sample travels to the seam over `DUR.gather`. After `DUR.eraseHold`, the idle result appears over `DUR.morph` and the Rust tray lights. | | Idle CPU was 0.67 percent of one core. / Rust draws the menu bar item. Measured once, menu bar only, on an M3 Max in October 2026. | A single measurement, with other builds running. |
 
-Figures (re-derive): 153,401 lines of Rust in `crates` and `src-tauri` including inline tests; 111,644 lines of TypeScript in `src` including tests and generated code; 81 `__TAURI_INVOKE` calls and 10 events; 0.672 percent of one core and 104.9 MB, menu bar only, a single run recorded in `plan/competitor-benchmarks.md` and `README.md` lines 182 to 196. The card says "one run" because it is one run.
+Figures (re-derive): 153,401 lines of Rust in `crates` and `src-tauri` including inline tests; 111,644 lines of TypeScript in `src` including tests and generated code; 92 commands (`grep -o '__TAURI_INVOKE[<(]'`; the 81 counted earlier missed the 11 calls written `__TAURI_INVOKE<T>(`) and 10 events; 0.672 percent of one core and 104.9 MB, menu bar only, a single run recorded in `plan/competitor-benchmarks.md` and `README.md` lines 182 to 196. The card says "one run" because it is one run.
 
 ### 15. StatGlass: in a browser tab
 

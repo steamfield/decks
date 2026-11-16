@@ -7,8 +7,8 @@ The diagram is a schematic; the result strip is a recording. rr was read at comm
 | The simulation (`simulate`, `sceneAt`, `flowSteps`, `waitSpans`) | ported unchanged | `~/Projects/rr/site/src/lib/flow.ts`; `data/11-rr-locks.test.ts` compares segments, steps and scenes with the source when `~/Projects/rr` is present |
 | Diagram layout | laptop, four agent rows, waiting column, three hosts | wide geometry of `~/Projects/rr/site/src/components/landing/FlowDiagram.tsx`, re-proportioned for the stage |
 | FLOW_RUNS, FLOW_HOSTS | four agents; `m4-mini`, `m1-linux`, `m1-mini`; commands, subtask names, "3/3 passed", "86 passed", pids, test percentages | `flow.ts`. Made up by rr's site; covered by the `Schematic` tag |
-| STILLS | 0, 3,600, 8,900 and 17,000 ms of simulation time | derived in `data/11-rr-locks.ts` from `flowSteps` and the segments; `data/11-rr-locks.test.ts` asserts what each frame shows |
-| POLL_MS (card 2: "every 2 seconds") | 2,000 ms | `~/Projects/rr/internal/cli/loadbalance.go` line 477, `time.NewTimer(2 * time.Second)` |
+| STILLS | 0, 1,000, 3,900, 7,950, 10,250, 13,550 and 17,000 ms of simulation time, one per beat 0 to 6; beat 7 holds the last | derived in `data/11-rr-locks.ts` from `flowSteps` and the segments; `data/11-rr-locks.test.ts` asserts each still's holders, phases, waiting agents, visible processes and returned results |
+| POLL_MS (card 4: "every 2 seconds") | 2,000 ms | `~/Projects/rr/internal/cli/loadbalance.go` line 477, `time.NewTimer(2 * time.Second)` |
 | "Each rr call is a separate process", "rr has no server", lock on each host | claim | `~/Projects/rr/README.md` line 353: the lock is a directory created atomically under `/tmp` on the remote |
 | "A parallel task locks every host" | claim | `flow.ts` header (one worker per host, each holding its lock until the task ends, `internal/parallel`) |
 | "tasks the config lists under parallel" | claim | `~/Projects/rr/README.md` lines 234 and 264 to 271: subtasks are named tasks listed under `parallel:` |

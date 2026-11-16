@@ -6,7 +6,7 @@ recorded run, a published article or a named document. This is the fact-check in
 One section per visible slide, in manifest order. A figure with no source yet carries
 `FLAG:` and the sentence that says what to confirm before presenting.
 
-Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3, 6 to 11, 13 to 16 and 18 to 20 are also kept one per file under `data/sources/`,
+Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3, 5 to 11, 13 to 16 and 18 to 20 are also kept one per file under `data/sources/`,
 where each stage's author wrote them; this file is the merged copy the fact-check reads.
 
 ---
@@ -83,6 +83,7 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 | STEPS | 15 verify steps | `.stacks/manifest.json` `verify[].name`; order from the run records |
 | RUNS | failed at 393 s, green at 501 s, green at 623 s | `.stacks/state/runs.jsonl`: `secondsSinceCreated` and `outcome` of each line; all three have `agent: "claude"`, `scope: "full"` |
 | First run's failed steps | lint, readme-filled, agents-md-filled, claude-readme-filled, harness-doc-filled (5 of 15) | `.stacks/state/runs.jsonl` line 1, `steps[].status` |
+| Failure label on beat 2 | "lint + 4 doc checks" | derived from `FIRST_FAIL.failed` in `data/04-stacks-loop.ts`: lint plus the four `*-filled` steps. Reread in `.stacks/state/runs.jsonl` on 2026-11-16 |
 | CLI, RECORDED | stacks 0.5.0, 2026-10-29 | `.stacks/manifest.json` `cli`, `createdAt` |
 | "Stacks keeps a hash of the steps outside the project" | claim | `~/Projects/stacks/packages/cli/src/core/verify/tamper.ts`: the manifest's `verifyDigest` plus a state record under the user state dir, keyed by `projectId` |
 | "refuses to run if one was edited" | claim | `VerifyChanged` in `~/Projects/stacks/packages/cli/src/errors.ts` (exit 5); `commands/verify.ts` lines 151 to 157 for the refused `--accept-changes` |
@@ -90,6 +91,22 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 | "Each product started as a tool I needed" (slide 1 notes) | claim | `~/Projects/steamfield/src/content/blog/why-steamfield.mdx`, first paragraph |
 | "coding agents run some of them more often than I do" (slide 1 notes) | claim | `~/Projects/steamfield/src/content/blog/design-cli-for-ai-agents.mdx`: "two CLIs that agents call more than people do" (rr and Stacks) |
 | Notes: "six thousand for a composed brief" | 6,000 words | `~/Projects/stacks/AGENTS.md` line 126 |
+
+## Slide 5: Stacks gives a failed check an exit code.
+
+Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/05-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+
+| Figure | Value | Source |
+|---|---|---|
+| PANE.commands | the three commands, unchanged | fixture `steps[].command`, through `data/05-stacks-live.ts` |
+| RECORDING | each command followed by its captured output, wrapped every 92 characters | fixture `steps[].lines`, through `data/05-stacks-live.ts` |
+| RECORDING.tag | Recorded 2026-11-16 · stacks 0.12.0 | fixture `recorded` and `tool` |
+| "Stacks wrote the project and brief, then printed the hand-off" | claim | fixture step 1: `Created demo-cli from typescript-cli (sandbox).`, `Brief: .stacks/BRIEF.md (4065 words)` and the `NEXT STEP FOR THE AGENT` line |
+| VERIFY_EXIT (card 2: "exits 5") | 5 | fixture step 2: `Verify failed.` and `exit=5` |
+| JSON result | outcome failed; 2 passed, 8 failed, 12 skipped; firstGreen false; tamperCheck full | fixture step 3 |
+| Notes: "zsh's pipestatus" | claim | fixture step 2 command, `echo "exit=$pipestatus[1]"` |
+
+Step 2 leaves out its ten leading progress lines (`> install` to `> effect-api-reference`, listed in `data/sources/05-stacks-live.md`) so the command and the whole report fit at a readable size. No other line is left out and no line's text is rewritten. The viewport keeps complete exchanges and always includes the newest command. The brief's 4,065 words belong to this capture and CLI version; no card repeats the figure or compares it with slide 4's project.
 
 ## Slide 6: The Stacks CLI is written with Effect.
 
@@ -215,8 +232,8 @@ The diagram is a schematic; the result strip is a recording. rr was read at comm
 | The simulation (`simulate`, `sceneAt`, `flowSteps`, `waitSpans`) | ported unchanged | `~/Projects/rr/site/src/lib/flow.ts`; `data/11-rr-locks.test.ts` compares segments, steps and scenes with the source when `~/Projects/rr` is present |
 | Diagram layout | laptop, four agent rows, waiting column, three hosts | wide geometry of `~/Projects/rr/site/src/components/landing/FlowDiagram.tsx`, re-proportioned for the stage |
 | FLOW_RUNS, FLOW_HOSTS | four agents; `m4-mini`, `m1-linux`, `m1-mini`; commands, subtask names, "3/3 passed", "86 passed", pids, test percentages | `flow.ts`. Made up by rr's site; covered by the `Schematic` tag |
-| STILLS | 0, 3,600, 8,900 and 17,000 ms of simulation time | derived in `data/11-rr-locks.ts` from `flowSteps` and the segments; `data/11-rr-locks.test.ts` asserts what each frame shows |
-| POLL_MS (card 2: "every 2 seconds") | 2,000 ms | `~/Projects/rr/internal/cli/loadbalance.go` line 477, `time.NewTimer(2 * time.Second)` |
+| STILLS | 0, 1,000, 3,900, 7,950, 10,250, 13,550 and 17,000 ms of simulation time, one per beat 0 to 6; beat 7 holds the last | derived in `data/11-rr-locks.ts` from `flowSteps` and the segments; `data/11-rr-locks.test.ts` asserts each still's holders, phases, waiting agents, visible processes and returned results |
+| POLL_MS (card 4: "every 2 seconds") | 2,000 ms | `~/Projects/rr/internal/cli/loadbalance.go` line 477, `time.NewTimer(2 * time.Second)` |
 | "Each rr call is a separate process", "rr has no server", lock on each host | claim | `~/Projects/rr/README.md` line 353: the lock is a directory created atomically under `/tmp` on the remote |
 | "A parallel task locks every host" | claim | `flow.ts` header (one worker per host, each holding its lock until the task ends, `internal/parallel`) |
 | "tasks the config lists under parallel" | claim | `~/Projects/rr/README.md` lines 234 and 264 to 271: subtasks are named tasks listed under `parallel:` |

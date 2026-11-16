@@ -2,7 +2,7 @@
 
 The full script for each slide, moved out of the slide files. The slides carry a bullet version of the same points for use on stage. Each slide has what the slide shows, the spoken script (opening, then one paragraph per click), and answers for likely questions.
 
-Section numbers follow the slide filename prefixes. In the current 17-slide cut, the thread plays at position 3, habits at 16 and the close at 17; OUTLINE.md section 8 gives the full mapping.
+Section numbers follow the slide filename prefixes. In the current 18-slide cut, the thread plays at position 3, habits at 17 and the close at 18; OUTLINE.md section 8 gives the full mapping.
 
 ## 1. Building for agents
 
@@ -68,11 +68,11 @@ These are the five tools, in the order I use them on one change. I start a proje
 
 ## 4. Stacks briefs the agent and checks its work.
 
-Clicks: 3
+Clicks: 4
 
 ### What the slide shows
 
-The top half is a diagram of how Stacks works. The monitor underneath shows the verify runs of tea-dashboard, a SvelteKit project scaffolded with stacks 0.5.0 on October 29, 2026 and built by Claude Code. Times are seconds since the scaffold command.
+The top half is a diagram of how Stacks works. The monitor underneath shows the verify runs of tea-dashboard, a SvelteKit project scaffolded with stacks 0.5.0 on October 29, 2026 and built by Claude Code. Times are seconds since the scaffold command. The failed run and the passing run each get their own click.
 
 Source: data-sources.md, Slide 4.
 
@@ -82,7 +82,9 @@ Stacks starts a project. I pick a stack, which is a Markdown recipe, and run one
 
 **[click]** Stacks then starts the agent with a two-sentence prompt: read the brief and carry it out, and you're done when stacks verify passes. The brief is a file in the repo, so I can review it and change it like any other file.
 
-**[click]** These are the verify runs from tea-dashboard, a SvelteKit dashboard that Claude Code built from a Stacks brief. Claude ran verify for the first time 393 seconds after the scaffold, and five of the fifteen steps failed: lint, and four checks that the README and the agent docs had been filled in. The next run, at 501 seconds, passed all fifteen.
+**[click]** This is tea-dashboard, a SvelteKit dashboard Claude Code built from a Stacks brief. The first verify ran at 393 seconds. Five of fifteen steps failed: lint, plus four checks for the README and agent docs. The result goes back to the agent.
+
+**[click]** Claude Code fixes the failures and runs verify again. At 501 seconds, all fifteen steps pass. That is the completion rule from the prompt: keep working until these checks pass.
 
 **[click]** An agent that can't get a check to pass can edit the check instead. Stacks stores a hash of the verify steps outside the project. If a step changes, verify exits without running anything until a person accepts the change, and it refuses the accept flag when the caller is an agent.
 
@@ -90,6 +92,35 @@ Stacks starts a project. I pick a stack, which is a Markdown recipe, and run one
 
 - What is in the brief? The stack's guidance, a section for each add-on, the ground rules, and a table of every verify step. A composed brief is capped at six thousand words.
 - Which agents does it start? Claude Code, Codex, OpenCode, Cursor and Copilot. When it is already running inside an agent, or in CI, it prints the prompt and starts nothing.
+- Which doc checks failed? readme-filled, agents-md-filled, claude-readme-filled and harness-doc-filled.
+
+## 5. Stacks gives a failed check an exit code.
+
+Clicks: 3
+
+### What the slide shows
+
+One terminal pane above three command cards. Each card has a play button, and the button on the next command advances the slide one click, the same as the arrow key. By default the pane plays a recording made on November 16 with stacks 0.12.0 in an empty temp directory. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
+
+The recording drops ten leading progress lines from the second command's output; the report text is unchanged.
+
+Source: data-sources.md, Slide 5.
+
+### Say
+
+Let's run those commands. This pane uses a shell when the live connection is available, and a recording of the same commands otherwise. Watch the exit code when I check the fresh project.
+
+**[click]** That command wrote the project and its brief. The last line is the hand-off to the agent: read the brief, carry it out, and keep running verify until it passes. I have not built anything yet.
+
+**[click]** Verify fails on the fresh scaffold because the work in the brief is still waiting for the agent. The final line says exit equals five. That gives a caller a result it can branch on, alongside the report.
+
+**[click]** Here is the same failed check through JSON. A script can read the outcome, the totals and the gate state from named fields. The terminal text and the structured output describe the same unfinished project.
+
+### If asked
+
+- Why the pipestatus? The second command pipes verify through tail, and zsh's pipestatus keeps verify's exit code.
+- What does the JSON command drop? It sends stderr away from the pane and uses jq to select the four fields shown.
+- Is the recording trimmed? It drops the second command's ten leading progress lines. The report text is unchanged.
 
 ## 6. The Stacks CLI is written with Effect.
 
@@ -223,13 +254,13 @@ A delegate asks a question by calling a tool. foreman registers one tool with Co
 
 ## 11. rr runs each agent's tests on its own machine.
 
-Clicks: 4
+Clicks: 7
 
 ### What the slide shows
 
-The diagram is a schematic. It is the simulation of rr's lock rules from rr's own site, and its agents, host names and timings are made up. The strip on the last beat is a recording of the result event from one rr test run in OpenData on November 2.
+The diagram is a schematic. It is the simulation of rr's lock rules from rr's own site, and its agents, host names and timings are made up. Each click moves the simulation to the next event and stops there. The strip on the last beat is a recording of the result event from one rr test run in OpenData on November 2.
 
-The simulation's hosts are m4-mini, m1-linux and m1-mini. OpenData's config lists mbp, m4-mini and m1-mini and sets worktree_isolation to false, so the card on beat 3 describes rr's default.
+The simulation's hosts are m4-mini, m1-linux and m1-mini. OpenData's config lists mbp, m4-mini and m1-mini and sets worktree_isolation to false, so the card on beat 5 describes rr's default.
 
 Source: data-sources.md, Slide 11.
 
@@ -237,11 +268,17 @@ Source: data-sources.md, Slide 11.
 
 rr is written in Go. My agents use it all day to run tests. It copies the working tree to another machine with rsync and runs a command there over SSH. This diagram is the simulation from rr's own site, with four agents on one laptop and three hosts. Each rr call is a separate process. rr has no server, and the only state those processes share is a lock directory on each host.
 
-**[click]** Agent 1 runs rr test, which is a parallel task. I define each shard as a task in the config and list them under parallel in the parent task, because rr does not split a suite on its own. In OpenData, rr test runs eight of those tasks. A parallel run locks every host, copies the files to each one with rsync, and runs the tasks across them.
+**[click]** Agent 1 runs rr test, which is a parallel task. I define each shard as a task in the config and list them under parallel, because rr does not split a suite on its own. In OpenData, rr test runs eight of those tasks.
 
-**[click]** Agents 2 and 3 start their own runs while agent 1 holds all three locks. A plain run tries the hosts in the order the config lists them and takes the first one it can lock. When every host is locked it waits on the laptop and tries again every two seconds. Before it waits, it prints one JSON event with the status waiting and the command that holds each lock, so an agent reading the output can see its run is queued behind rr test.
+**[click]** A parallel run locks every host and copies the files to each one with rsync. SSH starts each configured task when rsync finishes. The parallel run holds every lock until all its subtasks finish.
 
-**[click]** When agent 1's run ends, all three locks are released. Agent 2 retries first and locks m4-mini. Agent 3 finds m4-mini locked and takes the next host, m1-linux. Agent 4 starts later, finds the first two hosts locked, and takes m1-mini without waiting. I usually have two to four agents running at once. By default rr syncs each git worktree to its own directory on the host, so two agents' files stay apart.
+**[click]** Agents 2 and 3 start their own runs while agent 1 holds all three locks. A plain run tries the hosts in config order and takes the first one it can lock. When every host is locked, it waits on the laptop and retries every two seconds.
+
+**[click]** This retry finds every lock still held. Before it waits, it prints one JSON event with the status waiting and the command that holds each lock. An agent reading the output can see its run is queued behind rr test.
+
+**[click]** Agent 1's run ends and all three locks are released. Agent 2 retries first and locks m4-mini. Agent 3 finds m4-mini locked and takes m1-linux. By default rr syncs each git worktree to its own directory on the host, so two agents' files stay apart.
+
+**[click]** Agent 4 starts later and takes m1-mini without waiting. It tries the occupied hosts in config order before it locks m1-mini. I usually have two to four agents running at once.
 
 **[click]** This is the result event from an rr test run in OpenData on November 2. Five of the eight tasks passed and three failed. rr parses the output of pytest, Go test, Jest and Vitest, and for each failed test it reports the file, the line and the error message. The highlighted line is a Vitest failure at charts-json.test.ts, line 74, and the message under it says a tooltip field named share is missing from the chart's data.
 
@@ -282,7 +319,7 @@ Clicks: 4
 
 ### What the slide shows
 
-A schematic of the StatGlass repo. Rust crates are on the left, the TypeScript layers on the right, and the generated bindings file is between them. The bar is line counts at commit 5db8622a, with tests and generated code included. The chart inside the widget box uses made-up values. The code is quoted from the files named above each pane.
+A schematic of the StatGlass repo. Rust crates are on the left, the TypeScript layers on the right, and the generated bindings file is between them. The bar is line counts at commit 5db8622a, with tests and generated code included. The chart inside the widget box uses made-up values. On beat 3 the sample reaches the widget first, and then the chart advances by one sample. The code is quoted from the files named above each pane.
 
 Source: data-sources.md, Slide 14.
 
@@ -301,6 +338,7 @@ StatGlass is a Tauri app, and 58 percent of its lines are Rust. The Rust crates 
 ### If asked
 
 - Do the line counts include tests? Yes. Inline Rust tests, TypeScript tests and the generated bindings are all counted.
+- Are the chart values recorded? They are made-up values from cpuAt, as the chart's Illustrative tag says.
 
 ## 15. The StatGlass UI also runs in a browser tab.
 
