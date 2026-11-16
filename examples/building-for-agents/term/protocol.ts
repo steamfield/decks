@@ -1,8 +1,12 @@
 /**
- * The messages a LiveTerm pane and the dev-server terminal plugin exchange over Vite's HMR
- * socket, as custom events. Types and event names only; the rules live in sessions.ts.
+ * The wire contract between a terminal pane in the browser (term/client) and the dev-server
+ * terminal plugin (term/server): event names and message shapes, sent as custom events on
+ * Vite's HMR socket. No logic and no imports, so both sides and any future home can share it.
+ *
+ * term/ is written to move into the framework unchanged: term/server imports no browser or
+ * React code, term/client imports no node:* module, and nothing under term/ imports from the
+ * rest of the deck. term/boundaries.test.ts enforces that.
  */
-import type { TermLine } from "../data/types";
 
 /** One terminal pane on a demo slide. The server keeps one shell per `id`. */
 export interface TermPaneSpec {
@@ -11,33 +15,13 @@ export interface TermPaneSpec {
   rows: number;
   cols: number;
   /**
-   * Where the shell starts: "temp" is a fresh directory outside the repository, "repo" is the
-   * repository root (the rr demo needs its .rr.yaml).
+   * Where the shell starts: "temp" is a fresh temporary directory, and any other value names
+   * a directory the server was configured with. The browser never sends a path.
    */
-  cwd: "temp" | "repo";
+  cwd: string;
   /** `commands[n - 1]` is typed and run when the slide steps forward to click n. */
   commands: readonly string[];
 }
-
-/** What the pane shows whenever it is not live. */
-export type TermRecording =
-  | {
-      kind: "lines";
-      lines: readonly TermLine[];
-      /** `shownAt[click]` is how many lines are visible at that click. */
-      shownAt: readonly number[];
-      /** The evidence tag, for example "Recorded 2026-11-16 · stacks 0.7.0". */
-      tag: string;
-    }
-  | {
-      kind: "poster";
-      /** A still of a full-screen program, served from the deck's public directory. */
-      src: string;
-      alt: string;
-      /** The first click at which the still is visible. */
-      from: number;
-      tag: string;
-    };
 
 /** Browser to server. */
 export const TERM_ATTACH = "deck-term:attach";

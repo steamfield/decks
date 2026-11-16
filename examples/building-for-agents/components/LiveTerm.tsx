@@ -1,6 +1,27 @@
-import type { TermPaneSpec, TermRecording } from "../term/protocol";
+import type { TermLine } from "../data/types";
+import type { TermPaneSpec } from "../term/protocol";
 import { CrtPanel } from "./CrtPanel";
 import { TermPane } from "./TermPane";
+
+/** What a pane shows whenever it is not live. */
+export type TermRecording =
+  | {
+      kind: "lines";
+      lines: readonly TermLine[];
+      /** `shownAt[click]` is how many lines are visible at that click. */
+      shownAt: readonly number[];
+      /** The evidence tag, for example "Recorded 2026-11-16 · stacks 0.12.0". */
+      tag: string;
+    }
+  | {
+      kind: "poster";
+      /** A still of a full-screen program, served from the deck's public directory. */
+      src: string;
+      alt: string;
+      /** The first click at which the still is visible. */
+      from: number;
+      tag: string;
+    };
 
 /**
  * One terminal pane on a demo slide. It shows `recording` stepped by `click`; when the deck is

@@ -41,7 +41,7 @@ export default defineConfig({
           environment: "node",
           setupFiles: ["./vitest.setup.ts"],
           testTimeout: 30_000,
-          include: ["examples/*/styles/*.test.{ts,tsx}", "examples/*/term/*.test.ts"],
+          include: ["examples/*/styles/*.test.{ts,tsx}", "examples/*/term/**/*.test.ts"],
         },
       },
     ],

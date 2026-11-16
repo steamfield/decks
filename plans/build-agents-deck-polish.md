@@ -81,17 +81,26 @@ clock checkpoints and the beats to drop on stage.
 
 ```
 examples/building-for-agents/
-  term/protocol.ts      event names and message types shared by plugin and component; no logic
-  term/sessions.ts      session state: one pty per session id, which steps have run, reset; pure
-                        logic with the spawn function passed in
-  term/plugin.ts        Vite plugin: wires sessions to Vite's dev WebSocket (custom events); the
-                        only module that imports node-pty; wiring only
-  components/LiveTerm.tsx (+ .module.css)   one pane: fallback TermPane, or xterm when live
-  components/LiveDemoStage.tsx              a demo slide: headline, 1 or 2 LiveTerm panes, card,
-                                            rail; data-driven
-  data/05-stacks-live.ts, 12-rr-live.ts, 17-glass-live.ts   steps (prepared commands), card
-                                            copy, recorded fallback transcripts
+  term/protocol.ts              wire contract: event names and message shapes; no imports
+  term/server/sessions.ts       session rules; pure, with spawn, clock and temp dirs passed in
+  term/server/shell.ts          the one real spawn (runs shell_pty.py); a node-pty version
+                                would replace this file alone
+  term/server/plugin.ts         liveTerm(options): wires sessions to Vite's HMR socket
+  term/client/connection.ts     attach, step, reset and pane state over an injected transport
+  term/client/use-live-term.ts  React hook: when a pane goes live, the click-to-step rule
+  term/client/xterm-host.tsx    mounts xterm in a counter-scaled box; theme comes in as props
+  components/LiveTerm.tsx       the deck's skin: CRT panel, recording fallback, tags
+  components/LiveDemoStage.tsx  a demo slide: headline, command cards, panes, card, rail
+  data/05-stacks-live.ts, 12-rr-live.ts, 17-glass-live.ts   commands, copy, recordings
 ```
+
+Portability (added 2026-11-16 at Riley's request): `term/` is laid out to move into the
+framework as a relocation. `term/server` goes to `packages/node`, `term/client` to
+`packages/kit`, `protocol.ts` is shared. Nothing under `term/` imports from the rest of the
+deck; server code imports nothing from the browser side and the reverse; `term/boundaries.test.ts`
+enforces all three in the gate. Deck-specific facts (the opt-in, named directories, the shell)
+are plugin options, and theme, gating and the click reach the client as props. What stays in
+the deck is the skin.
 
 Behaviour (revised after the devil's advocate review; see the log at the end):
 
