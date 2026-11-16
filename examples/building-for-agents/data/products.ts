@@ -20,6 +20,8 @@ export interface Product {
   verb: string;
   /** What its language chip says. */
   lang: string;
+  /** Its landing page, linked from the thread rail. */
+  site: string;
   icon: readonly string[];
 }
 
@@ -29,6 +31,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "Stacks",
     verb: "Start",
     lang: "TypeScript · Effect 4",
+    site: "https://stacks.steamfield.io",
     icon: [
       "....yyyy....",
       "....yyyy....",
@@ -49,6 +52,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "foreman",
     verb: "Delegate",
     lang: "TypeScript · Effect 4",
+    site: "https://foreman.steamfield.io",
     icon: [
       "............",
       "vv..cc..pp..",
@@ -69,6 +73,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "rr",
     verb: "Test",
     lang: "Go",
+    site: "https://rr.steamfield.io",
     icon: [
       "cccccccccccc",
       "c..........c",
@@ -89,6 +94,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "StatGlass",
     verb: "Watch",
     lang: "Rust + TypeScript",
+    site: "https://statglass.steamfield.io",
     icon: [
       "...cccc.....",
       "..c....c....",
@@ -109,6 +115,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "Decks",
     verb: "Present",
     lang: "TypeScript · React",
+    site: "https://decks.steamfield.io",
     icon: [
       "............",
       "....vvvvvvvv",

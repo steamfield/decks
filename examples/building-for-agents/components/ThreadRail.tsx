@@ -7,8 +7,11 @@ export function ThreadRail({ current, all }: { current?: ProductId; all?: boolea
   return (
     <nav className={`sf-rail ${styles["sf-rail"]}`} aria-label="Where this slide is in the talk">
       {PRODUCTS.map((p, i) => (
-        <div
+        <a
           key={p.id}
+          href={p.site}
+          target="_blank"
+          rel="noreferrer"
           className={`sf-rail-item ${styles["sf-rail-item"]}${i === currentIndex ? " is-current" : ""}${all || (currentIndex >= 0 && i < currentIndex) ? " is-done" : ""}`}
           aria-current={i === currentIndex ? "step" : undefined}
         >
@@ -17,7 +20,7 @@ export function ThreadRail({ current, all }: { current?: ProductId; all?: boolea
             <span className={`sf-rail-verb ${styles["sf-rail-verb"]}`}>{p.verb}</span>
             <span className={`sf-rail-name ${styles["sf-rail-name"]}`}>{p.name}</span>
           </span>
-        </div>
+        </a>
       ))}
     </nav>
   );
