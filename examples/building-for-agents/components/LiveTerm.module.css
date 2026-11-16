@@ -1,0 +1,13 @@
+.terminal {
+  height: 100%;
+  width: 100%;
+  color: var(--od-phosphor);
+  font-family: var(--sf-font-term);
+}
+
+.terminal :global(.xterm-viewport) {
+  overflow: hidden;
+}
+.skin {
+  display: contents;
+}
