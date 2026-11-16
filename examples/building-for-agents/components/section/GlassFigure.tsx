@@ -19,10 +19,12 @@ const block = (ch: string) => Array.from({ length: SIZE }, () => ch.repeat(SIZE)
 export function GlassFigure({ t }: { t: number }) {
   const fill = clamp01(t / 0.7);
   const settle = clamp01((t - 0.7) / 0.3);
+  /** New columns enter at the right edge and push the older ones left, as the history does. */
+  const arrived = Math.min(COLUMNS, Math.ceil(fill * COLUMNS));
   return (
     <g>
       {Array.from({ length: COLUMNS }, (_, column) => {
-        const shown = fill * COLUMNS > column ? 1 : 0;
+        const shown = column < arrived ? 1 : 0;
         const level = column < OLDER ? 1 - settle * (1 - DIM) : 1;
         return (
           // biome-ignore lint/suspicious/noArrayIndexKey: the columns are fixed.
@@ -30,7 +32,7 @@ export function GlassFigure({ t }: { t: number }) {
             {ROWS.map((row, i) => (
               <Cells
                 key={row}
-                x={1 + column * PITCH}
+                x={1 + (COLUMNS - arrived + column) * PITCH}
                 y={5 + i * PITCH}
                 rows={block(row[column] ?? ".")}
               />
