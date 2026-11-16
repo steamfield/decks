@@ -33,7 +33,7 @@ browserTest(
       page.getByRole("heading", { name: "Stacks gives a failed check an exit code." }),
     ).toBeVisible();
     const leads = await page.evaluate<string[]>(
-      `import("/data/06-stacks-live.ts").then(({ COPY }) => COPY.map(entry => entry.lead))`,
+      `import("/data/07-stacks-live.ts").then(({ COPY }) => COPY.map(entry => entry.lead))`,
     );
     for (const click of [0, 1, 0]) {
       if (click === 1) await page.keyboard.press("ArrowRight");

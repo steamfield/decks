@@ -16,7 +16,7 @@ import {
   type Severity,
   severity,
   THRESHOLDS,
-} from "../data/16-monitor-to-glass";
+} from "../data/20-monitor-to-glass";
 import { CrtFrame } from "./CrtFrame";
 import { DATA, DIM, NEUTRAL, OFF, ON, PINK, PLUMB, QUIET, WAIT } from "./design";
 import { EvidenceTag } from "./EvidenceTag";
