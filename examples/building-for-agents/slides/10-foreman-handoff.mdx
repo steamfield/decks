@@ -1,0 +1,21 @@
+---
+title: One prompt starts three Codex agents in parallel.
+clicks: 0
+---
+
+import { FOREMAN_HANDOFF } from '../data/handoffs'
+
+{/* SLIDE 10 · FOREMAN HAND-OFF: a prompt that has Claude delegate a small library to three Codex agents in parallel */}
+
+<HandoffStage handoff={FOREMAN_HANDOFF} />
+
+<Notes>
+OPENING
+- Copy this, paste into a second Claude Code session, come back.
+- Claude gets a spec for a cron function and starts three Codex runs through foreman.
+- One writes the code. Two write tests, and none sees another's work.
+- Claude merges them and decides from the spec whether a failing test or the code is wrong.
+
+IF ASKED
+- Each run has its own worktree. Claude owns the merge and the final table of what each agent got wrong.
+</Notes>

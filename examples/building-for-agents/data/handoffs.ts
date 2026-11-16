@@ -8,8 +8,7 @@ import type { Handoff } from "../components/HandoffStage";
  */
 
 export const STACKS_HANDOFF: Handoff = {
-  headline:
-    "One prompt has Claude Code scaffold a deck with Stacks and write it with Decks while I talk.",
+  headline: "One prompt scaffolds a deck and writes it.",
   product: "stacks",
   where: "CLAUDE CODE · VS CODE",
   kind: "prompt",
@@ -17,7 +16,7 @@ export const STACKS_HANDOFF: Handoff = {
 };
 
 export const FOREMAN_HANDOFF: Handoff = {
-  headline: "One prompt has Claude delegate a library to three Codex agents in parallel.",
+  headline: "One prompt starts three Codex agents in parallel.",
   product: "foreman",
   where: "CLAUDE CODE · VS CODE",
   kind: "prompt",
@@ -25,7 +24,7 @@ export const FOREMAN_HANDOFF: Handoff = {
 };
 
 export const RR_HANDOFF: Handoff = {
-  headline: "One command runs tests on four hosts with rr monitor.",
+  headline: "One command runs a suite across four hosts.",
   product: "rr",
   where: "GHOSTTY",
   kind: "shell",
@@ -33,7 +32,7 @@ export const RR_HANDOFF: Handoff = {
 };
 
 export const STATGLASS_HANDOFF: Handoff = {
-  headline: "An agent reads this laptop's load history via StatGlass CLI.",
+  headline: "An agent reads this laptop's load from StatGlass.",
   product: "statglass",
   where: "CLAUDE CODE · VS CODE",
   kind: "prompt",

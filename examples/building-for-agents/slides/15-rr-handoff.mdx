@@ -1,0 +1,21 @@
+---
+title: One command runs a suite across four hosts.
+clicks: 0
+---
+
+import { RR_HANDOFF } from '../data/handoffs'
+
+{/* SLIDE 15 · RR HAND-OFF: one command for Ghostty that runs the Stacks suite across the hosts and opens rr monitor */}
+
+<HandoffStage handoff={RR_HANDOFF} />
+
+<Notes>
+OPENING
+- Copy this, paste into Ghostty, leave rr monitor on screen for a moment, come back.
+- It runs the Stacks test suite in the background and puts rr monitor in front.
+- Seven partitions across the four machines.
+- From here every host is locked until the suite ends, so the in-deck rr demo comes before this slide.
+
+IF ASKED
+- The suite's output goes to /tmp/rr-check.log.
+</Notes>

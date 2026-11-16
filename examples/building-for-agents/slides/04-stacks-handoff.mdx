@@ -1,0 +1,22 @@
+---
+title: One prompt scaffolds a deck and writes it.
+clicks: 0
+---
+
+import { STACKS_HANDOFF } from '../data/handoffs'
+
+{/* SLIDE 4 · STACKS HAND-OFF: a prompt to paste into Claude Code that scaffolds a deck with Stacks and writes it with Decks */}
+
+<HandoffStage handoff={STACKS_HANDOFF} />
+
+<Notes>
+OPENING
+- Copy this, switch to VS Code, paste into Claude Code, come back.
+- Stacks scaffolds a pitch deck from its decks stack. Claude writes three slides with the Decks skills.
+- It is done when stacks verify passes. We leave it running.
+- We look at the result when we reach Decks.
+
+IF ASKED
+- The ten-minute timebox is an instruction to the agent, not a limit the tool enforces.
+- Any number on those slides is made up and labelled illustrative.
+</Notes>
