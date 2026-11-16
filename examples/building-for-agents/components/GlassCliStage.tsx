@@ -1,8 +1,8 @@
 import { DUR, SETTLE, STAGE, StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import { Fragment } from "react";
-import { GAP_LINE, READ_COMMANDS, RETRY, RFC_SIZES, SESSION } from "../data/16-glass-cli";
-import { WHY_RUST } from "../data/code/16-glass-cli";
+import { GAP_LINE, READ_COMMANDS, RETRY, RFC_SIZES, SESSION } from "../data/19-glass-cli";
+import { WHY_RUST } from "../data/code/19-glass-cli";
 import type { TermLine } from "../data/types";
 import { DIM, OFF, ON } from "./design";
 import styles from "./GlassCliStage.module.css";

@@ -1,0 +1,39 @@
+---
+title: Stacks briefs the agent and checks its work.
+clicks: 4
+---
+
+{/* SLIDE 5 · STACKS LOOP: a command writes a brief, the agent builds, verify decides when it is done */}
+
+<StacksLoopStage />
+
+<Notes>
+OPENING
+- Stacks starts a project: pick a stack (a Markdown recipe), run one command.
+- It writes starter files, the instruction files an agent reads, and a brief.
+- Brief is about 4,500 words: what to install, layout, which checks must pass.
+- Stacks makes no model calls and runs nothing from the recipe.
+
+[click] CLICK 1
+- Stacks starts the agent with a two-sentence prompt: read the brief, carry it out, done when stacks verify passes.
+- The brief is a file in the repo. I review and change it like any other file.
+
+[click] CLICK 2
+- tea-dashboard: a SvelteKit dashboard Claude Code built from a Stacks brief.
+- First verify, 393 seconds in: five of fifteen steps failed (lint, plus four README and agent-docs checks).
+- The failed result goes back to the agent.
+
+[click] CLICK 3
+- Claude Code fixes the failures and runs stacks verify again.
+- At 501 seconds, all fifteen steps pass. That is the completion rule from the prompt.
+
+[click] CLICK 4
+- An agent that can't pass a check can edit the check instead.
+- Stacks stores a hash of the verify steps outside the project.
+- If a step changes, verify exits without running until a person accepts.
+- It refuses the accept flag when the caller is an agent.
+
+IF ASKED
+- What's in the brief? Stack guidance, a section per add-on, ground rules, a table of every verify step. Capped at 6,000 words.
+- Which agents? Claude Code, Codex, OpenCode, Cursor, Copilot. Inside an agent or CI it prints the prompt and starts nothing.
+</Notes>

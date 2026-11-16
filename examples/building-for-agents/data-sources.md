@@ -6,7 +6,7 @@ recorded run, a published article or a named document. This is the fact-check in
 One section per visible slide, in manifest order. A figure with no source yet carries
 `FLAG:` and the sentence that says what to confirm before presenting.
 
-Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3 and 5 to 20 are also kept one per file under `data/sources/`,
+Sibling repos are read from `~/Projects/<repo>`. Sections for slides 2, 3, 6 to 9, 11 to 14, 16 to 19 and 21 to 24 are also kept one per file under `data/sources/`,
 where each stage's author wrote them; this file is the merged copy the fact-check reads.
 
 ---
@@ -70,7 +70,7 @@ Station order, verbs, names, icons and language chips are `data/products.ts` (se
 | FEATURED | Stacks, foreman, StatGlass | `OUTLINE.md` section 3 (Riley's decision, 2026-11-13) |
 | BRIEF_SECONDS (notes: "about ninety seconds each") | 90 | `FLAG: author-reported` (`OUTLINE.md` section 10) |
 
-## Slide 4: Stacks briefs the agent and checks its work.
+## Slide 5: Stacks briefs the agent and checks its work.
 
 All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git repository; read 2026-11-13).
 
@@ -83,7 +83,7 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 | STEPS | 15 verify steps | `.stacks/manifest.json` `verify[].name`; order from the run records |
 | RUNS | failed at 393 s, green at 501 s, green at 623 s | `.stacks/state/runs.jsonl`: `secondsSinceCreated` and `outcome` of each line; all three have `agent: "claude"`, `scope: "full"` |
 | First run's failed steps | lint, readme-filled, agents-md-filled, claude-readme-filled, harness-doc-filled (5 of 15) | `.stacks/state/runs.jsonl` line 1, `steps[].status` |
-| Failure label on beat 2 | "lint + 4 doc checks" | derived from `FIRST_FAIL.failed` in `data/04-stacks-loop.ts`: lint plus the four `*-filled` steps. Reread in `.stacks/state/runs.jsonl` on 2026-11-16 |
+| Failure label on beat 2 | "lint + 4 doc checks" | derived from `FIRST_FAIL.failed` in `data/05-stacks-loop.ts`: lint plus the four `*-filled` steps. Reread in `.stacks/state/runs.jsonl` on 2026-11-16 |
 | CLI, RECORDED | stacks 0.5.0, 2026-10-29 | `.stacks/manifest.json` `cli`, `createdAt` |
 | "Stacks keeps a hash of the steps outside the project" | claim | `~/Projects/stacks/packages/cli/src/core/verify/tamper.ts`: the manifest's `verifyDigest` plus a state record under the user state dir, keyed by `projectId` |
 | "refuses to run if one was edited" | claim | `VerifyChanged` in `~/Projects/stacks/packages/cli/src/errors.ts` (exit 5); `commands/verify.ts` lines 151 to 157 for the refused `--accept-changes` |
@@ -92,23 +92,23 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 | "coding agents run some of them more often than I do" (slide 1 notes) | claim | `~/Projects/steamfield/src/content/blog/design-cli-for-ai-agents.mdx`: "two CLIs that agents call more than people do" (rr and Stacks) |
 | Notes: "six thousand for a composed brief" | 6,000 words | `~/Projects/stacks/AGENTS.md` line 126 |
 
-## Slide 5: Stacks gives a failed check an exit code.
+## Slide 6: Stacks gives a failed check an exit code.
 
-Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/05-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/06-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
 
 | Figure | Value | Source |
 |---|---|---|
-| PANE.commands | the three commands, unchanged | fixture `steps[].command`, through `data/05-stacks-live.ts` |
-| RECORDING | each command followed by its captured output, wrapped every 92 characters | fixture `steps[].lines`, through `data/05-stacks-live.ts` |
+| PANE.commands | the three commands, unchanged | fixture `steps[].command`, through `data/06-stacks-live.ts` |
+| RECORDING | each command followed by its captured output, wrapped every 92 characters | fixture `steps[].lines`, through `data/06-stacks-live.ts` |
 | RECORDING.tag | Recorded 2026-11-16 · stacks 0.12.0 | fixture `recorded` and `tool` |
 | "Stacks wrote the project and brief, then printed the hand-off" | claim | fixture step 1: `Created demo-cli from typescript-cli (sandbox).`, `Brief: .stacks/BRIEF.md (4065 words)` and the `NEXT STEP FOR THE AGENT` line |
 | VERIFY_EXIT (card 2: "exits 5") | 5 | fixture step 2: `Verify failed.` and `exit=5` |
 | JSON result | outcome failed; 2 passed, 8 failed, 12 skipped; firstGreen false; tamperCheck full | fixture step 3 |
 | Notes: "zsh's pipestatus" | claim | fixture step 2 command, `echo "exit=$pipestatus[1]"` |
 
-Step 2 leaves out its ten leading progress lines (`> install` to `> effect-api-reference`, listed in `data/sources/05-stacks-live.md`) so the command and the whole report fit at a readable size. No other line is left out and no line's text is rewritten. The viewport keeps complete exchanges and always includes the newest command. The brief's 4,065 words belong to this capture and CLI version; no card repeats the figure or compares it with slide 4's project.
+Step 2 leaves out its ten leading progress lines (`> install` to `> effect-api-reference`, listed in `data/sources/06-stacks-live.md`) so the command and the whole report fit at a readable size. No other line is left out and no line's text is rewritten. The viewport keeps complete exchanges and always includes the newest command. The brief's 4,065 words belong to this capture and CLI version; no card repeats the figure or compares it with slide 5's project.
 
-## Slide 6: The Stacks CLI is written with Effect.
+## Slide 7: The Stacks CLI is written with Effect.
 
 All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
 
@@ -118,7 +118,7 @@ All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
 | SRC_LINES | 24,386 | `find src -name '*.ts' \| xargs cat \| wc -l` |
 | TEST_FILES (notes) | 209 | `find tests -name '*.test.ts' \| wc -l` |
 | Tree rows | bin.ts, main.ts, cli.ts, runtime.ts, errors.ts, commands/, services/, platform/, schemas/, core/, tests/ | `ls src` and `ls`; the notes paraphrase `~/Projects/stacks/AGENTS.md`'s architecture map |
-| RUNS_COMMAND | `src/commands/runs.ts` lines 8 to 25 | `data/code/06-stacks.ts`, checked by `data/code/excerpts.test.ts` |
+| RUNS_COMMAND | `src/commands/runs.ts` lines 8 to 25 | `data/code/07-stacks.ts`, checked by `data/code/excerpts.test.ts` |
 | HOST_SERVICE | `src/services/host.ts` lines 29 to 49 | same |
 | APP_LAYER | `src/runtime.ts` lines 11 to 19 | same |
 | ERROR_TABLE | `src/errors.ts` lines 425 to 443 | same |
@@ -128,9 +128,9 @@ All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
 | "Effect 4, with the CLI module that ships inside the effect package" (notes) | claim | root `package.json` catalog `"effect": "^4.0.6"`; `bun.lock` pins `effect@4.0.6`; imports from `"effect/cli"` in `src/` |
 | "runs on Node 22 or newer; Bun builds and bundles it" (notes) | claim | `package.json` `engines`; `scripts/build.ts` lines 34 to 49; `dist/stacks` refuses Bun |
 
-## Slide 7: Stacks output differs for people and agents.
+## Slide 8: Stacks output differs for people and agents.
 
-The three panes were recorded for this deck on 2026-11-13 with the installed `stacks` 0.7.0 (`stacks --version`), in a scratch project made with `stacks new typescript-cli proj --sandbox --no-launch --offline` and never built. `stacks verify` was then run three times there with `DO_NOT_TRACK=1`, stdout and stderr captured separately. The lines shown are in `data/fixtures/07-stacks-verify.json`. Other sources are `~/Projects/stacks/packages/cli` at commit a952e96.
+The three panes were recorded for this deck on 2026-11-13 with the installed `stacks` 0.7.0 (`stacks --version`), in a scratch project made with `stacks new typescript-cli proj --sandbox --no-launch --offline` and never built. `stacks verify` was then run three times there with `DO_NOT_TRACK=1`, stdout and stderr captured separately. The lines shown are in `data/fixtures/08-stacks-verify.json`. Other sources are `~/Projects/stacks/packages/cli` at commit a952e96.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -140,7 +140,7 @@ The three panes were recorded for this deck on 2026-11-13 with the installed `st
 | SCRIPT pane | the first 44 of stdout's 15,886 characters; the first 211 of the 1,148-character envelope that ends stderr's 45 lines | `stacks verify --json >out 2>err` |
 | Totals in the panes | 6 passed, 16 failed, 0 skipped | the report's first line in each capture |
 | VERIFY_EXIT | 5 | `$?` after each of the three runs |
-| How rows are fitted | long lines wrap between words; step rows are cut with `…`; a lone `…` row stands for dropped lines; JSON rows are broken by hand and checked against the capture at build time | `data/07-stacks-output.ts` |
+| How rows are fitted | long lines wrap between words; step rows are cut with `…`; a lone `…` row stands for dropped lines; JSON rows are broken by hand and checked against the capture at build time | `data/08-stacks-output.ts` |
 | AUDIENCE_RULE (first card) | human only when stdout is a TTY, no agent is detected and CI is unset; otherwise agent; `--json` wins | `src/services/output.ts` lines 24 to 32 |
 | AGENT_MARKERS | CLAUDECODE, CODEX_SANDBOX, OPENCODE, CURSOR_AGENT, AI_AGENT (5 of the 10 markers, one per agent plus the cross-agent one) | `src/config.ts` lines 62 to 73 |
 | "prints no colour codes and no live step output" | claim | the AGENT capture: stderr is one `> step` line per step; the terminal capture streams each step's output |
@@ -152,14 +152,14 @@ The three panes were recorded for this deck on 2026-11-13 with the installed `st
 
 Departures from the outline: the panes are three runs of one command in one project (the totals match; the elapsed time differs by a tenth of a second), recorded in a scratch project and not in tea-dashboard, so that project's run record is untouched. The exit strip shows all eight rows of the table, including 1, which the outline left out. Titles, cards and notes were rewritten to PROSE.md. The second card says "no colour codes and no live step output" where the outline said "drops colour and progress", because the agent rendering still prints one `> step` line per step.
 
-## Slide 8: foreman, the session
+## Slide 9: foreman, the session
 
 Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. One batch of runs is used for the whole slide: three of the `site-*` runs in `site/fixtures/runs/` (`site-console`, `site-commands`, `site-e2e`), the same three `site/src/pages/index.astro` line 134 passes to `buildSession`. No figure comes from the `fix-*` batch.
 
 | Figure | Value | Source |
 |---|---|---|
-| The session model (`sceneAt`, `stepAt`, timing constants) | ported | `site/src/data/session.ts`, into `data/08-foreman-session.ts`. Geometry follows `site/src/components/landing/session/SessionCanvas.tsx` |
-| Session data (delegates, activity, packets, question) | `data/fixtures/08-foreman-session.json` | written by `bun examples/building-for-agents/data/fixtures/08-foreman-session.gen.mjs <out>`, which calls the site's own `buildSession` over the three run fixtures and `site/fixtures/cli/answer.json` |
+| The session model (`sceneAt`, `stepAt`, timing constants) | ported | `site/src/data/session.ts`, into `data/09-foreman-session.ts`. Geometry follows `site/src/components/landing/session/SessionCanvas.tsx` |
+| Session data (delegates, activity, packets, question) | `data/fixtures/09-foreman-session.json` | written by `bun examples/building-for-agents/data/fixtures/09-foreman-session.gen.mjs <out>`, which calls the site's own `buildSession` over the three run fixtures and `site/fixtures/cli/answer.json` |
 | Recorded date in the monitor's tag | 2026-11-06 | `createdAt` of all three runs (`RECORDED`) |
 | "timeline shortened" | the 54-second timeline, start order, steer and follow-up are scripted by the site's model | `site/src/data/session.ts` (`activityFor` compresses each recording); in the recordings `site-e2e` was created at 09:47:40 UTC, 23 minutes after `site-console` (09:24:19) and `site-commands` (09:24:25) |
 | Delegates | 3 | `DELEGATES`, the three lanes |
@@ -177,7 +177,7 @@ Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. One batch of
 
 Departures recorded here: the packet from the daemon to Claude is labelled "wait returns: …" (the site labels it "question q1" and "done"), because foreman sends Claude nothing; the Claude status line is rewritten without the site's arrow glyph. The ambient "events" dots are the model's own and are frozen in a still.
 
-## Slide 9: foreman, the daemon
+## Slide 11: foreman, the daemon
 
 Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The diagram is a schematic; every label on it is from the file named here.
 
@@ -203,9 +203,9 @@ Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The diagram 
 
 Not used: the outline's "44 test files". `find src tests -name '*.test.ts' \| wc -l` gives 40; 44 counts every `*.test.ts` outside `site/` and `node_modules/`. Neither is on the slide or in the notes.
 
-## Slide 10: foreman, the held question
+## Slide 12: foreman, the held question
 
-Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The sequence diagram is a schematic. The code is quoted through `data/code/10-foreman-question.ts` and checked by `data/code/excerpts.test.ts`.
+Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The sequence diagram is a schematic. The code is quoted through `data/code/12-foreman-question.ts` and checked by `data/code/excerpts.test.ts`.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -223,16 +223,16 @@ Read 2026-11-13 from `~/Projects/claude-codex` at commit `9413fa8`. The sequence
 
 Wording: nothing on the slide or in the notes says foreman pushes to or notifies Claude.
 
-## Slide 11: rr runs each agent's tests on its own machine.
+## Slide 13: rr runs each agent's tests on its own machine.
 
 The diagram is a schematic; the result strip is a recording. rr was read at commit 536948d (2026-11-13); the fixtures were last changed in rr commit 9a0dab1 (2026-11-02). Latest rr tag: v0.29.4.
 
 | Figure | Value | Source |
 |---|---|---|
-| The simulation (`simulate`, `sceneAt`, `flowSteps`, `waitSpans`) | ported unchanged | `~/Projects/rr/site/src/lib/flow.ts`; `data/11-rr-locks.test.ts` compares segments, steps and scenes with the source when `~/Projects/rr` is present |
+| The simulation (`simulate`, `sceneAt`, `flowSteps`, `waitSpans`) | ported unchanged | `~/Projects/rr/site/src/lib/flow.ts`; `data/13-rr-locks.test.ts` compares segments, steps and scenes with the source when `~/Projects/rr` is present |
 | Diagram layout | laptop, four agent rows, waiting column, three hosts | wide geometry of `~/Projects/rr/site/src/components/landing/FlowDiagram.tsx`, re-proportioned for the stage |
 | FLOW_RUNS, FLOW_HOSTS | four agents; `m4-mini`, `m1-linux`, `m1-mini`; commands, subtask names, "3/3 passed", "86 passed", pids, test percentages | `flow.ts`. Made up by rr's site; covered by the `Schematic` tag |
-| STILLS | 0, 1,000, 3,900, 7,950, 10,250, 13,550 and 17,000 ms of simulation time, one per beat 0 to 6; beat 7 holds the last | derived in `data/11-rr-locks.ts` from `flowSteps` and the segments; `data/11-rr-locks.test.ts` asserts each still's holders, phases, waiting agents, visible processes and returned results |
+| STILLS | 0, 1,000, 3,900, 7,950, 10,250, 13,550 and 17,000 ms of simulation time, one per beat 0 to 6; beat 7 holds the last | derived in `data/13-rr-locks.ts` from `flowSteps` and the segments; `data/13-rr-locks.test.ts` asserts each still's holders, phases, waiting agents, visible processes and returned results |
 | POLL_MS (card 4: "every 2 seconds") | 2,000 ms | `~/Projects/rr/internal/cli/loadbalance.go` line 477, `time.NewTimer(2 * time.Second)` |
 | "Each rr call is a separate process", "rr has no server", lock on each host | claim | `~/Projects/rr/README.md` line 353: the lock is a directory created atomically under `/tmp` on the remote |
 | "A parallel task locks every host" | claim | `flow.ts` header (one worker per host, each holding its lock until the task ends, `internal/parallel`) |
@@ -241,7 +241,7 @@ The diagram is a schematic; the result strip is a recording. rr was read at comm
 | First host it can lock, in config order | claim | `~/Projects/rr/internal/cli/loadbalance.go` (`roundRobinWait`, line 385) and README line 353; `~/Projects/opendata/.rr.yaml` comment: "rr takes the first unlocked host in this order" |
 | WAITING_EVENT | `"status":"waiting"` and `"command":"rr test"` | event shape from `loadbalance.go` lines 398 to 407 (`details.holders[].command`) and `~/Projects/rr/plugins/rr/skills/rr/reference/machine-interface.md` line 35; the holder's command is the simulation's, so the label is schematic |
 | "Each git worktree syncs to its own remote directory unless the config turns that off" | claim | `~/Projects/rr/README.md` line 330 (`sync.worktree_isolation: false` turns it off); default on in `internal/config/expand.go` line 168 |
-| Result event | line 4 of `run.jsonl` | `data/fixtures/11-rr-result.json`, a byte copy of line 4 of `~/Projects/rr/site/fixtures/run.jsonl`; the test checks both the copy and that every quoted line is a substring |
+| Result event | line 4 of `run.jsonl` | `data/fixtures/13-rr-result.json`, a byte copy of line 4 of `~/Projects/rr/site/fixtures/run.jsonl`; the test checks both the copy and that every quoted line is a substring |
 | RUN.recorded | 2026-11-02 | the event's `ts` |
 | RUN.shards, passed, failed (notes: eight tasks, five passed, three failed) | 8, 5, 3 | the event's `details.total`, `details.passed`, `details.failed` |
 | FAILURE_AT | `src/data/articles/charts-json.test.ts:74` | the event's `details.failures[0].tests[2].file` |
@@ -252,14 +252,14 @@ The diagram is a schematic; the result strip is a recording. rr was read at comm
 
 Not stated, by decision: any rr speedup; "load balanced"; automatic sharding.
 
-## Slide 12: rr runs this task across my machines.
+## Slide 14: rr runs this task across my machines.
 
-Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/12-rr-live.json`. Each command was typed into `zsh -f` on a 24-row, 104-column pseudo-terminal (`term/server/shell_pty.py`) at the repository root, against the four hosts in the root `.rr.yaml`. Escape sequences were removed and runs of blank lines collapsed; the second command keeps the final frame of rr's redrawing progress display. The text is otherwise as printed. Playback uses an 11-row, 104-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/14-rr-live.json`. Each command was typed into `zsh -f` on a 24-row, 104-column pseudo-terminal (`term/server/shell_pty.py`) at the repository root, against the four hosts in the root `.rr.yaml`. Escape sequences were removed and runs of blank lines collapsed; the second command keeps the final frame of rr's redrawing progress display. The text is otherwise as printed. Playback uses an 11-row, 104-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
 
 | Figure | Value | Source |
 |---|---|---|
-| PANE.commands | `rr monitor --once --no-color`, `rr demo --pretty` | fixture `steps[].command`, in order and unchanged, through `data/12-rr-live.ts` |
-| RECORDING | step 1 complete; step 2 without its four leading progress lines and its blank lines | fixture `steps[].lines`, through `data/12-rr-live.ts` |
+| PANE.commands | `rr monitor --once --no-color`, `rr demo --pretty` | fixture `steps[].command`, in order and unchanged, through `data/14-rr-live.ts` |
+| RECORDING | step 1 complete; step 2 without its four leading progress lines and its blank lines | fixture `steps[].lines`, through `data/14-rr-live.ts` |
 | RECORDING.tag | Recorded 2026-11-16 · rr 0.30.0 | fixture `recorded` and `tool` |
 | Hosts in the snapshot (card 1, notes) | m1-linux, m1-mini, m4-mini, mbp; each `online` with LOCK `-` | fixture step 1, host rows |
 | Snapshot readings | CPU 4%, 13%, 9%, 37%; RAM 28%, 62%, 70%, 57%; latency 70ms, 94ms, 62ms and `-` for mbp | fixture step 1, host rows, as printed; no card or note repeats them |
@@ -267,8 +267,8 @@ Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/1
 | The demo task's shards | demo-1 to demo-4 under `parallel`, each `bun run test packages/core --shard=N/4`, `fail_fast: false` | root `.rr.yaml`, `tasks.demo` and `tasks.demo-1` to `demo-4` |
 | Shard hosts and times (card 2, notes) | demo-1 on m1-linux 5.1s, demo-2 on m1-mini 7.0s, demo-3 on m4-mini 6.2s, demo-4 on mbp 2.8s | fixture step 2, Parallel Execution Summary |
 | Run totals | 4 passed, 0 failed, 4 total, 10.0s | fixture step 2 |
-| "locks the hosts and syncs the repo before running its configured subtasks" (card 2, notes) | claim | rr's parallel workflow, sourced on slide 11 (`~/Projects/rr/README.md` line 24; the `flow.ts` header). Not visible in the summary itself |
-| "The config defines the shards; rr does not split the suite automatically" (notes) | claim | root `.rr.yaml`; `~/Projects/rr/README.md` lines 234 and 264 to 271, as on slide 11 |
+| "locks the hosts and syncs the repo before running its configured subtasks" (card 2, notes) | claim | rr's parallel workflow, sourced on slide 13 (`~/Projects/rr/README.md` line 24; the `flow.ts` header). Not visible in the summary itself |
+| "The config defines the shards; rr does not split the suite automatically" (notes) | claim | root `.rr.yaml`; `~/Projects/rr/README.md` lines 234 and 264 to 271, as on slide 13 |
 | "rr prints JSON by default" (notes) | claim | `~/Projects/rr/README.md` line 104, as on slide 2 |
 | mbp is the presenter's laptop (card 0, notes) | mbp | root `.rr.yaml` comment ("mbp is this laptop"). `FLAG: author-reported` |
 | "no-color avoids rr 0.30.0 truncating coloured table cells" (notes, IF ASKED) | claim | `FLAG: author-reported` |
@@ -276,15 +276,15 @@ Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/1
 
 Step 2 leaves out its four leading lines (`◉ demo-1 [m1-linux]`, `◉ demo-2 [m1-mini]`, `◉ demo-3 [m4-mini]`, `◉ demo-4 [mbp]`) and every blank line. Both separator rules and every line of the Parallel Execution Summary are kept, including the timings, the host names and the logs path. No line's text is rewritten. No speedup is calculated or claimed.
 
-## Slide 13: StatGlass started as the rr monitor command.
+## Slide 16: StatGlass started as the rr monitor command.
 
 Beats 0 and 1 are a recording; beat 2's cards are illustrative. rr read at commit 536948d, statglass at 5db8622a (both 2026-11-13).
 
 | Figure | Value | Source |
 |---|---|---|
 | The origin claim (title, notes) | StatGlass came from keeping `rr monitor` open | `FLAG: author-reported` (Riley). Nothing in either repo records it |
-| Notes: "a debugging aid", "always open", "why the fans were going at three" | Riley's account | `FLAG: author-reported`, from `OUTLINE.md` section 10, slide 13 |
-| Monitor recording | 193 snapshots, 2026-11-02 16:41:08Z to 16:48:56Z, hosts m1-mini, m4-mini, mbp | `data/fixtures/13-monitor.json`: the lines of `~/Projects/rr/site/fixtures/monitor.jsonl` (rr commit 9a0dab1) as one JSON array; the test compares them |
+| Notes: "a debugging aid", "always open", "why the fans were going at three" | Riley's account | `FLAG: author-reported`, from `OUTLINE.md` section 10, slide 16 |
+| Monitor recording | 193 snapshots, 2026-11-02 16:41:08Z to 16:48:56Z, hosts m1-mini, m4-mini, mbp | `data/fixtures/16-monitor.json`: the lines of `~/Projects/rr/site/fixtures/monitor.jsonl` (rr commit 9a0dab1) as one JSON array; the test compares them |
 | RECORDED | 2026-11-02 | first snapshot's `timestamp` |
 | BUSIEST | frame 111, 281 s into the recording, all three hosts holding a lock | `busiestFrame`, ported from `~/Projects/rr/site/src/lib/monitor/timeline.ts`; the test compares the port's timeline and frame with the source |
 | Card readings (CPU, 1m load, RAM, latency, lock command, held time, alias) | per host at frame 111 | the fixture, through `buildTimeline` |
@@ -304,7 +304,7 @@ Beats 0 and 1 are a recording; beat 2's cards are illustrative. rr read at commi
 | Notes: size limit, oldest per-process detail removed first | claim | `~/Projects/statglass/README.md` lines 213 to 222 |
 | StatGlass cards and menu bar item on beat 2 | the recording's CPU, RAM and GPU histories, in StatGlass's metric colors | Illustrative. Colors follow `~/Projects/steamfield/src/components/home/StatGlassDemo.tsx` (CPU cyan, memory violet, GPU pink). StatGlass did not record these readings |
 
-## Slide 14: StatGlass, the boundary
+## Slide 17: StatGlass, the boundary
 
 Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a` (version 0.12.0, `package.json`).
 
@@ -312,7 +312,7 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a` (version 0.12.0
 |---|---|---|
 | RUST_LINES | 153,401 | `find crates src-tauri -name '*.rs' -print0 \| xargs -0 cat \| wc -l`. Inline tests included. |
 | TS_LINES | 111,644 | `find src \( -name '*.ts' -o -name '*.tsx' \) -print0 \| xargs -0 cat \| wc -l`. Tests and `src/core/generated` included. |
-| RUST_PERCENT, TS_PERCENT | 58, 42 | `RUST_LINES / (RUST_LINES + TS_LINES)`, rounded, in `data/14-glass-boundary.ts`. The outline said "about 60". |
+| RUST_PERCENT, TS_PERCENT | 58, 42 | `RUST_LINES / (RUST_LINES + TS_LINES)`, rounded, in `data/17-glass-boundary.ts`. The outline said "about 60". |
 | COMMANDS | 92 | `grep -o '__TAURI_INVOKE[<(]' src/core/generated/bindings.ts \| wc -l`; the `collect_commands!` block in `src-tauri/src/lib.rs` (from line 79) lists the same 92. The outline said 81, which is `grep -c '__TAURI_INVOKE("'` and misses the 11 calls written `__TAURI_INVOKE<T>(`. `grep -c __TAURI_INVOKE` prints 93 because it counts the import line. |
 | EVENTS | 10 | the `collect_events!` block, `src-tauri/src/lib.rs` lines 143 to 154 |
 | "A pre-push hook fails if the file is stale" | | `Makefile` lines 235 to 250 (`bindings`, `bindings-check`) and its help text for `make check` |
@@ -321,18 +321,18 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a` (version 0.12.0
 | IDLE.backgroundTickS (notes only) | 2 s | `README.md` line 184; decision D-094 in `plan/decisions.md` line 3111 |
 | Box names and notes | crate and directory names | `AGENTS.md` lines 26 to 40; "one-hour ring" from `crates/statglass-engine/src/lib.rs` line 3; the tray from `src-tauri/src/tray/mod.rs` lines 1 to 19 |
 | FRAME_MESSAGE | `{ kind: "frame", values: [ … ], … }` | abridged from the `frame` variant of `LiveMsg`, `src/core/generated/bindings.ts` line 1951; the layout message it depends on is documented at lines 1917 to 1921 |
-| Code: `subscribe_live` | lines 75 to 85 | `src-tauri/src/commands.rs`, through `data/code/14-glass-boundary.ts` (drift test) |
+| Code: `subscribe_live` | lines 75 to 85 | `src-tauri/src/commands.rs`, through `data/code/17-glass-boundary.ts` (drift test) |
 | Code: `subscribeLive` | line 150 | `src/core/generated/bindings.ts`, same module |
 | Code: `el.animate` | lines 33 to 36 | `src/app/widgets/lib/use-tick-scroll.ts`, same module |
 | "d3 computes the path and React renders it as SVG" | | `src/app/widgets` imports `area` and `line` from `d3-shape`; `use-tick-scroll.ts` header comment |
 | "A test counts renders" (notes) | | `src/app/stores/live-selectors.test.tsx` lines 7 to 32 |
 | "Rust decides what a value means" (notes) | | `.claude/rules/data-boundary.md` line 10, "Rust Owns Meaning, the Client Presents" |
 | "Rust stops sending frames with no window visible" (notes) | | `src-tauri/src/live.rs` lines 6 to 9 |
-| The widget chart | illustrative | `cpuAt` in `data/14-glass-boundary.ts`, ported from `~/Projects/steamfield/src/lib/statglass-demo.ts` (steamfield commit 1b001f9). Tagged Illustrative on the slide. |
+| The widget chart | illustrative | `cpuAt` in `data/17-glass-boundary.ts`, ported from `~/Projects/steamfield/src/lib/statglass-demo.ts` (steamfield commit 1b001f9). Tagged Illustrative on the slide. |
 
 Banned on this slide (checked): "about 60 percent Rust" (it is 58); "81 commands" (it is 92); the idle figure without "one run" beside it; any ratio against Stats (one run each, different modules enabled).
 
-## Slide 15: StatGlass in a browser tab
+## Slide 18: StatGlass in a browser tab
 
 Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`.
 
@@ -343,12 +343,12 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`.
 | "React code calls a Transport interface" with two implementations | | `src/core/transport/contracts.ts` lines 1 to 9; `src/core/transport/native.ts`; `createMockTransport` in `src/core/mock-transport.ts` line 99 |
 | "A lint rule bans Tauri imports under src/app" | enforced | `biome.json`: `noRestrictedImports` overrides for `src/app/**`, `src/app/widgets/**` and the `src/app` tests each restrict the group `@tauri-apps/**`. `AGENTS.md` lines 49 to 53 state the rule and say a write hook enforces it too. |
 | "Vitest, Playwright, the browser dev server and the docs site demo all use it" | | `src/core/transport/contracts.ts` lines 4 to 5 (dev server, Vitest, Playwright); `docs-site/src/lib/demo.ts` lines 1 to 6 and `docs-site/scripts/build-demo.mjs` (the demo is the app built on its mock transport) |
-| Code: the `Transport` interface | lines 121 to 471, trimmed | `src/core/transport/contracts.ts`, through `data/code/15-glass-browser.ts` (drift test) |
+| Code: the `Transport` interface | lines 121 to 471, trimmed | `src/core/transport/contracts.ts`, through `data/code/18-glass-browser.ts` (drift test) |
 | "I can change a screen in a browser without starting the native shell" (notes) | | follows from the dev server using the mock. The outline's stronger "I do most UI work in a browser" is `FLAG: author-reported` and is not in the notes. |
 
 Open decision for Riley: the frame loads the hosted demo, so the beat needs venue network. No copy of the demo build is checked in.
 
-## Slide 16: StatGlass, the agent CLI
+## Slide 19: StatGlass, the agent CLI
 
 Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`. The session on the slide is illustrative and tagged so; its parts are sourced below.
 
@@ -361,22 +361,22 @@ Read 2026-11-13 from `~/Projects/statglass` at commit `5db8622a`. The session on
 | BUSY_ENVELOPE | `{"error":{"tag":"Busy","message":"StatGlass is busy; retry shortly.","retryable":true,"next":"retry in a second"}}` | the value asserted by `cli_envelope_shape`, `crates/statglass-query/src/tests.rs` lines 383 to 399 |
 | "StatGlass stores gaps explicitly" (notes) | | `AGENTS.md` line 54: "Gaps are explicit; never interpolate." |
 | "over a local socket" (notes) | | `plan/rfc-agent-cli.md` lines 96 to 103 and 172 (`cli/query.sock`) |
-| RFC_SIZES.compiledTsBinaryMb | 55 to 60 MB per architecture, an estimate ("about") | `plan/rfc-agent-cli.md` lines 106 to 109, quoted on the slide through `data/code/16-glass-cli.ts` (drift test) |
+| RFC_SIZES.compiledTsBinaryMb | 55 to 60 MB per architecture, an estimate ("about") | `plan/rfc-agent-cli.md` lines 106 to 109, quoted on the slide through `data/code/19-glass-cli.ts` (drift test) |
 | RFC_SIZES.appMb | 36 MB | same lines |
 | RFC_SIZES.helperBinaryKb | 550 KB, the helper binary beside the CLI | same lines. It appears only inside the quote and in IF ASKED. |
 | "The RFC defers an MCP server and says it could be a TypeScript package" (notes) | | `plan/rfc-agent-cli.md` lines 365 to 375 |
-| "The Stacks CLI's errors have the same tag, retryable and next fields" (notes) | | this deck's `data/code/06-stacks.ts`, `LAYER_TEST` (`packages/cli/tests/update.test.ts` in stacks) |
+| "The Stacks CLI's errors have the same tag, retryable and next fields" (notes) | | this deck's `data/code/07-stacks.ts`, `LAYER_TEST` (`packages/cli/tests/update.test.ts` in stacks) |
 
 Banned on this slide (checked): any size for the CLI's own binary (the RFC gives none and none was measured); "a compiled TypeScript binary came to about 55 MB" (the RFC's figure is an estimate of 55 to 60).
 
-## Slide 17: StatGlass reports this laptop's CPU history. (hidden)
+## Slide 21: StatGlass reports this laptop's CPU history. (hidden)
 
-The slide has `hide: true` and is out of the default cut; its sources stay here so it can be restored. Recorded for this deck on 2026-11-16 with statglass 0.10.0 and kept in `data/fixtures/17-glass-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) with `DO_NOT_TRACK=1`, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences were removed; the text is otherwise as printed. Playback uses a 12-row, 92-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`.
+The slide has `hide: true` and is out of the default cut; its sources stay here so it can be restored. Recorded for this deck on 2026-11-16 with statglass 0.10.0 and kept in `data/fixtures/21-glass-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) with `DO_NOT_TRACK=1`, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences were removed; the text is otherwise as printed. Playback uses a 12-row, 92-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`.
 
 | Figure | Value | Source |
 |---|---|---|
-| PANE.commands | `statglass history cpu.total --since 30m`, `statglass events --since 2h`, `statglass history cpu.total --since 30m --json \| jq '.series[0].summary'` | fixture `steps[].command`, unchanged, through `data/17-glass-live.ts` |
-| RECORDING | every output line, wrapped every 92 characters | fixture `steps[].lines`, through `data/17-glass-live.ts` |
+| PANE.commands | `statglass history cpu.total --since 30m`, `statglass events --since 2h`, `statglass history cpu.total --since 30m --json \| jq '.series[0].summary'` | fixture `steps[].command`, unchanged, through `data/21-glass-live.ts` |
+| RECORDING | every output line, wrapped every 92 characters | fixture `steps[].lines`, through `data/21-glass-live.ts` |
 | RECORDING.tag | Recorded 2026-11-16 · statglass 0.10.0 | fixture `recorded` and `tool` |
 | History range and coverage (card 1, notes) | 08:27 to 08:57, 10 s buckets, 100% measured | fixture step 1, line 1 |
 | History summary (notes) | min 22.9%, mean 36.8%, max 100.0% in the 10 s from 08:54:00, last 69.8% at 08:57:20 | fixture step 1, line 2 |
@@ -390,7 +390,7 @@ The slide has `hide: true` and is out of the default cut; its sources stay here 
 
 All output lines are kept and wrapped at 92 characters; no line's text is rewritten and the recorded host name is preserved. The events give the processes running around each event; they do not establish what caused a fan ramp, and the notes say so.
 
-## Slide 18: A Decks hook blocks AI-sounding sentences.
+## Slide 22: A Decks hook blocks AI-sounding sentences.
 
 Everything on this slide is computed at build time from files in this repository (read 2026-11-13, commit 811fe91).
 
@@ -408,9 +408,9 @@ Everything on this slide is computed at build time from files in this repository
 
 Left out: the outline's note that the drafting agent "was refused more than once". No denial was recorded during this build.
 
-## Slide 19: Each tool has some of the same six habits.
+## Slide 23: Each tool has some of the same six habits.
 
-One row per lit cell. Every file was opened on 2026-11-13 at: stacks a952e96, foreman (`~/Projects/claude-codex`) 9413fa8, rr 536948d, statglass 5db8622a, decks 811fe91. Paths are under `~/Projects/<repo>`, or this repository for Decks. `data/19-habits.ts` holds the same list.
+One row per lit cell. Every file was opened on 2026-11-13 at: stacks a952e96, foreman (`~/Projects/claude-codex`) 9413fa8, rr 536948d, statglass 5db8622a, decks 811fe91. Paths are under `~/Projects/<repo>`, or this repository for Decks. `data/23-habits.ts` holds the same list.
 
 | Habit | Product | Cell prints | Source |
 |---|---|---|---|
@@ -439,12 +439,12 @@ One row per lit cell. Every file was opened on 2026-11-13 at: stacks a952e96, fo
 
 | Figure | Value | Source |
 |---|---|---|
-| LIT_CELLS | 22 | `data/19-habits.ts`, the count of rows above |
+| LIT_CELLS | 22 | `data/23-habits.ts`, the count of rows above |
 | AGENTS_AT_ONCE (notes: "two to four agents at a time") | 2 to 4 | `FLAG: author-reported` (`OUTLINE.md` section 11) |
-| Counts on the cards (four, four, three, five) | lit cells per row | computed in `HabitsStage.tsx` from `HABITS` in `data/19-habits.ts` |
+| Counts on the cards (four, four, three, five) | lit cells per row | computed in `HabitsStage.tsx` from `HABITS` in `data/23-habits.ts` |
 | "None of them calls a model" | claim about the six habits, not about the products | each habit's sources above are flags, fields, exit codes, locks and bundled text |
 
-Cells the outline lists that are left unlit, with the reason (also in `data/19-habits.ts`):
+Cells the outline lists that are left unlit, with the reason (also in `data/23-habits.ts`):
 
 | Habit | Product | Why it is dark |
 |---|---|---|
@@ -453,7 +453,7 @@ Cells the outline lists that are left unlit, with the reason (also in `data/19-h
 
 Departures from the outline: row labels and cards were rewritten to PROSE.md (plain statements). The second row is "The next step is printed" (the outline's "Errors name the next step"), because foreman's `next:` lines end results. The sixth is "Docs ship with the tool" (the outline's "in the binary"), because rr's skill ships as a plugin in its repo and Decks' rules ship in its package. The outline's "None of these tools calls a model" was not checked across the product repos; the last card makes the claim about the habits.
 
-## Slide 20: Close
+## Slide 24: Close
 
 | Figure | Value | Source |
 |---|---|---|

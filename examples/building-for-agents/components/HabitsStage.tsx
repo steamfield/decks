@@ -1,7 +1,7 @@
 import { DUR, SETTLE, StoryCard, StoryStage, stagger, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import { countWord } from "../data/03-thread";
-import { HABITS, ROWS_PER_BEAT } from "../data/19-habits";
+import { HABITS, ROWS_PER_BEAT } from "../data/23-habits";
 import { PRODUCTS } from "../data/products";
 import { DIM, FRAME, DATA as LIT, OFF, ON } from "./design";
 import { PixelIcon } from "./PixelIcon";

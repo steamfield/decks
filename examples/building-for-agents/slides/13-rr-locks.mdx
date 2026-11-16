@@ -1,0 +1,56 @@
+---
+title: rr runs each agent's tests on its own machine.
+clicks: 7
+---
+
+{/* SLIDE 13 · RR LOCKS: each rr call is a process that locks a host before it runs tests there */}
+
+<RrLocksStage />
+
+<Notes>
+OPENING
+- rr is Go. My agents use it all day to run tests.
+- It rsyncs the working tree to another machine and runs the command there over SSH.
+- Simulation from rr's site: four agents on one laptop, three hosts.
+- Each rr call is its own process. No server. The only shared state is a lock directory on each host.
+
+[click] CLICK 1
+- Agent 1 runs rr test, a parallel task.
+- I define each shard as a task and list them under parallel. rr doesn't split a suite itself.
+- In OpenData, rr test runs eight tasks.
+
+[click] CLICK 2
+- A parallel run locks every host, rsyncs to each, runs the tasks across them.
+- SSH starts each configured task after rsync finishes.
+- The parallel run holds every lock until all subtasks finish.
+
+[click] CLICK 3
+- Agents 2 and 3 start while agent 1 holds all three locks.
+- A plain run tries hosts in config order and takes the first it can lock.
+- All locked: it waits on the laptop and retries every two seconds.
+
+[click] CLICK 4
+- This retry finds every lock held.
+- Before waiting it prints a JSON event: status waiting, plus the command holding each lock.
+- So an agent reading the output can see its run is queued behind rr test.
+
+[click] CLICK 5
+- Agent 1 finishes, all locks release.
+- Agent 2 retries first and gets m4-mini. Agent 3 finds it locked and takes m1-linux.
+- Default: each git worktree syncs to its own directory on the host, so two agents' files stay apart.
+
+[click] CLICK 6
+- Agent 4 arrives later and takes m1-mini without waiting.
+- It tries occupied hosts in config order before it locks m1-mini.
+- I usually run two to four agents.
+
+[click] CLICK 7
+- Result event from rr test in OpenData, November 2: five of eight passed, three failed.
+- rr parses pytest, Go test, Jest and Vitest. Each failure gets file, line, message.
+- Highlighted: Vitest failure, charts-json.test.ts line 74, tooltip field share missing from the chart data.
+
+IF ASKED
+- Is it faster? Not measured. One job per host, so two agents' suites don't compete for CPU and ports.
+- Load balancing? No. First lockable host in config order.
+- Are those your hosts? Names are the simulation's. OpenData's config lists mbp, m4-mini, m1-mini, with worktree_isolation false (one shared remote copy).
+</Notes>
