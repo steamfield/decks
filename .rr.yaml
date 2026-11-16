@@ -49,15 +49,15 @@ tasks:
 
   # The live rr demo in examples/building-for-agents: one run fanned out over all four hosts.
   demo:
-    description: Unit and dom tests in four shards, one per host (the talk's live demo).
+    description: The core package tests in four shards, one per host (the live demo in the agents talk).
     parallel: [demo-1, demo-2, demo-3, demo-4]
     fail_fast: false
 
   demo-1:
-    run: bun run test --shard=1/4
+    run: bun run test packages/core --shard=1/4
   demo-2:
-    run: bun run test --shard=2/4
+    run: bun run test packages/core --shard=2/4
   demo-3:
-    run: bun run test --shard=3/4
+    run: bun run test packages/core --shard=3/4
   demo-4:
-    run: bun run test --shard=4/4
+    run: bun run test packages/core --shard=4/4
