@@ -39,6 +39,16 @@ procedure around it.
 - `foreman wait` also returns on a command error inside a run. To wait for a hand-off or a
   question, loop until the run leaves `running`:
   `until [ "$(foreman status <run> --json | jq -r '.digests[0].state')" != running ]; do foreman wait <run> --timeout 60m >/dev/null; done`
+- With three or more runs in parallel, do not put the full gate in their contracts: each gate
+  takes about ten minutes and rr gives up on the lock after five (`LOCK_HELD`). Units run the
+  scoped checks; run `rr run --local "bun run check"` yourself on the integration branch after
+  each merge. Nothing else may hold the rr lock while a live `rr` demo is being recorded.
+- `decks shot <deck> <n> <click>` takes the slide's playback position, which differs from its
+  filename prefix when a number is skipped or a slide is hidden. Give positions in contracts.
+- A follow-up names the rule it changes and the rules it keeps. "Stepping back does not remove
+  a waiting step" was read as "stepping back to click 0 no longer resets".
+- Accept a UI unit after rendering every click yourself and driving the feature as its user,
+  including the impatient paths (a key pressed before the page is ready, three presses at once).
 
 ### Worktrees and setup
 
