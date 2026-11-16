@@ -8,6 +8,12 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  AGENT_1_TEST_START,
+  AGENT_2_RETRY_END,
+  AGENT_2_TEST_START,
+  AGENT_2_WAITING_AT,
+  AGENT_3_RETRY_START,
+  AGENT_4_ARRIVAL,
   FAILURE_AT,
   FLOW_HOSTS,
   FLOW_RUNS,
@@ -37,7 +43,16 @@ const fixture = JSON.stringify(
 // The commits cited in 11-rr-locks.ts: the run fixture, and the flow.ts it ports.
 const RUN_FIXTURE_COMMIT = "9a0dab1";
 const FLOW_COMMIT = "536948d";
-const scene = (beat: number) => sceneAt(SEGMENTS, FLOW_RUNS, FLOW_HOSTS.length, STILLS[beat] ?? 0);
+const scene = (beat: number) => {
+  const frame = sceneAt(SEGMENTS, FLOW_RUNS, FLOW_HOSTS.length, STILLS[beat] ?? 0);
+  return {
+    holders: frame.hosts.map((host) => host.holder),
+    phases: frame.hosts.map((host) => host.phase),
+    waiting: frame.chips.map((chip) => chip.visible && chip.state === "waiting" && chip.slot === 1),
+    visible: frame.chips.map((chip) => chip.visible),
+    results: frame.results,
+  };
+};
 
 describe("slide 11: the recorded result", () => {
   it("quotes the fixture event byte for byte", () => {
@@ -65,27 +80,93 @@ describeSourceRepos("slide 11: the fixture against rr", () => {
 });
 
 describe("slide 11: each beat rests on the frame its card describes", () => {
+  it("orders the mid-beat moments strictly inside their clicks' stills", () => {
+    const spans = [
+      { from: STILLS[1], moments: [AGENT_1_TEST_START], to: STILLS[2] },
+      { from: STILLS[2], moments: [AGENT_2_WAITING_AT], to: STILLS[3] },
+      { from: STILLS[3], moments: [AGENT_2_RETRY_END], to: STILLS[4] },
+      { from: STILLS[4], moments: [AGENT_2_TEST_START, AGENT_3_RETRY_START], to: STILLS[5] },
+      { from: STILLS[5], moments: [AGENT_4_ARRIVAL], to: STILLS[6] },
+    ];
+    let previous: number = STILLS[0];
+    for (const { from, moments, to } of spans) {
+      for (const moment of moments) {
+        expect(moment).toBeGreaterThan(previous);
+        expect(moment).toBeGreaterThan(from);
+        expect(moment).toBeLessThan(to);
+        previous = moment;
+      }
+    }
+  });
+
   it("beat 0: every host free, no rr process yet", () => {
-    expect(scene(0).hosts.every((host) => host.phase === "free")).toBe(true);
-    expect(scene(0).chips.some((chip) => chip.visible)).toBe(false);
+    expect(scene(0)).toEqual({
+      holders: [undefined, undefined, undefined],
+      phases: ["free", "free", "free"],
+      waiting: [false, false, false, false],
+      visible: [false, false, false, false],
+      results: [undefined, undefined, undefined, undefined],
+    });
   });
 
   it("beat 1: agent 1 holds every host and nobody else has arrived", () => {
-    expect(scene(1).hosts.map((host) => host.holder)).toEqual([0, 0, 0]);
-    expect(scene(1).chips.filter((chip) => chip.visible)).toHaveLength(1);
+    expect(scene(1)).toEqual({
+      holders: [0, 0, 0],
+      phases: ["sync", "sync", "sync"],
+      waiting: [false, false, false, false],
+      visible: [true, false, false, false],
+      results: [undefined, undefined, undefined, undefined],
+    });
   });
 
-  it("beat 2: agents 2 and 3 wait while agent 1 still holds every host", () => {
-    expect(scene(2).hosts.map((host) => host.holder)).toEqual([0, 0, 0]);
-    expect(
-      scene(2).chips.map((chip) => chip.visible && chip.state === "waiting" && chip.slot === 1),
-    ).toEqual([false, true, true, false]);
+  it("beat 2: agent 1's tests run after sync, before the other calls", () => {
+    expect(scene(2)).toEqual({
+      holders: [0, 0, 0],
+      phases: ["test", "test", "test"],
+      waiting: [false, false, false, false],
+      visible: [true, false, false, false],
+      results: [undefined, undefined, undefined, undefined],
+    });
   });
 
-  it("beat 3: agents 2, 3 and 4 hold one host each and agent 1 has its result", () => {
-    expect(scene(3).hosts.map((host) => host.holder)).toEqual([1, 2, 3]);
-    expect(scene(3).results[0]?.ok).toBe(true);
-    expect(scene(3).chips.some((chip) => chip.state === "waiting")).toBe(false);
+  it("beat 3: agents 2 and 3 have moved into waiting while every host is held", () => {
+    expect(scene(3)).toEqual({
+      holders: [0, 0, 0],
+      phases: ["test", "test", "test"],
+      waiting: [false, true, true, false],
+      visible: [true, true, true, false],
+      results: [undefined, undefined, undefined, undefined],
+    });
+  });
+
+  it("beat 4: a retry has failed and agent 1 still holds every lock", () => {
+    expect(scene(4)).toEqual({
+      holders: [0, 0, 0],
+      phases: ["test", "hold", "hold"],
+      waiting: [false, true, true, false],
+      visible: [true, true, true, false],
+      results: [undefined, undefined, undefined, undefined],
+    });
+  });
+
+  it("beat 5: the waiting agents run on the first two hosts and agent 1 has its result", () => {
+    expect(scene(5)).toEqual({
+      holders: [1, 2, undefined],
+      phases: ["test", "test", "free"],
+      waiting: [false, false, false, false],
+      visible: [false, true, true, false],
+      results: [FLOW_RUNS[0]?.result, undefined, undefined, undefined],
+    });
+  });
+
+  it("beat 6: agent 4 holds the last host while agents 2 and 3 still run", () => {
+    expect(scene(6)).toEqual({
+      holders: [1, 2, 3],
+      phases: ["test", "test", "sync"],
+      waiting: [false, false, false, false],
+      visible: [false, true, true, true],
+      results: [FLOW_RUNS[0]?.result, undefined, undefined, undefined],
+    });
   });
 });
 
