@@ -1,5 +1,5 @@
 ---
-title: One prompt starts three Codex agents in parallel.
+title: One prompt has three Codex agents build an app in parallel.
 clicks: 0
 ---
 
@@ -12,10 +12,11 @@ import { FOREMAN_HANDOFF } from '../data/handoffs'
 <Notes>
 OPENING
 - Copy this, paste into a second Claude Code session, come back.
-- Claude picks a stack with Stacks, gets a spec for the Horse Tinder matching function, and starts three Codex runs through foreman.
-- One writes the code. Two write tests, and none sees another's work.
-- Claude merges them and decides from the spec whether a failing test or the code is wrong.
+- Claude picks a stack with Stacks for an Effect backend and a React frontend, then starts three Codex runs through foreman.
+- One builds the API, one the swipe screen, one the horse profiles and photos.
+- Claude owns the contract between them and the merge. We look at the app when it is done.
 
 IF ASKED
-- Each run has its own worktree. Claude owns the merge and the final table of what each agent got wrong.
+- Each run has its own worktree, so the three never edit the same files at once.
+- The fifteen-minute timebox is an instruction to the agent, not a limit the tool enforces.
 </Notes>

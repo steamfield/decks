@@ -60,6 +60,7 @@
   font-size: calc(2.083334 * var(--sw) * var(--deck-text-scale, 1));
   line-height: 1.08;
 }
+.prompt.dense,
 .prompt:has(.spec) {
   font-size: calc(1.614584 * var(--sw) * var(--deck-text-scale, 1));
 }

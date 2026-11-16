@@ -238,13 +238,14 @@ Source: data-sources.md, Demo hand-offs.
 ### Say
 
 - Copy this, paste into a second Claude Code session, come back.
-- Claude picks a stack with Stacks, gets a spec for the Horse Tinder matching function, and starts three Codex runs through foreman.
-- One writes the code. Two write tests, and none sees another's work.
-- Claude merges them and decides from the spec whether a failing test or the code is wrong.
+- Claude picks a stack with Stacks for an Effect backend and a React frontend, then starts three Codex runs through foreman.
+- One builds the API, one the swipe screen, one the horse profiles and photos.
+- Claude owns the contract between them and the merge. We look at the app when it is done.
 
 ### If asked
 
-- Each run has its own worktree. Claude owns the merge and the final table of what each agent got wrong.
+- Each run has its own worktree, so the three never edit the same files at once.
+- The fifteen-minute timebox is an instruction to the agent, not a limit the tool enforces.
 
 ## 11. foreman is a short-lived CLI and a daemon.
 

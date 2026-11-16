@@ -149,7 +149,7 @@ Before the talk:
 
 - VS Code is open with two Claude Code sessions ready: one for the Stacks prompt, one for the foreman prompt. The StatGlass prompt can go into either.
 - Ghostty is open.
-- `~/demo` is empty or does not exist. The Stacks prompt writes `~/demo/horse-tinder-deck` and the foreman prompt writes `~/demo/horse-tinder-match`.
+- `~/demo` is empty or does not exist. The Stacks prompt writes `~/demo/horse-tinder-deck` and the foreman prompt writes `~/demo/horse-tinder`.
 - StatGlass is running and has about 30 minutes of history, so the slide 20 prompt has something to read.
 - Nothing else is using rr. The slide 15 command runs the Stacks suite on all four hosts.
 
@@ -158,6 +158,8 @@ At each hand-off slide, click Copy, switch to the app named on the slide, paste,
 The rr hand-off has to come after the in-deck rr demo on slide 14. The suite locks all four hosts for about two minutes (128 seconds when run on 2026-11-16), and `rr demo` on slide 14 needs them free. Do not move slide 15 earlier, and do not run the slide 15 command before the slide 14 demo has finished.
 
 At the Decks slide (file 22), switch to VS Code and show the Horse Tinder deck that the slide 4 prompt built. If that session has not finished or verify did not pass, say so and carry on with the slide.
+
+The slide 10 prompt builds the Horse Tinder web app in `~/demo/horse-tinder` and opens it in the browser when it finishes. It starts at about 12 minutes with a 15-minute timebox, so it may not be done before the close. Show it at the Decks slide beside the pitch deck if it is ready, or after the close during questions.
 
 ## Before you present
 

@@ -16,11 +16,12 @@ export const STACKS_HANDOFF: Handoff = {
 };
 
 export const FOREMAN_HANDOFF: Handoff = {
-  headline: "One prompt starts three Codex agents in parallel.",
+  headline: "One prompt has three Codex agents build an app in parallel.",
   product: "foreman",
   where: "CLAUDE CODE · VS CODE",
   kind: "prompt",
-  text: "/ce:build Timebox: 10 minutes. Don't ask me anything: take your recommended option for every decision. Use the foreman skill: you orchestrate, and three Codex agents (model gpt-6.1-terra) write all the code in parallel, each in its own worktree.\n\nHorse Tinder needs a matching library. Use the `stacks` CLI to pick a lean stack, start it in ~/demo/horse-tinder-match, and commit this spec as SPEC.md:\n\n  matchScore(a: Horse, b: Horse): number\n  Horse: name, breed, heightHands, age, discipline, temperament (1-5), likesApples.\n  Returns a whole number from 0 to 100, the same for (a, b) and (b, a).\n  0 if either horse is under 3 years old, or the heights differ by more than 3 hands.\n  Otherwise start at 50: +20 same discipline, +15 temperaments within 1,\n  +15 both like apples, -5 per year of age gap past 4. Clamp to 0-100.\n  Invalid input throws a RangeError that names the field.\n\nThen start three runs at once, none seeing another's work: impl writes the function, tests-examples writes example tests and tests-properties writes property tests, each from the spec alone.\n\nWhen they hand back, merge and run the tests. For each failure, decide from the spec whether the code or the test is wrong and send it back to its owner. Finish green, with a table of what each agent got wrong.\n",
+  dense: true,
+  text: "/ce:build Timebox: 15 minutes. Don't ask me anything: take your recommended option for every decision.\n\nBuild Horse Tinder, a dating app for horses, in ~/demo/horse-tinder: a full-stack web app with an Effect backend and a React frontend. Use the `stacks` CLI to pick the stack. Use the foreman skill: you orchestrate, and three Codex agents (model gpt-6.1-terra) build it in parallel, each in its own worktree.\n\nThe MVP is one screen: swipe through horse profiles, like or pass, and see your matches.\n- api: profiles, swipes and matches, held in memory.\n- web: the swipe deck and the matches list.\n- data: twelve realistic horse profiles, each with a real, freely licensed photo of a horse saved in the repo.\n\nMake it look like a real product. Open it in my browser when it's done.\n",
 };
 
 export const RR_HANDOFF: Handoff = {

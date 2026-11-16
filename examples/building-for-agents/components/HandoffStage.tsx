@@ -13,6 +13,8 @@ export interface Handoff {
   product: ProductId;
   where: string;
   kind: "prompt" | "shell";
+  /** Set a long prompt in the smaller prompt size. */
+  dense?: boolean;
   text: string;
 }
 
@@ -144,7 +146,7 @@ export function HandoffStage({ handoff }: { handoff: Handoff }) {
             </div>
             <pre
               ref={snippet}
-              className={`${styles.snippet} ${handoff.kind === "shell" ? styles.shell : styles.prompt}`}
+              className={`${styles.snippet} ${handoff.kind === "shell" ? styles.shell : styles.prompt}${handoff.dense ? ` ${styles.dense}` : ""}`}
             >
               {handoff.kind === "shell"
                 ? shellTokens(handoff.text).map((token) => {
