@@ -6,7 +6,7 @@ Capture date: 2026-11-16. Tool: statglass 0.10.0.
 The capture used `zsh -f` on a 24-row, 92-column pseudo-terminal with
 `DO_NOT_TRACK=1`, querying the running app while the repo's test gate ran.
 Escape sequences were removed; output text is otherwise as printed.
-Playback uses a 12-row, 92-column pane so the live grid fits at readable type.
+The capture is kept at its original 92-column width and playback wraps it at the shared 135-column grid.
 
 | Claim / constant | Evidence | Status |
 | --- | --- | --- |
@@ -19,7 +19,7 @@ Playback uses a 12-row, 92-column pane so the live grid fits at readable type.
 | Laptop identity and test activity during capture | Fixture `how` and author-supplied capture context; the host name remains `Riley’s MacBook Pro` | FLAG: author-reported |
 | `RECORDING.tag` | Fixture `recorded` and `tool` | VERIFIED |
 
-All output lines are retained and wrapped at 92 characters. No line's text
+All output lines are retained, kept at the 92-column capture width and wrapped for playback at the shared 135-column grid. No line's text
 is rewritten and the recorded host name is preserved. The viewport retains
 complete exchanges that fit together and restores earlier exchanges on back.
 At the final beat the JSON exchange fills the pane. The events supply

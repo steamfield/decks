@@ -94,12 +94,12 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 
 ## Slide 6: Stacks gives a failed check an exit code.
 
-Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/06-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/06-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The capture is kept at its original 92-column width and playback wraps it at the shared 135-column grid. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
 
 | Figure | Value | Source |
 |---|---|---|
 | PANE.commands | the three commands, unchanged | fixture `steps[].command`, through `data/06-stacks-live.ts` |
-| RECORDING | each command followed by its captured output, wrapped every 92 characters | fixture `steps[].lines`, through `data/06-stacks-live.ts` |
+| RECORDING | each command followed by its captured output, kept at the 92-column capture width and wrapped for playback at the shared 135-column grid | fixture `steps[].lines`, through `data/06-stacks-live.ts` |
 | RECORDING.tag | Recorded 2026-11-16 · stacks 0.12.0 | fixture `recorded` and `tool` |
 | "Stacks wrote the project and brief, then printed the hand-off" | claim | fixture step 1: `Created demo-cli from typescript-cli (sandbox).`, `Brief: .stacks/BRIEF.md (4065 words)` and the `NEXT STEP FOR THE AGENT` line |
 | VERIFY_EXIT (card 2: "exits 5") | 5 | fixture step 2: `Verify failed.` and `exit=5` |
@@ -254,7 +254,7 @@ Not stated, by decision: any rr speedup; "load balanced"; automatic sharding.
 
 ## Slide 14: rr runs this task across my machines.
 
-Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/14-rr-live.json`. Each command was typed into `zsh -f` on a 24-row, 104-column pseudo-terminal (`term/server/shell_pty.py`) at the repository root, against the four hosts in the root `.rr.yaml`. Escape sequences were removed and runs of blank lines collapsed; the second command keeps the final frame of rr's redrawing progress display. The text is otherwise as printed. Playback uses an 11-row, 104-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/14-rr-live.json`. Each command was typed into `zsh -f` on a 24-row, 104-column pseudo-terminal (`term/server/shell_pty.py`) at the repository root, against the four hosts in the root `.rr.yaml`. Escape sequences were removed and runs of blank lines collapsed; the second command keeps the final frame of rr's redrawing progress display. The text is otherwise as printed. The capture is kept at its original 104-column width and playback wraps it at the shared 135-column grid. Recorded host locks describe the capture; live locks vary, because another task can hold a host during the demo. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -371,12 +371,12 @@ Banned on this slide (checked): any size for the CLI's own binary (the RFC gives
 
 ## Slide 21: StatGlass reports this laptop's CPU history. (hidden)
 
-The slide has `hide: true` and is out of the default cut; its sources stay here so it can be restored. Recorded for this deck on 2026-11-16 with statglass 0.10.0 and kept in `data/fixtures/21-glass-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) with `DO_NOT_TRACK=1`, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences were removed; the text is otherwise as printed. Playback uses a 12-row, 92-column pane. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`.
+The slide has `hide: true` and is out of the default cut; its sources stay here so it can be restored. Recorded for this deck on 2026-11-16 with statglass 0.10.0 and kept in `data/fixtures/21-glass-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) with `DO_NOT_TRACK=1`, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences were removed; the text is otherwise as printed. The capture is kept at its original 92-column width and playback wraps it at the shared 135-column grid. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`.
 
 | Figure | Value | Source |
 |---|---|---|
 | PANE.commands | `statglass history cpu.total --since 30m`, `statglass events --since 2h`, `statglass history cpu.total --since 30m --json \| jq '.series[0].summary'` | fixture `steps[].command`, unchanged, through `data/21-glass-live.ts` |
-| RECORDING | every output line, wrapped every 92 characters | fixture `steps[].lines`, through `data/21-glass-live.ts` |
+| RECORDING | every output line, kept at the 92-column capture width and wrapped for playback at the shared 135-column grid | fixture `steps[].lines`, through `data/21-glass-live.ts` |
 | RECORDING.tag | Recorded 2026-11-16 · statglass 0.10.0 | fixture `recorded` and `tool` |
 | History range and coverage (card 1, notes) | 08:27 to 08:57, 10 s buckets, 100% measured | fixture step 1, line 1 |
 | History summary (notes) | min 22.9%, mean 36.8%, max 100.0% in the 10 s from 08:54:00, last 69.8% at 08:57:20 | fixture step 1, line 2 |

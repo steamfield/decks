@@ -6,7 +6,7 @@ Capture date: 2026-11-16. Tool: rr 0.30.0.
 The capture used `zsh -f` on a 24-row, 104-column pseudo-terminal at the
 repository root. Its commands queried the four configured hosts. Escape
 sequences were removed, blank runs collapsed, and the run's final progress
-frame retained during capture. Playback uses an 11-row, 104-column pane.
+frame retained during capture. The capture is kept at its original 104-column width and playback wraps it at the shared 135-column grid. Recorded host locks describe the capture; live locks vary, because another task can hold a host during the demo.
 
 | Claim / constant | Evidence | Status |
 | --- | --- | --- |

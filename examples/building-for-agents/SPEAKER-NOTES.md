@@ -122,7 +122,7 @@ Clicks: 3
 
 ### What the slide shows
 
-One terminal pane above three command cards. Each card has a play button, and the button on the next command advances the slide one click, the same as the arrow key. By default the pane plays a recording made on November 16 with stacks 0.12.0 in an empty temp directory. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
+One terminal pane fills the width under the headline. Each beat's one-line caption sits in the pane's bottom band, and three command cards sit above the thread rail. Each card has a play button, and the button on the next command advances the slide one click, the same as the arrow key. By default the pane plays a recording made on November 16 with stacks 0.12.0 in an empty temp directory. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
 
 The recording drops ten leading progress lines from the second command's output; the report text is unchanged.
 
@@ -337,7 +337,7 @@ Clicks: 2
 
 ### What the slide shows
 
-One terminal pane above two command cards, built the same way as slide 6. The commands run at the root of this repo against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, the laptop I present from. By default the pane plays a recording made on November 16 with rr 0.30.0. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
+One terminal pane fills the width under the headline, built the same way as slide 6, with the beat's caption in its bottom band and two command cards above the thread rail. The commands run at the root of this repo against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, the laptop I present from. By default the pane plays a recording made on November 16 with rr 0.30.0. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
 
 The recording drops the second command's four leading progress lines and its blank lines. The Parallel Execution Summary is complete and its text is unchanged.
 
@@ -347,7 +347,7 @@ Source: data-sources.md, Slide 14.
 
 The previous slide simulated the locks. Here are the machines configured for this repo, including the laptop I am presenting from. I'll query their status, then run the demo task across them.
 
-**[click]** Every host is online. The dash in each LOCK cell means no command holds that machine. The mbp row is this laptop. That is the fleet the next command will use.
+**[click]** The snapshot reports the lock on each host. These are live machines, so another task can hold a host while this demo is running. The table shows that state before I start the run.
 
 **[click]** The repo's config defines demo as a parallel task. rr locked and synced the hosts, then ran a shard on each. The summary names the host each shard ran on.
 
@@ -357,6 +357,7 @@ The previous slide simulated the locks. Here are the machines configured for thi
 - Why the pretty flag? rr prints JSON by default, and pretty asks for the display meant for a person.
 - Did rr split the test suite? The config defines four tasks, demo-1 to demo-4, each running one shard of the core package's tests, and lists them under demo's parallel key. rr does not split a suite on its own.
 - Is the recording trimmed? It leaves out blank lines and the progress lines printed before the complete summary.
+- Why is a host locked? A locked host is already doing other work. The snapshot reflects the machines at this moment; the recorded fallback reflects the earlier capture.
 
 ## 15. One command runs a suite across four hosts.
 
@@ -503,9 +504,9 @@ Clicks: 3
 
 ### What the slide shows
 
-One terminal pane above three command cards, built the same way as slide 6. The commands run in a temp directory and ask the StatGlass app running on this laptop for its CPU history and events. By default the pane plays a recording made on November 16 with statglass 0.10.0, taken while this repo's test gate was running. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live, and the readings are the laptop's own from the last half hour. If the live connection fails, the tag says so and the recording plays.
+One terminal pane fills the width under the headline, built the same way as slide 6, with the beat's caption in its bottom band and three command cards above the thread rail. The commands run in a temp directory and ask the StatGlass app running on this laptop for its CPU history and events. By default the pane plays a recording made on November 16 with statglass 0.10.0, taken while this repo's test gate was running. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live, and the readings are the laptop's own from the last half hour. If the live connection fails, the tag says so and the recording plays.
 
-The recording keeps every output line, wrapped at 92 columns. The host name is the laptop's, as the app printed it.
+The recording keeps every output line, captured at 92 columns and wrapped for playback at the pane's 135 columns. The host name is the laptop's, as the app printed it.
 
 Source: data-sources.md, Slide 21.
 

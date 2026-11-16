@@ -69,9 +69,11 @@ Slides 5 and 13 gained clicks after these minutes were planned: slide 5 went fro
 
 ## The live demos
 
-Each demo slide shows a terminal pane and one card per command. The arrow key, the presenter window's next, or the lit card's play button runs the next command. At click 0 the pane is switched off.
+Each demo slide shows a terminal pane that fills the width under the headline, with no story card. The beat's one-line caption sits in the pane's bottom band, and one card per command sits above the thread rail. The arrow key, the presenter window's next, or the lit card's play button runs the next command. At click 0 the pane is switched off. The trackpad scrolls the pane from anywhere on it.
 
 When the shell is live, the pane's tag reads `Live`. If you press before the shell is ready, or while a command is still running, the press is queued and the command runs at the next prompt, in order; the tag reads `Live · busy` while a command runs and `Live · queued` while presses wait. Press only once the slide is on screen: a press made while the slide is still loading counts as arriving mid-slide and runs nothing. If the live shell is unavailable, the tag reads `Recorded <date> · <tool version>` and the pane plays the recording, and after a failure the tag adds `live unavailable: <reason>`. The deck works the same either way.
+
+The live shell is a clean `zsh` with a private config, so your own rc files and aliases do not load. It runs without the package runner's variables and `node_modules/.bin` entries on the PATH, so `bun`, `node` and the tools on your own PATH behave as they do in a normal terminal. Output longer than three lines prints at about 30 lines a second, so a long result takes a moment to finish. Default text is light, the prompt and typed command are bold green, and tools that colour their output, such as `jq`, show their colours.
 
 To recover on any demo slide:
 
@@ -90,7 +92,7 @@ stacks verify --json 2>/dev/null | jq '{outcome, totals, firstGreen, tamperCheck
 
 The commands run in a fresh temp directory and need no network.
 
-What the audience sees: the first command prints `Created demo-cli from typescript-cli (sandbox).`, the brief's path and word count, and the hand-off line that starts `NEXT STEP FOR THE AGENT`. The second prints the tail of a failed verify report and `exit=5`. The third prints a JSON object with the outcome, the pass, fail and skip totals, firstGreen and tamperCheck. Live, the second command also shows the progress lines the recording leaves out.
+What the audience sees: the first command prints `Created demo-cli from typescript-cli (sandbox).`, the brief's path and word count, and the hand-off line that starts `NEXT STEP FOR THE AGENT`. The second prints the tail of a failed verify report and `exit=5`. The third prints a JSON object with the outcome, the pass, fail and skip totals, firstGreen and tamperCheck. Live, the second command also prints verify's progress lines, which go to stderr, so the command line scrolls off the top of the 17 rows by the time `exit=5` prints. Scroll up in the pane to show it. `stacks verify | tail -5` emits no colour live; the recording tints its fail lines.
 
 Each command took under one and a half seconds when it was recorded.
 
@@ -105,7 +107,7 @@ rr demo --pretty
 
 The commands run at the repo root against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, this laptop.
 
-What the audience sees: the first command prints a table with one row per host. Each row should read `online`, and the LOCK column should be a dash for every host. The second runs the demo task, four shards of the core package's tests, one per host, and ends with the Parallel Execution Summary: one line per shard with its host and time, then a totals line with 4 passed and 0 failed. Live, rr also prints progress lines while it runs.
+What the audience sees: the first command prints a table with one row per host. Each row should read `online`, and the LOCK column should be a dash for every host. The second runs the demo task, four shards of the core package's tests, one per host, and ends with the Parallel Execution Summary: one line per shard with its host and time, then a totals line with 4 passed and 0 failed. Live, rr also prints progress lines while it runs. The recording's LOCK column is all dashes, but live a host can be held by another task, and the caption says only that the snapshot reports each host's lock.
 
 The snapshot takes about 2 seconds and the run about 11 seconds. While the run is going, you can say what it is doing: rr is locking each host and syncing the repo before the tests start.
 

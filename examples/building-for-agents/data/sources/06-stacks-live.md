@@ -10,7 +10,7 @@ removed during capture; the fixture otherwise preserves the printed text.
 | Claim / constant | Evidence | Status |
 | --- | --- | --- |
 | `PANE.commands` | The fixture's three `steps[].command` values, unchanged | VERIFIED |
-| `RECORDING` | Each command followed by that step's captured output, wrapped every 92 characters | VERIFIED |
+| `RECORDING` | Each command followed by that step's captured output, kept at the 92-column capture width and wrapped for playback at the shared 135-column grid | VERIFIED |
 | Project and brief written; next agent step printed | Step 1: `Created demo-cli from typescript-cli (sandbox).`, `Brief: .stacks/BRIEF.md (4065 words)`, and `NEXT STEP FOR THE AGENT` | VERIFIED |
 | `VERIFY_EXIT` | Step 2: `Verify failed.` and `exit=5` | VERIFIED |
 | JSON result | Step 3: outcome failed; totals 2 passed, 8 failed, 12 skipped; firstGreen false; tamperCheck full | VERIFIED |
