@@ -70,6 +70,8 @@ export interface NightDrive {
 }
 
 const FOV = 50;
+/** The buffer's pixel budget: a 1920 x 1080 frame at the 1.5 pixel ratio. */
+const MAX_PIXELS = 2880 * 1620;
 const SUN_Z = -190;
 const SUN_R = 27;
 const SUNRISE_DELAY = 0.55;
@@ -257,8 +259,6 @@ export function mountNightDrive(
       renderer.dispose();
       renderer.forceContextLoss();
     });
-    const dpr = Math.min(window.devicePixelRatio, 1.5);
-    renderer.setPixelRatio(dpr);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFShadowMap;
     renderer.shadowMap.autoUpdate = false;
@@ -496,7 +496,17 @@ export function mountNightDrive(
     const resize = () => {
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
-      if (!w || !h) return;
+      const shown = canvas.getBoundingClientRect().width;
+      if (!w || !h || !shown) return;
+      // w and h are canvas units, before the slide's scale. Size the buffer to the screen
+      // pixels the canvas covers, or a portrait phone (where the field bleeds far past the
+      // frame) gets a 40-megapixel buffer and iOS kills the tab.
+      const dpr = Math.min(
+        (shown / w) * window.devicePixelRatio,
+        1.5,
+        Math.sqrt(MAX_PIXELS / (w * h)),
+      );
+      renderer.setPixelRatio(dpr);
       renderer.setSize(w, h, false);
       composer.setSize(w, h, false);
       camera.aspect = w / h;
@@ -518,6 +528,9 @@ export function mountNightDrive(
     const ro = new ResizeObserver(resize);
     cleanups.push(() => ro.disconnect());
     ro.observe(canvas);
+    // The slide's scale changes the on-screen size without changing the canvas's layout size.
+    window.addEventListener("resize", resize);
+    cleanups.push(() => window.removeEventListener("resize", resize));
     resize();
 
     const timer = new Timer();
