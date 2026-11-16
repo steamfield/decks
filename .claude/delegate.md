@@ -1,7 +1,7 @@
 # Delegating work to Codex
 
-How Claude Code hands framework, deck and site work to Codex runs (`foreman` or
-`codex-delegate`) in this repo. `AGENTS.md` is the rulebook both sides follow; this file is the
+How Claude Code hands framework, deck and site work to Codex runs (`foreman`) in this
+repo. `AGENTS.md` is the rulebook both sides follow; this file is the
 procedure around it.
 
 ## For the orchestrator
@@ -44,7 +44,7 @@ procedure around it.
 
 One worktree per run, under `.claude/worktrees/<name>`, cut from the branch that holds every
 run the new one depends on: `foreman start <name> --new-worktree --from <branch> --setup "bun
-install" ...`. For `codex-delegate`, run `bun install` in the new worktree before the runner.
+install" ...`.
 
 ### Hook trust
 
@@ -53,11 +53,10 @@ on `apply_patch` that runs `decks hook lint` from source and denies deck prose w
 error-level pattern, and a `UserPromptSubmit` hook that adds the deck-writing reminder. Both only
 read their hook JSON and the repo's pattern file.
 
-- `foreman`: worktrees under `.claude/worktrees/` inherit the approval given in the main checkout
-  (`codex`, then `/hooks`; `foreman doctor` reports it). After `.codex/hooks.json` changes the
-  approval must be given again. If `foreman start` refuses for untrusted hooks, ask the user to
-  approve them; don't work around it.
-- `codex-delegate`: start the runner with `DELEGATE_TRUST_REPO_HOOKS=1` in front.
+Worktrees under `.claude/worktrees/` inherit the approval given in the main checkout (`codex`,
+then `/hooks`; `foreman doctor` reports it). After `.codex/hooks.json` changes the approval must
+be given again. If `foreman start` refuses for untrusted hooks, ask the user to approve them;
+don't work around it.
 
 ## For the delegate
 
