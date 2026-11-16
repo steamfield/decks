@@ -13,7 +13,7 @@ import type { TermLine } from "./types";
 
 export const PANE: TermPaneSpec = {
   id: "stacks",
-  rows: 24,
+  rows: 11,
   cols: 92,
   cwd: "temp",
   commands: fixture.steps.map((step) => step.command),

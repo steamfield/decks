@@ -109,38 +109,51 @@ export function LiveTerm({
   const terminalBox = useRef<HTMLDivElement>(null);
   const [face, setFace] = useState<{
     font: string;
+    size: number;
     colors: Parameters<typeof XtermHost>[0]["colors"];
   }>();
   useLayoutEffect(() => {
     const element = terminalBox.current;
     if (!element) return;
-    const css = getComputedStyle(element);
-    const token = (name: string) => css.getPropertyValue(name).trim();
-    setFace({
-      font: token("--sf-font-term"),
-      colors: {
-        background: token("--od-screen-black"),
-        foreground: token("--od-phosphor"),
-        cursor: token("--od-phosphor"),
-        black: token("--od-screen-black"),
-        red: token("--od-pink"),
-        green: token("--od-phosphor"),
-        yellow: token("--od-amber"),
-        blue: token("--od-violet"),
-        magenta: token("--od-pink"),
-        cyan: token("--od-cyan"),
-        white: token("--od-text"),
-        brightBlack: token("--od-text-faint"),
-        brightRed: token("--od-pink"),
-        brightGreen: token("--od-phosphor"),
-        brightYellow: token("--od-amber"),
-        brightBlue: token("--od-violet"),
-        brightMagenta: token("--od-pink"),
-        brightCyan: token("--od-cyan"),
-        brightWhite: token("--od-text"),
-      },
-    });
-  }, []);
+    // Resolve TermPane's frame-relative type before handing screen pixels to xterm.
+    element.style.fontSize = `calc(${(size ?? 31) / 19.2} * var(--sw))`;
+    const measure = () => {
+      const css = getComputedStyle(element);
+      const fontSize = Number.parseFloat(css.fontSize);
+      const token = (name: string) => css.getPropertyValue(name).trim();
+      setFace((current) =>
+        current?.size === fontSize
+          ? current
+          : {
+              font: token("--sf-font-term"),
+              size: fontSize,
+              colors: {
+                background: token("--od-screen-black"),
+                foreground: token("--od-phosphor"),
+                cursor: token("--od-phosphor"),
+                black: token("--od-screen-black"),
+                green: token("--od-phosphor"),
+                yellow: token("--od-amber"),
+                blue: token("--od-violet"),
+                magenta: token("--od-pink"),
+                cyan: token("--od-cyan"),
+                white: token("--od-text"),
+                brightBlack: token("--od-text-faint"),
+                brightGreen: token("--od-phosphor"),
+                brightYellow: token("--od-amber"),
+                brightBlue: token("--od-violet"),
+                brightMagenta: token("--od-pink"),
+                brightCyan: token("--od-cyan"),
+                brightWhite: token("--od-text"),
+              },
+            },
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    if (element.parentElement) observer.observe(element.parentElement);
+    return () => observer.disconnect();
+  }, [size]);
   const showingLive = live.live && Host && face && live.connection;
   const tag = showingLive
     ? `Live${live.busy ? " · busy" : ""}`
@@ -157,7 +170,7 @@ export function LiveTerm({
             cols={pane.cols}
             scale={scale}
             fontFamily={face.font}
-            fontSize={size ?? 31}
+            fontSize={face.size}
             colors={face.colors}
           />
         </div>

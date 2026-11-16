@@ -20,57 +20,30 @@ export function XtermHost({
   fontSize: number;
   colors: ITheme;
 }) {
-  const box = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const target = host.current;
-    const outer = box.current;
-    if (!target || !outer || scale <= 0) return;
+    if (!target || scale <= 0) return;
     let term: Terminal | undefined;
     let unsubscribe: (() => void) | undefined;
     let disposed = false;
-    const observer = new ResizeObserver(() => fit());
-    const metrics = document.createElement("canvas").getContext("2d");
-    const fit = () => {
-      if (!term || !metrics || disposed || !target.clientWidth || !target.clientHeight) return;
-      const dpr = window.devicePixelRatio;
-      const cellWidth = (target.clientWidth * dpr) / cols;
-      const cellHeight = Math.floor((target.clientHeight * dpr) / rows);
-      metrics.font = `${fontSize * scale}px ${fontFamily}`;
-      const base = metrics.measureText("W");
-      const baseHeight = base.fontBoundingBoxAscent + base.fontBoundingBoxDescent;
-      const fitHeight = cellHeight / (baseHeight * dpr);
-      // Letter spacing rounds to whole device pixels. Put its remainder in the font size.
-      const spacing = Math.max(0, Math.ceil(cellWidth - base.width * dpr * fitHeight));
-      const fitted = (cellWidth - spacing) / (base.width * dpr);
-      const nextSize = Math.max(1, fontSize * scale * fitted);
-      metrics.font = `${nextSize}px ${fontFamily}`;
-      const next = metrics.measureText("W");
-      const charHeight = Math.ceil(
-        (next.fontBoundingBoxAscent + next.fontBoundingBoxDescent) * dpr,
-      );
-      term.options.fontSize = nextSize;
-      term.options.letterSpacing = spacing;
-      term.options.lineHeight = Math.max(1, (cellHeight + 0.001) / charHeight);
-      term.refresh(0, rows - 1);
-    };
-    let density = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-    const refit = () => {
-      fit();
-      density.removeEventListener("change", refit);
-      density = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-      density.addEventListener("change", refit);
-    };
-    density.addEventListener("change", refit);
-    window.addEventListener("resize", refit);
     void document.fonts.ready.then(() => {
       if (disposed) return;
       try {
+        // xterm lays text out on a grid of whole device pixels. At a size whose glyph advance
+        // is fractional, glyphs drift off their cells and the last columns are clipped, so
+        // take the nearest size whose advance is whole.
+        const ruler = document.createElement("canvas").getContext("2d");
+        if (!ruler) throw new Error("no 2d canvas to measure the terminal font");
+        ruler.font = `${fontSize * scale}px ${fontFamily}`;
+        const advance = ruler.measureText("W").width * window.devicePixelRatio;
         term = new Terminal({
           rows,
           cols,
           fontFamily,
-          fontSize: fontSize * scale,
+          fontSize: (fontSize * scale * Math.max(1, Math.round(advance))) / advance,
+          letterSpacing: 0,
+          lineHeight: 1.12,
           theme: colors,
           cursorBlink: false,
           scrollback: 2000,
@@ -86,8 +59,6 @@ export function XtermHost({
         term.open(target);
         term.onData((data) => connection.input(data));
         unsubscribe = connection.subscribeOutput((chunk) => term?.write(chunk));
-        fit();
-        observer.observe(outer);
       } catch (error) {
         connection.unavailable(
           `terminal could not open: ${error instanceof Error ? error.message : String(error)}`,
@@ -96,15 +67,12 @@ export function XtermHost({
     });
     return () => {
       disposed = true;
-      observer.disconnect();
-      density.removeEventListener("change", refit);
-      window.removeEventListener("resize", refit);
       unsubscribe?.();
       term?.dispose();
     };
   }, [connection, rows, cols, scale, fontFamily, fontSize, colors]);
   return (
-    <div ref={box} style={{ width: "100%", height: "100%", overflow: "hidden" }}>
+    <div style={{ width: "100%", height: "100%", overflow: "hidden" }}>
       <div
         ref={host}
         role="application"
