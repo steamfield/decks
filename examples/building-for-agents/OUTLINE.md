@@ -24,7 +24,7 @@ Everything below was gathered on 2026-11-13 by reading the product repos under `
 These came from a question round on 2026-11-13. Do not reopen them.
 
 1. Repo "breakaways" are in-deck animated tours (a file tree that lights up beside real code). Each deep dive also has a release valve: an optional cue to leave the deck for a live demo, scripted in `SPEAKER-GUIDE.md`. The deck must work with every valve skipped.
-2. Three products get deep dives of about five minutes each: Stacks, foreman, StatGlass. The other four (rr, OpenData, OpenChart, Decks) get about 90 seconds each.
+2. Three products get deep dives of about five minutes each: Stacks, foreman, StatGlass. The other two (rr, Decks) get about 90 seconds each.
 3. The spine is one piece of work moving from start to ship, told with real recordings stitched together. Each step shows something that happened, taken from artifacts already in the repos. It is framed as how work moves through the stack. It never claims to be one literal feature followed end to end.
 4. The look is Steamfield synthwave, taken from steamfield.io and built as its own design system with a `DESIGN.md` and tokens, to the texas-2026 standard. Update, 2026-11-13: the deck matches the site hero's look and feel. Every slide sits inside the hero's CRT tube (scanlines, phosphor mask, grain, hum bar, tube corners, the slight barrel distortion) and uses its aged palette; the cover and close run the hero's three.js scene, with the sun rising over one minute. The heavy tape tracking noise is the one effect left out. `DESIGN.md` in this folder is the current design contract, and where section 6 below disagrees with it (the turned-down CRT, scanlines kept off code, the left-aligned cover, the site's full-saturation accents), `DESIGN.md` wins.
 5. Effect is taught through the Stacks repo tour. There is no separate Effect primer slide. foreman reuses the ideas without re-explaining them.
@@ -36,7 +36,7 @@ These came from a question round on 2026-11-13. Do not reopen them.
 
 ## 3. Thesis and arc
 
-The thesis, said once on slide 2 and paid off on slide 18: every tool Riley ships has two users, a person and a coding agent, and the agent support lives in ordinary engineering decisions about output, errors, exit codes and concurrency. None of the tools calls a model.
+The thesis, said once on slide 2 and paid off on slide 19: every tool Riley ships has two users, a person and a coding agent, and the agent support lives in ordinary engineering decisions about output, errors, exit codes and concurrency. None of the tools calls a model.
 
 The thread is a verb per product, in the order work flows:
 
@@ -46,8 +46,6 @@ The thread is a verb per product, in the order work flows:
 | Delegate | foreman | TypeScript · Effect 4 | Deep dive |
 | Test | rr | Go | Brief |
 | Watch | StatGlass | Rust + TypeScript | Deep dive |
-| Ask | OpenData | TypeScript MCP server · Python engine | Brief |
-| Chart | OpenChart | TypeScript | Brief |
 | Present | Decks | TypeScript · Vue | Brief |
 
 Honesty about languages is a rule (section 4). The title promises TypeScript; two products are mostly something else, and the deck says so on the object.
@@ -68,14 +66,14 @@ Deck mechanics:
 
 Content:
 
-- No em dashes anywhere. No marketing adjectives. Product names keep their casing: OpenData, OpenChart, StatGlass, Stacks, rr, Decks, foreman.
+- No em dashes anywhere. No marketing adjectives. Product names keep their casing: StatGlass, Stacks, rr, Decks, foreman.
 - Print the evidence status on the object, as a small pixel-type tag. There are three: `Recorded` (replays a real artifact; the tag carries the date), `Schematic` (a diagram of how something works, with no real data), `Illustrative` (made-up sample values). Never rely on a legend. A stage that mixes a recording with a schematic tags each part.
-- Print the language on every product's first slide as a chip (the table in section 3). rr is Go. StatGlass is about 60 percent Rust and its agent CLI is Rust. OpenData's engine is Python. Say these plainly; they are part of the talk, and slide 14 turns one of them into a point.
+- Print the language on every product's first slide as a chip (the table in section 3). rr is Go. StatGlass is about 60 percent Rust and its agent CLI is Rust. Say these plainly; they are part of the talk, and slide 16 turns one of them into a point.
 - Code on a slide is real code, quoted from the named file, trimmed with `// …` where lines are dropped. Never paraphrase code into something that would not compile. At most 14 lines visible at once, set no smaller than 24px at the 1920 canvas.
 - Terminal output on a slide is real output from a fixture or a doc, or it is tagged `Illustrative`.
 - Every figure comes from a `data/*.ts` constant that cites a row in `data-sources.md`. A figure with no row does not go on a slide. That includes figures in headlines, cards, chips and notes.
 - Do not claim a speedup for rr. The README's "roughly a third" is an expectation, and the rr site's own blog says so. If a timing is needed, the only measured one is a README example: 52.9 s wall clock against 97 s summed across three shards.
-- Do not say foreman "pushes" or "notifies" Claude. Claude is woken because a background `foreman wait` process exits (slide 9 is about exactly this).
+- Do not say foreman "pushes" or "notifies" Claude. Claude is woken because a background `foreman wait` process exits (slide 10 is about exactly this).
 - Do not say rr balances by load. It takes the first host it can lock, in config order.
 - Do not say rr shards automatically. A shard is a task the user defines; a parent task lists them under `parallel:`.
 
@@ -172,7 +170,7 @@ Set `fonts.sans` to Heros and `fonts.mono` to JetBrains Mono in `theme.json`, an
 
 The reserved regions in `story-stage.md` hold: headline band top left, card bottom left (or right when the stage needs the left). One more region is this deck's own:
 
-- The thread rail runs along the bottom of every content slide, from x 110 to 1810 at about y 990 to 1045, under the card. It shows the seven products as 12x12 pixel icons (data in `~/Projects/steamfield/src/data/pixel-icons.ts`) with the verb under each in pixel type. Products already covered sit at full strength, the current one has a 2px pink marker and its name in Orbitron, the rest sit at the dim level. It is the site's stage rail, moved to the bottom. It carries the view-transition name `vt-thread-rail` so it holds still across slide changes while the marker slides.
+- The thread rail runs along the bottom of every content slide, from x 110 to 1810 at about y 990 to 1045, under the card. It shows the five products as 12x12 pixel icons (data in `~/Projects/steamfield/src/data/pixel-icons.ts`) with the verb under each in pixel type. Products already covered sit at full strength, the current one has a 2px pink marker and its name in Orbitron, the rest sit at the dim level. It is the site's stage rail, moved to the bottom. It carries the view-transition name `vt-thread-rail` so it holds still across slide changes while the marker slides.
 - A product's first slide shows a name plate at the right end of the headline band: pixel icon, product name in Orbitron, and the language chip. Later slides for the same product show only the chip.
 - Every figure carries a `FIG. n` tag in yellow pixel type at its top left, numbered through the deck, as on the site.
 
@@ -213,68 +211,66 @@ Riley asked that the existing landing-page animations be used. These are the one
 
 | Source | What it shows | Model to port (framework-free) | Used on |
 | --- | --- | --- | --- |
-| `~/Projects/rr/site/src/components/landing/FlowDiagram.tsx` (768 lines) | "How runs share hosts": four agents on a laptop, one rr process per call, three hosts, locks, a waiting column, retries every 2 s | `rr/site/src/lib/flow.ts` (`simulate`, `sceneAt`, `flowSteps`, `FLOW_HOSTS`, `FLOW_RUNS`); the wide geometry constants are at the top of `FlowDiagram.tsx`. steamfield.io has its own port: `~/Projects/steamfield/src/lib/rr-flow.ts` and `src/components/home/RrDemo.tsx` | Slide 10 |
-| `~/Projects/rr/site/src/components/landing/MonitorStage.tsx` and `monitor/MonitorCard.tsx` | One real `rr test` run replayed from two sides: `rr monitor` host cards on top, the run's output as a person or an agent sees it underneath | `rr/site/src/lib/monitor/timeline.ts`, `render.ts`; fixtures `rr/site/fixtures/monitor.jsonl`, `run.jsonl`, `run.pretty.txt`, `run.stdout.txt` | Slides 2, 11, E3 |
-| `~/Projects/rr/site/src/components/landing/QueueBoard.tsx` | Interactive lock queue | `rr/site/src/lib/queue.ts` | Reference for slide 10's waiting beat |
-| `~/Projects/claude-codex/site/src/components/landing/session/SessionCanvas.tsx` (647 lines) and `SessionDiagram.tsx` | Claude, the daemon board and delegate cards in worktrees, with packets travelling and a held question | `claude-codex/site/src/data/session.ts` (`buildSession`, `sceneAt`, `stepAt`); steamfield.io's port: `~/Projects/steamfield/src/lib/foreman-session.ts`, `src/data/foreman-session.ts`, `src/components/home/ForemanCanvas.tsx` | Slide 7 |
-| `~/Projects/claude-codex/site/src/components/landing/Lifecycle.tsx` | The run state machine with a real excerpt per state | `claude-codex/site/src/data/lifecycle.ts` | Reference for slides 8 and 9 |
-| `~/Projects/claude-codex/site/src/components/landing/SupervisionConsole.tsx` | A recorded run replayed as a transcript and an event feed | `claude-codex/site/src/data/supervision.ts`; fixtures `claude-codex/site/fixtures/runs/*.json`, `fixtures/cli/*.json` | Slide 9's terminal lines |
-| `~/Projects/statglass/docs-site/src/islands/DashboardDemo.tsx`, `PopoverDemo.tsx` | The real React app in an iframe, running on its mock transport | `statglass/docs-site/src/lib/demo.ts` (URL builder, scenarios `multi-host`, `linux-host`, and so on); the demo build comes from `scripts/build-demo.mjs` | Slide 13 |
-| `~/Projects/steamfield/src/components/home/StatGlassDemo.tsx` | The popover on simulated readings | `~/Projects/steamfield/src/lib/statglass-demo.ts` (every value a pure function of the sample number) | Slides 11 and 12 |
-| `~/Projects/stacks-api/apps/web/src/islands/home-cli-script.ts` and `islands/blog/scenarios/*.ts` (`verify-loop`, `tamper-check`, `new-project`, `brief-preview`) | Scripted agent sessions with the stacks CLI | The scenario files are data (`DemoTurn[]`) | Slides 4, 6, E1 |
-| `~/Projects/steamfield/src/data/opendata-demo.ts`, `src/lib/opendata-demo.ts`, `OpenDataDemo.tsx` | A four-turn Claude session with real queries, rows and run times | The data module | Slide 15 |
-| `~/Projects/openchart/examples/src/gallery/agents/` (`scenarios.ts`, `replay.ts`) | "Chat analyst: write, repair, refine": an emitted spec runs through the real `validateSpec` | The scenario data; the deck calls `validateSpec` itself at module load | Slide 16 |
-| `~/Projects/decks/site/src/components/landing/DeckPlayer.tsx`, fixture `site/fixtures/hook-denial.json` | A deck stepping through beats; a recorded hook denial | The fixture | Slide 17 |
+| `~/Projects/rr/site/src/components/landing/FlowDiagram.tsx` (768 lines) | "How runs share hosts": four agents on a laptop, one rr process per call, three hosts, locks, a waiting column, retries every 2 s | `rr/site/src/lib/flow.ts` (`simulate`, `sceneAt`, `flowSteps`, `FLOW_HOSTS`, `FLOW_RUNS`); the wide geometry constants are at the top of `FlowDiagram.tsx`. steamfield.io has its own port: `~/Projects/steamfield/src/lib/rr-flow.ts` and `src/components/home/RrDemo.tsx` | Slide 11 |
+| `~/Projects/rr/site/src/components/landing/MonitorStage.tsx` and `monitor/MonitorCard.tsx` | One real `rr test` run replayed from two sides: `rr monitor` host cards on top, the run's output as a person or an agent sees it underneath | `rr/site/src/lib/monitor/timeline.ts`, `render.ts`; fixtures `rr/site/fixtures/monitor.jsonl`, `run.jsonl`, `run.pretty.txt`, `run.stdout.txt` | Slides 2, 13, E3 |
+| `~/Projects/rr/site/src/components/landing/QueueBoard.tsx` | Interactive lock queue | `rr/site/src/lib/queue.ts` | Reference for slide 11's waiting beat |
+| `~/Projects/claude-codex/site/src/components/landing/session/SessionCanvas.tsx` (647 lines) and `SessionDiagram.tsx` | Claude, the daemon board and delegate cards in worktrees, with packets travelling and a held question | `claude-codex/site/src/data/session.ts` (`buildSession`, `sceneAt`, `stepAt`); steamfield.io's port: `~/Projects/steamfield/src/lib/foreman-session.ts`, `src/data/foreman-session.ts`, `src/components/home/ForemanCanvas.tsx` | Slide 8 |
+| `~/Projects/claude-codex/site/src/components/landing/Lifecycle.tsx` | The run state machine with a real excerpt per state | `claude-codex/site/src/data/lifecycle.ts` | Reference for slides 9 and 10 |
+| `~/Projects/claude-codex/site/src/components/landing/SupervisionConsole.tsx` | A recorded run replayed as a transcript and an event feed | `claude-codex/site/src/data/supervision.ts`; fixtures `claude-codex/site/fixtures/runs/*.json`, `fixtures/cli/*.json` | Slide 10's terminal lines |
+| `~/Projects/statglass/docs-site/src/islands/DashboardDemo.tsx`, `PopoverDemo.tsx` | The real React app in an iframe, running on its mock transport | `statglass/docs-site/src/lib/demo.ts` (URL builder, scenarios `multi-host`, `linux-host`, and so on); the demo build comes from `scripts/build-demo.mjs` | Slide 15 |
+| `~/Projects/steamfield/src/components/home/StatGlassDemo.tsx` | The popover on simulated readings | `~/Projects/steamfield/src/lib/statglass-demo.ts` (every value a pure function of the sample number) | Slides 13 and 14 |
+| `~/Projects/stacks-api/apps/web/src/islands/home-cli-script.ts` and `islands/blog/scenarios/*.ts` (`verify-loop`, `tamper-check`, `new-project`, `brief-preview`) | Scripted agent sessions with the stacks CLI | The scenario files are data (`DemoTurn[]`) | Slides 4, 7, E1 |
+| `~/Projects/decks/site/src/components/landing/DeckPlayer.tsx`, fixture `site/fixtures/hook-denial.json` | A deck stepping through beats; a recorded hook denial | The fixture | Slide 18 |
 
-New animated diagrams this deck builds because none exists: the Stacks loop with its real verify timeline (slide 4), the foreman process diagram (slide 8), the held-question sequence diagram (slide 9), the Rust to TypeScript sample pipeline (slide 12), the Transport fork (slide 13), the split tool result (slide 15) and the habits matrix (slide 18).
+New animated diagrams this deck builds because none exists: the Stacks loop with its real verify timeline (slide 4), the foreman process diagram (slide 9), the held-question sequence diagram (slide 10), the Rust to TypeScript sample pipeline (slide 14), the Transport fork (slide 15) and the habits matrix (slide 19).
 
 ## 8. The arc
 
-Thirty-minute cut: 19 slides, 68 beats, about 27.5 minutes of script, which leaves room for slide changes and one release valve.
+Phase 0 cut: 17 slides, 60 beats, about 24.5 minutes of script. Slots 05, 12 and 17 are reserved for later live demos and have no spec in this phase.
+
+The numbers below are filename prefixes for the planned arc. Current playback positions are consecutive: filenames 01-04 play as 1-4, 06-11 as 5-10, 13-16 as 11-14, and 18-20 as 15-17. For `decks shot` or presenter navigation, use 3 for the thread, 16 for habits and 17 for the close.
 
 | # | Page / stage | Headline (draft) | Step | Beats | Min |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `01-cover` / `StoryCover` + `NightDriveField` | Building for agents | | 1 | 0.5 |
 | 2 | `02-two-users` / `TwoUsersStage` | Every tool I ship has two users. | | 3 | 1.25 |
-| 3 | `03-thread` / `ThreadStage` | One change passes through seven tools. | | 3 | 1.25 |
+| 3 | `03-thread` / `ThreadStage` | I ship a change with five tools I built. | | 3 | 1.25 |
 | 4 | `04-stacks-loop` / `StacksLoopStage` | Stacks hands the agent a brief and a finish line. | Start | 4 | 1.75 |
-| 5 | `05-stacks-tour` / `StacksTourStage` | An Effect CLI is commands, services and one error table. | Start | 6 | 2.75 |
-| 6 | `06-stacks-output` / `StacksOutputStage` | Stacks prints the same result three ways. | Start | 4 | 1.5 |
-| 7 | `07-foreman-session` / `ForemanSessionStage` | Claude delegates to Codex, one worktree per task. | Delegate | 5 | 2.0 |
-| 8 | `08-foreman-daemon` / `ForemanDaemonStage` | A daemon sits between the two agents. | Delegate | 4 | 1.5 |
-| 9 | `09-foreman-question` / `ForemanQuestionStage` | A held question is an unanswered request. | Delegate | 4 | 1.5 |
-| 10 | `10-rr-locks` / `RrLocksStage` | rr gives every run its own machine. | Test | 5 | 2.0 |
-| 11 | `11-monitor-to-glass` / `MonitorToGlassStage` | I kept rr monitor open all day, so I built an app. | Watch | 3 | 1.0 |
-| 12 | `12-glass-boundary` / `GlassBoundaryStage` | Rust owns the data. TypeScript draws it. | Watch | 5 | 2.0 |
-| 13 | `13-glass-browser` / `GlassBrowserStage` | The whole app runs in a browser tab. | Watch | 2 | 1.0 |
-| 14 | `14-glass-cli` / `GlassCliStage` | Agents ask StatGlass what happened at 3pm. | Watch | 3 | 1.25 |
-| 15 | `15-opendata` / `OpenDataStage` | OpenData answers the model and the person separately. | Ask | 4 | 1.5 |
-| 16 | `16-openchart` / `OpenChartStage` | OpenChart tells the agent which field is wrong. | Chart | 4 | 1.5 |
-| 17 | `17-decks` / `DecksStage` | Decks rejects a sentence before it reaches a slide. | Present | 3 | 1.25 |
-| 18 | `18-habits` / `HabitsStage` | Six habits carry across all seven tools. | | 4 | 1.5 |
-| 19 | `19-close` / `CloseStage` | Start at steamfield.io. | | 1 | 0.5 |
+| 05 | reserved: live demo | | | | |
+| 6 | `06-stacks-tour` / `StacksTourStage` | An Effect CLI is commands, services and one error table. | Start | 6 | 2.75 |
+| 7 | `07-stacks-output` / `StacksOutputStage` | Stacks prints the same result three ways. | Start | 4 | 1.5 |
+| 8 | `08-foreman-session` / `ForemanSessionStage` | Claude delegates to Codex, one worktree per task. | Delegate | 5 | 2.0 |
+| 9 | `09-foreman-daemon` / `ForemanDaemonStage` | A daemon sits between the two agents. | Delegate | 4 | 1.5 |
+| 10 | `10-foreman-question` / `ForemanQuestionStage` | A held question is an unanswered request. | Delegate | 4 | 1.5 |
+| 11 | `11-rr-locks` / `RrLocksStage` | rr gives every run its own machine. | Test | 5 | 2.0 |
+| 12 | reserved: live demo | | | | |
+| 13 | `13-monitor-to-glass` / `MonitorToGlassStage` | I kept rr monitor open all day, so I built an app. | Watch | 3 | 1.0 |
+| 14 | `14-glass-boundary` / `GlassBoundaryStage` | Rust owns the data. TypeScript draws it. | Watch | 5 | 2.0 |
+| 15 | `15-glass-browser` / `GlassBrowserStage` | The whole app runs in a browser tab. | Watch | 2 | 1.0 |
+| 16 | `16-glass-cli` / `GlassCliStage` | Agents ask StatGlass what happened at 3pm. | Watch | 3 | 1.25 |
+| 17 | reserved: live demo | | | | |
+| 18 | `18-decks` / `DecksStage` | Decks rejects a sentence before it reaches a slide. | Present | 3 | 1.25 |
+| 19 | `19-habits` / `HabitsStage` | Each tool has some of the same six habits. | | 4 | 1.5 |
+| 20 | `20-close` / `CloseStage` | Start at steamfield.io. | | 1 | 0.5 |
 
 The headlines record each slide's claim. The wording is a draft and has to pass the prose audit. A figure in a headline is subject to `data-sources.md`; if the check changes the figure, the headline changes.
 
 Cross-slide morphs (only adjacent slides share a name; add each name in both places in `styles/index.css`, per `story-stage.md`):
 
 - `vt-thread-rail`: every content slide to the next. The rail holds; the marker slides.
-- `vt-thread-row` (slide 3 to slide 4): the seven stations collapse down into the rail.
-- `vt-host-cards` (slide 10 to slide 11): rr's three host boxes become the three `rr monitor` cards.
-- `vt-chart-card` (slide 15 to slide 16): the chart that rendered in the conversation lifts out and becomes slide 16's render target.
+- `vt-thread-row` (slide 3 to slide 4): the five stations collapse down into the rail.
+- `vt-host-cards` (slide 11 to slide 13): rr's three host boxes become the three `rr monitor` cards.
 
 ## 9. Stretching to 40 minutes
 
-Six extension slides sit in the manifest with `hide: true` in their stanza. Removing `hide` from all six brings the deck to about 38 minutes. `SPEAKER-GUIDE.md` lists them in the order to restore if only some fit. They are specified at the end of section 10. `beats.test.ts` still checks a hidden slide; confirm that against the Slidev version in the lockfile, and if hidden slides break a guard, keep the extensions in a second manifest (`slides-40.md`, alias `agents-40`) instead.
+Four extension slides sit in the manifest with `hide: true` in their stanza. Removing `hide` from all four extends the talk; re-time it before presenting. `SPEAKER-GUIDE.md` lists them in the order to restore if only some fit. They are specified at the end of section 10. `beats.test.ts` still checks a hidden slide; confirm that against the Slidev version in the lockfile, and if hidden slides break a guard, keep the extensions in a second manifest (`slides-40.md`, alias `agents-40`) instead.
 
 | # | Page / stage | Headline (draft) | After | Beats | Min |
 | --- | --- | --- | --- | --- | --- |
-| E1 | `06b-stacks-tamper` / `StacksTamperStage` | Editing a verify step stops verify. | 6 | 4 | 1.5 |
-| E2 | `09b-foreman-fake-codex` / `ForemanFakeStage` | A 117-line script stands in for Codex. | 9 | 3 | 1.5 |
-| E3 | `10b-rr-two-views` / `RrTwoViewsStage` | One run reads differently to a person and an agent. | 10 | 4 | 1.5 |
-| E4 | `15b-mcp-app` / `McpAppStage` | The chart is a React app the server ships as one file. | 15 | 4 | 2.0 |
-| E5 | `15c-benchmark` / `BenchmarkStage` | With the connector, 25 of 30 answers were right. | E4 | 3 | 1.25 |
-| E6 | `06c-stacks-mcp` / `StacksMcpStage` | The MCP server is three tools that shell out. | E1 | 3 | 1.0 |
+| E1 | `07b-stacks-tamper` / `StacksTamperStage` | Editing a verify step stops verify. | 7 | 4 | 1.5 |
+| E2 | `10b-foreman-fake-codex` / `ForemanFakeStage` | A 117-line script stands in for Codex. | 10 | 3 | 1.5 |
+| E3 | `11b-rr-two-views` / `RrTwoViewsStage` | One run reads differently to a person and an agent. | 11 | 4 | 1.5 |
+| E6 | `07c-stacks-mcp` / `StacksMcpStage` | The MCP server is three tools that shell out. | E1 | 3 | 1.0 |
 
 ## 10. Per-slide spec
 
@@ -288,7 +284,7 @@ Coordinates are in the 1920x1080 stage viewBox. Card copy is given as `lead` / `
 - Lede in Heros: "Agent tooling and infrastructure, from CLIs to a native macOS app."
 - Byline: Riley Hilliard · Steamfield · Austin JS · November 2026.
 - Entrance: the grid light builds, then the sun rises a short way on `TRACE` and settles. The grid drifts toward the viewer as ambient motion. One beat, no card.
-- Say: who I am, that Steamfield is a small studio that builds its own products, and that tonight is seven tools I built because coding agents became the main user of my command line.
+- Say: who I am, that Steamfield is a small studio that builds its own products, and that tonight is five tools I built because coding agents became the main user of my command line.
 
 ### 2. Two users
 
@@ -304,15 +300,15 @@ Layout: two `CrtFrame` terminals side by side above the card line. Left is label
 
 ### 3. The thread
 
-Purpose: show all seven products once, in the order work flows, and set up the rail.
+Purpose: show all five products once, in the order work flows, and set up the rail.
 
-Layout: a road line across the stage at y 560, drawn on `TRACE` at entrance, with seven stations. Each station is a pixel icon in a small CRT tile, the verb in pixel type under it, and (from beat 1) the product name in Orbitron and its `LangChip`. Tag: `Schematic`.
+Layout: a road line across the stage at y 560, drawn on `TRACE` at entrance, with five stations. Each station is a pixel icon in a small CRT tile, the verb in pixel type under it, and (from beat 1) the product name in Orbitron and its `LangChip`. Tag: `Schematic`.
 
 | Beat | Stage | Card | Say |
 | --- | --- | --- | --- |
-| 0 | The line and seven tiles with verbs only: Start, Delegate, Test, Watch, Ask, Chart, Present. | I built each one for my own work. / Most started inside OpenData, whose test suite is about 14,000 tests. | I did not plan seven products. Each one was a chore I got tired of. |
+| 0 | The line and five tiles with verbs only: Start, Delegate, Test, Watch, Present. | I built each one for my own work. / Most started inside OpenData, whose test suite is about 14,000 tests. | Each tool started as a chore I got tired of. |
 | 1 | Names and language chips land on an eased stagger, left to right. | Most of it is TypeScript. / rr is Go, and StatGlass keeps its samplers in Rust. | This is a JS meetup, so I will say up front which parts are not JS. |
-| 2 | Stacks, foreman and StatGlass brighten; the other four drop to the dim level. Then the row hands off to the rail (`vt-thread-row`). | Three get a closer look tonight. / Stacks, foreman and StatGlass, with the repo open. | The other four get ninety seconds each. |
+| 2 | Stacks, foreman and StatGlass brighten; the other two drop to the dim level. Then the row hands off to the rail (`vt-thread-row`). | Three get a closer look tonight. / Stacks, foreman and StatGlass, with the repo open. | The other two, rr and Decks, get ninety seconds each. |
 
 Figure: "about 14,000" is the published figure on the rr site and in `why-steamfield.mdx`. A static count on 2026-11-13 found about 14,300 Python test functions and about 5,300 TypeScript test cases in the OpenData monorepo. Re-derive a collected count before the talk (`data-sources.md` row; see section 11) and use whatever it returns.
 
@@ -333,7 +329,7 @@ Data: `~/Projects/stacks-tests/tea-dashboard/.stacks/state/runs.jsonl` (a real C
 
 Release valve A (2 minutes, after this slide): `stacks search`, `stacks show typescript-cli`, `stacks new typescript-cli demo-cli --sandbox --no-launch`, `stacks verify --json; echo "exit=$?"` in a scratch directory with `--offline`. Script in `SPEAKER-GUIDE.md`.
 
-### 5. Stacks: the repo tour
+### 6. Stacks: the repo tour
 
 Purpose: the Effect breakaway. Teach four ideas (a command, a service with its layer, one error table, a test that swaps a layer) from real files.
 
@@ -368,7 +364,7 @@ tests/            209 files, real command tree, fake layers
 
 Facts to verify before quoting: Effect 4.0.6 with the built-in `effect/cli` module (not `@effect/cli`); the published CLI runs on Node 22 or newer and refuses Bun, while Bun is the package manager and bundler. Put those in the notes for beat 0.
 
-### 6. Stacks: three audiences
+### 7. Stacks: three audiences
 
 Purpose: the AX payoff of the tour. One result, three renderings, and exit codes that each mean one action.
 
@@ -383,7 +379,7 @@ Data: human text from `packages/cli/docs/quickstart.md` lines 150 to 157; the `V
 | 2 | SCRIPT pane: one `VerifyResult` object, then the error envelope with `"next"` in pink. | A script gets one JSON object. / The error envelope is the last line of stderr, with the next step written out. | `stacks schema` prints the JSON Schema for every one of these shapes. |
 | 3 | The panes dim. Exit tiles rise: 0, 2, 3, 4, 5, 6, 130, each with its action from the table. 5 and 6 are bright. | Each exit code means one action. / Five means read the report. Six means ask a person. | A published code never changes meaning. Treat it like an API. |
 
-### 7. foreman: the session
+### 8. foreman: the session
 
 Purpose: the product workflow. Claude writes contracts, Codex delegates run in worktrees, one stops to ask, Claude answers, Claude commits.
 
@@ -401,7 +397,7 @@ Data: `buildSession` and `sceneAt` from `claude-codex/site/src/data/session.ts` 
 
 Release valve B (3 minutes): two prepared contracts, `foreman start … --new-worktree --contract … --write --effort low`, `foreman status`, `foreman wait --all --timeout 9m`, `foreman answer`. Script in `SPEAKER-GUIDE.md`. Rehearse it; whether the delegate asks depends on the model.
 
-### 8. foreman: the daemon
+### 9. foreman: the daemon
 
 Purpose: the repo breakaway as a process diagram, with the tree alongside.
 
@@ -416,7 +412,7 @@ Layout: five boxes left to right at y 380: Claude Code, the `foreman` CLI, a soc
 
 Figures: 9,189 lines of TypeScript in `src` excluding tests, 44 test files, 111 commits from 2026-11-05 to 2026-11-07. Use them in notes; re-derive first.
 
-### 9. foreman: the held question
+### 10. foreman: the held question
 
 Purpose: the technical heart. Two mechanisms that are simpler than people expect.
 
@@ -429,7 +425,7 @@ Layout: a sequence diagram with four lifelines at x 300, 700, 1100, 1500: Claude
 | 2 | Claude sends `foreman answer`; the daemon responds to the stored request; Codex resumes. | `questions.ts` lines 82 to 87 (`respond(rpc.id, …)`). | The answer is the JSON-RPC response. / After fifteen minutes with none, the daemon replies itself: carry on without it. | A late answer still arrives, as a steer into the running turn. |
 | 3 | The diagram dims. | `tests/supervisor-integration.test.ts` lines 6317 to 6334, trimmed to `f.start({ questionTimeoutMs: 1000 })`, `TestClock.adjust(1000)` and the two `expect`s. | The timeout test takes no time. / Effect's TestClock moves the clock. A 117-line script plays Codex. | Every one of these states has a test like this. |
 
-### 10. rr: host locks
+### 11. rr: host locks
 
 Purpose: how test runs are spread across a fleet of agents. rr is the one Go tool; say so in the first sentence.
 
@@ -447,11 +443,11 @@ Data: `rr/site/src/lib/flow.ts` (`FLOW_HOSTS` is `m4-mini`, `m1-linux`, `m1-mini
 
 Notes also carry: the hosts in OpenData's real config are `mbp`, `m4-mini` and `m1-mini` (`~/Projects/opendata/.rr.yaml` lines 34 to 60), which differs from the simulation's host names; OpenData sets `worktree_isolation: false`, so beat 3's body describes rr's default, which is why it says "by default". Release valve C (2 minutes): two worktrees running `rr test` at once with `rr monitor` in a third pane.
 
-### 11. From rr monitor to StatGlass
+### 13. From rr monitor to StatGlass
 
 Purpose: the origin story, told as a morph. `FLAG: author-reported`: nothing in either repo records that StatGlass came from watching `rr monitor`. It is Riley's account; the note says "I".
 
-Layout: three host cards across the stage at y 240 to 620. They arrive from slide 10 through `vt-host-cards`. In beats 0 and 1 they are `rr monitor` TUI cards inside one wide `CrtFrame` terminal: VT323, braille sparklines, CPU and RAM, latency, and `> <command>` for the lock holder. Port `rr/site/src/lib/monitor/timeline.ts` and `render.ts`, fed by `rr/site/fixtures/monitor.jsonl` (hosts `m1-mini`, `m4-mini`, `mbp`). In beat 2 the bezel dissolves and the same three cards redraw as StatGlass host cards in the app's style, under a macOS menu bar strip with the StatGlass item. Name plate: StatGlass, Rust + TypeScript. Tags: `Recorded` on the monitor replay; `Illustrative` on the StatGlass cards unless they are driven by a real capture.
+Layout: three host cards across the stage at y 240 to 620. They arrive from slide 11 through `vt-host-cards`. In beats 0 and 1 they are `rr monitor` TUI cards inside one wide `CrtFrame` terminal: VT323, braille sparklines, CPU and RAM, latency, and `> <command>` for the lock holder. Port `rr/site/src/lib/monitor/timeline.ts` and `render.ts`, fed by `rr/site/fixtures/monitor.jsonl` (hosts `m1-mini`, `m4-mini`, `mbp`). In beat 2 the bezel dissolves and the same three cards redraw as StatGlass host cards in the app's style, under a macOS menu bar strip with the StatGlass item. Name plate: StatGlass, Rust + TypeScript. Tags: `Recorded` on the monitor replay; `Illustrative` on the StatGlass cards unless they are driven by a real capture.
 
 | Beat | Stage | Card | Say |
 | --- | --- | --- | --- |
@@ -459,7 +455,7 @@ Layout: three host cards across the stage at y 240 to 620. They arrive from slid
 | 1 | A history bar under the cards fills to its end and stops; a chip reads "600 samples". | It remembers ten minutes. / A 600-sample buffer that is gone when the terminal closes. | The question I kept asking was about earlier: why were the fans going at three? |
 | 2 | The cards morph; the history bar extends far to the left, ticked at 1 h, 24 h, 7 d, 30 d. | StatGlass keeps 30 days. / A menu bar app for Apple Silicon, with the same hosts and their history in SQLite. | It used to be called Kelvo. It also reads rr's lock file and shows which job holds each host. |
 
-### 12. StatGlass: the boundary
+### 14. StatGlass: the boundary
 
 Purpose: the repo breakaway for the native app. Where the Rust and TypeScript line falls and how one tick crosses it.
 
@@ -475,7 +471,7 @@ Layout: two columns with a seam between them. Left (x 110 to 800), three Rust bo
 
 Figures (re-derive): 153,401 lines of Rust in `crates` and `src-tauri` including inline tests; 111,644 lines of TypeScript in `src` including tests and generated code; 81 `__TAURI_INVOKE` calls and 10 events; 0.672 percent of one core and 104.9 MB, menu bar only, a single run recorded in `plan/competitor-benchmarks.md` and `README.md` lines 182 to 196. The card says "one run" because it is one run.
 
-### 13. StatGlass: in a browser tab
+### 15. StatGlass: in a browser tab
 
 Purpose: the DX point a JS audience will take home. The UI depends on an interface, so the whole app runs without Tauri.
 
@@ -488,7 +484,7 @@ Layout: beat 0 is a fork diagram: a "React UI" box at left, a `Transport` interf
 
 The embed: the demo build is produced by `statglass/scripts/build-demo.mjs` into `docs-site/public/demo` and is served at `statglass.steamfield.io/demo/index.html?window=dashboard&scenario=multi-host` (URL builder in `docs-site/src/lib/demo.ts`). Copy the built demo into the deck's `public/statglass-demo/` so the talk does not depend on venue wifi, and load the iframe only in the real slide view. Presenter, overview and export show a poster screenshot instead (capture it with `bun run shot`). If the build is too large to check in, load the hosted URL and fall back to the poster after a short timeout. This slide is also release valve D: click into the frame and open Timeline and Hosts.
 
-### 14. StatGlass: the agent CLI
+### 16. StatGlass: the agent CLI
 
 Purpose: the AX side of the native app, and the honest note that this CLI is Rust.
 
@@ -512,39 +508,7 @@ and the reason for Rust from `plan/rfc-agent-cli.md` lines 106 to 109.
 
 Check the RFC's wording before the card ships. It gives 55 to 60 MB per architecture as an estimate against a 36 MB app, and says the helper binary beside the CLI is 550 KB. The card must not compare the CLI's own size to anything unless that size is measured.
 
-### 15. OpenData
-
-Purpose: 90 seconds on an MCP server written in TypeScript, and the idea that one tool result serves two readers.
-
-Layout: an `AgentPane` in chat layout at left (x 110 to 1000), replaying the steamfield.io session from `~/Projects/steamfield/src/data/opendata-demo.ts` (the queries, rows and run times there are the ones that ran; use its first turn). At right (x 1060 to 1810), a "tool result" tile that splits in beat 2 into two branches. Name plate: OpenData, with two chips: "MCP server: TypeScript" and "Engine: Python · DuckDB". Tag: `Recorded` on the session.
-
-| Beat | Stage | Card | Say |
-| --- | --- | --- | --- |
-| 0 | The question posts; a `search_datasets` step row opens. | The MCP server is TypeScript. / Fourteen tools on Bun and Hono, in front of a Python and DuckDB engine. | The data engine is Python. Everything an agent touches is TypeScript. |
-| 1 | The right tile shows the server's instruction line `WORKFLOW: search_datasets -> query_sql -> openchart` (`mcp/src/server.ts` lines 52 to 62). The `query_sql` step runs. | The workflow is one instruction line. / Search results carry column schemas, so the agent goes straight to SQL. | Tool descriptions are prompts. I tune them from transcripts. |
-| 2 | The result tile splits: `content` (text) goes left to a "model" label; `structuredContent` and `_meta` go right to an "iframe" label. | Each result has two readers. / The model gets a text sample. The chart's rows go to the interface only. | Chart rows never enter the model's context. |
-| 3 | The chart renders inside the conversation. | The chart renders inside the chat. / A React app in a sandboxed iframe, served by the server as a ui:// resource. | That chart is the next product. |
-
-Figures (re-derive): 14 registered tools, 11 for the model and 3 app-only (`mcp/src/tools/index.ts` lines 23 to 36); query results capped at 60 rows for the model; up to 120 chart rows in `_meta`. Catalog size for the notes: the 2026-11-02 snapshot has 1,046 datasets from 214 providers (`frontend/app/routes/home/_data/landing-snapshot.json`); `why-steamfield.mdx` says 1,036 and 213. Use the snapshot, and say "public data sources", since a few providers are not government.
-
-### 16. OpenChart
-
-Purpose: 90 seconds on validation that an agent can act on.
-
-Layout: three columns. Left (x 110 to 720): a `CodePane` with a JSON spec. Centre (x 760 to 1140): a verdict tile. Right (x 1180 to 1810): the render target, arriving from slide 15 through `vt-chart-card`. From beat 3 a package strip runs along y 660: core, engine, vanilla, then react, vue, svelte. Name plate: OpenChart, TypeScript. Tag: none on the spec; the verdict is live.
-
-The verdict is real: the stage's data module imports `validateSpec` from `@opendata-ai/openchart-engine` (already a dependency of the addon) and calls it on both specs at module load. The error text on screen is whatever it returns. The spec is the bar spec from `~/Projects/openchart/README.md` lines 26 to 44, with one field name misspelled the way the test fixture does it (`packages/engine/src/compiler/__tests__/validate-did-you-mean.test.ts` lines 25 to 40).
-
-| Beat | Stage | Card | Say |
-| --- | --- | --- | --- |
-| 0 | The spec draws in. | A chart is a JSON spec. / Mark, data, encoding and chrome. The engine works out scales, labels and layout. | Agents write config more reliably than drawing code, so the chart is config. |
-| 1 | The misspelled line turns pink; the verdict tile shows `path`, `code` and `suggestion` from the real result. | The error points at one field. / A JSON Pointer path, a code, and the nearest column name by edit distance. | The validator is hand-written, about 3,400 lines, for input the compiler never sees. |
-| 2 | One token in the spec changes; the verdict turns phosphor; the chart draws through `<OpenChart :spec>`. | One token changes and it renders. / The agent fixed the field the error named and tried again. | The schema also ships as JSON Schema, generated from the types and checked in CI. |
-| 3 | The package strip rises; engine is widest, wrappers thin. | The engine never touches the DOM. / The same spec renders in React, in Vue on this slide, or to SVG in Node. | The React wrapper is about 5 percent of the engine's size. |
-
-Figures (re-derive): 6 published packages at 9.0.0; 19 marks (two repo comments still say 16; use the type); non-test lines engine 50,097 and react 2,639; validator 3,369 lines. OpenChart has no CLI and no MCP server of its own; do not imply one.
-
-### 17. Decks
+### 18. Decks
 
 Purpose: 90 seconds, self-referential. The audience has been looking at Decks for 25 minutes.
 
@@ -558,20 +522,20 @@ Layout: a `CodePane` at left; at right a beat scrubber: four dots for beats with
 
 Figures: 27 patterns and 5 denied come from `~/Projects/steamfield/src/data/projects.ts`; re-derive both from `packages/decks/lint/ai-rhetoric-patterns.tsv`. Beat 2's count is computed from the deck's own file at build time. The "refused more than once" line in the notes is true only if it happens; record a real denial during the build or cut the line.
 
-### 18. Six habits
+### 19. Six habits
 
-Purpose: the payoff. What the seven tools share, shown as a matrix so each habit is tied to evidence.
+Purpose: the payoff. What the five tools share, shown as a matrix so each habit is tied to evidence.
 
-Layout: a matrix. Rows are the six habits, as short labels in Heros at x 110 to 620. Columns are the seven products as pixel icons at x 700 to 1810. A cell lights when the product shows that habit. The thread rail is fully lit under it. Tag: none; every lit cell has a source row.
+Layout: a matrix. Rows are the six habits, as short labels in Heros at x 110 to 620. Columns are the five products as pixel icons at x 700 to 1810. A cell lights when the product shows that habit. The thread rail is fully lit under it. Tag: none; every lit cell has a source row.
 
 | Habit | Lit cells and the evidence |
 | --- | --- |
-| Output is an API | Stacks (`--json`, `stacks schema`), foreman (`--json`), rr (JSON events by default), StatGlass (`--json`, `statglass schema`), OpenData (`outputSchema` on every tool), OpenChart (JSON Schema export) |
-| Errors name the next step | Stacks (`next`), foreman (`next:` and `or:` lines), rr (`suggestion`), StatGlass (`next`), OpenData (recovery hints, for example the rate-limit text), OpenChart (`suggestion` with did-you-mean) |
+| Output is an API | Stacks (`--json`, `stacks schema`), foreman (`--json`), rr (JSON events by default), StatGlass (`--json`, `statglass schema`) |
+| Errors name the next step | Stacks (`next`), foreman (`next:` and `or:` lines), rr (`suggestion`), StatGlass (`next`) |
 | One exit code, one action | Stacks, foreman, rr, StatGlass |
-| Done is a command | Stacks (`verify`), foreman (the contract's gate, run by Claude), Decks (`check`, `lint`, guard tests), OpenChart (`validateSpec`) |
+| Done is a command | Stacks (`verify`), foreman (the contract's gate, run by Claude), Decks (`check`, `lint`, guard tests) |
 | Safe with several agents | rr (host locks), foreman (a worktree per run), Stacks (state outside the project), Decks (`shot` and `snap` pick free ports) |
-| The docs ship in the binary | Stacks (`stacks` prints the agent guide; `skill install`), foreman (`guide`, `skill install`), StatGlass (`guide`, `skill install`), rr (plugin with a skill), Decks (`decks init`), OpenChart (`llms.txt`) |
+| The docs ship in the binary | Stacks (`stacks` prints the agent guide; `skill install`), foreman (`guide`, `skill install`), StatGlass (`guide`, `skill install`), rr (plugin with a skill), Decks (`decks init`) |
 
 Confirm each cell against the product before lighting it, and drop any you cannot source.
 
@@ -582,9 +546,9 @@ Confirm each cell against the product before lighting it, and drop any you canno
 | 2 | Rows 5 and 6 light. | Assume several agents at once. / Locks, worktrees, and a guide the binary prints itself. | The docs that ship in the binary always match the installed version. |
 | 3 | The matrix dims to the row labels; the rail glows. | None of these tools calls a model. / They are ordinary CLIs and one app. The agent support is in how they print. | You can do every one of these in the tool you already maintain, on Monday. |
 
-### 19. Close
+### 20. Close
 
-`CloseStage`: the cover's `NightDriveField` returns with the sun lower on the horizon. Title in Orbitron: STEAMFIELD.IO. Lede in Heros: "Seven products, most of them open source." An `OdQrCard` to `https://steamfield.io`. Byline as the cover. One beat. This slide stays up during Q&A, so add a small line of install commands under the lede in JetBrains Mono, taken from `~/Projects/steamfield/src/data/projects.ts`: `npm install -g @steamfield/stacks`, `npm install -g @steamfield/foreman`, `brew install rileyhilliard/tap/rr`. "Most" is deliberate: OpenData is open core.
+`CloseStage`: the cover's `NightDriveField` returns with the sun lower on the horizon. Title in Orbitron: STEAMFIELD.IO. Lede in Heros: "Five products, all open source." An `OdQrCard` to `https://steamfield.io`. Byline as the cover. One beat. This slide stays up during Q&A, so add a small line of install commands under the lede in JetBrains Mono, taken from `~/Projects/steamfield/src/data/projects.ts`: `npm install -g @steamfield/stacks`, `npm install -g @steamfield/foreman`, `brew install rileyhilliard/tap/rr`.
 
 ### Extension slides (hidden in the 30-minute cut)
 
@@ -594,17 +558,13 @@ E2, foreman's fake Codex. Tree focus on `tests/fixtures/fake-app-server/`. Beats
 
 E3, rr in two views. Port `MonitorStage.tsx` fully: monitor cards on top, and under them the same run as `--pretty` text and as JSON events, switching by beat. All `Recorded`.
 
-E4, the MCP App. Beats: a tool advertises `_meta.ui.resourceUri` (`mcp/src/tools/tracking.ts` lines 30 to 35); the server serves one self-contained HTML file of about 1.1 MB built with `vite-plugin-singlefile`; the host renders it in a sandboxed iframe; `ontoolresult` delivers `structuredContent` (`mcp/src/mcp-app/main.tsx` lines 96 to 118). Show the 49-line prototype `~/Projects/opendata-mcp-app/src/app/src/App.tsx` lines 9 to 34 as the smallest working example. Riley has given an Austin JS talk on this before (`~/Projects/opendata/talks/austin-js/mcp-apps/`); reuse its diagrams where they fit and do not repeat its jokes.
-
-E5, the benchmark. Two rows of 30 marks, web search against the connector, as `examples/opendata-pitch/components/BenchmarkStage.vue` draws them (port it and its data with provenance). Figures from `~/Projects/opendata/plans/2026-09-11-benchmark-infra/phase1-report.md`: hand-graded, 6 of 30 with web search only and 25 of 30 with the connector. The report's own caveat goes on the slide as a tag, not only in the notes: nine questions were rewritten to need the catalog, the un-rewritten result is 15 against 27, and these are single runs.
-
 E6, Stacks MCP. Beats: three tools in `packages/mcp/src/toolkit.ts` lines 13 to 58 (`stacks_list`, `stacks_new`, `stacks_verify`) with their readonly and destructive annotations; each spawns the CLI with `--json`; a drift test keeps the schemas in step. Point: the MCP server is a thin wrapper because the CLI was already an API.
 
 ## 11. Numbers and provenance
 
 `data-sources.md` follows the skeleton in `.claude/rules/deck-data.md`: one section per slide, one row per figure with the command or file that produces it, a "Numbers refresh (2026-11-13)" section, and a "Banned on-slide content (checked)" section. Every `data/*.ts` module opens with a provenance header naming its source repo, file, line range, the commit it was read at, and the date.
 
-Derive each number fresh with the recorded command even though this file states it. Commits the research read: stacks `a952e96`, openchart `26bd0ba6`, statglass `5db8622a`. Record the commit for the others when you read them.
+Derive each number fresh with the recorded command even though this file states it. Commits the research read: stacks `a952e96`, statglass `5db8622a`. Record the commit for the others when you read them.
 
 Code excerpts live in `data/code/<slide>-<name>.ts` as the exact text plus `{ repo, path, lines, commit }`. Add a test that reads each source file, when the sibling repo is present at `~/Projects/<repo>`, and fails if the excerpt's untrimmed lines no longer match. Skip it cleanly when the repo is absent so CI on another machine still passes.
 
@@ -616,8 +576,6 @@ Known conflicts and stale facts. Each needs a decision recorded in `data-sources
 | rr version | Latest tag v0.29.4 (2026-11-03). The site says 0.29.3. |
 | rr's parsed frameworks | The code parses pytest, Go test, Jest and Vitest's default reporter. The README omits Vitest. Bun's test runner and Playwright are not parsed. |
 | rr speedup | Not measured. See section 4. |
-| OpenChart mark count | 19 in the type. Two comments in the repo say 16. |
-| OpenData catalog size | 1,046 datasets and 214 providers in the 2026-11-02 snapshot; 1,036 and 213 in the blog post; "800+" in one stale docs page. |
 | OpenData test count | "About 14,000" is published. A static count is about 19,600 definitions. Get a collected count (`pytest --collect-only -q` in `opendata/` and `backend/`, `vitest list` in the TypeScript packages, or the totals from one `rr test` run) and use it on slide 3. |
 | StatGlass CPU figure | 0.672 percent is one run, before remote monitoring existed. Keep "one run" next to it. |
 | StatGlass origin | Author-reported. No repo records it. |
@@ -626,20 +584,20 @@ Known conflicts and stale facts. Each needs a decision recorded in `data-sources
 | Stacks runtime | The published CLI runs on Node and refuses Bun. Bun builds and bundles it. Do not call it a Bun CLI. |
 | A subagent report called rr a Rust tool | It is Go (`go.mod`, Go 1.26). |
 
-Banned on slides: any rr speedup multiple; "load-balanced" for rr; "pushes" or "notifies" for foreman; "government" as a blanket description of OpenData's sources; any size for the StatGlass CLI binary; "all open source".
+Banned on slides: any rr speedup multiple; "load-balanced" for rr; "pushes" or "notifies" for foreman; any size for the StatGlass CLI binary; "all open source".
 
 ## 12. Speaker guide and release valves
 
-`SPEAKER-GUIDE.md` follows `examples/texas-2026/SPEAKER-GUIDE.md`. It holds: a timing table with a running clock per slide for the 30-minute cut and for the 38-minute cut; the order in which to restore extension slides; which beats can be dropped on the fly if the talk runs long (slide 5 beat 3, slide 8 beat 3, slide 12 beat 4, slide 18 beat 2); a pre-talk checklist; and the release valves.
+`SPEAKER-GUIDE.md` follows `examples/texas-2026/SPEAKER-GUIDE.md`. It holds: a timing table with a running clock per slide for the 30-minute cut and for the 38-minute cut; the order in which to restore extension slides; which beats can be dropped on the fly if the talk runs long (slide 6 beat 3, slide 9 beat 3, slide 14 beat 4, slide 19 beat 2); a pre-talk checklist; and the release valves.
 
 Each valve is optional, has a time box, and ends by pressing the arrow key to the next slide. Each lists exact commands, what the audience should see, and what to say if it fails ("the slide showed you the recording; moving on").
 
 | Valve | After slide | Time | What |
 | --- | --- | --- | --- |
 | A | 4 | 2 min | Stacks in a scratch directory: search, show, `new --sandbox --no-launch`, `verify --json`, the exit code |
-| B | 7 | 3 min | foreman: two contracts, two delegates, one question, answered live |
-| C | 10 | 2 min | rr: two worktrees running `rr test` at once, `rr monitor` alongside |
-| D | 13 | 1 min | StatGlass: the real menu bar app, then Timeline and Hosts in the dashboard |
+| B | 8 | 3 min | foreman: two contracts, two delegates, one question, answered live |
+| C | 11 | 2 min | rr: two worktrees running `rr test` at once, `rr monitor` alongside |
+| D | 15 | 1 min | StatGlass: the real menu bar app, then Timeline and Hosts in the dashboard |
 
 Take at most one valve in the 30-minute cut. Pre-talk checklist items the research turned up: run any `stacks` command once beforehand or set `DO_NOT_TRACK=1` so the first-run telemetry notice does not appear on stage; warm each rr worktree's remote `node_modules` with one run; have `foreman doctor` green and the Codex hooks trusted; have StatGlass running long enough to have history, or run `bun run seed` in a dev build.
 
@@ -651,7 +609,7 @@ Wave 0, design (one agent, then Riley's approval). Scaffold the deck. Write `the
 
 Wave 1, shared parts and data (parallel, disjoint files). `RepoTree`; `CodePane` with `scripts/tokenize.mjs` and the excerpt drift test; `TermPane`; `AgentPane`; `PacketPath`. Port the simulations in section 7 into `data/` with provenance headers and a unit test per port that pins a few scene times against the source's own values. Write `data/products.ts` and the first pass of `data-sources.md`.
 
-Wave 2, stages (parallel, one agent per product, each owning its stages, pages and data modules): Stacks (4, 5, 6, E1, E6); foreman (7, 8, 9, E2); rr and the StatGlass origin (10, 11, E3); StatGlass (12, 13, 14); OpenData and OpenChart (15, 16, E4, E5); frame and close (2, 3, 17, 18, 19). Each hand-off includes screenshots of every beat from `bun run shot`, the prose audit table, and any beat-count difference from this file.
+Wave 2, stages (parallel, one agent per product, each owning its stages, pages and data modules): Stacks (4, 6, 7, E1, E6); foreman (8, 9, 10, E2); rr and the StatGlass origin (11, 13, E3); StatGlass (14, 15, 16); frame and close (2, 3, 18, 19, 20). Each hand-off includes screenshots of every beat from `bun run shot`, the prose audit table, and any beat-count difference from this file.
 
 Wave 3, assembly (the orchestrator). `slides.md` manifest with `clicks:`, titles and `hide: true` on the extensions. Presenter notes for every page. `SPEAKER-GUIDE.md`. The view-transition names in `styles/index.css`. A full walk with `bun run snap`.
 
@@ -661,7 +619,7 @@ Wave 4, review. A fresh agent runs the prose review. The `fact-checking-a-deck` 
 
 - `bun run check`, `bun run typecheck`, `bun run test`, `bun run lint` and `bun run build agents` pass, and the story guards report scanning this deck.
 - `bun run shot agents <n>` shows no console errors and no wrapped one-line headline on any slide.
-- `bun run export agents` produces a PDF in which every slide is readable as a still, including the simulation slides and slide 13's poster.
+- `bun run export agents` produces a PDF in which every slide is readable as a still, including the simulation slides and slide 15's poster.
 - Every figure in `bun run fact-extract agents` traces to a row in `data-sources.md`, and each row's command was rerun in the week of the talk.
 - Every code excerpt passes the drift test against its source repo.
 - Every recording carries a `Recorded` tag with a date, every diagram a `Schematic` tag, and every made-up value an `Illustrative` tag.
@@ -672,7 +630,7 @@ Wave 4, review. A fresh agent runs the prose review. The `fact-checking-a-deck` 
 
 ## 15. Open items for Riley
 
-- Confirm the origin sentence on slide 11 reads the way you would say it.
-- Slide 7 needs one batch of foreman runs. If you would rather show a newer session than the 2026-11-06 recordings, record it with `claude-codex/site/scripts/capture-runs.mjs` and point the data module at it.
-- Slide 13 embeds the StatGlass demo build. Say whether checking the built demo into this repo is acceptable or the slide should load the hosted copy.
+- Confirm the origin sentence on slide 13 reads the way you would say it.
+- Slide 8 needs one batch of foreman runs. If you would rather show a newer session than the 2026-11-06 recordings, record it with `claude-codex/site/scripts/capture-runs.mjs` and point the data module at it.
+- Slide 15 embeds the StatGlass demo build. Say whether checking the built demo into this repo is acceptable or the slide should load the hosted copy.
 - `steamfield/src/data/projects.ts` has stale versions for StatGlass and rr. That is a separate change to the site.

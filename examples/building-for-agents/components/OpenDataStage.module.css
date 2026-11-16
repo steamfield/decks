@@ -1,9 +1,0 @@
-.od-part-note {
-  font-family: var(--od-font-sans);
-  font-size: calc(var(--sf-svg-term) * var(--deck-text-scale, 1));
-  fill: var(--od-text-secondary);
-}
-
-.od-chat-chart {
-  position: absolute;
-}

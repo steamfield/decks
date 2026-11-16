@@ -1,0 +1,41 @@
+---
+title: Rust collects the data and TypeScript draws it.
+clicks: 4
+---
+
+{/* SLIDE 14 · GLASS BOUNDARY: where Rust stops and TypeScript starts in StatGlass, and how one sample gets across */}
+
+<GlassBoundaryStage />
+
+<Notes>
+OPENING
+- Tauri app. 58 percent of the lines are Rust.
+- Rust: sampling, last-hour ring buffer, SQLite history, SSH to remote hosts, the menu bar item.
+- TypeScript: the React UI in the popover and dashboard.
+- Written rule: Rust decides what a value means, the client formats and draws it.
+
+[click] CLICK 1
+- One generated file sits between them: bindings.ts.
+- Each Rust command carries a specta attribute. tauri-specta writes the typed TypeScript function.
+- Top pane: subscribe_live in Rust. Bottom pane: the generated line, same five arguments, camel case.
+- 92 commands, 10 events. Pre-push hook regenerates and fails on a diff.
+
+[click] CLICK 2
+- Live samples reach the UI over a Tauri Channel.
+- Engine sends one frame per tick: a timestamp and an array of numbers.
+- An earlier layout message names the series at each position, so names go once per layout.
+
+[click] CLICK 3
+- Reducer applies each message to host state. A zustand store holds it. Each widget subscribes to its part.
+- A test counts renders: a CPU change leaves the memory card alone.
+- Chart path from d3, rendered by React as SVG.
+- On a tick the chart redraws one slot over and animate slides it back, so only the transform animates.
+
+[click] CLICK 4
+- No window open: Rust stops sending frames, engine samples every two seconds, menu bar bitmap only.
+- Measured: 0.67 percent of one core, about 105 MB.
+- One 120-second run, M3 Max, October, machine also running builds, before remote monitoring existed.
+
+IF ASKED
+- Line counts include tests? Yes: inline Rust tests, TypeScript tests, generated bindings.
+</Notes>

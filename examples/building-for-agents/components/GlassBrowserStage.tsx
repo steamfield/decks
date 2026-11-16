@@ -10,8 +10,8 @@ import {
   INTERFACE,
   LINT_RULE,
   UI,
-} from "../data/13-glass-browser";
-import { TRANSPORT_INTERFACE } from "../data/code/13-glass-browser";
+} from "../data/15-glass-browser";
+import { TRANSPORT_INTERFACE } from "../data/code/15-glass-browser";
 import { CodePane } from "./CodePane";
 import { DATA, DIM, OFF, ON, type Pt, polyline } from "./design";
 import { EvidenceTag } from "./EvidenceTag";

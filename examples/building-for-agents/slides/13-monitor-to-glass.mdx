@@ -1,0 +1,33 @@
+---
+title: StatGlass started as the rr monitor command.
+clicks: 2
+---
+
+{/* SLIDE 13 · MONITOR TO GLASS: rr monitor's host cards, then the same hosts as StatGlass cards */}
+
+<MonitorToGlassStage />
+
+<Notes>
+OPENING
+- rr monitor is a terminal dashboard that ships with rr.
+- One card per host: CPU, memory, latency, the command holding the lock. All over SSH.
+- Recording from November 2, an rr test run in OpenData, all three hosts busy.
+- I added it as a debugging aid, then noticed it was always open.
+
+[click] CLICK 1
+- It keeps 600 samples per metric in a ring buffer. One sample a second is ten minutes.
+- In memory only. Gone when I close the terminal.
+- My questions were about earlier in the day, like why the fans were going at three.
+
+[click] CLICK 2
+- StatGlass answers those: a menu bar app for Apple Silicon Macs.
+- Monitors this Mac and others over SSH, history in SQLite.
+- 10-second buckets for 24 hours, one-minute through 7 days, 15-minute through 30 days, within a size limit.
+- Used to be called Kelvo.
+- Reads rr's lock file and shows which job holds each host.
+- Cards on screen are the rr recording in StatGlass's layout.
+
+IF ASKED
+- 30 days guaranteed? Size limit. Oldest per-process detail goes first, then resource charts.
+- Needs rr? No. Any Apple Silicon Mac it can reach over SSH. The rr job is an extra on hosts with an rr lock.
+</Notes>
