@@ -18,5 +18,5 @@ Let's run those commands. This pane uses a shell when the live connection is ava
 [click] Here is the same failed check through JSON. A script can read the outcome, the totals and the gate state from named fields. The terminal text and the structured output describe the same unfinished project.
 
 IF ASKED
-The second command uses zsh's pipestatus to preserve verify's exit code through tail. The JSON command keeps stderr out of the pane and uses jq to select the fields shown. The recording drops the second command's leading progress lines; the report text is unchanged.
+The second command uses zsh's pipestatus to preserve verify's exit code through tail. The JSON command keeps stderr out of the pane and uses jq to select the fields shown. The second command discards verify's progress lines, which go to stderr; the report text is unchanged.
 </Notes>

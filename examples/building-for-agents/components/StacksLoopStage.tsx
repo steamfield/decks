@@ -24,7 +24,7 @@ import {
   FIRST_GREEN as recordedFirstGreen,
   STEPS,
   TIMELINE_END,
-} from "../data/06-stacks-loop";
+} from "../data/05-stacks-loop";
 import { CrtFrame } from "./CrtFrame";
 import {
   along,

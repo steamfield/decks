@@ -30,7 +30,7 @@ The command prints the deck's address, normally `http://localhost:3030`. Open it
 
 ## Timing
 
-Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 25 is hidden, so files 01 to 24 play as positions 1 to 24 and files 26 to 29 play as positions 25 to 28. Files 05, 12, 18 and 24 are hand-off slides: one beat each, no clicks. Files 04, 10, 15, 19 and 26 are section title slides: no clicks, and a picture that plays once. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
+Position is where the slide plays in the default cut; File is the slide's filename prefix. Slide 25 is hidden, so files 01 to 24 play as positions 1 to 24 and files 26 to 29 play as positions 25 to 28. Files 06, 12, 18 and 24 are hand-off slides: one beat each, no clicks. Files 04, 10, 15, 19 and 26 are section title slides: no clicks, and a picture that plays once. Minutes come from the plan in `OUTLINE.md` section 8, and Clock is the running total at the end of each slide.
 
 | Position | File | Slide | Clicks | Minutes | Clock |
 |---|---|---|---|---|---|
@@ -38,8 +38,8 @@ Position is where the slide plays in the default cut; File is the slide's filena
 | 2 | 02 | Two users | 2 | 1.25 | 1.75 |
 | 3 | 03 | The thread | 2 | 1.25 | 3 |
 | 4 | 04 | Stacks title | 0 | 0.25 | 3.25 |
-| 5 | 05 | Stacks hand-off | 0 | 0.5 | 3.75 |
-| 6 | 06 | Stacks: the loop | 4 | 1.75 | 5.5 |
+| 5 | 05 | Stacks: the loop | 4 | 1.75 | 5 |
+| 6 | 06 | Stacks hand-off | 0 | 0.5 | 5.5 |
 | 7 | 07 | Stacks: live | 3 | 1 | 6.5 |
 | 8 | 08 | Stacks: the repo tour | 5 | 2.75 | 9.25 |
 | 9 | 09 | Stacks: output for people and agents | 3 | 1.5 | 10.75 |
@@ -70,7 +70,7 @@ Clock checks:
 - Halfway: leaving slide 13 (the foreman daemon) at about 15 minutes.
 - Before the close: leaving position 27 (six habits) at about 29.5 minutes.
 
-Slides 6 and 16 gained clicks after these minutes were planned: slide 6 went from four beats to five and slide 16 from five to eight. Read at 140 words a minute, the script runs about 28 to 30 minutes, so the plan above was short by two to four minutes before the hand-off slides. That estimate was not redone with them, and they add 2.0 minutes to the plan. Time the talk in rehearsal, adjust the clock checks, and decide beforehand which of the beats under "If you are running long" to drop.
+Slides 5 and 16 gained clicks after these minutes were planned: slide 5 went from four beats to five and slide 16 from five to eight. Read at 140 words a minute, the script runs about 28 to 30 minutes, so the plan above was short by two to four minutes before the hand-off slides. That estimate was not redone with them, and they add 2.0 minutes to the plan. Time the talk in rehearsal, adjust the clock checks, and decide beforehand which of the beats under "If you are running long" to drop.
 
 ## The live demos
 
@@ -91,13 +91,13 @@ To recover on any demo slide:
 
 ```bash
 stacks new typescript-cli demo-cli --sandbox --no-launch --offline
-cd demo-cli && stacks verify | tail -5; echo "exit=$pipestatus[1]"
+cd demo-cli && stacks verify 2>/dev/null | tail -5; echo "exit=$pipestatus[1]"
 stacks verify --json 2>/dev/null | jq '{outcome, totals, firstGreen, tamperCheck}'
 ```
 
 The commands run in a fresh temp directory and need no network.
 
-What the audience sees: the first command prints `Created demo-cli from typescript-cli (sandbox).`, the brief's path and word count, and the hand-off line that starts `NEXT STEP FOR THE AGENT`. The second prints the tail of a failed verify report and `exit=5`. The third prints a JSON object with the outcome, the pass, fail and skip totals, firstGreen and tamperCheck. Live, the second command also prints verify's progress lines, which go to stderr, so the command line scrolls off the top of the 17 rows by the time `exit=5` prints. Scroll up in the pane to show it. `stacks verify | tail -5` emits no colour live; the recording tints its fail lines.
+What the audience sees: the first command prints `Created demo-cli from typescript-cli (sandbox).`, the brief's path and word count, and the hand-off line that starts `NEXT STEP FOR THE AGENT`. The second prints the tail of a failed verify report and `exit=5`. The third prints a JSON object with the outcome, the pass, fail and skip totals, firstGreen and tamperCheck. The second command sends verify's progress lines, which go to stderr, to `/dev/null`, so the command line stays on screen above the report. `stacks verify | tail -5` emits no colour live; the recording tints its fail lines.
 
 Each command took under one and a half seconds when it was recorded.
 
@@ -152,16 +152,16 @@ Slides 5, 12, 18 and 24 are hand-off slides. Each shows one prompt with a Copy b
 
 Before the talk:
 
-- VS Code is open with two Claude Code sessions ready: one for slide 5 (and slide 24), one for slide 12 and then slide 18.
-- `~/demo` is empty or does not exist. It ends up holding `horse-tinder-deck` (slide 5) and `horse-tinder` (slide 12).
+- VS Code is open with two Claude Code sessions ready: one for slide 6 (and slide 24), one for slide 12 and then slide 18.
+- `~/demo` is empty or does not exist. It ends up holding `horse-tinder-deck` (slide 6) and `horse-tinder` (slide 12).
 - Ghostty is optional. Use it only to run `rr monitor` when you rerun the command the agent hands back after slide 18.
 - StatGlass is running and has about 30 minutes of history, so the slide 24 prompt has something to read.
 
-At each hand-off slide, click Copy, switch to the app named on the slide, paste, and switch back to the deck. Slide 5 and slide 24 go into the first Claude Code session, and slide 12 into the second. Slide 18 is pasted into that same second session, the one building Horse Tinder, and waits behind the build.
+At each hand-off slide, click Copy, switch to the app named on the slide, paste, and switch back to the deck. Slide 6 and slide 24 go into the first Claude Code session, and slide 12 into the second. Slide 18 is pasted into that same second session, the one building Horse Tinder, and waits behind the build.
 
 The slide 18 work starts only after the Horse Tinder build finishes. With a 15-minute timebox started at about 12 minutes, that is near or after the end of the talk, so the sharded run is most likely something to show during questions. If it does run earlier, it uses only the three remote hosts. The in-deck rr demo on slide 17 needs the hosts free, so an agent running tests through rr during slide 17 would make that demo wait.
 
-At the Decks slide (file 27), switch to VS Code and show the Horse Tinder deck that the slide 5 prompt built. If that session has not finished or verify did not pass, say so and carry on with the slide.
+At the Decks title slide (file 26), switch to the browser and show the Horse Tinder deck that the slide 6 prompt built. If that session has not finished or verify did not pass, say so and carry on with the slide.
 
 The slide 12 prompt builds the Horse Tinder web app in `~/demo/horse-tinder` and opens it in the browser when it finishes. It starts at about 12 minutes with a 15-minute timebox, so it may not be done before the close, and it is the prompt most likely to run long. Show it at the Decks slide beside the pitch deck if it is ready, or after the close during questions.
 

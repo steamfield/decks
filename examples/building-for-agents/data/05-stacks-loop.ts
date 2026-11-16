@@ -1,5 +1,5 @@
 /**
- * Slide 6: the Stacks loop. Sourced in data-sources.md under "Slide 6".
+ * Slide 5: the Stacks loop. Sourced in data-sources.md under "Slide 5".
  *
  * Everything here is one real project: tea-dashboard, scaffolded with
  * `stacks new sveltekit` (stacks 0.5.0) on 2026-10-29 and built by Claude

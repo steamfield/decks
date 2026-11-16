@@ -13,7 +13,7 @@ export const STACKS_HANDOFF: Handoff = {
   product: "stacks",
   where: "CLAUDE CODE · VS CODE",
   kind: "prompt",
-  text: "/ce:build Timebox: 10 minutes. Don't ask me anything: take your recommended option for every decision.\n\nUse the `stacks` CLI to make an investor pitch deck for Horse Tinder, a dating app for horses, in ~/demo/horse-tinder-deck. Three slides, local only. Push the slide design and animation as far as you can. Open it in my browser when it's done.\n",
+  text: "/ce:build Timebox: 15 minutes. Don't ask me anything: take your recommended option for every decision.\n\nUse the `stacks` CLI to make an investor pitch deck for Horse Tinder, a dating app for horses, in ~/demo/horse-tinder-deck. Three slides, local only. Push the slide design and animation as far as you can. Open it in my browser when it's done.\n",
 };
 
 export const FOREMAN_HANDOFF: Handoff = {

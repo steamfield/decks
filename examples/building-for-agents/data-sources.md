@@ -71,7 +71,7 @@ Station order, verbs, names, icons and language chips are `data/products.ts` (se
 | FEATURED | Stacks, foreman, StatGlass | `OUTLINE.md` section 3 (Riley's decision, 2026-11-13) |
 | BRIEF_SECONDS (notes: "about ninety seconds each") | 90 | `FLAG: author-reported` (`OUTLINE.md` section 10) |
 
-## Slide 6: Stacks briefs the agent and checks its work.
+## Slide 5: Stacks briefs the agent and checks its work.
 
 All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git repository; read 2026-11-13).
 
@@ -84,7 +84,7 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 | STEPS | 15 verify steps | `.stacks/manifest.json` `verify[].name`; order from the run records |
 | RUNS | failed at 393 s, green at 501 s, green at 623 s | `.stacks/state/runs.jsonl`: `secondsSinceCreated` and `outcome` of each line; all three have `agent: "claude"`, `scope: "full"` |
 | First run's failed steps | lint, readme-filled, agents-md-filled, claude-readme-filled, harness-doc-filled (5 of 15) | `.stacks/state/runs.jsonl` line 1, `steps[].status` |
-| Failure label on beat 2 | "lint + 4 doc checks" | derived from `FIRST_FAIL.failed` in `data/06-stacks-loop.ts`: lint plus the four `*-filled` steps. Reread in `.stacks/state/runs.jsonl` on 2026-11-16 |
+| Failure label on beat 2 | "lint + 4 doc checks" | derived from `FIRST_FAIL.failed` in `data/05-stacks-loop.ts`: lint plus the four `*-filled` steps. Reread in `.stacks/state/runs.jsonl` on 2026-11-16 |
 | CLI, RECORDED | stacks 0.5.0, 2026-10-29 | `.stacks/manifest.json` `cli`, `createdAt` |
 | "Stacks keeps a hash of the steps outside the project" | claim | `~/Projects/stacks/packages/cli/src/core/verify/tamper.ts`: the manifest's `verifyDigest` plus a state record under the user state dir, keyed by `projectId` |
 | "refuses to run if one was edited" | claim | `VerifyChanged` in `~/Projects/stacks/packages/cli/src/errors.ts` (exit 5); `commands/verify.ts` lines 151 to 157 for the refused `--accept-changes` |
@@ -107,7 +107,7 @@ Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtur
 | JSON result | outcome failed; 2 passed, 8 failed, 12 skipped; firstGreen false; tamperCheck full | fixture step 3 |
 | Notes: "zsh's pipestatus" | claim | fixture step 2 command, `echo "exit=$pipestatus[1]"` |
 
-Step 2 leaves out its ten leading progress lines (`> install` to `> effect-api-reference`, listed in `data/sources/07-stacks-live.md`) so the command and the whole report fit at a readable size. No other line is left out and no line's text is rewritten. The viewport keeps complete exchanges and always includes the newest command. The brief's 4,065 words belong to this capture and CLI version; no card repeats the figure or compares it with slide 6's project.
+Step 2's command sends verify's stderr to `/dev/null` (added 2026-11-16, after the capture, and not captured again), and the recording leaves out the ten leading progress lines that redirect discards (`> install` to `> effect-api-reference`, listed in `data/sources/07-stacks-live.md`) so the command and the whole report fit at a readable size. No other line is left out and no line's text is rewritten. The viewport keeps complete exchanges and always includes the newest command. The brief's 4,065 words belong to this capture and CLI version; no card repeats the figure or compares it with slide 5's project.
 
 ## Slide 8: The Stacks CLI is written with Effect.
 

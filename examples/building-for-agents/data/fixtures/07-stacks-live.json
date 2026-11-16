@@ -17,7 +17,7 @@
       ]
     },
     {
-      "command": "cd demo-cli && stacks verify | tail -5; echo \"exit=$pipestatus[1]\"",
+      "command": "cd demo-cli && stacks verify 2>/dev/null | tail -5; echo \"exit=$pipestatus[1]\"",
       "ms": 1045,
       "lines": [
         "> install",

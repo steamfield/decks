@@ -16,8 +16,10 @@ removed during capture; the fixture otherwise preserves the printed text.
 | JSON result | Step 3: outcome failed; totals 2 passed, 8 failed, 12 skipped; firstGreen false; tamperCheck full | VERIFIED |
 | `RECORDING.tag` | Fixture `recorded` and `tool` values | VERIFIED |
 
-Step 2 omits these leading progress lines to fit its complete command and report
-at a readable size: `> install`, `> lint`, `> typecheck`, `> test`,
+Step 2 was captured as `stacks verify | tail -5` and the recording left out these
+leading progress lines, which verify writes to stderr, to fit its complete command and
+report at a readable size. On 2026-11-16 the command gained `2>/dev/null`, which
+discards the same lines live; the recorded output was not captured again. The lines: `> install`, `> lint`, `> typecheck`, `> test`,
 `> config-logging`, `> binary`, `> schema-conventions`, `> no-standalone-schema`,
 `> effect-testkit`, `> effect-api-reference`. No other output line is omitted
 from the recording data and no line's text is rewritten.

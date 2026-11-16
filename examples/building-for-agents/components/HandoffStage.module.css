@@ -3,7 +3,8 @@
   left: var(--sf-margin-x);
   right: var(--sf-margin-x);
   top: calc(16.1 * var(--sh));
-  bottom: calc(13.6 * var(--sh));
+  /* The panel is as tall as its text; a long prompt may reach this far and no further. */
+  max-height: calc(70.3 * var(--sh));
   display: flex;
   flex-direction: column;
   border: var(--sf-hairline) solid var(--od-border-rule);

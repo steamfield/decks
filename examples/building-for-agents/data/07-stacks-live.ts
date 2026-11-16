@@ -2,8 +2,9 @@
  * Slide 07: recorded Stacks shell demo, from fixtures/07-stacks-live.json.
  * Captured 2026-11-16 on a 24x92 zsh pseudo-terminal with stacks 0.12.0.
  * Source record: sources/07-stacks-live.md; data-sources.md row supplied in the hand-off.
- * Lines wrap at the demo grid without changing their text. Step 2 drops its ten leading
- * progress lines so the command and complete report fit at presentation size.
+ * Lines wrap at the demo grid without changing their text. Step 2 sends verify's ten
+ * progress lines (stderr) to /dev/null so the command and complete report fit. The capture
+ * was made without that redirect and the lines were left out of it; see the source record.
  */
 import { type LiveDemo, paneGrid } from "../components/LiveDemoStage";
 import type { TermRecording } from "../components/LiveTerm";

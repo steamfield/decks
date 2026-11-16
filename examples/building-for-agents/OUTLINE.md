@@ -121,7 +121,7 @@ If building the deck exposes a gap in shared tooling (TypeScript highlighting in
 
 The source is `~/Projects/steamfield/DESIGN.md` and the tokens at the top of `~/Projects/steamfield/src/styles/global.css`. Read both. The site is an 80s arcade and synthwave poster built from real data: near-black violet sky, a neon grid to the horizon, the Steamfield mark as a setting sun, CRT monitors and pixel type. The deck borrows that costume and turns it down for a projector. The nostalgia goes on the frame; the content stays crisp and readable from the back row.
 
-The design run writes `DESIGN.md` in the deck directory with the full token map, in the shape of `examples/texas-2026/DESIGN.md`. The cover and slide 6 are the approval samples: build those two first, screenshot them with `bun run shot`, and get Riley's approval before any other stage is styled.
+The design run writes `DESIGN.md` in the deck directory with the full token map, in the shape of `examples/texas-2026/DESIGN.md`. The cover and slide 5 are the approval samples: build those two first, screenshot them with `bun run shot`, and get Riley's approval before any other stage is styled.
 
 ### 6.1 Color
 
@@ -222,7 +222,7 @@ Riley asked that the existing landing-page animations be used. These are the one
 | `~/Projects/stacks-api/apps/web/src/islands/home-cli-script.ts` and `islands/blog/scenarios/*.ts` (`verify-loop`, `tamper-check`, `new-project`, `brief-preview`) | Scripted agent sessions with the stacks CLI | The scenario files are data (`DemoTurn[]`) | Slides 6, 9, E1 |
 | `~/Projects/decks/site/src/components/landing/DeckPlayer.tsx`, fixture `site/fixtures/hook-denial.json` | A deck stepping through beats; a recorded hook denial | The fixture | Slide 27 |
 
-New animated diagrams this deck builds because none exists: the Stacks loop with its real verify timeline (slide 6), the foreman process diagram (slide 13), the held-question sequence diagram (slide 14), the Rust to TypeScript sample pipeline (slide 21), the Transport fork (slide 22) and the habits matrix (slide 28).
+New animated diagrams this deck builds because none exists: the Stacks loop with its real verify timeline (slide 5), the foreman process diagram (slide 13), the held-question sequence diagram (slide 14), the Rust to TypeScript sample pipeline (slide 21), the Transport fork (slide 22) and the habits matrix (slide 28).
 
 ## 8. The arc
 
@@ -236,8 +236,8 @@ The numbers below are filename prefixes. A hidden slide is dropped before number
 | 2 | `02-two-users` / `TwoUsersStage` | Every tool I ship has two users. | | 3 | 1.25 |
 | 3 | `03-thread` / `ThreadStage` | I ship a change with five tools I built. | | 3 | 1.25 |
 | 4 | `04-stacks-title` / `SectionStage` | Stacks starts a project an agent can finish. | Start | 1 | 0.25 |
-| 5 | `05-stacks-handoff` / `HandoffStage` | One prompt scaffolds a deck and writes it. | Start | 1 | 0.5 |
-| 6 | `06-stacks-loop` / `StacksLoopStage` | Stacks hands the agent a brief and a finish line. | Start | 5 | 1.75 |
+| 5 | `05-stacks-loop` / `StacksLoopStage` | Stacks hands the agent a brief and a finish line. | Start | 5 | 1.75 |
+| 6 | `06-stacks-handoff` / `HandoffStage` | One prompt scaffolds a deck and writes it. | Start | 1 | 0.5 |
 | 7 | `07-stacks-live` / `LiveDemoStage` | Stacks gives a failed check an exit code. | Start | 4 | 1.0 |
 | 8 | `08-stacks-tour` / `StacksTourStage` | An Effect CLI is commands, services and one error table. | Start | 6 | 2.75 |
 | 9 | `09-stacks-output` / `StacksOutputStage` | Stacks prints the same result three ways. | Start | 4 | 1.5 |
@@ -267,7 +267,7 @@ The headlines record each slide's claim. The wording is a draft and has to pass 
 Cross-slide morphs (only adjacent slides share a name; add each name in both places in `styles/index.css`, per `story-stage.md`):
 
 - `vt-thread-rail`: every content slide to the next. The rail holds; the marker slides.
-- `vt-thread-row` (slide 3 to slide 6): the five stations collapse down into the rail.
+- `vt-thread-row` (slide 3 to slide 5): the five stations collapse down into the rail.
 - `vt-host-cards` (slide 16 to slide 20): rr's three host boxes become the three `rr monitor` cards.
 
 ## 9. Stretching to 40 minutes
@@ -671,7 +671,7 @@ Pre-talk checklist items the research turned up, kept in the guide: run any `sta
 
 Work in a git worktree under `.claude/worktrees/`. If the build is delegated through foreman or `codex-delegate`, use the wave plan and contract templates in `.claude/skills/building-a-deck/contracts/README.md`; two writers never touch the same files.
 
-Wave 0, design (one agent, then Riley's approval). Scaffold the deck. Write `theme.json`, `styles/tokens.css`, `components/design.ts`, `DESIGN.md`. Build `NightDriveField`, `ThreadRail`, `NamePlate`, `LangChip`, `EvidenceTag`, `CrtFrame`. Build slide 1 and slide 6 completely. Screenshot both at every beat and stop for approval.
+Wave 0, design (one agent, then Riley's approval). Scaffold the deck. Write `theme.json`, `styles/tokens.css`, `components/design.ts`, `DESIGN.md`. Build `NightDriveField`, `ThreadRail`, `NamePlate`, `LangChip`, `EvidenceTag`, `CrtFrame`. Build slide 1 and slide 5 completely. Screenshot both at every beat and stop for approval.
 
 Wave 1, shared parts and data (parallel, disjoint files). `RepoTree`; `CodePane` with `scripts/tokenize.mjs` and the excerpt drift test; `TermPane`; `AgentPane`; `PacketPath`. Port the simulations in section 7 into `data/` with provenance headers and a unit test per port that pins a few scene times against the source's own values. Write `data/products.ts` and the first pass of `data-sources.md`.
 
@@ -692,7 +692,7 @@ Wave 4, review. A fresh agent runs the prose review. The `fact-checking-a-deck` 
 - The prose review by an agent that did not write the deck has no open findings.
 - Stepping backward through every slide replays each beat in reverse with nothing left behind.
 - A timed read-through of the notes lands between 27 and 29 minutes for the 30-minute cut.
-- The cover and slide 6 were approved by Riley before the rest was styled.
+- The cover and slide 5 were approved by Riley before the rest was styled.
 
 ## 15. Open items for Riley
 

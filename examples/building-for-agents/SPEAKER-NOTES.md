@@ -80,29 +80,7 @@ A section title: the verb Start, the name Stacks, one sentence, and a pixel-art 
 - The next slides show the brief it writes and the checks the agent must pass.
 - Let the audience picture finish before advancing.
 
-## 05. One prompt scaffolds a deck and writes it.
-
-Clicks: 0
-
-### What the slide shows
-
-A prompt for Claude Code in VS Code, with a Copy button. It is a hand-off slide: no clicks, and nothing runs in the deck. The prompt text is in `data/handoffs.ts`.
-
-Source: data-sources.md, Demo hand-offs.
-
-### Say
-
-- Copy this, switch to VS Code, paste into Claude Code, come back.
-- The prompt names the tool and the job, nothing else. Claude finds the decks stack, and Stacks tells it what to do next.
-- It is done when stacks verify passes. We leave it running.
-- We look at the result when we reach Decks.
-
-### If asked
-
-- The ten-minute timebox is an instruction to the agent, not a limit the tool enforces.
-- The prompt has no commands in it. The scaffold's brief carries the steps and the finish line.
-
-## 6. Stacks briefs the agent and checks its work.
+## 5. Stacks briefs the agent and checks its work.
 
 Clicks: 4
 
@@ -110,7 +88,7 @@ Clicks: 4
 
 The top half is a diagram of how Stacks works. The monitor underneath shows the verify runs of tea-dashboard, a SvelteKit project scaffolded with stacks 0.5.0 on October 29, 2026 and built by Claude Code. Times are seconds since the scaffold command. The failed run and the passing run each get their own click.
 
-Source: data-sources.md, Slide 6.
+Source: data-sources.md, Slide 5.
 
 ### Say
 
@@ -130,6 +108,28 @@ Stacks starts a project. I pick a stack, which is a Markdown recipe, and run one
 - Which agents does it start? Claude Code, Codex, OpenCode, Cursor and Copilot. When it is already running inside an agent, or in CI, it prints the prompt and starts nothing.
 - Which doc checks failed? readme-filled, agents-md-filled, claude-readme-filled and harness-doc-filled.
 
+## 6. One prompt scaffolds a deck and writes it.
+
+Clicks: 0
+
+### What the slide shows
+
+A prompt for Claude Code in VS Code, with a Copy button. It is a hand-off slide: no clicks, and nothing runs in the deck. The prompt text is in `data/handoffs.ts`.
+
+Source: data-sources.md, Demo hand-offs.
+
+### Say
+
+- Copy this, switch to VS Code, paste into Claude Code, come back.
+- The prompt names the tool and the job, nothing else. Claude finds the decks stack, and Stacks tells it what to do next.
+- It is done when stacks verify passes. We leave it running.
+- We look at the result when we reach Decks.
+
+### If asked
+
+- The fifteen-minute timebox is an instruction to the agent, not a limit the tool enforces.
+- The prompt has no commands in it. The scaffold's brief carries the steps and the finish line.
+
 ## 7. Stacks gives a failed check an exit code.
 
 Clicks: 3
@@ -138,7 +138,7 @@ Clicks: 3
 
 One terminal pane fills the width under the headline. Each beat's one-line caption sits in the pane's bottom band, and three command cards sit above the thread rail. Each card has a play button, and the button on the next command advances the slide one click, the same as the arrow key. By default the pane plays a recording made on November 16 with stacks 0.12.0 in an empty temp directory. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
 
-The recording drops ten leading progress lines from the second command's output; the report text is unchanged.
+The second command discards verify's progress lines, which go to stderr; the report text is unchanged.
 
 Source: data-sources.md, Slide 7.
 
@@ -156,7 +156,7 @@ Let's run those commands. This pane uses a shell when the live connection is ava
 
 - Why the pipestatus? The second command pipes verify through tail, and zsh's pipestatus keeps verify's exit code.
 - What does the JSON command drop? It sends stderr away from the pane and uses jq to select the four fields shown.
-- Is the recording trimmed? It drops the second command's ten leading progress lines. The report text is unchanged.
+- Is the output trimmed? The second command sends verify's ten progress lines to /dev/null. The report text is unchanged.
 
 ## 8. The Stacks CLI is written with Effect.
 
