@@ -3,6 +3,8 @@ import "./settle";
 
 export { CodeBlock } from "./code-block";
 export { CountUp } from "./count-up";
+export { MagicMove } from "./magic-move";
+export { Mark, type MarkKind } from "./mark";
 export { Morph } from "./morph";
 export {
   Draw,

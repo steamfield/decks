@@ -13,6 +13,7 @@ export const stepNames = new Set([
   "Highlight",
   "CountUp",
   "Draw",
+  "Mark",
 ]);
 
 const parser = unified().use(remarkParse).use(remarkMdx);
@@ -234,7 +235,7 @@ export function countClicks(
           (attribute) => attribute.type === "mdxJsxAttribute" && attribute.name === "until",
         );
         const until =
-          hasUntil && ["Step", "Stagger", "Highlight", "Draw"].includes(motion)
+          hasUntil && ["Step", "Stagger", "Highlight", "Draw", "Mark"].includes(motion)
             ? integerAttribute(node, "until", file)
             : undefined;
         if (until !== undefined && until <= at)

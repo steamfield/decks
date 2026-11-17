@@ -56,6 +56,7 @@ export { StoryLink } from "./story/story-link";
 export { easeHeight, entrance, fadeIn, fadeOutInPlace, RISE, riseIn } from "./story/story-motion";
 export { STAGE, StoryStage } from "./story/story-stage";
 export { prefersReducedMotion, resolvePosition } from "./story/timeline-position";
+export { LiveTerm } from "./term/live-term";
 export { scaleChartTheme, slideChartAnimation, slideChartTheme } from "./theme/chart-theme";
 export {
   DRAW,

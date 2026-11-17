@@ -445,7 +445,7 @@ Kit CSS, deck CSS, tests and tooling select on these and nothing else from the f
 | `data-deck-transition` | `<html>`, during a transition | a slide transition name, or `step` |
 | `#deck-root` | the React mount node | |
 | `#deck-frame` | the scaled canvas element of the main view | sets `--deck-w`, `--deck-h`, `--deck-scale`, `--deck-text-scale` |
-| `#deck-print` | the print container. Not built yet (planned for 1.0.0-rc, with the print view) | |
+| `#deck-print` | the print container | |
 | `data-step-state` | each step primitive's element | `before`, `current`, `after`, `gone` |
 | `data-step-enter`, `data-step-exit` | the same element | the preset names (section 5.1) |
 | `data-deck-layer` | a layer's element inside a slide root | `above`, `below`, `credit` |
@@ -453,10 +453,7 @@ Kit CSS, deck CSS, tests and tooling select on these and nothing else from the f
 | `data-deck-layout` | a layout component's element | `center`, `cover`, `section`, `two-col`, `image-side` |
 | `data-line`, `data-line-state` | a line of a code block | the line number; `active`, `dim` |
 | `data-line-number` | a numbered line of a code block | the number shown |
-
-The `print` values exist in the types and the hash codec: `#/print` sets
-`data-deck-view="print"`, but no view renders slides in the `print` context yet, and the play
-view is shown. The print view is not built yet (planned for 1.0.0-rc).
+| `.rd-tray` | the play view's control tray (section 4.5) | |
 
 Framework UI classes are prefixed `rd-` and live in `@layer react-decks`. The framework ships
 no CSS reset.
@@ -786,8 +783,7 @@ Accepted limits:
 
 ### Views and keys
 
-`Deck` renders `PlayView`, `PresenterView` or `OverviewView` by `DeckState.view` (the print
-view is not built yet, planned for 1.0.0-rc; `print` renders `PlayView` until then) and sets `data-deck-motion` to `live` in the
+`Deck` renders `PlayView`, `PresenterView`, `OverviewView` or `PrintView` by `DeckState.view` and sets `data-deck-motion` to `live` in the
 play view and `instant` in every other view. `Deck` keeps two things in memory above the
 view switch: the timer (below) and the home view, the last of `play` and `presenter` shown.
 When the view at mount is `overview`, the home view is `presenter` if `window.name` starts
@@ -801,6 +797,7 @@ Keys added to the Phase 2 table:
 | `Escape` | In the overview: `setView(home)`. The position is untouched, clicks included. |
 | `p` | In the play view, when not embedded: opens the presenter window. |
 | `f` | In every view: toggles fullscreen on `document.documentElement`. |
+| `g` | In the play or presenter view, when not embedded: opens the go-to dialog (section 4.5). |
 
 The presenter window: `const w = window.open("", "react-decks-presenter:" + channelId,
 "popup,width=1280,height=800")`. The `popup` feature asks the browser for a separate window
@@ -1685,6 +1682,186 @@ layouts use the extra canvas: columns widen, centered content stays centered.
 | `ImageSide side="right"` | The image touches the top, right and bottom edges; the text is within the padding on the left. |
 | `Cover`, `Section` | Content is inside the padding at all three window shapes. |
 | A deck defines `components/Center.tsx` | Its component renders. |
+
+## 4.5 Control tray, go-to dialog, `Toc` and `Link` (Final)
+
+### Control tray
+
+The play view renders a control tray in its bottom-left corner, outside the scaled canvas. It
+is absent when the deck is `embedded` or `bridge`, and in every view other than play. It is a
+`div` with `role="toolbar"` and `aria-label="Deck controls"`, class `rd-tray`, holding these
+buttons in order, each a `<button type="button">` with an `aria-label` and an inline SVG icon
+(`aria-hidden`):
+
+| Control | Accessible name | Shown when | Action |
+| --- | --- | --- | --- |
+| Previous | "Previous" | always; disabled on the deck's first frame | `prev` |
+| Next | "Next" | always; disabled on the deck's last frame | `next` |
+| Counter | "Go to slide" (its text is "n / total") | always | opens the go-to dialog |
+| Overview | "Overview" | always | the `o` key's action |
+| Presenter | "Open presenter" | always (the tray is never shown embedded) | the `p` key's action |
+| Fullscreen | "Enter fullscreen" or "Exit fullscreen", by `document.fullscreenElement` | `document.fullscreenEnabled` | the `f` key's action |
+| Text size | "Smaller text", "Larger text" | always | `stepTextScale(name, -1)`, `stepTextScale(name, 1)` |
+
+The `f`, `o` and `p` actions live in `navigation/deck-actions.ts`, called by both the keys and
+the tray, so their rules (section 4.2) hold for both.
+
+The tray is hidden until wanted, as Slidev's is: it sits in a bottom-left hit area (padding
+around it), at `opacity: 0`, and `:hover` or `:focus-within` on the hit area raises it to 1
+over `--deck-dur-base`. On a touch device a tap on the corner reveals it the same way. Over
+the tray the cursor shows even when `data-deck-idle` hides it elsewhere. When the pointer
+leaves the tray, a focused tray button is blurred, so `Space` and `Enter` (ignored on a
+focused button, section 4.2) advance the talk again. Colours come from the `--rd-ui-*`
+properties the other views use, derived from `currentColor`.
+
+### Go-to dialog
+
+`g` in the play or presenter view, when not embedded, and the tray's counter open a modal
+native `<dialog>` with `aria-label="Go to slide"`, holding a search input (label "Slide") and a
+list (`role="listbox"`) of every slide as "n  title" (`role="option"`). The input is focused
+on open, and deck keys do not act while the dialog is open. Typing filters the list: a number
+matches the slide with that number, other text matches a case-insensitive substring of the
+title. `ArrowDown` and `ArrowUp` move the selection (`aria-selected`), starting on the first
+match; `Enter` or a click on an option calls `go(slide)` and closes the dialog; `Escape` or a
+click outside closes it with the position unchanged. Whether it is open is held beside the
+store (`navigation/go-to-state.ts`, `useGoTo()`), never synced and never in the URL.
+
+### `Toc` and `Link`
+
+```ts
+/** A link to slide `to`, click 0. */
+export function Link(props: { to: number; children?: ReactNode }): ReactElement;
+/** Every slide's title as a `Link`, in a list; the current slide has `aria-current="page"`. */
+export function Toc(): ReactElement;
+```
+
+Both are default slide components (section 6.3). In the `slide` and `presenter` contexts a
+`Link` is an `<a>` whose `href` is the slide's formatted hash and whose click calls
+`go(to)`; a `to` outside the deck throws naming it. In any other context (`preview`,
+`overview`, `print`) it renders its children in a `span`, so a thumbnail never navigates.
+
+| Situation (browser test) | Outcome |
+| --- | --- |
+| The pointer moves to the bottom-left corner of the play view | The tray becomes visible; elsewhere it is not. |
+| A click on the tray's Next | Both the play window and the presenter advance one click. |
+| A click on the counter, typing "3", `Enter` | The deck is on slide 3, click 0, and the URL says so. |
+| A tray button clicked, the pointer leaves the tray, `Space` | The deck advances. |
+| `?embedded` | No tray; `g` does nothing. |
+
+## 5.3 `Mark` (Final)
+
+```ts
+export type MarkKind = "underline" | "circle" | "box" | "strike" | "cross" | "bracket";
+/** A hand-drawn mark around its children, drawn at click `at` and removed at `until`. */
+export function Mark(props: { kind?: MarkKind; at: number; until?: number; color?: string; children?: ReactNode }): ReactElement;
+```
+
+A step primitive (section 5.1) and a default slide component; `kind` defaults to `underline`,
+`color` to `currentColor` and takes any CSS colour, including a theme token's `var()`. The
+root is an inline-block `span` with the step attributes (`data-step-state` from `at` and
+`until`); its text is always visible, never `inert` or `aria-hidden`, like `Highlight`. The
+mark is an `aria-hidden` SVG positioned over the root, with a `viewBox` normalised per kind
+and `preserveAspectRatio="none"`, so it fits any box without measuring layout; its paths
+carry `vector-effect="non-scaling-stroke"` and `pathLength="1"`. The paths come from the
+`roughjs` generator (no DOM) with a seed fixed per kind, so every render context shows the
+same paths. The drawing is the `Draw` motion: `stroke-dashoffset` from 1 to 0 over
+`--deck-dur-slow` with `--deck-ease-draw` in the `current` and `after` states, back to 1 in
+`before` and `gone`. Going back un-draws; motion `instant` or a context other than `slide`
+shows the state's end pose. `underline` sits under the text, `circle` and `box` around it
+with a small outset, `strike` through its middle, `cross` two diagonals, `bracket` a left and
+right bracket. The static click count counts `Mark` like `Highlight` (`max(at, until)`).
+
+| Situation (browser test) | Outcome |
+| --- | --- |
+| A `circle` at click 2: step to 2, then back to 1 | The stroke draws in, then un-draws; the text is visible throughout. |
+| The same slide in print | The mark is drawn. |
+
+## 6.7 Code morphing (Final)
+
+Slidev's syntax: a fence of four or more backticks with the language `md` and the meta
+`magic-move`, optionally followed by a quoted title and an options object `{at: N, lines:
+true}`, holding ordinary code fences. Each inner fence is one step and may carry its own
+line ranges (`{1|2-3|all}`, as in section 6.3) and `{lines: false}`; text between the inner
+fences is ignored.
+
+At compile, the node package replaces the fence with a `MagicMove` element (a default slide
+component from the motion package) whose props carry every step's keyed tokens from
+`@shikijs/magic-move/core` (`codeToKeyedTokens` with the deck's Shiki highlighter and the CSS
+variables theme of section 6.3), the start click and each step's ranges. A malformed fence
+(no inner fences, an unknown option, a range outside its step) is a `DeckError` naming the
+slide file and line. The static click count is `at + Σ max(1, ranges(step)) − 1`: the first
+range of each step shows as the morph lands on it, and each further range is a click.
+
+`MagicMove` renders with `ShikiMagicMovePrecompiled` from `@shikijs/magic-move/react`. It
+animates only on a forward step into the next code step while its slide is the active one in
+the `slide` context with motion `live`; every other change (going back, a jump, motion
+`instant`, any other context, the first render) shows the click's code with no animation.
+Line highlighting within a step uses the code block's `data-line-state` (section 6.3).
+
+| Situation (browser test) | Outcome |
+| --- | --- |
+| A three-step fence: step through, back, reload mid-way | Each click shows its step's code and highlighted lines; reload shows the same. |
+| Print | The last step's code. |
+
+## 6.8 Live terminal, server (Final)
+
+`decks dev <deck> --live-term` turns on a dev-server plugin that runs real shells for
+`LiveTerm` panes (section 7.2). Without the flag, in `build`, `export`, `shot` and every
+other command, no shell exists and panes show their fallback. `deck.config.ts` may name
+working directories: `term: { dirs?: Record<string, string> }` (paths relative to the deck);
+a pane's `cwd` is `"temp"` (a fresh temporary directory) or a key of `dirs`, and any other
+value is an error naming the pane. The browser never sends a path.
+
+The plugin refuses to start, logging one line naming why, when the server is not bound to a
+loopback address or the platform is Windows (the pty helper is Python's standard `pty`
+module). Neither check is configurable. Sessions run `zsh -d` with a private `ZDOTDIR` (the
+package's `term/zsh/.zshrc`: a prompt that prints the OSC 133 marker, and the blank line
+before each prompt), through `term/shell_pty.py`, in the dev server's environment without the
+package runner's additions (`npm_*`, `NODE`, `NODE_OPTIONS`, `INIT_CWD`, and
+`node_modules/.bin` entries on `PATH`). The two asset files ship in the package's `dist/`.
+
+The wire contract is core's `term-protocol.ts`, as custom events on Vite's HMR socket. The
+session rules of RFC 0008 hold: one shell per pane id; an attach replays at most the last
+200 KB; a command waits in an ordered queue until a prompt marker; the command is typed and
+its carriage return follows 600 ms later; output is paced on the client. One rule changed so
+that several audience windows can share a pane: the server holds each pane's position, and a
+window reports `TermPosition` (its click, and whether its slide just became active) instead
+of sending steps.
+
+| Position report, server at click p | Result |
+| --- | --- |
+| `click = p + 1` | Command `click` is queued; position becomes `click`. |
+| `click = p` | Nothing (a second window reporting the same click). |
+| `click = 0`, and `p > 0` or `entered`, with anything run or typed in the session | The session resets; position 0. |
+| any other `click` (a jump, a step back) | Position becomes `click`; nothing runs. |
+
+## 7.2 Live terminal, pane (Final)
+
+```ts
+export function LiveTerm(props: { pane: TermPaneSpec; click: number; fallback: ReactNode }): ReactElement;
+```
+
+`LiveTerm` renders `fallback` (the deck's recording, in whatever form the deck chooses) unless
+the pane is eligible: the dev server runs with `--live-term` (the plugin answered the attach),
+the view is play, the deck is not embedded, the slide is active in the `slide` context, and
+motion is `live`. When eligible it lazy-loads `XtermHost` and shows the shell, reporting its
+position on every click change. A shell that fails to start, exits or loses its socket
+returns the pane to `fallback` with a short reason in an element with `role="status"`;
+nothing throws into the slide. Clicking into the pane gives it the keys; `Escape` returns them
+to the deck. The grid is the pane's `rows` and `cols`, never resized; the host snaps the font
+size so a glyph advance is a whole device pixel at the slide's scale and turns ligatures off.
+Theme colours and font come from CSS custom properties (`--deck-term-*`) a deck sets; the kit
+ships no skin. Output arriving more than three lines in a frame is paced to about 30 lines a
+second and never more than 1.5 s behind; a replay, a typed key and a command's echo are not
+paced. A full-screen program (a TUI) is not supported: its replay from the tail is wrong.
+
+| Situation (browser test) | Outcome |
+| --- | --- |
+| `decks dev` without `--live-term` | The pane shows its fallback. |
+| `--live-term`, next on the pane's slide | The command is typed, then runs, in the pane. |
+| Two play windows and a presenter, next from the presenter | The command runs once. |
+| The live pane at device pixel ratio 1 and 2 | The grid fills the pane with whole-pixel glyphs. |
+| The shell exits | The fallback shows with the reason. |
 
 ## 6.6 Errors (Final)
 

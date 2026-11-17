@@ -3,11 +3,13 @@ import { useEffect } from "react";
 import { defaultKeybindingsHandlerIgnore, type KeybindingsMap, tinykeys } from "tinykeys";
 import { stepTextScale } from "../canvas/text-scale";
 import { useDeckContext, useDeckSelector, usePresentation } from "../hooks";
+import { useGoTo } from "./go-to-state";
 
 export function useDeckKeys() {
   const { source, store } = useDeckContext();
   const view = useDeckSelector((state) => state.view);
   const { home } = usePresentation();
+  const { show: showGoTo } = useGoTo();
   useEffect(() => {
     const bind = (action: NavAction) => (event: KeyboardEvent) => {
       event.preventDefault();
@@ -73,6 +75,12 @@ export function useDeckKeys() {
         for (const key of ["Minus", "NumpadSubtract"]) keys[`${mod}+${key}`] = size(-1);
         keys[`${mod}+Digit0`] = size(0);
       }
+      if (!store.getState().embedded) {
+        keys.g = (event) => {
+          event.preventDefault();
+          showGoTo();
+        };
+      }
       Object.assign(keys, {
         ArrowRight: bind({ type: "next" }),
         Space: bind({ type: "next" }),
@@ -93,5 +101,5 @@ export function useDeckKeys() {
           event.target instanceof Element &&
           event.target.closest("button") !== null),
     });
-  }, [view, home, source, store]);
+  }, [view, home, source, store, showGoTo]);
 }

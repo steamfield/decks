@@ -24,3 +24,20 @@ export {
   syncChannelId,
   type Transport,
 } from "./sync";
+export {
+  TERM_ATTACH,
+  TERM_DATA,
+  TERM_GONE,
+  TERM_INPUT,
+  TERM_POSITION,
+  TERM_READY,
+  TERM_STATE,
+  type TermAttach,
+  type TermData,
+  type TermGone,
+  type TermInput,
+  type TermPaneSpec,
+  type TermPosition,
+  type TermReady,
+  type TermState,
+} from "./term-protocol";
