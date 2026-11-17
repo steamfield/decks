@@ -2,6 +2,28 @@ import { expect, type Page } from "@playwright/test";
 import { settled } from "./fixtures/deck-driver";
 import { test } from "./fixtures/live-term";
 
+test("a plain pane draws readable default text and preserves authored colours", async ({
+  page,
+  liveServer,
+}) => {
+  await page.goto(`${liveServer.url}#/2`);
+  const terminal = page.getByRole("application", { name: "Live terminal" });
+  const prompt = terminal.locator(".xterm-rows span").filter({ hasText: "$" }).first();
+  const background = terminal.locator("..");
+  await expect(prompt).toHaveCSS("color", "rgb(255, 255, 255)");
+  await expect(background).toHaveCSS("background-color", "rgb(0, 0, 0)");
+
+  await page.goto(`${liveServer.url}#/1`);
+  await expect(page.getByLabel("Terminal status")).toHaveText("Live");
+  await page.addStyleTag({
+    content:
+      '[aria-label="Plain terminal"] { --deck-term-foreground: rgb(210, 220, 230); --deck-term-background: rgb(20, 30, 40); }',
+  });
+  await page.goto(`${liveServer.url}#/2`);
+  await expect(prompt).toHaveCSS("color", "rgb(210, 220, 230)");
+  await expect(background).toHaveCSS("background-color", "rgb(20, 30, 40)");
+});
+
 async function expectGrid(page: Page, dpr: number) {
   await settled(page);
   const terminal = page.getByRole("application", { name: "Live terminal" });
