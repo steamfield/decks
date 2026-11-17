@@ -1760,12 +1760,15 @@ A step primitive (section 5.1) and a default slide component; `kind` defaults to
 `color` to `currentColor` and takes any CSS colour, including a theme token's `var()`. The
 root is an inline-block `span` with the step attributes (`data-step-state` from `at` and
 `until`); its text is always visible, never `inert` or `aria-hidden`, like `Highlight`. The
-mark is an `aria-hidden` SVG positioned over the root, with a `viewBox` normalised per kind
-and `preserveAspectRatio="none"`, so it fits any box without measuring layout; its paths
-carry `vector-effect="non-scaling-stroke"` and `pathLength="1"`. The paths come from the
-`roughjs` generator (no DOM) with a seed fixed per kind, so every render context shows the
-same paths. The drawing is the `Draw` motion: `stroke-dashoffset` from 1 to 0 over
-`--deck-dur-slow` with `--deck-ease-draw` in the `current` and `after` states, back to 1 in
+mark is an `aria-hidden` SVG positioned over the root. Its paths are generated at the root's
+own layout size (`offsetWidth` and `offsetHeight`, which the canvas scale does not change),
+read in a layout effect and kept current with a `ResizeObserver`; the `viewBox` is that size
+plus the kind's outset, so strokes keep their width and dashes measure true. (A normalised
+`viewBox` stretched with `preserveAspectRatio="none"` and `non-scaling-stroke` was tried and
+breaks `pathLength` dashes in Chromium.) The paths come from the `roughjs` generator (no DOM)
+with a seed fixed per kind, so equal boxes show the same paths in every render context; until
+the first measurement no paths render. Each path has `pathLength="1"`. The drawing
+is the `Draw` motion: `stroke-dashoffset` from 1 to 0 over `--deck-dur-slow` with `--deck-ease-draw` in the `current` and `after` states, back to 1 in
 `before` and `gone`. Going back un-draws; motion `instant` or a context other than `slide`
 shows the state's end pose. `underline` sits under the text, `circle` and `box` around it
 with a small outset, `strike` through its middle, `cross` two diagonals, `bracket` a left and
