@@ -4,6 +4,7 @@ import { type PluggableList, unified } from "unified";
 import { DeckError } from "../dev/errors";
 import { PUBLIC_SPECIFIERS } from "../dev/specifiers";
 import { parseCodeOptions } from "./code-options";
+import { isMagicMove, parseMagicMove } from "./magic-move";
 
 export const stepNames = new Set([
   "Step",
@@ -27,6 +28,7 @@ interface ClickNode {
   name?: unknown;
   value?: unknown;
   meta?: string | null;
+  lang?: string | null;
   attributes?: Element["attributes"];
   data?: unknown;
   children?: ClickNode[];
@@ -191,6 +193,19 @@ export function countClicks(
     )
       return;
     if (node.type === "code" && typeof node.value === "string") {
+      if (isMagicMove(node.lang, node.meta)) {
+        const move = parseMagicMove(
+          node.value,
+          node.meta ?? "",
+          file,
+          node.position?.start.line ?? 1,
+        );
+        total = Math.max(
+          total,
+          move.at + move.steps.reduce((sum, step) => sum + Math.max(1, step.ranges.length), 0) - 1,
+        );
+        return;
+      }
       const { steps, at } = parseCodeOptions(node.meta ?? "", node.value.split("\n").length, file);
       if (steps) total = Math.max(total, at + steps.length - 1);
     }
