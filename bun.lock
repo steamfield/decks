@@ -60,7 +60,6 @@
         "@fontsource/press-start-2p": "5.3.0",
         "@fontsource/vt323": "5.3.0",
         "@steamfield/decks": "workspace:*",
-        "@xterm/xterm": "6.0.0",
         "postprocessing": "6.39.6",
         "react": "19.3.1",
         "react-dom": "19.3.1",

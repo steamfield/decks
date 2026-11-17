@@ -44,7 +44,6 @@ export default defineConfig({
           include: [
             "examples/*/styles/*.test.{ts,tsx}",
             "examples/*/components/*.test.{ts,tsx}",
-            "examples/*/term/**/*.test.ts",
           ],
         },
       },

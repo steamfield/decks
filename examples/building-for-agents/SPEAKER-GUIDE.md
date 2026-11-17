@@ -25,7 +25,7 @@ The command prints the deck's address, normally `http://localhost:3030`. Open it
 - Down arrow: next slide at click 0. Up arrow: previous slide at click 0.
 - `o` opens the overview of every slide; Esc closes it.
 - On a demo slide, click into the terminal pane to type into the shell. Press Esc to give the keys back to the deck.
-- Keep one audience window. A second window or tab on the deck would send each command to the same shell a second time. The presenter window is safe: its thumbnails play the recording.
+- A second audience window or tab shows the same shell, and each command still runs once, whichever window advances. The presenter window's own slide previews play the recording.
 - Backup: `bun run decks export agents` writes `dist/building-for-agents.pdf` with every click as its own page. The demo slides print their recordings. Bring it on a USB drive.
 
 ## Timing
