@@ -1,13 +1,13 @@
 ## Slide 8: The Stacks CLI is written with Effect.
 
-All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
+From `~/Projects/stacks/packages/cli`. The counts and tree rows were reread on 2026-11-17 at commit 87de4915 (branch `refactor/cli-structure`, after the CLI's source was regrouped into folders); everything else was read 2026-11-13 at commit a952e96, and the code excerpts stay pinned there.
 
 | Figure | Value | Source |
 |---|---|---|
-| SRC_FILES | 203 | `find src -name '*.ts' \| wc -l` |
-| SRC_LINES | 24,386 | `find src -name '*.ts' \| xargs cat \| wc -l` |
-| TEST_FILES (notes) | 209 | `find tests -name '*.test.ts' \| wc -l` |
-| Tree rows | bin.ts, main.ts, cli.ts, runtime.ts, errors.ts, commands/, services/, platform/, schemas/, core/, tests/ | `ls src` and `ls`; the notes paraphrase `~/Projects/stacks/AGENTS.md`'s architecture map |
+| SRC_FILES | 231 | `find src -name '*.ts' \| wc -l` (87de4915) |
+| SRC_LINES | 29,402 | `find src -name '*.ts' \| xargs cat \| wc -l` (87de4915) |
+| TEST_FILES (notes) | 222 | `find tests -name '*.test.ts' \| wc -l` (87de4915) |
+| Tree rows | bin.ts, main.ts, cli.ts, runtime.ts, errors.ts, commands/, services/, platform/, schemas/, core/, tests/ | `ls src` and `ls` (87de4915); the notes paraphrase `~/Projects/stacks/AGENTS.md`'s architecture map |
 | RUNS_COMMAND | `src/commands/runs.ts` lines 8 to 25 | `data/code/08-stacks.ts`, checked by `data/code/excerpts.test.ts` |
 | HOST_SERVICE | `src/services/host.ts` lines 29 to 49 | same |
 | APP_LAYER | `src/runtime.ts` lines 11 to 19 | same |

@@ -375,12 +375,12 @@ packages/cli/src/
   schemas/        one Schema per --json result
   core/           platform-free domain logic
     registry/  compose/  brief/  scaffold/  verify/
-tests/            209 files, real command tree, fake layers
+tests/            222 files, real command tree, fake layers
 ```
 
 | Beat | Tree | Code pane | Card | Say |
 | --- | --- | --- | --- | --- |
-| 0 | Draws in. `bin.ts`, `main.ts`, `cli.ts` lit. A chip reads "203 files · 24,386 lines". | Empty frame. | Three files start every run. / bin.ts touches Node, main.ts maps errors to exit codes, cli.ts builds the command tree. | A lint rule rejects a Node import anywhere else. |
+| 0 | Draws in. `bin.ts`, `main.ts`, `cli.ts` lit. A chip reads "231 files · 29,402 lines". | Empty frame. | Three files start every run. / bin.ts touches Node, main.ts maps errors to exit codes, cli.ts builds the command tree. | A lint rule rejects a Node import anywhere else. |
 | 1 | `commands/` focused. | `commands/runs.ts` lines 1 to 25, trimmed to the `Command.make` call and `withDescription`. Focus the handler. | A command is one small file. / Flags, a thin handler, and help text that lists its own exit codes. | `yield*` pulls a service out of the environment. That is all the Effect you need to read this. |
 | 2 | `services/` focused. | `services/host.ts` lines 29 to 48, trimmed: the class line, `static layer`, `static memory`. | A service ships with its own fake. / Host.layer wraps the real process. Host.memory is the test double, in the same class. | A service is an interface with a name. A layer is how you build one. |
 | 3 | `runtime.ts` and `bin.ts` focused. | `runtime.ts` lines 11 to 19 (`AppLayer`). | Layers wire it together once. / Config, then output, then logging and processes. Tests call the same function. | This is dependency injection that the compiler checks. |
@@ -395,7 +395,7 @@ Purpose: the AX payoff of the tour. One result, three renderings, and exit codes
 
 Layout: three `TermPane`s side by side (x 110 to 1810, y 200 to 640), labelled in pixel type: PERSON, AGENT, SCRIPT. Below them from beat 3, a strip of exit-code tiles. Card bottom left.
 
-Data: human text from `packages/cli/docs/quickstart.md` lines 150 to 157; the `VerifyFailed` envelope from `packages/cli/tests/errors.test.ts` lines 373 to 380; the exit table from `packages/cli/docs/reference/output.md` lines 70 to 85; the audience rule from `src/services/output.ts` lines 24 to 32 and the agent markers from `src/config.ts` lines 58 to 71. Get the agent-text rendering by running `CLAUDECODE=1 stacks verify` in the tea-dashboard project and recording it; tag panes `Recorded` only if they are.
+Data: human text from `packages/cli/docs/quickstart.md` lines 150 to 157; the `VerifyFailed` envelope from `packages/cli/tests/errors.test.ts` lines 373 to 380; the exit table from `packages/cli/docs/reference/output.md` lines 70 to 85; the audience rule from `src/services/output.ts` lines 24 to 32 and the agent markers from `src/env-names.ts` lines 35 to 44. Get the agent-text rendering by running `CLAUDECODE=1 stacks verify` in the tea-dashboard project and recording it; tag panes `Recorded` only if they are.
 
 | Beat | Stage | Card | Say |
 | --- | --- | --- | --- |

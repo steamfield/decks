@@ -1,6 +1,8 @@
 /**
  * Slide 8: the Stacks repo tour. Sourced in data-sources.md under "Slide 8".
- * Read 2026-11-13 from ~/Projects/stacks/packages/cli at commit a952e96.
+ * Counts and tree reread 2026-11-17 from ~/Projects/stacks/packages/cli at
+ * commit 87de4915 (branch refactor/cli-structure); first read at a952e96.
+ * The code excerpts in data/code/08-stacks.ts stay pinned to a952e96.
  *
  * SRC_FILES:  `find src -name '*.ts' | wc -l`
  * SRC_LINES:  `find src -name '*.ts' | xargs cat | wc -l`
@@ -10,9 +12,9 @@
  */
 import type { TreeNode } from "./types";
 
-export const SRC_FILES = 203;
-export const SRC_LINES = 24386;
-export const TEST_FILES = 209;
+export const SRC_FILES = 231;
+export const SRC_LINES = 29402;
+export const TEST_FILES = 222;
 
 export const TREE: readonly TreeNode[] = [
   {

@@ -172,7 +172,7 @@ Source: data-sources.md, Slide 8.
 
 ### Say
 
-This is the source of that CLI: 203 files and about twenty-four thousand lines of TypeScript, written with Effect. I'll show four Effect ideas in real files, starting with where a run begins. bin.ts is the only file that imports from Node, and a lint rule fails the build if another file does. main.ts converts errors into exit codes. cli.ts assembles the commands.
+This is the source of that CLI: 231 files and about twenty-nine thousand lines of TypeScript, written with Effect. I'll show four Effect ideas in real files, starting with where a run begins. bin.ts is the only file that imports from Node, and a lint rule fails the build if another file does. main.ts converts errors into exit codes. cli.ts assembles the commands.
 
 **[click]** This is the whole runs command. The handler gets two services with yield star, calls a function in core, and passes the result to the Output service. Output formats it for a person or for an agent, so the command itself prints nothing. The help text lists the exit codes because agents read the help.
 

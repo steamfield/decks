@@ -33,7 +33,8 @@
  *   74 to 83 (stacks commit a952e96). `action` is the opening words of the
  *   table's "Next action" cell, cut at a sentence or clause boundary.
  * AUDIENCE_RULE: src/services/output.ts lines 24 to 32, `resolveAudience`.
- * AGENT_MARKERS: src/config.ts lines 62 to 73, `AgentMarkers`. The slide
+ * AGENT_MARKERS: src/env-names.ts lines 35 to 44, `AgentMarkers` (stacks
+ *   commit 87de4915; src/config.ts lines 62 to 73 at a952e96). The slide
  *   prints one marker per agent plus the cross-agent AI_AGENT.
  */
 
@@ -142,7 +143,7 @@ export const SCRIPT_LINES: readonly TermLine[] = [
 /** Rows of SCRIPT_LINES that hold the envelope's `next` field. */
 export const NEXT_ROWS: readonly number[] = next.map((line) => SCRIPT_LINES.indexOf(line));
 
-/** One marker per agent, in the order config.ts checks them, then the cross-agent one. */
+/** One marker per agent, in the order env-names.ts lists them, then the cross-agent one. */
 export const AGENT_MARKERS = [
   "CLAUDECODE",
   "CODEX_SANDBOX",

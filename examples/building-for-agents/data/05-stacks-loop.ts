@@ -12,8 +12,9 @@
  * BRIEF_WORDS: `wc -w .stacks/BRIEF.md`.
  * STEPS, STACK, CLI, CREATED_AT, FRAGMENTS: .stacks/manifest.json
  *   (`verify[].name`, `stack.id`, `cli`, `createdAt`, `fragments[].id`).
- * HANDOFF_PROMPT: ~/Projects/stacks/packages/cli/src/core/handoff.ts line 114
- *   (stacks commit a952e96), with BRIEF_PATH and the invocation filled in.
+ * HANDOFF_PROMPT: ~/Projects/stacks/packages/cli/src/core/handoff/render.ts
+ *   line 28 (stacks commit 87de4915; src/core/handoff.ts line 114 at a952e96),
+ *   with BRIEF_PATH and the invocation filled in.
  */
 
 export const PROJECT = "tea-dashboard";

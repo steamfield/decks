@@ -116,7 +116,7 @@ export function StacksOutputStage() {
               {AGENT_MARKERS.slice(3).join("  ")}
             </text>
             <text className="sf-mono is-small" x={SIDE.x} y={SIDE.y + 146}>
-              src/config.ts · checked in order
+              src/env-names.ts · checked in order
             </text>
           </g>
           {tiles.map((tile, i) => (

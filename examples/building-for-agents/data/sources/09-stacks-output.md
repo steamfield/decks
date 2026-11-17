@@ -12,7 +12,7 @@ The three panes were recorded for this deck on 2026-11-13 with the installed `st
 | VERIFY_EXIT | 5 | `$?` after each of the three runs |
 | How rows are fitted | long lines wrap between words; step rows are cut with `…`; a lone `…` row stands for dropped lines; JSON rows are broken by hand and checked against the capture at build time | `data/09-stacks-output.ts` |
 | AUDIENCE_RULE (first card) | human only when stdout is a TTY, no agent is detected and CI is unset; otherwise agent; `--json` wins | `src/services/output.ts` lines 24 to 32 |
-| AGENT_MARKERS | CLAUDECODE, CODEX_SANDBOX, OPENCODE, CURSOR_AGENT, AI_AGENT (5 of the 10 markers, one per agent plus the cross-agent one) | `src/config.ts` lines 62 to 73 |
+| AGENT_MARKERS | CLAUDECODE, CODEX_SANDBOX, OPENCODE, CURSOR_AGENT, AI_AGENT (5 of the 10 markers, one per agent plus the cross-agent one) | `src/env-names.ts` lines 35 to 44, `AgentMarkers` (commit 87de4915; `src/config.ts` lines 62 to 73 at a952e96) |
 | "prints no colour codes and no live step output" | claim | the AGENT capture: stderr is one `> step` line per step; the terminal capture streams each step's output |
 | "The error envelope is the last line of stderr" | claim | the SCRIPT capture; `tests/errors.test.ts` lines 373 to 380 |
 | EXIT_CODES | 0, 1, 2, 3, 4, 5, 6, 130 with the opening words of each "Next action" | `docs/reference/output.md` lines 70 to 83 |

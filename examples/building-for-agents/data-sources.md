@@ -80,7 +80,7 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 | COMMAND | `stacks new sveltekit tea-dashboard` | `.stacks/manifest.json`: `stack.id` is `sveltekit`, `mode` is `new`; the directory name is the project's. `FLAG:` the exact command line typed is not recorded; this is the command that produces this manifest |
 | FILES | AGENTS.md, .claude/, .stacks/BRIEF.md, .stacks/manifest.json | `ls -a` in the project |
 | BRIEF_WORDS | 4,481 | `wc -w .stacks/BRIEF.md` |
-| HANDOFF_PROMPT | "Read .stacks/BRIEF.md and carry it out. It's your full task for this project; you're done when stacks verify passes." | `~/Projects/stacks/packages/cli/src/core/handoff.ts` line 114 (stacks commit a952e96) |
+| HANDOFF_PROMPT | "Read .stacks/BRIEF.md and carry it out. It's your full task for this project; you're done when stacks verify passes." | `~/Projects/stacks/packages/cli/src/core/handoff/render.ts` line 28 (stacks commit 87de4915; `src/core/handoff.ts` line 114 at a952e96, before the refactor split it into `core/handoff/`) |
 | STEPS | 15 verify steps | `.stacks/manifest.json` `verify[].name`; order from the run records |
 | RUNS | failed at 393 s, green at 501 s, green at 623 s | `.stacks/state/runs.jsonl`: `secondsSinceCreated` and `outcome` of each line; all three have `agent: "claude"`, `scope: "full"` |
 | First run's failed steps | lint, readme-filled, agents-md-filled, claude-readme-filled, harness-doc-filled (5 of 15) | `.stacks/state/runs.jsonl` line 1, `steps[].status` |
@@ -111,14 +111,14 @@ Step 2's command sends verify's stderr to `/dev/null` (added 2026-11-16, after t
 
 ## Slide 8: The Stacks CLI is written with Effect.
 
-All from `~/Projects/stacks/packages/cli` at commit a952e96, read 2026-11-13.
+From `~/Projects/stacks/packages/cli`. The counts and tree rows were reread on 2026-11-17 at commit 87de4915 (branch `refactor/cli-structure`, after the CLI's source was regrouped into folders); everything else was read 2026-11-13 at commit a952e96, and the code excerpts stay pinned there.
 
 | Figure | Value | Source |
 |---|---|---|
-| SRC_FILES | 203 | `find src -name '*.ts' \| wc -l` |
-| SRC_LINES | 24,386 | `find src -name '*.ts' \| xargs cat \| wc -l` |
-| TEST_FILES (notes) | 209 | `find tests -name '*.test.ts' \| wc -l` |
-| Tree rows | bin.ts, main.ts, cli.ts, runtime.ts, errors.ts, commands/, services/, platform/, schemas/, core/, tests/ | `ls src` and `ls`; the notes paraphrase `~/Projects/stacks/AGENTS.md`'s architecture map |
+| SRC_FILES | 231 | `find src -name '*.ts' \| wc -l` (87de4915) |
+| SRC_LINES | 29,402 | `find src -name '*.ts' \| xargs cat \| wc -l` (87de4915) |
+| TEST_FILES (notes) | 222 | `find tests -name '*.test.ts' \| wc -l` (87de4915) |
+| Tree rows | bin.ts, main.ts, cli.ts, runtime.ts, errors.ts, commands/, services/, platform/, schemas/, core/, tests/ | `ls src` and `ls` (87de4915); the notes paraphrase `~/Projects/stacks/AGENTS.md`'s architecture map |
 | RUNS_COMMAND | `src/commands/runs.ts` lines 8 to 25 | `data/code/08-stacks.ts`, checked by `data/code/excerpts.test.ts` |
 | HOST_SERVICE | `src/services/host.ts` lines 29 to 49 | same |
 | APP_LAYER | `src/runtime.ts` lines 11 to 19 | same |
@@ -143,7 +143,7 @@ The three panes were recorded for this deck on 2026-11-13 with the installed `st
 | VERIFY_EXIT | 5 | `$?` after each of the three runs |
 | How rows are fitted | long lines wrap between words; step rows are cut with `…`; a lone `…` row stands for dropped lines; JSON rows are broken by hand and checked against the capture at build time | `data/09-stacks-output.ts` |
 | AUDIENCE_RULE (first card) | human only when stdout is a TTY, no agent is detected and CI is unset; otherwise agent; `--json` wins | `src/services/output.ts` lines 24 to 32 |
-| AGENT_MARKERS | CLAUDECODE, CODEX_SANDBOX, OPENCODE, CURSOR_AGENT, AI_AGENT (5 of the 10 markers, one per agent plus the cross-agent one) | `src/config.ts` lines 62 to 73 |
+| AGENT_MARKERS | CLAUDECODE, CODEX_SANDBOX, OPENCODE, CURSOR_AGENT, AI_AGENT (5 of the 10 markers, one per agent plus the cross-agent one) | `src/env-names.ts` lines 35 to 44, `AgentMarkers` (commit 87de4915; `src/config.ts` lines 62 to 73 at a952e96) |
 | "prints no colour codes and no live step output" | claim | the AGENT capture: stderr is one `> step` line per step; the terminal capture streams each step's output |
 | "The error envelope is the last line of stderr" | claim | the SCRIPT capture; `tests/errors.test.ts` lines 373 to 380 |
 | EXIT_CODES | 0, 1, 2, 3, 4, 5, 6, 130 with the opening words of each "Next action" | `docs/reference/output.md` lines 70 to 83 |
