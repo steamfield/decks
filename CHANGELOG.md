@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The control tray draws on its own dark, translucent panel, so it stays readable on slides whose text colour matches the background.
+
 ## 1.0.0
 
 The first stable release.
