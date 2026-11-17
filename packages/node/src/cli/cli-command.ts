@@ -24,13 +24,14 @@ const commands = {
       deck: deckArg,
       port: { type: "string", description: "Port to listen on" },
       open: { type: "boolean", default: false, description: "Open the deck in a browser" },
+      "live-term": { type: "boolean", default: false, description: "Enable live terminal panes" },
     },
     async run({ args }) {
       const { deck } = await resolveDeck(args.deck);
       if (args.port !== undefined && (!/^\d+$/.test(args.port) || Number(args.port) > 65535))
         throw new DeckError(`Invalid --port "${args.port}". Use a whole number from 0 to 65535.`);
       const port = args.port === undefined ? undefined : Number(args.port);
-      const server = await dev(deck, { port, open: args.open });
+      const server = await dev(deck, { port, open: args.open, liveTerm: args["live-term"] });
       console.log(pc.green(server.url));
     },
   }),
@@ -86,6 +87,11 @@ async function argumentError(command: string, cause: unknown): Promise<unknown> 
 export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> {
   const command = rawArgs[0];
   try {
+    if (
+      command !== "dev" &&
+      rawArgs.slice(1).some((arg) => /^--(?:no-)?live-term(?:=|$)/.test(arg))
+    )
+      throw new DeckError("--live-term is only available on decks dev.");
     if (command !== undefined && Object.hasOwn(tools, command)) {
       try {
         await runCommand(main, { rawArgs });
@@ -109,7 +115,11 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
       const options: ParseArgsOptionsConfig =
         command === "build"
           ? { out: { type: "string" }, base: { type: "string" } }
-          : { port: { type: "string" }, open: { type: "boolean" } };
+          : {
+              port: { type: "string" },
+              open: { type: "boolean" },
+              "live-term": { type: "boolean" },
+            };
       try {
         const { positionals } = parseArgs({
           args: rawArgs.slice(1),

@@ -22,6 +22,7 @@ export interface DeckConfig {
    */
   readonly credit?: boolean;
   readonly vite?: UserConfig;
+  readonly term?: { readonly dirs?: Record<string, string> };
   /** remark and rehype plugins added to the slide compiler. */
   readonly mdx?: {
     readonly remarkPlugins?: PluggableList;
@@ -53,6 +54,7 @@ const schema = z.strictObject({
   transition: z.string().min(1).optional(),
   htmlAttrs: z.record(z.string(), z.string()).optional(),
   credit: z.boolean().default(true),
+  term: z.strictObject({ dirs: z.record(z.string(), z.string()).optional() }).optional(),
   vite: z
     .custom<UserConfig>(
       (value) => typeof value === "object" && value !== null && !Array.isArray(value),
@@ -100,6 +102,10 @@ export async function loadDeck(dir: string, name?: string): Promise<ResolvedDeck
   if (!parsed.success)
     throw validationError(file, parsed.error.issues, module.default, Object.keys(schema.shape));
   const config = parsed.data;
+  for (const [key, path] of Object.entries(config.term?.dirs ?? {})) {
+    const directory = resolve(absolute, path);
+    if (config.term?.dirs) config.term.dirs[key] = directory;
+  }
   for (const key of Object.keys(config.htmlAttrs ?? {})) {
     if (!/^[A-Za-z_:][-A-Za-z0-9_:.]*$/.test(key))
       throw new DeckError(`htmlAttrs key ${key} is not a valid HTML attribute name.`, file);

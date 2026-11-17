@@ -11,6 +11,7 @@ import {
   type Plugin,
   build as viteBuild,
 } from "vite";
+import { liveTerm } from "../term/plugin";
 import { launchBrowser, openBuiltDeck, waitForCapture } from "./browser";
 import type { ResolvedDeck } from "./config";
 import { DeckError, displayPath } from "./errors";
@@ -75,10 +76,11 @@ export const firstDevPort = 3030;
 
 export async function dev(
   deck: ResolvedDeck,
-  options?: { port?: number; open?: boolean },
+  options?: { port?: number; open?: boolean; liveTerm?: boolean },
 ): Promise<DevServer> {
   const port = options?.port ?? (await getPort({ port: portNumbers(firstDevPort, 65535) }));
   const lifecycle = createDeckPlugins(deck);
+  if (options?.liveTerm) lifecycle.plugins.push(liveTerm(deck.dir));
   let server: Awaited<ReturnType<typeof createServer>> | undefined;
   try {
     server = await createServer({
