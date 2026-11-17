@@ -35,6 +35,8 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           playwright: "true" # the browser capture tests
+      # zsh for the live terminal's shell tests; the runner image ships without it.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq zsh
       - run: bun run test --shard=${{ matrix.shard }}/3
 
   e2e:
@@ -52,6 +54,8 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           playwright: "true"
+      # zsh for the live terminal's shell tests; the runner image ships without it.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq zsh
       - run: bun run test:e2e --shard=${{ matrix.shard }}/3
       # Playwright's actual images, traces and error contexts, for diagnosing a failure on the runner.
       - if: failure()

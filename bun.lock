@@ -86,6 +86,14 @@
         "react-dom": "19.3.1",
       },
     },
+    "examples/terminal": {
+      "name": "@steamfield/example-terminal",
+      "dependencies": {
+        "@steamfield/decks": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+    },
     "examples/texas-2026": {
       "name": "@react-decks/example-texas-2026",
       "dependencies": {
@@ -562,6 +570,8 @@
     "@steamfield/example-building-for-agents": ["@steamfield/example-building-for-agents@workspace:examples/building-for-agents"],
 
     "@steamfield/example-motion": ["@steamfield/example-motion@workspace:examples/motion"],
+
+    "@steamfield/example-terminal": ["@steamfield/example-terminal@workspace:examples/terminal"],
 
     "@steamfield/example-tides-slide": ["@steamfield/example-tides-slide@workspace:examples/tides-slide"],
 
