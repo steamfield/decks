@@ -150,9 +150,12 @@ export default function Above() {
           </filter>
         </defs>
       </svg>
+      {/* Under the glass, not inside its rounded clip: a moving layer inside that clip makes
+          the compositor redraw the whole tube through a mask every frame. The glass is
+          translucent and its black corners still cover the band. */}
+      <span className="sf-tube-hum" />
       <div className={`sf-tube${power && live ? " is-power" : ""}`}>
         <span className="sf-tube-grain" />
-        <span className="sf-tube-hum" />
         <span className="sf-tube-power">
           <span className="sf-tube-power-top" />
           <span className="sf-tube-power-bottom" />

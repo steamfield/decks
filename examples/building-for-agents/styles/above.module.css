@@ -73,7 +73,10 @@
       rgb(255 255 255 / var(--sf-tube-hum)) 50%,
       transparent
     );
-    animation: sf-tube-hum var(--sf-tube-hum-duration) linear infinite;
+    /* Stepped, not continuous: each move recomposites the warped picture under the band, which
+       measured as most of a slide's GPU load, and 30 steps a second of a faint, soft band look
+       the same as 120. */
+    animation: sf-tube-hum var(--sf-tube-hum-duration) steps(var(--sf-tube-hum-steps)) infinite;
   }
   .host.live :global(.sf-tube.is-power) :global(.sf-tube-power) {
     display: block;

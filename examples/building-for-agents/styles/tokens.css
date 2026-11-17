@@ -154,6 +154,8 @@
   --sf-tube-hum: 0.025;
   --sf-tube-hum-height: calc(18 * var(--sh));
   --sf-tube-hum-duration: 9s;
+  /* 30 a second: --sf-tube-hum-duration in seconds x 30. */
+  --sf-tube-hum-steps: 270;
   --sf-tube-sheen: 0.03;
   --sf-tube-vignette: 0.3;
   --sf-tube-radius: calc(2.7 * var(--sw)) / calc(3.2 * var(--sw));
