@@ -1,6 +1,60 @@
 import { createServer } from "node:net";
-import { expect, it, onTestFinished } from "vitest";
+import { TERM_ATTACH, TERM_GONE } from "@react-decks/core";
+import { expect, it, onTestFinished, vi } from "vitest";
 import { cli, fixture } from "../dev/server.test-support";
+
+it.each([false, true])("dev answers terminal attach only with --live-term=%s", async (enabled) => {
+  const { dir } = await fixture(onTestFinished, {
+    "deck.config.ts": `export default { title: "Test deck", vite: { optimizeDeps: { noDiscovery: true, include: [] }, plugins: [{ name: "term-test-barrier", configureServer(server) { server.ws.on("term-test:barrier", (_data, client) => client.send("term-test:barrier")); } }] } };`,
+  });
+  const process = cli(dir, ["dev", ".", "--port", "0", ...(enabled ? ["--live-term"] : [])]);
+  const url = await process.url();
+  const socket = new WebSocket(url.replace("http", "ws"), "vite-hmr");
+  onTestFinished(() => socket.close());
+  const messages: { event: string; data: unknown }[] = [];
+  socket.addEventListener("message", ({ data }) => {
+    const message = JSON.parse(String(data));
+    if (message.type === "custom") messages.push({ event: message.event, data: message.data });
+  });
+  await vi.waitFor(() => expect(socket.readyState).toBe(WebSocket.OPEN), { timeout: 10_000 });
+  socket.send(
+    JSON.stringify({
+      type: "custom",
+      event: TERM_ATTACH,
+      data: { pane: { id: "cli", rows: 24, cols: 92, cwd: "unknown-key", commands: [] } },
+    }),
+  );
+  socket.send(JSON.stringify({ type: "custom", event: "term-test:barrier", data: {} }));
+  await vi.waitFor(() => expect(messages.some((m) => m.event === "term-test:barrier")).toBe(true), {
+    timeout: 10_000,
+  });
+  expect(messages.filter((m) => m.event !== "term-test:barrier")).toEqual(
+    enabled
+      ? [
+          {
+            event: TERM_GONE,
+            data: {
+              id: "cli",
+              reason:
+                'Shell could not start: Pane "cli" has unknown terminal directory "unknown-key"',
+            },
+          },
+        ]
+      : [],
+  );
+});
+
+it.each(["build", "check", "lint", "export", "shot", "new", "init", "hook"])(
+  "rejects --live-term on %s",
+  async (command) => {
+    const { dir } = await fixture(onTestFinished);
+    const process = cli(dir, [command, ".", "--live-term"]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toBe(
+      `decks ${command}: --live-term is only available on decks dev.\n`,
+    );
+  },
+);
 
 it("accepts boolean negation while serving a deck", async () => {
   const { dir } = await fixture(onTestFinished);

@@ -48,6 +48,7 @@ export { StoryCover } from "@steamfield/decks/kit";
 | `DUR`, `SETTLE`, `DRAW`, `TRACE`, `SETTLE_CSS`, `DRAW_CSS`, `TRACE_CSS`, `easedStagger` | The story duration table (seconds), three gsap ease names, the same curves as CSS strings, and an eased stagger offset. |
 | `xScale`, `yScale`, `clamp01`, `stagger` | Linear scales (d3-scale) for stage coordinates, a 0 to 1 clamp, and per-item progress within one staggered beat. |
 | `FILTER_IDS`, `filterUrl` | SVG filters every `StoryStage` defines (marker textures and a glow), referenced as `filter={filterUrl(FILTER_IDS.glow)}`. |
+| `LiveTerm`; type `LiveTermStatus` | A real shell on a slide, one command per click, with a fallback wherever a shell can't run. See [terminal.md](terminal.md). |
 | `gsap` | The motion package's gsap instance, re-exported. |
 
 The package also exports `@steamfield/decks/kit/styles.css`. Nothing else is public.

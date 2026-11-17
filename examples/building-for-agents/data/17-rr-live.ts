@@ -1,3 +1,4 @@
+import type { TermPaneSpec } from "@steamfield/decks";
 /**
  * Slide 17: rr 0.30.0 shell capture, recorded 2026-11-16 in fixtures/17-rr-live.json.
  * Source: sources/17-rr-live.md; shared data-sources.md row supplied in the hand-off.
@@ -7,7 +8,6 @@
  */
 import { type LiveDemo, paneGrid } from "../components/LiveDemoStage";
 import type { TermRecording } from "../components/LiveTerm";
-import type { TermPaneSpec } from "../term/protocol";
 import fixture from "./fixtures/17-rr-live.json";
 import type { TermLine } from "./types";
 

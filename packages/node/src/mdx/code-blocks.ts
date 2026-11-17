@@ -2,8 +2,10 @@ import rehypeShiki from "@shikijs/rehype";
 import { bundledLanguages, createCssVariablesTheme, isSpecialLang } from "shiki";
 import { unified } from "unified";
 import { parseCodeOptions } from "./code-options";
+import { compileMagicMoves } from "./magic-move";
 
 export const codeBlocks: typeof rehypeShiki = () => async (tree, file) => {
+  await compileMagicMoves(tree, file);
   const warn = (node: typeof tree | (typeof tree.children)[number]): void => {
     if (node.type === "element" && node.tagName === "code") {
       const classes = node.properties.className;

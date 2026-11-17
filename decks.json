@@ -24,5 +24,8 @@
   },
   "tx26": {
     "dir": "examples/texas-2026"
+  },
+  "terminal": {
+    "dir": "examples/terminal"
   }
 }

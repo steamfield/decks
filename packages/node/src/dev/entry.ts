@@ -4,8 +4,8 @@ import type { ResolvedDeck } from "./config";
 import { PUBLIC_SPECIFIERS } from "./specifiers";
 
 export function entryModule(deck: ResolvedDeck): string {
-  return `${existsSync(join(deck.dir, "setup.ts")) ? 'import "/setup.ts";\n' : ""}import { mountDeck, Center, Cover, Section, TwoCol, ImageSide } from "${PUBLIC_SPECIFIERS.runtime}";
-import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock } from "${PUBLIC_SPECIFIERS.motion}";
+  return `${existsSync(join(deck.dir, "setup.ts")) ? 'import "/setup.ts";\n' : ""}import { mountDeck, Center, Cover, Section, TwoCol, ImageSide, Toc, Link } from "${PUBLIC_SPECIFIERS.runtime}";
+import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock, Mark, MagicMove } from "${PUBLIC_SPECIFIERS.motion}";
 ${existsSync(join(deck.dir, "styles/index.css")) ? 'import "/styles/index.css";' : ""}
 Promise.all([
   import("virtual:react-decks/manifest"),
@@ -13,7 +13,7 @@ Promise.all([
   import("virtual:react-decks/layers")
 ]).then(([{ manifest, slides, frontmatter }, { components }, { layers }]) => {
 mountDeck({ manifest, slides, frontmatter, layers,
-  components: { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, pre: CodeBlock, Center, Cover, Section, TwoCol, ImageSide, ...components },
+  components: { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, Mark, MagicMove, pre: CodeBlock, Center, Cover, Section, TwoCol, ImageSide, Toc, Link, ...components },
   loadNotes: () => import("virtual:react-decks/notes").then(module => module.notes)
 });
 }).catch(error => {

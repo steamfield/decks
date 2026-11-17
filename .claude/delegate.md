@@ -20,14 +20,14 @@ procedure around it.
 - Only you edit `docs/`, any `package.json`, any `packages/*/src/index.ts`, `biome.json`,
   `tsconfig.json`, `vitest.config.ts`, `decks.json`, and the agent harness. A run asks for such
   a change in its hand-off.
-- After a run: read the hand-off and the diff, refactor with Edit, run `bun run check` in the
+- After a run: read the hand-off and the diff, refactor with Edit, run `rr rd-check` from the
   worktree, merge with `--no-ff`, archive the run. After merging several runs, run the whole
   gate on a cold Vite cache (`find . -path '*/node_modules/.vite' -prune -exec rm -rf {} +`)
   and `bun run check:isolated` and `bun run test:tarball`: integration faults surface there.
 - Run gates in a worktree, not the main checkout, when anyone may be editing the checkout:
   Playwright's dev servers watch the source.
 - Your own inline edits get the delegate's discipline: after changing a package, run
-  `bun run test packages/<pkg>` (not only the test file you touched) before committing.
+  `rr rd-test packages/<pkg>` (not only the test file you touched) before committing.
 - Before pushing main, run `make -C site ci-fresh`: it builds the committed HEAD in a fresh
   clone the way Workers Builds does, so nothing left in this checkout (a built `dist/`, an
   installed package) can make a gate pass that the deploy fails.
@@ -40,9 +40,15 @@ procedure around it.
   question, loop until the run leaves `running`:
   `until [ "$(foreman status <run> --json | jq -r '.digests[0].state')" != running ]; do foreman wait <run> --timeout 60m >/dev/null; done`
 - With three or more runs in parallel, do not put the full gate in their contracts: each gate
-  takes about ten minutes and rr gives up on the lock after five (`LOCK_HELD`). Units run the
-  scoped checks; run `rr run --local "bun run check"` yourself on the integration branch after
-  each merge. Nothing else may hold the rr lock while a live `rr` demo is being recorded.
+  holds a host for about ten minutes and there are three hosts. Units run the scoped checks;
+  run `rr rd-check` yourself on the integration branch after each merge. Each worktree syncs
+  to its own remote directory (`decks@<worktree>`); `rr prune` removes the ones left by
+  archived runs. Nothing else may hold the rr lock while a live `rr` demo is being recorded.
+- A new default MDX component is registered in three places: `dev/entry.ts`, the `provided`
+  list in `mdx/component-check.ts`, and `mdx/clicks.ts` if it takes `at`. A scaffold that
+  misses one leaves every run that uses the component asking.
+- A new control with a common accessible name (Next, Previous) can collide with fixture
+  buttons that other packages' test-support queries by that name; grep them before the run.
 - `decks shot <deck> <n> <click>` takes the slide's playback position, which differs from its
   filename prefix when a number is skipped or a slide is hidden. Give positions in contracts.
 - A follow-up names the rule it changes and the rules it keeps. "Stepping back does not remove
@@ -60,8 +66,10 @@ install" ...`.
 
 The repo's Codex hooks (`.codex/hooks.json`) are reviewed and safe to trust: a `PreToolUse` hook
 on `apply_patch` that runs `decks hook lint` from source and denies deck prose with an
-error-level pattern, and a `UserPromptSubmit` hook that adds the deck-writing reminder. Both only
-read their hook JSON and the repo's pattern file.
+error-level pattern; a `PreToolUse` hook on `Bash` (`scripts/codex-rr-guard.mjs`) that blocks
+running Vitest, Playwright or the gate directly and names the rr task instead; and a
+`UserPromptSubmit` hook that adds the deck-writing reminder. They only read their hook JSON and
+the repo's pattern file.
 
 Worktrees under `.claude/worktrees/` inherit the approval given in the main checkout (`codex`,
 then `/hooks`; `foreman doctor` reports it). After `.codex/hooks.json` changes the approval must
@@ -73,13 +81,19 @@ don't work around it.
 - Read `AGENTS.md` (the whole rulebook) and `docs/architecture.md` before the first edit. Load
   `ce:architecting-systems`, `ce:writing-tests` and `ce:handling-errors`.
 - If `node_modules/` is missing, run `bun install`.
-- Iterate on the scoped test command in your contract, then `bun run lint` and `bun run
-  typecheck`. Run the whole gate as `rr run --local "bun run check"`: rr takes a machine-wide
-  lock, so parallel runs queue their gates instead of starving each other's build and browser
-  tests. Run each new test file three times alone, then `bun run test` once; a new or
-  changed Playwright spec with `--repeat-each=5`.
+- Run every test through rr: `rr rd-test <path>` (Vitest; flags after `--`), `rr rd-e2e --
+  <spec>` (Playwright), `rr rd-check` (the gate). rr syncs the worktree to a free host in
+  `.rr.yaml` and holds that host's lock, so parallel runs queue instead of starving one
+  machine; the repo's Codex hook blocks `bun run test`, `test:e2e`, `check`, `vitest` and
+  `playwright test` run directly. `bun run lint` and `bun run typecheck` run directly. Iterate
+  on the scoped test command in your contract. Run each new test file three times alone, then
+  `rr rd-test` once; a new or changed Playwright spec with `rr rd-e2e -- <spec>
+  --repeat-each=5`.
 - Deck work: read `plugins/decks/skills/working-with-decks/SKILL.md` and the skills it routes
   to. A hook deny means rewrite the prose; never route the write around it.
 - Do not edit the orchestrator's files listed above, or commit. When a maintained library would
   do a job better than hand-written code and is not installed, ask for it in a question; do not
   edit a `package.json`.
+- A change that adds a file type a package has not shipped before (a kit CSS Module, a
+  non-JS asset) needs the asset copy in `packages/decks/build.mjs`; only `bun run test:tarball`
+  sees a missing one.

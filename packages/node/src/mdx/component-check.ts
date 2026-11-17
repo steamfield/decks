@@ -9,11 +9,15 @@ const provided = [
   "CountUp",
   "Draw",
   "Morph",
+  "Mark",
+  "MagicMove",
   "Center",
   "Cover",
   "Section",
   "TwoCol",
   "ImageSide",
+  "Toc",
+  "Link",
   "Notes",
 ];
 

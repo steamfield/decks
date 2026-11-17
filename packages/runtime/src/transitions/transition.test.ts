@@ -4,6 +4,7 @@ import type { DeckState } from "../store/store";
 import { transitionName } from "./transition";
 
 const state = (slide: number, click = 0): DeckState => ({
+  syncStamp: { seq: 0, started: 0, origin: "test" },
   nav: { slide, click },
   view: "play",
   embedded: false,

@@ -2,6 +2,7 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { expect, it } from "vitest";
+import { serve } from "../dev/server.test-support";
 import { checkComponents } from "./component-check";
 
 const check = (source: string) => {
@@ -11,6 +12,13 @@ const check = (source: string) => {
     .use(checkComponents(() => new Set()));
   return processor.run(processor.parse(source));
 };
+
+it("compiles Toc and Link without slide imports", async () => {
+  const app = await serve({
+    "slides/01-first.mdx": "<Toc />\n\n<Link to={1}>Return to the start.</Link>",
+  });
+  await expect(app.server.transformRequest("/slides/01-first.mdx")).resolves.toBeDefined();
+});
 
 // Each accepted source is paired with a source that lacks the binding which makes it valid, so a
 // checker that accepts everything cannot pass.

@@ -1,8 +1,7 @@
-import { useDeck, useSlide } from "@steamfield/decks";
+import { type TermPaneSpec, useDeck, useSlide } from "@steamfield/decks";
 import { DUR, SETTLE, StoryStage, useStage } from "@steamfield/decks/kit";
 import { useTween } from "@steamfield/decks/motion";
 import type { ProductId } from "../data/products";
-import type { TermPaneSpec } from "../term/protocol";
 import codeStyles from "./CodePane.module.css";
 import { CrtPanel } from "./CrtPanel";
 import { tokenizeLine } from "./code-tokens";

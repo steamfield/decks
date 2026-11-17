@@ -1,4 +1,4 @@
-import { clicksForSlide, type DeckView, type SlideMeta } from "@react-decks/core";
+import { clicksForSlide, type DeckView, type SlideMeta, type SyncStamp } from "@react-decks/core";
 import { createContext, type RefObject, useContext, useMemo, useSyncExternalStore } from "react";
 import type { createSlideModules, DeckSource } from "./source";
 import type { DeckState, DeckStore } from "./store/store";
@@ -37,6 +37,7 @@ export function usePresentation() {
 }
 
 export interface DeckApi {
+  readonly syncStamp: SyncStamp;
   readonly slide: number;
   readonly total: number;
   readonly clicks: number;
@@ -59,6 +60,7 @@ export function useDeck(): DeckApi {
   const clicks = useDeckSelector((state) => state.nav.click);
   const view = useDeckSelector((state) => state.view);
   const embedded = useDeckSelector((state) => state.embedded);
+  const syncStamp = useDeckSelector((state) => state.syncStamp);
   const actions = useMemo(
     () => ({
       next: () => store.dispatch({ type: "next" }),
@@ -71,6 +73,7 @@ export function useDeck(): DeckApi {
   );
   const slides = source.manifest.slides;
   return {
+    syncStamp,
     slide,
     total: slides.length,
     clicks,

@@ -26,6 +26,10 @@ Only the config and slides are required by the framework. `data/`, `data-sources
 - `setup.ts` runs in the browser before component modules. Install the kit theme there with `installTheme(resolveTheme())`, imported from `@steamfield/decks/kit`. For an override, import `./theme.json` and pass it to `resolveTheme`.
 - `public/` contains assets served at the site root. Only `above.tsx`, `below.tsx` and `credit.tsx` are allowed as React layers under `layers/`; each default-exports a component. They render per slide instance.
 
+## Presenting controls
+
+Move the pointer to the bottom-left corner of the play view to reveal the control tray, or Tab to its buttons. It holds Previous, Next, the slide counter (opens go-to), Overview, Open presenter, fullscreen when supported, and smaller/larger text. The tray is absent in embedded and bridge decks and other views. Use `f` for fullscreen, `o` for overview, `p` for the presenter window, and `g` for go-to. Cmd/Ctrl `+` and `-` change text size; Cmd/Ctrl `0` resets it.
+
 ## Public import roots
 
 | Import | Use |

@@ -2,11 +2,13 @@ import { type ReactElement, useEffect } from "react";
 import { SlideFrame } from "../canvas/slide-frame";
 import { useDeckContext, useDeckSelector } from "../hooks";
 import { SlideHost } from "../slides/slide-host";
+import { ControlTray } from "./control-tray";
 import "./play-view.css";
 
 export function PlayView(): ReactElement {
   const { source, modules } = useDeckContext();
   const slide = useDeckSelector((state) => state.nav.slide);
+  const hideTray = useDeckSelector((state) => state.embedded || state.bridge);
   useEffect(() => {
     const preload = () => {
       for (const module of modules.values())
@@ -30,6 +32,7 @@ export function PlayView(): ReactElement {
             <SlideHost key={no} no={no} context="slide" />
           ))}
       </SlideFrame>
+      {!hideTray && <ControlTray />}
     </div>
   );
 }

@@ -85,6 +85,8 @@ export interface SyncSessionOptions {
 }
 
 export interface SyncSession {
+  /** The stamp adopted from a peer or assigned to the latest local publication. */
+  getStamp(): SyncStamp;
   /** Tell the other participants about a local change. */
   publish(state: SyncState): void;
   /** Stops listening and closes the transport. Later publishes do nothing. */
@@ -111,6 +113,7 @@ export function createSyncSession(options: SyncSessionOptions): SyncSession {
   });
   transport.post({ type: "hello", from: id });
   return {
+    getStamp: () => stamp,
     publish(state) {
       if (closed) return;
       stamp = { seq: stamp.seq + 1, started: startedAt, origin: id };

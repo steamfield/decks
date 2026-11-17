@@ -1,6 +1,6 @@
 # Presenting
 
-Open the deck's URL, press `f` for fullscreen and use the arrow keys. Press `p` for a presenter window with notes, and `o` for an overview of every slide.
+Open the deck's URL, press `f` for fullscreen and use the arrow keys. Press `p` for a presenter window with notes, `o` for an overview of every slide, and `g` to jump to a slide by number or title. Everything the keys do is also on the control tray in the bottom-left corner.
 
 ## Keyboard
 
@@ -23,6 +23,7 @@ Views and display:
 | `o` | Open the overview, or close it. | Every view. |
 | `Escape` | Close the overview without moving. | The overview. |
 | `p` | Open the presenter window. | The play view, when not embedded. |
+| `g` | Open the go-to dialog. | The play view and presenter window, when not embedded or in the site player. |
 | `Cmd/Ctrl` + `+` or `=` | Larger slide text. | Play view and presenter window. |
 | `Cmd/Ctrl` + `-` | Smaller slide text. | Play view and presenter window. |
 | `Cmd/Ctrl` + `0` | Slide text back to its authored size. | Play view and presenter window. |
@@ -30,6 +31,20 @@ Views and display:
 In the overview the arrow keys move between tiles instead: `ArrowRight` and `ArrowDown` to the next tile, `ArrowLeft` and `ArrowUp` to the previous, `Home` and `End` to the first and last.
 
 Keys are ignored while typing in an input, textarea, select or editable element, and a held key acts once. `Space` and `Enter` on a focused button do the button's job, so after clicking "Reset timer" the arrow keys still advance the talk.
+
+## Control tray
+
+Move the pointer to the bottom-left corner of the play view and a row of controls appears: previous, next, the position ("3 / 12", which opens the go-to dialog), overview, presenter, fullscreen and smaller or larger text. It fades out again when the pointer leaves, and `Tab` reaches it from the keyboard. Previous and next are disabled at the first and last click of the deck, and the fullscreen button is absent where the browser does not allow fullscreen.
+
+Moving the pointer away also releases a clicked tray button's focus, so `Space` advances the talk again rather than pressing the button. The tray is not shown in the presenter window, the overview, print, or a deck running `?embedded`.
+
+During a slide transition the browser routes clicks to the transition's snapshot, so a tray click in that moment is dropped. Keys still work; wait for the transition to finish or use the keyboard.
+
+## Go to a slide
+
+Press `g`, or click the position in the tray. Type a number to pick that slide, or any other text to filter slides by title; `ArrowUp` and `ArrowDown` move the selection and `Enter` goes there, at click 0. `Escape` or a click outside closes the dialog without moving. A search that is only digits always means a slide number, so a title such as "2026" is found by another word in it.
+
+In a synced talk, going to a slide from the presenter window moves the audience window too, as any other navigation does.
 
 ## The URL
 

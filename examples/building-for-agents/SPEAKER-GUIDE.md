@@ -14,10 +14,10 @@ From the repo root, on the laptop you present from:
 
 ```bash
 bun install
-DECKS_LIVE_TERM=1 bun run decks dev agents
+bun run decks dev agents --live-term
 ```
 
-`DECKS_LIVE_TERM=1` gives slides 7, 17 and 25 a real shell. Without it, `bun run decks dev agents` runs the same deck and the demo slides play their recordings.
+`--live-term` gives slides 7, 17 and 25 a real shell. Without it, `bun run decks dev agents` runs the same deck and the demo slides play their recordings.
 
 The command prints the deck's address, normally `http://localhost:3030`. Open it in one browser window on the projector and press `f` for fullscreen. Press `p` to open the presenter window and drag it to the laptop screen. Each station in the thread rail along the bottom links to that product's site (`https://<product>.steamfield.io`) and opens in a new tab, so a click on the rail leaves the deck window. The presenter window shows the current slide, the next state, the notes with the current click marked, the position ("5 / 28"), the click count and a timer that starts at the first key press.
 
@@ -25,7 +25,7 @@ The command prints the deck's address, normally `http://localhost:3030`. Open it
 - Down arrow: next slide at click 0. Up arrow: previous slide at click 0.
 - `o` opens the overview of every slide; Esc closes it.
 - On a demo slide, click into the terminal pane to type into the shell. Press Esc to give the keys back to the deck.
-- Keep one audience window. A second window or tab on the deck would send each command to the same shell a second time. The presenter window is safe: its thumbnails play the recording.
+- A second audience window or tab shows the same shell, and each command still runs once, whichever window advances. The presenter window's own slide previews play the recording.
 - Backup: `bun run decks export agents` writes `dist/building-for-agents.pdf` with every click as its own page. The demo slides print their recordings. Bring it on a USB drive.
 
 ## Timing

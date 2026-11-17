@@ -71,6 +71,37 @@ At click 0 line 2 is emphasized, at click 1 lines 4 and 5, at click 2 every line
 
 A block with `k` steps adds `at + k - 1` to the slide's click total, so the slide above has two clicks with no `clicks:` in its frontmatter. A block without braces uses no clicks. See [motion.md](motion.md) for how the total is counted.
 
+## Magic move
+
+A magic-move fence morphs one code block into the next on a click: tokens that stay move to their new place, removed ones fade out and new ones fade in. The syntax is Slidev's, so a Slidev fence pastes in unchanged. Open with four backticks, the language `md` (or `markdown`) and `magic-move`, then put ordinary code fences inside, one per version.
+
+`examples/motion/slides/32-magic-move.mdx`:
+
+`````mdx
+````md magic-move "greet.ts" {lines: true}
+```ts {1}
+const greeting = "Hello";
+```
+
+```ts {1|2}
+const greet = (name: string) => `Hello, ${name}`;
+greet("Ada");
+```
+
+```ts {all}
+export function greet(name: string) {
+  return `Hello, ${name}!`;
+}
+```
+````
+`````
+
+After `magic-move` come an optional title, either quoted (`"greet.ts"`) or in brackets (`[greet.ts]`), and an optional options object: `at` (the click of the first version, default 0) and `lines` (line numbers, default off). Each inner fence can have its own `{...}` line emphasis, as in a plain block, and its own `lines`.
+
+Each version holds for as many clicks as it has emphasis steps, at least one, and the next click morphs to the next version. The slide above shows version 1 at click 0, version 2 with line 1 then line 2 emphasized at clicks 1 and 2, and version 3 at click 3: `at` plus every version's step count, minus 1, so 3 clicks with no `clicks:` in the frontmatter.
+
+The morph plays only on a forward step in the play view with live motion. Going back, jumping, reloading, the presenter window, the overview and print show the version for the click at once, and each printed click page shows its own version. Slidev's `{*}` emphasis is not supported; use `{all}`. A fence that does not parse is a compile error naming the slide and the line.
+
 ## Languages
 
 The language is the first word on the fence. Any language Shiki bundles works. A block with no language is plain text. An unknown language is rendered as plain text and logs a warning naming the file.

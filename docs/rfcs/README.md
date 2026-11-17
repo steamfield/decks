@@ -13,7 +13,7 @@ They are follow-up work: nothing here blocks the deck in progress. An RFC is dra
 | [0005](0005-prose-review.md) | Prose review beyond the regex lint | Done | texas-2026 |
 | [0006](0006-codex-deck-orchestration.md) | A repo kit for orchestrating deck builds through Codex | Done | texas-2026 |
 | [0007](0007-react-decks.md) | react-decks, a React slide framework to replace Slidev | Done (1.0.0-rc.0) | every deck so far |
-| [0008](0008-live-terminal.md) | A live terminal pane on a slide, with a recorded fallback | Draft | building-for-agents |
+| [0008](0008-live-terminal.md) | A live terminal pane on a slide, with a recorded fallback | Done | building-for-agents |
 
 Statuses: Draft, Ready (reviewed and executable, awaiting a go-ahead), Accepted, In progress, Done, Rejected. An RFC that's done keeps its file, with a line at the top naming the commit that landed it.
 

@@ -76,8 +76,10 @@ node scripts/parity.mjs <alias>      # compare a ported deck with its Slidev bas
 bun run release <x.y.z[-rc.N]>       # bump every place the version lives; never commits, tags or pushes
 ```
 
-`rr rd-test`, `rr rd-e2e` and `rr rd-check` run the same on the hosts in `.rr.yaml`; sync a
-committed tree.
+Agents run tests and the gate as `rr rd-test [path]`, `rr rd-e2e -- [spec]` and `rr rd-check`:
+the same commands on a free host in `.rr.yaml`, so parallel agents queue instead of starving one
+machine (a Codex hook blocks the direct forms). rr syncs the working tree as it stands, so
+don't edit it mid-run.
 
 A `bun.lock` changes only through `bun add`, `bun update` or `bun install`; never edit it, and
 never delete lines to force a re-resolve (that re-resolves unrelated packages). Every
@@ -224,7 +226,8 @@ how to test motion without timing it, and the banned patterns with their replace
 jsdom has no layout and no View Transitions; a behaviour that needs either is a Playwright
 test, never a hand-built fake of the browser. Never test a component by stubbing what it
 depends on. The dom project does not process CSS either: a prop that only changes styling is
-checked in a browser. A port keeps the source's mechanism (an inline style stays an inline
+checked in a browser, and a paint claim (a stroke drawn, a gap) in pixels: computed
+styles can be right while the paint is wrong. A port keeps the source's mechanism (an inline style stays an inline
 style), because the kit guards in `tests/` police those mechanisms.
 
 Each behaviour is asserted at one layer, the cheapest that can show it. Which file change

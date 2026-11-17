@@ -14,10 +14,11 @@ When a slide's frontmatter has no `clicks`, the total is read from the MDX sourc
 
 | Written in the slide | Contributes |
 | --- | --- |
-| `Step`, `Stagger`, `Highlight`, `Draw` with `at` and optional `until` | `until` if present, else `at` |
+| `Step`, `Stagger`, `Highlight`, `Draw`, `Mark` with `at` and optional `until` | `until` if present, else `at` |
 | `TextReveal`, `CountUp` with `at` | `at` |
 | `Steps` with `from` and `k` children (JSX elements, or one list with `k` items) | `from + k - 1` |
 | A fenced code block with `k` highlight steps and `at=<n>` | `at + k - 1` (see [code-blocks.md](code-blocks.md)) |
+| A magic-move fence | `at` plus each version's highlight steps (at least 1 each), minus 1 (see [code-blocks.md](code-blocks.md)) |
 
 So this slide has two clicks with no `clicks:` line:
 
@@ -156,6 +157,29 @@ Draws the strokes of its SVG shape children on click `at`. It renders a `<g>`, s
 ```
 
 Props: `at`, `until`.
+
+### `Mark`
+
+Draws a hand-drawn mark around inline text on click `at`, and removes it at `until`. The text is always visible and readable; only the mark comes and goes. Going back un-draws it.
+
+```mdx
+The fix was <Mark kind="circle" at={1}>one line</Mark>, and <Mark at={2}>nobody</Mark> had read it.
+```
+
+Props: `at`, `until`, `kind` and `color`.
+
+| `kind` | Draws |
+| --- | --- |
+| `underline` (default) | A line under the text. |
+| `circle` | An ellipse around it. |
+| `box` | A rectangle around it. |
+| `strike` | A line through its middle. |
+| `cross` | Two diagonals across it. |
+| `bracket` | A bracket either side. |
+
+`color` takes any CSS colour, including a theme token (`color="var(--accent)"`); the default is the text colour. Set the stroke width with the `--deck-mark-width` CSS variable (default `3px`). The strokes come from [Rough.js](https://roughjs.com) with a fixed seed, so the same mark looks the same on every load and in every view. A mark over text that wraps onto two lines surrounds the whole box, and an `underline` sits under the last line only, so keep marked phrases short.
+
+`Mark` is the counterpart of Slidev's `v-mark`.
 
 ## Hooks
 

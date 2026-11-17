@@ -10,6 +10,8 @@ Basic layouts are available without imports in MDX. `Center`, `Cover` and `Secti
 
 Their default layout tokens are `--deck-pad-x`, `--deck-pad-y` and `--deck-gap`. Follow the installed guide for values rather than assuming kit classes share the same padding.
 
+Use `<Toc />` for an agenda slide: it lists every slide's title and marks the current slide. Use `<Link to={3}>...</Link>` for a cross-reference to slide 3 at click 0. Both are available without imports in MDX. Links navigate in play and presenter views; in previews, overview thumbnails and print they render as plain text.
+
 ## Typography
 
 Establish a short scale for headline, body, label and source. The framework guide's plain-CSS starter uses 96 design pixels for a headline and 40 for body; these are starting values, not rendered kit class guarantees. Do not carry old heading specificity fixes into a new deck. Inspect what actually renders.

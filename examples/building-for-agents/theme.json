@@ -29,6 +29,9 @@
     "slate": ["#8375b0", "#a395d6", "#d2c7f4", "#f6f1ff"]
   },
   "accents": {
+    "term-red": "{ramps.rose.1}",
+    "term-bright-magenta": "{ramps.rose.4}",
+    "term-selection": "#ffffff4d",
     "blue": "{ramps.violet.2}",
     "blue-soft": "{ramps.violet.3}",
     "pink": "{ramps.rose.2}",

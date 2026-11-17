@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.0
+
+The first stable release.
+
+### Package (`@steamfield/decks`)
+
+- A control tray in the play view, hidden until the pointer reaches the bottom-left corner or a tray button has focus: previous, next, a slide counter, overview, presenter, fullscreen and text size. Embedded decks and the site's deck player have none.
+- `g` opens a go-to dialog in the play and presenter views (not when embedded or in the site's deck player): type a number or part of a title, then Enter. The tray's counter opens it too. `<Toc />` lists every slide as a link, and `<Link to={n}>` goes to a slide.
+- `<Mark kind="underline|circle|box|strike|cross|bracket" at={n}>` draws a hand-drawn mark (roughjs) around text on a click, and un-draws it going back.
+- Code morphing: a four-backtick `md magic-move` fence holding several code fences morphs from one to the next on clicks, with each step's own line highlights (Shiki Magic Move).
+- A live terminal: the kit's `LiveTerm` runs a real shell on a slide under `decks dev --live-term`, one command per click, shared by every window, with a deck-supplied fallback everywhere else. `deck.config.ts` gains `term: { dirs }`. macOS and Linux only. See `docs/guide/terminal.md`.
+
+### Repo
+
+- The `building-for-agents` deck runs its terminals on the framework's `LiveTerm`; its own `term/` server is gone, and `DECKS_LIVE_TERM=1` is now `--live-term`.
+- CI installs `zsh` so the live-shell browser tests run on Linux.
+
 ## 1.0.0-rc.1
 
 No changes to the package's code. This release is published by the release workflow through npm trusted publishing, so it is the first version with provenance; `1.0.0-rc.0` was published by hand to create the package.

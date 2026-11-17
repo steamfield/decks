@@ -28,6 +28,7 @@ Only `title` is required. An unknown key is an error that lists the known ones. 
 | `credit` | `boolean` | `true` | The "Created with Decks" credit on every slide. `false` removes it. |
 | `vite` | Vite `UserConfig` | none | Merged into the framework's Vite config. `vite.plugins` are added after the framework's. |
 | `mdx` | `{ remarkPlugins?: PluggableList; rehypePlugins?: PluggableList }` | none | Plugins added to the slide compiler. Each key, when present, must be an array. |
+| `term` | `{ dirs?: Record<string, string> }` | none | Working directories a `LiveTerm` pane can start in, by key, relative to the deck. Each must exist when `decks dev --live-term` starts. See [terminal.md](terminal.md). |
 
 Examples of each:
 

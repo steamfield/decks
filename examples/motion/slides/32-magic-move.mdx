@@ -1,0 +1,22 @@
+---
+title: Keep the greeting as the function grows.
+---
+
+# Keep the greeting as the function grows.
+
+````md magic-move "greet.ts" {lines: true}
+```ts {1}
+const greeting = "Hello";
+```
+
+```ts {1|2}
+const greet = (name: string) => `Hello, ${name}`;
+greet("Ada");
+```
+
+```ts {all}
+export function greet(name: string) {
+  return `Hello, ${name}!`;
+}
+```
+````

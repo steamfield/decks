@@ -2,6 +2,7 @@ import { type ReactElement, useLayoutEffect, useMemo, useRef, useState } from "r
 import { useDeckAttention } from "./embed/deck-attention";
 import { DeckContext, PresentationContext, useDeckContext, useDeckSelector } from "./hooks";
 import { useDeckKeys } from "./navigation/deck-keys";
+import { GoToDialog } from "./navigation/go-to-dialog";
 import { createSlideModules, type DeckSource } from "./source";
 import type { DeckStore } from "./store/store";
 import { OverviewView } from "./views/overview-view";
@@ -36,10 +37,14 @@ function DeckView(): ReactElement {
       else html.setAttribute("data-deck-motion", previousMotion);
     };
   }, [view]);
-  if (view === "presenter") return <PresenterView />;
   if (view === "overview") return <OverviewView />;
   if (view === "print") return <PrintView />;
-  return <PlayView />;
+  return (
+    <>
+      {view === "presenter" ? <PresenterView /> : <PlayView />}
+      <GoToDialog />
+    </>
+  );
 }
 
 function Presentation(): ReactElement {

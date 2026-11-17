@@ -1,8 +1,10 @@
-import { formatHash, type NavAction, parseLocation, syncChannelId } from "@react-decks/core";
+import { type NavAction, parseLocation } from "@react-decks/core";
 import { useEffect } from "react";
 import { defaultKeybindingsHandlerIgnore, type KeybindingsMap, tinykeys } from "tinykeys";
 import { stepTextScale } from "../canvas/text-scale";
 import { useDeckContext, useDeckSelector, usePresentation } from "../hooks";
+import { openPresenter, toggleFullscreen, toggleOverview } from "./deck-actions";
+import { showGoTo } from "./go-to-state";
 
 export function useDeckKeys() {
   const { source, store } = useDeckContext();
@@ -15,20 +17,10 @@ export function useDeckKeys() {
     };
     const keys: KeybindingsMap = {
       f(event) {
-        if (!document.fullscreenEnabled) return;
-        event.preventDefault();
-        const toggle = document.fullscreenElement
-          ? document.exitFullscreen()
-          : document.documentElement.requestFullscreen();
-        void toggle.catch(() => {
-          // A browser may refuse fullscreen because of permissions or lost user activation.
-        });
+        if (toggleFullscreen()) event.preventDefault();
       },
       o(event) {
-        const current = parseLocation(window.location.hash, window.location.search).view;
-        if (current === "print") return;
-        event.preventDefault();
-        store.setView(current === "overview" ? home.current : "overview");
+        if (toggleOverview(store, home)) event.preventDefault();
       },
       Escape(event) {
         if (parseLocation(window.location.hash, window.location.search).view !== "overview") return;
@@ -36,28 +28,7 @@ export function useDeckKeys() {
         store.setView(home.current);
       },
       p(event) {
-        const state = parseLocation(window.location.hash, window.location.search);
-        if (state.view !== "play" || state.embedded) return;
-        event.preventDefault();
-        const channel = syncChannelId(
-          source.manifest.name,
-          window.location.pathname.replace(/index\.html$/, ""),
-        );
-        // "popup" asks for a window of its own, not a tab, so it is plainly a second surface
-        // driving this one and can be dragged to the speaker's screen.
-        const presenter = window.open(
-          "",
-          `react-decks-presenter:${channel}`,
-          "popup,width=1280,height=800",
-        );
-        // A blocked popup is intentionally silent; the deck remains usable in this window.
-        if (!presenter) return;
-        if (presenter.location.href === "about:blank") {
-          const url = new URL(window.location.href);
-          url.hash = formatHash({ view: "presenter", slide: state.slide, click: state.click });
-          presenter.location.href = url.href;
-        }
-        presenter.focus();
+        if (openPresenter(source)) event.preventDefault();
       },
     };
     if (view === "play" || view === "presenter") {
@@ -72,6 +43,13 @@ export function useDeckKeys() {
         for (const key of ["Equal", "Shift+Equal", "NumpadAdd"]) keys[`${mod}+${key}`] = size(1);
         for (const key of ["Minus", "NumpadSubtract"]) keys[`${mod}+${key}`] = size(-1);
         keys[`${mod}+Digit0`] = size(0);
+      }
+      const { embedded, bridge } = store.getState();
+      if (!embedded && !bridge) {
+        keys.g = (event) => {
+          event.preventDefault();
+          showGoTo(store);
+        };
       }
       Object.assign(keys, {
         ArrowRight: bind({ type: "next" }),
