@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
 import { settled } from "./fixtures/deck-driver";
-import { test } from "./fixtures/live-term";
+import { openLive, shellRows, test } from "./fixtures/live-term";
 
 test("next types the prepared command before its output appears", async ({ page, liveServer }) => {
   await page.goto(liveServer.url);
@@ -36,62 +36,67 @@ test("next types the prepared command before its output appears", async ({ page,
   await log.dispose();
 });
 
-test("two audience windows run each presenter command once and the sole window can reload then advance", async ({
+test("two audience windows and a presenter run each command once", async ({
   page,
   context,
   liveServer,
 }) => {
-  await page.goto(liveServer.url);
-  await expect(page.getByLabel("Terminal status")).toHaveText("Live");
+  await openLive(page, liveServer.url);
   const second = await context.newPage();
-  await second.goto(liveServer.url);
-  await expect(second.getByLabel("Terminal status")).toHaveText("Live");
+  await openLive(second, liveServer.url);
   await page.keyboard.press("ArrowRight");
-  await expect(page.getByLabel("Terminal status")).toHaveText("Live");
-  await expect(
-    page
-      .getByRole("application")
-      .locator(".xterm-rows > div")
-      .filter({ hasText: /^hello$/ }),
-  ).toHaveCount(1);
+  await expect(shellRows(page).filter({ hasText: /^hello$/ })).toHaveCount(1);
   const popup = page.waitForEvent("popup");
   await page.keyboard.press("p");
   const presenter = await popup;
-  await expect(
-    presenter.getByRole("region", { name: "Current slide" }).getByLabel("Terminal recording"),
-  ).toBeVisible();
   await settled(presenter);
   await presenter.keyboard.press("ArrowRight");
-  await expect(
-    page
-      .getByRole("application")
-      .locator(".xterm-rows > div")
-      .filter({ hasText: /^Finish ls:\s*$/ }),
-  ).toHaveCount(1);
-  await expect(page.getByLabel("Terminal status")).toHaveText("Live · busy");
-  await presenter.close();
-  await second.close();
-  await page.reload();
-  await expect(
-    page
-      .getByRole("application")
-      .locator(".xterm-rows > div")
-      .filter({ hasText: /^Finish ls:\s*$/ }),
-  ).toHaveCount(1);
-  await page.keyboard.press("ArrowRight");
-  await expect(page.getByLabel("Terminal status")).toHaveText("Live · queued");
+  await expect(shellRows(page).filter({ hasText: /^Finish ls:\s*$/ })).toHaveCount(1);
   await page.getByRole("application").click();
   await page.keyboard.press("Enter");
-  await expect(
-    page
-      .getByRole("application")
-      .locator(".xterm-rows > div")
-      .filter({ hasText: /^third$/ }),
-  ).toHaveCount(1);
+  await presenter.keyboard.press("ArrowRight");
+  // The third command prints what the first two appended to the `executions` file: a command
+  // that ran in two windows would show 1123 or 11223.
+  await expect(shellRows(page).filter({ hasText: /^executions=123$/ })).toHaveCount(1);
+  await expect(shellRows(second).filter({ hasText: /^executions=123$/ })).toHaveCount(1);
+});
+
+test("a reloaded window reattaches to the running shell and the next click runs the next command", async ({
+  page,
+  liveServer,
+}) => {
+  await openLive(page, liveServer.url);
+  await page.keyboard.press("ArrowRight");
+  await expect(shellRows(page).filter({ hasText: /^hello$/ })).toHaveCount(1);
+  await page.keyboard.press("ArrowRight");
+  await expect(shellRows(page).filter({ hasText: /^Finish ls:\s*$/ })).toHaveCount(1);
+  await page.reload();
+  await expect(shellRows(page).filter({ hasText: /^Finish ls:\s*$/ })).toHaveCount(1);
+  await page.getByRole("application").click();
+  await page.keyboard.press("Enter");
   await expect(page.getByLabel("Terminal status")).toHaveText("Live");
-  const rows = page.getByRole("application").locator(".xterm-rows > div");
-  await expect(rows.filter({ hasText: /^executions=123$/ })).toHaveCount(1);
-  await expect(rows.filter({ hasText: /^third$/ })).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("ArrowRight");
+  await expect(shellRows(page).filter({ hasText: /^executions=123$/ })).toHaveCount(1);
+});
+
+test("a click pressed while a command waits is queued and runs after the prompt returns", async ({
+  page,
+  liveServer,
+}) => {
+  await openLive(page, liveServer.url);
+  await page.keyboard.press("ArrowRight");
+  await expect(shellRows(page).filter({ hasText: /^hello$/ })).toHaveCount(1);
+  await page.keyboard.press("ArrowRight");
+  await expect(shellRows(page).filter({ hasText: /^Finish ls:\s*$/ })).toHaveCount(1);
+  await expect(page.getByLabel("Terminal status")).toHaveText("Live · busy");
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByLabel("Terminal status")).toHaveText("Live · queued");
+  await expect(shellRows(page).filter({ hasText: /^third$/ })).toHaveCount(0);
+  await page.getByRole("application").click();
+  await page.keyboard.press("Enter");
+  await expect(shellRows(page).filter({ hasText: /^third$/ })).toHaveCount(1);
+  await expect(page.getByLabel("Terminal status")).toHaveText("Live");
 });
 
 test("shell exit shows the reason in the frame, or below the fallback without a frame", async ({

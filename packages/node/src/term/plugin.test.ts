@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { readFile, symlink } from "node:fs/promises";
 import { join } from "node:path";
 import {
@@ -64,9 +64,9 @@ test.each([
   },
 );
 
-const realShell = test.skipIf(
-  process.platform !== "darwin" || process.env.DECKS_TEST_LIVE_SHELL !== "1",
-);
+// The pty helper needs zsh and python3; CI installs zsh, so these run there and locally.
+const hasTool = (name: string) => spawnSync(name, ["--version"]).status === 0;
+const realShell = test.skipIf(!hasTool("zsh") || !hasTool("python3"));
 
 test("live terminal registration survives a deck config restart", async () => {
   const { dir, put } = await fixture(onTestFinished);

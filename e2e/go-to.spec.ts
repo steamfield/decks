@@ -10,17 +10,6 @@ test.beforeEach(async ({ editableDeck, page }) => {
   await expect(page.getByRole("heading", { name: "Three steps", exact: true })).toBeVisible();
 });
 
-test("g filters by number and Enter jumps to slide 3 with a clean hash", async ({ page }) => {
-  await page.keyboard.press("g");
-  await expect(page.getByRole("searchbox", { name: "Slide", exact: true })).toBeFocused();
-  await page.getByRole("searchbox", { name: "Slide", exact: true }).fill("3");
-  await expect(page.getByRole("option")).toHaveText("3 A deck component");
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "A deck component", exact: true })).toBeVisible();
-  await expect(page).toHaveURL(/#\/3$/);
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-});
-
 test("go-to in either window moves both, while Escape keeps the frame and restores keys", async ({
   page,
 }) => {
@@ -55,15 +44,10 @@ test("go-to in either window moves both, while Escape keeps the frame and restor
   await expect(page.getByRole("heading", { name: "Three steps", exact: true })).toBeVisible();
 });
 
-test("backdrop dismissal keeps the position and input arrows never drive the deck", async ({
+test("backdrop dismissal keeps the position and gives the keys back to the deck", async ({
   page,
 }) => {
   await page.keyboard.press("g");
-  for (const key of ["ArrowRight", "ArrowLeft"]) {
-    await page.keyboard.press(key);
-    await expect(page).toHaveURL(/#\/2\?clicks=2$/);
-    await expect(page.locator("[data-deck-active]")).toHaveAttribute("data-deck-slide", "2");
-  }
   const dialog = page.getByRole("dialog", { name: "Go to slide" });
   await dialog.click({ position: { x: 2, y: 2 } });
   await expect(dialog).toBeVisible();

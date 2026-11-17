@@ -1,5 +1,5 @@
 import { createMemoryHub } from "@react-decks/core";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, it, onTestFinished } from "vitest";
 import { makeSource } from "../deck.test-support";
@@ -51,21 +51,59 @@ it("a presenter link preserves the presenter view", async () => {
   expect(await current.findByRole("link", { name: "Back to start" })).toBeVisible();
 });
 
-it.each(["#/overview/1", "#/print", "#/presenter/1"])(
-  "a link in the noninteractive rendering of %s is a span",
-  async (hash) => {
-    setup(hash);
-    const area =
-      hash === "#/presenter/1" ? within(screen.getByRole("region", { name: "Next" })) : screen;
-    if (hash === "#/presenter/1") {
-      expect((await area.findByText("Back to start")).tagName).toBe("SPAN");
-      expect(area.queryByRole("link")).not.toBeInTheDocument();
-      return;
-    }
-    expect((await area.findByText("Jump to steps")).tagName).toBe("SPAN");
-    expect(area.queryByRole("link")).not.toBeInTheDocument();
-  },
-);
+it.each(["#/overview/1", "#/print"])("a link in %s is a span", async (hash) => {
+  setup(hash);
+  expect((await screen.findAllByText("Jump to steps"))[0]?.tagName).toBe("SPAN");
+  expect(screen.queryByRole("link")).not.toBeInTheDocument();
+});
+
+it("a link in the presenter's Next preview is a span", async () => {
+  setup("#/presenter/1");
+  const next = within(screen.getByRole("region", { name: "Next" }));
+  expect((await next.findByText("Back to start")).tagName).toBe("SPAN");
+  expect(next.queryByRole("link")).not.toBeInTheDocument();
+});
+
+it("Enter on the focused link navigates", async () => {
+  const user = setup();
+  (await screen.findByRole("link", { name: "Jump to steps" })).focus();
+  await user.keyboard("{Enter}");
+  expect(window.location.hash).toBe("#/2");
+  expect(await screen.findByRole("link", { name: "Back to start" })).toBeVisible();
+});
+
+/** Clicks the link and says whether the link cancelled the browser's own handling of it. */
+function clickCancelled(link: HTMLElement, init?: MouseEventInit): boolean {
+  const seen: boolean[] = [];
+  const record = (event: Event) => {
+    seen.push(event.defaultPrevented);
+    // Stop jsdom following the href itself, which would move the hash under later tests.
+    event.preventDefault();
+  };
+  document.addEventListener("click", record);
+  fireEvent.click(link, init);
+  document.removeEventListener("click", record);
+  return seen[0] ?? false;
+}
+
+// The browser opens these in a new tab or window, so the link must not cancel them.
+it.each([
+  ["Ctrl-click", { ctrlKey: true }],
+  ["Cmd-click", { metaKey: true }],
+  ["Shift-click", { shiftKey: true }],
+  ["Alt-click", { altKey: true }],
+  ["middle-click", { button: 1 }],
+])("a %s is left to the browser", async (_name, init) => {
+  setup();
+  const link = await screen.findByRole("link", { name: "Jump to steps" });
+  expect(clickCancelled(link, init)).toBe(false);
+});
+
+it("a plain click is taken over so the browser does not reload the page", async () => {
+  setup();
+  const link = await screen.findByRole("link", { name: "Jump to steps" });
+  expect(clickCancelled(link)).toBe(true);
+});
 
 it.each([0, 6, 1.5])("an invalid target %s throws with the target and deck count", async (to) => {
   setup("#/1", to);

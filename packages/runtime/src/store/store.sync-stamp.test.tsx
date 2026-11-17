@@ -44,7 +44,8 @@ test("an unsynced window exposes its navigation stamp through useDeck before ren
   expect(store.getState().syncStamp).toEqual({ ...initial, seq: 1 });
 });
 
-test("a newcomer adopts remote stamps and delayed presentation applies the latest position with its stamp", async () => {
+/** A window that joined a deck where another window ("existing") is already presenting. */
+async function joinExisting() {
   vi.useFakeTimers();
   onTestFinished(() => {
     vi.useRealTimers();
@@ -52,7 +53,6 @@ test("a newcomer adopts remote stamps and delayed presentation applies the lates
   window.history.replaceState(null, "", "/#/2");
   const hub = createMemoryHub();
   const applies: (() => void)[] = [];
-  const source = makeSource();
   let remoteNav = { slide: 2, click: 0 };
   const remote = createSyncSession({
     id: "existing",
@@ -63,7 +63,7 @@ test("a newcomer adopts remote stamps and delayed presentation applies the lates
       remoteNav = next.nav;
     },
   });
-  const store = createDeckStore(source.manifest, {
+  const store = createDeckStore(makeSource().manifest, {
     transport: hub.connect(),
     present(_change, apply) {
       applies.push(apply);
@@ -74,28 +74,48 @@ test("a newcomer adopts remote stamps and delayed presentation applies the lates
     remote.close();
     window.history.replaceState(null, "", "/");
   });
+  await vi.runAllTimersAsync();
+  return {
+    store,
+    remote,
+    applies,
+    publish: async (click: number) => {
+      remoteNav = { slide: 2, click };
+      remote.publish({ nav: remoteNav });
+      await vi.runAllTimersAsync();
+      return remoteNav;
+    },
+  };
+}
+
+test("a delayed presentation applies the latest remote position with the stamp it was published under", async () => {
+  const { store, remote, applies, publish } = await joinExisting();
   const presented: DeckState[] = [];
   store.subscribe(() => presented.push(store.getState()));
-  await vi.runAllTimersAsync();
-  remoteNav = { slide: 2, click: 1 };
-  remote.publish({ nav: remoteNav });
-  await vi.runAllTimersAsync();
+  await publish(1);
   const first = remote.getStamp();
-  remoteNav = { slide: 2, click: 2 };
-  remote.publish({ nav: remoteNav });
-  await vi.runAllTimersAsync();
+  const latest = await publish(2);
   expect(store.getState().nav.click).toBe(0);
   act(() => {
     for (const apply of applies) apply();
   });
   expect(presented).toEqual([
-    expect.objectContaining({ nav: remoteNav, syncStamp: remote.getStamp() }),
+    expect.objectContaining({ nav: latest, syncStamp: remote.getStamp() }),
   ]);
   expect(store.getState().syncStamp).not.toEqual(first);
+});
+
+test("a local step after adopting a remote stamp is published with the next sequence number", async () => {
+  const { store, remote, applies, publish } = await joinExisting();
+  await publish(1);
+  act(() => {
+    for (const apply of applies) apply();
+  });
+  const adopted = store.getState().syncStamp;
   act(() => store.dispatch({ type: "next" }));
   act(() => applies.at(-1)?.());
   const stamp = store.getState().syncStamp;
-  expect(stamp.seq).toBe(3);
+  expect(stamp.seq).toBe(adopted.seq + 1);
   expect(stamp.origin).not.toBe("existing");
   await vi.runAllTimersAsync();
   expect(remote.getStamp()).toEqual(stamp);

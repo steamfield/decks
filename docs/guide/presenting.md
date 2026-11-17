@@ -23,7 +23,7 @@ Views and display:
 | `o` | Open the overview, or close it. | Every view. |
 | `Escape` | Close the overview without moving. | The overview. |
 | `p` | Open the presenter window. | The play view, when not embedded. |
-| `g` | Open the go-to dialog. | The play view and presenter window, when not embedded. |
+| `g` | Open the go-to dialog. | The play view and presenter window, when not embedded or in the site player. |
 | `Cmd/Ctrl` + `+` or `=` | Larger slide text. | Play view and presenter window. |
 | `Cmd/Ctrl` + `-` | Smaller slide text. | Play view and presenter window. |
 | `Cmd/Ctrl` + `0` | Slide text back to its authored size. | Play view and presenter window. |

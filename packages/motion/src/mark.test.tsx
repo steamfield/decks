@@ -31,32 +31,22 @@ describe("Mark", () => {
     );
   });
 
-  it.each(kinds)(
-    "accepts %s and leaves text readable without paths before measurement",
-    async (kind) => {
-      await setupMotion(() => (
-        <Mark kind={kind} at={1}>
-          Evidence
-        </Mark>
-      ));
-      const root = screen.getByText("Evidence");
-      expect(root).toBeVisible();
-      expect(root.tagName).toBe("SPAN");
-      expect(root.querySelectorAll("path")).toHaveLength(0);
-    },
-  );
-
-  it("accepts an omitted kind and an explicit underline before measurement", async () => {
+  it("every kind, and the default, leaves text readable without paths before measurement", async () => {
     await setupMotion(() => (
       <>
         <Mark at={1}>Default</Mark>
-        <Mark kind="underline" at={1}>
-          Explicit
-        </Mark>
+        {kinds.map((kind) => (
+          <Mark key={kind} kind={kind} at={1}>
+            {`Evidence ${kind}`}
+          </Mark>
+        ))}
       </>
     ));
-    expect(screen.getByText("Default")).toBeVisible();
-    expect(screen.getByText("Explicit")).toBeVisible();
+    for (const name of ["Default", ...kinds.map((kind) => `Evidence ${kind}`)]) {
+      const root = screen.getByText(name);
+      expect(root).toBeVisible();
+      expect(root.querySelectorAll("path")).toHaveLength(0);
+    }
   });
 
   it("rejects an unknown kind naming the offending value", async () => {

@@ -1,5 +1,6 @@
+import type { RenderContext } from "@react-decks/runtime";
 import { toKeyedTokens } from "@shikijs/magic-move/core";
-import { screen } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { MagicMove } from "./magic-move";
 import { setupMotion } from "./motion.test-support";
@@ -49,14 +50,37 @@ describe("magic move", () => {
     expect(states()).toEqual(["active", "active"]);
   });
 
-  it.each(["slide", "presenter", "preview", "overview", "print"] as const)(
-    "renders the initial %s instance at its click without animation",
+  // The real renderer writes --smm-duration only when a step change goes through its animated
+  // render(); the instant path leaves it unset, so it is the duration a viewer would get.
+  async function stepForward(context: RenderContext, motion?: "instant") {
+    const app = await setupMotion(Subject, { click: 1, context });
+    const figure = screen.getByRole("figure");
+    expect(figure.textContent).toBe("example.tsfirst");
+    // After mount: the deck sets the attribute itself on mount, and setupMotion restores it.
+    if (motion) document.documentElement.setAttribute("data-deck-motion", motion);
+    await act(async () => app.store.dispatch({ type: "next" }));
+    return figure;
+  }
+  const duration = (figure: HTMLElement) =>
+    figure.querySelector("pre")?.style.getPropertyValue("--smm-duration");
+
+  it("a forward click in the live slide takes the animated path", async () => {
+    const figure = await stepForward("slide");
+    await waitFor(() => expect(duration(figure)).not.toBe(""));
+  });
+
+  it("a forward click with motion instant shows the next step without animating", async () => {
+    const figure = await stepForward("slide", "instant");
+    await waitFor(() => expect(figure.textContent).toBe("example.tssecondextra"));
+    expect(duration(figure)).toBe("");
+  });
+
+  it.each(["presenter", "preview", "overview", "print"] as const)(
+    "a forward click in the %s context shows the next step without animating",
     async (context) => {
-      await setupMotion(Subject, { click: 3, context });
-      const figure = screen.getByRole("figure");
-      expect(figure.textContent).toBe("example.tssecondextra");
-      // The real renderer writes --smm-duration only when animate=true invokes render().
-      expect(figure.querySelector("pre")?.style.getPropertyValue("--smm-duration")).toBe("");
+      const figure = await stepForward(context);
+      await waitFor(() => expect(figure.textContent).toBe("example.tssecondextra"));
+      expect(duration(figure)).toBe("");
     },
   );
 });

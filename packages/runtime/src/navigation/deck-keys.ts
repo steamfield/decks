@@ -44,7 +44,8 @@ export function useDeckKeys() {
         for (const key of ["Minus", "NumpadSubtract"]) keys[`${mod}+${key}`] = size(-1);
         keys[`${mod}+Digit0`] = size(0);
       }
-      if (!store.getState().embedded) {
+      const { embedded, bridge } = store.getState();
+      if (!embedded && !bridge) {
         keys.g = (event) => {
           event.preventDefault();
           showGoTo(store);
