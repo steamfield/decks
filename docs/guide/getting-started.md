@@ -58,7 +58,7 @@ npx -p @steamfield/decks decks build hello
 
 Or add scripts to `package.json` (`"dev": "decks dev hello"`, `"build": "decks build hello"`), which run the installed bin, and use `bun run dev` or `npm run dev`. The rest of the guide writes the command as `decks` for short.
 
-### `decks dev <deck> [--port <n>] [--open]`
+### `decks dev <deck> [--port <n>] [--open] [--live-term]`
 
 Serves the deck with live updates and prints its URL.
 
@@ -66,6 +66,7 @@ Serves the deck with live updates and prints its URL.
 | --- | --- | --- |
 | `--port <n>` | first free port from 3030 up | A whole number from 0 to 65535. An explicit port is strict: if it is taken the command fails instead of moving to another. `0` lets the OS pick. |
 | `--open` | off | Open the deck in a browser. |
+| `--live-term` | off | Run real shells in the deck's `LiveTerm` panes, on macOS and Linux. See [terminal.md](terminal.md). `decks build` and the other commands reject it. |
 
 What an edit does while `dev` runs:
 

@@ -12,13 +12,9 @@ purpose.
 
 | Gap | Slidev feature | Why it matters here | Rough size |
 | --- | --- | --- | --- |
-| Code morphing ([steamfield/decks#4](https://github.com/steamfield/decks/issues/4)) | Shiki Magic Move | The Slidev feature people show off. `shiki-magic-move` has a framework-neutral core and a React renderer; it belongs in the motion package next to `Morph`. | Medium |
-| Hand-drawn marks ([steamfield/decks#5](https://github.com/steamfield/decks/issues/5)) | Rough Markers (`v-mark`) | Underline, circle, box, strike-through and bracket drawn on a click. `Highlight` covers only the marker sweep. Rough Notation is framework-neutral; these would be step primitives (`<Mark kind="circle" at={2}>`). | Small |
 | Agent tooling ([steamfield/decks#8](https://github.com/steamfield/decks/issues/8)) | MCP server (inspect, edit, reorder, navigate slides) | The product pitch is decks made by agents. An MCP server over the manifest and `shot`/`film` output would let an agent see and drive a running deck without a browser tool. Depends on Phase 5 tooling. | Medium |
-| Go-to dialog and navigation components ([steamfield/decks#9](https://github.com/steamfield/decks/issues/9)) | `g` go-to dialog, `<Toc>`, `<Link to>`, slide number components | Small presenter conveniences. `useDeck()` already exposes what they need. | Small |
 | Zoom and scale helpers ([steamfield/decks#10](https://github.com/steamfield/decks/issues/10)) | `zoom` frontmatter, `<Transform>` | Scaling one slide's content, or one block, without touching CSS. | Small |
 | PDF and images at build ([steamfield/decks#11](https://github.com/steamfield/decks/issues/11)) | Generate PDF when building, PNG export | `decks export` is planned (Phase 5). Emitting the PDF into the built site, and a per-slide PNG export, are small additions on top. | Small |
-| Live terminal ([RFC 0008](rfcs/0008-live-terminal.md)) | (none; `slidev-addon-liveshell` wraps ttyd and breaks in a build) | A talk about CLI tools has to leave the deck to run one. `examples/building-for-agents/term/` runs prepared commands in a real shell from the dev server, with a recording everywhere else, and is written to move into `core`, `node` and `kit` unchanged. | Medium: the code exists; the work is the config field, the kit component split and a Windows answer |
 
 ## Recipe (ecosystem, needs docs and a fixture)
 

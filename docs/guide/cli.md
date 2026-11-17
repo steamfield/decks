@@ -1,6 +1,6 @@
 # The decks command
 
-`decks dev` and `decks build` are in [getting-started.md](getting-started.md). This page covers the rest. Every command that takes a deck accepts an alias from `decks.json` or a directory, and a bare name that is neither resolves under `_config.decksDir` (default `decks/`).
+`decks dev` and `decks build` are in [getting-started.md](getting-started.md); `decks dev --live-term` is in [terminal.md](terminal.md). This page covers the rest. Every command that takes a deck accepts an alias from `decks.json` or a directory, and a bare name that is neither resolves under `_config.decksDir` (default `decks/`).
 
 ## `decks new <alias> [dir] [--story] [--author "Name"] [--url example.com]`
 

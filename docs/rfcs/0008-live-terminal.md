@@ -1,8 +1,8 @@
 # RFC 0008: a live terminal on a slide
 
-Status: Draft. A deck-local version runs in `examples/building-for-agents/term/` and was
+Status: Done. Shipped on `build/next-features`: the server is `packages/node/src/term/`, the pane is the kit's `LiveTerm`, and the user guide is `docs/guide/terminal.md`. Before that, a deck-local version ran in `examples/building-for-agents/term/` and was
 built for one talk. This RFC records what it proved and what moving it into the framework
-takes. Nothing in `packages/` has changed.
+takes.
 
 ## Problem
 
