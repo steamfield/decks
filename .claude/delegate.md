@@ -44,6 +44,11 @@ procedure around it.
   run `rr rd-check` yourself on the integration branch after each merge. Each worktree syncs
   to its own remote directory (`decks@<worktree>`); `rr prune` removes the ones left by
   archived runs. Nothing else may hold the rr lock while a live `rr` demo is being recorded.
+- A new default MDX component is registered in three places: `dev/entry.ts`, the `provided`
+  list in `mdx/component-check.ts`, and `mdx/clicks.ts` if it takes `at`. A scaffold that
+  misses one leaves every run that uses the component asking.
+- A new control with a common accessible name (Next, Previous) can collide with fixture
+  buttons that other packages' test-support queries by that name; grep them before the run.
 - `decks shot <deck> <n> <click>` takes the slide's playback position, which differs from its
   filename prefix when a number is skipped or a slide is hidden. Give positions in contracts.
 - A follow-up names the rule it changes and the rules it keeps. "Stepping back does not remove
