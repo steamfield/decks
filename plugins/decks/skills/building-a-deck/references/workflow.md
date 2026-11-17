@@ -58,6 +58,8 @@ Start the deck with `decks dev <deck> --live-term` on macOS or Linux. Only the a
 
 Click the terminal to type; press Escape to return keys to the deck. Give the pane a size in the slide layout. Set its font and colours with `--deck-term-*` custom properties; the component supplies no skin.
 
+Pass `frame={(content, status) => ...}` to wrap both the shell and recording in your deck's skin. Render `content` in a sized area and label it from `status.live`, `status.busy`, `status.queued` and `status.reason`, for example "Live · busy" or "Recorded · live unavailable: Shell exited (0)". `live` becomes true when the shell can draw; the recording stays visible while the module and font load. With `frame`, show the reason yourself. Without it, the component places the reason below the recording with `role="status"`.
+
 ## Notes and pacing
 
 Put opening narration before the first `[click]` marker in a single `<Notes>` block. For story decks use one plain `[click]` line per click, in order, so the presenter can follow every beat. Notes do not add clicks. Do not hide notes in comments or put the block inside a conditional expression.

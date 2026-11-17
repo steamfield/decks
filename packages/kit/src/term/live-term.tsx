@@ -8,7 +8,6 @@ import {
   type ReactElement,
   type ReactNode,
   useEffect,
-  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -37,6 +36,7 @@ export function LiveTerm({
   pane,
   click,
   fallback,
+  frame,
 }: {
   pane: TermPaneSpec;
   click: number;
@@ -50,21 +50,13 @@ export function LiveTerm({
   const eligible =
     isActive && renderContext === "slide" && view === "play" && !embedded && mode === "live";
   const live = useLiveTerm(import.meta.hot, pane, eligible, click, isActive);
-  const terminalBox = useRef<HTMLDivElement>(null);
+  const [drawn, setDrawn] = useState(false);
   const [Host, setHost] = useState<ComponentType<Parameters<typeof XtermHost>[0]>>();
   useEffect(() => {
     if (!import.meta.hot || !live.live) return;
-    const element = terminalBox.current;
-    if (!element) return;
-    const css = getComputedStyle(element);
-    const font = css.getPropertyValue("--deck-term-font").trim() || "monospace";
     let cancelled = false;
-    void Promise.all([
-      import("./xterm-host"),
-      document.fonts.load(`${css.fontSize} ${font}`),
-      document.fonts.ready,
-    ]).then(
-      ([{ XtermHost }]) => {
+    void import("./xterm-host").then(
+      ({ XtermHost }) => {
         if (!cancelled) setHost(() => XtermHost);
       },
       (error: unknown) => {
@@ -78,14 +70,36 @@ export function LiveTerm({
       cancelled = true;
     };
   }, [live.live, live.connection]);
+  const showingLive = live.live && drawn;
+  const content = (
+    <div className={styles.content}>
+      {!showingLive && fallback}
+      {live.live && Host && live.connection && (
+        <div className={showingLive ? styles.shell : styles.loading}>
+          <Host
+            connection={live.connection}
+            rows={pane.rows}
+            cols={pane.cols}
+            scale={scale}
+            onReady={setDrawn}
+          />
+        </div>
+      )}
+    </div>
+  );
   return (
-    <div ref={terminalBox} className={styles.pane}>
-      {live.live && Host && live.connection ? (
-        <Host connection={live.connection} rows={pane.rows} cols={pane.cols} scale={scale} />
+    <div className={styles.pane}>
+      {frame ? (
+        frame(content, {
+          live: showingLive,
+          busy: live.busy,
+          queued: live.queued.length > 0,
+          ...(live.reason ? { reason: live.reason } : {}),
+        })
       ) : (
         <>
-          {fallback}
-          {live.reason && <div role="status">{live.reason}</div>}
+          {content}
+          {!showingLive && live.reason && <div role="status">{live.reason}</div>}
         </>
       )}
     </div>

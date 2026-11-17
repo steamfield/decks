@@ -1,0 +1,32 @@
+@font-face {
+  font-family: "Terminal fixture";
+  src: url("/fonts/terminal.woff2") format("woff2");
+  font-weight: 400;
+}
+
+.demo,
+.plain {
+  height: 420px;
+}
+
+.demo {
+  --deck-term-font: "Terminal fixture", monospace;
+}
+
+.plain {
+  --deck-term-font: monospace;
+}
+
+.narrow {
+  width: 565px;
+}
+
+.frame {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
+}
+
+.screen {
+  min-height: 0;
+}
