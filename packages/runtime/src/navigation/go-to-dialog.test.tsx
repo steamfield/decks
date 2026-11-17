@@ -88,7 +88,7 @@ it.each(["#/2?clicks=2", "#/presenter/2?clicks=2"])(
   },
 );
 
-it.each(["#/overview/2?clicks=2", "#/print", "?embedded#/2"])(
+it.each(["#/overview/2?clicks=2", "#/print", "?embedded#/2", "?decks-bridge#/2"])(
   "g does not open a dialog in %s",
   async (hash) => {
     const user = setup(hash);

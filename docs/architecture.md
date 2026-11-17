@@ -797,7 +797,7 @@ Keys added to the Phase 2 table:
 | `Escape` | In the overview: `setView(home)`. The position is untouched, clicks included. |
 | `p` | In the play view, when not embedded: opens the presenter window. |
 | `f` | In every view: toggles fullscreen on `document.documentElement`. |
-| `g` | In the play or presenter view, when not embedded: opens the go-to dialog (section 4.5). |
+| `g` | In the play or presenter view, when not embedded or in the site player (`?decks-bridge`): opens the go-to dialog (section 4.5). |
 
 The presenter window: `const w = window.open("", "react-decks-presenter:" + channelId,
 "popup,width=1280,height=800")`. The `popup` feature asks the browser for a separate window
@@ -1716,7 +1716,7 @@ properties the other views use, derived from `currentColor`.
 
 ### Go-to dialog
 
-`g` in the play or presenter view, when not embedded, and the tray's counter open a modal
+`g` in the play or presenter view, when not embedded or in the site player, and the tray's counter open a modal
 native `<dialog>` with `aria-label="Go to slide"`, holding a search input (label "Slide") and a
 list (`role="listbox"`) of every slide as "n  title" (`role="option"`). The input is focused
 on open, and deck keys do not act while the dialog is open. Typing filters the list: a number
