@@ -33,6 +33,7 @@ test("tray navigation advances both windows, keeps native Space activation, and 
 }) => {
   await page.goto("/#/2");
   const tray = page.getByRole("toolbar", { name: "Deck controls" });
+  await page.mouse.move(4, 716);
   const opened = page.waitForEvent("popup");
   await tray.getByRole("button", { name: "Open presenter" }).click();
   const presenter = await opened;
@@ -64,6 +65,7 @@ test("tray navigation advances both windows, keeps native Space activation, and 
 test("the fullscreen button enters and exits document fullscreen", async ({ page }) => {
   await page.goto("/#/2");
   const tray = page.getByRole("toolbar", { name: "Deck controls" });
+  await page.mouse.move(4, 716);
   await tray.getByRole("button", { name: "Enter fullscreen" }).click();
   await expect
     .poll(() => page.evaluate(() => document.fullscreenElement === document.documentElement))
@@ -104,17 +106,23 @@ test("embedded and bridge decks have no tray, and returning from overview restor
   await expect(tray).toHaveCSS("opacity", "1");
 });
 
-test("the tray counter opens the go-to dialog, and choosing a slide goes there", async ({
+test("choosing a slide from the tray releases focus so Space advances after moving away", async ({
   page,
 }) => {
   await page.goto("/#/2");
   const tray = page.getByRole("toolbar", { name: "Deck controls" });
+  await page.mouse.move(4, 716);
   await tray.getByRole("button", { name: "Go to slide" }).click();
   const search = page.getByRole("searchbox", { name: "Slide", exact: true });
   await expect(search).toBeFocused();
   await search.fill("3");
+  await page.mouse.move(600, 300);
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#\/3$/);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(tray.getByRole("button", { name: "Go to slide" })).toHaveText(/^3 \/ \d+$/);
+  await page.mouse.move(800, 400);
+  await expect(tray).toHaveCSS("opacity", "0");
+  await page.keyboard.press("Space");
+  await expect(page).toHaveURL(/#\/4$/);
 });

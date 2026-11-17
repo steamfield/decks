@@ -1,8 +1,8 @@
-import { type ReactElement, useLayoutEffect, useState } from "react";
+import { type ReactElement, useLayoutEffect, useRef, useState } from "react";
 import { stepTextScale } from "../canvas/text-scale";
 import { useDeck, useDeckContext, usePresentation } from "../hooks";
 import { openPresenter, toggleFullscreen, toggleOverview } from "../navigation/deck-actions";
-import { useGoTo } from "../navigation/go-to-state";
+import { showGoTo } from "../navigation/go-to-state";
 import "./control-tray.css";
 
 function Icon({ path }: { path: string }): ReactElement {
@@ -17,7 +17,7 @@ export function ControlTray(): ReactElement {
   const deck = useDeck();
   const { source, store } = useDeckContext();
   const { home } = usePresentation();
-  const { show } = useGoTo();
+  const touchReveal = useRef(false);
   const [fullscreenEnabled, setFullscreenEnabled] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   useLayoutEffect(() => {
@@ -34,10 +34,22 @@ export function ControlTray(): ReactElement {
       role="toolbar"
       aria-label="Deck controls"
       className="rd-tray"
+      tabIndex={-1}
+      onPointerDownCapture={(event) => {
+        touchReveal.current =
+          event.pointerType === "touch" && !event.currentTarget.matches(":hover, :focus-within");
+      }}
+      onClickCapture={(event) => {
+        // Touch applies hover before click, so CSS alone cannot consume the reveal tap.
+        if (!touchReveal.current || event.detail === 0) return;
+        touchReveal.current = false;
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.focus();
+      }}
       onPointerLeave={(event) => {
         const focused = document.activeElement;
-        if (focused instanceof HTMLButtonElement && event.currentTarget.contains(focused))
-          focused.blur();
+        if (focused instanceof HTMLElement && event.currentTarget.contains(focused)) focused.blur();
       }}
     >
       <div className="rd-tray-buttons">
@@ -57,7 +69,15 @@ export function ControlTray(): ReactElement {
         >
           <Icon path="m9 6 6 6-6 6" />
         </button>
-        <button type="button" aria-label="Go to slide" onClick={show}>
+        <button
+          type="button"
+          aria-label="Go to slide"
+          onClick={(event) => {
+            // The dialog must not restore focus to the tray when it closes.
+            event.currentTarget.blur();
+            showGoTo(store);
+          }}
+        >
           <Icon path="M4 4h16v16H4z M8 8h8 M8 12h8 M8 16h4" />
           {deck.slide} / {deck.total}
         </button>

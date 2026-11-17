@@ -5,7 +5,7 @@ import { expect, it, onTestFinished } from "vitest";
 import { install, makeSource } from "../deck.test-support";
 import { createDeckStore, Deck } from "../index";
 
-function setup(hash = "#/2?clicks=2") {
+function setup(hash = "#/2?clicks=2", renders?: number[]) {
   // jsdom does not implement the native dialog methods or Escape's cancel event.
   install(HTMLDialogElement.prototype, "showModal", function (this: HTMLDialogElement) {
     this.open = true;
@@ -20,7 +20,12 @@ function setup(hash = "#/2?clicks=2") {
     slides: Object.fromEntries(
       base.manifest.slides.map(({ id, no }) => [
         id,
-        async () => ({ default: () => <h1>Slide {no}</h1> }),
+        async () => ({
+          default: () => {
+            renders?.push(no);
+            return <h1>Slide {no}</h1>;
+          },
+        }),
       ]),
     ),
     manifest: {
@@ -37,6 +42,23 @@ function setup(hash = "#/2?clicks=2") {
   });
   return userEvent.setup();
 }
+
+it("opening, filtering and closing go-to leaves the mounted slides untouched", async () => {
+  const renders: number[] = [];
+  const user = setup("#/2?clicks=2", renders);
+  for (const no of [1, 2, 3])
+    await screen.findByRole("heading", { name: `Slide ${no}`, hidden: true });
+  const before = [...renders];
+  for (const query of ["3", "Title", "missing"]) {
+    await user.keyboard("g");
+    await user.type(screen.getByRole("searchbox", { name: "Slide" }), query);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(renders).toEqual(before);
+  }
+  await user.keyboard("{ArrowRight}");
+  expect(window.location.hash).toBe("#/2?clicks=3");
+});
 
 it.each(["#/2?clicks=2", "#/presenter/2?clicks=2"])(
   "g opens a focused modal with every slide in %s",
