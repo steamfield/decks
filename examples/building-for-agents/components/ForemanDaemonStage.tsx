@@ -424,6 +424,7 @@ export function ForemanDaemonStage() {
             reveal={s.frame}
             {...TREE_BOX}
             root={root}
+            repoDir="~/Projects/claude-codex/src"
           />
           <ThreadRail current="foreman" />
         </>

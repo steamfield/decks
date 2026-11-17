@@ -15,6 +15,8 @@ export interface Excerpt {
   /** First and last source line the excerpt draws from, 1-based, inclusive. */
   start: number;
   end: number;
+  /** Where the file is on the author's machine when `repo` is not a directory under ~/Projects. */
+  local?: string;
   /** The commit the file was read at. */
   commit: string;
   lang: "ts" | "rust" | "json" | "sh" | "yaml" | "text";

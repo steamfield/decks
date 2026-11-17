@@ -1,6 +1,7 @@
 import { STAGE, stagger } from "@steamfield/decks/kit";
 import type { TreeNode } from "../data/types";
 import styles from "./RepoTree.module.css";
+import { VscodeLink } from "./VscodeLink";
 
 export function RepoTree({
   nodes,
@@ -12,6 +13,7 @@ export function RepoTree({
   width,
   row = 40,
   root = "",
+  repoDir,
 }: {
   nodes: readonly TreeNode[];
   lit?: readonly string[];
@@ -22,6 +24,8 @@ export function RepoTree({
   width: number;
   row?: number;
   root?: string;
+  /** Directory the nodes' `path`s are relative to; with it, rows open in VS Code. */
+  repoDir?: string;
 }) {
   return (
     <div
@@ -52,7 +56,13 @@ export function RepoTree({
               transform: `translateY(${(1 - p) * 10}px)`,
             }}
           >
-            <span className={`sf-tree-label ${styles["sf-tree-label"]}`}>{node.label}</span>
+            <span className={`sf-tree-label ${styles["sf-tree-label"]}`}>
+              {repoDir && node.path ? (
+                <VscodeLink path={`${repoDir}/${node.path}`}>{node.label}</VscodeLink>
+              ) : (
+                node.label
+              )}
+            </span>
             {node.note && focused && (
               <span className={`sf-tree-note ${styles["sf-tree-note"]}`}>{node.note}</span>
             )}

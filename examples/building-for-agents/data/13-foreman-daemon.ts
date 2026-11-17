@@ -60,12 +60,18 @@ export const TARGETS = ["darwin-arm64", "darwin-x64", "linux-x64", "linux-arm64"
 export const SCAFFOLD_STACK = "typescript-cli";
 
 export const TREE: readonly TreeNode[] = [
-  { id: "commands", label: "commands/", depth: 0, note: "flags and help text" },
-  { id: "core", label: "core/", depth: 0, note: "worktrees, digests" },
-  { id: "daemon", label: "daemon/", depth: 0, note: "socket, lock, client" },
-  { id: "supervisor", label: "supervisor/", depth: 0, note: "runs, turns, questions" },
-  { id: "codex", label: "codex/", depth: 0, note: "app-server client, pin" },
-  { id: "guide", label: "guide/", depth: 0, note: "contract and skill text" },
-  { id: "schemas", label: "schemas/", depth: 0, note: "every wire shape" },
-  { id: "errors", label: "errors.ts", depth: 0, note: "every tagged error" },
+  { id: "commands", label: "commands/", depth: 0, path: "commands/", note: "flags and help text" },
+  { id: "core", label: "core/", depth: 0, path: "core/", note: "worktrees, digests" },
+  { id: "daemon", label: "daemon/", depth: 0, path: "daemon/", note: "socket, lock, client" },
+  {
+    id: "supervisor",
+    label: "supervisor/",
+    depth: 0,
+    path: "supervisor/",
+    note: "runs, turns, questions",
+  },
+  { id: "codex", label: "codex/", depth: 0, path: "codex/", note: "app-server client, pin" },
+  { id: "guide", label: "guide/", depth: 0, path: "guide/", note: "contract and skill text" },
+  { id: "schemas", label: "schemas/", depth: 0, path: "schemas/", note: "every wire shape" },
+  { id: "errors", label: "errors.ts", depth: 0, path: "errors.ts", note: "every tagged error" },
 ];
