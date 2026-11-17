@@ -13,8 +13,10 @@ export function PresenterView(): ReactElement {
   const [notes, setNotes] = useState<Readonly<Record<string, readonly NoteHtml[]>> | Error | null>(
     null,
   );
+  // The current click's notes go to the top of the panel, so the presenter reads down from
+  // there without scrolling: earlier clicks scroll away and the next ones stay below.
   const revealNote = useCallback((element: HTMLDivElement | null) => {
-    element?.scrollIntoView?.({ block: "nearest" });
+    element?.scrollIntoView?.({ block: "start" });
   }, []);
   const meta = source.manifest.slides[nav.slide - 1];
   const next = navigate(nav, { type: "next" }, source.manifest);

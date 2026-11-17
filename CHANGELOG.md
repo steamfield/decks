@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Presenter view pins the current click's notes to the top of the notes panel on every step, so the speaker never scrolls them.
 - The control tray draws on its own dark, translucent panel, so it stays readable on slides whose text colour matches the background.
 
 ## 1.0.0

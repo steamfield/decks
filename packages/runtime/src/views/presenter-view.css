@@ -56,6 +56,13 @@
     line-height: 1.45;
   }
 
+  /* Room below the last click, so any click's notes can scroll to the top of the panel. */
+  .rd-presenter-notes::after {
+    content: "";
+    display: block;
+    block-size: 100%;
+  }
+
   .rd-presenter-notes > div {
     opacity: 0.6;
     padding-inline-start: 0.875rem;
