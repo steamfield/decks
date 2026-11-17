@@ -188,11 +188,11 @@ it.each(["?embedded#/2", "?decks-bridge#/2", "#/presenter/2", "#/overview/2", "#
 it("leaving the tray blurs a focused button so Space navigates again", async () => {
   setup("#/2");
   const user = userEvent.setup();
-  const counter = tray().getByRole("button", { name: "Go to slide" });
-  await user.click(counter);
-  expect(counter).toHaveFocus();
+  const larger = tray().getByRole("button", { name: "Larger text" });
+  await user.click(larger);
+  expect(larger).toHaveFocus();
   await user.unhover(screen.getByRole("toolbar", { name: "Deck controls" }));
-  expect(counter).not.toHaveFocus();
+  expect(larger).not.toHaveFocus();
   await user.keyboard(" ");
   expect(window.location.hash).toBe("#/2?clicks=1");
 });
