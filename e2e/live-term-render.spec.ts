@@ -44,8 +44,10 @@ async function expectGrid(page: Page, dpr: number) {
   expect((grid.y - pane.y) * 2 + grid.height).toBeCloseTo(pane.height, 1);
   // A one-device-pixel advance can leave more than 10% spare height with a small bitmap
   // font. Bound the margin by that step, including xterm's per-row measurement rounding.
+  // Font hinting (Linux) can make the next whole advance unreachable, so the width bound
+  // allows two device pixels per column.
   const stepHeight = grid.height / advance + 24 / dpr;
-  expect(pane.width - grid.width - 6 < 60 / dpr || pane.height - grid.height < stepHeight).toBe(
+  expect(pane.width - grid.width - 6 < 120 / dpr || pane.height - grid.height < stepHeight).toBe(
     true,
   );
 }
