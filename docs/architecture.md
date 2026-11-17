@@ -1813,10 +1813,12 @@ Line highlighting within a step uses the code block's `data-line-state` (section
 other command, no shell exists and panes show their fallback. `deck.config.ts` may name
 working directories: `term: { dirs?: Record<string, string> }` (paths relative to the deck);
 a pane's `cwd` is `"temp"` (a fresh temporary directory) or a key of `dirs`, and any other
-value is an error naming the pane. The browser never sends a path.
+value is an error naming the pane. The browser never sends a path. Every command checks that
+`dirs` is a record of strings; only `dev --live-term` checks that each directory exists, since
+a deck built elsewhere names directories that exist only on the speaker's machine.
 
 The plugin refuses to start, logging one line naming why, when the server is not bound to a
-loopback address or the platform is Windows (the pty helper is Python's standard `pty`
+loopback address, its HMR WebSocket has a port or server of its own, or the platform is Windows (the pty helper is Python's standard `pty`
 module). Neither check is configurable. Sessions run `zsh -d` with a private `ZDOTDIR` (the
 package's `term/zsh/.zshrc`: a prompt that prints the OSC 133 marker, and the blank line
 before each prompt), through `term/shell_pty.py`, in the dev server's environment without the
