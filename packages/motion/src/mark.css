@@ -1,0 +1,34 @@
+@layer react-decks {
+  .rd-mark[data-step-state] {
+    display: inline-block;
+    position: relative;
+    opacity: 1;
+    visibility: visible;
+    transition: none;
+  }
+
+  .rd-mark > svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .rd-mark > svg > path {
+    stroke-width: var(--deck-mark-width, 3px);
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset var(--deck-dur-slow) var(--deck-ease-draw);
+  }
+
+  .rd-mark:is([data-step-state="before"], [data-step-state="gone"]) > svg > path {
+    stroke-dashoffset: 1;
+  }
+
+  html[data-deck-motion="instant"] .rd-mark > svg > path,
+  [data-deck-context]:not([data-deck-context="slide"]) .rd-mark > svg > path {
+    transition-duration: 0ms;
+  }
+}

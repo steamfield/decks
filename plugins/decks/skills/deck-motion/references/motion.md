@@ -8,7 +8,7 @@ Without explicit `clicks`, the compiler uses the maximum contribution in MDX:
 
 | Element | Count contribution |
 | --- | --- |
-| `Step`, `Stagger`, `Highlight`, `Draw` | `until` when present, otherwise `at` |
+| `Step`, `Stagger`, `Highlight`, `Draw`, `Mark` | `until` when present, otherwise `at` |
 | `TextReveal`, `CountUp` | `at` |
 | `Steps` with k children | `from + k - 1` |
 | Fenced code with k emphasis states | `at + k - 1` |
@@ -30,6 +30,18 @@ Read installed declarations for full props; the commonly needed ones are:
 - `CountUp`: `at`, `from`, `to`, optional `format`. Backward shows the start value immediately. In instant mode it settles according to the click.
 - `Draw`: `at`, optional `until`; wraps direct stroked SVG shapes in a `g`. Supply the stroke through CSS.
 - `Morph`: `name`, optional `as`, `className`. Same name once per slide, shared by adjacent slides for the same object. Use a valid nonreserved CSS identifier. It does not morph under `cut`.
+
+## Mark
+
+Use `Mark` to draw a rough stroke around or through inline text on a click. Use `Highlight` for a background sweep behind the text. `Mark` keeps the text visible and accessible at every click.
+
+Choose `kind="underline"` (the default), `"circle"`, `"box"`, `"strike"`, `"cross"` or `"bracket"`. Set `at` to the drawing click and optional `until` to the click that removes the stroke. Going backward un-draws the mark. Set `color` to any CSS color, including a theme token such as `var(--accent)`; it defaults to `currentColor`.
+
+```mdx
+<Mark kind="circle" at={2} until={4} color="var(--accent)">the evidence</Mark>
+```
+
+Marks fit the text box and update when it resizes. Equal boxes produce identical paths across slide, presenter, preview, overview and print. Outside the live slide and in instant mode, the stroke snaps to the pose for that context's click. Set `--deck-mark-width` to change the stroke width (default `3px`).
 
 ## Tokens
 
