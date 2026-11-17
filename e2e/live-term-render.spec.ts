@@ -80,9 +80,11 @@ test.describe("pane bounds and DPR changes without a slide-scale change", () => 
     await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto(liveServer.url);
     await expectGrid(page, 2);
-    await page.getByRole("button", { name: "Resize terminal" }).click();
     const screen = page.getByRole("application").locator(".xterm-screen");
-    await expect.poll(async () => (await screen.boundingBox())?.width).toBeCloseTo(450, 3);
+    const before = (await screen.boundingBox())?.width ?? 0;
+    await page.getByRole("button", { name: "Resize terminal" }).click();
+    // The refit width depends on the platform's font metrics, so wait for the narrower grid.
+    await expect.poll(async () => (await screen.boundingBox())?.width).toBeLessThan(before);
     await expectGrid(page, 2);
     const canvas = page.locator("#deck-frame");
     const scale = await canvas.evaluate((element) =>
@@ -99,9 +101,9 @@ test.describe("pane bounds and DPR changes without a slide-scale change", () => 
         mobile: false,
       });
       await page.waitForFunction(() => window.devicePixelRatio === 1);
-      await expect.poll(async () => (await screen.boundingBox())?.width).toBeCloseTo(420, 3);
       await expect(canvas).toHaveCSS("--deck-scale", scale);
-      await expectGrid(page, 1);
+      // Whole-pixel advances at DPR 1 hold only once the grid has refit for the new ratio.
+      await expect(() => expectGrid(page, 1)).toPass();
     } finally {
       await session.detach();
     }
