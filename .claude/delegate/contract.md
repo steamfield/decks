@@ -59,12 +59,14 @@ scratch files.
 Run from the worktree root and iterate until the checks pass:
 
 ```sh
-bun run test {scoped path}
+rr rd-test {scoped path}
 bun run lint
 bun run typecheck
 ```
 
-Run each new test file three times on its own, then `bun run test` once.
+Tests run through rr (a hook blocks `bun run test`, `test:e2e` and `check` run directly).
+Run each new test file three times on its own, then `rr rd-test` once; a new or changed
+Playwright spec with `rr rd-e2e -- {spec} --repeat-each=5`.
 Do not run `check:isolated`; the orchestrator does. Report unrelated failures without
 weakening or skipping tests.
 

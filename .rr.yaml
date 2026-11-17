@@ -1,12 +1,20 @@
 version: 1
 
-# Remote test runs for the framework. `rr <task> --repeat N` spreads
-# N runs across the hosts, which is how intermittent failures are hunted.
+# Remote test runs for the framework. Every agent (Claude Code or a Codex run) runs Vitest,
+# Playwright and the gate through these tasks, so parallel runs queue on host locks instead of
+# starving one machine; .codex/hooks.json blocks the direct commands. `rr <task> --repeat N`
+# spreads N runs across the hosts, which is how intermittent failures are hunted.
 # mbp is this laptop (a local host in ~/.rr/config.yaml). It is last because rr takes the
-# first host it can lock, in this order, so gates still land on the minis.
-hosts: [m4-mini, m1-mini, m1-linux, mbp]
+# first host it can lock, in this order, so gates still land on the minis. Only macOS hosts:
+# the darwin screenshot baselines are the ones a local run compares against.
+hosts: [m4-mini, m1-mini, mbp]
 
 require: [bun, node]
+
+# With every host busy, keep waiting for one instead of failing with LOCK_HELD after the
+# default minute: a gate holds a host for about ten minutes.
+lock:
+  wait_timeout: 15m
 
 defaults:
   setup:
@@ -36,7 +44,7 @@ sync:
 
 tasks:
   rd-test:
-    description: react-decks unit and integration tests (Vitest). Pass a path after the task name.
+    description: react-decks unit and integration tests (Vitest). Pass a path after the task name, flags after --.
     run: bun run test
 
   rd-e2e:

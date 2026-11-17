@@ -76,8 +76,10 @@ node scripts/parity.mjs <alias>      # compare a ported deck with its Slidev bas
 bun run release <x.y.z[-rc.N]>       # bump every place the version lives; never commits, tags or pushes
 ```
 
-`rr rd-test`, `rr rd-e2e` and `rr rd-check` run the same on the hosts in `.rr.yaml`; sync a
-committed tree.
+Agents run tests and the gate as `rr rd-test [path]`, `rr rd-e2e -- [spec]` and `rr rd-check`:
+the same commands on a free host in `.rr.yaml`, so parallel agents queue instead of starving one
+machine (a Codex hook blocks the direct forms). rr syncs the working tree as it stands, so
+don't edit it mid-run.
 
 A `bun.lock` changes only through `bun add`, `bun update` or `bun install`; never edit it, and
 never delete lines to force a re-resolve (that re-resolves unrelated packages). Every
