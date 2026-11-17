@@ -51,7 +51,8 @@ describe("magic move", () => {
   });
 
   // The real renderer writes --smm-duration only when a step change goes through its animated
-  // render(); the instant path leaves it unset, so it is the duration a viewer would get.
+  // render(), which needs Web Animations; the animated path itself is proved in
+  // e2e/code-magic-move.spec.ts. These rows show the instant path leaves it unset.
   async function stepForward(context: RenderContext, motion?: "instant") {
     const app = await setupMotion(Subject, { click: 1, context });
     const figure = screen.getByRole("figure");
@@ -63,11 +64,6 @@ describe("magic move", () => {
   }
   const duration = (figure: HTMLElement) =>
     figure.querySelector("pre")?.style.getPropertyValue("--smm-duration");
-
-  it("a forward click in the live slide takes the animated path", async () => {
-    const figure = await stepForward("slide");
-    await waitFor(() => expect(duration(figure)).not.toBe(""));
-  });
 
   it("a forward click with motion instant shows the next step without animating", async () => {
     const figure = await stepForward("slide", "instant");
