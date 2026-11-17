@@ -11,11 +11,29 @@ import {
   type TermPosition,
 } from "@react-decks/core";
 import type { Plugin } from "vite";
+import { z } from "zod";
 import { loadDeck } from "../dev/config";
 import { DeckError, displayPath } from "../dev/errors";
 import { shellEnvironment } from "./environment";
 import { createSessions } from "./sessions";
 import { shellSpawn } from "./shell";
+
+const attachMessage = z.object({
+  pane: z.object({
+    id: z.string(),
+    cwd: z.string(),
+    rows: z.int().min(1).max(65535),
+    cols: z.int().min(1).max(65535),
+    commands: z.array(z.string()),
+  }),
+});
+const positionMessage = z.object({
+  id: z.string(),
+  click: z.int().min(0),
+  entered: z.boolean(),
+  stamp: z.object({ seq: z.int().min(0), started: z.number(), origin: z.string() }),
+});
+const inputMessage = z.object({ id: z.string(), data: z.string() });
 
 export function liveTerm(deckDir: string, platform = process.platform): Plugin {
   return {
@@ -44,6 +62,16 @@ export function liveTerm(deckDir: string, platform = process.platform): Plugin {
       const bind = () => {
         if (platform === "win32") {
           server.config.logger.warn("Live terminal disabled: Windows is not supported");
+          return;
+        }
+        if (server.config.legacy?.skipWebSocketTokenCheck === true) {
+          server.config.logger.warn(
+            "Live terminal disabled: legacy.skipWebSocketTokenCheck disables WebSocket authentication",
+          );
+          return;
+        }
+        if (server.config.server.allowedHosts === true) {
+          server.config.logger.warn("Live terminal disabled: server.allowedHosts allows any Host");
           return;
         }
         const ws = server.config.server.ws;
@@ -85,8 +113,15 @@ export function liveTerm(deckDir: string, platform = process.platform): Plugin {
           },
           log: (reason) => server.config.logger.warn(`Live terminal: ${reason}`),
         });
+        const malformed = (event: string, error: z.ZodError) =>
+          server.config.logger.warn(
+            `Live terminal: malformed ${event}: ${error.issues.map((issue) => `${issue.path.join(".") || "message"}: ${issue.message}`).join("; ")}`,
+          );
         const sockets = new WeakSet<object>();
-        server.ws.on(TERM_ATTACH, ({ pane }: TermAttach, client) => {
+        server.ws.on(TERM_ATTACH, (message: unknown, client) => {
+          const parsed = attachMessage.safeParse(message);
+          if (!parsed.success) return malformed(TERM_ATTACH, parsed.error);
+          const { pane }: TermAttach = parsed.data;
           // Closing a socket removes its subscriptions, but never ends its session.
           if (!sockets.has(client.socket)) {
             sockets.add(client.socket);
@@ -94,12 +129,18 @@ export function liveTerm(deckDir: string, platform = process.platform): Plugin {
           }
           sessions.attach(pane, client);
         });
-        server.ws.on(TERM_POSITION, ({ id, click, entered }: TermPosition, client) =>
-          sessions.position(id, click, entered, client),
-        );
-        server.ws.on(TERM_INPUT, ({ id, data }: TermInput, client) =>
-          sessions.input(id, data, client),
-        );
+        server.ws.on(TERM_POSITION, (message: unknown, client) => {
+          const parsed = positionMessage.safeParse(message);
+          if (!parsed.success) return malformed(TERM_POSITION, parsed.error);
+          const { id, click, entered, stamp }: TermPosition = parsed.data;
+          sessions.position(id, click, entered, client, stamp);
+        });
+        server.ws.on(TERM_INPUT, (message: unknown, client) => {
+          const parsed = inputMessage.safeParse(message);
+          if (!parsed.success) return malformed(TERM_INPUT, parsed.error);
+          const { id, data }: TermInput = parsed.data;
+          sessions.input(id, data, client);
+        });
         server.httpServer?.once("close", () => sessions.close());
       };
       server.httpServer?.once("listening", bind);

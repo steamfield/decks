@@ -51,7 +51,10 @@ test("equivalent inline pane specs preserve the connection, click reports and fa
   await view.next();
   expect(sent).toEqual([
     { event: TERM_ATTACH, data: { pane } },
-    { event: TERM_POSITION, data: { id: "demo", click: 1, entered: false } },
+    {
+      event: TERM_POSITION,
+      data: { id: "demo", click: 1, entered: false, stamp: view.store.getState().syncStamp },
+    },
   ]);
   await act(async () => {
     for (const receive of listeners.get(TERM_GONE) ?? [])

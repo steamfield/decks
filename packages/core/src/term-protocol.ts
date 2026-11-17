@@ -1,3 +1,5 @@
+import type { SyncStamp } from "./sync";
+
 /**
  * The wire contract between a live terminal pane in the browser (kit) and the dev server's
  * terminal plugin (node): event names and message shapes, sent as custom events on Vite's HMR
@@ -41,6 +43,7 @@ export interface TermPosition {
   id: string;
   click: number;
   entered: boolean;
+  stamp: SyncStamp;
 }
 /** Keys typed into a focused pane. */
 export interface TermInput {

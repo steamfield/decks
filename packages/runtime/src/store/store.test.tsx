@@ -21,6 +21,7 @@ it.each(["overview", "print"])(
 it("creation parses search flags and clamps and canonicalizes the hash", async () => {
   const { store } = setup("?embedded&decks-bridge=1#/99?clicks=88");
   expect(store.getState()).toEqual({
+    syncStamp: { seq: 0, started: expect.any(Number), origin: expect.any(String) },
     nav: { slide: 5, click: 0 },
     view: "play",
     embedded: true,

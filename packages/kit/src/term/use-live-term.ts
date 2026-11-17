@@ -1,4 +1,5 @@
 import type { TermPaneSpec } from "@react-decks/core";
+import { useDeck } from "@react-decks/runtime";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { createConnection, type TermTransport } from "./connection";
 
@@ -17,6 +18,7 @@ export function useLiveTerm(
   click: number,
   slideActive: boolean,
 ) {
+  const { syncStamp } = useDeck();
   const key = JSON.stringify([pane.id, pane.rows, pane.cols, pane.cwd, pane.commands]);
   const [current, setCurrent] = useState(() => ({
     transport,
@@ -38,8 +40,8 @@ export function useLiveTerm(
     () => recording,
   );
   useEffect(() => {
-    connection?.navigate(eligible, click, slideActive);
-  }, [connection, eligible, click, slideActive]);
+    connection?.navigate(eligible, click, slideActive, syncStamp);
+  }, [connection, eligible, click, slideActive, syncStamp]);
   useEffect(() => () => connection?.detach(), [connection]);
   return { ...state, live: eligible && state.live, connection };
 }

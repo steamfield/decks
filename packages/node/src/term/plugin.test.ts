@@ -10,12 +10,13 @@ import {
   TERM_READY,
   TERM_STATE,
 } from "@react-decks/core";
-import { createLogger, createServer, type ViteDevServer } from "vite";
+import { createLogger, createServer } from "vite";
 import { expect, inject, onTestFinished, test, vi } from "vitest";
 import { loadDeck } from "../dev/config";
 import { dev } from "../dev/server";
 import { fixture } from "../dev/server.test-support";
 import { liveTerm } from "./plugin";
+import { connect } from "./plugin.test-support";
 
 test("the published package ships its pty helper and private zsh dotfile", async () => {
   const dist = join(inject("builtPackage"), "dist/term");
@@ -26,32 +27,6 @@ test("the published package ships its pty helper and private zsh dotfile", async
     await readFile(new URL("../../term/zsh/.zshrc", import.meta.url), "utf8"),
   );
 });
-
-async function connect(server: ViteDevServer) {
-  const address = server.httpServer?.address();
-  if (!address || typeof address === "string") throw new Error("Missing Vite port");
-  const socket = new WebSocket(`ws://127.0.0.1:${address.port}`, "vite-hmr");
-  const events: {
-    event: string;
-    data: {
-      id?: string;
-      buffer?: string;
-      chunk?: string;
-      reason?: string;
-      busy?: boolean;
-      ran?: number[];
-    };
-  }[] = [];
-  socket.addEventListener("message", ({ data }) => {
-    const message = JSON.parse(String(data));
-    if (message.type === "custom") events.push(message);
-  });
-  onTestFinished(() => socket.close());
-  await vi.waitFor(() => expect(socket.readyState).toBe(WebSocket.OPEN), { timeout: 10_000 });
-  const send = (event: string, data: unknown) =>
-    socket.send(JSON.stringify({ type: "custom", event, data }));
-  return { socket, events, send };
-}
 
 test.each([
   { host: "0.0.0.0", platform: "darwin", reason: 'host "0.0.0.0" is not loopback' },
@@ -173,8 +148,20 @@ realShell(
     await vi.waitFor(() => expect(a.events.some((e) => e.event === TERM_READY)).toBe(true), {
       timeout: 10_000,
     });
-    for (const click of [1, 2, 3]) a.send(TERM_POSITION, { id: pane.id, click, entered: false });
-    for (const click of [1, 2, 3]) b.send(TERM_POSITION, { id: pane.id, click, entered: false });
+    for (const click of [1, 2, 3])
+      a.send(TERM_POSITION, {
+        id: pane.id,
+        click,
+        entered: false,
+        stamp: { seq: click, started: 0, origin: "a" },
+      });
+    for (const click of [1, 2, 3])
+      b.send(TERM_POSITION, {
+        id: pane.id,
+        click,
+        entered: false,
+        stamp: { seq: click, started: 0, origin: "a" },
+      });
     await vi.waitFor(
       () =>
         expect(
@@ -215,7 +202,13 @@ realShell(
     expect(output.match(/\r\nthird-42\r\n/g)).toHaveLength(1);
     expect(output).not.toContain("PERSONAL_RC_LOADED");
     expect(output).toContain("\u001b[32m");
-    for (const click of [2, 1, 2]) b.send(TERM_POSITION, { id: pane.id, click, entered: false });
+    for (const [index, click] of [2, 1, 2].entries())
+      b.send(TERM_POSITION, {
+        id: pane.id,
+        click,
+        entered: false,
+        stamp: { seq: 4 + index, started: 0, origin: "a" },
+      });
     server.ws.on("term-test:barrier", (_data, client) => client.send("term-test:barrier"));
     b.send("term-test:barrier", {});
     await vi.waitFor(
@@ -229,8 +222,18 @@ realShell(
       ran: [1, 2, 3],
       queued: [],
     });
-    b.send(TERM_POSITION, { id: pane.id, click: 0, entered: true });
-    reloaded.send(TERM_POSITION, { id: pane.id, click: 0, entered: true });
+    b.send(TERM_POSITION, {
+      id: pane.id,
+      click: 0,
+      entered: true,
+      stamp: { seq: 7, started: 0, origin: "a" },
+    });
+    reloaded.send(TERM_POSITION, {
+      id: pane.id,
+      click: 0,
+      entered: true,
+      stamp: { seq: 7, started: 0, origin: "a" },
+    });
     await vi.waitFor(() => expect(b.events.filter((e) => e.event === TERM_READY)).toHaveLength(2), {
       timeout: 10_000,
     });

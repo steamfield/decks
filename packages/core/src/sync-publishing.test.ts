@@ -4,6 +4,19 @@ import { createMemoryHub, createSyncSession, type SyncMessage, type SyncState } 
 import { connect, tab } from "./sync.test-support";
 
 describe("publishing and closing", () => {
+  it("exposes the adopted stamp before remote delivery and the next local publication", async () => {
+    const hub = createMemoryHub();
+    const peer = tab(hub, "peer", { slide: 2, click: 0 }, 1000);
+    const local = tab(hub, "local", { slide: 1, click: 0 }, 2000);
+    expect(local.session.getStamp()).toEqual({ seq: 0, started: 2000, origin: "local" });
+    await vi.runAllTimersAsync();
+    expect(local.session.getStamp()).toEqual({ seq: 0, started: 1000, origin: "peer" });
+    peer.publish({ nav: { slide: 2, click: 1 } });
+    await vi.runAllTimersAsync();
+    expect(local.session.getStamp()).toEqual(peer.session.getStamp());
+    local.publish({ nav: { slide: 2, click: 2 } });
+    expect(local.session.getStamp()).toEqual({ seq: 2, started: 2000, origin: "local" });
+  });
   it("publishes the next sequence with its own origin, even before hearing back", async () => {
     const hub = createMemoryHub();
     const local = tab(hub, "local", { slide: 1, click: 0 }, 2000);

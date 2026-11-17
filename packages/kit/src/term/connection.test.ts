@@ -10,6 +10,8 @@ import {
 import { expect, test } from "vitest";
 import { createConnection, type TermTransport } from "./connection";
 
+const stamp = { seq: 1, started: 0, origin: "window" };
+
 function setup() {
   const sent: { event: string; data: unknown }[] = [];
   const events = new EventTarget();
@@ -35,7 +37,8 @@ function setup() {
   const connection = createConnection(transport, pane);
   const emit = (event: string, detail: unknown) =>
     events.dispatchEvent(new CustomEvent(event, { detail }));
-  const navigate = (active: boolean, click: number) => connection.navigate(active, click, active);
+  const navigate = (active: boolean, click: number) =>
+    connection.navigate(active, click, active, stamp);
   return { connection, sent, pane, emit, navigate };
 }
 
@@ -89,7 +92,7 @@ test("every active click change reports once, including jumps, steps back and be
     { event: TERM_ATTACH, data: { pane } },
     ...[1, 3, 2, 0].map((click) => ({
       event: TERM_POSITION,
-      data: { id: "demo", click, entered: false },
+      data: { id: "demo", click, entered: false, stamp },
     })),
   ]);
 });
@@ -104,15 +107,15 @@ test.each([0, 3])(
     navigate(true, click);
     expect(sent).toEqual([
       { event: TERM_ATTACH, data: { pane } },
-      { event: TERM_POSITION, data: { id: "demo", click, entered: true } },
+      { event: TERM_POSITION, data: { id: "demo", click, entered: true, stamp } },
     ]);
   },
 );
 
 test("reenabling motion on an already active slide only attaches", () => {
   const { connection, sent, pane } = setup();
-  connection.navigate(false, 0, true);
-  connection.navigate(true, 0, true);
+  connection.navigate(false, 0, true, stamp);
+  connection.navigate(true, 0, true, stamp);
   expect(sent).toEqual([{ event: TERM_ATTACH, data: { pane } }]);
 });
 
@@ -155,7 +158,7 @@ test("live input reaches the shell and detached panes ignore later messages and 
     { event: TERM_ATTACH, data: { pane } },
     { event: TERM_INPUT, data: { id: "demo", data: "ls\r" } },
     { event: TERM_ATTACH, data: { pane } },
-    { event: TERM_POSITION, data: { id: "demo", click: 2, entered: true } },
+    { event: TERM_POSITION, data: { id: "demo", click: 2, entered: true, stamp } },
   ]);
 });
 

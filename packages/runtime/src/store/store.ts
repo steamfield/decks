@@ -8,6 +8,7 @@ import {
   type NavState,
   navigate,
   parseLocation,
+  type SyncStamp,
   type SyncState,
   type Transport,
 } from "@react-decks/core";
@@ -15,6 +16,7 @@ import { createStore } from "zustand/vanilla";
 import { cancelPresentation } from "../transitions/transition";
 
 export interface DeckState {
+  readonly syncStamp: SyncStamp;
   readonly nav: NavState;
   readonly view: DeckView;
   readonly embedded: boolean;
@@ -37,10 +39,21 @@ export function createDeckStore(
     present?: (change: { from: DeckState; to: DeckState }, apply: () => void) => void;
   },
 ): DeckStore {
+  const identity: SyncStamp = {
+    seq: 0,
+    started: performance.timeOrigin + performance.now(),
+    origin:
+      typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
+            byte.toString(16).padStart(2, "0"),
+          ).join(""),
+  };
   function readLocation(): DeckState {
     const location = parseLocation(window.location.hash, window.location.search);
     const nav = clampNav(location, manifest);
     return {
+      syncStamp: identity,
       nav: { slide: nav.slide, click: nav.click },
       view: location.view,
       embedded: location.embedded,
@@ -79,20 +92,15 @@ export function createDeckStore(
   }
   const positionChanged = (a: NavState, b: NavState) => a.slide !== b.slide || a.click !== b.click;
   let lastAspect = window.innerWidth / window.innerHeight;
-  function current(): SyncState {
-    const { nav, view, audienceAspect } = logical;
+  function current(state = logical): SyncState {
+    const { nav, view, audienceAspect } = state;
     const aspect = view === "play" ? window.innerWidth / window.innerHeight : audienceAspect;
     return aspect === undefined ? { nav } : { nav, aspect };
   }
   const session = options?.transport
     ? createSyncSession({
-        id:
-          typeof crypto.randomUUID === "function"
-            ? crypto.randomUUID()
-            : Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
-                byte.toString(16).padStart(2, "0"),
-              ).join(""),
-        startedAt: performance.timeOrigin + performance.now(),
+        id: identity.origin,
+        startedAt: identity.started,
         transport: options.transport,
         current,
         onRemote(remote) {
@@ -100,6 +108,7 @@ export function createDeckStore(
           const nav = clampNav(remote.nav, manifest);
           const next = {
             ...previous,
+            syncStamp: session?.getStamp() ?? previous.syncStamp,
             nav,
             ...(remote.aspect === undefined ? {} : { audienceAspect: remote.aspect }),
           };
@@ -113,14 +122,15 @@ export function createDeckStore(
         },
       })
     : undefined;
-  function publish() {
-    const state = current();
+  function publish(next = logical): SyncStamp {
+    const state = current(next);
     if (state.aspect !== undefined) lastAspect = state.aspect;
     session?.publish(state);
+    return session?.getStamp() ?? { ...identity, seq: logical.syncStamp.seq + 1 };
   }
   function onLocation() {
     const previous = logical;
-    const next = { ...previous, ...readLocation() };
+    const next = { ...previous, ...readLocation(), syncStamp: previous.syncStamp };
     writeLocation(next, false);
     if (
       next.nav.slide !== previous.nav.slide ||
@@ -129,8 +139,8 @@ export function createDeckStore(
       next.embedded !== previous.embedded ||
       next.bridge !== previous.bridge
     ) {
+      if (positionChanged(next.nav, previous.nav)) next.syncStamp = publish(next);
       present(next);
-      if (positionChanged(next.nav, previous.nav)) publish();
     }
   }
   let resizeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -160,8 +170,7 @@ export function createDeckStore(
       if (nav === previous.nav) return;
       const next = { ...previous, nav };
       writeLocation(next, nav.slide !== previous.nav.slide);
-      present(next);
-      publish();
+      present({ ...next, syncStamp: publish(next) });
     },
     setView(view, position) {
       const previous = logical;
@@ -171,8 +180,7 @@ export function createDeckStore(
       const next = { ...previous, view, nav };
       if (nav.slide !== previous.nav.slide) writeLocation({ ...previous, view }, false);
       writeLocation(next, nav.slide !== previous.nav.slide);
-      present(next);
-      if (moved) publish();
+      present(moved ? { ...next, syncStamp: publish(next) } : next);
     },
     destroy() {
       if (options?.present) cancelPresentation(options.present);
