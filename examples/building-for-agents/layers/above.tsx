@@ -91,10 +91,9 @@ export default function Above() {
     return () => observer.disconnect();
   }, [on, scale]);
 
-  // WebKit filters the frame in canvas units at the device pixel ratio. A phone (3x, and in
-  // portrait a window three frames tall) needs a buffer iOS will not allocate, and the frame
-  // then draws nothing, or the cover's WebGL takes the tab down. Past the budget the picture
-  // goes without the warp.
+  // The warp's region is the whole window in canvas units at the device pixel ratio: on a
+  // phone (3x, and in portrait a window three frames tall) that is 25-55 MP, where iOS
+  // Safari drew the filtered frame blank. Past the budget the picture goes without the warp.
   const warp = box.windowWidth * box.windowHeight * window.devicePixelRatio ** 2 <= MAX_WARP_PIXELS;
   useLayoutEffect(() => {
     if (!on || !map || !warp) return;

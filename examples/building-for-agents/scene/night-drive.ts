@@ -500,7 +500,7 @@ export function mountNightDrive(
       if (!w || !h || !shown) return;
       // w and h are canvas units, before the slide's scale. Size the buffer to the screen
       // pixels the canvas covers, or a portrait phone (where the field bleeds far past the
-      // frame) gets a 40-megapixel buffer and iOS kills the tab.
+      // frame) gets a 43-megapixel buffer.
       const dpr = Math.min(
         (shown / w) * window.devicePixelRatio,
         1.5,
