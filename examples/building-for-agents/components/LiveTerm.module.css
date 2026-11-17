@@ -1,11 +1,25 @@
-.terminal {
-  height: 100%;
-  width: 100%;
-  color: var(--od-text);
-  font-family: var(--sf-font-term);
-}
-
 .skin {
+  --deck-term-font: var(--sf-font-term);
+  --deck-term-background: var(--od-screen-black);
+  --deck-term-foreground: var(--od-text);
+  --deck-term-cursor: var(--od-phosphor);
+  --deck-term-selection: var(--od-term-selection);
+  --deck-term-black: var(--od-text-faint);
+  --deck-term-red: var(--od-term-red);
+  --deck-term-green: var(--od-phosphor);
+  --deck-term-yellow: var(--od-amber);
+  --deck-term-blue: var(--od-blue);
+  --deck-term-magenta: var(--od-pink);
+  --deck-term-cyan: var(--od-cyan);
+  --deck-term-white: var(--od-text-secondary);
+  --deck-term-bright-black: var(--od-text-muted);
+  --deck-term-bright-red: var(--od-rose);
+  --deck-term-bright-green: var(--od-emerald);
+  --deck-term-bright-yellow: var(--od-amber-soft);
+  --deck-term-bright-blue: var(--od-blue-soft);
+  --deck-term-bright-magenta: var(--od-term-bright-magenta);
+  --deck-term-bright-cyan: var(--od-cyan-bright);
+  --deck-term-bright-white: var(--od-text-highlight);
   display: contents;
   pointer-events: auto;
 }

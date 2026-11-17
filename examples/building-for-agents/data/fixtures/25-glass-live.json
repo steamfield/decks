@@ -1,7 +1,7 @@
 {
   "recorded": "2026-11-16",
   "tool": "statglass 0.10.0",
-  "how": "Each command typed into zsh -f on a 24x92 pseudo-terminal (term/server/shell_pty.py), DO_NOT_TRACK=1, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences removed; text otherwise as printed.",
+  "how": "Each command typed into zsh -f on a 24x92 pseudo-terminal (the deck-local pty helper), DO_NOT_TRACK=1, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences removed; text otherwise as printed.",
   "steps": [
     {
       "command": "statglass history cpu.total --since 30m",

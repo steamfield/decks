@@ -1,3 +1,4 @@
+import type { TermPaneSpec } from "@steamfield/decks";
 /**
  * Slide 25: statglass 0.10.0 capture, recorded 2026-11-16 in fixtures/25-glass-live.json.
  * Source: sources/25-glass-live.md; shared data-sources.md row supplied in the hand-off.
@@ -7,7 +8,6 @@
  */
 import { type LiveDemo, paneGrid } from "../components/LiveDemoStage";
 import type { TermRecording } from "../components/LiveTerm";
-import type { TermPaneSpec } from "../term/protocol";
 import fixture from "./fixtures/25-glass-live.json";
 import type { TermLine } from "./types";
 
