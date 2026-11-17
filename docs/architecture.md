@@ -1826,14 +1826,16 @@ session rules of RFC 0008 hold: one shell per pane id; an attach replays at most
 its carriage return follows 600 ms later; output is paced on the client. One rule changed so
 that several audience windows can share a pane: the server holds each pane's position, and a
 window reports `TermPosition` (its click, and whether its slide just became active) instead
-of sending steps.
+of sending steps. A window reports only on a change while mounted: its slide becoming active
+through navigation (`entered`), or its click changing while active. Mounting or reloading only
+attaches. Each command runs at most once per session, so a lagging window's late reports, or
+stepping back and forward again, never type a command twice.
 
 | Position report, server at click p | Result |
 | --- | --- |
-| `click = p + 1` | Command `click` is queued; position becomes `click`. |
-| `click = p` | Nothing (a second window reporting the same click). |
-| `click = 0`, and `p > 0` or `entered`, with anything run or typed in the session | The session resets; position 0. |
-| any other `click` (a jump, a step back) | Position becomes `click`; nothing runs. |
+| `click = p + 1`, command `click` not yet run | Command `click` is queued; position becomes `click`. |
+| `click = 0`, and `p > 0` or `entered`, with anything run or typed in the session | The session resets (shell restarted, nothing run); position 0. |
+| any other report (the same click again, a jump, a step back, a command already run) | Position becomes `click`; nothing runs. |
 
 ## 7.2 Live terminal, pane (Final)
 

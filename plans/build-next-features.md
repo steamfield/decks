@@ -135,8 +135,8 @@ Behaviour:
 - `<Link to={n}>` is an `<a>` whose `href` is the formatted hash; a click calls `go(n)`.
 - `<Toc />` lists every slide's title as a `Link` and marks the current slide with
   `aria-current`.
-- Outside the `slide` render context, both render text with no navigation, so an overview
-  thumbnail never navigates.
+- Outside the `slide` and `presenter` render contexts, both render text with no navigation, so
+  an overview thumbnail never navigates.
 
 Tests: a dom test per behaviour above, and e2e for `g`, typing "3", Enter, and the URL.
 
@@ -184,6 +184,8 @@ The one change to the session rules (RFC open question 4): the client reports it
 when the pane's server-side position moves from N−1 to N. A second audience window reporting
 the same position is a no-op, so two windows never double-type a command.
 
+At the 2B merge (mine): the `decks.json` entry for `examples/terminal`.
+
 CI (mine): `apt-get install -y zsh` in `.github/workflows/check.yml` for the e2e shards, so the
 live-shell e2e runs on Linux instead of being skipped.
 
@@ -196,7 +198,7 @@ magic-move slide.
 | Who | Work |
 | --- | --- |
 | Codex 3A | `examples/building-for-agents` uses the kit `LiveTerm` and `term` config. It deletes `term/` and keeps `CrtPanel`, `TermPane` and `LiveDemoStage` as the deck's skin. `SPEAKER-GUIDE.md` and `OUTLINE.md` say `decks dev agents --live-term`. `decks shot` of the three live slides (positions given in the contract) matches the pre-migration captures. |
-| Me | `bun remove @xterm/xterm` from the deck; drop the `examples/*/term` include in `vitest.config.ts`; `decks.json` gets the terminal fixture (scaffold). |
+| Me | `bun remove @xterm/xterm` from the deck; drop the `examples/*/term` include in `vitest.config.ts`. |
 | Me | Guide pages: `presenting.md` (tray, `g`); `slides.md` (`Toc`, `Link`); `motion.md` (`Mark`); `code-blocks.md` (magic move); a new `terminal.md` with `config.md` and `cli.md` (`--live-term`, macOS and Linux only, the TUI replay limit from RFC open question 3); `migrating-from-slidev.md` rows for `v-mark`, magic move, the tray and `g`. |
 | Me | RFC 0008 marked Done with its commit. `feature-gaps.md` rows #4, #5 and #9 and the live terminal move to `archive/feature-gaps-shipped.md`. A CHANGELOG `## Unreleased` section. A reviewer check that the skills Codex edited read correctly together. |
 
@@ -231,3 +233,12 @@ magic-move slide.
   `decks export` show only recordings.
 - Tray: the Space key after clicking a tray button and moving away advances the talk; the tray
   never appears in `?embedded` or the site's deck player.
+
+## DA findings applied (2026-11-16)
+
+- §6.8: a command runs at most once per session, and windows report position only on a change
+  while mounted, so a lagging window or a newly opened one cannot re-run a command or reset a
+  live session.
+- 1A's counter test checks the button; opening the dialog is the landing test (1B owns the
+  dialog). `MagicMove` was already registered in `entry.ts`. `decks.json` for the terminal
+  fixture lands with 2B.
