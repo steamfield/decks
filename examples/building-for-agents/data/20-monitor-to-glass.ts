@@ -320,7 +320,9 @@ export function cardsAt(index: number): HostCard[] {
       cpu,
       ram: history(TIMELINE, name, "ram", i),
       gpu: history(TIMELINE, name, "gpu", i),
-      plot: sparkline(cpu, GRAPH_COLS, GRAPH_ROWS),
+      // The replay scrolls: past the graph's width, rr's resample would squeeze the whole
+      // history into it on every frame, so the graph shows the newest samples unscaled.
+      plot: sparkline(cpu.slice(-GRAPH_COLS * 2), GRAPH_COLS, GRAPH_ROWS),
     };
   });
 }

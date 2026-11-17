@@ -127,8 +127,10 @@ Source: data-sources.md, Demo hand-offs.
 
 ### If asked
 
-- The fifteen-minute timebox is an instruction to the agent, not a limit the tool enforces.
+- The eight-minute timebox is an instruction to the agent, not a limit the tool enforces.
 - The prompt has no commands in it. The scaffold's brief carries the steps and the finish line.
+- It asks for light equine humor in the copy, so the results come out whimsical.
+- It asks for real, sourced horse photos instead of vector art, and tells Claude to skip code review: the deck only has to build and render.
 
 ## 7. Stacks gives a failed check an exit code.
 
@@ -274,6 +276,8 @@ Source: data-sources.md, Demo hand-offs.
 
 - Each run has its own worktree, so the three never edit the same files at once.
 - The fifteen-minute timebox is an instruction to the agent, not a limit the tool enforces.
+- It asks for light equine humor in the copy, so the results come out whimsical.
+- The prompt skips code review: after a little manual QA it opens the app, because this is a live demo.
 
 ## 13. foreman is a short-lived CLI and a daemon.
 
