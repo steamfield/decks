@@ -11,11 +11,13 @@ export function XtermHost({
   rows,
   cols,
   scale,
+  onReady,
 }: {
   connection: TermConnection;
   rows: number;
   cols: number;
   scale: number;
+  onReady: (ready: boolean) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -25,6 +27,7 @@ export function XtermHost({
     let unsubscribe: (() => void) | undefined;
     let cleanupOutput: (() => void) | undefined;
     let cleanupWheel: (() => void) | undefined;
+    let cleanupFit: (() => void) | undefined;
     let disposed = false;
     const css = getComputedStyle(target.parentElement ?? target);
     const fontFamily = css.fontFamily;
@@ -60,24 +63,14 @@ export function XtermHost({
         try {
           // xterm lays text out on a grid of whole device pixels. At a size whose glyph advance
           // is fractional, glyphs drift off their cells and the last columns are clipped, so
-          // take the nearest size whose advance is whole.
-          const bounds = target.parentElement?.getBoundingClientRect();
-          if (!bounds) throw new Error("no terminal frame to measure");
-          const face = terminalFace({
-            fontFamily,
-            fontSize,
-            scale,
-            devicePixelRatio: window.devicePixelRatio,
-            rows,
-            cols,
-            width: bounds.width,
-            height: bounds.height,
-          });
+          // fit with whole advances and centre the unused space.
+          const frame = target.parentElement;
+          if (!frame) throw new Error("no terminal frame to measure");
           term = new Terminal({
             rows,
             cols,
             fontFamily,
-            fontSize: face.fontSize,
+            fontSize: fontSize * scale,
             letterSpacing: 0,
             lineHeight: 1.12,
             theme: colors,
@@ -85,7 +78,7 @@ export function XtermHost({
             drawBoldTextInBrightColors: false,
             cursorBlink: false,
             scrollback: 2000,
-            overviewRuler: { width: face.scrollbar, showTopBorder: false, showBottomBorder: false },
+            overviewRuler: { width: 6, showTopBorder: false, showBottomBorder: false },
             logLevel: "off",
           });
           term.attachCustomKeyEventHandler((event) => {
@@ -96,11 +89,55 @@ export function XtermHost({
             return false;
           });
           term.open(target);
-          target.style.width = `${face.gridWidth + face.scrollbar}px`;
-          target.style.height = `${face.gridHeight}px`;
-          target.style.marginLeft = `${face.margin / scale}px`;
-          target.style.transform = `scale(${face.residual / scale})`;
           const terminal = term;
+          const fit = () => {
+            const bounds = frame.getBoundingClientRect();
+            const face = terminalFace(
+              terminal,
+              fontFamily,
+              bounds.width,
+              bounds.height,
+              window.devicePixelRatio,
+            );
+            target.style.width = `${face.gridWidth + face.scrollbar}px`;
+            target.style.height = `${face.gridHeight}px`;
+            target.style.marginLeft = `${face.left / scale}px`;
+            target.style.marginTop = `${face.top / scale}px`;
+            target.style.transform = `scale(${1 / scale})`;
+            return face;
+          };
+          let face = fit();
+          const refit = () => {
+            if (disposed) return;
+            try {
+              face = fit();
+            } catch (error) {
+              connection.unavailable(
+                `terminal could not fit: ${error instanceof Error ? error.message : String(error)}`,
+              );
+            }
+          };
+          const observer = new ResizeObserver(refit);
+          observer.observe(frame);
+          let resolution = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+          const changedDpr = () => {
+            if (disposed) return;
+            resolution.removeEventListener("change", changedDpr);
+            refit();
+            resolution = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+            resolution.addEventListener("change", changedDpr);
+          };
+          resolution.addEventListener("change", changedDpr);
+          cleanupFit = () => {
+            observer.disconnect();
+            resolution.removeEventListener("change", changedDpr);
+          };
+          const rendered = terminal.onRender(() => {
+            // An empty replay writes only RIS; wait for visible shell text, not that reset.
+            if (disposed || !target.querySelector(".xterm-rows")?.textContent?.trim()) return;
+            onReady(true);
+            rendered.dispose();
+          });
           let replays = 0;
           const paced = createOutputPacer((chunk, replay) => {
             if (replay) {
@@ -128,7 +165,7 @@ export function XtermHost({
           const wheel = (event: WheelEvent) => {
             event.preventDefault();
             event.stopPropagation();
-            const lineHeight = face.rowHeight * face.residual;
+            const lineHeight = face.rowHeight;
             const pixels =
               event.deltaY *
               (event.deltaMode === 1 ? lineHeight : event.deltaMode === 2 ? rows * lineHeight : 1);
@@ -137,7 +174,6 @@ export function XtermHost({
             remainder -= lines;
             if (lines) terminal.scrollLines(lines);
           };
-          const frame = target.parentElement ?? target;
           frame.addEventListener("wheel", wheel, { passive: false, capture: true });
           cleanupWheel = () => frame.removeEventListener("wheel", wheel, true);
         } catch (error) {
@@ -154,12 +190,14 @@ export function XtermHost({
       });
     return () => {
       disposed = true;
+      onReady(false);
       unsubscribe?.();
       cleanupOutput?.();
       cleanupWheel?.();
+      cleanupFit?.();
       term?.dispose();
     };
-  }, [connection, rows, cols, scale]);
+  }, [connection, rows, cols, scale, onReady]);
   return (
     <div className={styles.viewport}>
       <div
