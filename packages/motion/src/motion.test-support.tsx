@@ -28,10 +28,10 @@ export async function setupMotion(
     return (
       <>
         <button type="button" onClick={deck.next}>
-          Next
+          Next click
         </button>
         <button type="button" onClick={deck.prev}>
-          Previous
+          Previous click
         </button>
         <Subject />
       </>
@@ -73,15 +73,15 @@ export async function setupMotion(
     window.history.replaceState(null, "", "/");
   });
   if (options.error) await screen.findByText(/^Slide slide-1 \(1.mdx\) failed to render:/);
-  else await screen.findByRole("button", { name: "Next" });
+  else await screen.findByRole("button", { name: "Next click" });
   const user = userEvent.setup();
   return {
     ...result,
     store,
     errors,
     user,
-    next: () => user.click(screen.getByRole("button", { name: "Next" })),
-    previous: () => user.click(screen.getByRole("button", { name: "Previous" })),
+    next: () => user.click(screen.getByRole("button", { name: "Next click" })),
+    previous: () => user.click(screen.getByRole("button", { name: "Previous click" })),
   };
 }
 
