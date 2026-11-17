@@ -104,7 +104,13 @@ test("a phone can load all four decks from the examples menu", async ({ page }) 
   }
 });
 
-test("a phone shows the AISD poster until the uniformly scaled live deck is ready", async ({
+const hero = examples[0];
+if (!hero) throw new Error("examples.json has no examples");
+const heroStart = hero.states.findIndex(
+  (state) => state.slide === hero.startSlide && state.beat === hero.startBeat,
+);
+
+test("a phone shows the hero's poster until the uniformly scaled live deck is ready", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
@@ -113,18 +119,22 @@ test("a phone shows the AISD poster until the uniformly scaled live deck is read
   const gate = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route("**/d/aisd-showcase/index.html*", async (route) => {
+  await page.route(`**/d/${hero.name}/index.html*`, async (route) => {
     await gate;
     await route.continue();
   });
-  const opening = page.waitForRequest("**/d/aisd-showcase/index.html*");
+  const opening = page.waitForRequest(`**/d/${hero.name}/index.html*`);
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const player = page.getByRole("group", { name: /^Deck player:/ });
   await player.scrollIntoViewIfNeeded();
   try {
     await opening;
     await expect(player.getByRole("status")).toContainText("Loading interactive deck");
-    await expect(player.getByRole("img", { name: /AISD.*slide 1 of/ })).toBeVisible();
+    await expect(
+      player.getByRole("img", {
+        name: `${hero.title}, slide ${hero.startSlide} of ${hero.slides}`,
+      }),
+    ).toBeVisible();
     await expect(player.locator("iframe")).toBeHidden();
   } finally {
     release();
@@ -141,7 +151,7 @@ test("a phone shows the AISD poster until the uniformly scaled live deck is read
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });
 
-test("Play advances the live AISD deck with its recorded caption", async ({ page }) => {
+test("Play advances the live hero deck with its recorded caption", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const player = page.getByRole("group", { name: /^Deck player:/ });
@@ -151,7 +161,7 @@ test("Play advances the live AISD deck with its recorded caption", async ({ page
   await expect(
     player
       .getByRole("paragraph")
-      .and(player.getByText(examples[0]?.states[1]?.lead ?? "", { exact: true })),
+      .and(player.getByText(hero.states[heroStart + 1]?.lead ?? "", { exact: true })),
   ).toBeVisible({
     timeout: 15_000,
   });

@@ -25,7 +25,7 @@ const COPY = [
   },
   {
     lead: "So verifiability is the product.",
-    body: "Every answer traces to a query you can rerun. That is what a skeptic will trust.",
+    body: "Every answer traces to a query a skeptic can rerun.",
   },
 ];
 

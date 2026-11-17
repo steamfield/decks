@@ -46,21 +46,21 @@
       "beat": 0,
       "beats": 2,
       "lead": "rr --pretty prints a summary for a person.",
-      "body": "One line per task with its host and time, then totals. Designing this view is developer experience, DX."
+      "body": "It prints each task's host and time, then totals. Designing output for people is developer experience, DX."
     },
     {
       "slide": 2,
       "beat": 1,
       "beats": 2,
-      "lead": "A coding agent receives every byte.",
-      "body": "The colour codes are part of the text, and each one uses space in the agent’s context."
+      "lead": "The agent reads the colour codes as text.",
+      "body": "Each escape code takes up space in its context."
     },
     {
       "slide": 2,
       "beat": 2,
       "beats": 2,
       "lead": "Without the flag, rr prints JSON events.",
-      "body": "The last event lists each failing test. Designing this output is agent experience, AX."
+      "body": "The last event lists each failing test. Designing output for agents is agent experience, AX."
     },
     {
       "slide": 3,
@@ -122,8 +122,8 @@
       "slide": 5,
       "beat": 4,
       "beats": 4,
-      "lead": "Stacks refuses to verify edited checks.",
-      "body": "Stacks keeps a hash of the steps outside the project and refuses to run if one was edited."
+      "lead": "A person approves any change to the checks.",
+      "body": "Stacks stores a hash of the steps outside the project and refuses an agent's accept flag."
     },
     {
       "slide": 6,
@@ -221,7 +221,7 @@
       "beat": 2,
       "beats": 3,
       "lead": "With --json, stdout is one object.",
-      "body": "The last line of stderr is an error envelope whose next field says what to do."
+      "body": "On failure, the last stderr line is JSON whose next field says what to do."
     },
     {
       "slide": 9,
@@ -242,7 +242,7 @@
       "beat": 0,
       "beats": 4,
       "lead": "Claude writes one contract per task.",
-      "body": "Each contract is a Markdown file. foreman reads its May change line for the paths the delegate may edit."
+      "body": "Each contract is a Markdown file. Its May change line lists the paths the delegate may edit."
     },
     {
       "slide": 11,
@@ -263,7 +263,7 @@
       "beat": 3,
       "beats": 4,
       "lead": "Claude answered after 18 seconds.",
-      "body": "The answer is returned inside the same Codex turn, so the delegate continues with its context."
+      "body": "The answer arrives in the same Codex turn, so the delegate keeps its context."
     },
     {
       "slide": 11,
@@ -319,13 +319,13 @@
       "beat": 1,
       "beats": 3,
       "lead": "A background foreman wait exits with the question.",
-      "body": "Claude Code reports the finished background task to Claude, which reads the question from its output."
+      "body": "Claude Code tells Claude the task finished, and Claude reads the question from its output."
     },
     {
       "slide": 14,
       "beat": 2,
       "beats": 3,
-      "lead": "Claude's answer is returned as the tool result.",
+      "lead": "Claude's answer goes back as the tool result.",
       "body": "After 15 minutes without an answer, the daemon returns a message telling Codex to continue."
     },
     {
@@ -354,21 +354,21 @@
       "beat": 1,
       "beats": 7,
       "lead": "A parallel task locks every host.",
-      "body": "Its shards are tasks the config lists under parallel. rsync copies the files and SSH runs the command."
+      "body": "Its shards are the tasks the config lists under parallel."
     },
     {
       "slide": 16,
       "beat": 2,
       "beats": 7,
       "lead": "Files sync before the tests start.",
-      "body": "Each host runs its configured subtask while the parallel run holds every lock."
+      "body": "rsync copies the files to each host, then SSH runs that host's subtask."
     },
     {
       "slide": 16,
       "beat": 3,
       "beats": 7,
       "lead": "A run waits when every host is locked.",
-      "body": "Each process tries hosts in config order, then waits on the laptop when every lock is held."
+      "body": "Agents 2 and 3 try the hosts in config order, then wait on the laptop."
     },
     {
       "slide": 16,
@@ -382,7 +382,7 @@
       "beat": 5,
       "beats": 7,
       "lead": "A retry locks the first free host.",
-      "body": "Each git worktree syncs to its own remote directory unless the config turns that off."
+      "body": "By default each git worktree syncs to its own directory on the host, so agents' files stay separate."
     },
     {
       "slide": 16,
@@ -473,21 +473,21 @@
       "beat": 2,
       "beats": 4,
       "lead": "Rust sends samples over a Tauri Channel.",
-      "body": "Each tick is one message whose values are an array, ordered by a layout sent earlier."
+      "body": "Each tick is one message holding an array of numbers. An earlier layout message names each position."
     },
     {
       "slide": 21,
       "beat": 3,
       "beats": 4,
-      "lead": "Each tick runs one transform animation.",
-      "body": "d3 computes the path and React renders it as SVG. The animation slides the redrawn chart one slot."
+      "lead": "Each tick slides the chart one slot.",
+      "body": "d3 computes the path and React renders it as SVG. Only a transform animates."
     },
     {
       "slide": 21,
       "beat": 4,
       "beats": 4,
       "lead": "Idle CPU was 0.67 percent of one core.",
-      "body": "Rust draws the menu bar item. Measured once, menu bar only, on an M3 Max in October 2026."
+      "body": "Measured once, menu bar only, on an M3 Max in October 2026."
     },
     {
       "slide": 22,
@@ -521,8 +521,8 @@
       "slide": 23,
       "beat": 2,
       "beats": 2,
-      "lead": "The CLI is written in Rust.",
-      "body": "The RFC estimates a compiled TypeScript binary at 55 to 60 MB, for a 36 MB app."
+      "lead": "The RFC chose Rust for the CLI.",
+      "body": "It estimates a compiled TypeScript CLI at 55 to 60 MB, against a 36 MB app."
     },
     {
       "slide": 24,
@@ -549,15 +549,15 @@
       "slide": 26,
       "beat": 1,
       "beats": 2,
-      "lead": "The write hook enforces 5 lint patterns.",
-      "body": "The lint has 27 patterns. A write matching one of the 5 errors is refused with the pattern's id."
+      "lead": "A hook refuses writes that hit a lint error.",
+      "body": "Of the lint's 27 patterns, 5 are errors. The hook prints each match's pattern id."
     },
     {
       "slide": 26,
       "beat": 2,
       "beats": 2,
       "lead": "This deck lists a source for each figure.",
-      "body": "Each row names the file or command that produces the figure."
+      "body": "A sources file has one row per figure, naming the file or command behind it."
     },
     {
       "slide": 27,
@@ -570,22 +570,22 @@
       "slide": 27,
       "beat": 1,
       "beats": 3,
-      "lead": "A command checks when work is finished.",
-      "body": "Stacks has verify, and Decks has check and lint; three tools document one action per exit code."
+      "lead": "A command checks whether the work is done.",
+      "body": "Stacks has verify and Decks has check and lint. Three tools document one action per exit code."
     },
     {
       "slide": 27,
       "beat": 2,
       "beats": 3,
       "lead": "Agents run in parallel and read bundled docs.",
-      "body": "rr locks a host and foreman uses a worktree per task; five tools ship their own guide or skill."
+      "body": "rr locks a host and foreman uses a worktree per task. Five tools ship their own guide or skill."
     },
     {
       "slide": 27,
       "beat": 3,
       "beats": 3,
-      "lead": "Any CLI or library can adopt these habits.",
-      "body": "The six habits are output formats, exit codes, locks and bundled docs; none of them calls a model."
+      "lead": "Any CLI can adopt these six habits.",
+      "body": "None of them calls a model."
     },
     {
       "slide": 28,

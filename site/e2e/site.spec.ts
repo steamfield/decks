@@ -490,6 +490,15 @@ test("hovering and focusing real campus marks pauses the live deck", async ({ pa
   await page.goto("/");
   await player(page).scrollIntoViewIfNeeded();
   await expect(player(page)).toHaveAttribute("data-phase", "ready");
+  const aisd = examples.find(({ name }) => name === "aisd-showcase");
+  if (!aisd) throw new Error("examples.json has no aisd-showcase for the campus marks");
+  await page.getByText("More", { exact: true }).click();
+  await page.getByRole("button", { name: aisd.title, exact: true }).click();
+  await expect(page.locator("iframe")).toHaveAttribute("src", /\/d\/aisd-showcase\//);
+  await expect(player(page)).toHaveAttribute("data-phase", "ready");
+  // The More list stays open after a pick and covers the transport on a phone.
+  await page.getByText("More", { exact: true }).click();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
   const frame = page.frameLocator("iframe");
   const campus = frame.getByRole("button", { name: /: grade [A-F],/ }).first();
   const label = await campus.getAttribute("aria-label");
