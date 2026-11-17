@@ -103,3 +103,18 @@ test("embedded and bridge decks have no tray, and returning from overview restor
   await page.mouse.move(4, 716);
   await expect(tray).toHaveCSS("opacity", "1");
 });
+
+test("the tray counter opens the go-to dialog, and choosing a slide goes there", async ({
+  page,
+}) => {
+  await page.goto("/#/2");
+  const tray = page.getByRole("toolbar", { name: "Deck controls" });
+  await tray.getByRole("button", { name: "Go to slide" }).click();
+  const search = page.getByRole("searchbox", { name: "Slide", exact: true });
+  await expect(search).toBeFocused();
+  await search.fill("3");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#\/3$/);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(tray.getByRole("button", { name: "Go to slide" })).toHaveText(/^3 \/ \d+$/);
+});
