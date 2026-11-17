@@ -6,10 +6,12 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@gsap/react": "2.1.2",
     "@react-decks/core": "workspace:*",
     "@react-decks/runtime": "workspace:*",
+    "@shikijs/magic-move": "4.6.0",
     "gsap": "3.15.1",
-    "@gsap/react": "2.1.2"
+    "roughjs": "4.6.6"
   },
   "peerDependencies": {
     "react": "19.3.1",
