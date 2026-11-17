@@ -136,7 +136,7 @@ Clicks: 3
 
 ### What the slide shows
 
-One terminal pane fills the width under the headline. Each beat's one-line caption sits in the pane's bottom band, and three command cards sit above the thread rail. Each card has a play button, and the button on the next command advances the slide one click, the same as the arrow key. By default the pane plays a recording made on November 16 with stacks 0.12.0 in an empty temp directory. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
+One terminal pane fills the width under the headline. Each beat's one-line caption sits in the pane's bottom band, and three command cards sit above the thread rail. Each card has a play button, and the button on the next command advances the slide one click, the same as the arrow key. By default the pane plays a recording made on November 16 with stacks 0.12.0 in an empty temp directory. When the deck runs from `bun run decks dev agents --live-term`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
 
 The second command discards verify's progress lines, which go to stderr; the report text is unchanged.
 
@@ -380,7 +380,7 @@ Clicks: 2
 
 ### What the slide shows
 
-One terminal pane fills the width under the headline, built the same way as slide 7, with the beat's caption in its bottom band and two command cards above the thread rail. The commands run at the root of this repo against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, the laptop I present from. By default the pane plays a recording made on November 16 with rr 0.30.0. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
+One terminal pane fills the width under the headline, built the same way as slide 7, with the beat's caption in its bottom band and two command cards above the thread rail. The commands run at the root of this repo against the four hosts in its `.rr.yaml`: m1-linux, m1-mini and m4-mini over the network, and mbp, the laptop I present from. By default the pane plays a recording made on November 16 with rr 0.30.0. When the deck runs from `bun run decks dev agents --live-term`, the same pane runs the commands in a real shell and its tag reads Live. If the live connection fails, the tag says so and the recording plays.
 
 The recording drops the second command's four leading progress lines and its blank lines. The Parallel Execution Summary is complete and its text is unchanged.
 
@@ -564,7 +564,7 @@ Clicks: 3
 
 ### What the slide shows
 
-One terminal pane fills the width under the headline, built the same way as slide 7, with the beat's caption in its bottom band and three command cards above the thread rail. The commands run in a temp directory and ask the StatGlass app running on this laptop for its CPU history and events. By default the pane plays a recording made on November 16 with statglass 0.10.0, taken while this repo's test gate was running. When the deck runs from `DECKS_LIVE_TERM=1 bun run decks dev agents`, the same pane runs the commands in a real shell and its tag reads Live, and the readings are the laptop's own from the last half hour. If the live connection fails, the tag says so and the recording plays.
+One terminal pane fills the width under the headline, built the same way as slide 7, with the beat's caption in its bottom band and three command cards above the thread rail. The commands run in a temp directory and ask the StatGlass app running on this laptop for its CPU history and events. By default the pane plays a recording made on November 16 with statglass 0.10.0, taken while this repo's test gate was running. When the deck runs from `bun run decks dev agents --live-term`, the same pane runs the commands in a real shell and its tag reads Live, and the readings are the laptop's own from the last half hour. If the live connection fails, the tag says so and the recording plays.
 
 The recording keeps every output line, captured at 92 columns and wrapped for playback at the pane's 135 columns. The host name is the laptop's, as the app printed it.
 

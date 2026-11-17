@@ -1,23 +1,10 @@
-import { useDeck, useSlide } from "@steamfield/decks";
-import { ink, useFrameScale } from "@steamfield/decks/kit";
-import { motionMode } from "@steamfield/decks/motion";
-import {
-  type ComponentType,
-  type ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import type { TermPaneSpec } from "@steamfield/decks";
+import { LiveTerm as KitLiveTerm, useFrameScale } from "@steamfield/decks/kit";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { TermLine } from "../data/types";
-import { terminalFace } from "../term/client/terminal-face";
-import { useLiveTerm } from "../term/client/use-live-term";
-import type { XtermHost } from "../term/client/xterm-host";
-import type { TermPaneSpec } from "../term/protocol";
 import { CrtPanel } from "./CrtPanel";
 import styles from "./LiveTerm.module.css";
-import { TermPane } from "./TermPane";
+import { TermLines } from "./TermPane";
 
 /** What a pane shows whenever it is not live. */
 export type TermRecording =
@@ -39,20 +26,7 @@ export type TermRecording =
       tag: string;
     };
 
-function subscribeMotion(notify: () => void) {
-  const observer = new MutationObserver(notify);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-deck-motion"],
-  });
-  return () => observer.disconnect();
-}
-
-/**
- * One terminal pane on a demo slide. It shows `recording` stepped by `click`; when the deck is
- * presented from a dev server started with DECKS_LIVE_TERM=1, the same pane runs `pane` in a
- * real shell instead.
- */
+/** The deck's recording and CRT skin around the framework's live pane. */
 export function LiveTerm({
   pane,
   click,
@@ -63,7 +37,7 @@ export function LiveTerm({
   height,
   label = "",
   caption,
-  size,
+  size = 31,
 }: {
   pane: TermPaneSpec;
   click: number;
@@ -76,131 +50,52 @@ export function LiveTerm({
   caption: string;
   size?: number;
 }) {
-  const { renderContext, isActive } = useSlide();
-  const { view, embedded } = useDeck();
-  const scale = useFrameScale();
-  const motion = useSyncExternalStore(
-    subscribeMotion,
-    () => motionMode() === "live",
-    () => false,
-  );
-  const eligible = renderContext === "slide" && isActive && view === "play" && !embedded && motion;
   const terminalBox = useRef<HTMLDivElement>(null);
-  const live = useLiveTerm(import.meta.hot, pane, eligible, click);
-  const [Host, setHost] = useState<ComponentType<Parameters<typeof XtermHost>[0]>>();
-  useEffect(() => {
-    if (!import.meta.hot || !live.live) return;
-    const element = terminalBox.current;
-    if (!element) return;
-    const font = getComputedStyle(element).getPropertyValue("--sf-font-term").trim();
-    let cancelled = false;
-    void Promise.all([
-      import("../term/client/xterm-host"),
-      document.fonts.load(`${size ?? 31}px ${font}`),
-      document.fonts.ready,
-    ])
-      .then(([{ XtermHost }]) => {
-        if (!cancelled) setHost(() => XtermHost);
-      })
-      .catch(
-        (error: unknown) =>
-          !cancelled &&
-          live.connection?.unavailable(
-            `terminal could not load: ${error instanceof Error ? error.message : String(error)}`,
-          ),
-      );
-    return () => {
-      cancelled = true;
-    };
-  }, [live.live, live.connection, size]);
-  const [face, setFace] = useState<{
-    key: string;
-    font: string;
-    size: number;
-    layout: ReturnType<typeof terminalFace>;
-    colors: Parameters<typeof XtermHost>[0]["colors"];
-  }>();
+  const scale = useFrameScale();
+  const [recordingSize, setRecordingSize] = useState(size);
   useLayoutEffect(() => {
     const element = terminalBox.current;
     if (!element) return;
-    // Resolve TermPane's frame-relative type before handing screen pixels to xterm.
-    element.style.fontSize = `calc(${(size ?? 31) / 19.2} * var(--sw))`;
     let disposed = false;
     const measure = () => {
       if (disposed) return;
-      const css = getComputedStyle(element);
-      const fontSize = Number.parseFloat(css.fontSize);
-      const token = (name: string) => css.getPropertyValue(name).trim();
       const content = element.querySelector(".sf-panel-content");
       if (!content) return;
       const bounds = content.getBoundingClientRect();
       if (scale <= 0 || bounds.width <= 0 || bounds.height <= 0) return;
       const padding = getComputedStyle(content);
-      const font = token("--sf-font-term");
-      const layout = terminalFace({
-        fontFamily: font,
-        fontSize,
-        scale,
-        devicePixelRatio: window.devicePixelRatio,
-        rows: pane.rows,
-        cols: pane.cols,
-        width:
-          bounds.width -
-          (Number.parseFloat(padding.paddingLeft) + Number.parseFloat(padding.paddingRight)) *
-            scale,
-        height:
-          bounds.height -
-          (Number.parseFloat(padding.paddingTop) + Number.parseFloat(padding.paddingBottom)) *
-            scale,
-      });
+      const css = getComputedStyle(element);
+      const fontSize = Number.parseFloat(css.fontSize);
+      const font = css.getPropertyValue("--sf-font-term").trim();
+      const ruler = document.createElement("canvas").getContext("2d");
+      if (!ruler) throw new Error(`No 2d canvas to measure recording "${pane.id}"`);
+      ruler.font = `${fontSize * scale}px ${font}`;
+      const dpr = window.devicePixelRatio;
+      const advance = ruler.measureText("W").width * dpr;
+      const cell = Math.max(1, Math.round(advance));
+      const snapped = (fontSize * scale * cell) / advance;
+      const rowHeight = Math.floor(snapped * 1.12 * dpr) / dpr;
+      const gridWidth = Math.ceil((pane.cols * cell) / dpr);
+      const gridHeight = Math.ceil(pane.rows * rowHeight);
+      const availableWidth =
+        bounds.width -
+        (Number.parseFloat(padding.paddingLeft) + Number.parseFloat(padding.paddingRight)) * scale;
+      const availableHeight =
+        bounds.height -
+        (Number.parseFloat(padding.paddingTop) + Number.parseFloat(padding.paddingBottom)) * scale;
+      // Keep the recording's original grid fit, including its reserved scrollbar space.
+      const residual = Math.min(availableWidth / (gridWidth + 6), availableHeight / gridHeight);
+      element.style.setProperty("--live-term-width", `${(gridWidth * residual) / scale}px`);
+      element.style.setProperty("--live-term-height", `${(gridHeight * residual) / scale}px`);
       element.style.setProperty(
-        "--live-term-width",
-        `${(layout.gridWidth * layout.residual) / scale}px`,
+        "--live-term-margin",
+        `${Math.max(0, (availableWidth - (gridWidth + 6) * residual) / 2) / scale}px`,
       );
-      element.style.setProperty(
-        "--live-term-height",
-        `${(layout.gridHeight * layout.residual) / scale}px`,
-      );
-      element.style.setProperty("--live-term-margin", `${layout.margin / scale}px`);
       element.style.setProperty(
         "--live-term-line-height",
-        `${(layout.rowHeight * layout.residual) / scale}px`,
+        `${(gridHeight * residual) / (pane.rows * scale)}px`,
       );
-      const key = `${font}:${fontSize}:${scale}:${bounds.width}:${bounds.height}:${window.devicePixelRatio}:${layout.fontSize}`;
-      setFace((current) =>
-        current?.key === key
-          ? current
-          : {
-              key,
-              font,
-              size: fontSize,
-              layout,
-              colors: {
-                background: token("--od-screen-black"),
-                foreground: token("--od-text"),
-                cursor: token("--od-phosphor"),
-                black: token("--od-text-faint"),
-                red: ink("rose", 1),
-                green: token("--od-phosphor"),
-                yellow: token("--od-amber"),
-                blue: ink("violet", 2),
-                magenta: token("--od-pink"),
-                cyan: token("--od-cyan"),
-                white: token("--od-text-secondary"),
-                brightBlack: token("--od-text-muted"),
-                brightRed: ink("rose", 3),
-                brightGreen: ink("emerald", 3),
-                brightYellow: ink("amber", 3),
-                brightBlue: ink("violet", 3),
-                brightMagenta: ink("rose", 4),
-                brightCyan: ink("cyan", 3),
-                brightWhite: token("--od-text-highlight"),
-                scrollbarSliderBackground: token("--od-text-faint"),
-                scrollbarSliderHoverBackground: token("--od-text-muted"),
-                scrollbarSliderActiveBackground: token("--od-cyan"),
-              },
-            },
-      );
+      setRecordingSize((size * snapped * residual) / (fontSize * scale));
     };
     measure();
     void document.fonts.ready.then(measure);
@@ -212,57 +107,48 @@ export function LiveTerm({
       observer.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [size, scale, pane.rows, pane.cols]);
-  const showingLive = live.live && Host && face && live.connection;
-  const queued = live.queued.length > 0;
-  const tag = showingLive
-    ? `Live${queued ? " · queued" : live.busy ? " · busy" : ""}`
-    : `${recording.tag}${queued ? " · live queued" : ""}${live.reason ? ` · live unavailable: ${live.reason}` : ""}`;
-  const box = { x, y, width, height, label, tag, fig: caption };
-  let content: ReactNode;
-  if (showingLive && Host && face && live.connection) {
-    content = (
-      <CrtPanel {...box}>
-        <div className={styles.terminal}>
-          <Host
-            connection={live.connection}
-            rows={pane.rows}
-            cols={pane.cols}
-            scale={scale}
-            fontFamily={face.font}
-            fontSize={face.size}
-            colors={face.colors}
-            wheelTarget={terminalBox.current ?? undefined}
-          />
-        </div>
-      </CrtPanel>
-    );
-  } else if (recording.kind === "poster") {
-    content = (
-      <CrtPanel {...box} power={click >= recording.from ? 1 : 0}>
-        <img src={recording.src} alt={recording.alt} />
-      </CrtPanel>
-    );
-  } else {
-    const shown = recording.shownAt[Math.min(click, recording.shownAt.length - 1)];
-    if (shown === undefined) throw new Error(`LiveTerm recording for ${box.label} has no shownAt`);
-    content = (
-      <TermPane
-        {...box}
-        lines={recording.lines}
-        shown={shown}
-        size={
-          face
-            ? ((size ?? 31) * face.layout.fontSize * face.layout.residual) / (face.size * scale)
-            : size
-        }
-        follow={false}
-      />
-    );
-  }
+  }, [size, scale, pane.id, pane.rows, pane.cols]);
+  const shown =
+    recording.kind === "lines"
+      ? recording.shownAt[Math.min(click, recording.shownAt.length - 1)]
+      : undefined;
+  if (recording.kind === "lines" && shown === undefined)
+    throw new Error(`LiveTerm recording for ${label} has no shownAt`);
   return (
-    <div ref={terminalBox} className={styles.skin}>
-      {content}
+    <div
+      ref={terminalBox}
+      className={styles.skin}
+      style={{ fontSize: `calc(${size / 19.2} * var(--sw))` }}
+    >
+      <KitLiveTerm
+        pane={pane}
+        click={click}
+        fallback={
+          recording.kind === "poster" ? (
+            <img src={recording.src} alt={recording.alt} />
+          ) : (
+            <TermLines lines={recording.lines} shown={shown} size={recordingSize} follow={false} />
+          )
+        }
+        frame={(content, status) => (
+          <CrtPanel
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            label={label}
+            fig={caption}
+            power={status.live || recording.kind === "lines" || click >= recording.from ? 1 : 0}
+            tag={
+              status.live
+                ? `Live${status.queued ? " · queued" : status.busy ? " · busy" : ""}`
+                : `${recording.tag}${status.reason ? ` · live unavailable: ${status.reason}` : ""}`
+            }
+          >
+            {content}
+          </CrtPanel>
+        )}
+      />
     </div>
   );
 }

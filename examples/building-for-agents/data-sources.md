@@ -95,7 +95,7 @@ All from one project, `~/Projects/stacks-tests/tea-dashboard` (not a git reposit
 
 ## Slide 7: Stacks gives a failed check an exit code.
 
-Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/07-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The capture is kept at its original 92-column width and playback wraps it at the shared 135-column grid. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+Recorded for this deck on 2026-11-16 with stacks 0.12.0 and kept in `data/fixtures/07-stacks-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (the deck-local pty helper) in an empty temp directory, with `DO_NOT_TRACK=1`. Escape sequences were removed; the text is otherwise as printed. The capture is kept at its original 92-column width and playback wraps it at the shared 135-column grid. The pane shows this recording unless the deck runs with `--live-term`, in which case it runs the same commands in a real shell and is tagged Live.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -255,7 +255,7 @@ Not stated, by decision: any rr speedup; "load balanced"; automatic sharding.
 
 ## Slide 17: rr runs this task across my machines.
 
-Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/17-rr-live.json`. Each command was typed into `zsh -f` on a 24-row, 104-column pseudo-terminal (`term/server/shell_pty.py`) at the repository root, against the four hosts in the root `.rr.yaml`. Escape sequences were removed and runs of blank lines collapsed; the second command keeps the final frame of rr's redrawing progress display. The text is otherwise as printed. The capture is kept at its original 104-column width and playback wraps it at the shared 135-column grid. Recorded host locks describe the capture; live locks vary, because another task can hold a host during the demo. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`, in which case it runs the same commands in a real shell and is tagged Live.
+Recorded for this deck on 2026-11-16 with rr 0.30.0 and kept in `data/fixtures/17-rr-live.json`. Each command was typed into `zsh -f` on a 24-row, 104-column pseudo-terminal (the deck-local pty helper) at the repository root, against the four hosts in the root `.rr.yaml`. Escape sequences were removed and runs of blank lines collapsed; the second command keeps the final frame of rr's redrawing progress display. The text is otherwise as printed. The capture is kept at its original 104-column width and playback wraps it at the shared 135-column grid. Recorded host locks describe the capture; live locks vary, because another task can hold a host during the demo. The pane shows this recording unless the deck runs with `--live-term`, in which case it runs the same commands in a real shell and is tagged Live.
 
 | Figure | Value | Source |
 |---|---|---|
@@ -372,7 +372,7 @@ Banned on this slide (checked): any size for the CLI's own binary (the RFC gives
 
 ## Slide 25: StatGlass reports this laptop's CPU history. (hidden)
 
-The slide has `hide: true` and is out of the default cut; its sources stay here so it can be restored. Recorded for this deck on 2026-11-16 with statglass 0.10.0 and kept in `data/fixtures/25-glass-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (`term/server/shell_pty.py`) with `DO_NOT_TRACK=1`, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences were removed; the text is otherwise as printed. The capture is kept at its original 92-column width and playback wraps it at the shared 135-column grid. The pane shows this recording unless the deck runs with `DECKS_LIVE_TERM=1`.
+The slide has `hide: true` and is out of the default cut; its sources stay here so it can be restored. Recorded for this deck on 2026-11-16 with statglass 0.10.0 and kept in `data/fixtures/25-glass-live.json`. Each command was typed into `zsh -f` on a 24-row, 92-column pseudo-terminal (the deck-local pty helper) with `DO_NOT_TRACK=1`, against the StatGlass app running on the presenter's laptop while this repo's test gate ran. Escape sequences were removed; the text is otherwise as printed. The capture is kept at its original 92-column width and playback wraps it at the shared 135-column grid. The pane shows this recording unless the deck runs with `--live-term`.
 
 | Figure | Value | Source |
 |---|---|---|

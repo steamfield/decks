@@ -1,3 +1,4 @@
+import type { TermPaneSpec } from "@steamfield/decks";
 /**
  * Slide 07: recorded Stacks shell demo, from fixtures/07-stacks-live.json.
  * Captured 2026-11-16 on a 24x92 zsh pseudo-terminal with stacks 0.12.0.
@@ -8,7 +9,6 @@
  */
 import { type LiveDemo, paneGrid } from "../components/LiveDemoStage";
 import type { TermRecording } from "../components/LiveTerm";
-import type { TermPaneSpec } from "../term/protocol";
 import fixture from "./fixtures/07-stacks-live.json";
 import type { TermLine } from "./types";
 

@@ -14,10 +14,10 @@ From the repo root, on the laptop you present from:
 
 ```bash
 bun install
-DECKS_LIVE_TERM=1 bun run decks dev agents
+bun run decks dev agents --live-term
 ```
 
-`DECKS_LIVE_TERM=1` gives slides 7, 17 and 25 a real shell. Without it, `bun run decks dev agents` runs the same deck and the demo slides play their recordings.
+`--live-term` gives slides 7, 17 and 25 a real shell. Without it, `bun run decks dev agents` runs the same deck and the demo slides play their recordings.
 
 The command prints the deck's address, normally `http://localhost:3030`. Open it in one browser window on the projector and press `f` for fullscreen. Press `p` to open the presenter window and drag it to the laptop screen. Each station in the thread rail along the bottom links to that product's site (`https://<product>.steamfield.io`) and opens in a new tab, so a click on the rail leaves the deck window. The presenter window shows the current slide, the next state, the notes with the current click marked, the position ("5 / 28"), the click count and a timer that starts at the first key press.
 

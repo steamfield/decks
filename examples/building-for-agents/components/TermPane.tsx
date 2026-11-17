@@ -33,8 +33,6 @@ export function TermPane({
   size?: number;
   follow?: boolean;
 }) {
-  const n = shown === undefined ? lines.length : Math.floor(shown + 1e-6);
-  const visible = lines.slice(0, Math.max(0, n)).map((line, index) => ({ ...line, index }));
   return (
     <CrtPanel
       x={x}
@@ -47,22 +45,42 @@ export function TermPane({
       progress={progress}
       power={power}
     >
-      <div
-        className={`sf-term-lines ${styles["sf-term-lines"]}${follow ? " is-follow" : ""}`}
-        style={{ fontSize: `calc(${size / 19.2} * var(--sw))` }}
-      >
-        {visible.map((line) => (
-          <div
-            key={line.index}
-            className={`sf-term-line ${styles["sf-term-line"]} is-${line.tone ?? "out"}${highlight.includes(line.index) ? " is-hot" : highlight.length > 0 ? " is-cold" : ""}`}
-          >
-            <span className={`sf-term-prefix ${styles["sf-term-prefix"]}`}>
-              {line.tone === "cmd" ? "$ " : line.tone === "user" ? "> " : ""}
-            </span>
-            {line.text}
-          </div>
-        ))}
-      </div>
+      <TermLines lines={lines} shown={shown} highlight={highlight} size={size} follow={follow} />
     </CrtPanel>
+  );
+}
+
+export function TermLines({
+  lines,
+  shown,
+  highlight = [],
+  size = 31,
+  follow = true,
+}: {
+  lines: readonly TermLine[];
+  shown?: number;
+  highlight?: readonly number[];
+  size?: number;
+  follow?: boolean;
+}) {
+  const n = shown === undefined ? lines.length : Math.floor(shown + 1e-6);
+  const visible = lines.slice(0, Math.max(0, n)).map((line, index) => ({ ...line, index }));
+  return (
+    <div
+      className={`sf-term-lines ${styles["sf-term-lines"]}${follow ? " is-follow" : ""}`}
+      style={{ fontSize: `calc(${size / 19.2} * var(--sw))` }}
+    >
+      {visible.map((line) => (
+        <div
+          key={line.index}
+          className={`sf-term-line ${styles["sf-term-line"]} is-${line.tone ?? "out"}${highlight.includes(line.index) ? " is-hot" : highlight.length > 0 ? " is-cold" : ""}`}
+        >
+          <span className={`sf-term-prefix ${styles["sf-term-prefix"]}`}>
+            {line.tone === "cmd" ? "$ " : line.tone === "user" ? "> " : ""}
+          </span>
+          {line.text}
+        </div>
+      ))}
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 {
   "recorded": "2026-11-16",
   "tool": "stacks 0.12.0",
-  "how": "Each command typed into zsh -f on a 24x92 pseudo-terminal (term/server/shell_pty.py) in an empty temp directory, DO_NOT_TRACK=1. Escape sequences removed; text otherwise as printed.",
+  "how": "Each command typed into zsh -f on a 24x92 pseudo-terminal (the deck-local pty helper) in an empty temp directory, DO_NOT_TRACK=1. Escape sequences removed; text otherwise as printed.",
   "steps": [
     {
       "command": "stacks new typescript-cli demo-cli --sandbox --no-launch --offline",
