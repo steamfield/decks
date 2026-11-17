@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
 - `decks check` reports a visible slide whose `[click]` note markers cover a different number of clicks than the slide has.
 - Presenter view pins the current click's notes to the top of the notes panel on every step, scrolling smoothly unless reduced motion is set, so the speaker never scrolls them.
