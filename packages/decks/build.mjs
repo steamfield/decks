@@ -25,10 +25,12 @@ await build({ ...config, dts: false });
 await build({ ...config, clean: false, dts: { dtsOnly: true } });
 
 // JS chunks retain relative CSS imports; ship those files at the same level.
-for (const name of ["runtime", "motion"]) {
+// The kit's global stylesheets ship whole under dist/kit/ below; its CSS Modules are imported
+// from JS like runtime's and motion's.
+for (const name of ["runtime", "motion", "kit"]) {
   const source = new URL(`../${name}/src/`, import.meta.url);
   for (const file of await readdir(source, { recursive: true })) {
-    if (file.endsWith(".css"))
+    if (name === "kit" ? file.endsWith(".module.css") : file.endsWith(".css"))
       await cp(new URL(file, source), new URL(`dist/${basename(file)}`, import.meta.url));
   }
 }
