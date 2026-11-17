@@ -9,6 +9,7 @@ const provided = [
   "CountUp",
   "Draw",
   "Morph",
+  "Mark",
   "Center",
   "Cover",
   "Section",
