@@ -92,8 +92,9 @@ Every slide can use these names with no import.
 | Source | Names |
 | --- | --- |
 | The deck's `components/*.tsx` | Every named export under its own name; a default export under the file's basename. |
-| Motion (`@steamfield/decks/motion`) | `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph` |
+| Motion (`@steamfield/decks/motion`) | `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph`, `Mark` |
 | Layouts (`@steamfield/decks`) | `Center`, `Cover`, `Section`, `TwoCol`, `ImageSide` |
+| Navigation (`@steamfield/decks`) | `Toc`, `Link` |
 | Built in | `Notes`; fenced code blocks render through `CodeBlock` |
 
 A deck component with the same name as a framework one replaces it for that deck. A replaced motion component no longer adds clicks.
@@ -120,6 +121,24 @@ slides/03-x.mdx:3:1: <Nonexistent> is not defined. Export it from a file in comp
 ```
 
 Lowercase elements and member names such as `<motion.div>` are not checked.
+
+## Links between slides
+
+`<Link to={5}>the results</Link>` is a link to slide 5 at click 0. In the play view and the presenter window a click goes there, and in a synced talk the other windows follow. A `Cmd`- or `Ctrl`-click opens the slide in a new tab, which joins the talk's sync and then follows the talk's position. A `to` that is not a slide number in the deck is an error naming it.
+
+`<Toc />` is an agenda: a numbered list of every slide's title as a `Link`, with the current slide marked (`aria-current="page"`). Slides without a `title` in their frontmatter are listed by number, and hidden slides are left out.
+
+In the overview, a preview, and print, both render as plain text, so a thumbnail never navigates.
+
+```mdx
+---
+title: What this talk covers.
+---
+
+<h1>What this talk covers.</h1>
+
+<Toc />
+```
 
 ## Built-in layouts
 

@@ -35,6 +35,10 @@ Decks used to be a Slidev addon, `slidev-addon-decks`. It is now its own React f
 | `<!-- notes -->` at the end of a page | `<Notes>...</Notes>`, `[click]` markers included |
 | `<!-- lint-allow: id -->` on a line | `{/* lint-allow: id */}` on the same line |
 | `routeEmbedNavigation` from `slidev-addon-decks/composables/embed-navigation` | `routeEmbedNavigation` from `@steamfield/decks` |
+| `v-mark` (`v-mark.circle`, `v-mark.box`, ...) | `<Mark kind="circle" at={n}>` around the text; see [motion.md](motion.md) |
+| a four-backtick `md magic-move` fence | the same fence; `{*}` emphasis becomes `{all}`. See [code-blocks.md](code-blocks.md) |
+| `<Toc />`, `<Link to="5">` | `<Toc />`, `<Link to={5}>` (a number); see [slides.md](slides.md) |
+| the bottom-left navigation controls and `g` | the control tray and `g`; see [presenting.md](presenting.md) |
 
 ## Commands
 
