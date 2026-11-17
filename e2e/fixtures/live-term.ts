@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
+import { expect, type Page } from "@playwright/test";
 import { dev, loadDeck } from "@steamfield/decks/node";
 import { test as base } from "./deck.fixture";
 
@@ -30,3 +31,12 @@ export const test = base.extend<{ liveServer: Awaited<ReturnType<typeof dev>> }>
 test.beforeEach(() => {
   test.skip(!hasZsh, "Live terminal browser tests require zsh on PATH");
 });
+
+/** The terminal pane's visible rows in a window. */
+export const shellRows = (page: Page) => page.getByRole("application").locator(".xterm-rows > div");
+
+/** Opens the live server's deck in a window and waits for the shell to be on screen. */
+export async function openLive(page: Page, url: string) {
+  await page.goto(url);
+  await expect(page.getByLabel("Terminal status")).toHaveText("Live");
+}
