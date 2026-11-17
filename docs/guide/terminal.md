@@ -81,14 +81,13 @@ The kit ships no terminal skin. The pane reads `--deck-term-font`, `--deck-term-
 
 ## While presenting
 
-A click into the pane gives it the keyboard; `Escape` gives the keys back to the deck. Pressing next while a command still runs queues the next command until the prompt returns. The audience window, a second audience window and the presenter all show the same shell, and each command runs once whichever window advanced. Reloading a window reattaches to the running shell and replays its recent output. If the shell exits or its connection drops, the pane goes back to its fallback with the reason.
+A click into the pane gives it the keyboard; `Escape` gives the keys back to the deck. Pressing next while a command still runs queues the next command until the prompt returns. Every audience window shows the same shell, and each command runs once whichever window advanced, the presenter included. The presenter's own preview of the slide shows the fallback. Reloading a window reattaches to the running shell and replays its recent output. If the shell exits or its connection drops, the pane goes back to its fallback with the reason.
 
-The dev server only starts shells when it listens on a loopback address and serves its hot-update socket on its own port. Neither check can be turned off: anyone who can reach the server can type into the shell.
+The dev server only starts shells when it listens on a loopback address, its hot-update socket shares the page's port, and Vite's socket token and Host checks are on. A deck's `vite` config that changes any of these turns the terminal off with a line in the dev log saying why. None of the checks can be turned off: anything that can reach the socket can type into the shell.
 
 ## Limits
 
 - A full-screen program (`vim`, `htop`, a TUI) is not supported. A reattach replays the tail of the output, which redraws such a program wrongly.
-- A window that lags behind can deliver a late report right after a reset at click 0, which runs command 1 again.
 - Jumping back to a terminal slide at click 0 from far away (the go-to dialog, the overview) replays the old session instead of restarting the shell. Step to click 1 and back to restart it.
 - If the dev server restarts while a pane is past click 0, later commands wait until the pane returns to click 0.
 - Typing into a focused pane during the short pause before a command's Enter is sent edits that command.

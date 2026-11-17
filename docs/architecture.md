@@ -1818,8 +1818,14 @@ value is an error naming the pane. The browser never sends a path. Every command
 a deck built elsewhere names directories that exist only on the speaker's machine.
 
 The plugin refuses to start, logging one line naming why, when the server is not bound to a
-loopback address, its HMR WebSocket has a port or server of its own, or the platform is Windows (the pty helper is Python's standard `pty`
-module). Neither check is configurable. Sessions run `zsh -d` with a private `ZDOTDIR` (the
+loopback address, its HMR WebSocket has a port or server of its own, the WebSocket token
+check is off (`legacy.skipWebSocketTokenCheck`), any Host is allowed (`server.allowedHosts:
+true`), or the platform is Windows (the pty helper is Python's standard `pty` module). A deck's
+`vite` config can set each of these, and each would let another web page type into the shell;
+none of the checks is configurable. Every message from the socket is validated before it
+is used (ids and `cwd` strings, `rows` and `cols` whole numbers 1-65535, `commands` an array of
+strings, `click` a whole number 0 or more, `entered` a boolean, typed `data` a string); a
+malformed one is logged and dropped, and never throws in the dev server. Sessions run `zsh -d` with a private `ZDOTDIR` (the
 package's `term/zsh/.zshrc`: a prompt that prints the OSC 133 marker, and the blank line
 before each prompt), through `term/shell_pty.py`, in the dev server's environment without the
 package runner's additions (`npm_*`, `NODE`, `NODE_OPTIONS`, `INIT_CWD`, and
@@ -1834,7 +1840,17 @@ window reports `TermPosition` (its click, and whether its slide just became acti
 of sending steps. A window reports only on a change while mounted: its slide becoming active
 through navigation (`entered`), or its click changing while active. Mounting or reloading only
 attaches. Each command runs at most once per session, so a lagging window's late reports, or
-stepping back and forward again, never type a command twice.
+stepping back and forward again, never type a command twice. A report carries the window's
+sync stamp (`SyncStamp`, `packages/core/src/sync.ts`); the server drops a report older than the
+newest stamp it has seen for that pane, so a late report from before another window's step or
+reset changes nothing. The newest stamp is forgotten when the pane has no attached window, so a
+reloaded window starting a fresh stamp is never locked out.
+
+An attach whose pane spec differs from the running session's (an author edited `commands`,
+`rows`, `cols` or `cwd` in dev) restarts the session with the new spec. A `"temp"` session's
+directory is deleted once its shell has exited; a `term.dirs` directory is never deleted. The
+replay buffer is kept as chunks with a running byte count, so heavy output never re-encodes
+the whole buffer per chunk.
 
 | Position report, server at click p | Result |
 | --- | --- |
