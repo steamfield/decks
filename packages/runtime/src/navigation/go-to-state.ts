@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { useDeckContext } from "../hooks";
 import type { DeckStore } from "../store/store";
 
@@ -28,7 +28,11 @@ function setOpen(store: DeckStore, open: boolean) {
   for (const listener of state.listeners) listener();
 }
 
-export function useGoTo(): { open: boolean; show(): void; hide(): void } {
+export function showGoTo(store: DeckStore): void {
+  setOpen(store, true);
+}
+
+export function useGoTo(): { open: boolean; hide(): void } {
   const { store } = useDeckContext();
   const state = stateFor(store);
   const open = useSyncExternalStore(
@@ -38,5 +42,6 @@ export function useGoTo(): { open: boolean; show(): void; hide(): void } {
     },
     () => state.open,
   );
-  return { open, show: () => setOpen(store, true), hide: () => setOpen(store, false) };
+  const hide = useCallback(() => setOpen(store, false), [store]);
+  return { open, hide };
 }

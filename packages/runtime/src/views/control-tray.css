@@ -28,6 +28,7 @@
   }
 
   .rd-tray-buttons {
+    pointer-events: none;
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
@@ -35,6 +36,11 @@
     border: 1px solid var(--rd-ui-line);
     border-radius: 0.375rem;
     background: var(--rd-ui-panel);
+  }
+
+  .rd-tray:hover .rd-tray-buttons,
+  .rd-tray:focus-within .rd-tray-buttons {
+    pointer-events: auto;
   }
 
   .rd-tray button {

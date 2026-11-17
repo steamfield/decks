@@ -4,13 +4,12 @@ import { defaultKeybindingsHandlerIgnore, type KeybindingsMap, tinykeys } from "
 import { stepTextScale } from "../canvas/text-scale";
 import { useDeckContext, useDeckSelector, usePresentation } from "../hooks";
 import { openPresenter, toggleFullscreen, toggleOverview } from "./deck-actions";
-import { useGoTo } from "./go-to-state";
+import { showGoTo } from "./go-to-state";
 
 export function useDeckKeys() {
   const { source, store } = useDeckContext();
   const view = useDeckSelector((state) => state.view);
   const { home } = usePresentation();
-  const { show: showGoTo } = useGoTo();
   useEffect(() => {
     const bind = (action: NavAction) => (event: KeyboardEvent) => {
       event.preventDefault();
@@ -48,7 +47,7 @@ export function useDeckKeys() {
       if (!store.getState().embedded) {
         keys.g = (event) => {
           event.preventDefault();
-          showGoTo();
+          showGoTo(store);
         };
       }
       Object.assign(keys, {
@@ -71,5 +70,5 @@ export function useDeckKeys() {
           event.target instanceof Element &&
           event.target.closest("button") !== null),
     });
-  }, [view, home, source, store, showGoTo]);
+  }, [view, home, source, store]);
 }
