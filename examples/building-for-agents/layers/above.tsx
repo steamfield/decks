@@ -95,8 +95,7 @@ export default function Above() {
   // portrait a window three frames tall) needs a buffer iOS will not allocate, and the frame
   // then draws nothing, or the cover's WebGL takes the tab down. Past the budget the picture
   // goes without the warp.
-  const warp =
-    box.windowWidth * box.windowHeight * window.devicePixelRatio ** 2 <= MAX_WARP_PIXELS;
+  const warp = box.windowWidth * box.windowHeight * window.devicePixelRatio ** 2 <= MAX_WARP_PIXELS;
   useLayoutEffect(() => {
     if (!on || !map || !warp) return;
     const slide = host.current?.closest<HTMLElement>("[data-deck-slide]");
