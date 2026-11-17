@@ -7,6 +7,7 @@ import { tokenizeLine } from "./code-tokens";
 import styles from "./HandoffStage.module.css";
 import { NamePlate } from "./NamePlate";
 import { ThreadRail } from "./ThreadRail";
+import { VscodeLink } from "./VscodeLink";
 
 export interface Handoff {
   headline: string;
@@ -42,11 +43,18 @@ function shellTokens(command: string) {
 function promptTokens(line: string) {
   let offset = 0;
   return line
-    .split(/(`[^`]+`|^\/\S+)/g)
+    .split(/(`[^`]+`|^\/\S+|~\/[\w./-]*[\w/-])/g)
     .filter(Boolean)
     .map((text) => {
       const start = offset;
       offset += text.length;
+      if (text.startsWith("~/")) {
+        return (
+          <VscodeLink key={start} path={text}>
+            {text}
+          </VscodeLink>
+        );
+      }
       return (
         <span
           key={start}

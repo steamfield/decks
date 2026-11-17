@@ -1,0 +1,8 @@
+/* Looks like the text around it. The story overlay ignores the pointer, so the link turns it back on. */
+.link {
+  pointer-events: auto;
+  color: inherit;
+  text-decoration: none;
+  /* The kit underlines slide links with a dashed bottom border. */
+  border-bottom: none;
+}

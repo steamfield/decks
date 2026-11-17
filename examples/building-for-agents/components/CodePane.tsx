@@ -5,6 +5,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { Excerpt } from "../data/code/types";
 import styles from "./CodePane.module.css";
 import { tokenizeLine } from "./code-tokens";
+import { VscodeLink } from "./VscodeLink";
 
 const NO_FOCUS: readonly (readonly [number, number])[] = [];
 
@@ -71,7 +72,12 @@ export function CodePane({
   const code = (source: Excerpt, ranges: typeof focus) => (
     <>
       <div className={`sf-code-label ${styles["sf-code-label"]}`}>
-        {`${source.repo}/${source.path} · lines ${source.start} to ${source.end}`}
+        <VscodeLink
+          path={source.local ?? `~/Projects/${source.repo}/${source.path}`}
+          line={source.start}
+        >
+          {`${source.repo}/${source.path} · lines ${source.start} to ${source.end}`}
+        </VscodeLink>
       </div>
       <pre
         className={`sf-code-body ${styles["sf-code-body"]}`}

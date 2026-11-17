@@ -105,6 +105,7 @@ export function StacksTourStage() {
             reveal={s.tree}
             {...TREE_BOX}
             root={root}
+            repoDir="~/Projects/stacks"
           />
           {step.excerpt && (
             <CodePane

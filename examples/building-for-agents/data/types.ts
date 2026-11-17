@@ -6,6 +6,8 @@ export interface TreeNode {
   label: string;
   /** Indent level, 0 for the tree's top rows. */
   depth: number;
+  /** Path inside the repo; makes the row a link into VS Code. */
+  path?: string;
   /** One short line shown beside the row when a beat focuses it. */
   note?: string;
 }

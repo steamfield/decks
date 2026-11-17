@@ -40,6 +40,7 @@ const last = sourceLines.findIndex((line) => line.trim() === "// excerpt:end");
 const OWN_SOURCE: Excerpt = {
   repo: "this deck",
   path: "components/DecksStage.tsx",
+  local: "~/Projects/decks/examples/building-for-agents/components/DecksStage.tsx",
   start: first + 1,
   end: last,
   commit: "the build you are watching",
