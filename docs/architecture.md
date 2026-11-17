@@ -1836,10 +1836,14 @@ stepping back and forward again, never type a command twice.
 
 | Position report, server at click p | Result |
 | --- | --- |
-| `click = p + 1`, command `click` not yet run | Command `click` is queued; position becomes `click`. |
+| `click > 0`, command `click` not yet run, every command before it run or queued | Command `click` is queued; position becomes `click`. |
 | `click = 0`, and `p > 0` or `entered`, with anything run or typed in the session | The session resets (shell restarted, nothing run); position 0. |
 | `click = 0`, nothing run or typed yet | Queued commands are dropped; position 0. |
 | any other report (the same click again, a jump, a step back, a command already run) | Position becomes `click`; nothing runs. |
+
+The first row does not compare with `p`: a lagging window's late report can move the position
+back (A reports 1 and 2, B's 1 arrives after A's 2), and A's next step must still run command
+3. A jump past an unrun command runs nothing.
 
 ## 7.2 Live terminal, pane (Final)
 
