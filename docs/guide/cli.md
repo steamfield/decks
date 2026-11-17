@@ -18,6 +18,7 @@ Checks the whole project and exits 1 if anything is wrong, one problem per line:
 | `<alias>: <message>` | The deck's config failed to load. |
 | `no slides: <alias>` | The deck has no visible slides (`dev` and `build` would refuse it). |
 | `<alias>: slide name: <file>` | A slide file is not `NN-slug.mdx`, or two share a number. |
+| `<alias>: notes: <file> has [click] cues for N click(s), but the slide has M` | A visible slide's notes use `[click]` markers, and they cover a different number of clicks than the slide has, so cues would highlight on the wrong step. Notes with no markers are not checked. |
 | `N error-level prose hit(s)` | `decks lint` finds error-level patterns. |
 
 ## `decks lint [alias...] [--stdin]`

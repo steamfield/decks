@@ -6,6 +6,8 @@ import { defineCommand } from "citty";
 import { glob } from "tinyglobby";
 import { loadDeck } from "../../dev/config";
 import { DeckError } from "../../dev/errors";
+import { renderNotes } from "../../mdx/notes";
+import { readSource } from "../../mdx/read-source";
 import { scanSlidesWithCounts } from "../../mdx/slides";
 import { readRegistry } from "../registry";
 import { lintDecks } from "./lint";
@@ -61,7 +63,24 @@ export const check = defineCommand({
         const loaded = await loadDeck(deck.dir, deck.alias);
         // Only a deck whose config loads can be linted; a broken one is already reported.
         present.push(deck);
-        await scanSlidesWithCounts(loaded, new Map());
+        const { slides } = await scanSlidesWithCounts(loaded, new Map());
+        // Cues marked with [click] belong to one click each; once the slide gains or loses a
+        // click they drift onto the wrong step, which the presenter only finds on stage. A hidden
+        // slide is not presented, so it is checked once it is restored.
+        for (const { meta } of slides) {
+          const { file, clicks } = meta;
+          const path = join(deck.dir, file);
+          const segments = await renderNotes(
+            await readSource(path),
+            path,
+            loaded.config.mdx?.remarkPlugins,
+          );
+          const cues = segments?.at(-1)?.click ?? 0;
+          if (cues > 0 && cues !== clicks)
+            problems.push(
+              `${deck.alias}: notes: ${path} has [click] cues for ${cues} click(s), but the slide has ${clicks}`,
+            );
+        }
       } catch (cause) {
         if (!(cause instanceof DeckError)) throw cause;
         if (
