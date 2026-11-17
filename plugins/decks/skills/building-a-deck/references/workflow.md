@@ -50,6 +50,14 @@ Set `transition: "story"` in `deck.config.ts` and import the kit stylesheet. Wri
 
 Use `decks:deck-motion` for entrance versus beat state and refs. Use `decks:visualization` before selecting an Ink mark or writing an OpenChart spec. Use no network-dependent live demo to stand in for reproducible evidence.
 
+## Live terminal
+
+Use `LiveTerm` from `@steamfield/decks/kit` for prepared shell commands inside a slide. Pass a `pane` specification (`id`, `rows`, `cols`, `cwd`, `commands`), the slide's current click, and a required `fallback` recording node. Use `cwd: "temp"` for a fresh temporary directory, or a key declared in `deck.config.ts` under `term.dirs`.
+
+Start the deck with `decks dev <deck> --live-term` on macOS or Linux. Only the active play slide with live motion shows the shell. Presenter, overview, print and embeds show the recording. Build, export and shot also show the recording; check it at every click. Full-screen TUIs are unsupported because replaying the output tail cannot reconstruct their screen.
+
+Click the terminal to type; press Escape to return keys to the deck. Give the pane a size in the slide layout. Set its font and colours with `--deck-term-*` custom properties; the component supplies no skin.
+
 ## Notes and pacing
 
 Put opening narration before the first `[click]` marker in a single `<Notes>` block. For story decks use one plain `[click]` line per click, in order, so the presenter can follow every beat. Notes do not add clicks. Do not hide notes in comments or put the block inside a conditional expression.

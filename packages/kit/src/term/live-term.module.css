@@ -1,0 +1,20 @@
+.pane {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: var(--deck-term-foreground, currentColor);
+  background-color: var(--deck-term-background, transparent);
+  font-family: var(--deck-term-font, monospace);
+  font-size: var(--deck-term-font-size, 1em);
+}
+
+.host {
+  transform-origin: top left;
+}
