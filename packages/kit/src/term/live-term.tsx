@@ -25,6 +25,14 @@ function subscribeMotion(notify: () => void) {
   return () => observer.disconnect();
 }
 
+/** What a deck's `frame` needs to label the pane (architecture section 7.2). */
+export interface LiveTermStatus {
+  live: boolean;
+  busy: boolean;
+  queued: boolean;
+  reason?: string;
+}
+
 export function LiveTerm({
   pane,
   click,
@@ -33,6 +41,7 @@ export function LiveTerm({
   pane: TermPaneSpec;
   click: number;
   fallback: ReactNode;
+  frame?: (content: ReactNode, status: LiveTermStatus) => ReactNode;
 }): ReactElement {
   const { isActive, renderContext } = useSlide();
   const { view, embedded } = useDeck();

@@ -1850,8 +1850,27 @@ back (A reports 1 and 2, B's 1 arrives after A's 2), and A's next step must stil
 ## 7.2 Live terminal, pane (Final)
 
 ```ts
-export function LiveTerm(props: { pane: TermPaneSpec; click: number; fallback: ReactNode }): ReactElement;
+export interface LiveTermStatus {
+  /** The shell is on screen. */
+  live: boolean;
+  /** A command is running. */
+  busy: boolean;
+  /** Clicks are waiting for a prompt. */
+  queued: boolean;
+  /** Why the pane fell back after trying to go live. */
+  reason?: string;
+}
+export function LiveTerm(props: {
+  pane: TermPaneSpec;
+  click: number;
+  fallback: ReactNode;
+  /** Wraps what the pane shows (shell or fallback) in the deck's skin, given the status. */
+  frame?: (content: ReactNode, status: LiveTermStatus) => ReactNode;
+}): ReactElement;
 ```
+
+Without `frame`, the reason renders below the fallback in an element with `role="status"`;
+with `frame`, the deck shows the status itself (a tag such as "Live · busy").
 
 `LiveTerm` renders `fallback` (the deck's recording, in whatever form the deck chooses) unless
 the pane is eligible: the dev server runs with `--live-term` (the plugin answered the attach),
