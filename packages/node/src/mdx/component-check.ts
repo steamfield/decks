@@ -14,6 +14,8 @@ const provided = [
   "Section",
   "TwoCol",
   "ImageSide",
+  "Toc",
+  "Link",
   "Notes",
 ];
 

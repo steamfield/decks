@@ -1,0 +1,57 @@
+@layer react-decks {
+  .rd-go-to {
+    --rd-ui-panel: color-mix(in oklab, currentColor 7%, transparent);
+    --rd-ui-line: color-mix(in oklab, currentColor 22%, transparent);
+    box-sizing: border-box;
+    width: min(32rem, calc(100vw - 3rem));
+    max-height: 80dvh;
+    padding: 1.25rem;
+    border: 1px solid var(--rd-ui-line);
+    border-radius: 0.5rem;
+    color: CanvasText;
+    background: Canvas;
+    font:
+      1rem / 1.5 system-ui,
+      sans-serif;
+    cursor: auto;
+  }
+
+  .rd-go-to::backdrop {
+    background: color-mix(in oklab, CanvasText 45%, transparent);
+  }
+
+  .rd-go-to input {
+    box-sizing: border-box;
+    width: 100%;
+    margin-block: 0.5rem 1rem;
+    padding: 0.5rem;
+    border: 1px solid var(--rd-ui-line);
+    border-radius: 0.25rem;
+    color: inherit;
+    background: var(--rd-ui-panel);
+    font: inherit;
+  }
+
+  .rd-go-to [role="listbox"] {
+    max-height: 50dvh;
+    overflow: auto;
+  }
+
+  .rd-go-to [role="option"] {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    border: 0;
+    border-radius: 0.25rem;
+    color: inherit;
+    background: transparent;
+    text-align: start;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .rd-go-to [aria-selected="true"],
+  .rd-go-to [role="option"]:hover {
+    background: var(--rd-ui-panel);
+  }
+}
