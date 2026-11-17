@@ -92,5 +92,5 @@ The dev server only starts shells when it listens on a loopback address, its hot
 - If the dev server restarts while a pane is past click 0, later commands wait until the pane returns to click 0.
 - Typing into a focused pane during the short pause before a command's Enter is sent edits that command.
 - Windows order their reports by the deck's sync stamp, which two separate browsers (or a private window) don't share. Keep every window of one talk in the same browser profile.
-- Reloading a window can, rarely, drop its next command if the old page's connection closes after the reloaded page has reconnected. Pressing next again runs it.
+- Reloading a window can, rarely, leave its pane ignoring clicks, if the old page's connection closes after the reloaded page has reconnected. Close every window showing the deck and open it again.
 - After editing a pane's spec in dev, a stale hot update can briefly restart the pane with the old spec; saving again restores the new one.
