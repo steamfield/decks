@@ -1782,7 +1782,7 @@ right bracket. The static click count counts `Mark` like `Highlight` (`max(at, u
 ## 6.7 Code morphing (Final)
 
 Slidev's syntax: a fence of four or more backticks with the language `md` and the meta
-`magic-move`, optionally followed by a quoted title and an options object `{at: N, lines:
+`magic-move`, optionally followed by a title (`[title]` as Slidev writes it, or quoted) and an options object `{at: N, lines:
 true}`, holding ordinary code fences. Each inner fence is one step and may carry its own
 line ranges (`{1|2-3|all}`, as in section 6.3) and `{lines: false}`; text between the inner
 fences is ignored.
@@ -1838,6 +1838,7 @@ stepping back and forward again, never type a command twice.
 | --- | --- |
 | `click = p + 1`, command `click` not yet run | Command `click` is queued; position becomes `click`. |
 | `click = 0`, and `p > 0` or `entered`, with anything run or typed in the session | The session resets (shell restarted, nothing run); position 0. |
+| `click = 0`, nothing run or typed yet | Queued commands are dropped; position 0. |
 | any other report (the same click again, a jump, a step back, a command already run) | Position becomes `click`; nothing runs. |
 
 ## 7.2 Live terminal, pane (Final)
