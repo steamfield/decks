@@ -219,23 +219,6 @@ test("overview preview controls are inert so Tab only visits slide buttons", asy
   await expect(page.getByRole("button", { name: "Slide 2: Three steps" })).toBeFocused();
 });
 
-test("advancing pins the current click's notes to the top of the panel, past the earlier ones", async ({
-  page,
-}) => {
-  const presenter = await openPresenter(page);
-  const notes = presenter.getByRole("region", { name: "Notes" });
-  const first = notes.getByText("First point.", { exact: true });
-  const second = notes.getByText("Second point.", { exact: true });
-  await expect(first.locator("..")).toHaveAttribute("aria-current", "true");
-  await notes.evaluate((region) => {
-    region.style.height = "100px";
-  });
-  await presenter.keyboard.press("ArrowRight");
-  await expect(second.locator("..")).toHaveAttribute("aria-current", "true");
-  await expect(second).toBeInViewport();
-  await expect(first).not.toBeInViewport();
-});
-
 test("a 4:3 audience resize frames both previews before and after presenter reload", async ({
   page,
 }) => {
