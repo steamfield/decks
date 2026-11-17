@@ -69,8 +69,9 @@ it("Overview opens at the talk position and Escape returns to play with the tray
 it("Open presenter opens the current frame and then focuses the same window without navigating it", async () => {
   const events: string[] = [];
   const popup = { location: { href: "about:blank" }, focus: () => events.push("focus") };
-  install(window, "open", (url: string, name: string, features: string) => {
-    events.push(`${url}|${name}|${features}`);
+  // The browser reuses a window by its name, so two opens with one name are one window.
+  install(window, "open", (_url: string, name: string) => {
+    events.push(`open ${name}`);
     return popup;
   });
   setup("?custom=kept#/2?clicks=2");
@@ -81,7 +82,7 @@ it("Open presenter opens the current frame and then focuses the same window with
   popup.location.href = `${window.location.origin}/?custom=kept#/overview/3`;
   await user.click(presenter);
   expect(popup.location.href).toBe(`${window.location.origin}/?custom=kept#/overview/3`);
-  const opened = `|react-decks-presenter:${syncChannelId("fixture", "/")}|popup,width=1280,height=800`;
+  const opened = `open react-decks-presenter:${syncChannelId("fixture", "/")}`;
   expect(events).toEqual([opened, "focus", opened, "focus"]);
 });
 

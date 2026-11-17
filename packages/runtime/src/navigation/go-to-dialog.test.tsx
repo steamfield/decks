@@ -5,7 +5,7 @@ import { expect, it, onTestFinished } from "vitest";
 import { install, makeSource } from "../deck.test-support";
 import { createDeckStore, Deck } from "../index";
 
-function setup(hash = "#/2?clicks=2", renders?: number[]) {
+function setup(hash = "#/2?clicks=2", renders?: number[], total = 5) {
   // jsdom does not implement the native dialog methods or Escape's cancel event.
   install(HTMLDialogElement.prototype, "showModal", function (this: HTMLDialogElement) {
     this.open = true;
@@ -14,7 +14,18 @@ function setup(hash = "#/2?clicks=2", renders?: number[]) {
     this.open = false;
   });
   window.history.replaceState(null, "", `/${hash}`);
-  const base = makeSource();
+  const original = makeSource();
+  const extra = Array.from({ length: Math.max(0, total - 5) }, (_, index) => ({
+    no: index + 6,
+    id: `slide-${index + 6}`,
+    file: `slides/${index + 6}.mdx`,
+    title: `Title ${index + 6}`,
+    clicks: 0,
+  }));
+  const base = {
+    ...original,
+    manifest: { ...original.manifest, slides: [...original.manifest.slides, ...extra] },
+  };
   const source = {
     ...base,
     slides: Object.fromEntries(
@@ -77,12 +88,15 @@ it.each(["#/2?clicks=2", "#/presenter/2?clicks=2"])(
   },
 );
 
-it.each(["#/overview/2?clicks=2", "#/print"])("g does not open a dialog in %s", async (hash) => {
-  const user = setup(hash);
-  await user.keyboard("g");
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(window.location.hash).toBe(hash);
-});
+it.each(["#/overview/2?clicks=2", "#/print", "?embedded#/2"])(
+  "g does not open a dialog in %s",
+  async (hash) => {
+    const user = setup(hash);
+    await user.keyboard("g");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(window.location.hash).toBe(hash.slice(hash.indexOf("#")));
+  },
+);
 
 it("a number matches only that slide and Enter goes there at click zero", async () => {
   const user = setup();
@@ -114,27 +128,46 @@ it("arrow selection starts at the first match and Enter chooses the selected sli
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });
 
-it("cancel keeps the position, restores deck keys and reopening clears the query", async () => {
+it.each(["Escape", "cancel"])(
+  "%s keeps the position, restores deck keys and reopening clears the query",
+  async (how) => {
+    const user = setup();
+    await user.keyboard("g");
+    await user.type(screen.getByRole("searchbox", { name: "Slide" }), "Title 3");
+    if (how === "Escape") await user.keyboard("{Escape}");
+    else fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(window.location.hash).toBe("#/2?clicks=2");
+    await user.keyboard("{ArrowRight}");
+    expect(window.location.hash).toBe("#/2?clicks=3");
+    await user.keyboard("g");
+    expect(screen.getByRole("searchbox", { name: "Slide" })).toHaveValue("");
+    expect(screen.getAllByRole("option")).toHaveLength(5);
+  },
+);
+
+it("a text query matching several slides lists all of them in order", async () => {
   const user = setup();
   await user.keyboard("g");
-  await user.type(screen.getByRole("searchbox", { name: "Slide" }), "Title 3");
-  fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(window.location.hash).toBe("#/2?clicks=2");
-  await user.keyboard("{ArrowRight}");
-  expect(window.location.hash).toBe("#/2?clicks=3");
-  await user.keyboard("g");
-  expect(screen.getByRole("searchbox", { name: "Slide" })).toHaveValue("");
-  expect(screen.getAllByRole("option")).toHaveLength(5);
+  await user.type(screen.getByRole("searchbox", { name: "Slide" }), "title");
+  expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+    "1  Title 1",
+    "2  Title 2",
+    "3  Title 3",
+    "4  Title 4",
+  ]);
+  expect(screen.getByRole("option", { selected: true })).toHaveTextContent("1 Title 1");
 });
 
-it("Escape closes a populated search input without changing the position", async () => {
-  const user = setup();
+it("a number query matches that slide number only, not slides whose number contains it", async () => {
+  const user = setup("#/2?clicks=2", undefined, 12);
   await user.keyboard("g");
-  await user.type(screen.getByRole("searchbox", { name: "Slide" }), "Title 3");
-  await user.keyboard("{Escape}");
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(window.location.hash).toBe("#/2?clicks=2");
+  await user.type(screen.getByRole("searchbox", { name: "Slide" }), "1");
+  expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["1  Title 1"]);
+  await user.type(screen.getByRole("searchbox", { name: "Slide" }), "2");
+  expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+    "12  Title 12",
+  ]);
 });
 
 it("deck shortcuts do not navigate from the input or a focused option", async () => {
