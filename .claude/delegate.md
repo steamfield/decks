@@ -94,3 +94,6 @@ don't work around it.
 - Do not edit the orchestrator's files listed above, or commit. When a maintained library would
   do a job better than hand-written code and is not installed, ask for it in a question; do not
   edit a `package.json`.
+- A change that adds a file type a package has not shipped before (a kit CSS Module, a
+  non-JS asset) needs the asset copy in `packages/decks/build.mjs`; only `bun run test:tarball`
+  sees a missing one.

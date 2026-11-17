@@ -99,6 +99,8 @@ frames and stops finite animations) with a small `maxDiffPixelRatio`, and mask l
   raising a test's timeout.
 - Tests that need the built package use the one build from `tests/package.global-setup.ts`;
   never build `packages/decks` from a test.
+- "A command ran once" across windows or reloads is asserted on a side effect outside the
+  terminal (a file the command appends to), never on the visible rows, which scroll.
 
 ## Banned, with the replacement
 
