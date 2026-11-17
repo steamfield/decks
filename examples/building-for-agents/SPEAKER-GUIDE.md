@@ -1,6 +1,6 @@
 # Speaker guide: Building for agents
 
-This guide is for anyone presenting this deck. Read it once, then run the deck in presenter view: every slide's notes explain what is on screen, script each click, and list the questions you are likely to get. `SPEAKER-NOTES.md` has the same script in one file.
+This guide is for anyone presenting this deck. Read it once, then run the deck in presenter view: every slide's notes are a list of short cues, 2 to 5 words each, grouped by click and ending with likely questions. `SPEAKER-NOTES.md` has the full script behind those cues; read it while rehearsing.
 
 ## The talk in one paragraph
 

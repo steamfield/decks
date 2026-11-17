@@ -8,30 +8,30 @@ clicks: 3
 <ForemanDaemonStage />
 
 <Notes>
-OPENING
-- Two processes. The CLI runs once per command and exits. The daemon supervises.
-- Daemon needed because a Codex turn lasts minutes and the starting command is long gone.
-- Daemon exits after 30 idle minutes.
-- About 9,000 lines of TypeScript, same Effect layout as Stacks (scaffolded from the typescript-cli stack).
+- Two processes: CLI, daemon
+- Turns outlive the command
+- Idle 30 min: exits
+- ~9,000 lines, Stacks layout
 
-[click] CLICK 1
-- CLI talks to the daemon over a Unix socket, foreman.sock in foreman's home.
-- One line of JSON per message. Request has id and body, response repeats the id.
-- Socket missing: CLI starts the daemon and reconnects.
-- One daemon per home directory, enforced by an exclusive SQLite transaction on a guard file.
+[click]
+- Unix socket: foreman.sock
+- One JSON line per message
+- No socket: CLI starts daemon
+- One daemon per home
 
-[click] CLICK 2
-- Daemon starts one process, codex app-server, and speaks JSON-RPC over stdin and stdout.
-- Protocol ships in the Codex CLI. foreman's client speaks it without an SDK.
-- thread/start for a run, turn/start per turn, turn/steer to change a running turn.
-- Each run is one thread. Supervisor routes by thread id.
+[click]
+- Daemon runs codex app-server
+- JSON-RPC over stdio, no SDK
+- thread/start, turn/start, turn/steer
+- One thread per run
 
-[click] CLICK 3
-- Written against Codex 0.166.0. Its protocol is 467 JSON schema files. foreman stores a SHA-256 of them.
-- Daemon regenerates and hashes at startup. foreman doctor reports whether it matches.
-- CLI ships as a compiled binary for four platforms, bun build --compile.
+[click]
+- Built on Codex 0.166.0
+- 467 schemas, hash stored
+- doctor reports mismatch
+- Compiled binary, four platforms
 
-IF ASKED
-- Why a daemon? A held question and a running turn both outlive the command that started them.
-- How long did it take? 111 commits, November 5 to 7.
+If asked
+- Why daemon? Questions outlive commands
+- Time? 111 commits, November 5 to 7
 </Notes>

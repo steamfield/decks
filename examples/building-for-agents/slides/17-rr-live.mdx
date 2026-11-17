@@ -8,13 +8,21 @@ import { DEMO } from "../data/17-rr-live";
 <LiveDemoStage demo={DEMO} />
 
 <Notes>
-SAY
-The previous slide simulated the locks. Here are the machines configured for this repo, including the laptop I am presenting from. I'll query their status, then run the demo task across them.
+- Real hosts, incl. this laptop
+- Status, then demo task
 
-[click] The snapshot reports the lock on each host. These are live machines, so another task can hold a host while this demo is running. The mbp row is this laptop. The table shows that state before I start the run.
+[click]
+- Lock per host
+- Others may hold one
+- mbp is this laptop
 
-[click] The repo's config defines demo as a parallel task. rr locked and synced the hosts, then ran a shard on each. The summary names the host each shard ran on.
+[click]
+- demo: parallel task
+- Lock, sync, shard each
+- Summary names hosts
 
-IF ASKED
-The no-color flag avoids rr 0.30.0 truncating coloured table cells in a terminal. rr prints JSON by default; pretty asks for the human display. The recording omits blank lines and the duplicate progress lines before the complete summary. The config defines the shards; rr does not split the suite automatically. These recordings run when a live shell is unavailable. A locked host is already doing other work; the snapshot reflects the machines at this moment.
+If asked
+- no-color: rr 0.30.0 truncation
+- Config defines shards
+- Recording if no live shell
 </Notes>

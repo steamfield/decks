@@ -8,20 +8,19 @@ clicks: 1
 <GlassBrowserStage />
 
 <Notes>
-OPENING
-- The React code under src/app calls an interface named Transport for everything.
-- Two implementations: Tauri (generated bindings, a Channel per live subscription) and a mock (fake backend in TypeScript).
-- A Biome rule fails lint if src/app imports from the Tauri packages.
-- In the pane: getHost is a request, subscribeLive takes a callback for the stream.
+- UI talks to Transport
+- Tauri or mock
+- Biome blocks Tauri imports
+- Request versus stream
 
-[click] CLICK 1
-- StatGlass dashboard loaded from the docs site, on the mock transport, multi-host scenario.
-- Same React code the native app ships. The mock simulates the numbers.
-- Vitest, Playwright and the dev server use the mock too.
-- I change a screen in a browser with hot reload, no native shell.
-- Check before the talk: the frame needs a network connection.
-- Stage reminder: click the slide outside the frame before pressing an arrow key.
+[click]
+- Live dashboard, mock transport
+- Same React as native
+- Tests use the mock
+- Browser dev, hot reload
+- Needs network
+- Click outside before arrows
 
-IF ASKED
-- Is the frame live? Yes. Timeline and Hosts are in its sidebar.
+If asked
+- Live frame? Yes, try sidebar
 </Notes>

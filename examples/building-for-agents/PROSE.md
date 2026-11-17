@@ -89,7 +89,12 @@ Each of these has shipped in a draft of this deck or of the blog and been flagge
 
 ## Presenter notes
 
-Notes are what Riley says aloud, in first person. Write them the way he would explain
+The `<Notes>` block on each slide is a list of cues to glance at while presenting: 2 to
+5 words per point, grouped under `[click]` markers, then an `If asked` list. The full
+spoken script lives in `SPEAKER-NOTES.md`; a fact added to a cue goes there too. The
+rules below apply to that script.
+
+The script is what Riley says aloud, in first person. Write it the way he would explain
 the slide to another engineer across a table.
 
 - Every sentence adds a fact. Apply the deletion test to each one: name the specific fact

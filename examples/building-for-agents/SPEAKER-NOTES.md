@@ -1,6 +1,6 @@
 # Speaker notes: Building for agents
 
-The full script for each slide, moved out of the slide files. The slides carry a bullet version of the same points for use on stage. Each slide has what the slide shows, the spoken script (opening, then one paragraph per click), and answers for likely questions.
+The full script for each slide, moved out of the slide files. The slides carry 2-to-5-word cues for the same points, to glance at on stage. Each slide has what the slide shows, the spoken script (opening, then one paragraph per click), and answers for likely questions.
 
 Section numbers follow the slide filename prefixes. The deck has 29 slide files, and slide 25 has `hide: true`, so the default cut is 28 slides. In that cut the thread plays at position 3, habits at 27 and the close at 28; OUTLINE.md section 8 gives the full mapping.
 

@@ -9,25 +9,24 @@ SLIDE 2 · TWO USERS: one rr command on two monitors, as a person sees it and as
 <TwoUsersStage />
 
 <Notes>
-OPENING
-- First user is me: rr running OpenData's tests across three machines, pretty flag on.
-- One line per task with host and time, totals at the end.
-- I read the totals, see two failed, scroll up to those two.
-- Designing this view is developer experience.
+- First user: me
+- rr, three machines, pretty flag
+- Read totals: two failed
+- Scroll up to those
+- This is developer experience
 
-[click] CLICK 1
-- Second user is a coding agent, and it gets the whole stream.
-- Same output as bytes, escape character written out.
-- Each coloured value is wrapped in two escape sequences.
-- My terminal makes colour. An agent gets text that takes up context.
+[click]
+- Second user: coding agent
+- Same output as bytes
+- Escape codes eat context
 
-[click] CLICK 2
-- Without the pretty flag, rr prints JSON.
-- One event per phase on stderr, one result event at the end.
-- Result holds status, exit code, each failing test with file and message.
-- JSON is the default. A person adds the flag.
-- Designing this output is agent experience.
+[click]
+- No flag: JSON
+- Phase events, then result
+- Status, exit code, failures
+- JSON default; people add flag
+- This is agent experience
 
-IF ASKED
-- Why different totals? Suite ran twice, 32 minutes apart. The end-to-end task failed in the first run, passed in the second.
+If asked
+- Different totals? Two runs, 32 min apart
 </Notes>

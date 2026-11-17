@@ -8,49 +8,48 @@ clicks: 7
 <RrLocksStage />
 
 <Notes>
-OPENING
-- rr is Go. My agents use it all day to run tests.
-- It rsyncs the working tree to another machine and runs the command there over SSH.
-- Simulation from rr's site: four agents on one laptop, three hosts.
-- Each rr call is its own process. No server. The only shared state is a lock directory on each host.
+- rr: Go, agents' test runner
+- rsync, then SSH
+- Four agents, three hosts
+- No server, just lock dirs
 
-[click] CLICK 1
-- Agent 1 runs rr test, a parallel task.
-- I define each shard as a task and list them under parallel. rr doesn't split a suite itself.
-- In OpenData, rr test runs eight tasks.
+[click]
+- Agent 1: rr test
+- Shards are named tasks
+- OpenData: eight tasks
 
-[click] CLICK 2
-- A parallel run locks every host, rsyncs to each, runs the tasks across them.
-- SSH starts each configured task after rsync finishes.
-- The parallel run holds every lock until all subtasks finish.
+[click]
+- Locks every host
+- rsync, then run
+- Holds locks until done
 
-[click] CLICK 3
-- Agents 2 and 3 start while agent 1 holds all three locks.
-- A plain run tries hosts in config order and takes the first it can lock.
-- All locked: it waits on the laptop and retries every two seconds.
+[click]
+- Agents 2, 3 arrive
+- First lockable host wins
+- All locked: retry every 2s
 
-[click] CLICK 4
-- This retry finds every lock held.
-- Before waiting it prints a JSON event: status waiting, plus the command holding each lock.
-- So an agent reading the output can see its run is queued behind rr test.
+[click]
+- Every lock held
+- Prints waiting event
+- Agent sees it's queued
 
-[click] CLICK 5
-- Agent 1 finishes, all locks release.
-- Agent 2 retries first and gets m4-mini. Agent 3 finds it locked and takes m1-linux.
-- Default: each git worktree syncs to its own directory on the host, so two agents' files stay apart.
+[click]
+- Agent 1 done, locks free
+- Agent 2: m4-mini
+- Agent 3: m1-linux
+- One remote dir per worktree
 
-[click] CLICK 6
-- Agent 4 arrives later and takes m1-mini without waiting.
-- It tries occupied hosts in config order before it locks m1-mini.
-- I usually run two to four agents.
+[click]
+- Agent 4: m1-mini, no wait
+- I run two to four
 
-[click] CLICK 7
-- Result event from rr test in OpenData, November 2: five of eight passed, three failed.
-- rr parses pytest, Go test, Jest and Vitest. Each failure gets file, line, message.
-- Highlighted: Vitest failure, charts-json.test.ts line 74, tooltip field share missing from the chart data.
+[click]
+- November 2: 5 pass, 3 fail
+- Parses pytest, Go, Jest, Vitest
+- charts-json.test.ts line 74
 
-IF ASKED
-- Is it faster? Not measured. One job per host, so two agents' suites don't compete for CPU and ports.
-- Load balancing? No. First lockable host in config order.
-- Are those your hosts? Names are the simulation's. OpenData's config lists mbp, m4-mini, m1-mini, with worktree_isolation false (one shared remote copy).
+If asked
+- Faster? Not measured
+- Load balancing? No, config order
+- Real hosts? Simulation names
 </Notes>
