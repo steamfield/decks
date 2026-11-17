@@ -1,4 +1,4 @@
-import type { TermPaneSpec } from "@react-decks/core";
+import type { SyncStamp, TermPaneSpec } from "@react-decks/core";
 import { onTestFinished, vi } from "vitest";
 import { createSessions, type PtySpawn, type TermClient } from "./sessions";
 
@@ -11,10 +11,13 @@ export const pane: TermPaneSpec = {
   commands: ["sleep 3", "echo done"],
 };
 
-export function setup(fail = false) {
+export function setup(fail = false, tempDir?: () => string, dirs = { repo: "/repository" }) {
+  mkdirSync(resolve(".tmp"), { recursive: true });
+  const tempRoot = mkdtempSync(resolve(".tmp/term-sessions-"));
   vi.useFakeTimers();
   onTestFinished(() => {
     vi.useRealTimers();
+    rmSync(tempRoot, { recursive: true, force: true });
   });
   const shells: {
     spec: Parameters<PtySpawn>[0];
@@ -55,8 +58,14 @@ export function setup(fail = false) {
         return () => clearTimeout(timer);
       },
     },
-    tempDir: () => `/temp/${shells.length}`,
-    dirs: { repo: "/repository" },
+    tempDir:
+      tempDir ??
+      (() => {
+        const path = join(tempRoot, String(shells.length));
+        mkdirSync(path, { recursive: true });
+        return path;
+      }),
+    dirs,
     env: { TERM: "xterm-256color" },
     log: (reason) => logs.push(reason),
   });
@@ -76,5 +85,28 @@ export function setup(fail = false) {
     if (!current) throw new Error("No shell was spawned");
     return current;
   };
-  return { sessions, shells, shell, a, b, logs };
+  let seq = 0;
+  return {
+    tempRoot,
+    sessions: {
+      ...sessions,
+      position(
+        id: string,
+        click: number,
+        entered: boolean,
+        client: TermClient,
+        stamp: SyncStamp = { seq: ++seq, started: 0, origin: "test" },
+      ) {
+        sessions.position(id, click, entered, client, stamp);
+      },
+    },
+    shells,
+    shell,
+    a,
+    b,
+    logs,
+  };
 }
+
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { join, resolve } from "node:path";

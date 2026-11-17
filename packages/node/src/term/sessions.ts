@@ -1,4 +1,12 @@
-import { TERM_DATA, TERM_GONE, TERM_READY, TERM_STATE, type TermPaneSpec } from "@react-decks/core";
+import { rmSync } from "node:fs";
+import {
+  type SyncStamp,
+  TERM_DATA,
+  TERM_GONE,
+  TERM_READY,
+  TERM_STATE,
+  type TermPaneSpec,
+} from "@react-decks/core";
 
 const promptMarker = "\u001b]133;A\u0007";
 
@@ -36,11 +44,19 @@ export function createSessions(options: {
     inputReceived: boolean;
     ran: Set<number>;
     queued: number[];
-    buffer: string;
+    stamp?: SyncStamp;
+    buffer: Buffer[];
+    bytes: number;
     tail: string;
     cancel?: () => void;
   };
   const sessions = new Map<string, Session>();
+  const replay = (s: Session) => {
+    const bytes = Buffer.concat(s.buffer, s.bytes);
+    let from = Math.max(0, bytes.length - 200 * 1024);
+    while (from < bytes.length && ((bytes[from] ?? 0) & 0xc0) === 0x80) from++;
+    return bytes.toString("utf8", from);
+  };
   const state = (s: Session) => ({
     id: s.pane.id,
     click: s.click,
@@ -76,7 +92,7 @@ export function createSessions(options: {
       if (sessions.get(s.pane.id) === s) s.pty?.write("\r");
     }, 600);
   };
-  const start = (pane: TermPaneSpec, clients: Set<TermClient>) => {
+  const start = (pane: TermPaneSpec, clients: Set<TermClient>, stamp?: SyncStamp) => {
     const s: Session = {
       pane,
       clients,
@@ -86,35 +102,56 @@ export function createSessions(options: {
       inputReceived: false,
       ran: new Set(),
       queued: [],
-      buffer: "",
+      stamp,
+      buffer: [],
+      bytes: 0,
       tail: "",
     };
     sessions.set(pane.id, s);
+    let temporary: string | undefined;
+    const cleanup = () => {
+      if (temporary === undefined) return;
+      const path = temporary;
+      temporary = undefined;
+      try {
+        rmSync(path, { recursive: true, force: true });
+      } catch (error) {
+        options.log(
+          `${pane.id}: could not remove temporary directory "${path}": ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    };
     try {
+      if (pane.cwd === "temp") temporary = options.tempDir();
       const cwd =
         pane.cwd === "temp"
-          ? options.tempDir()
+          ? temporary
           : Object.hasOwn(options.dirs, pane.cwd)
             ? options.dirs[pane.cwd]
             : undefined;
       if (!cwd) throw new Error(`Pane "${pane.id}" has unknown terminal directory "${pane.cwd}"`);
       s.pty = options.spawn({ rows: pane.rows, cols: pane.cols, cwd, env: options.env });
-      s.pty.onExit((reason) => gone(s, reason));
+      s.pty.onExit((reason) => {
+        cleanup();
+        gone(s, reason);
+      });
       s.pty.onData((chunk) => {
         if (sessions.get(pane.id) !== s) return;
         const text = s.tail + chunk;
         const prompted = text.includes(promptMarker);
         s.tail = text.slice(-(promptMarker.length - 1));
-        const bytes = new TextEncoder().encode(s.buffer + chunk);
-        let from = Math.max(0, bytes.length - 200 * 1024);
-        while (from < bytes.length && ((bytes[from] ?? 0) & 0xc0) === 0x80) from++;
-        s.buffer = new TextDecoder().decode(bytes.subarray(from));
+        const bytes = Buffer.from(chunk);
+        s.buffer.push(bytes);
+        s.bytes += bytes.length;
+        while (s.buffer[0] && s.bytes - s.buffer[0].length >= 200 * 1024) {
+          s.bytes -= s.buffer.shift()?.length ?? 0;
+        }
         if (!s.ready && !prompted) return;
         let printed = chunk;
         if (!s.ready) {
           s.ready = true;
           broadcast(s, TERM_READY, { id: pane.id, buffer: "" });
-          printed = s.buffer;
+          printed = replay(s);
         }
         broadcast(s, TERM_DATA, {
           id: pane.id,
@@ -129,6 +166,7 @@ export function createSessions(options: {
         }
       });
     } catch (error) {
+      if (!s.pty) cleanup();
       gone(s, `Shell could not start: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
@@ -142,14 +180,36 @@ export function createSessions(options: {
       const s = sessions.get(pane.id);
       if (!s) return start(pane, new Set([client]));
       s.clients.add(client);
+      if (
+        s.pane.rows !== pane.rows ||
+        s.pane.cols !== pane.cols ||
+        s.pane.cwd !== pane.cwd ||
+        s.pane.commands.length !== pane.commands.length ||
+        s.pane.commands.some((command, index) => command !== pane.commands[index])
+      ) {
+        stop(s);
+        start(pane, s.clients, s.stamp);
+        const fresh = sessions.get(pane.id);
+        if (fresh) broadcast(fresh, TERM_STATE, state(fresh));
+        return;
+      }
       if (s.ready) {
-        client.send(TERM_READY, { id: pane.id, buffer: s.buffer });
+        client.send(TERM_READY, { id: pane.id, buffer: replay(s) });
       }
       if (s.ready || s.queued.length > 0) client.send(TERM_STATE, state(s));
     },
-    position(id: string, click: number, entered: boolean, client: TermClient) {
+    position(id: string, click: number, entered: boolean, client: TermClient, stamp: SyncStamp) {
       const s = find(id, client);
       if (!s) return;
+      if (
+        s.stamp &&
+        (stamp.seq < s.stamp.seq ||
+          (stamp.seq === s.stamp.seq &&
+            (stamp.started > s.stamp.started ||
+              (stamp.started === s.stamp.started && stamp.origin < s.stamp.origin))))
+      )
+        return;
+      s.stamp = stamp;
       const previous = s.click;
       s.click = click;
       if (click === 0) {
@@ -157,7 +217,7 @@ export function createSessions(options: {
         s.queued = [];
         if ((previous > 0 || entered) && (s.ran.size > 0 || s.inputReceived)) {
           stop(s);
-          start(s.pane, s.clients);
+          start(s.pane, s.clients, s.stamp);
           const fresh = sessions.get(id);
           if (fresh) broadcast(fresh, TERM_STATE, state(fresh));
           return;
@@ -191,7 +251,10 @@ export function createSessions(options: {
       s.pty?.write(data);
     },
     detach(client: TermClient) {
-      for (const s of sessions.values()) s.clients.delete(client);
+      for (const s of sessions.values()) {
+        s.clients.delete(client);
+        if (s.clients.size === 0) s.stamp = undefined;
+      }
     },
     close() {
       for (const s of sessions.values()) stop(s);

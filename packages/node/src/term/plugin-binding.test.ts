@@ -6,6 +6,58 @@ import { expect, onTestFinished, test, vi } from "vitest";
 import { fixture } from "../dev/server.test-support";
 import { liveTerm } from "./plugin";
 
+test.each(["allowedHosts", "skipWebSocketTokenCheck"] as const)(
+  "%s disables the terminal even on loopback",
+  async (setting) => {
+    const { dir } = await fixture(onTestFinished);
+    const warnings: string[] = [];
+    const logger = createLogger("silent");
+    logger.warn = (message) => {
+      warnings.push(message);
+    };
+    const server = await createServer({
+      configFile: false,
+      root: dir,
+      customLogger: logger,
+      server: { host: "127.0.0.1", port: 0, allowedHosts: setting === "allowedHosts" ? true : [] },
+      legacy: { skipWebSocketTokenCheck: setting === "skipWebSocketTokenCheck" },
+      plugins: [liveTerm(dir)],
+    });
+    onTestFinished(() => server.close());
+    await server.listen();
+    const address = server.httpServer?.address();
+    if (!address || typeof address === "string") throw new Error("Missing Vite port");
+    const socket = new WebSocket(`ws://127.0.0.1:${address.port}`, "vite-hmr");
+    onTestFinished(() => socket.close());
+    const events: string[] = [];
+    socket.addEventListener("message", ({ data }) => {
+      const message = JSON.parse(String(data));
+      if (message.type === "custom") events.push(message.event);
+    });
+    await vi.waitFor(() => expect(socket.readyState).toBe(WebSocket.OPEN), { timeout: 10_000 });
+    server.ws.on("term-test:barrier", (_data, client) => client.send("term-test:barrier"));
+    socket.send(
+      JSON.stringify({
+        type: "custom",
+        event: TERM_ATTACH,
+        data: {
+          pane: { id: "disabled", rows: 24, cols: 92, cwd: "unknown", commands: [] },
+        },
+      }),
+    );
+    socket.send(JSON.stringify({ type: "custom", event: "term-test:barrier", data: {} }));
+    await vi.waitFor(() => expect(events).toContain("term-test:barrier"), { timeout: 10_000 });
+    expect(events).toEqual(["term-test:barrier"]);
+    expect(warnings).toEqual([
+      `Live terminal disabled: ${
+        setting === "allowedHosts"
+          ? "server.allowedHosts allows any Host"
+          : "legacy.skipWebSocketTokenCheck disables WebSocket authentication"
+      }`,
+    ]);
+  },
+);
+
 test.each(["port", "server"] as const)(
   "a separate WebSocket %s cannot enable shell handlers",
   async (kind) => {

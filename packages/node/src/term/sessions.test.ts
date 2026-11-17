@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { TERM_DATA, TERM_GONE, TERM_READY, TERM_STATE } from "@react-decks/core";
 import { expect, test, vi } from "vitest";
 import { marker, pane, setup } from "./sessions.test-support";
@@ -25,14 +26,14 @@ test("a prompt redraw during typing preserves the reading pause and the ordered 
 });
 
 test("attach starts one shell and both early clients become ready at its first split prompt", () => {
-  const { sessions, shells, shell, a, b } = setup();
+  const { sessions, shells, shell, a, b, tempRoot } = setup();
   sessions.attach(pane, a.socket);
   sessions.attach(pane, b.socket);
   expect(shells).toHaveLength(1);
   expect(shell().spec).toEqual({
     rows: 24,
     cols: 92,
-    cwd: "/temp/0",
+    cwd: join(tempRoot, "0"),
     env: { TERM: "xterm-256color" },
   });
   shell().data(marker.slice(0, 3));
@@ -54,7 +55,7 @@ test("a later attach replays the bounded buffer and state without resetting the 
   await vi.advanceTimersByTimeAsync(600);
   shell().data("λ".repeat(210 * 1024));
   shell().data("tail");
-  sessions.attach(pane, b.socket);
+  sessions.attach({ ...pane, cwd: "repo" }, b.socket);
   expect(shells).toHaveLength(1);
   expect(shell().spec.cwd).toBe("/repository");
   expect(b.received).toEqual([
@@ -64,6 +65,24 @@ test("a later attach replays the bounded buffer and state without resetting the 
   shell().data("shared");
   expect(a.received.at(-1)).toEqual(b.received.at(-1));
 });
+
+test.each([false, true])(
+  "replay keeps the newest 200 KB without cutting UTF-8 when ready=%s",
+  (ready) => {
+    const { sessions, shell, a, b } = setup();
+    sessions.attach(pane, a.socket);
+    if (ready) shell().data(marker);
+    for (let i = 0; i < 80; i++) shell().data("€".repeat(1024));
+    shell().data(`END!${marker}`);
+    sessions.attach(pane, b.socket);
+    const suffix = `END!${marker}`;
+    const buffer = `${"€".repeat(Math.floor((200 * 1024 - Buffer.byteLength(suffix)) / 3))}${suffix}`;
+    expect(b.received).toEqual([
+      { event: TERM_READY, data: { id: pane.id, buffer } },
+      { event: TERM_STATE, data: { id: pane.id, click: 0, busy: false, ran: [], queued: [] } },
+    ]);
+  },
+);
 
 test("a step types once and waits before its carriage return, and a prompt makes it idle", async () => {
   const { sessions, shell, a } = setup();
@@ -113,7 +132,7 @@ test("input reaches the shell and a detached client stops receiving output", () 
 });
 
 test("reset while busy kills the old shell, forgets ran clicks and uses a new temporary directory", async () => {
-  const { sessions, shells, shell, a, b } = setup();
+  const { sessions, shells, shell, a, b, tempRoot } = setup();
   sessions.attach(pane, a.socket);
   sessions.attach(pane, b.socket);
   const old = shell();
@@ -123,7 +142,7 @@ test("reset while busy kills the old shell, forgets ran clicks and uses a new te
   sessions.position("demo", 0, true, a.socket);
   expect(old.killed).toBe(true);
   expect(shells).toHaveLength(2);
-  expect(shell().spec.cwd).toBe("/temp/1");
+  expect(shell().spec.cwd).toBe(join(tempRoot, "1"));
   old.exit("late exit");
   old.data(marker);
   shell().data(marker);

@@ -33,8 +33,12 @@ export function shellSpawn(): PtySpawn {
     child.stderr.on("data", (chunk: string) => {
       failure = (failure + chunk).slice(-1024);
     });
-    child.on("error", (error) => exit(`Shell could not start: ${error.message}`));
-    child.stdin.on("error", (error) => exit(`Shell input failed: ${error.message}`));
+    child.on("error", (error) => {
+      failure = `Shell could not start: ${error.message}`;
+    });
+    child.stdin.on("error", (error) => {
+      failure = `Shell input failed: ${error.message}`;
+    });
     child.on("close", (code, signal) =>
       exit(failure.trim() || `Shell exited (${signal ?? code ?? "unknown status"})`),
     );

@@ -1,4 +1,5 @@
 import {
+  type SyncStamp,
   TERM_ATTACH,
   TERM_DATA,
   TERM_GONE,
@@ -93,7 +94,7 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
         output.delete(receive);
       };
     },
-    navigate(eligible: boolean, click: number, slideActive: boolean) {
+    navigate(eligible: boolean, click: number, slideActive: boolean, stamp: SyncStamp) {
       const before = previous;
       previous = { active: slideActive, click };
       if (!eligible) return detach();
@@ -103,7 +104,7 @@ export function createConnection(transport: TermTransport, pane: TermPaneSpec) {
         transport.send(TERM_ATTACH, { pane });
       }
       if (before && (!before.active || click !== before.click)) {
-        transport.send(TERM_POSITION, { id: pane.id, click, entered: !before.active });
+        transport.send(TERM_POSITION, { id: pane.id, click, entered: !before.active, stamp });
       }
     },
     input(data: string) {
