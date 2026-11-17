@@ -1,11 +1,63 @@
-import { basename, join } from "node:path";
+import { symlink } from "node:fs/promises";
+import { basename, join, relative } from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
-import { defineDeck, loadDeck } from "../index";
+import { build, defineDeck, dev, loadDeck } from "../index";
+import { DeckError } from "./errors";
 import { fixture as createFixture } from "./server.test-support";
 
 const fixture = (files?: Record<string, string>) => createFixture(onTestFinished, files);
 
 describe("loadDeck", () => {
+  it("resolves terminal directories relative to the deck", async () => {
+    const { dir } = await fixture({
+      "deck.config.ts": 'export default { title: "Deck", term: { dirs: { repo: "slides" } } };',
+    });
+    expect((await loadDeck(dir)).config.term).toEqual({ dirs: { repo: join(dir, "slides") } });
+  });
+  it.each(["missing", "deck.config.ts"])(
+    "checks terminal directory %s only when live terminal serving is requested",
+    async (path) => {
+      const { dir } = await fixture({
+        "deck.config.ts": `export default { title: "Deck", term: { dirs: { demo: ${JSON.stringify(path)} } } };`,
+      });
+      const deck = await loadDeck(dir);
+      expect(deck.config.term?.dirs).toEqual({ demo: join(dir, path) });
+      const server = await dev(deck, { port: 0 });
+      onTestFinished(() => server.close());
+      expect((await fetch(server.url)).status).toBe(200);
+      await expect(dev(deck, { port: 0, liveTerm: true })).rejects.toBeInstanceOf(DeckError);
+      await expect(dev(deck, { port: 0, liveTerm: true })).rejects.toThrow(
+        `term.dirs key "demo" points at "${relative(process.cwd(), join(dir, path))}", which is not a directory.`,
+      );
+    },
+  );
+  it("builds a recording-only deck without the speaker's terminal directory", async () => {
+    const { dir } = await fixture({
+      "deck.config.ts":
+        'export default { title: "Deck", term: { dirs: { demo: "speaker-only" } } };',
+    });
+    await build(await loadDeck(dir), { outDir: join(dir, "site"), ogImage: false });
+  });
+  it("reports a terminal directory inspection failure as a config error naming the key and path", async () => {
+    const { dir } = await fixture({
+      "deck.config.ts": 'export default { title: "Deck", term: { dirs: { demo: "loop" } } };',
+    });
+    await symlink("loop", join(dir, "loop"));
+    const starting = async () => dev(await loadDeck(dir), { port: 0, liveTerm: true });
+    await expect(starting()).rejects.toBeInstanceOf(DeckError);
+    await expect(starting()).rejects.toThrow(
+      `cannot inspect term.dirs key "demo" at "${relative(process.cwd(), join(dir, "loop"))}"`,
+    );
+  });
+  it.each(["{ dirs: { repo: 3 } }", "{ unknown: {} }"])(
+    "rejects invalid terminal config %s",
+    async (term) => {
+      const { dir } = await fixture({
+        "deck.config.ts": `export default { title: "Deck", term: ${term} };`,
+      });
+      await expect(loadDeck(dir)).rejects.toThrow(/deck\.config\.ts:[\s\S]*term/);
+    },
+  );
   it("rereads edited config and imported settings without a cache", async () => {
     const { dir, put } = await fixture({
       "title.ts": 'export const title = "Before";',

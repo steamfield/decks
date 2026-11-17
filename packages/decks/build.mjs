@@ -45,6 +45,9 @@ await cp(
 await cp(new URL("../node/lint/", import.meta.url), new URL("dist/lint/", import.meta.url), {
   recursive: true,
 });
+await cp(new URL("../node/term/", import.meta.url), new URL("dist/term/", import.meta.url), {
+  recursive: true,
+});
 await cp(
   new URL("../../plugins/decks/skills/", import.meta.url),
   new URL("dist/plugin/skills/", import.meta.url),
