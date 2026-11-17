@@ -1,0 +1,30 @@
+@import "@shikijs/magic-move/style.css" layer(react-decks);
+
+@layer react-decks {
+  .rd-magic-move pre {
+    padding: 28px 32px;
+    color: var(--deck-code-foreground);
+    font:
+      calc(32px * var(--deck-text-scale, 1)) / 1.6 ui-monospace,
+      "SFMono-Regular",
+      Consolas,
+      monospace;
+    tab-size: 2;
+  }
+  .rd-magic-move [data-line] {
+    min-width: 0;
+    padding: 0;
+    transition: opacity var(--deck-dur-base) var(--deck-ease-settle);
+  }
+  .rd-magic-move .shiki-magic-move-move,
+  .rd-magic-move .shiki-magic-move-enter-active,
+  .rd-magic-move .shiki-magic-move-leave-active {
+    transition-property: transform, color, opacity;
+    transition-duration: var(--smm-duration);
+    transition-timing-function: var(--deck-ease-settle);
+  }
+  .rd-magic-move .shiki-magic-move-enter-from,
+  .rd-magic-move .shiki-magic-move-leave-to {
+    opacity: 0;
+  }
+}

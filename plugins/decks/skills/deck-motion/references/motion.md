@@ -43,6 +43,31 @@ Choose `kind="underline"` (the default), `"circle"`, `"box"`, `"strike"`, `"cros
 
 Marks fit the text box and update when it resizes. Equal boxes produce identical paths across slide, presenter, preview, overview and print. Outside the live slide and in instant mode, the stroke snaps to the pose for that context's click. Set `--deck-mark-width` to change the stroke width (default `3px`).
 
+## Magic move
+
+Use a fence of four or more backticks with `md magic-move` or `markdown magic-move` to morph code between clicks. Put one code fence inside it for each code version. Text between those fences is ignored. The outer fence accepts a title in quotes or Slidev's `[title]` form and `{at: N, lines: true}`; `at` defaults to 0 and line numbers default to off. An inner fence can override numbering with `{lines: false}`.
+
+`````md
+````md magic-move "greet.ts" {at: 1, lines: true}
+```ts {1}
+const greeting = "Hello";
+```
+```ts {1|2} {lines: false}
+const greet = (name: string) => `Hello, ${name}`;
+greet("Ada");
+```
+```ts {all}
+export function greet(name: string) {
+  return `Hello, ${name}!`;
+}
+```
+````
+`````
+
+Ranges use the ordinary code-block syntax: commas and hyphens select lines, `|` separates emphasis clicks, and `all` and `none` are keywords. Each version takes at least one click state. Its first range appears when the morph lands; further ranges each take a click. The total contribution is `at + sum(max(1, range count per version)) - 1`. Before `at`, the first version is visible without emphasis.
+
+Only an adjacent forward click into the next code version morphs in the active live slide. Backward navigation, jumps, first render, instant motion and other contexts show their click's code immediately. Print follows each page's click; final-only print shows the last version. The compiler supplies `MagicMove` and keyed tokens; do not author the component or tokenize code in the browser. Invalid options and ranges report the slide file and line.
+
 ## Tokens
 
 Import `duration`, `ease`, `stagger` and `gsap` from `@steamfield/decks/motion`. `duration.quick`, `.base`, `.slow` correspond to `--deck-dur-quick`, `--deck-dur-base`, `--deck-dur-slow`. `ease.enter`, `.exit`, `.settle`, `.draw` correspond to `--deck-ease-enter`, `--deck-ease-exit`, `--deck-ease-settle`, `--deck-ease-draw`. `stagger` corresponds to `--deck-stagger`.
