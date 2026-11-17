@@ -90,6 +90,7 @@ The dev server only starts shells when it listens on a loopback address, its hot
 - A full-screen program (`vim`, `htop`, a TUI) is not supported. A reattach replays the tail of the output, which redraws such a program wrongly.
 - Jumping back to a terminal slide at click 0 from far away (the go-to dialog, the overview) replays the old session instead of restarting the shell. Step to click 1 and back to restart it.
 - If the dev server restarts while a pane is past click 0, later commands wait until the pane returns to click 0.
+- A next pressed before the terminal slide has appeared on the first load moves the click without running its command, and later commands then wait until click 0. Wait for the slide before advancing.
 - Typing into a focused pane during the short pause before a command's Enter is sent edits that command.
 - Windows order their reports by the deck's sync stamp, which two separate browsers (or a private window) don't share. Keep every window of one talk in the same browser profile.
 - Reloading a window can, rarely, leave its pane ignoring clicks, if the old page's connection closes after the reloaded page has reconnected. Close every window showing the deck and open it again.
