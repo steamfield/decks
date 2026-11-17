@@ -1781,7 +1781,7 @@ right bracket. The static click count counts `Mark` like `Highlight` (`max(at, u
 
 ## 6.7 Code morphing (Final)
 
-Slidev's syntax: a fence of four or more backticks with the language `md` and the meta
+Slidev's syntax: a fence of four or more backticks with the language `md` or `markdown` and the meta
 `magic-move`, optionally followed by a title (`[title]` as Slidev writes it, or quoted) and an options object `{at: N, lines:
 true}`, holding ordinary code fences. Each inner fence is one step and may carry its own
 line ranges (`{1|2-3|all}`, as in section 6.3) and `{lines: false}`; text between the inner
@@ -1804,7 +1804,7 @@ Line highlighting within a step uses the code block's `data-line-state` (section
 | Situation (browser test) | Outcome |
 | --- | --- |
 | A three-step fence: step through, back, reload mid-way | Each click shows its step's code and highlighted lines; reload shows the same. |
-| Print | The last step's code. |
+| Print | Each page's click selects its code step; final-only print shows the last step. |
 
 ## 6.8 Live terminal, server (Final)
 
