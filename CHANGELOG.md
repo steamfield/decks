@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Package (`@steamfield/decks`)
+
+- A remote presenter: `decks dev <deck> --remote` serves a token-protected page on the local network with the notes, the current and next slide, a timer and Previous/Next/go-to, for an iPad, phone or second laptop when the laptop's screen is mirrored. The dev server itself stays on loopback. See `docs/guide/presenting.md`.
+- `decks film <deck> <slide> [click]` writes a contact sheet of one step's motion on virtual time, so an agent can check a transition or animation without watching it. `decks inspect <deck>` reports content that leaves the canvas or clips its own text; `overflow: clip` marks a deliberate crop.
+- Twenty-one fill-in motion graphics: `MotionTemplate` from the kit (titles, lower thirds, stats, comparisons, lists, quotes, section breaks, agendas, timelines, processes, myth and fact, spotlights, device mockups, photo and logo reveals, icon arrays, team grids, Venn overlaps, end cards). Each takes its look from the theme and ships its source in `docs/motion-templates/` as a reference. See `docs/guide/motion-templates.md`.
+- Motion graphics in code: `useTimeline` builds may return a cleanup, gsap's SplitText, MorphSVG, MotionPath, DrawSVG and CustomEase are registered and exported, `Camera` tours a picture per click, `ShapeMorph` morphs an SVG path, and the kit's `Scene3D` runs a three.js scene on the click timeline. `useTemplateMotion` and `TemplateProps` are public for writing your own templates.
+- `ChartSteps` changes an OpenChart's data per click through its update animation.
+- Eight more slide transitions: `rise`, `cover`, `reveal`, `wipe`, `iris`, `blur`, `flip`, `cube`.
+- `window.__deck.busy()` and `window.__deck.preload(slide)` are public reads for capture tools; `registerSettleProbe` takes an optional label.
+
+### Repo
+
+- A slide-recipes fixture deck and its reference in the building-a-deck skill; the deck-motion skill, the routing skill and the deck-author agent teach where motion graphics fit in a talk.
+- RFC 0009 (remote presenter) is done.
+
 ## 1.1.0
 
 - `decks check` reports a visible slide whose `[click]` note markers cover a different number of clicks than the slide has.

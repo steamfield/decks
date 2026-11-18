@@ -1,6 +1,6 @@
 # RFC 0009: a remote presenter on a second device
 
-Status: Ready. Reviewed by a devil's-advocate pass and decided with Riley on 2026-11-17.
+Status: Done. Shipped on `feat/remote-and-motion` (2026-11-18): the relay is `packages/node/src/remote/`, the window link and page are `packages/runtime/src/remote/`, and the user guide is `docs/guide/presenting.md`.
 
 ## Problem
 
