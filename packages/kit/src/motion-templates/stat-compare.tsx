@@ -36,10 +36,10 @@ export function StatCompare({
   const layout = (
     <figure className={styles.figure} ref={figure} style={{ color: ink(accent, 3) }}>
       <div className={styles.row}>
-        <h1>
+        <h2>
           {baseline}
           {suffix}
-        </h1>
+        </h2>
         <svg
           viewBox="0 0 100 50"
           aria-hidden="true"
@@ -50,9 +50,9 @@ export function StatCompare({
           <polyline ref={arrow} points="2,25 96,25" />
           <polyline ref={tip} points="75,4 96,25 75,46" />
         </svg>
-        <h1 ref={destination} aria-label={format(to)}>
+        <h2 ref={destination} aria-label={format(to)}>
           <span aria-hidden="true">{format(value)}</span>
-        </h1>
+        </h2>
         <strong ref={change}>
           {signed}
           {suffix === "%" ? " pp" : suffix}

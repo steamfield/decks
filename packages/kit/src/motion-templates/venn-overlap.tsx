@@ -41,9 +41,9 @@ export function VennOverlap({
           </div>
         ))}
       </div>
-      <h1 ref={shared} className={styles.shared}>
+      <h2 ref={shared} className={styles.shared}>
         {overlap}
-      </h1>
+      </h2>
     </div>
   );
   useTemplateMotion(at, (tl) => {

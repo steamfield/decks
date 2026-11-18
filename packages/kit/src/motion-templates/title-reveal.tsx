@@ -31,7 +31,7 @@ export function TitleReveal({
   }, []);
   const layout = (
     <figure className={styles.figure} ref={figure} style={{ color: ink(accent, 3) }}>
-      <h1 ref={headline}>{title}</h1>
+      <h2 ref={headline}>{title}</h2>
       <div className={styles.rule} ref={rule} aria-hidden="true" />
       {subtitle && (
         <figcaption className="od-body" ref={caption}>

@@ -21,7 +21,7 @@ for (const [name, label] of examples) {
           (el) => !el.closest("[data-deck-layer]"),
         );
         if (
-          !parts.some((el) => el.matches("h1")) ||
+          !parts.some((el) => el.matches("h2")) ||
           parts.some((el) => el instanceof HTMLImageElement && !el.naturalWidth)
         )
           return;

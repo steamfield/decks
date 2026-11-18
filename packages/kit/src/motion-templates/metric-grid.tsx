@@ -40,11 +40,11 @@ export function MetricGrid({ metrics, at = 0, accent = "cyan" }: TemplateProps<"
           }}
           className={styles.tile}
         >
-          <h1 aria-label={formatter.format(value) + suffix}>
+          <h2 aria-label={formatter.format(value) + suffix}>
             <span aria-hidden="true">
               {formatter.format(value * (counts[index] ?? 0)) + suffix}
             </span>
-          </h1>
+          </h2>
           <p className="od-body">{label}</p>
         </div>
       ))}

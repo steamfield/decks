@@ -10,7 +10,7 @@
   pointer-events: none;
 }
 .number,
-.section h1 {
+.section h2 {
   position: relative;
   margin: 0;
 }
@@ -19,7 +19,7 @@
   letter-spacing: -0.065em;
   color: var(--od-text-secondary);
 }
-.section h1 {
+.section h2 {
   margin-top: 0.25em;
   text-wrap: balance;
 }

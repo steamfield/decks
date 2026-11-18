@@ -11,10 +11,10 @@
   stroke-width: 8;
 }
 .card blockquote,
-.card h1 {
+.card h2 {
   margin: 0;
 }
-.card h1 {
+.card h2 {
   max-width: 24ch;
   font-family: var(--od-font-serif);
   text-wrap: balance;

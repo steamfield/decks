@@ -20,7 +20,7 @@ export function LowerThird({ name, role, at = 0, accent = "cyan" }: TemplateProp
     <figure className={styles.figure} ref={figure} style={{ color: ink(accent, 3) }}>
       <div ref={bar} className={styles.bar} aria-hidden="true" />
       <div className={styles.mask}>
-        <h1 ref={nameLine}>{name}</h1>
+        <h2 ref={nameLine}>{name}</h2>
         <p className="od-body" ref={roleLine}>
           {role}
         </p>

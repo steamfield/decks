@@ -14,7 +14,7 @@ export function EndCard({ title, link, at = 0, accent = "cyan" }: TemplateProps<
   const split = useRef<SplitText | null>(null);
   const layout = (
     <div className={styles.card}>
-      <h1 ref={heading}>{title}</h1>
+      <h2 ref={heading}>{title}</h2>
       <span
         className={styles.rule}
         aria-hidden="true"

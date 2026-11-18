@@ -59,7 +59,7 @@ export function PhotoReveal({
         </>
       )}
       <div className={styles.caption}>
-        <h1 style={{ borderLeftColor: ink(accent, 3) }}>{caption}</h1>
+        <h2 style={{ borderLeftColor: ink(accent, 3) }}>{caption}</h2>
         {credit && <p className="od-body">{credit}</p>}
       </div>
       {image !== "loading" && <PhotoEntrance figure={figure} at={at} />}
@@ -92,7 +92,7 @@ function PhotoEntrance({ figure, at }: { figure: RefObject<HTMLElement | null>; 
       );
     // The caption reaches its baseline first, followed by the credit.
     tl.fromTo(
-      card.querySelector("h1"),
+      card.querySelector("h2"),
       { opacity: 0, yPercent: 32 },
       { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
       duration.quick,

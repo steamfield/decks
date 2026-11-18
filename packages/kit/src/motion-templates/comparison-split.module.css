@@ -8,7 +8,7 @@
   color: var(--od-text);
   font-family: var(--od-font-sans);
 }
-.split h1 {
+.split h2 {
   font-family: var(--od-font-serif);
   overflow-wrap: anywhere;
 }
