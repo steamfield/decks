@@ -107,4 +107,32 @@ describe.skipIf(skipBrowserTests)("capture failures", () => {
     onTestFinished(() => browser.close());
     await expect(openBuiltDeck(browser, outDir, "./", "#/1")).rejects.toThrow(DeckError);
   });
+
+  it.each<{ name: string; files: Record<string, string>; fails: boolean }>([
+    {
+      name: "the deck throws before mount",
+      files: { "setup.ts": 'throw new Error("Setup broke before mount");' },
+      fails: true,
+    },
+    {
+      name: "the slide never settles",
+      files: {
+        "styles/index.css":
+          "@keyframes capture-long { to { opacity: 1; } } h1 { animation: capture-long 3600s; }",
+      },
+      fails: true,
+    },
+    { name: "the capture is closed normally", files: {}, fails: false },
+  ])("leaves no page open when $name", async ({ files, fails }) => {
+    const { dir } = await fixture(onTestFinished, files);
+    const outDir = join(dir, "site");
+    await build(await loadDeck(dir), { outDir, ogImage: false });
+    const browser = await launchBrowser();
+    onTestFinished(() => browser.close());
+    // Only a deck that never settles needs a short bound to reach its failure quickly.
+    const capture = openBuiltDeck(browser, outDir, "./", "#/1", undefined, fails ? 100 : undefined);
+    if (fails) await expect(capture).rejects.toThrow(DeckError);
+    else await (await capture).close();
+    expect(browser.contexts().flatMap((context) => context.pages())).toEqual([]);
+  });
 });

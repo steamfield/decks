@@ -111,6 +111,35 @@ export function Busy() {
   },
 );
 
+it.skipIf(skipBrowserTests)(
+  "fails with the page error, not a settle timeout, when a slide's load throws after mount",
+  { timeout },
+  async () => {
+    // The load fails before it can finish, so its probe stays busy past the 10 s limit.
+    const { dir } = await fixture(onTestFinished, {
+      "slides/01-first.mdx": "# First",
+      "slides/02-broken.mdx": "<Broken />",
+      "components/Broken.tsx": `import {useEffect} from "react";
+import {useSlide, registerSettleProbe} from "@react-decks/runtime";
+export function Broken() {
+  const {isActive} = useSlide();
+  useEffect(() => {
+    if (!isActive) return;
+    const remove = registerSettleProbe(() => true, "broken load");
+    queueMicrotask(() => { throw new Error("Broken after mount"); });
+    return remove;
+  }, [isActive]);
+  return <p>Broken</p>;
+}`,
+    });
+    expect(await run(dir, ["2"])).toEqual({
+      code: 1,
+      stdout: "",
+      stderr: `decks film: Cannot film ${dir}: Broken after mount\n`,
+    });
+  },
+);
+
 async function labelBand(times: number[]) {
   const browser = await launchBrowser();
   onTestFinished(() => browser.close());

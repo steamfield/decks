@@ -21,4 +21,4 @@ registerSettleProbe(() => {
     }
     return unfinished;
   });
-});
+}, "gsap tween");

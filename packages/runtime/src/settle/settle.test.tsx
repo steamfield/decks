@@ -112,6 +112,18 @@ it("reports active probes to capture tools until they become idle or unregister"
   expect(window.__deck?.busy()).toEqual([]);
 });
 
+it("reports a labelled busy probe by its label", async () => {
+  const root = document.createElement("div");
+  let unmount = () => {};
+  await act(async () => {
+    unmount = mountDeck(makeSource(), root);
+  });
+  onTestFinished(() => act(unmount));
+  const unregister = registerSettleProbe(() => true, "chart update");
+  onTestFinished(unregister);
+  expect(window.__deck?.busy()).toEqual(["chart update"]);
+});
+
 it("film preload waits for the hidden neighbour of the destination", async () => {
   const source = makeSource();
   const neighbour = Promise.withResolvers<{ default: () => ReactElement }>();

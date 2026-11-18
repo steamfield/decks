@@ -20,7 +20,7 @@ export function useChartEntrance(
       ? 0
       : (enter.duration ?? (spring ? springDuration(spring) : 500)) + (config.annotationDelay ?? 0);
 
-  useEffect(() => registerSettleProbe(() => busy.current), []);
+  useEffect(() => registerSettleProbe(() => busy.current, "chart update"), []);
   useEffect(() => {
     if (!enabled || visit < 1) return;
     const resolved = chart?.current?.instance?.layout.animation;

@@ -1,18 +1,24 @@
 import { transitionInFlight } from "../transitions/transition";
 
-const probes = new Set<() => boolean>();
+const probes = new Set<{ isBusy: () => boolean; label?: string }>();
 
-export function registerSettleProbe(isBusy: () => boolean): () => void {
-  probes.add(isBusy);
+/**
+ * Holds `settled()` while `isBusy` returns true. `label` names what is busy in `busy()`, so a
+ * capture that times out can say what it waited on.
+ */
+export function registerSettleProbe(isBusy: () => boolean, label?: string): () => void {
+  const probe = { isBusy, label };
+  probes.add(probe);
   return () => {
-    probes.delete(isBusy);
+    probes.delete(probe);
   };
 }
 
 /** Reports fonts and registered motion probes that capture tools must still advance. */
 export function busy(): string[] {
   const reasons = document.fonts?.status === "loading" ? ["loading fonts"] : [];
-  for (const probe of probes) if (probe()) reasons.push(probe.name || "settle probe");
+  for (const { isBusy, label } of probes)
+    if (isBusy()) reasons.push(label ?? (isBusy.name || "settle probe"));
   return reasons;
 }
 

@@ -1,14 +1,14 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { parseArgs } from "node:util";
 import { formatHash } from "@react-decks/core";
 import { defineCommand } from "citty";
-import { launchBrowser, openBuiltPage, waitForCapture } from "../../dev/browser";
+import { launchBrowser, openPreviewPage, startPreview, waitForCapture } from "../../dev/browser";
 import { DeckError } from "../../dev/errors";
 import { layoutFindings } from "../../dev/layout-findings";
 import { build } from "../../dev/server";
 import { scanSlides } from "../../mdx/slides";
+import { commandPositionals, wholeNumber } from "../command-args";
 import { resolveDeck } from "../registry";
 
 const maxFindingsPerSlide = 10;
@@ -24,82 +24,71 @@ export const inspect = defineCommand({
     height: { type: "string", default: "1080", description: "Viewport height" },
   },
   setup({ rawArgs }) {
-    try {
-      const { positionals } = parseArgs({
-        args: rawArgs,
-        options: { width: { type: "string" }, height: { type: "string" } },
-        allowPositionals: true,
-      });
-      if (positionals.length > 1)
-        throw new DeckError(
-          `Unexpected argument "${positionals[1]}". Pass one deck alias or directory.`,
-        );
-    } catch (cause) {
-      if (cause instanceof DeckError) throw cause;
+    const positionals = commandPositionals(rawArgs, {
+      width: { type: "string" },
+      height: { type: "string" },
+    });
+    if (positionals.length > 1)
       throw new DeckError(
-        cause instanceof Error ? cause.message : String(cause),
-        undefined,
-        undefined,
-        { cause },
+        `Unexpected argument "${positionals[1]}". Pass one deck alias or directory.`,
       );
-    }
   },
   async run({ args }) {
     const { deck } = await resolveDeck(args.deck);
-    const width = viewportSize(args.width, "width");
-    const height = viewportSize(args.height, "height");
+    const width = wholeNumber(args.width, "width", 1);
+    const height = wholeNumber(args.height, "height", 1);
     const slides = await scanSlides(deck);
     const outDir = await mkdtemp(join(tmpdir(), "decks-inspect-"));
     let findingsCount = 0;
     let slidesWithFindings = 0;
     try {
       await build(deck, { outDir, base: "./", ogImage: false });
-      const browser = await launchBrowser();
+      // One preview serves every slide; each slide gets a fresh page.
+      const preview = await startPreview(outDir, "./");
       try {
-        for (const { meta } of slides) {
-          const label = `slide ${meta.no} (${basename(meta.file)})`;
-          const hash = formatHash({ view: "play", slide: meta.no, click: meta.clicks });
-          let capture: Awaited<ReturnType<typeof openBuiltPage>> | undefined;
-          try {
-            capture = await openBuiltPage(browser, outDir, "./", `?motion=instant${hash}`, {
-              width,
-              height,
-            });
-            await waitForCapture(capture.page);
-            const findings = await layoutFindings(capture.page, meta.no, hash);
-            if (capture.errors.length > 0) throw new DeckError(capture.errors.join("; "));
-            if (findings.length > 0) slidesWithFindings++;
-            findingsCount += findings.length;
-            for (const { kind, pixels, side, selector, excerpt } of findings.slice(
-              0,
-              maxFindingsPerSlide,
-            ))
-              console.log(
-                `${label}: ${kind} by ${Math.round(pixels)}px ${side}: ${selector} ${JSON.stringify(excerpt)}`,
-              );
-            const omitted = findings.length - maxFindingsPerSlide;
-            if (omitted > 0) console.log(`... and ${omitted} more on slide ${meta.no}`);
-          } catch (cause) {
-            const message =
-              capture?.errors.join("; ") ||
-              (cause instanceof Error ? cause.message : String(cause));
-            const prefix = `Cannot capture ${outDir}: `;
-            const detail = message.startsWith(prefix) ? message.slice(prefix.length) : message;
-            throw new DeckError(`Cannot capture ${label}: ${detail}`, undefined, undefined, {
-              cause,
-            });
-          } finally {
-            if (capture) {
-              try {
-                await capture.page.close();
-              } finally {
-                await capture.close();
-              }
+        const browser = await launchBrowser();
+        try {
+          for (const { meta } of slides) {
+            const label = `slide ${meta.no} (${basename(meta.file)})`;
+            const hash = formatHash({ view: "play", slide: meta.no, click: meta.clicks });
+            let capture: Awaited<ReturnType<typeof openPreviewPage>> | undefined;
+            try {
+              capture = await openPreviewPage(browser, preview, `?motion=instant${hash}`, {
+                width,
+                height,
+              });
+              await waitForCapture(capture.page);
+              const findings = await layoutFindings(capture.page, meta.no, hash);
+              if (capture.errors.length > 0) throw new DeckError(capture.errors.join("; "));
+              if (findings.length > 0) slidesWithFindings++;
+              findingsCount += findings.length;
+              for (const { kind, pixels, side, selector, excerpt } of findings.slice(
+                0,
+                maxFindingsPerSlide,
+              ))
+                console.log(
+                  `${label}: ${kind} by ${Math.round(pixels)}px ${side}: ${selector} ${JSON.stringify(excerpt)}`,
+                );
+              const omitted = findings.length - maxFindingsPerSlide;
+              if (omitted > 0) console.log(`... and ${omitted} more on slide ${meta.no}`);
+            } catch (cause) {
+              const message =
+                capture?.errors.join("; ") ||
+                (cause instanceof Error ? cause.message : String(cause));
+              const prefix = `Cannot capture ${outDir}: `;
+              const detail = message.startsWith(prefix) ? message.slice(prefix.length) : message;
+              throw new DeckError(`Cannot capture ${label}: ${detail}`, undefined, undefined, {
+                cause,
+              });
+            } finally {
+              await capture?.close();
             }
           }
+        } finally {
+          await browser.close();
         }
       } finally {
-        await browser.close();
+        await preview.close();
       }
     } finally {
       await rm(outDir, { recursive: true, force: true });
@@ -117,10 +106,3 @@ export const inspect = defineCommand({
     }
   },
 });
-
-function viewportSize(value: string, name: string): number {
-  const number = Number(value);
-  if (!/^\d+$/.test(value) || !Number.isSafeInteger(number) || number < 1)
-    throw new DeckError(`Invalid ${name} "${value}". Use a whole number 1 or greater.`);
-  return number;
-}

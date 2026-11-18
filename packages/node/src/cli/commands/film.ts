@@ -1,7 +1,6 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { parseArgs } from "node:util";
 import { defineCommand } from "citty";
 import { launchBrowser, openBuiltPage } from "../../dev/browser";
 import { contactSheet } from "../../dev/contact-sheet";
@@ -9,6 +8,7 @@ import { DeckError } from "../../dev/errors";
 import { captureStep, installFilmClock } from "../../dev/film-capture";
 import { build } from "../../dev/server";
 import { scanSlides } from "../../mdx/slides";
+import { commandPositionals, wholeNumber } from "../command-args";
 import { resolveDeck } from "../registry";
 
 export const film = defineCommand({
@@ -26,26 +26,12 @@ export const film = defineCommand({
     const frameOption = rawArgs.indexOf("--frames");
     const frameValue = rawArgs[frameOption + 1];
     if (frameOption >= 0 && frameValue && /^-\d/.test(frameValue)) throw invalidFrames(frameValue);
-    let positionals: string[];
-    try {
-      ({ positionals } = parseArgs({
-        args: rawArgs,
-        options: {
-          frames: { type: "string" },
-          out: { type: "string" },
-          width: { type: "string" },
-          height: { type: "string" },
-        },
-        allowPositionals: true,
-      }));
-    } catch (cause) {
-      throw new DeckError(
-        cause instanceof Error ? cause.message : String(cause),
-        undefined,
-        undefined,
-        { cause },
-      );
-    }
+    const positionals = commandPositionals(rawArgs, {
+      frames: { type: "string" },
+      out: { type: "string" },
+      width: { type: "string" },
+      height: { type: "string" },
+    });
     if (positionals.length > 3)
       throw new DeckError(
         `Unexpected argument "${positionals[3]}". Pass a deck, slide and optional click.`,
@@ -84,13 +70,18 @@ export const film = defineCommand({
           { width, height },
           installFilmClock,
         );
+        const pageErrors = (cause?: unknown) => {
+          const message = `Cannot film ${deck.dir}: ${capture.errors.join("; ")}`;
+          return new DeckError(message, undefined, undefined, { cause });
+        };
         try {
-          const result = await captureStep(capture.page, slide, click, times);
-          if (capture.errors.length)
-            throw new DeckError(`Cannot film ${deck.dir}: ${capture.errors.join("; ")}`);
+          const result = await captureStep(capture.page, slide, click, times).catch((cause) => {
+            // A page error usually explains the timeout or failed seek that followed it.
+            throw capture.errors.length ? pageErrors(cause) : cause;
+          });
+          if (capture.errors.length) throw pageErrors();
           return result;
         } finally {
-          await capture.page.close();
           await capture.close();
         }
       };
@@ -114,11 +105,4 @@ export const film = defineCommand({
 
 function invalidFrames(value: string) {
   return new DeckError(`Invalid --frames "${value}". Use a whole number from 2 to 24.`);
-}
-
-function wholeNumber(value: string, name: string, min: number) {
-  const number = Number(value);
-  if (!/^\d+$/.test(value) || !Number.isSafeInteger(number) || number < min)
-    throw new DeckError(`Invalid ${name} "${value}". Use a whole number ${min} or greater.`);
-  return number;
 }
