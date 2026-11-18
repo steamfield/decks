@@ -14,7 +14,7 @@ purpose.
 | --- | --- | --- | --- |
 | Agent tooling ([steamfield/decks#8](https://github.com/steamfield/decks/issues/8)) | MCP server (inspect, edit, reorder, navigate slides) | The product pitch is decks made by agents. An MCP server over the manifest and `shot`/`film` output would let an agent see and drive a running deck without a browser tool. Depends on Phase 5 tooling. | Medium |
 | Zoom and scale helpers ([steamfield/decks#10](https://github.com/steamfield/decks/issues/10)) | `zoom` frontmatter, `<Transform>` | Scaling one slide's content, or one block, without touching CSS. | Small |
-| PDF and images at build ([steamfield/decks#11](https://github.com/steamfield/decks/issues/11)) | Generate PDF when building, PNG export | `decks export` is planned (Phase 5). Emitting the PDF into the built site, and a per-slide PNG export, are small additions on top. | Small |
+| PDF and images at build ([steamfield/decks#11](https://github.com/steamfield/decks/issues/11)) | Generate PDF when building, PNG export | `decks export` writes a PDF and `decks shot` one PNG; emitting the PDF into the built site, and a PNG per slide, are small additions on top. | Small |
 
 ## Recipe (ecosystem, needs docs and a fixture)
 
