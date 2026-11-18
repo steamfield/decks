@@ -85,6 +85,10 @@ Inspect the PNGs for clipping, overlaps, unreadable sources, card/mark collision
 
 After a source or copy change, rerun the relevant fact-check and lint; after a visual or motion change, inspect affected states again. Do not claim an unavailable source or failed capture passed. Report the exact error and the work left to verify.
 
+### Film a step
+
+Run `decks film q3 2 1 --out slide-2-c1-film.png` and open the PNG. Read across each row to follow the motion into click 1. To inspect the transition into slide 2, use click 0. The labels show virtual milliseconds and the last frame shows the settled pose. Use `--frames 12` for a closer look at a short beat.
+
 ## Definition of done
 
 - The requested arc and slide count are complete; no scaffold placeholders remain.
