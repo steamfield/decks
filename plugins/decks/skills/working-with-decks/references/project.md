@@ -58,6 +58,10 @@ Use `decks <command> --help` to confirm the installed version's flags.
 | `decks shot <deck> <slide> [clicks] [--out file.png] [--width N] [--height N]` | Build and capture one settled frame with instant motion. Defaults: click 0, 1920x1080, `slide-<slide>-c<clicks>.png`. Owns its browser and preview server. |
 | `decks export <deck> [--out file.pdf] [--final]` | Build and export all click states to PDF; `--final` exports only each slide's final click. Default PDF is `<outDir>/<name>.pdf`, using the registry output default. |
 
+Run `decks inspect <deck> [--width N] [--height N]` to check each visible slide at its last click.
+It reports elements outside the canvas and boxes that clip text, and exits 1 when it finds either.
+Use `decks film <deck> <slide> [click]` for a PNG contact sheet of the motion into one click or slide.
+
 Screenshot and PDF commands use Chromium. If the CLI reports it missing, follow its instruction: `npx playwright install chromium`. A capture failure is a failed verification, not a successful export. Build also generates an `og.png` preview from the first slide when `public/og.png` is absent; missing Chromium skips that preview with a warning rather than failing the build.
 
 Edits hot-update or reload as needed: adding a component or changing exports reloads; editing config restarts the server. Do not prescribe manual restarts after every new component.
