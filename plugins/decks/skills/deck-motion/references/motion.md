@@ -98,6 +98,24 @@ An omitted position appends. `"<"` means the previous inserted tween's start; a 
 
 In `presenter`, `preview`, `overview` and `print`, in an inactive slide, and in instant/reduced motion, show the completed pose for the local click. Overview uses the final click; preview can show the next click rather than the current one. No animation, timers or WebGL there. Custom SVG ids use `useId()` because several instances can coexist.
 
-Deck config `transition` supplies the fallback; slide frontmatter overrides the boundary from that slide to the next in either direction. Built-ins: `fade`, `push`, `zoom`, `cut`; `story` comes from the kit stylesheet. Prefer a consistent quiet transition and reserve changes for meaningful boundaries. The story transition preserves headline/card positions. Use `Morph` for authored object hand-offs instead of manually assigning unscoped view-transition names.
+Deck config `transition` supplies the fallback. Slide frontmatter overrides the boundary from that slide to the next in either direction. Most decks use one or two transitions. Keep a quiet default and save a second transition for meaningful boundaries.
+
+| Preset | When to use it |
+| --- | --- |
+| `fade` | Move between slides with a quiet cross-fade. |
+| `push` | Carry a horizontal sequence across slides. |
+| `zoom` | Move between a big picture and its detail. |
+| `cut` | Change slides immediately, such as during a rapid comparison. |
+| `rise` | Carry a vertical sequence across slides. |
+| `cover` | Bring in a new slide over the current one, like a panel. |
+| `reveal` | Slide the current view away to show what's underneath. |
+| `wipe` | Sweep across two views of the same subject. |
+| `iris` | Center a reveal on a focal point, at most once per deck. |
+| `blur` | Shift focus to a new subject at a section break. |
+| `flip` | Turn from a question to its answer, like a card. |
+| `cube` | Turn between distinct faces of one subject. |
+| `story` | Preserve headline and card positions across story stages. Provided by the kit stylesheet. |
+
+Use `Morph` for authored object hand-offs so the framework scopes their view-transition names.
 
 `?motion=instant#/2?clicks=1` checks a settled state directly. `window.__deck.settled()` waits for registered motion; after a change in another window, wait for navigation to arrive before waiting for settlement. A custom canvas animation needs the public `registerSettleProbe` API and cleanup if capture must await it; prefer built-in primitives over adding such a loop.
