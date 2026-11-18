@@ -22,36 +22,38 @@ import { TitleReveal } from "./title-reveal";
  * folder, shipped in the package's docs/motion-templates/ as a reference for custom motion.
  */
 export function MotionTemplate(props: MotionTemplateProps): ReactNode {
+  // Timelines and text splits are built once per mount; new content gets a fresh mount.
+  const key = JSON.stringify(props);
   switch (props.template) {
     case "title-reveal":
-      return <TitleReveal {...props} />;
+      return <TitleReveal key={key} {...props} />;
     case "lower-third":
-      return <LowerThird {...props} />;
+      return <LowerThird key={key} {...props} />;
     case "stat-burst":
-      return <StatBurst {...props} />;
+      return <StatBurst key={key} {...props} />;
     case "stat-compare":
-      return <StatCompare {...props} />;
+      return <StatCompare key={key} {...props} />;
     case "metric-grid":
-      return <MetricGrid {...props} />;
+      return <MetricGrid key={key} {...props} />;
     case "list-cascade":
-      return <ListCascade {...props} />;
+      return <ListCascade key={key} {...props} />;
     case "quote-card":
-      return <QuoteCard {...props} />;
+      return <QuoteCard key={key} {...props} />;
     case "section-wipe":
-      return <SectionWipe {...props} />;
+      return <SectionWipe key={key} {...props} />;
     case "agenda":
-      return <Agenda {...props} />;
+      return <Agenda key={key} {...props} />;
     case "end-card":
-      return <EndCard {...props} />;
+      return <EndCard key={key} {...props} />;
     case "timeline-sweep":
-      return <TimelineSweep {...props} />;
+      return <TimelineSweep key={key} {...props} />;
     case "process-flow":
-      return <ProcessFlow {...props} />;
+      return <ProcessFlow key={key} {...props} />;
     case "comparison-split":
-      return <ComparisonSplit {...props} />;
+      return <ComparisonSplit key={key} {...props} />;
     case "myth-fact":
-      return <MythFact {...props} />;
+      return <MythFact key={key} {...props} />;
     case "spotlight":
-      return <Spotlight {...props} />;
+      return <Spotlight key={key} {...props} />;
   }
 }
