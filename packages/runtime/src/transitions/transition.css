@@ -84,4 +84,189 @@
       transform: scale(var(--rd-zoom-new));
     }
   }
+
+  html[data-deck-transition="rise"] {
+    --rd-rise: 100%;
+  }
+  html[data-deck-transition="rise"][data-deck-nav="backward"] {
+    --rd-rise: -100%;
+  }
+  html[data-deck-transition="rise"]::view-transition-old(root) {
+    animation: rd-rise-out var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  html[data-deck-transition="rise"]::view-transition-new(root) {
+    animation: rd-rise-in var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  @keyframes rd-rise-out {
+    to {
+      transform: translateY(calc(-1 * var(--rd-rise)));
+    }
+  }
+  @keyframes rd-rise-in {
+    from {
+      transform: translateY(var(--rd-rise));
+    }
+  }
+
+  html[data-deck-transition="cover"],
+  html[data-deck-transition="reveal"] {
+    --rd-push: 100%;
+  }
+  html[data-deck-transition="cover"][data-deck-nav="backward"],
+  html[data-deck-transition="reveal"][data-deck-nav="backward"] {
+    --rd-push: -100%;
+  }
+  html[data-deck-transition="cover"]::view-transition-old(root),
+  html[data-deck-transition="reveal"]::view-transition-new(root) {
+    animation: none;
+    z-index: 0;
+  }
+  html[data-deck-transition="cover"]::view-transition-new(root) {
+    animation: rd-push-in var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+    z-index: 1;
+  }
+  html[data-deck-transition="reveal"]::view-transition-old(root) {
+    animation: rd-push-out var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+    z-index: 1;
+  }
+
+  html[data-deck-transition="wipe"] {
+    --rd-wipe-inset: 0 100% 0 0;
+  }
+  html[data-deck-transition="wipe"][data-deck-nav="backward"] {
+    --rd-wipe-inset: 0 0 0 100%;
+  }
+  html[data-deck-transition="wipe"]::view-transition-old(root),
+  html[data-deck-transition="iris"]::view-transition-old(root) {
+    animation: none;
+  }
+  html[data-deck-transition="wipe"]::view-transition-new(root) {
+    animation: rd-wipe-in var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  html[data-deck-transition="iris"]::view-transition-new(root) {
+    animation: rd-iris-in var(--deck-dur-slow, 600ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  @keyframes rd-wipe-in {
+    from {
+      clip-path: inset(var(--rd-wipe-inset));
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+  @keyframes rd-iris-in {
+    from {
+      clip-path: circle(0% at 50% 50%);
+    }
+    to {
+      /* A CSS circle's percentage uses the normalized diagonal. */
+      clip-path: circle(72% at 50% 50%);
+    }
+  }
+
+  html[data-deck-transition="blur"]::view-transition-old(root),
+  html[data-deck-transition="blur"]::view-transition-new(root) {
+    mix-blend-mode: plus-lighter;
+  }
+  html[data-deck-transition="blur"]::view-transition-old(root) {
+    animation: rd-blur-out var(--deck-dur-base, 300ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  html[data-deck-transition="blur"]::view-transition-new(root) {
+    animation: rd-blur-in var(--deck-dur-base, 300ms)
+      var(--deck-ease-settle, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  }
+  @keyframes rd-blur-out {
+    to {
+      filter: blur(12px);
+      opacity: 0;
+    }
+  }
+  @keyframes rd-blur-in {
+    from {
+      filter: blur(12px);
+      opacity: 0;
+    }
+  }
+
+  html[data-deck-transition="flip"] {
+    --rd-flip-turn: 90deg;
+  }
+  html[data-deck-transition="flip"][data-deck-nav="backward"] {
+    --rd-flip-turn: -90deg;
+  }
+  html[data-deck-transition="flip"]::view-transition-old(root) {
+    animation: rd-flip-out var(--deck-dur-slow, 600ms)
+      var(--deck-ease-draw, cubic-bezier(0.65, 0, 0.35, 1)) both;
+    backface-visibility: hidden;
+  }
+  html[data-deck-transition="flip"]::view-transition-new(root) {
+    animation: rd-flip-in var(--deck-dur-slow, 600ms)
+      var(--deck-ease-draw, cubic-bezier(0.65, 0, 0.35, 1)) both;
+    backface-visibility: hidden;
+  }
+  @keyframes rd-flip-out {
+    from {
+      transform: perspective(150vw) rotateY(0deg);
+    }
+    50%,
+    to {
+      transform: perspective(150vw) rotateY(var(--rd-flip-turn));
+    }
+  }
+  @keyframes rd-flip-in {
+    from,
+    50% {
+      transform: perspective(150vw) rotateY(calc(-1 * var(--rd-flip-turn)));
+    }
+    to {
+      transform: perspective(150vw) rotateY(0deg);
+    }
+  }
+
+  html[data-deck-transition="cube"] {
+    --rd-cube-edge: 50%;
+    --rd-cube-turn: 90deg;
+    /* Rotate the X translations into Z so depth uses the snapshot's width. */
+    --rd-cube-recede: rotateY(90deg) translateX(50%) rotateY(-90deg);
+    --rd-cube-advance: rotateY(-90deg) translateX(50%) rotateY(90deg);
+  }
+  html[data-deck-transition="cube"][data-deck-nav="backward"] {
+    --rd-cube-edge: -50%;
+    --rd-cube-turn: -90deg;
+  }
+  html[data-deck-transition="cube"]::view-transition-old(root) {
+    --rd-cube-origin: var(--rd-cube-edge);
+    --rd-cube-face: 0deg;
+  }
+  html[data-deck-transition="cube"]::view-transition-new(root) {
+    --rd-cube-origin: calc(-1 * var(--rd-cube-edge));
+    --rd-cube-face: var(--rd-cube-turn);
+  }
+  html[data-deck-transition="cube"]::view-transition-old(root),
+  html[data-deck-transition="cube"]::view-transition-new(root) {
+    transform-origin: calc(50% + var(--rd-cube-origin)) 50%;
+    backface-visibility: hidden;
+    animation: rd-cube-turn var(--deck-dur-slow, 600ms)
+      var(--deck-ease-draw, cubic-bezier(0.65, 0, 0.35, 1)) both;
+  }
+  @keyframes rd-cube-turn {
+    /* Bring both face edges to the same hinge and use the viewport center for perspective. */
+    from {
+      transform: translateX(calc(-1 * var(--rd-cube-origin))) perspective(150vw)
+        var(--rd-cube-recede) rotateY(0deg) translateX(var(--rd-cube-edge)) var(--rd-cube-advance)
+        rotateY(var(--rd-cube-face));
+    }
+    to {
+      transform: translateX(calc(-1 * var(--rd-cube-origin))) perspective(150vw)
+        var(--rd-cube-recede) rotateY(calc(-1 * var(--rd-cube-turn)))
+        translateX(var(--rd-cube-edge)) var(--rd-cube-advance) rotateY(var(--rd-cube-face));
+    }
+  }
 }
