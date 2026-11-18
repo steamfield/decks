@@ -39,7 +39,8 @@ push unless Riley says so. Scaffold SHA: `9031e0f`.
 | 2 agent tooling | 1C film, 2C inspect | phase 1 | `bun run decks film motion <push slide> 0`; `bun run decks inspect motion` |
 | 3 data and transitions | 1D ChartSteps, 1E transitions | phase 1 | `bun run decks dev motion`, slides 35-43 |
 | 4 motion graphics library | 2A Camera and ShapeMorph, 2B motion graphics (Astra) | phase 2 | slides 45-49, filmed |
-| 5 motion templates | 2E templates A, 2F templates B (both Astra) | phase 4 | `bun run decks dev motion`, slides 50-55, each filmed |
+| 5 motion templates | templates A, B, C (five templates each, all Astra) | phase 4 | `bun run decks dev motion`, slides 50-64, each filmed |
+| 5b discoverability (mine) | guide, skills, deck-author agent | phase 5 | a fresh agent asked for a deck proposes motion graphics where they fit |
 | 6 recipes | 2D recipes | phases 3 and 5 | `bun run decks dev recipes` |
 
 Phases 2 and 3 run together after phase 1 (four lanes). The unit names below (1A-2D) are
@@ -69,8 +70,7 @@ the file name is the one assigned here. Names are prefixed by kind so `slideNo()
 | `36-transition-rise.mdx` … `43-transition-cube.mdx` (rise, cover, reveal, wipe, iris, blur, flip, cube), `44-transition-end.mdx` | 1E |
 | `45-camera.mdx`, `46-shape-morph.mdx` | 2A |
 | `47-kinetic-type.mdx`, `48-path-follow.mdx`, `49-scene-3d.mdx` | 2B |
-| `50-title-reveal.mdx` … `52-stat-burst.mdx` | 2E |
-| `53-list-cascade.mdx` … `55-section-wipe.mdx` | 2F |
+| `50-mt-title-reveal.mdx` … `64-mt-spotlight.mdx` | templates A, B, C |
 
 Skill files, one owner each per phase: 1C `building-a-deck/references/workflow.md` (a film
 section) and `deck-motion/SKILL.md` ("Verify motion as a viewer"); 1D
@@ -268,49 +268,51 @@ gsap's plugins; this unit makes that safe and teaches it.
 
 ## Motion templates (phase 5)
 
-Added 2026-11-18 at Riley's request: besides the library, ready-made motion graphics an agent
-fills in. The agent picks a template, writes the prose, and the template takes its colours,
-type and timing from the deck's theme and motion tokens. Each template is also a reference:
-one readable source file per template, which the build copies into the package's `docs/`
-(`docs/motion-templates/<name>.tsx`) so an agent writing custom motion can read how a
-finished one is built.
+Riley, 2026-11-18: besides the library, about fifteen ready-made motion graphics an agent fills
+in, made discoverable so an agent building a deck knows it can use motion graphics and where
+they fit. The agent picks a template and writes the words; the template takes colour, type and
+timing from the deck theme and motion tokens. Each template is one readable source file, which
+the build copies into the package's `docs/motion-templates/`, so an agent writing custom motion
+can read a finished one first.
 
 ```tsx
 import { MotionTemplate } from "@steamfield/decks/kit";
 
 <MotionTemplate template="title-reveal" title="Agents read your docs first." subtitle="Write them for that reader." />
-<MotionTemplate template="list-cascade" at={1} items={["Brief", "Build", "Film"]} />
+<MotionTemplate template="myth-fact" myth="Agents skip the docs." fact="They read them first, and literally." />
 ```
 
-`MotionTemplate` takes a discriminated union on `template`; each template's content props are
-typed (no free-form config). Optional `accent` takes a theme colour name from the kit theme,
-never a raw colour. Every template:
+| Lane | Templates | Slides |
+| --- | --- | --- |
+| A titles and numbers | `title-reveal`, `lower-third`, `stat-burst`, `stat-compare`, `metric-grid` | `50-mt-*` to `54-mt-*` |
+| B text and structure | `list-cascade`, `quote-card`, `section-wipe`, `agenda`, `end-card` | `55-mt-*` to `59-mt-*` |
+| C diagrams and narrative | `timeline-sweep`, `process-flow`, `comparison-split`, `myth-fact`, `spotlight`, plus the `MotionTemplate` click-counting branch | `60-mt-*` to `64-mt-*` |
 
-- is built on `useTimeline` with gsap and its registered plugins, so it seeks per click, renders
-  its end state outside the live slide context and in `instant` mode, and settles;
-- uses only theme variables and motion tokens; text stays real text (SplitText reverted on
-  cleanup, `aria-label` on split elements);
-- plays its entrance at click `at` (default 0, on arrival) as one beat, except `list-cascade`,
-  which takes one click per item; `clicks.ts` counts `at` (plus `items.length − 1` for a
-  literal `items` in `list-cascade`), otherwise the slide sets frontmatter `clicks`;
-- has a slide in `examples/motion` and a `decks film` sheet in its run's hand-off.
+Typed props for all fifteen are in the scaffold (`motion-template-props.ts`). Every template is
+built on `useTimeline`, uses only theme variables and motion tokens, keeps text as real text,
+shows its finished pose outside the live slide, and is filmed in its run. One beat at click
+`at` except `list-cascade`, `timeline-sweep`, `process-flow` (one click per item) and
+`comparison-split`, `myth-fact` (two beats).
 
-| Template | What it does | Content props | Lane |
-| --- | --- | --- | --- |
-| `title-reveal` | Headline words rise out of a mask with a stagger, an accent rule draws under it, the subtitle fades up | `title`, `subtitle?` | 2E |
-| `lower-third` | An accent block wipes in, name and role slide out from behind it | `name`, `role` | 2E |
-| `stat-burst` | A number counts up while a ring draws around it, the label slides in | `value`, `label`, `suffix?` | 2E |
-| `list-cascade` | Items arrive one per click, each with a drawn marker | `items` | 2F |
-| `quote-card` | Quote marks draw, the quote reveals word by word, the source line follows | `quote`, `source` | 2F |
-| `section-wipe` | A panel in the accent colour wipes across, the section number and title land on it | `number`, `title` | 2F |
+### Discoverability (mine, after phase 5)
 
-Phase 5 scaffold (mine): `packages/kit/src/motion-templates/` with `motion-template.tsx` (the
-dispatcher over a registry), `registry.ts`, one stub file per template, the `MotionTemplate`
-and `MotionTemplateName` exports, `MotionTemplate` in `stepNames`, the `build.mjs` copy into
-`docs/motion-templates/`, and slide filenames `50-title-reveal.mdx` to
-`55-section-wipe.mdx`. 2E owns the first three template files and slides, 2F the last three;
-each lane adds its templates' rows to `deck-motion/references/motion-graphics.md` under a
-heading the scaffold creates for it.
+An agent building a new deck must learn that motion graphics exist, which template fits where,
+and when to write custom motion instead:
+
+- `docs/guide/motion-templates.md` (new, ships in the package): every template with a one-line
+  use, props, an example, and a "where motion graphics fit in a talk" section: the opening
+  title, section breaks, the one number the talk turns on, a myth to correct, a before/after,
+  a process or timeline the speaker walks through, the close; and where they do not: dense
+  data slides, every slide, anything the speaker must talk over.
+- `deck-motion/SKILL.md`: the template table and the placement rules, pointing at
+  `motion-templates.md` and `motion-graphics.md`.
+- `building-a-deck`: in planning the arc, mark the slides that get a motion graphic; in
+  verification, film them.
+- `working-with-decks`: route "motion graphics", "animated title", "kinetic" requests to
+  deck-motion.
+- `plugins/decks/agents/deck-author.md`: one line that motion templates exist and when to use
+  them.
+- `docs/guide/kit.md` and `README.md` in the guide: link the new page.
 
 ## Phase 3 (mine)
 
