@@ -351,3 +351,14 @@ frontmatter; ChartSteps keeps one `Chart` instance and throws on unmorphable spe
 components are not default MDX components; examples filenames, skill sections and the remote
 flag plumbing are assigned up front; 2D waits for 2A and 2C, and 2C fixes nothing outside its
 paths; the remote page build reuses `config()` and the RFC says so.
+
+## Decisions during the build
+
+- 2026-11-18, phase 1 questions: the remote page keeps its token in its URL (no stripping, no
+  `sessionStorage`), so a reload works against the strict 403; the iPad is not projected.
+  After a failed socket handshake the page GETs its own tokenized URL: only a 403 means the
+  link expired. The first window report after `waiting` is pushed regardless of dedup; the
+  first report sets the position with `elapsed: null` and the first change starts the talk;
+  reports arrive in arrival order (a late presenter report can briefly win; accepted for v1).
+  `--remote` forces the dev server to loopback even when `vite.server.host` is configured,
+  with a logged line. A window in print never reports. RFC 0009 is updated at phase 3 docs.
