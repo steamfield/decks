@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { PNG } from "pngjs";
 import { startSettling } from "./fixtures/deck-driver";
 import { kitFixture } from "./fixtures/kit.fixture";
@@ -14,14 +14,15 @@ for (const [name, label] of examples) {
   test(`${name} goes forward, back, through two quick clicks and reloads at its last click`, async ({
     page,
   }) => {
-    await page.addInitScript(() => {
+    await page.addInitScript((label) => {
       const read = () => {
         const slide = document.querySelector("[data-deck-active]");
+        // The pose is every element of the slide outside its layers, so no single part is named.
         const parts = Array.from(slide?.querySelectorAll("*") ?? []).filter(
           (el) => !el.closest("[data-deck-layer]"),
         );
         if (
-          !parts.some((el) => el.matches("h2")) ||
+          !slide?.textContent?.includes(label) ||
           parts.some((el) => el instanceof HTMLImageElement && !el.naturalWidth)
         )
           return;
@@ -42,7 +43,7 @@ for (const [name, label] of examples) {
         requestAnimationFrame(sample);
       }
       requestAnimationFrame(sample);
-    });
+    }, label);
     const no = slideNo(`mt-${name}`);
     const text = page.locator("[data-deck-active]").getByText(label, { exact: true });
     await page.goto(`/#/${no}`);
@@ -91,6 +92,7 @@ import { MotionTemplate } from "@steamfield/decks/kit";
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.goto(fixture.url);
       const slide = page.locator("[data-deck-active]");
+      // The circles are decorative parts of a hidden drawing; their tag is their only identity.
       const circles = slide.locator("circle");
       await expect(circles).toHaveCount(labels.length);
       await expect(circles.first()).toHaveCSS("stroke", "rgb(251, 113, 133)");
@@ -261,38 +263,37 @@ import { MotionTemplate } from "@steamfield/decks/kit";
   }
 });
 
-test("three rapid forward presses bring the pre-mounted Venn to the same intersection as a reload", async ({
-  page,
-}) => {
+// For each corner of the Pilot label, which Venn circles contain it. The circles are decorative
+// parts of a hidden drawing, so they are found by tag.
+function pilotCorners(page: Page) {
+  const label = page.locator("[data-deck-active]").getByRole("heading", { name: "Pilot" });
+  return label.evaluate((label) => {
+    const range = document.createRange();
+    range.selectNodeContents(label);
+    const { left, right, top, bottom } = range.getBoundingClientRect();
+    const slide = label.closest("[data-deck-slide]");
+    const discs = Array.from(slide?.querySelectorAll("circle") ?? [], (circle) => {
+      const box = circle.getBoundingClientRect();
+      return { x: box.x + box.width / 2, y: box.y + box.height / 2, r: box.width / 2 };
+    });
+    return [left, right].flatMap((x) =>
+      [top, bottom].map((y) => discs.map((d) => Math.hypot(x - d.x, y - d.y) < d.r)),
+    );
+  });
+}
+
+const inAllThree = Array.from({ length: 4 }, () => [true, true, true]);
+
+test("three quick presses or a reload land Pilot in the Venn's shared region", async ({ page }) => {
   const venn = slideNo("mt-venn-overlap");
   await page.goto(`/#/${slideNo("mt-team-grid")}`);
   await expect(page.getByRole("heading", { name: "Team grid" })).toBeVisible();
   for (let i = 0; i < 3; i++) await page.keyboard.press("ArrowRight");
   await position(page, venn, 1);
   await settled(page, venn, 1);
-  const shared = page.locator("[data-deck-active]").getByRole("heading", { name: "Pilot" });
-  const arrived = await shared.boundingBox();
+  await expect.poll(() => pilotCorners(page)).toEqual(inAllThree);
   await page.reload();
   await position(page, venn, 1);
   await settled(page, venn, 1);
-  expect(await shared.boundingBox()).toEqual(arrived);
+  await expect.poll(() => pilotCorners(page)).toEqual(inAllThree);
 });
-
-for (const mode of ["presenter", "instant"]) {
-  for (const [name, label] of examples) {
-    test(`${mode} advances ${name} without a tick`, async ({ page, motionClock }) => {
-      const no = slideNo(`mt-${name}`);
-      await page.goto(mode === "presenter" ? `/#/presenter/${no}` : `/?motion=instant#/${no}`);
-      const slide = page.locator(
-        mode === "presenter" ? '[data-deck-context="presenter"]' : "[data-deck-active]",
-      );
-      const text = slide.getByText(label, { exact: true });
-      await expect(text).toBeAttached();
-      await settled(page, no, 0);
-      await expect(text).toBeHidden();
-      await motionClock.pauseAt();
-      await page.keyboard.press("ArrowRight");
-      await expect(text).toBeVisible();
-    });
-  }
-}

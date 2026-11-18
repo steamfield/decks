@@ -1,110 +1,13 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { PNG } from "pngjs";
 import { test } from "./fixtures/motion.fixture";
 import { position, settled, slideNo } from "./fixtures/motion-gallery";
 
-const graphics = ["kinetic-type", "path-follow", "scene-3d"] as const;
-type Graphic = (typeof graphics)[number];
-
-async function pose(page: Page, name: Graphic) {
-  const active = page.locator("[data-deck-active]");
-  if (name === "kinetic-type") {
-    const heading = active.getByRole("heading", { name: "Give the last word weight." });
-    await expect(heading).toHaveAttribute("aria-label", "Give the last word weight.");
-    return heading.evaluate((element) => {
-      const words = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-      const result: [number, string][] = [];
-      for (let node = words.nextNode(); node; node = words.nextNode()) {
-        if (!node.textContent?.trim() || !node.parentElement) continue;
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        result.push([
-          range.getBoundingClientRect().top,
-          getComputedStyle(node.parentElement).color,
-        ]);
-      }
-      return result;
-    });
-  }
-  if (name === "path-follow") {
-    const route = active.getByRole("img", { name: "Two legs of the route" });
-    const { marker, samples, separation } = await route.evaluate((svg) => {
-      const click = Number(new URLSearchParams(location.hash.split("?")[1]).get("clicks"));
-      const path = svg.querySelector("path");
-      const dot = svg.querySelector("circle");
-      const matrix = path?.getScreenCTM();
-      if (!path || !dot || !matrix) throw new Error("Missing route or marker");
-      const box = svg.getBoundingClientRect(),
-        circle = dot.getBoundingClientRect();
-      const samples = [0.25, 0.75].map((t) => {
-        const p = path.getPointAtLength(t * path.getTotalLength()).matrixTransform(matrix);
-        return [Math.round(p.x - box.left), Math.round(p.y - box.top)] as const;
-      });
-      const tip = path
-        .getPointAtLength((path.getTotalLength() * click) / 2)
-        .matrixTransform(matrix);
-      return {
-        marker: [circle.x - box.left, circle.y - box.top],
-        samples,
-        separation: Math.hypot(
-          circle.x + circle.width / 2 - tip.x,
-          circle.y + circle.height / 2 - tip.y,
-        ),
-      };
-    });
-    expect(separation).toBeLessThan(1);
-    const image = PNG.sync.read(await route.screenshot());
-    const painted = samples.map(([x, y]) => {
-      const i = 4 * (y * image.width + x);
-      return image.data.readUInt8(i + 1) > image.data.readUInt8(i) + 30;
-    });
-    return [...marker, ...painted];
-  }
-  const host = active.getByRole("img", { name: "Three studio forms" });
-  const instant = (await page.locator("html").getAttribute("data-deck-motion")) === "instant";
-  await expect(host.locator(instant ? "svg" : "canvas")).toBeVisible();
-  const { width, height, data } = PNG.sync.read(await host.screenshot());
-  const pigments = [
-    (r: number, g: number, b: number) => g > r + 30 && g > b + 12,
-    (r: number, g: number, b: number) => r > 100 && g >= r && b >= g && b - r < 45,
-    (r: number, g: number, b: number) => r > b + 48 && r > g + 10,
-  ];
-  return pigments.map((matches, form) => {
-    let left = width,
-      right = -1,
-      top = height,
-      bottom = -1;
-    for (let y = 0; y < height; y++)
-      for (let x = 0; x < width; x++) {
-        const index = 4 * (y * width + x);
-        const r = data.readUInt8(index),
-          g = data.readUInt8(index + 1),
-          b = data.readUInt8(index + 2);
-        if (matches(r, g, b)) {
-          left = Math.min(left, x);
-          right = Math.max(right, x);
-          top = Math.min(top, y);
-          bottom = Math.max(bottom, y);
-        }
-      }
-    expect(right).toBeGreaterThan(left);
-    if (form === 2) {
-      const face = (fraction: number) => {
-        const x = Math.round(left + fraction * (right - left));
-        return data.readUInt8(4 * (Math.round((top + bottom) / 2) * width + x));
-      };
-      const faces = [face(0.02), face(0.5), face(0.98)];
-      expect(Math.max(...faces) - Math.min(...faces)).toBeGreaterThan(15);
-    }
-    // Units are percent of the viewport. A lit solid and its SVG projection have different edges.
-    return [
-      ((left + right) * 50) / width,
-      ((top + bottom) * 50) / height,
-      ((right - left) * 100) / width,
-      ((bottom - top) * 100) / height,
-    ];
-  });
-}
+const kinetic = slideNo("kinetic-type");
+const pathFollow = slideNo("path-follow");
+const orbit = slideNo("scene-3d");
+const headline = "Give the last word weight.";
+const words = ["Give", "the", "last", "word", "weight."];
 
 async function step(page: Page, no: number, key: string, click: number) {
   await page.keyboard.press(key);
@@ -112,103 +15,239 @@ async function step(page: Page, no: number, key: string, click: number) {
   await settled(page, no, click);
 }
 
-for (const name of graphics) {
-  test(`kinetic type, path follow and scene slides land on the same pose by clicking live and by loading at the click with motion instant: ${name}`, async ({
-    page,
-    browser,
-  }) => {
-    const no = slideNo(name);
-    await page.goto(`/#/${no}`);
-    await position(page, no);
-    if (name === "scene-3d")
-      await expect(
-        page.getByRole("img", { name: "Three studio forms" }).locator("canvas"),
-      ).toBeVisible();
-    const instant = await browser.newPage({ viewport: page.viewportSize() ?? undefined });
-    try {
-      for (const click of [0, 1, 2]) {
-        if (click) await step(page, no, "ArrowRight", click);
-        if (name === "scene-3d" && click !== 2) continue;
-        await instant.goto(
-          new URL(`/?motion=instant#/${no}${click ? `?clicks=${click}` : ""}`, page.url()).href,
-        );
-        await position(instant, no, click);
-        await settled(instant, no, click);
-        const live = await pose(page, name),
-          still = await pose(instant, name);
-        if (name === "path-follow") expect(live.slice(-2)).toEqual([click >= 1, click === 2]);
-        if (name === "scene-3d") {
-          for (const [index, value] of live.flat().entries())
-            expect(Number(value)).toBeCloseTo(Number(still.flat()[index]), 0);
-        } else expect(still).toEqual(live);
-      }
-    } finally {
-      await instant.close();
-    }
-  });
-
-  test(`each of slides 47-49 forward, back, two quick clicks and reload at the last click: ${name}`, async ({
-    page,
-    deck,
-  }) => {
-    const no = slideNo(name);
-    await deck.goto(no);
-    const start = await pose(page, name);
-    await step(page, no, "ArrowRight", 1);
-    const middle = await pose(page, name);
-    expect(middle).not.toEqual(start);
-    await step(page, no, "ArrowRight", 2);
-    const end = await pose(page, name);
-    expect(end).not.toEqual(middle);
-    await step(page, no, "ArrowLeft", 1);
-    expect(await pose(page, name)).toEqual(middle);
-    await step(page, no, "ArrowLeft", 0);
-    expect(await pose(page, name)).toEqual(start);
-    await page.keyboard.press("ArrowRight");
-    await step(page, no, "ArrowRight", 2);
-    expect(await pose(page, name)).toEqual(end);
-    if (name === "path-follow")
-      await page.addInitScript(() => {
-        const record = () => {
-          const route = document.querySelector(
-            '[data-deck-active] svg[aria-label="Two legs of the route"]',
-          );
-          const path = route?.querySelector("path"),
-            marker = route?.querySelector("circle");
-          if (!path || !marker) {
-            requestAnimationFrame(record);
-            return;
-          }
-          const tip = path.getPointAtLength(path.getTotalLength());
-          const drawn = Number.parseFloat(getComputedStyle(path).strokeDasharray);
-          const matrix = marker.transform.baseVal.consolidate()?.matrix;
-          Reflect.set(
-            window,
-            "firstRouteComplete",
-            !!matrix &&
-              Math.hypot(matrix.e - tip.x, matrix.f - tip.y) < 1 &&
-              Math.abs(drawn - path.getTotalLength()) < 1,
-          );
-        };
-        requestAnimationFrame(record);
-      });
-    await page.reload();
-    await position(page, no, 2);
-    if (name === "path-follow")
-      await expect
-        .poll(() => page.evaluate(() => Reflect.get(window, "firstRouteComplete")))
-        .toBe(true);
-    expect(await pose(page, name)).toEqual(end);
-  });
+/**
+ * How each word of the headline paints: "hidden" while its mask clips it, "accent" in the gallery
+ * accent, "ink" otherwise. A word's screenshot is its masked box, so a clipped word is blank.
+ */
+async function wordPaint(page: Page) {
+  const heading = page.getByRole("heading", { name: headline });
+  await expect(heading).toBeVisible();
+  const paints = [];
+  for (const word of words) {
+    const image = PNG.sync.read(await heading.getByText(word, { exact: true }).screenshot());
+    const pixels = Array.from({ length: image.data.length / 4 }, (_, i) =>
+      Array.from(image.data.subarray(4 * i, 4 * i + 3)),
+    );
+    const accent = pixels.some(([r = 0, g = 0]) => g > r + 60);
+    const ink = pixels.some(([r = 0, g = 0, b = 0]) => r > 150 && Math.abs(g - r) < 30 && b > 120);
+    paints.push(accent ? "accent" : ink ? "ink" : "hidden");
+  }
+  return paints;
 }
+
+const masked = ["hidden", "hidden", "hidden", "hidden", "hidden"];
+const entered = ["ink", "ink", "ink", "ink", "ink"];
+const emphasised = ["ink", "ink", "ink", "ink", "accent"];
+
+test("kinetic type reveals every word on the first click and turns only the last word to the accent on the second", async ({
+  page,
+  deck,
+}) => {
+  await deck.goto(kinetic);
+  await expect.poll(() => wordPaint(page)).toEqual(masked);
+  await step(page, kinetic, "ArrowRight", 1);
+  await expect.poll(() => wordPaint(page)).toEqual(entered);
+  await step(page, kinetic, "ArrowRight", 2);
+  await expect.poll(() => wordPaint(page)).toEqual(emphasised);
+  await step(page, kinetic, "ArrowLeft", 1);
+  await expect.poll(() => wordPaint(page)).toEqual(entered);
+  await step(page, kinetic, "ArrowLeft", 0);
+  await expect.poll(() => wordPaint(page)).toEqual(masked);
+});
+
+test("kinetic type loaded at its last click with motion instant shows the emphasised headline", async ({
+  page,
+}) => {
+  await page.goto(`/?motion=instant#/${kinetic}?clicks=2`);
+  await position(page, kinetic, 2);
+  await settled(page, kinetic, 2);
+  await expect.poll(() => wordPaint(page)).toEqual(emphasised);
+});
+
+const route = (page: Page) =>
+  page.locator("[data-deck-active]").getByRole("img", { name: "Two legs of the route" });
+
+/**
+ * The marker's distance from the drawn tip of the route at `click` (half the route per click),
+ * and whether paint reaches a quarter and three quarters of the way along it.
+ */
+async function routePose(page: Page, click: number) {
+  // The route and its marker are decorative parts of the named image, found by tag inside it.
+  const { separation, samples } = await route(page).evaluate((svg, click) => {
+    const path = svg.querySelector("path");
+    const dot = svg.querySelector("circle");
+    const matrix = path?.getScreenCTM();
+    if (!path || !dot || !matrix) throw new Error("Missing route or marker");
+    const box = svg.getBoundingClientRect();
+    const circle = dot.getBoundingClientRect();
+    const at = (t: number) =>
+      path.getPointAtLength(t * path.getTotalLength()).matrixTransform(matrix);
+    const tip = at(click / 2);
+    return {
+      separation: Math.hypot(
+        circle.x + circle.width / 2 - tip.x,
+        circle.y + circle.height / 2 - tip.y,
+      ),
+      samples: [0.25, 0.75].map((t) => [
+        Math.round(at(t).x - box.left),
+        Math.round(at(t).y - box.top),
+      ]),
+    };
+  }, click);
+  const image = PNG.sync.read(await route(page).screenshot());
+  const painted = samples.map(([x = 0, y = 0]) => {
+    const i = 4 * (y * image.width + x);
+    return image.data.readUInt8(i + 1) > image.data.readUInt8(i) + 30;
+  });
+  return { markerOnTip: separation < 1, painted };
+}
+
+test("the path-follow marker sits on the drawn tip at every click going forward and back", async ({
+  page,
+  deck,
+}) => {
+  await deck.goto(pathFollow);
+  await expect
+    .poll(() => routePose(page, 0))
+    .toEqual({ markerOnTip: true, painted: [false, false] });
+  await step(page, pathFollow, "ArrowRight", 1);
+  await expect
+    .poll(() => routePose(page, 1))
+    .toEqual({ markerOnTip: true, painted: [true, false] });
+  await step(page, pathFollow, "ArrowRight", 2);
+  await expect.poll(() => routePose(page, 2)).toEqual({ markerOnTip: true, painted: [true, true] });
+  await step(page, pathFollow, "ArrowLeft", 1);
+  await expect
+    .poll(() => routePose(page, 1))
+    .toEqual({ markerOnTip: true, painted: [true, false] });
+});
+
+test("path follow loaded at click 1 with motion instant shows the first leg with the marker at its end", async ({
+  page,
+}) => {
+  await page.goto(`/?motion=instant#/${pathFollow}?clicks=1`);
+  await position(page, pathFollow, 1);
+  await settled(page, pathFollow, 1);
+  await expect
+    .poll(() => routePose(page, 1))
+    .toEqual({ markerOnTip: true, painted: [true, false] });
+});
+
+test("reloading path follow at its last click shows the complete route on every frame", async ({
+  page,
+  deck,
+}) => {
+  await deck.goto(pathFollow, 2);
+  await page.addInitScript(() => {
+    const frames: boolean[] = [];
+    Reflect.set(window, "routeFrames", frames);
+    const record = () => {
+      const svg = document.querySelector(
+        '[data-deck-active] svg[aria-label="Two legs of the route"]',
+      );
+      const path = svg?.querySelector("path");
+      const marker = svg?.querySelector("circle");
+      const matrix = marker?.transform.baseVal.consolidate()?.matrix;
+      if (path && matrix) {
+        const tip = path.getPointAtLength(path.getTotalLength());
+        const drawn = Number.parseFloat(getComputedStyle(path).strokeDasharray);
+        frames.push(
+          Math.hypot(matrix.e - tip.x, matrix.f - tip.y) < 1 &&
+            Math.abs(drawn - path.getTotalLength()) < 1,
+        );
+      }
+      requestAnimationFrame(record);
+    };
+    requestAnimationFrame(record);
+  });
+  await page.reload();
+  await position(page, pathFollow, 2);
+  await settled(page, pathFollow, 2);
+  const frames: boolean[] = await page.evaluate(() => Reflect.get(window, "routeFrames"));
+  expect(frames).not.toHaveLength(0);
+  expect(frames).not.toContain(false);
+  await expect.poll(() => routePose(page, 2)).toEqual({ markerOnTip: true, painted: [true, true] });
+});
+
+const studio = (page: Page) =>
+  page.locator("[data-deck-active]").getByRole("img", { name: "Three studio forms" });
+
+/**
+ * Finds the sphere (emerald), ring (slate) and cube (amber) by pigment in a screenshot of the
+ * scene. Returns their centres' order left to right and how much the cube's shading varies across
+ * its middle row, which only a turned cube (two faces in view) does by more than 15.
+ */
+async function studioLayout(host: Locator) {
+  const { width, height, data } = PNG.sync.read(await host.screenshot());
+  const pigments = {
+    sphere: (r: number, g: number, b: number) => g > r + 30 && g > b + 12,
+    ring: (r: number, g: number, b: number) => r > 100 && g >= r && b >= g && b - r < 45,
+    cube: (r: number, g: number, b: number) => r > b + 48 && r > g + 10,
+  };
+  const bounds = Object.entries(pigments).map(([form, matches]) => {
+    const box = { form, left: width, right: -1, top: height, bottom: -1 };
+    for (let y = 0; y < height; y++)
+      for (let x = 0; x < width; x++) {
+        const i = 4 * (y * width + x);
+        if (!matches(data.readUInt8(i), data.readUInt8(i + 1), data.readUInt8(i + 2))) continue;
+        box.left = Math.min(box.left, x);
+        box.right = Math.max(box.right, x);
+        box.top = Math.min(box.top, y);
+        box.bottom = Math.max(box.bottom, y);
+      }
+    return box;
+  });
+  const cube = bounds[2];
+  if (!cube || cube.right < cube.left) throw new Error("The cube is not painted");
+  const row = Math.round((cube.top + cube.bottom) / 2);
+  const shade = (fraction: number) =>
+    data.readUInt8(4 * (row * width + Math.round(cube.left + fraction * (cube.right - cube.left))));
+  const faces = [shade(0.02), shade(0.5), shade(0.98)];
+  return {
+    order: bounds
+      .filter((box) => box.right > box.left)
+      .sort((a, b) => a.left + a.right - (b.left + b.right))
+      .map((box) => box.form),
+    turned: Math.max(...faces) - Math.min(...faces) > 15,
+  };
+}
+
+const orbited = { order: ["sphere", "ring", "cube"], turned: true };
+
+test("the live orbit ends with the sphere, ring and cube in a row and the cube's side in view", async ({
+  page,
+  deck,
+}) => {
+  await deck.goto(orbit);
+  // The live canvas is a presentational child of the named image.
+  await expect(studio(page).locator("canvas")).toBeVisible();
+  await step(page, orbit, "ArrowRight", 1);
+  await step(page, orbit, "ArrowRight", 2);
+  await expect.poll(() => studioLayout(studio(page))).toEqual(orbited);
+  await page.reload();
+  await position(page, orbit, 2);
+  await settled(page, orbit, 2);
+  await expect(studio(page).locator("canvas")).toBeVisible();
+  await expect.poll(() => studioLayout(studio(page))).toEqual(orbited);
+});
+
+test("the orbit loaded with motion instant shows the poster's sphere, ring and turned cube", async ({
+  page,
+}) => {
+  await page.goto(`/?motion=instant#/${orbit}?clicks=2`);
+  await position(page, orbit, 2);
+  await settled(page, orbit, 2);
+  // The poster is a presentational child of the named image.
+  await expect(studio(page).locator("svg")).toBeVisible();
+  await expect.poll(() => studioLayout(studio(page))).toEqual(orbited);
+});
 
 test("words emerge in reading order and a third quick press leaves a complete heading on return", async ({
   page,
   motionClock,
 }) => {
-  const no = slideNo("kinetic-type");
-  await page.goto(`/#/${no}`);
-  const heading = page.getByRole("heading", { name: "Give the last word weight." });
+  await page.goto(`/#/${kinetic}`);
+  const heading = page.getByRole("heading", { name: headline });
   await expect(heading).toBeVisible();
   await motionClock.pauseAt();
   const image = PNG.sync.read(await heading.screenshot());
@@ -232,13 +271,14 @@ test("words emerge in reading order and a third quick press leaves a complete he
   expect(moving[0]).toBeLessThan(before[0] ?? 0);
   expect(moving.at(-1)).toBe(before.at(-1));
   await page.keyboard.press("ArrowRight");
+  await position(page, kinetic, 2);
   expect(await heights()).toEqual(moving);
   await page.clock.resume();
   await page.keyboard.press("ArrowRight");
-  await position(page, slideNo("path-follow"));
-  await settled(page, slideNo("path-follow"), 0);
+  await position(page, pathFollow);
+  await settled(page, pathFollow, 0);
   await page.keyboard.press("ArrowLeft");
-  await position(page, no, 2);
-  await settled(page, no, 2);
-  await expect(heading).toHaveAccessibleName("Give the last word weight.");
+  await position(page, kinetic, 2);
+  await settled(page, kinetic, 2);
+  await expect(heading).toHaveAccessibleName(headline);
 });

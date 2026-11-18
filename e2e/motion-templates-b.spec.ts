@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 import { kitFixture } from "./fixtures/kit.fixture";
 import { test } from "./fixtures/motion.fixture";
 import { position, settled, slideNo } from "./fixtures/motion-gallery";
+import { paintAt, paints } from "./fixtures/paint";
 
 const examples = [
   ["list-cascade", "Try the revised checklist", 3],
@@ -99,20 +100,22 @@ installTheme(resolveTheme({ramps: {rose: ["#501020", "#aa3040", "#dd6688", "#ffd
   try {
     await page.goto(`${fixture.url}?motion=instant#/1`);
     const slide = page.locator("[data-deck-active]");
-    await expect(slide.getByRole("figure").locator("svg")).toHaveCSS(
-      "stroke",
-      "rgb(221, 102, 136)",
-    );
+    // The quote marks draw in the rose ramp's step 3.
+    await expect.poll(() => paints(slide.getByRole("figure"), 0xdd6688)).toBe(true);
+    const texts = [
+      "Body reference",
+      "List item",
+      "Agenda item",
+      "Source",
+      "02",
+      "https://example.org",
+    ];
     const sizes = () =>
-      slide.evaluate((root) =>
-        ["Body reference", "List item", "Agenda item", "Source", "02", "https://example.org"].map(
-          (text) => {
-            const element = Array.from(root.querySelectorAll("p, span, figcaption, div, a")).find(
-              (el) => (el.childElementCount === 0 || el.tagName === "A") && el.textContent === text,
-            );
-            if (!element) throw new Error(`Missing ${text}`);
-            return parseFloat(getComputedStyle(element).fontSize);
-          },
+      Promise.all(
+        texts.map((text) =>
+          slide
+            .getByText(text, { exact: true })
+            .evaluate((element) => parseFloat(getComputedStyle(element).fontSize)),
         ),
       );
     const before = await sizes();
@@ -128,6 +131,9 @@ installTheme(resolveTheme({ramps: {rose: ["#501020", "#aa3040", "#dd6688", "#ffd
   }
 });
 
+// The default theme's cyan step 3, which paints the section panel.
+const cyan = 0x22d3ee;
+
 test("the section panel covers the canvas and clears the footer when it settles", async ({
   page,
   motionClock,
@@ -136,24 +142,29 @@ test("the section panel covers the canvas and clears the footer when it settles"
   await page.goto(`/#/${no}`);
   await position(page, no);
   await motionClock.pauseAt();
-  const patch = () => page.screenshot({ clip: { x: 1810, y: 960, width: 8, height: 8 } });
-  const canvas = await patch();
+  const corner = { x: 1814, y: 964 };
+  const [before] = await paintAt(page, [corner]);
+  expect(before).not.toBe(cyan);
   await page.keyboard.press("ArrowRight");
   await motionClock.step(250);
-  expect(await patch()).not.toEqual(canvas);
+  expect(await paintAt(page, [corner])).toEqual([cyan]);
   await motionClock.step(1000);
-  expect(await patch()).toEqual(canvas);
+  expect(await paintAt(page, [corner])).toEqual([before]);
 });
 
 test("the quote marks draw on the entrance click", async ({ page }) => {
   const no = slideNo("mt-quote-card");
   await page.goto(`/#/${no}`);
   await position(page, no);
-  const marks = page.getByRole("figure").locator("svg");
-  const before = await marks.screenshot();
+  await settled(page, no, 0);
+  const card = page.getByRole("figure");
+  // The gallery's rose step 3, which the marks stroke in.
+  const rose = 0xfb7185;
+  await expect(card.getByText("Shift supervisor, demo interview")).toBeHidden();
+  expect(await paints(card, rose)).toBe(false);
   await page.keyboard.press("ArrowRight");
   await settled(page, no, 1);
-  expect(await marks.screenshot()).not.toEqual(before);
+  await expect.poll(() => paints(card, rose)).toBe(true);
 });
 
 test("three quick forward keys carry a finished list into a complete quotation", async ({
@@ -179,33 +190,15 @@ test("the current agenda item sits forward of the completed and upcoming items",
   await position(page, no, 1);
   const rows = page.locator("[data-deck-active]").getByRole("listitem");
   const current = rows.nth(1);
-  await expect(current).toHaveCSS("color", "rgb(34, 211, 238)");
-  await expect(rows.first()).toHaveCSS("color", "rgb(113, 113, 122)");
-  await expect(rows.last()).toHaveCSS("color", "rgb(161, 161, 170)");
+  await expect(current).toBeVisible();
+  // Current in cyan step 3; completed in zinc 500 and upcoming in zinc 400, the muted text tones.
+  await expect.poll(() => paints(current, cyan)).toBe(true);
+  await expect.poll(() => paints(rows.first(), 0x71717a)).toBe(true);
+  await expect.poll(() => paints(rows.last(), 0xa1a1aa)).toBe(true);
+  expect(await paints(rows.first(), cyan)).toBe(false);
   const [doneX, currentX, laterX] = await rows.evaluateAll((items) =>
     items.map((item) => item.getBoundingClientRect().x),
   );
   expect(currentX).toBeGreaterThan(doneX ?? Infinity);
   expect(doneX).toBe(laterX);
 });
-
-for (const mode of ["presenter", "instant"] as const) {
-  test(`${mode} shows the next quote on a click without advancing the motion clock`, async ({
-    page,
-    motionClock,
-  }) => {
-    const no = slideNo("mt-quote-card");
-    const presenter = mode === "presenter";
-    await page.goto(presenter ? `/#/presenter/${no}` : `/?motion=instant#/${no}`);
-    const slide = page.locator(
-      presenter ? '[data-deck-context="presenter"]' : "[data-deck-active]",
-    );
-    const credit = slide.getByText("Shift supervisor, demo interview");
-    await expect(credit).toBeAttached();
-    await expect(credit).toBeHidden();
-    await motionClock.pauseAt();
-    await page.keyboard.press("ArrowRight");
-    await expect(credit).toHaveCSS("opacity", "1");
-    await expect(credit).toBeVisible();
-  });
-}

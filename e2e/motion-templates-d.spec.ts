@@ -87,7 +87,7 @@ for (const [name, file, sentence] of examples) {
       await position(page, no);
       const slide = page.locator("[data-deck-active]");
       const text = slide.getByText(sentence);
-      await expect(slide.locator("img")).toBeAttached();
+      await expect(slide.locator("img")).toBeAttached(); // no role until it loads
       await page.keyboard.press("ArrowRight");
       await position(page, no, 1);
       await motionClock.pauseAt();
@@ -135,15 +135,16 @@ test("device-mockup draws each of the three devices with the screenshot inside i
       await expect(img).toBeVisible();
       await expect(img).toHaveCSS("object-fit", "cover");
       await expect(img).toHaveCSS("object-position", "50% 0%");
+      const outline = figure.locator("svg"); // the frame: decorative, hidden, found by tag
       const box = await img.boundingBox();
-      const frame = await figure.locator("svg").boundingBox();
+      const frame = await outline.boundingBox();
       if (!box || !frame) throw new Error(`Missing ${device} screen or frame`);
       expect(box.x).toBeGreaterThan(frame.x);
       expect(box.y).toBeGreaterThan(frame.y);
       expect(box.x + box.width).toBeLessThan(frame.x + frame.width);
       expect(box.y + box.height).toBeLessThan(frame.y + frame.height);
       expect(box.height > box.width).toBe(device === "phone");
-      const pixels = PNG.sync.read(await figure.locator("svg").screenshot());
+      const pixels = PNG.sync.read(await outline.screenshot());
       // Paint at the laptop base, phone earpiece and browser control distinguishes the silhouettes.
       const samples = {
         laptop: [0.5, 0.965],
@@ -192,7 +193,8 @@ installTheme(resolveTheme({ramps: {rose: ["#501020", "#aa3040", "#dd6688", "#ffd
     const slide = page.locator("[data-deck-active]");
     await expect(slide.getByRole("img")).toHaveCount(3);
     const rose = "rgb(221, 102, 136)";
-    await expect(slide.locator("figure svg")).toHaveCSS("stroke", rose);
+    // Only the device mockup draws a frame, a decorative hidden drawing found by its tag.
+    await expect(slide.getByRole("figure").locator("svg")).toHaveCSS("stroke", rose);
     await expect(slide.getByText("The inlet")).toHaveCSS("border-left-color", rose);
     await expect(slide.getByRole("separator")).toHaveCSS("background-color", rose);
   } finally {
@@ -217,7 +219,7 @@ test("the laptop and its screen rise together during the entrance", async ({
   await settled(page, no, 0);
   const slide = page.locator("[data-deck-active]");
   const screen = slide.getByAltText("Trail Desk showing the lake and ridge patrols");
-  const frame = slide.locator("figure svg");
+  const frame = slide.getByRole("figure", { includeHidden: true }).locator("svg"); // decorative
   const tops = async () =>
     Promise.all(
       [frame, screen].map((part) => part.evaluate((el) => el.getBoundingClientRect().top)),
@@ -259,7 +261,7 @@ test("the full-bleed photo settles as shade and credit rise from below", async (
   await settled(page, no, 0);
   const slide = page.locator("[data-deck-active]");
   const img = slide.getByAltText("Pine silhouettes above the water at North Inlet");
-  const shade = slide.locator("figure [aria-hidden=true]");
+  const shade = slide.getByRole("figure", { includeHidden: true }).locator("[aria-hidden]"); // decorative
   const credit = slide.getByText("Field sketch by Mira Chen");
   const top = () => shade.evaluate((el) => el.getBoundingClientRect().top);
   await motionClock.pauseAt();
