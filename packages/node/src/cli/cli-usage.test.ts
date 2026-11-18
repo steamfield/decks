@@ -165,20 +165,23 @@ it("names a missing argument after the deck and points at help", async () => {
   );
 });
 
-it("rejects --remote and --remote-port on decks build with the only-on-dev message", async () => {
-  const { dir } = await fixture(onTestFinished);
-  for (const args of [["--remote"], ["--remote-port", "3040"]]) {
+it.each([[["--remote"]], [["--remote-port", "3040"]]])(
+  "rejects %j on decks build with the only-on-dev message",
+  async (args) => {
+    const { dir } = await fixture(onTestFinished);
     const process = cli(dir, ["build", ".", ...args]);
     expect((await process.exit)[0]).toBe(1);
     expect(process.output().stderr).toBe("decks build: --remote is only available on decks dev.\n");
-  }
-});
+  },
+);
 
-it("keeps the LAN presenter disabled when a port accompanies --no-remote", async () => {
+it("prints only the dev URL when a remote port accompanies --no-remote", async () => {
   const { dir } = await fixture(onTestFinished);
   const child = cli(dir, ["dev", ".", "--no-remote", "--port", "0", "--remote-port", "0"]);
-  await child.url();
-  expect(child.output().stdout).not.toContain("Remote presenter:");
+  const url = await child.url();
+  // The remote banner follows the dev URL, so the whole output is read once the process is gone.
+  await child.close();
+  expect(child.output()).toEqual({ stdout: `${url}\n`, stderr: "" });
 });
 
 it.each(["SIGINT", "SIGTERM", "SIGHUP"] as const)(

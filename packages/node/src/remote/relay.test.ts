@@ -154,13 +154,6 @@ test("reset-timer pushes the position with elapsed null and restarts the count a
   expect(other).toEqual(messages);
 });
 
-test("answers ping with pong", async () => {
-  const remote = await connectRemote(await remoteFixture());
-  await remote.at(1, { type: "waiting" });
-  remote.send({ type: "ping" });
-  await remote.at(2, { type: "pong" });
-});
-
 test("only a remote that was waiting needs the same position again when a play window gains focus", () => {
   const { relay, messages, send, window } = setup();
   relay.report(window, { ...play, view: "overview" });

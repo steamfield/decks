@@ -2,18 +2,17 @@ import { once } from "node:events";
 import { expect, test } from "vitest";
 import { connectRemote, remoteFixture } from "./remote.test-support";
 
-test("closes with 1009 on an oversized frame and 1008 on unknown or unparsable messages", async () => {
+test.each([
+  ["an unknown message type", '{"type":"wat"}', 1008],
+  ["unparsable JSON", "???", 1008],
+  ["a go to slide 0", '{"type":"go","slide":0}', 1008],
+  ["an oversized frame", '{"type":"ping"}'.padEnd(4097), 1009],
+])("closes the socket on %s with its close code and logs the sender", async (_name, data, code) => {
   const app = await remoteFixture();
-  for (const data of [
-    '{"type":"wat"}',
-    "???",
-    '{"type":"go","slide":0}',
-    '{"type":"ping"}'.padEnd(4097),
-  ]) {
-    const remote = await connectRemote(app);
-    const closed = once(remote.socket, "close");
-    remote.socket.send(data);
-    expect((await closed)[0]).toBe(data.length > 4096 ? 1009 : 1008);
-  }
-  expect(app.warnings).toHaveLength(4);
+  const remote = await connectRemote(app);
+  const closed = once(remote.socket, "close");
+  remote.socket.send(data);
+  expect((await closed)[0]).toBe(code);
+  // The socket dials the printed address, a local one, so the sender is that address.
+  expect(app.warnings).toEqual([`Remote presenter: invalid message from ${app.url.hostname}`]);
 });

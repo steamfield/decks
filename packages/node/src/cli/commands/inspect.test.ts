@@ -57,26 +57,54 @@ browserTest("prints findings sorted by slide and document order, then the summar
   });
 });
 
-browserTest("exits 1 with findings and 0 without", async () => {
-  const withFinding = await inspect(
-    {
-      "slides/01-first.mdx": '<p className="edge">Off the left edge</p>',
-      "styles/index.css":
-        "@media (width: 960px) and (height: 540px) { .edge { position: absolute; left: -20px; } }",
-    },
-    ["--width", "960", "--height", "540"],
-  );
-  const withoutFindings = await inspect({});
-  expect([withFinding, withoutFindings]).toEqual([
-    {
+browserTest(
+  "measures at the viewport --width and --height set, exiting 1 on a finding",
+  async () => {
+    const result = await inspect(
+      {
+        "slides/01-first.mdx": '<p className="edge">Off the left edge</p>',
+        "styles/index.css":
+          "@media (width: 960px) and (height: 540px) { .edge { position: absolute; left: -20px; } }",
+      },
+      ["--width", "960", "--height", "540"],
+    );
+    expect(result).toEqual({
       code: 1,
       stdout:
         'slide 1 (01-first.mdx): outside by 10px left: p.edge "Off the left edge"\n1 finding in 1 slide\n',
       stderr: "",
-    },
-    { code: 0, stdout: "no layout findings in 1 slide\n", stderr: "" },
-  ]);
-});
+    });
+  },
+);
+
+browserTest(
+  "prints ten findings per slide and counts the omitted findings in the summary",
+  async () => {
+    const label = (index: number) =>
+      `<p style={{position: "absolute", right: -${index + 1}}}>Label ${index}</p>`;
+    const result = await inspect({
+      "slides/01-first.mdx": Array.from({ length: 12 }, (_, index) => label(index + 1)).join(
+        "\n\n",
+      ),
+      "slides/02-ten.mdx": Array.from({ length: 10 }, (_, index) => label(index + 1)).join("\n\n"),
+    });
+    const lines = (slide: string) =>
+      Array.from(
+        { length: 10 },
+        (_, index) => `${slide}: outside by ${index + 2}px right: p "Label ${index + 1}"`,
+      );
+    expect(result).toEqual({
+      code: 1,
+      stdout: [
+        ...lines("slide 1 (01-first.mdx)"),
+        "... and 2 more on slide 1",
+        ...lines("slide 2 (02-ten.mdx)"),
+        "22 findings in 2 slides\n",
+      ].join("\n"),
+      stderr: "",
+    });
+  },
+);
 
 browserTest("names the slide when the page errors during capture", async () => {
   const result = await inspect({

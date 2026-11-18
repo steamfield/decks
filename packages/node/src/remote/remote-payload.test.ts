@@ -39,7 +39,14 @@ test("an edit to slide body text alone publishes no new deck payload", async () 
   // Loading the slide puts it in the module graph, so its edit reaches the window as a frame.
   await fetch(new URL("/slides/01-first.mdx", app.devUrl));
   await app.put("slides/01-first.mdx", `${body}\n\nMore talk.`);
-  await waitForWatcher(() => expect(window.frames.length).toBeGreaterThan(1));
+  await waitForWatcher(() =>
+    expect(window.frames).toContainEqual(
+      expect.objectContaining({
+        type: "update",
+        updates: [expect.objectContaining({ path: "/slides/01-first.mdx" })],
+      }),
+    ),
+  );
   // The sentinel: a notes edit after the body edit must be the only new payload.
   await app.put("slides/01-first.mdx", `${body}\n\nMore talk.\n\n<Notes>\n\nA note.\n\n</Notes>`);
   const noted = {
