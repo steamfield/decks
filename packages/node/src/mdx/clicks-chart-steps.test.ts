@@ -30,3 +30,7 @@ it("counts the last specs prop when the prop is repeated, as MDX applies it", ()
     readSlide(`${imported}\n\n<CS at={2} specs={[only]} specs={[a, b, c, d]} />`, file).clicks,
   ).toBe(4);
 });
+
+it("counts the last at prop when the prop is repeated, as MDX applies it", () => {
+  expect(readSlide(`${imported}\n\n<CS at={2} at={5} specs={[a, b]} />`, file).clicks).toBe(5);
+});

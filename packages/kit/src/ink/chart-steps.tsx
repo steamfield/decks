@@ -24,8 +24,6 @@ function validate(specs: readonly (ChartSpec | LayerSpec)[]) {
           `ChartSteps specs[${index - 1}] and specs[${index}] differ in ${what} (${before} vs ${after}); a step can only morph data`,
         );
       };
-      if (previous.length !== current.length)
-        differ("layer count", previous.length, current.length);
       for (const [layer, next] of current.entries()) {
         const prev = previous[layer];
         if (!prev) continue;

@@ -333,7 +333,12 @@ export function countClicks(
                 );
         total = Math.max(total, at + beats - 1);
       } else if (motion === "ChartSteps") {
-        const at = integerAttribute(node, "at", file);
+        // MDX applies JSX props in source order, so the last occurrence wins.
+        const at = integerAttribute(
+          { ...node, attributes: node.attributes?.toReversed() },
+          "at",
+          file,
+        );
         const specs = arrayLiteralLength(
           node,
           "specs",

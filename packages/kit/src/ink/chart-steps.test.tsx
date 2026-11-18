@@ -206,13 +206,12 @@ it("throws naming both indices and the channel when an encoding field or type di
   }
 });
 
-const pair = { layer: [bar(20), bar(50)] };
-it.each([
-  ["adds", [bar(20), pair], "specs[0] and specs[1] differ in layer count (1 vs 2)"],
-  ["removes", [pair, pair, bar(80)], "specs[1] and specs[2] differ in layer count (2 vs 1)"],
-])("throws naming both indices when a step %s a layer", (_change, input, detail) =>
-  invalid(input, 1, `ChartSteps ${detail}; a step can only morph data`),
-);
+it("lets OpenChart snap when a matching chart gains a layer", async () => {
+  const layers = [{ layer: [bar(20)] }, { layer: [bar(80), bar(50)] }];
+  const go = await show(<ChartSteps specs={layers} at={1} />);
+  await go(1);
+  expect(screen.getByLabelText("A: 80")).toBeInTheDocument();
+});
 
 it("throws on an empty specs array, on at below 1 and on a fractional at", async () => {
   await invalid([], 1, "ChartSteps specs must contain at least one spec, got []");
