@@ -67,3 +67,13 @@ it("names the selected template and invalid at in an MDX counting error", () => 
     }),
   );
 });
+
+it("names an unknown template literal and lists the valid templates", () => {
+  expect(() => count('template="title-revael" at={1}')).toThrow(
+    expect.objectContaining({
+      name: "DeckError",
+      file,
+      message: `${file}:3:1: <Graphic template="title-revael">: unknown template. Valid templates: agenda, comparison-split, device-mockup, end-card, icon-array, list-cascade, logo-reveal, lower-third, metric-grid, myth-fact, photo-reveal, process-flow, quote-card, section-wipe, spotlight, stat-burst, stat-compare, team-grid, timeline-sweep, title-reveal, venn-overlap.`,
+    }),
+  );
+});

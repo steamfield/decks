@@ -9,6 +9,7 @@ export { Mark, type MarkKind } from "./mark";
 export { Morph } from "./morph";
 export { CustomEase, DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin, SplitText } from "./plugins";
 export { ShapeMorph } from "./shape-morph";
+export { shouldTweenStep, stepIndex } from "./stepped";
 export {
   Draw,
   Highlight,
