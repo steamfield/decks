@@ -1,0 +1,56 @@
+---
+title: West handles the most requests.
+clicks: 2
+---
+
+import { ChartSteps, ink, scaleChartTheme, slideChartTheme, theme, useFrameScale } from "@steamfield/decks/kit";
+
+export function RankedBars() {
+  const scale = useFrameScale();
+  const rows = [
+    { desk: "West", requests: 84 },
+    { desk: "North", requests: 60 },
+    { desk: "East", requests: 36 },
+  ];
+  const labelColor = theme().text.secondary;
+  const specs = [rows.slice(1), rows, rows].map((data, click) => ({
+    mark: "bar",
+    data,
+    encoding: {
+      x: { field: "requests", type: "quantitative", scale: { domain: [0, 100] }, axis: { labelColor, tickCount: 5 } },
+      y: {
+        field: "desk",
+        type: "nominal",
+        sort: null,
+        scale: { domain: rows.map(({ desk }) => desk), reverse: true },
+        axis: { labelColor, values: data.map(({ desk }) => desk) },
+      },
+      key: { field: "desk", type: "nominal" },
+      color: {
+        condition: { test: { field: "desk", equal: rows[0].desk }, value: ink(click === 2 ? "cyan" : "slate", 3) },
+        value: ink("slate", 3),
+      },
+    },
+    legend: { show: false },
+    responsive: false,
+    watermark: false,
+    labels: { density: "all", placement: "outside", fontSize: 38 * scale },
+    theme: scaleChartTheme({
+      ...slideChartTheme,
+      fonts: { ...slideChartTheme.fonts, sizes: { ...slideChartTheme.fonts.sizes, axisTick: 52 } },
+    }, scale),
+    animation: { enter: false, update: true },
+  }));
+
+  return (
+    <div style={{ width: "100%", height: 540 }}>
+      <ChartSteps specs={specs} at={1} />
+    </div>
+  );
+}
+
+<Cover>
+  <h1 className="od-title" style={{ fontSize: "calc(64px * var(--deck-text-scale, 1))" }}>West handles the most requests.</h1>
+  <RankedBars />
+  <small style={{ fontSize: "calc(30px * var(--deck-text-scale, 1))", color: "var(--od-text-secondary)" }}>Demo data · Requests by desk during the pilot</small>
+</Cover>
