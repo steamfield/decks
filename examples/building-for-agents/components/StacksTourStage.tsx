@@ -33,8 +33,8 @@ const COPY = [
     body: "It adds config, output, logging and processes, and the tests call the same function.",
   },
   {
-    lead: "Each error has one row in a table.",
-    body: "The row sets its exit code and whether a retry can work. A missing row fails the build.",
+    lead: "Each error class carries its exit code.",
+    body: "It also says whether a retry can work. The exit table is derived from the classes, so nothing is written twice.",
   },
   {
     lead: "Tests replace a layer with a fake.",
@@ -53,8 +53,16 @@ const STEPS: readonly Step[] = [
   { focus: "", lit: ["bin", "main", "cli"] },
   { focus: "commands", lit: ["cli"], excerpt: RUNS_COMMAND, lines: [[2, 5]] },
   { focus: "services", lit: ["commands"], excerpt: HOST_SERVICE, lines: [[1, 4]] },
-  { focus: "runtime", lit: ["bin", "services"], excerpt: APP_LAYER, lines: [[6, 9]] },
-  { focus: "errors", lit: ["main"], excerpt: ERROR_TABLE, lines: [[12, 12]] },
+  { focus: "runtime", lit: ["bin", "services"], excerpt: APP_LAYER, lines: [[10, 13]] },
+  {
+    focus: "errors",
+    lit: ["main"],
+    excerpt: ERROR_TABLE,
+    lines: [
+      [5, 6],
+      [13, 14],
+    ],
+  },
   {
     focus: "tests",
     lit: ["services"],

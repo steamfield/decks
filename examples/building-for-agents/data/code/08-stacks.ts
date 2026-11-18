@@ -1,21 +1,23 @@
 /**
- * Slide 8: the Stacks repo tour's code. Read 2026-11-13 from
- * ~/Projects/stacks at commit a952e96. Checked by excerpts.test.ts.
+ * Slide 8: the Stacks repo tour's code. Reread 2026-11-18 from
+ * ~/Projects/stacks at commit 6525ecbd, after the CLI structure refactor;
+ * first read at a952e96. Checked by excerpts.test.ts.
  */
 import type { Excerpt } from "./types";
 
-const base = { repo: "stacks", commit: "a952e96", lang: "ts" } as const;
+const base = { repo: "stacks", commit: "6525ecbd", lang: "ts" } as const;
 
 /** A whole command: flags (none here), a thin handler, its help text. */
 export const RUNS_COMMAND: Excerpt = {
   ...base,
   path: "packages/cli/src/commands/runs.ts",
-  start: 8,
-  end: 25,
+  start: 9,
+  end: 27,
   code: `export const runsCommand = Command.make("runs", {}, () =>
   Effect.gen(function* () {
-    const result = yield* projectRuns((yield* Host).cwd);
-    yield* (yield* Output).result(Schema.encodeSync(ProjectRuns)(result), renderRuns(result));
+    const host = yield* Host;
+    const runs = yield* projectRuns(host.cwd);
+    yield* (yield* Output).result(Schema.encodeSync(ProjectRuns)(runs), renderRuns(runs));
   }),
 ).pipe(
   // …
@@ -28,8 +30,8 @@ export const RUNS_COMMAND: Excerpt = {
 export const HOST_SERVICE: Excerpt = {
   ...base,
   path: "packages/cli/src/services/host.ts",
-  start: 29,
-  end: 49,
+  start: 33,
+  end: 53,
   code: `export class Host extends Context.Service<Host, HostInfo>()("stacks/Host") {
   static layer = (value: HostInfo) => Layer.succeed(Host, value);
   static memory = (overrides: Partial<HostInfo> = {}) =>
@@ -49,37 +51,47 @@ export const HOST_SERVICE: Excerpt = {
 export const APP_LAYER: Excerpt = {
   ...base,
   path: "packages/cli/src/runtime.ts",
-  start: 11,
-  end: 19,
-  code: `export const AppLayer = (
-  output: Layer.Layer<Output, never, Host | AppConfig>,
-  env: Environment | undefined,
-  build: Build,
-) =>
+  start: 18,
+  end: 30,
+  code: `export const AppLayer = ({
+  output,
+  build,
+  env,
+}: {
+  output: Layer.Layer<Output, never, Host | AppConfig>;
+  build: Build;
+  env?: Environment;
+}) =>
   Layer.mergeAll(Processes.layer, Logging.layer).pipe(
     Layer.provideMerge(output),
     Layer.provideMerge(env === undefined ? AppConfig.layer(build) : AppConfig.memory(env, build)),
   );`,
 };
 
-/** One row per error: exit code, retryable, keeps its report. */
+/** An error class carries its exit policy; the table is derived from the classes. */
 export const ERROR_TABLE: Excerpt = {
   ...base,
   path: "packages/cli/src/errors.ts",
-  start: 425,
-  end: 443,
-  code: `export const errorTable = {
-  Usage: { exit: 2, retryable: false, keepsResult: false },
-  // …
-  UpstreamUnavailable: { exit: 4, retryable: true, keepsResult: false },
-  // …
-  VerifyFailed: { exit: 5, retryable: false, keepsResult: true },
-  VerifyChanged: { exit: 5, retryable: false, keepsResult: true },
-  PermissionDenied: { exit: 6, retryable: false, keepsResult: false },
-  // …
-  Interrupted: { exit: 130, retryable: false, keepsResult: false },
-  // …
-} as const satisfies Record<AppError["_tag"], ErrorSpec> & Record<typeof ErrorTag.Type, ErrorSpec>;`,
+  start: 221,
+  end: 480,
+  code: `export class UpstreamUnavailable extends Schema.TaggedError<UpstreamUnavailable>()(
+  "UpstreamUnavailable",
+  { details: Schema.optionalKey(UpstreamUnavailableDetails) },
+) {
+  static readonly exit = 4;
+  static readonly retryable = true;
+  override readonly message = "Upstream service is unavailable.";
+}
+// …
+export const errorTable = Object.freeze(
+  EffectRecord.map(errorClasses, (Class) =>
+    Object.freeze({
+      exit: Class.exit,
+      retryable: "retryable" in Class && Class.retryable,
+      // …
+    }),
+  ),
+);`,
 };
 
 /** A test that swaps the HttpClient layer and asserts the exact envelope. */
