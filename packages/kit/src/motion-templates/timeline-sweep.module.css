@@ -1,0 +1,55 @@
+.timeline {
+  position: relative;
+  width: 100%;
+  margin: auto 0;
+  font-family: var(--od-font-sans);
+}
+.line,
+.head {
+  left: calc(var(--first-date, 0%) + var(--travel, 0%));
+  position: absolute;
+  top: 0;
+  background: currentColor;
+}
+.line {
+  width: 100%;
+  height: 0.07em;
+  transform-origin: left;
+}
+.head {
+  width: 0.46em;
+  height: 0.46em;
+  border-radius: 50%;
+  margin: -0.19em 0 0 -0.23em;
+}
+.events {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.timeline .events li {
+  margin: 0;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  text-align: center;
+  padding: 0 0.22em;
+  gap: 0.3em;
+  overflow-wrap: anywhere;
+}
+.events li::before {
+  content: "";
+  width: 0.07em;
+  height: 0.8em;
+  background: currentColor;
+}
+.events strong {
+  font-family: var(--od-font-mono);
+  font-size: 1.2em;
+}
+.events span {
+  color: var(--od-text);
+}

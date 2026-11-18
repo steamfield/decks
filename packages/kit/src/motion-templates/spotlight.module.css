@@ -1,0 +1,60 @@
+@layer react-decks {
+  .figure {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    margin: auto 0;
+    gap: 1em;
+    font-family: var(--od-font-sans);
+  }
+  .image {
+    position: relative;
+    min-width: 0;
+    max-width: 62%;
+  }
+  .image img {
+    display: block;
+    max-width: 100%;
+    max-height: 13em;
+    width: auto;
+    height: auto;
+  }
+  .image .light {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    clip-path: circle(1.2em at var(--x) var(--y));
+  }
+  .image > img {
+    filter: brightness(0.38);
+  }
+  .ring {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 2.5em;
+    height: 2.5em;
+    transform: translate(-50%, -50%) rotate(-90deg);
+  }
+  .leader {
+    position: absolute;
+    left: min(100%, calc(var(--x) + 1.2em));
+    right: -0.7em;
+    top: var(--y);
+    height: 0.075em;
+    background: currentColor;
+    transform-origin: left;
+  }
+  .caption {
+    margin: 0;
+    position: relative;
+    width: min(12em, 32%);
+  }
+  .caption strong {
+    position: absolute;
+    top: var(--y);
+    transform: translateY(-50%);
+    overflow-wrap: anywhere;
+  }
+}
