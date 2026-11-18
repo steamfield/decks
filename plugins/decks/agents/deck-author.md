@@ -51,8 +51,9 @@ The plugin's skills define the conventions; this file describes your job and con
    prose patterns. Rewrite flagged phrasing and run `decks lint <alias>`.
 5. Read `decks:deck-motion` before scripting a stage or transition. Check the deck
    in presenter, preview and print views as well as the main slide view. Decks ships
-   fifteen fill-in motion graphics (`MotionTemplate`: titles, stats, timelines, quotes,
-   section breaks, comparisons, a myth-fact correction, a spotlight on an image, a close).
+   twenty-one fill-in motion graphics (`MotionTemplate`: titles, stats, timelines, quotes,
+   section breaks, comparisons, a myth-fact correction, a spotlight on an image, device
+   mockups, photo and logo reveals, team and icon grids, a close).
    When you plan the arc, pick the three to six slides where the talk turns and give each
    one, following the deck-motion motion-templates reference; write custom motion only when
    no template fits.

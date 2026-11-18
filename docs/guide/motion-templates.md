@@ -1,6 +1,6 @@
 # Motion templates
 
-A motion template is a finished motion graphic you fill in: pick one, write its words, and it
+A motion template is one of twenty-one finished motion graphics you fill in: pick one, write its words, and it
 takes its colours, type and timing from the deck's theme and motion tokens. It needs no CSS, no
 timeline code and no durations.
 
@@ -40,6 +40,12 @@ for the click. Its text stays real text, so it is read once, as a sentence, by a
 | `comparison-split` | The left side lands, then a divider slides in and the right side lands | `left`, `right` (`{ title, points }`, up to 4 points) |
 | `myth-fact` | The myth appears; on the next click a strike draws through it and the fact rises below | `myth`, `fact` |
 | `spotlight` | An image dims, a ring draws around one point, the label slides in beside it | `src`, `alt`, `x`, `y` (0 to 1), `label` |
+| `device-mockup` | A laptop, phone or browser frame slides up with a screenshot inside it | `src`, `alt`, `device`, `caption?` |
+| `photo-reveal` | A full-bleed photo eases in with a slow push; a caption and credit rise over it | `src`, `alt`, `caption`, `credit?` |
+| `logo-reveal` | A logo opens from a mask as an accent rule draws beneath it; a tagline fades up | `src`, `alt`, `tagline?` |
+| `icon-array` | A grid of person icons; the first `filled` of `total` fill with the accent ("1 in 4") | `filled`, `total` (up to 100), `label` |
+| `team-grid` | Two to six cards rise in, each with a photo or initials, a name and a role | `people` (`{ name, role, src? }[]`) |
+| `venn-overlap` | Two or three circles slide together; the overlap label lands in the shared region | `sets` (2 or 3 labels), `overlap` |
 
 ### Clicks
 
@@ -65,6 +71,12 @@ A motion graphic earns its place at the moments a talk turns, not on every slide
 | A belief to correct | `myth-fact` |
 | Two options weighed | `comparison-split` |
 | A point in a screenshot, photo or map | `spotlight` |
+| The product, shown on the device it runs on | `device-mockup` |
+| A photograph that sets the scene | `photo-reveal` |
+| A company, sponsor or project mark | `logo-reveal` |
+| A proportion that should feel human ("1 in 4") | `icon-array` |
+| The people behind the work | `team-grid` |
+| Two or three ideas that meet in one | `venn-overlap` |
 | A quote that carries an argument | `quote-card` |
 | The close | `end-card` |
 
