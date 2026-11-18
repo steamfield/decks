@@ -117,8 +117,10 @@ test("keeps the remote socket open and routing across a deck.config.ts restart",
 test("prints the dev URL, then LAN IPv4 remote URLs and the mDNS one last, each serving 200", async () => {
   const app = await remoteFixture();
   const urls = app.lines.filter((line) => line.includes("?token=")).map((line) => new URL(line));
-  expect(app.lines.slice(0, 2)).toEqual([app.devUrl, "Remote presenter:"]);
-  expect(app.lines.indexOf(urls[0]?.href ?? "")).toBeGreaterThan(1);
+  // Vite may log first (a cold dependency optimizer), so the order is checked from the dev URL.
+  const dev = app.lines.indexOf(app.devUrl);
+  expect(app.lines.slice(dev, dev + 2)).toEqual([app.devUrl, "Remote presenter:"]);
+  expect(app.lines.indexOf(urls[0]?.href ?? "")).toBeGreaterThan(dev + 1);
   const kinds = urls.map(({ hostname }) =>
     isIPv4(hostname) ? "IPv4" : hostname.endsWith(".local") ? "mDNS" : hostname,
   );

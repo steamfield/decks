@@ -2,11 +2,12 @@ import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { stripVTControlCharacters } from "node:util";
-import { expect, type Page } from "@playwright/test";
+import { type Browser, expect, type Page } from "@playwright/test";
 import { cliProcess } from "../../packages/node/src/cli/cli-process.test-support";
 import { test as base } from "./deck.fixture";
+import { settled } from "./deck-driver";
 
-async function startRemote(dir: string, mode?: "clock" | "live-term") {
+async function startRemote(browser: Browser, dir: string, mode?: "clock" | "live-term") {
   const clockStep = join(dir, "advance-clock");
   // The relay and remote have separate monotonic clocks. Pin Node's only for the timer test.
   const clock = `
@@ -53,6 +54,16 @@ async function startRemote(dir: string, mode?: "clock" | "live-term") {
     const remoteURL = printedRemoteURL();
     if (!remoteURL) throw new Error("Missing remote URL in decks dev output");
     expect((await fetch(remoteURL, { signal: AbortSignal.timeout(5000) })).status).toBe(200);
+    // Warm the cold dev server (dependency optimizer, first transforms) as deckServer does,
+    // so a test's first page load is not racing it.
+    const warm = await browser.newPage();
+    try {
+      await warm.goto(url);
+      await warm.waitForFunction(() => window.__deck !== undefined);
+      await settled(warm);
+    } finally {
+      await warm.close();
+    }
     return {
       url,
       remoteURL,
@@ -85,10 +96,10 @@ export const test = base.extend<
   // One default-mode server per worker: each test closes its windows, and the relay takes its
   // position from the first window that reports after that. Only the clock test reads the timer.
   remote: [
-    async ({ browserName }, use) => {
+    async ({ browser, browserName }, use) => {
       const dir = await mkdtemp(join(tmpdir(), `deck-remote-${browserName}-`));
       try {
-        const server = await startRemote(dir);
+        const server = await startRemote(browser, dir);
         try {
           await use(server);
         } finally {
@@ -108,12 +119,12 @@ export const test = base.extend<
       await device.close();
     }
   },
-  remoteServer: async ({ browserName }, use) => {
+  remoteServer: async ({ browser, browserName }, use) => {
     const dir = await mkdtemp(join(tmpdir(), `deck-remote-${browserName}-`));
     let server: RemoteServer | undefined;
     try {
       await use(async (mode) => {
-        server = await startRemote(dir, mode);
+        server = await startRemote(browser, dir, mode);
         return server;
       });
     } finally {

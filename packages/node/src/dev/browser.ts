@@ -12,7 +12,9 @@ export class MissingChromiumError extends DeckError {
 
 export async function launchBrowser(): Promise<Browser> {
   try {
-    return await chromium.launch();
+    // A compositor-thread animation keeps ticking on real time after the page pauses and seeks
+    // it, so a capture could paint a frame the page never had (seen on Linux runners).
+    return await chromium.launch({ args: ["--disable-threaded-animation"] });
   } catch (cause) {
     if (cause instanceof Error && cause.message.includes("Executable doesn't exist"))
       throw new MissingChromiumError(cause);
