@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, onTestFinished, test } from "vitest";
 import { cliProcess } from "../packages/node/src/cli/cli-process.test-support";
+import { skipBrowserTests } from "../packages/node/src/dev/server.test-support";
 
 async function decks(...args: string[]) {
   const command = cliProcess("bun", ["--silent", "run", "decks", ...args], {});
@@ -23,7 +24,7 @@ test("every recipe slide file appears in recipes.md with identical MDX", async (
   expect(snippets).toEqual(slides);
 });
 
-test("bun run decks check passes for the recipes deck", async () => {
+test("bun run decks check passes for every deck", async () => {
   expect(await decks("check")).toEqual({
     code: 0,
     stdout: "All decks check out.\n",
@@ -35,7 +36,7 @@ test("bun run decks lint recipes passes", async () => {
   expect(await decks("lint", "recipes")).toEqual({ code: 0, stdout: "", stderr: "" });
 });
 
-test("bun run decks inspect recipes reports no findings", async () => {
+test.skipIf(skipBrowserTests)("bun run decks inspect recipes reports no findings", async () => {
   expect(await decks("inspect", "recipes")).toEqual({
     code: 0,
     stdout: "no layout findings in 8 slides\n",

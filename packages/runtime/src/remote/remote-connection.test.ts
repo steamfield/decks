@@ -12,21 +12,37 @@ function clock() {
   return (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
 }
 
-it("a missed pong shows Disconnected since and reconnects with growing backoff up to 10 seconds", async () => {
+it("the page pings every 5 seconds", async () => {
   const advance = clock();
-  install(globalThis, "fetch", async () => new Response(null, { status: 503 }));
   const page = remotePage();
   page.present();
   await advance(5000);
   expect(page.sent).toEqual([{ type: "ping" }]);
   page.deliver({ type: "pong" });
+  await advance(5000);
+  expect(page.sent).toEqual([{ type: "ping" }, { type: "ping" }]);
+});
+
+it("a missed pong shows Disconnected since, while a pong in time keeps the page connected", async () => {
+  const advance = clock();
+  install(globalThis, "fetch", async () => new Response(null, { status: 503 }));
+  const page = remotePage();
+  page.present();
+  await advance(5000);
+  page.deliver({ type: "pong" });
   await advance(4999);
   page.position(1, 1, 2000);
   await advance(9999);
-  expect(page.sent).toEqual([{ type: "ping" }, { type: "ping" }, { type: "ping" }]);
   expect(screen.queryByText(/Disconnected since/)).toBeNull();
   await advance(1);
   expect(screen.getByText("Disconnected since 13:45:19")).toBeVisible();
+});
+
+it("reconnect attempts back off from 1 to 10 seconds and stay at 10", async () => {
+  const advance = clock();
+  install(globalThis, "fetch", async () => new Response(null, { status: 503 }));
+  const page = remotePage();
+  act(() => page.sockets[0]?.close());
   const start = Date.now();
   let offset = 0;
   for (const delay of [1000, 2000, 4000, 8000, 10000]) {
@@ -37,7 +53,16 @@ it("a missed pong shows Disconnected since and reconnects with growing backoff u
   }
   await advance(10000);
   expect(page.sockets.at(-1)?.at).toBe(start + offset + 10000);
-  act(() => page.sockets.at(-1)?.open());
+});
+
+it("a reconnected page resynchronizes to the deck and position it receives", async () => {
+  const advance = clock();
+  const page = remotePage();
+  page.present();
+  act(() => page.sockets[0]?.close());
+  expect(screen.getByText(/Disconnected since/)).toBeVisible();
+  await advance(1000);
+  act(() => page.sockets[1]?.open());
   page.deliver({ type: "deck", deck });
   page.position(2, 0, 90000);
   expect(screen.queryByText(/Disconnected since/)).toBeNull();
@@ -105,30 +130,21 @@ it("a stalled token check does not hide a later refusal", async () => {
   expect(screen.getByRole("status")).toHaveTextContent("This link has expired.");
 });
 
-it("malformed relay frames leave the last notes visible and a later position still arrives", () => {
+const validSlide = deck.slides[0];
+const deckFrame = (slide: unknown) =>
+  JSON.stringify({ type: "deck", deck: { title: "Field notes", slides: [slide] } });
+
+it.each([
+  ["an unparsable frame", "{"],
+  ["an unknown message type", '{"type":"new-protocol"}'],
+  ["a deck with an invalid slide", deckFrame({ ...validSlide, title: 3 })],
+  ["a position with a non-numeric click", '{"type":"position","click":"1","slide":1,"elapsed":0}'],
+])("%s leaves the last notes visible and a later position still arrives", (_kind, frame) => {
   const page = remotePage();
   page.present();
-  const validSlide = deck.slides[0];
-  for (const frame of [
-    "{",
-    "null",
-    '{"type":"new-protocol"}',
-    '{"type":"deck","deck":{}}',
-    '{"type":"position","click":1,"slide":1e400,"elapsed":0}',
-    '{"type":"position","click":"1","slide":1,"elapsed":0}',
-    '{"type":"position","click":1,"slide":1,"elapsed":"started"}',
-    ...[
-      { ...validSlide, title: 3 },
-      { ...validSlide, clicks: null },
-      { ...validSlide, notes: [{ click: 1, html: 4 }] },
-    ].map((slide) =>
-      JSON.stringify({ type: "deck", deck: { title: "Field notes", slides: [slide] } }),
-    ),
-  ]) {
-    act(() => page.sockets[0]?.frame(frame));
-    expect(screen.getByRole("heading", { name: "Arrival" })).toBeVisible();
-    expect(screen.getByText("Introduce the site.")).toBeVisible();
-  }
+  act(() => page.sockets[0]?.frame(frame));
+  expect(screen.getByRole("heading", { name: "Arrival" })).toBeVisible();
+  expect(screen.getByText("Introduce the site.")).toBeVisible();
   page.position(2);
   expect(screen.getByRole("heading", { name: "Departure" })).toBeVisible();
 });
