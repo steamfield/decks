@@ -4,6 +4,8 @@
 
 Write the audience, the decision or understanding the talk should leave, the time available, and the sources. Sketch one claim per slide and one change per story beat. Do not draft layout labels and call them headlines.
 
+Mark the slides where the talk turns (the opening, the one number, a myth to correct, a section break, a walked-through process, the close) as motion-graphic slides. Each gets a `MotionTemplate` from `decks:deck-motion`'s motion-templates reference; most decks have three to six, never on every slide.
+
 Conventional content slides need one dominant body block. A chart can carry the slide; it does not also need a list explaining the chart. Story slides need a persistent visual, a claim headline, a card and a source link. Use a cover or close where it has a purpose. Do not add section dividers to satisfy a template.
 
 For work split among agents, define ownership of slides, source modules, theme and reusable components before delegating. Finish research before dependent slides, and establish the visual system with a representative slide. A reviewer proposing a new number must name its source row or constant. Review in a separate read-only context; never change branches in another agent's worktree.

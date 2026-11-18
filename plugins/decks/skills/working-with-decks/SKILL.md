@@ -26,6 +26,7 @@ These are plugin skills, invoked as `decks:<name>`. Follow their linked referenc
 | Write, shorten or revise visible text | `decks:writing-slides` |
 | Choose a layout, typography, theme or visual hierarchy | `decks:deck-design` |
 | Add reveals, transitions, demos or story beats | `decks:deck-motion` |
+| Add a motion graphic: an animated title, stat, timeline, quote, section break, kinetic type or 3D | `decks:deck-motion`, its motion-templates reference first |
 | Add or edit a chart, table, map or Ink visualization | `decks:visualization`, then `decks:deck-data` before writing any figure |
 | Add numbers, refresh evidence or fact-check | `decks:deck-data` |
 

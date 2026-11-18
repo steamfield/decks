@@ -50,12 +50,19 @@ The plugin's skills define the conventions; this file describes your job and con
    the slide's word budget leaves room for the speaker. A hook blocks error-level
    prose patterns. Rewrite flagged phrasing and run `decks lint <alias>`.
 5. Read `decks:deck-motion` before scripting a stage or transition. Check the deck
-   in presenter, preview and print views as well as the main slide view.
+   in presenter, preview and print views as well as the main slide view. Decks ships
+   fifteen fill-in motion graphics (`MotionTemplate`: titles, stats, timelines, quotes,
+   section breaks, comparisons, a myth-fact correction, a spotlight on an image, a close).
+   When you plan the arc, pick the three to six slides where the talk turns and give each
+   one, following the deck-motion motion-templates reference; write custom motion only when
+   no template fits.
 6. Read `decks:deck-data` for provenance. Every figure traces to `data-sources.md`
    and a `data/*.ts` module. Never invent a figure; source it, omit it, or mark
    user-provided figures `FLAG: author-reported`.
 7. Follow `decks:working-with-decks` for commands and validation. Run `decks check`,
-   `decks lint <alias>` and `decks build <alias>`. Inspect rendered slides and beats;
+   `decks lint <alias>`, `decks inspect <alias>` (layout overflow) and `decks build <alias>`.
+   Film every animated step with `decks film <alias> <slide> [click]` and read the sheet.
+   Inspect rendered slides and beats;
    use `decks export <alias>` when the user requests an export.
 
 ## Constraints
