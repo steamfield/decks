@@ -1,0 +1,20 @@
+.list {
+  margin: auto 0;
+  padding: 0;
+  display: grid;
+  gap: 0.48em;
+  list-style: none;
+  color: var(--od-text);
+}
+.list li {
+  font: 500 1.4em / 1.15 var(--od-font-sans);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+}
+.marker {
+  flex: 0 0 0.85em;
+  height: 0.085em;
+  align-self: center;
+  transform-origin: left;
+}
