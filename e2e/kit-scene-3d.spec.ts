@@ -1,13 +1,18 @@
 import { chromium, expect, type Page } from "@playwright/test";
 import { PNG } from "pngjs";
-import { startSettling } from "./fixtures/deck-driver";
+import { settled, startSettling } from "./fixtures/deck-driver";
 import { kitFixture } from "./fixtures/kit.fixture";
 import { test } from "./fixtures/motion.fixture";
 import { slideNo } from "./fixtures/motion-gallery";
 
 const label = "Three studio forms";
+// The canvas and the poster are presentational children of the named image: their tag is their
+// only identity, and naming either would announce the picture twice.
 function liveCanvas(page: Page) {
   return page.getByRole("img", { name: label }).locator("canvas");
+}
+function poster(page: Page) {
+  return page.getByRole("img", { name: label }).locator("svg");
 }
 
 test("Scene3D renders a WebGL canvas with role img and its label on the active live slide", async ({
@@ -84,9 +89,8 @@ test("Scene3D falls back to the poster with one warning when three fails to load
   await expect.poll(() => warnings.length).toBe(1);
   await deck.press("ArrowRight");
   await deck.settled();
-  const host = page.getByRole("img", { name: label });
-  await expect(host.locator("svg")).toBeVisible();
-  await expect(host.locator("canvas")).toHaveCount(0);
+  await expect(poster(page)).toBeVisible();
+  await expect(liveCanvas(page)).toHaveCount(0);
   expect(warnings).toHaveLength(1);
 });
 
@@ -158,13 +162,12 @@ test("a cold live scene settles on the latest click after the renderer arrives",
     await page.keyboard.press("ArrowRight");
     const completion = await startSettling(page);
     await motionClock.step(1000);
-    const host = page.getByRole("img", { name: label });
     expect(await completion.evaluate((s) => s.done)).toBe(false);
-    await expect(host.locator("svg, canvas")).toHaveCount(0);
+    await expect(poster(page).or(liveCanvas(page))).toHaveCount(0);
     release.resolve();
     await liveCanvas(page).waitFor();
     await motionClock.settle();
-    expect(await completion.evaluate((s) => s.done)).toBe(true);
+    await expect.poll(() => completion.evaluate((s) => s.done)).toBe(true);
     await expect(page).toHaveURL(/clicks=2$/);
     await completion.dispose();
   } finally {
@@ -184,7 +187,7 @@ test("WebGL unavailability leaves a capturable poster", async ({ baseURL }) => {
     });
     await page.goto(`/#/${slideNo("scene-3d")}`);
     await expect.poll(() => warnings.length).toBe(1);
-    await expect(page.getByRole("img", { name: label }).locator("svg")).toBeVisible();
+    await expect(poster(page)).toBeVisible();
     expect(errors).toEqual([]);
   } finally {
     await browser.close();
@@ -199,7 +202,7 @@ test("a context lost during a hold gives way to the poster", async ({ page, deck
     if (!extension) throw new Error("Missing WEBGL_lose_context");
     extension.loseContext();
   });
-  await expect(page.getByRole("img", { name: label }).locator("svg")).toBeVisible();
+  await expect(poster(page)).toBeVisible();
   await expect(liveCanvas(page)).toHaveCount(0);
 });
 
@@ -230,35 +233,36 @@ test("setup receives the host aspect and releases its resources on departure", a
   }
 });
 
-test("static views and inactive neighbours allocate no WebGL contexts", async ({ page }) => {
-  const no = slideNo("scene-3d");
-  await page.addInitScript(() => {
-    const contexts = new Set<WebGL2RenderingContext>();
-    const proto = HTMLCanvasElement.prototype;
-    proto.getContext = new Proxy(proto.getContext, {
-      apply(get, canvas, args) {
-        const context = Reflect.apply(get, canvas, args);
-        if (context instanceof WebGL2RenderingContext) contexts.add(context);
-        return context;
-      },
+const views = [
+  ["the instant slide", `/?motion=instant#/${slideNo("scene-3d")}`, "slide"],
+  ["the presenter's current slide", `/#/presenter/${slideNo("scene-3d")}`, "presenter"],
+  ["the presenter's next-slide preview", `/#/presenter/${slideNo("scene-3d")}?clicks=1`, "preview"],
+  ["the overview", `/#/overview/${slideNo("scene-3d")}`, "overview"],
+  ["print", "/?print=final#/print", "print"],
+  ["an inactive neighbour of the active slide", `/#/${slideNo("scene-3d") - 1}`, "slide"],
+] as const;
+
+for (const [view, url, context] of views) {
+  test(`${view} allocates no WebGL context for the scene`, async ({ page }) => {
+    await page.addInitScript(() => {
+      const contexts = new Set<WebGL2RenderingContext>();
+      const proto = HTMLCanvasElement.prototype;
+      proto.getContext = new Proxy(proto.getContext, {
+        apply(get, canvas, args) {
+          const context = Reflect.apply(get, canvas, args);
+          if (context instanceof WebGL2RenderingContext) contexts.add(context);
+          return context;
+        },
+      });
+      Object.defineProperty(window, "webglContextCount", { get: () => contexts.size });
     });
-    Object.defineProperty(window, "webglContextCount", { get: () => contexts.size });
-  });
-  for (const [url, context] of [
-    [`/?motion=instant#/${no}`, "slide"],
-    [`/#/presenter/${no}`, "presenter"],
-    [`/#/presenter/${no}?clicks=1`, "preview"],
-    [`/#/overview/${no}`, "overview"],
-    ["/?print=final#/print", "print"],
-    [`/#/${no - 1}`, "slide"],
-  ]) {
-    if (!url) throw new Error("Missing scene URL");
     await page.goto(url);
-    const host = page.locator(`[data-deck-context="${context}"][data-deck-slide="${no}"]`);
-    await expect(host.locator("svg").last()).toBeAttached();
-    const state = await startSettling(page);
-    await state.evaluate((s) => s.promise);
-    await state.dispose();
-    expect(await page.evaluate(() => Reflect.get(window, "webglContextCount"))).toBe(0);
-  }
-});
+    // The render context is the DOM contract this test is about.
+    const host = page.locator(
+      `[data-deck-context="${context}"][data-deck-slide="${slideNo("scene-3d")}"]`,
+    );
+    await expect(host.getByRole("img", { name: label, includeHidden: true }).last()).toBeAttached();
+    await settled(page);
+    await expect.poll(() => page.evaluate(() => Reflect.get(window, "webglContextCount"))).toBe(0);
+  });
+}

@@ -10,9 +10,9 @@ const click = (page: Page, count: number) => page.getByText(`click ${count} of 3
 test("Next on the remote advances the play window one click and the remote shows the new position", async ({
   page,
   remotePage,
-  remoteServer,
+  remote,
 }) => {
-  const { url, remoteURL } = await remoteServer();
+  const { url, remoteURL } = remote;
   await page.goto(`${url}#/2`);
   await remotePage.goto(remoteURL);
   await expect(steps(page)).toBeVisible();
@@ -25,13 +25,13 @@ test("Next on the remote advances the play window one click and the remote shows
   await expect(click(remotePage, 1)).toBeVisible();
 });
 
-test("the presenter window in context A follows a remote Next (it syncs over BroadcastChannel from the play window)", async ({
+test("a presenter window beside the play window follows a remote Next", async ({
   page,
   context,
   remotePage,
-  remoteServer,
+  remote,
 }) => {
-  const { url, remoteURL } = await remoteServer();
+  const { url, remoteURL } = remote;
   await page.goto(`${url}#/2`);
   await expect(steps(page)).toBeVisible();
   const presenter = await context.newPage();
@@ -52,9 +52,9 @@ test("the presenter window in context A follows a remote Next (it syncs over Bro
 test("pressing ArrowRight in the play window updates the remote's position and notes", async ({
   page,
   remotePage,
-  remoteServer,
+  remote,
 }) => {
-  const { url, remoteURL } = await remoteServer();
+  const { url, remoteURL } = remote;
   await page.goto(url);
   await expect(cover(page)).toBeVisible();
   await remotePage.goto(remoteURL);
@@ -71,9 +71,9 @@ test("with two play windows open, one remote Next advances the talk exactly one 
   page,
   context,
   remotePage,
-  remoteServer,
+  remote,
 }) => {
-  const { url, remoteURL } = await remoteServer();
+  const { url, remoteURL } = remote;
   await page.goto(`${url}#/2`);
   await expect(steps(page)).toBeVisible();
   const second = await context.newPage();
@@ -126,9 +126,9 @@ test("the remote shows Waiting for the deck after every deck window closes, and 
   page,
   context,
   remotePage,
-  remoteServer,
+  remote,
 }) => {
-  const { url, remoteURL } = await remoteServer();
+  const { url, remoteURL } = remote;
   const reports: unknown[] = [];
   remotePage.on("websocket", (socket) => {
     socket.on("framereceived", ({ payload }) => {
@@ -144,6 +144,8 @@ test("the remote shows Waiting for the deck after every deck window closes, and 
   const second = await context.newPage();
   // Its initial position reaches the relay before it catches up to the existing talk.
   await second.goto(`${url}#/2?clicks=2`);
+  // The page has no lasting sign that the relay got this report (the catch-up replaces it at
+  // once), so the wait reads the wire.
   await expect
     .poll(() => reports)
     .toContainEqual(expect.objectContaining({ type: "position", slide: 2, click: 2 }));
@@ -181,7 +183,7 @@ test("the remote shows Waiting for the deck after every deck window closes, and 
   await expect(click(remotePage, 2)).toBeVisible();
 });
 
-test("a remote Next on the live terminal fixture's slide runs its command exactly once (start that server with --live-term too)", async ({
+test("a remote Next on the live terminal slide runs its command exactly once", async ({
   page,
   remotePage,
   remoteServer,
@@ -208,8 +210,8 @@ test("a remote Next on the live terminal fixture's slide runs its command exactl
   expect(await executions()).toBe("12");
 });
 
-test("the remote URL without its token gets a 403 page", async ({ remotePage, remoteServer }) => {
-  const { remoteURL } = await remoteServer();
+test("the remote URL without its token gets a 403 page", async ({ remotePage, remote }) => {
+  const { remoteURL } = remote;
   const tokenless = new URL(remoteURL);
   tokenless.searchParams.delete("token");
 

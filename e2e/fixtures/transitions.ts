@@ -2,6 +2,7 @@ import { expect, type Page } from "@playwright/test";
 import { loadDeck, scanSlides } from "@steamfield/decks/node";
 import { test as motionTest } from "./motion.fixture";
 import { slideNo } from "./motion-gallery";
+import { seekTransition } from "./transition-seek";
 
 const gallery = await scanSlides(await loadDeck("examples/motion"));
 const gallerySize = gallery.length;
@@ -12,7 +13,6 @@ export const lastSlide = finalSlide;
 declare global {
   interface Window {
     e2eTransition?: ViewTransition;
-    e2eCaptureTransition?: (transition: ViewTransition) => void;
     e2eTransitionNames: string[];
     e2eTransitionAttributes: string[];
     e2eNavAttributes: string[];
@@ -79,98 +79,11 @@ export async function keys(page: Page, names: string[]) {
     });
 }
 
-export async function sampleRootTransition(page: Page, key: string, points: number[]) {
-  const capture = await page.evaluateHandle((points) => {
-    const started = Promise.withResolvers<ViewTransition>();
-    window.e2eCaptureTransition = started.resolve;
-    const frames = started.promise.then(async (transition) => {
-      await transition.ready;
-      const animations = document
-        .getAnimations()
-        .filter(
-          (animation) =>
-            animation.effect instanceof KeyframeEffect &&
-            animation.effect.pseudoElement?.startsWith("::view-transition"),
-        );
-      // Named groups can outlast the root snapshots, such as the gallery's footer during blur.
-      const end = Math.max(
-        ...animations.map(({ effect }) =>
-          effect instanceof KeyframeEffect &&
-          (effect.pseudoElement === "::view-transition-old(root)" ||
-            effect.pseudoElement === "::view-transition-new(root)")
-            ? Number(effect.getComputedTiming().endTime)
-            : 0,
-        ),
-      );
-      if (!Number.isFinite(end) || end <= 0) throw new Error("Missing finite root animation");
-      for (const animation of animations) animation.pause();
-      try {
-        return points.map((point) => {
-          for (const animation of animations) animation.currentTime = end * point;
-          const read = (kind: "old" | "new") => {
-            const style = getComputedStyle(
-              document.documentElement,
-              `::view-transition-${kind}(root)`,
-            );
-            const matrix = new DOMMatrixReadOnly(
-              style.transform === "none" ? undefined : style.transform,
-            );
-            const origin = Number.parseFloat(style.transformOrigin);
-            const width = Number.parseFloat(style.width);
-            const height = Number.parseFloat(style.height);
-            const projectX = (x: number) => {
-              const point = matrix.transformPoint({ x: x - origin });
-              return origin + point.x / point.w;
-            };
-            return {
-              x: matrix.m41,
-              y: matrix.m42,
-              stationary: matrix.isIdentity,
-              turn: matrix.m13,
-              perspective: matrix.m14,
-              left: projectX(0),
-              right: projectX(width),
-              width,
-              height,
-              clip: style.clipPath,
-              filter: style.filter,
-              opacity: Number(style.opacity),
-              z: Number(style.zIndex),
-            };
-          };
-          return { old: read("old"), next: read("new") };
-        });
-      } finally {
-        for (const animation of animations) animation.finish();
-      }
-    });
-    const state = {
-      done: false,
-      frames: frames
-        .catch((error: unknown) => String(error))
-        .finally(() => {
-          state.done = true;
-        }),
-    };
-    return state;
-  }, points);
-  try {
-    await keys(page, [key]);
-    const done = await page.waitForFunction(({ done }) => done, capture, { timeout: 5000 });
-    await done.dispose();
-    const frames = await capture.evaluate(({ frames }) => frames);
-    if (typeof frames === "string") throw new Error(frames);
-    return frames;
-  } catch (cause) {
-    throw new Error(
-      `Waiting for root snapshots after ${key} at progress ${points.join(", ")} failed`,
-      {
-        cause,
-      },
-    );
-  } finally {
-    await capture.dispose();
-  }
+/** Presses `key` and seeks the slide change's root snapshots to each progress point. */
+export async function seekRootTransition(page: Page, key: string, points: number[]) {
+  const samples = seekTransition(page, "root", points);
+  await keys(page, [key]);
+  return samples;
 }
 
 export const test = motionTest.extend({
@@ -209,8 +122,6 @@ export const test = motionTest.extend({
         );
         const transition = start(update);
         window.e2eTransition = transition;
-        window.e2eCaptureTransition?.(transition);
-        delete window.e2eCaptureTransition;
         return transition;
       };
     });

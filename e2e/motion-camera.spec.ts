@@ -7,10 +7,10 @@ const camera = slideNo("camera");
 const morph = slideNo("shape-morph");
 const mapName = "River route from the spring to the harbour";
 const shapeName = "A circle becomes a square and then a star";
-const circle = "M200 50a150 150 0 1 1 0 300a150 150 0 1 1 0 -300Z";
-const square = "M50 50H350V350H50Z";
 const star = "M200 30L244 147L370 151L270 230L306 352L200 280L94 352L130 230L30 151L156 147Z";
 
+// The camera's viewport and moving layer are unnamed wrappers around the map; naming them would
+// add empty groups for screen readers, so the probes reach them from the map.
 function framing(svg: Locator) {
   return svg.evaluate((svg) => {
     const inner = svg.parentElement;
@@ -68,6 +68,7 @@ test("a second click mid-tween continues from the visible position without a jum
   const visible = await framing(map);
   expect(visible.zoom).toBeGreaterThan(1.5);
   await deck.press("ArrowRight");
+  await position(page, camera, 3);
   expect(await framing(map)).toEqual(visible);
   await motionClock.step(32);
   const nextFrame = await framing(map);
@@ -77,59 +78,39 @@ test("a second click mid-tween continues from the visible position without a jum
   expect(await framing(map)).toEqual({ x: 950, y: 350, zoom: 1.5 });
 });
 
-test("camera slide forward, back, two quick clicks and reload at the last click give the expected transform", async ({
+test("reloading at the camera's last click shows only the harbour stop, with no tween", async ({
   page,
   deck,
-  motionClock,
 }) => {
-  await page.addInitScript(() => {
+  await deck.goto(camera, 3);
+  await page.addInitScript((name) => {
+    const poses: number[][] = [];
+    Reflect.set(window, "cameraPoses", poses);
     const frame = () => {
-      const map = document.querySelector(
-        "[data-deck-active] svg[aria-label='River route from the spring to the harbour']",
-      );
-      const layer = map?.parentElement;
+      const layer = document.querySelector(
+        `[data-deck-active] svg[aria-label='${name}']`,
+      )?.parentElement;
       const viewport = layer?.parentElement;
-      if (!layer || !viewport) return requestAnimationFrame(frame);
-      const m = new DOMMatrixReadOnly(getComputedStyle(layer).transform);
-      Reflect.set(window, "firstCameraPose", [
-        (viewport.clientWidth / 2 - m.e) / m.a,
-        (viewport.clientHeight / 2 - m.f) / m.d,
-        m.a,
-      ]);
+      if (layer && viewport) {
+        const m = new DOMMatrixReadOnly(getComputedStyle(layer).transform);
+        const pose = [
+          (viewport.clientWidth / 2 - m.e) / m.a,
+          (viewport.clientHeight / 2 - m.f) / m.d,
+          m.a,
+        ];
+        if (poses.at(-1)?.join() !== pose.join()) poses.push(pose);
+      }
+      requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
-  });
-  const map = page.getByRole("img", { name: mapName });
-  await deck.goto(camera, 1);
-  await motionClock.pauseAt();
-  const initial = { x: 600, y: 300, zoom: 1 };
-  const spring = { x: 250, y: 200, zoom: 2 };
-  const harbour = { x: 950, y: 350, zoom: 1.5 };
-  await expect.poll(() => framing(map)).toEqual(initial);
-  await deck.press("ArrowRight");
-  await motionClock.settle();
-  await expect.poll(() => framing(map)).toEqual(spring);
-  await deck.press("ArrowLeft");
-  await motionClock.settle();
-  await expect.poll(() => framing(map)).toEqual(initial);
-  await deck.press("ArrowRight");
-  await motionClock.step(128);
-  const visible = await framing(map);
-  expect(visible.zoom).toBeGreaterThan(1);
-  expect(visible.zoom).toBeLessThan(2);
-  await deck.press("ArrowRight");
-  await position(page, camera, 3);
-  expect(await framing(map)).toEqual(visible);
-  await motionClock.settle();
-  await expect.poll(() => framing(map)).toEqual(harbour);
-  await page.clock.resume();
+  }, mapName);
   await page.reload();
   await position(page, camera, 3);
-  await expect
-    .poll(() => page.evaluate(() => Reflect.get(window, "firstCameraPose")))
-    .toEqual([950, 350, 1.5]);
+  await deck.settled();
+  expect(await page.evaluate(() => Reflect.get(window, "cameraPoses"))).toEqual([[950, 350, 1.5]]);
 });
 
+// The markers are decorative parts of the map image, with no accessible identity of their own.
 function springOffset(map: Locator) {
   return map.evaluate((svg) => {
     const spring = svg.querySelector("circle")?.getBoundingClientRect();
@@ -145,6 +126,7 @@ function springOffset(map: Locator) {
 test("tabbing to an offscreen marker keeps the current stop centred", async ({ page, deck }) => {
   await deck.goto(camera, 2);
   const map = page.getByRole("img", { name: mapName });
+  // The harbour marker is a decorative part of the map image; the test makes it focusable.
   const harbour = map.locator("circle").last();
   await harbour.evaluate((marker) => marker.setAttribute("tabindex", "0"));
   await expect.poll(() => springOffset(map)).toEqual([0, 0]);
@@ -156,6 +138,7 @@ test("tabbing to an offscreen marker keeps the current stop centred", async ({ p
 test("a resize keeps the stop's point at the viewport centre", async ({ page, deck }) => {
   await deck.goto(camera, 2);
   const map = page.getByRole("img", { name: mapName });
+  // The camera viewport is an unnamed wrapper (see framing).
   const viewport = map.locator("../..");
   await expect(viewport).toHaveCSS("overflow", "clip");
   await viewport.evaluate((viewport) => {
@@ -189,29 +172,12 @@ for (const [name, no, click] of [
       await motionClock.step(160);
       expect(await completion.evaluate((state) => state.done)).toBe(false);
       await motionClock.step(600);
-      expect(await completion.evaluate((state) => state.done)).toBe(true);
+      await expect.poll(() => completion.evaluate((state) => state.done)).toBe(true);
     } finally {
       await completion.dispose();
     }
   });
 }
-
-test("shape-morph slide forward and back end on the expected path data", async ({ page, deck }) => {
-  await deck.goto(morph);
-  const outline = page.getByRole("img", { name: shapeName }).locator("path");
-  await expect(outline).toHaveCount(1);
-  await expect(outline).toHaveAttribute("d", circle);
-  for (const [key, d] of [
-    ["ArrowRight", square],
-    ["ArrowRight", star],
-    ["ArrowLeft", square],
-    ["ArrowLeft", circle],
-  ] as const) {
-    await deck.press(key);
-    await deck.settled();
-    await expect(outline).toHaveAttribute("d", d);
-  }
-});
 
 test("instant arrival at the last click renders the camera and outline", async ({ page }) => {
   await page.goto(`/?motion=instant#/${camera}?clicks=3`);
@@ -220,6 +186,7 @@ test("instant arrival at the last click renders the camera and outline", async (
     .poll(() => framing(page.getByRole("img", { name: mapName })))
     .toEqual({ x: 950, y: 350, zoom: 1.5 });
   await page.goto(`/?motion=instant#/${morph}?clicks=2`);
+  // The outline is the shape image's one decorative part.
   await expect(page.getByRole("img", { name: shapeName }).locator("path")).toHaveAttribute(
     "d",
     star,

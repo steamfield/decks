@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { slideNo } from "./fixtures/motion-gallery";
-import { keys, open, sampleRootTransition, settle, test } from "./fixtures/transitions";
+import { keys, open, seekRootTransition, settle, test } from "./fixtures/transitions";
 
 test.use({
   launchOptions: {
@@ -122,7 +122,7 @@ test("Only clicks marked morphSteps start a step transition", async ({ page }) =
   await expect.poll(() => page.evaluate(() => window.e2eTransitionNames)).toEqual(["fade", "step"]);
 });
 
-type RootSnapshot = Awaited<ReturnType<typeof sampleRootTransition>>[number]["next"];
+type RootSnapshot = Awaited<ReturnType<typeof seekRootTransition>>[number]["next"];
 
 function expectFaceOn({ left, right, width, turn }: RootSnapshot) {
   expect(left).toBeCloseTo(0, 2);
@@ -141,7 +141,7 @@ async function boundary(page: Page, preset: string, direction: 1 | -1 = 1, point
   const from = direction === 1 ? slide : slide + 1;
   const key = direction === 1 ? "ArrowRight" : "ArrowLeft";
   await open(page, from);
-  const frames = await sampleRootTransition(page, key, points);
+  const frames = await seekRootTransition(page, key, points);
   await expect(page).toHaveURL(new RegExp(`#/${from + direction}$`));
   await settle(page);
   return frames;
@@ -257,7 +257,7 @@ test("cube ends flush beside a classic scrollbar", async ({ page }) => {
   await expect
     .poll(() => page.evaluate(() => innerWidth - document.documentElement.clientWidth))
     .toBeGreaterThan(0);
-  const [last] = await sampleRootTransition(page, "ArrowRight", [1]);
+  const [last] = await seekRootTransition(page, "ArrowRight", [1]);
   if (!last) throw new Error("Missing cube end frame");
   expectFaceOn(last.next);
   await settle(page);

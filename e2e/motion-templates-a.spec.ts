@@ -1,99 +1,65 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { PNG } from "pngjs";
 import { settled as settleDeck } from "./fixtures/deck-driver";
 import { test } from "./fixtures/motion.fixture";
 import { gallery, position, settled, slideNo } from "./fixtures/motion-gallery";
 
+const figureOf = (page: Page) =>
+  page.locator("[data-deck-active]").getByRole("figure", { includeHidden: true });
+
+// Each template and its caption, which shows once the template has entered.
 const examples = [
-  ["title-reveal", "The river changed course."],
+  ["title-reveal", "A field guide to the spring flood"],
   ["lower-third", "River survey lead"],
-  ["stat-burst", "1,248"],
-  ["stat-compare", "-12 min"],
-  ["metric-grid", "1,248"],
+  ["stat-burst", "Water samples tested"],
+  ["stat-compare", "Time to process a sample"],
+  ["metric-grid", "Field sites"],
 ] as const;
 
 for (const [name, witness] of examples) {
-  test(`each slide forward, back, two quick clicks and reload at the last click: ${name}`, async ({
+  test(`${name} enters on its click, hides going back, and reloads at the click with no replay`, async ({
     page,
     deck,
-    motionClock,
   }) => {
     const no = slideNo(`mt-${name}`);
-    await page.addInitScript(() => {
+    await page.addInitScript((witness) => {
       const poses = new Set<string>();
       Reflect.set(window, "templatePoses", poses);
       function read() {
-        const graphic = document.querySelector("[data-deck-active] figure");
-        if (graphic) {
-          const parts = [graphic, ...graphic.querySelectorAll("*")].map((part) => {
-            const { opacity, visibility, transform, strokeDasharray, strokeDashoffset } =
-              getComputedStyle(part);
-            return [opacity, visibility, transform, strokeDasharray, strokeDashoffset];
-          });
-          const pose = JSON.stringify([graphic.textContent, parts]);
+        const slide = document.querySelector("[data-deck-active]");
+        if (slide?.textContent?.includes(witness)) {
+          // The pose is every element of the slide outside its layers, so no single part is named.
+          const parts = Array.from(slide.querySelectorAll("*"))
+            .filter((part) => !part.closest("[data-deck-layer]"))
+            .map((part) => {
+              const { opacity, visibility, transform, strokeDasharray, strokeDashoffset } =
+                getComputedStyle(part);
+              return [opacity, visibility, transform, strokeDasharray, strokeDashoffset];
+            });
+          // The text carries the counters, so a replayed count-up changes the pose too.
+          const pose = JSON.stringify([slide.textContent, parts]);
           poses.add(pose);
           Reflect.set(window, "latestPose", pose);
-        } else if (document.querySelector("[data-deck-active] h1")) {
-          poses.add("missing figure");
         }
         requestAnimationFrame(read);
       }
       requestAnimationFrame(read);
-    });
+    }, witness);
     await deck.goto(no);
-    const figure = page.locator("[data-deck-active]").locator("figure");
-    const text =
-      name === "title-reveal"
-        ? figure.getByRole("heading", { name: witness })
-        : figure.getByText(witness, { exact: true });
-    await expect(figure).toBeHidden();
-    await motionClock.pauseAt();
+    const text = figureOf(page).getByText(witness, { exact: true });
+    await expect(figureOf(page)).toBeHidden();
     await deck.press("ArrowRight");
-    const art =
-      name === "title-reveal" || name === "lower-third"
-        ? figure.locator("div[aria-hidden=true]")
-        : figure.locator("svg").first();
-    if (
-      name === "title-reveal" ||
-      name === "lower-third" ||
-      name === "stat-burst" ||
-      name === "stat-compare"
-    ) {
-      const drawn = () =>
-        art.evaluate((node) => {
-          const stroke = node.querySelector("circle, polyline");
-          return stroke
-            ? getComputedStyle(stroke).strokeDashoffset
-            : node.getBoundingClientRect().width;
-        });
-      const start = await drawn();
-      await motionClock.step(name === "title-reveal" ? 400 : 200);
-      const moving = await drawn();
-      expect(moving).not.toBe(start);
-      await motionClock.step(name === "title-reveal" ? 800 : 1000);
-      expect(await drawn()).not.toBe(moving);
-    } else await motionClock.step(1200);
-    expect(await page.evaluate(() => window.__deck?.busy())).toEqual([]);
-    await page.clock.resume();
     await settled(page, no, 1);
     await expect(text).toBeVisible();
     await deck.press("ArrowLeft");
     await settled(page, no, 0);
-    await expect(figure).toBeHidden();
+    await expect(figureOf(page)).toBeHidden();
     await deck.press("ArrowRight");
     await deck.press("ArrowRight");
-    if (no < gallery.length) {
-      const nextClicks = Math.min(1, gallery[no]?.meta.clicks ?? 0);
-      if (nextClicks) {
-        await deck.press("ArrowRight");
-        await position(page, no + 1, 1);
-        await deck.press("ArrowLeft");
-      }
-      await position(page, no + 1);
-      await deck.press("ArrowLeft");
-    }
+    await position(page, no + 1);
+    await deck.press("ArrowLeft");
     await position(page, no, 1);
     await settled(page, no, 1);
     await expect(text).toBeVisible();
@@ -102,108 +68,139 @@ for (const [name, witness] of examples) {
     await page.reload();
     await position(page, no, 1);
     await settled(page, no, 1);
-    await expect
-      .poll(() => page.evaluate(() => Reflect.get(window, "templatePoses").size))
-      .toBeGreaterThan(0);
+    await expect(text).toBeVisible();
     expect(await page.evaluate(() => Array.from(Reflect.get(window, "templatePoses")))).toEqual([
       finalPose,
     ]);
-    await expect(text).toBeVisible();
-    if (name === "title-reveal") {
-      const heading = figure.getByRole("heading", { name: "The river changed course." });
-      const masks = await heading.evaluate((h) =>
-        [...h.querySelectorAll("span")]
-          .filter((word) => getComputedStyle(word).overflowY === "clip")
-          .map((word) => word.textContent),
-      );
-      expect(masks).toEqual(["The", "river", "changed", "course."]);
-      const clipped = await heading.evaluate((h) =>
-        [...h.querySelectorAll("span")]
-          .filter(
-            (word) =>
-              getComputedStyle(word).overflowY !== "visible" &&
-              word.scrollHeight > word.clientHeight + 1,
-          )
-          .map((word) => word.textContent),
-      );
-      expect(clipped).toEqual([]);
-    }
-    if (name === "lower-third") {
-      const box = await figure.boundingBox();
-      expect(box?.y).toBeGreaterThanOrEqual(720);
-      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(1080);
-    }
-    if (name === "metric-grid") {
-      const labels = ["Field sites", "Water samples", "River surveyed"];
-      const boxes = await Promise.all(
-        labels.map((label) => figure.getByText(label, { exact: true }).boundingBox()),
-      );
-      expect(boxes.map((box) => box?.y)).toEqual(labels.map(() => boxes[0]?.y));
-      expect(boxes[1]?.x).toBeGreaterThan(boxes[0]?.x ?? 0);
-      expect(boxes[2]?.x).toBeGreaterThan(boxes[1]?.x ?? 0);
-    }
   });
-  test(`the accent prop changes the accent colour to that hue's step 3: ${name}`, async ({
+}
+
+// The rule, bar and ring are decorative parts hidden from assistive technology, found by tag.
+const width = (art: Locator) => art.evaluate((node) => node.getBoundingClientRect().width);
+const dash = (art: Locator) => art.evaluate((node) => getComputedStyle(node).strokeDashoffset);
+const draws = [
+  ["title-reveal", (figure: Locator) => width(figure.locator("div[aria-hidden=true]")), 400],
+  ["lower-third", (figure: Locator) => width(figure.locator("div[aria-hidden=true]")), 200],
+  ["stat-burst", (figure: Locator) => dash(figure.locator("circle")), 200],
+  ["stat-compare", (figure: Locator) => dash(figure.locator("polyline").first()), 200],
+] as const;
+
+for (const [name, drawn, early] of draws) {
+  test(`${name} draws its accent through the entrance and is idle after 1.2 s`, async ({
+    page,
+    deck,
+    motionClock,
+  }) => {
+    const no = slideNo(`mt-${name}`);
+    await deck.goto(no);
+    await motionClock.pauseAt();
+    await deck.press("ArrowRight");
+    await position(page, no, 1);
+    const start = await drawn(figureOf(page));
+    await motionClock.step(early);
+    const moving = await drawn(figureOf(page));
+    expect(moving).not.toBe(start);
+    await motionClock.step(1200 - early);
+    expect(await drawn(figureOf(page))).not.toBe(moving);
+    expect(await page.evaluate(() => window.__deck?.busy())).toEqual([]);
+  });
+}
+
+test("title-reveal masks each word without clipping any glyph", async ({ page, deck }) => {
+  await deck.goto(slideNo("mt-title-reveal"), 1);
+  const heading = figureOf(page).getByRole("heading", { name: "The river changed course." });
+  const masks = await Promise.all(
+    ["The", "river", "changed", "course."].map((word) =>
+      heading.getByText(word, { exact: true }).evaluate((element) => {
+        // SplitText wraps each word in a mask; walk up from the word to it.
+        let node: Element | null = element;
+        while (node && getComputedStyle(node).overflowY !== "clip") node = node.parentElement;
+        return {
+          masked: node !== null,
+          clipped: !!node && node.scrollHeight > node.clientHeight + 1,
+        };
+      }),
+    ),
+  );
+  expect(masks).toEqual(Array.from({ length: 4 }, () => ({ masked: true, clipped: false })));
+});
+
+test("lower-third sits in the bottom third of the canvas", async ({ page, deck }) => {
+  await deck.goto(slideNo("mt-lower-third"), 1);
+  const box = await figureOf(page).boundingBox();
+  expect(box?.y).toBeGreaterThanOrEqual(720);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(1080);
+});
+
+test("metric-grid lays its tiles out left to right on one row", async ({ page, deck }) => {
+  await deck.goto(slideNo("mt-metric-grid"), 1);
+  const labels = ["Field sites", "Water samples", "River surveyed"];
+  const boxes = await Promise.all(
+    labels.map((label) => figureOf(page).getByText(label, { exact: true }).boundingBox()),
+  );
+  expect(boxes.map((box) => box?.y)).toEqual(labels.map(() => boxes[0]?.y));
+  expect(boxes[1]?.x).toBeGreaterThan(boxes[0]?.x ?? 0);
+  expect(boxes[2]?.x).toBeGreaterThan(boxes[1]?.x ?? 0);
+});
+
+const ramps = {
+  cyan: ["#032022", "#064044", "#17aacc", "#8ceeff"],
+  rose: ["#291225", "#54204c", "#e258a5", "#ffccee"],
+} as const;
+
+/** Writes the template's gallery slide twice into the editable deck: default accent, then rose. */
+async function accentDeck(dir: string, name: string, extra = "") {
+  const slide = gallery[slideNo(`mt-${name}`) - 1];
+  if (!slide) throw new Error(`Missing gallery slide mt-${name}`);
+  const demo = await readFile(join("examples/motion", slide.meta.file), "utf8");
+  await writeFile(
+    join(dir, "setup.ts"),
+    `import {installTheme, resolveTheme} from "@steamfield/decks/kit"; installTheme(resolveTheme(${JSON.stringify({ ramps })}));\n`,
+  );
+  await writeFile(join(dir, "styles/index.css"), '@import "@steamfield/decks/kit/styles.css";\n');
+  const body = `${demo.replace("at={1}", "at={0}")}\n<p className="od-body">Reference body</p>\n${extra}\n`;
+  await writeFile(join(dir, "slides/01-cover.mdx"), body.replace(' accent="rose"', ""));
+  await writeFile(join(dir, "slides/02-steps.mdx"), body);
+}
+
+// A metric tile has no role of its own, so it is the block that holds its label.
+const tile = (figure: Locator, label: string) =>
+  figure.locator("div").filter({ has: figure.page().getByText(label, { exact: true }) });
+
+// The parts each template paints in its accent; the rule, bar, ring and arrow are decorative.
+const accents: [string, string, (figure: Locator) => Locator[]][] = [
+  ["title-reveal", examples[0][1], (figure) => [figure.locator("div[aria-hidden=true]")]],
+  ["lower-third", examples[1][1], (figure) => [figure.locator("div[aria-hidden=true]")]],
+  ["stat-burst", examples[2][1], (figure) => [figure.locator("svg")]],
+  ["stat-compare", examples[3][1], (f) => [f.locator("svg"), f.getByText("-12 min")]],
+  [
+    "metric-grid",
+    examples[4][1],
+    (f) => ["Field sites", "Water samples", "River surveyed"].map((label) => tile(f, label)),
+  ],
+];
+
+for (const [name, caption, painted] of accents) {
+  test(`${name} paints the accent's step 3 and captions no smaller than body text`, async ({
     page,
     editableDeck,
   }) => {
-    const slide = gallery[slideNo(`mt-${name}`) - 1];
-    if (!slide) throw new Error(`Missing gallery slide mt-${name}`);
-    const demo = await readFile(join("examples/motion", slide.meta.file), "utf8");
-    const ramps = {
-      cyan: ["#032022", "#064044", "#17aacc", "#8ceeff"],
-      rose: ["#291225", "#54204c", "#e258a5", "#ffccee"],
-    } as const;
-    await writeFile(
-      join(editableDeck.dir, "setup.ts"),
-      `import {installTheme, resolveTheme} from "@steamfield/decks/kit"; installTheme(resolveTheme(${JSON.stringify({ ramps })}));\n`,
-    );
-    await writeFile(
-      join(editableDeck.dir, "styles/index.css"),
-      '@import "@steamfield/decks/kit/styles.css";\n',
-    );
-    const backdrop =
-      name === "lower-third"
-        ? '<div style={{position:"absolute",inset:0,background:"var(--od-canvas)"}} />'
-        : "";
-    const slideBody = `${demo.replace("at={1}", "at={0}")}\n<p className="od-body">Reference body</p>\n${backdrop}\n`;
-    await writeFile(
-      join(editableDeck.dir, "slides/01-cover.mdx"),
-      slideBody.replace(' accent="rose"', ""),
-    );
-    await writeFile(join(editableDeck.dir, "slides/02-steps.mdx"), slideBody);
+    await accentDeck(editableDeck.dir, name);
     for (const [no, accent] of [
       [1, "cyan"],
       [2, "rose"],
     ] as const) {
       await page.goto(`${editableDeck.url}?motion=instant#/${no}`);
-      const figure = page
-        .locator(`[data-deck-active][data-deck-slide="${no}"]`)
-        .getByRole("figure");
+      const slide = page.locator(`[data-deck-active][data-deck-slide="${no}"]`);
+      const figure = slide.getByRole("figure");
       await expect(figure).toBeVisible();
-      const caption = figure.locator("figcaption, p").first();
-      const reference = page.locator("[data-deck-active]").getByText("Reference body");
-      expect(
-        await caption.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
-      ).toBeGreaterThanOrEqual(
-        await reference.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+      const size = (element: Locator) =>
+        element.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+      expect(await size(figure.getByText(caption, { exact: true }))).toBeGreaterThanOrEqual(
+        await size(slide.getByText("Reference body")),
       );
-      if (name === "lower-third") {
-        expect(
-          await caption.evaluate((el) => {
-            const { x, y, width, height } = el.getBoundingClientRect();
-            return el.contains(document.elementFromPoint(x + width / 2, y + height / 2));
-          }),
-        ).toBe(true);
-      }
-      const accents =
-        name === "stat-compare"
-          ? [figure.locator("svg"), figure.getByText("-12 min")]
-          : name === "metric-grid"
-            ? await figure.locator(":scope > div").all()
-            : [figure.locator(name === "stat-burst" ? "svg" : "div[aria-hidden=true]")];
       const hue = Number.parseInt(ramps[accent][2].slice(1), 16);
-      for (const element of accents) {
+      for (const element of painted(figure)) {
         const image = PNG.sync.read(await element.screenshot());
         expect(image.data.some((_, i) => i % 4 === 0 && image.data.readUIntBE(i, 3) === hue)).toBe(
           true,
@@ -212,7 +209,25 @@ for (const [name, witness] of examples) {
     }
   });
 }
-test("wide totals keep the burst ring still and stay within all four tiles", async ({
+
+test("the lower-third role line stays on top of a full-canvas backdrop", async ({
+  page,
+  editableDeck,
+}) => {
+  const backdrop = '<div style={{position:"absolute",inset:0,background:"var(--od-canvas)"}} />';
+  await accentDeck(editableDeck.dir, "lower-third", backdrop);
+  await page.goto(`${editableDeck.url}?motion=instant#/1`);
+  const role = page.locator("[data-deck-active]").getByText("River survey lead", { exact: true });
+  await expect(role).toBeVisible();
+  expect(
+    await role.evaluate((el) => {
+      const { x, y, width, height } = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(x + width / 2, y + height / 2));
+    }),
+  ).toBe(true);
+});
+
+test("wide totals keep the burst ring still on every frame and stay within all four tiles", async ({
   page,
   editableDeck,
 }) => {
@@ -234,14 +249,29 @@ test("wide totals keep the burst ring still and stay within all four tiles", asy
       `<MotionTemplate template="metric-grid" at={1} metrics={${JSON.stringify(metrics)}} />`,
   );
   await page.goto(`${editableDeck.url}#/1`);
-  const ring = page.locator("[data-deck-active] figure svg");
+  // The ring is a decorative drawing hidden from assistive technology, found by its tag.
+  const ring = figureOf(page).locator("svg");
   await expect(ring).toBeAttached();
   await settleDeck(page);
-  const bounds = () => ring.evaluate((el) => el.getBoundingClientRect().toJSON());
-  const before = await bounds();
+  const frames = await ring.evaluateHandle((svg) => {
+    const log = new Set<string>();
+    const sample = () => {
+      log.add(JSON.stringify(svg.getBoundingClientRect()));
+      frame = requestAnimationFrame(sample);
+    };
+    let frame = requestAnimationFrame(sample);
+    return { log, stop: () => cancelAnimationFrame(frame) };
+  });
   await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/#\/1\?clicks=1$/);
+  await expect(figureOf(page).getByText("Samples", { exact: true })).toBeVisible();
   await settleDeck(page);
-  expect.soft(await bounds()).toEqual(before);
+  const bounds = await frames.evaluate(({ log, stop }) => {
+    stop();
+    return Array.from(log);
+  });
+  await frames.dispose();
+  expect(bounds, "the ring's bounds on every frame of the count-up").toHaveLength(1);
   await page.goto(`${editableDeck.url}?motion=instant#/2?clicks=1`);
   const numbers = page.locator("[data-deck-active]").getByRole("heading", { name: "12,345,678" });
   await expect(numbers).toHaveCount(4);

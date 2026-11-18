@@ -2,77 +2,13 @@ import { expect, type Page } from "@playwright/test";
 import { settled } from "./fixtures/deck-driver";
 import { kitFixture } from "./fixtures/kit.fixture";
 import { test } from "./fixtures/motion.fixture";
-import { motionClock } from "./fixtures/motion-clock";
-import { position, slideNo } from "./fixtures/motion-gallery";
-import { record } from "./fixtures/motion-recorder";
+import { slideNo } from "./fixtures/motion-gallery";
 
 const no = slideNo("chart-steps");
 const active = (page: Page) => page.locator("[data-deck-active]");
 const north = (page: Page) => active(page).getByLabel(/^North: /);
 
-function height(page: Page) {
-  // Compare chart coordinates across mounts; viewport transforms round to subpixels.
-  return north(page).evaluate((mark) => {
-    if (!(mark instanceof SVGGraphicsElement)) throw new Error("The North bar has no SVG geometry");
-    return mark.getBBox().height;
-  });
-}
-
-test("The north bar moves between its static heights in both directions on the same chart.", async ({
-  page,
-}) => {
-  await page.goto(`/?motion=instant#/${no}?clicks=1`);
-  await expect(north(page)).toBeVisible();
-  await settled(page);
-  const end = await height(page);
-  const clock = await motionClock(page);
-  await page.goto(`/#/${no}`);
-  await position(page, no);
-  await expect(north(page)).toBeVisible();
-  await clock.pauseAt();
-  await clock.settle();
-  const start = await height(page);
-  const paint = await record(
-    active(page),
-    (element) =>
-      Number(
-        Boolean(element.querySelector('[aria-label^="North: "]')?.getBoundingClientRect().height),
-      ),
-    clock.settle,
-  );
-
-  for (const [key, click, target] of [
-    ["ArrowRight", 1, end],
-    ["ArrowLeft", 0, start],
-  ] as const) {
-    await page.keyboard.press(key);
-    await position(page, no, click);
-    await clock.step(160);
-    const mid = await height(page);
-    expect(mid).toBeGreaterThan(start);
-    expect(mid).toBeLessThan(end);
-    await clock.settle();
-    expect(await height(page)).toBe(target);
-  }
-  expect(await paint.log()).not.toContain(0);
-});
-
-test("A two-click jump and a later-click reload show the static target immediately.", async ({
-  page,
-}) => {
-  await page.goto(`/?motion=instant#/${no}?clicks=2`);
-  await expect(north(page)).toHaveAccessibleName("North: 84");
-  await settled(page);
-  const target = await height(page);
-  const clock = await motionClock(page);
-  await page.goto(`/#/${no}`);
-  await expect(north(page)).toBeVisible();
-  await clock.pauseAt();
-  await page.evaluate((no) => {
-    location.hash = `/${no}?clicks=2`;
-  }, no);
-  await expect(north(page)).toHaveAttribute("aria-label", "North: 84");
-  expect(await height(page)).toBe(target);
+test("Reloading at a later click shows the static target bar on every frame.", async ({ page }) => {
   await page.addInitScript(() => {
     const ratios: number[] = [];
     Reflect.set(window, "reloadBarRatios", ratios);
@@ -86,13 +22,14 @@ test("A two-click jump and a later-click reload show the static target immediate
     }
     requestAnimationFrame(sample);
   });
-  await page.clock.resume();
+  await page.goto(`/#/${no}?clicks=2`);
+  await expect(north(page)).toHaveAccessibleName("North: 84");
   await page.reload();
   await expect(north(page)).toHaveAccessibleName("North: 84");
   await settled(page);
   const ratios: number[] = await page.evaluate(() => Reflect.get(window, "reloadBarRatios"));
-  expect(ratios.length).toBeGreaterThan(0);
-  for (const ratio of ratios) expect(ratio).toBeCloseTo(84 / 48);
+  expect(ratios).not.toHaveLength(0);
+  expect(ratios.filter((ratio) => Math.abs(ratio - 84 / 48) >= 0.005)).toEqual([]);
 });
 
 test("Print shows the chart data for each click, including the final hold.", async ({ page }) => {

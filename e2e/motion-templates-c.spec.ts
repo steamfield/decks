@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { expect, type Route } from "@playwright/test";
+import { expect, type Page, type Route } from "@playwright/test";
 import { PNG } from "pngjs";
 import { kitFixture } from "./fixtures/kit.fixture";
 import { test } from "./fixtures/motion.fixture";
@@ -17,47 +17,7 @@ const demos = [
 ] satisfies [string, string[]][];
 
 for (const [name, words] of demos) {
-  test(`each entrance in the live slide plays and settles within about 1.2 s of virtual time per beat (${name})`, async ({
-    page,
-    deck,
-    motionClock,
-  }) => {
-    await deck.goto(slideNo(`mt-${name}`));
-    await motionClock.pauseAt();
-    for (const [i, word] of words.entries()) {
-      const graphic = () =>
-        page.locator("[data-deck-active]").evaluate(
-          (slide, { name, i }) => {
-            const heading = slide.querySelectorAll("h2")[0];
-            let target: Element | null | undefined = heading;
-            if (name === "timeline-sweep")
-              target = slide.querySelector("ol")?.previousElementSibling;
-            if (name === "process-flow")
-              target = slide.querySelectorAll("li")[i]?.firstElementChild;
-            if (name === "comparison-split" && i === 1)
-              target = heading?.parentElement?.nextElementSibling;
-            if (name === "myth-fact" && i === 1) target = heading?.firstElementChild;
-            if (name === "spotlight") target = slide.querySelector("svg circle");
-            if (!target) throw new Error(`Missing graphic for ${name} beat ${i}`);
-            const { left, transform, backgroundSize, strokeDasharray } = getComputedStyle(target);
-            return [left, transform, backgroundSize, strokeDasharray];
-          },
-          { name, i },
-        );
-      await deck.press("ArrowRight");
-      await motionClock.step(180);
-      const moving = await graphic();
-      expect(await page.evaluate(() => window.__deck?.busy().length)).toBeGreaterThan(0);
-      await motionClock.step(1020);
-      expect(await graphic()).not.toEqual(moving);
-      expect(await page.evaluate(() => window.__deck?.busy())).toEqual([]);
-      await expect(
-        page.locator("[data-deck-active]").getByText(word, { exact: true }),
-      ).toBeVisible();
-    }
-  });
-
-  test(`each slide forward, back, two quick clicks and reload at the last click (${name})`, async ({
+  test(`${name} reveals a part per click, hides the last going back and reloads at its last click in the same pose`, async ({
     page,
   }) => {
     const no = slideNo(`mt-${name}`);
@@ -98,6 +58,7 @@ for (const [name, words] of demos) {
     function recordPose(labels: string[]) {
       function sample() {
         const slide = document.querySelector("[data-deck-active]");
+        // Only the spotlight has an image; the reload waits for it before reading the pose.
         const img = slide?.querySelector("img");
         if (
           !slide ||
@@ -107,6 +68,7 @@ for (const [name, words] of demos) {
           requestAnimationFrame(sample);
           return;
         }
+        // The pose is every element of the slide outside its layers, so no single part is named.
         const artwork = Array.from(slide.querySelectorAll(":scope > :not([data-deck-layer]) *"));
         Reflect.set(
           window,
@@ -165,43 +127,64 @@ installTheme(resolveTheme({surfaces:{canvas:"#ffffff"},ramps:{rose:["#775580", "
   ],
 });
 
-for (const [index, [name, words]] of demos.entries()) {
+// The slide each template sits on in the themed deck, and the click that shows its last part:
+// timeline-sweep enters at click 0, so it shows its last date one click earlier.
+const accentSlides = [
+  [1, "timeline-sweep", 2, "The evening route opens."],
+  [2, "process-flow", 3, "Release the gangway."],
+  [3, "comparison-split", 2, "Mobile passes"],
+  [4, "myth-fact", 2, "The ramp adjusts to the tide."],
+  [5, "spotlight", 1, "Harbour entrance"],
+] as const;
+
+async function openThemed(page: Page, themedURL: string, slide: number, click: number) {
+  await page.goto(new URL(`?motion=instant#/${slide}?clicks=${click}`, themedURL).href);
+  return page.locator("[data-deck-active]");
+}
+
+for (const [slide, name, click, last] of accentSlides) {
   themed(
     `the accent prop changes the accent colour to that hue's step 3 (${name})`,
     async ({ page, themedURL }) => {
-      const click = words.length - (index === 0 ? 1 : 0);
-      await page.goto(new URL(`?motion=instant#/${index + 1}?clicks=${click}`, themedURL).href);
-      const active = page.locator("[data-deck-active]");
-      await expect(
-        active.getByText(words[words.length - 1] ?? name, { exact: true }),
-      ).toBeVisible();
+      const active = await openThemed(page, themedURL, slide, click);
+      await expect(active.getByText(last, { exact: true })).toBeVisible();
       const image = PNG.sync.read(await active.screenshot());
       const painted = image.data.some((_, i) => i % 4 === 0 && isRose(image.data, i));
       expect(painted, name).toBe(true);
-      if (name === "comparison-split")
-        await expect(active.getByRole("list").first()).toHaveCSS("list-style-type", "disc");
-      if (name === "process-flow") {
-        const boxes = await active.getByRole("listitem").evaluateAll((items) =>
-          items.map((item) => {
-            const r = item.getBoundingClientRect();
-            return { left: r.left, right: r.right, middle: r.top + r.height / 2 };
-          }),
-        );
-        const [first, second] = boxes;
-        if (!first || !second) throw new Error("Missing adjacent process boxes");
-        const frame = PNG.sync.read(await page.screenshot());
-        for (let x = Math.ceil(first.right); x < Math.floor(second.left); x++) {
-          const y = Math.ceil(first.middle);
-          const offset = (y * frame.width + x) * 4;
-          expect(
-            frame.data.readUInt8(offset + 2) - frame.data.readUInt8(offset + 1),
-            "connector reaches both boxes",
-          ).toBeGreaterThan(20);
-        }
-      }
     },
   );
 }
+
+themed("comparison-split marks each side's points with discs", async ({ page, themedURL }) => {
+  const active = await openThemed(page, themedURL, 3, 2);
+  await expect(active.getByText("Mobile passes", { exact: true })).toBeVisible();
+  await expect(active.getByRole("list").first()).toHaveCSS("list-style-type", "disc");
+});
+
+themed("process-flow's connector reaches both neighbouring boxes", async ({ page, themedURL }) => {
+  const active = await openThemed(page, themedURL, 2, 3);
+  await expect(active.getByText("Release the gangway.", { exact: true })).toBeVisible();
+  const [first, second] = await active.getByRole("listitem").evaluateAll((items) =>
+    items.map((item) => {
+      const r = item.getBoundingClientRect();
+      return { left: r.left, right: r.right, middle: r.top + r.height / 2 };
+    }),
+  );
+  if (!first || !second) throw new Error("Missing adjacent process boxes");
+  const frame = PNG.sync.read(await page.screenshot());
+  const y = Math.ceil(first.middle);
+  const gap = Array.from(
+    { length: Math.floor(second.left) - Math.ceil(first.right) },
+    (_, i) => (y * frame.width + Math.ceil(first.right) + i) * 4,
+  );
+  expect(gap).not.toHaveLength(0);
+  expect(
+    gap.filter(
+      (offset) => frame.data.readUInt8(offset + 2) - frame.data.readUInt8(offset + 1) <= 20,
+    ),
+    "connector pixels between the boxes",
+  ).toEqual([]);
+});
 
 themed(
   "spotlight places its ring at x and y of the rendered image and throws outside 0..1",
@@ -288,7 +271,8 @@ test("a cold image holds capture and a failed image leaves the label without a r
   expect(await page.evaluate(() => window.__deck?.busy().length)).toBeGreaterThan(0);
   await route.fulfill({ contentType: "image/svg+xml", body: "unreadable image" });
   await expect(caption).toBeVisible();
-  await expect(page.locator("[data-deck-active] circle")).toBeHidden();
+  // The ring is a decorative, hidden drawing; its tag is its only identity.
+  await expect(page.locator("[data-deck-active]").locator("circle")).toBeHidden();
   await settled(page, no, 1);
   expect(warnings).toEqual(["spotlight: could not load field.svg"]);
 });

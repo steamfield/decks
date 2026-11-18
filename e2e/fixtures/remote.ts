@@ -73,10 +73,33 @@ async function startRemote(dir: string, mode?: "clock" | "live-term") {
   }
 }
 
-export const test = base.extend<{
-  remotePage: Page;
-  remoteServer: (mode?: "clock" | "live-term") => ReturnType<typeof startRemote>;
-}>({
+type RemoteServer = Awaited<ReturnType<typeof startRemote>>;
+
+export const test = base.extend<
+  {
+    remotePage: Page;
+    remoteServer: (mode: "clock" | "live-term") => Promise<RemoteServer>;
+  },
+  { remote: RemoteServer }
+>({
+  // One default-mode server per worker: each test closes its windows, and the relay takes its
+  // position from the first window that reports after that. Only the clock test reads the timer.
+  remote: [
+    async ({ browserName }, use) => {
+      const dir = await mkdtemp(join(tmpdir(), `deck-remote-${browserName}-`));
+      try {
+        const server = await startRemote(dir);
+        try {
+          await use(server);
+        } finally {
+          await server.close();
+        }
+      } finally {
+        await rm(dir, { recursive: true, force: true });
+      }
+    },
+    { scope: "worker" },
+  ],
   remotePage: async ({ browser }, use) => {
     const device = await browser.newContext();
     try {
@@ -87,7 +110,7 @@ export const test = base.extend<{
   },
   remoteServer: async ({ browserName }, use) => {
     const dir = await mkdtemp(join(tmpdir(), `deck-remote-${browserName}-`));
-    let server: Awaited<ReturnType<typeof startRemote>> | undefined;
+    let server: RemoteServer | undefined;
     try {
       await use(async (mode) => {
         server = await startRemote(dir, mode);
