@@ -181,7 +181,10 @@ it("prints only the dev URL when a remote port accompanies --no-remote", async (
   const url = await child.url();
   // The remote banner follows the dev URL, so the whole output is read once the process is gone.
   await child.close();
-  expect(child.output()).toEqual({ stdout: `${url}\n`, stderr: "" });
+  const { stdout, stderr } = child.output();
+  // Vite's own log lines (a cold dependency optimizer) may come first; the rest is the CLI's.
+  const printed = stdout.split("\n").filter((line) => !line.includes(" [vite] "));
+  expect({ printed, stderr }).toEqual({ printed: [url, ""], stderr: "" });
 });
 
 it.each(["SIGINT", "SIGTERM", "SIGHUP"] as const)(

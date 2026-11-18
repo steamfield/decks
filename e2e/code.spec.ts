@@ -237,7 +237,10 @@ const provided = true;
   await expect(page.getByRole("figure")).toContainText("provided.ts");
 });
 
-test("Code edits hot-update and new steps reload the manifest without losing the URL.", async ({
+// Each test saves the slide once. The chokidar bundled in Vite drops a second `change` for the
+// same path within 50 ms of the first (see dev-error-state.spec.ts), so a step edit written as
+// soon as a hot update lands could go unseen.
+test("A code edit hot-updates the slide without reloading the document.", async ({
   page,
   freshDeck,
 }) => {
@@ -251,6 +254,19 @@ test("Code edits hot-update and new steps reload the manifest without losing the
   await expect
     .poll(() => page.evaluate(() => Reflect.get(window, "codeDocument")))
     .toBe("original");
+  await states(page, [9]);
+  await expect(page).toHaveURL(/#\/1\?clicks=1$/);
+});
+
+test("A new code step reloads the manifest without losing the URL.", async ({
+  page,
+  freshDeck,
+}) => {
+  await page.goto(`${freshDeck.url}#/1?clicks=1`);
+  await states(page, [9]);
+  const file = join(freshDeck.dir, "slides/01-code.mdx");
+  const source = await readFile(file, "utf8");
+  await page.evaluate(() => Reflect.set(window, "codeDocument", "original"));
   const reloaded = page.waitForEvent("load");
   await writeFile(file, source.replace("{2|9}", "{2|9|all}"));
   await reloaded;
