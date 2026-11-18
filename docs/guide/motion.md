@@ -297,6 +297,14 @@ A slide's `transition` applies to the boundary between it and the next slide, in
 | `fade` | Cross-fade over `--deck-dur-base`. The default. |
 | `push` | The old slide slides out and the new one in, horizontally, over `--deck-dur-slow`. The direction follows the navigation. |
 | `zoom` | The old slide scales up and fades while the new one scales in, reversed going back, over `--deck-dur-slow`. |
+| `rise` | Pushes both slides up, or down when going backward, over `--deck-dur-slow`. |
+| `cover` | The new slide enters over the stationary old slide from the right, or from the left when going backward, over `--deck-dur-slow`. |
+| `reveal` | The old slide exits left over the stationary new slide, or right when going backward, over `--deck-dur-slow`. |
+| `wipe` | Unclips the new slide from left to right, or right to left when going backward, over `--deck-dur-slow`. |
+| `iris` | Opens a circle from the centre of the new slide to its corners over `--deck-dur-slow`. |
+| `blur` | Cross-fades as the old slide blurs and the new slide sharpens over `--deck-dur-base`. |
+| `flip` | Turns the old slide edge-on, then the new slide face-on, over `--deck-dur-slow`; the rotation reverses going backward. |
+| `cube` | Turns the slides around a shared vertical edge over `--deck-dur-slow`; the turn reverses going backward. |
 | `cut` | No transition. |
 | `story` | Provided by the kit's stylesheet. See [kit.md](kit.md). |
 
@@ -316,6 +324,38 @@ html[data-deck-transition="lift"]::view-transition-new(root) {
 A name with no CSS gets the browser's default cross-fade.
 
 A deck's `layers/above.tsx` holds still while slides transition under it. See [config.md](config.md).
+
+Most talks use one transition throughout and save a second for one moment (an `iris` into the reveal, a `cube` between two halves of the talk). `decks film <deck> <slide> 0` shows what a transition looks like as a contact sheet.
+
+## `Camera`
+
+`Camera` frames one region of a large picture per click, like a camera panning and zooming across a diagram or a map. Give its container a height. Each stop is the centre of the frame in the children's own CSS pixels, from their top-left corner, and a zoom (1 keeps their natural size).
+
+```mdx
+<div style={{ height: 600 }}>
+  <Camera at={1} stops={[{ x: 600, y: 300, zoom: 1 }, { x: 250, y: 200, zoom: 2 }, { x: 900, y: 420, zoom: 2.5 }]}>
+    <RouteMap />
+  </Camera>
+</div>
+```
+
+Stop 0 shows before click `at`, stop 1 arrives on click `at`, and stop `i` on click `at + i - 1`; the last stop holds. One click forward or back moves the camera from where it is now to the new stop; a jump, instant motion and every other view show the stop for the click directly. A literal `stops` array is counted (`at + stops.length - 2`); for an array from data or a spread, set `clicks` in the frontmatter. Props: `stops`, `at`, `children`.
+
+## `ShapeMorph`
+
+`ShapeMorph` is one SVG `<path>` that morphs from one outline to the next per click, so the audience follows the same shape as it changes. Put it inside an `<svg>` and set the fill or stroke there.
+
+```mdx
+<svg viewBox="0 0 100 100" role="img" aria-label="A triangle becomes a square">
+  <ShapeMorph at={1} paths={["M50 10L90 90H10Z", "M10 10H90V90H10Z"]} />
+</svg>
+```
+
+It indexes and counts like `Camera`. An outline that is empty or only moves the pen appears at once instead of morphing. Props: `paths`, `at`.
+
+## Motion graphics with gsap
+
+For motion beyond the primitives, write a deck component on `useTimeline` (above) and use gsap's plugins, which `@steamfield/decks/motion` registers and exports: `SplitText`, `MorphSVGPlugin`, `MotionPathPlugin`, `DrawSVGPlugin` and `CustomEase`. A build can return a cleanup function, which runs when the timeline is rebuilt or the slide unmounts; return `() => split.revert()` after splitting text so the original text comes back. Because `useTimeline` seeks every beat, the motion steps with clicks, reverses, and shows its finished state in the presenter, overview and print without extra code. For 3D, `Scene3D` in the kit (see [kit.md](kit.md)) puts a three.js scene on the same timeline. Ready-made motion graphics are in [motion-templates.md](motion-templates.md).
 
 ## `Morph`
 
