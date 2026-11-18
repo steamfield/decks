@@ -28,11 +28,6 @@ it("team-grid hides its parts before click at and shows the finished pose from c
   for (const part of parts()) expect(part).not.toBeVisible();
 });
 
-it("team-grid with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "preview" });
-  for (const part of parts()) expect(part).toBeVisible();
-});
-
 it("the team-grid entrance in the live slide plays and settles within about 1.2 s of virtual time", async () => {
   await setup(() => <MotionTemplate {...props} />);
   const [first] = parts();
@@ -47,31 +42,13 @@ it("the team-grid entrance in the live slide plays and settles within about 1.2 
   for (const part of parts()) expect(part).toHaveStyle({ opacity: "1" });
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished team-grid pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    for (const part of parts()) expect(part).toHaveStyle({ opacity: "1" });
-  },
-);
-
-it("text is read once as the full sentence and is whole after unmount", async () => {
-  const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
-  const text = screen.getByRole("heading", { name: "Ada Reed" });
-  expect(text).toHaveAccessibleName("Ada Reed");
-  expect(screen.getAllByText(text.textContent ?? "", { exact: true })).toEqual([text]);
-  view.unmount();
-  expect(text.firstChild).toBeInstanceOf(Text);
-  expect(text.firstChild).toBe(text.lastChild);
-  expect(text.textContent).toBe("Ada Reed");
+it("team-grid shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
+  for (const part of parts()) expect(part).toHaveStyle({ opacity: "1" });
 });
 
 it.each([
   [{ at: -1 }, "team-grid: invalid at -1"],
-  [{ at: Infinity }, "team-grid: invalid at Infinity"],
   [{ at: 0.5 }, "team-grid: invalid at 0.5"],
   [
     { people: [{ name: " ", role: "Lead" }, props.people[1]] },

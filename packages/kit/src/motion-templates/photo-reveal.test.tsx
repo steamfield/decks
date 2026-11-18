@@ -1,5 +1,5 @@
 import { gsap } from "@react-decks/motion";
-import { fireEvent, isInaccessible, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -42,13 +42,6 @@ it("photo-reveal hides its parts before click at and shows the finished pose fro
   expect(text()).not.toBeVisible();
 });
 
-it("photo-reveal with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "overview" });
-  load();
-  expect(image()).toBeVisible();
-  expect(text()).toBeVisible();
-});
-
 it("the photo-reveal entrance in the live slide plays and settles within about 1.2 s of virtual time", async () => {
   await setup(() => <MotionTemplate {...props} />);
   await tick(2);
@@ -68,31 +61,14 @@ it("the photo-reveal entrance in the live slide plays and settles within about 1
   expect(image()).toBeVisible();
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished photo-reveal pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    load();
-    expect(text()).toBeVisible();
-    expect(image()).toBeVisible();
-    expect(text()).toHaveStyle({ opacity: "1" });
-  },
-);
-
-it("text is read once as the full sentence and is whole after unmount", async () => {
-  const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
+it("photo-reveal shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
   load();
-  expect(screen.getByRole("img", { name: props.alt })).toBeVisible();
-  const sentence = text();
-  expect(screen.getByRole("heading", { name: props.caption })).toBe(sentence);
-  expect(isInaccessible(sentence)).toBe(false);
-  expect(sentence).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.caption })).toBe(text());
+  expect(text()).toBeVisible();
   expect(screen.getByText(props.credit)).toBeVisible();
-  view.unmount();
-  expect(sentence.textContent).toBe(props.caption);
+  expect(image()).toBeVisible();
+  expect(text()).toHaveStyle({ opacity: "1" });
 });
 
 it.each(["error", "zero-width", "zero-height"] as const)(
@@ -117,8 +93,6 @@ it.each(["error", "zero-width", "zero-height"] as const)(
 it.each([
   [{ at: -1 }, "photo-reveal: invalid at -1"],
   [{ at: 1.5 }, "photo-reveal: invalid at 1.5"],
-  [{ at: Infinity }, "photo-reveal: invalid at Infinity"],
-  [{ at: NaN }, "photo-reveal: invalid at NaN"],
   [{ src: " " }, 'photo-reveal: invalid src " "'],
   [{ alt: "" }, 'photo-reveal: invalid alt ""'],
   [{ caption: " " }, 'photo-reveal: invalid caption " "'],

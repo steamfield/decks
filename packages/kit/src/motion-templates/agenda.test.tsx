@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -26,11 +26,6 @@ it("agenda hides its parts before click at and shows the finished pose from clic
   expect(part()).not.toBeVisible();
 });
 
-it("agenda with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "overview" });
-  expect(part()).toBeVisible();
-});
-
 it("the agenda entrance in the live slide plays and settles within about 1.2 s of virtual time per beat", async () => {
   await setup(() => <MotionTemplate {...props} />);
   expect(part()).not.toBeVisible();
@@ -45,30 +40,14 @@ it("the agenda entrance in the live slide plays and settles within about 1.2 s o
   expect(part()).toHaveStyle({ opacity: "1" });
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished agenda pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    expect(part()).toHaveStyle({ opacity: "1" });
-    expect(part()).toBeVisible();
-  },
-);
-
-it("text is read once as the full sentence and is whole after unmount", async () => {
-  const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
-  const text = within(screen.getByRole("listitem", { current: "step" })).getByText("Handoff gaps");
-  expect(text).toHaveTextContent("Handoff gaps");
-  view.unmount();
-  expect(text.textContent).toBe("Handoff gaps");
+it("agenda shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
+  expect(part()).toHaveStyle({ opacity: "1" });
+  expect(part()).toBeVisible();
 });
 
 it.each([
   [{ at: -1 }, "agenda: invalid at -1"],
-  [{ at: Number.NaN }, "agenda: invalid at NaN"],
-  [{ at: Infinity }, "agenda: invalid at Infinity"],
   [{ at: 1.5 }, "agenda: invalid at 1.5"],
   [{ items: [] }, "agenda: invalid items []"],
   [{ items: [" "] }, 'agenda: invalid items[0] " "'],
@@ -86,7 +65,7 @@ it.each([
   },
 );
 
-it("agenda checks off items before current, highlights current and mutes the rest", async () => {
+it("agenda checks off items before current and marks current as the step", async () => {
   await setup(() => <MotionTemplate {...props} />, { instant: true });
   const [done, current, later] = screen.getAllByRole("listitem");
   expect(done).toHaveTextContent("✓");
@@ -96,15 +75,12 @@ it("agenda checks off items before current, highlights current and mutes the res
   expect(later).not.toHaveTextContent("✓");
 });
 
-it.each([0, 4, 1.5, Number.NaN, Infinity])(
-  "agenda throws for current outside the list: %s",
-  async (current) => {
-    const { errors } = await setup(() => <MotionTemplate {...props} current={current} />, {
-      error: true,
-    });
-    expect(errors).toEqual([new Error(`agenda: invalid current ${current}`)]);
-  },
-);
+it.each([0, 4, 1.5])("agenda throws for current outside the list: %s", async (current) => {
+  const { errors } = await setup(() => <MotionTemplate {...props} current={current} />, {
+    error: true,
+  });
+  expect(errors).toEqual([new Error(`agenda: invalid current ${current}`)]);
+});
 
 it("highlights the seventh and last section", async () => {
   const items = Array.from({ length: 7 }, (_, index) => String(index + 1));

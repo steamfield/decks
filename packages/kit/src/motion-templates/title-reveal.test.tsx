@@ -34,7 +34,7 @@ function finished() {
   expect(screen.getByText("Tracing the May flood")).toBeVisible();
   expect(screen.getByRole("heading", { name: content.title })).toBeVisible();
 }
-it("each template hides its parts before click at and shows the finished pose from click at", async () => {
+it("title-reveal hides its parts before click at and shows the finished pose from click at", async () => {
   const view = await show(2);
   expect(screen.getByText("Tracing the May flood")).not.toBeVisible();
   await view.next();
@@ -47,12 +47,8 @@ it("each template hides its parts before click at and shows the finished pose fr
   await tick(1.2);
   expect(screen.getByText("Tracing the May flood")).not.toBeVisible();
 });
-it("each template with at 0 shows the finished pose outside the live slide", async () => {
-  await show(0, { context: "preview" });
-  finished();
-});
 it.each([0, 1])(
-  "each entrance in the live slide plays and settles within about 1.2 s of virtual time per beat (at %i)",
+  "the title-reveal entrance in the live slide plays and settles within about 1.2 s of virtual time (at %i)",
   async (at) => {
     const view = await show(at);
     if (at) await view.next();
@@ -69,20 +65,17 @@ it.each([0, 1])(
     expect(pose()).toBe(end);
   },
 );
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "presenter, preview, overview, print and instant mode show the finished pose for the click with no tween (%s)",
-  async (mode) => {
-    await show(2, mode === "instant" ? { click: 2, instant: true } : { click: 2, context: mode });
-    finished();
-  },
-);
+it("title-reveal shows its finished pose for the click in print", async () => {
+  await show(2, { click: 2, context: "print" });
+  finished();
+});
 
 it.each([
   [{ title: " " }, 'title-reveal title must contain text, got " "'],
   [{ at: -1 }, "title-reveal at must be a nonnegative integer, got -1"],
   [{ at: NaN }, "title-reveal at must be a nonnegative integer, got NaN"],
 ] as const)(
-  "each template throws naming itself and the prop for empty required text, an empty list, a negative at and a list over its limit (%j)",
+  "title-reveal throws naming itself and the prop for invalid input %j",
   async (overrides, message) => {
     const view = await setup(
       () => <MotionTemplate template="title-reveal" {...content} {...overrides} />,
@@ -92,7 +85,7 @@ it.each([
   },
 );
 
-it("text is read once as the full sentence and is whole after unmount", async () => {
+it("reads the split title once as the whole sentence and leaves it whole after unmount", async () => {
   const view = await show(0, { context: "print" });
   const heading = screen.getByRole("heading", { name: content.title });
   for (const word of content.title.split(" "))

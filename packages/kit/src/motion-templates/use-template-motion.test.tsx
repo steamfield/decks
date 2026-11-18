@@ -49,8 +49,24 @@ it("holds the hidden pose until click at, then plays the entrance and the step a
   expect(pose()).toHaveTextContent(/^1\/1$/);
 });
 
-it("shows the finished pose for the click with no animation outside the live slide", async () => {
-  await setup(() => createElement(Template, { at: 0 }), { context: "overview", click: 0 });
+it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
+  "%s shows the pose for the click with no animation",
+  async (mode) => {
+    await setup(() => createElement(Template, { at: 2 }), {
+      click: 3,
+      ...(mode === "instant" ? { instant: true } : { context: mode }),
+    });
+    expect(pose()).toHaveTextContent(/^1\/1$/);
+  },
+);
+
+it("shows the hidden pose outside the live slide at a click before at", async () => {
+  await setup(() => createElement(Template, { at: 2 }), { context: "print", click: 1 });
+  expect(pose()).toHaveTextContent(/^0\/0$/);
+});
+
+it("shows the entrance's finished pose outside the live slide when at is 0", async () => {
+  await setup(() => createElement(Template, { at: 0 }), { context: "overview" });
   expect(pose()).toHaveTextContent(/^1\/0$/);
 });
 

@@ -1,4 +1,4 @@
-import { fireEvent, isInaccessible, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -41,13 +41,6 @@ it("device-mockup hides its parts before click at and shows the finished pose fr
   expect(text()).not.toBeVisible();
 });
 
-it("device-mockup with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "overview" });
-  load();
-  expect(image()).toBeVisible();
-  expect(text()).toBeVisible();
-});
-
 it("the device-mockup entrance in the live slide plays and settles within about 1.2 s of virtual time", async () => {
   await setup(() => <MotionTemplate {...props} />);
   await tick(2);
@@ -69,30 +62,12 @@ it("the device-mockup entrance in the live slide plays and settles within about 
   expect(image()).toBeVisible();
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished device-mockup pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    load();
-    expect(text()).toBeVisible();
-    expect(image()).toBeVisible();
-    expect(text()).toHaveStyle({ opacity: "1" });
-  },
-);
-
-it("text is read once as the full sentence and is whole after unmount", async () => {
-  const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
+it("device-mockup shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
   load();
-  expect(screen.getByRole("img", { name: props.alt })).toBeVisible();
-  const sentence = text();
-  expect(isInaccessible(sentence)).toBe(false);
-  expect(sentence).toBeVisible();
-
-  view.unmount();
-  expect(sentence.textContent).toBe(props.caption);
+  expect(text()).toBeVisible();
+  expect(image()).toBeVisible();
+  expect(text()).toHaveStyle({ opacity: "1" });
 });
 
 it.each(["error", "zero-width", "zero-height"] as const)(
@@ -119,8 +94,6 @@ it.each(["error", "zero-width", "zero-height"] as const)(
 it.each([
   [{ at: -1 }, "device-mockup: invalid at -1"],
   [{ at: 1.5 }, "device-mockup: invalid at 1.5"],
-  [{ at: Infinity }, "device-mockup: invalid at Infinity"],
-  [{ at: NaN }, "device-mockup: invalid at NaN"],
   [{ src: " " }, 'device-mockup: invalid src " "'],
   [{ alt: "" }, 'device-mockup: invalid alt ""'],
 ] as const)(

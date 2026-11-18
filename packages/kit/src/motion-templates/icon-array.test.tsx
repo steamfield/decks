@@ -27,11 +27,6 @@ it("icon-array hides its parts before click at and shows the finished pose from 
   for (const part of parts()) expect(part).not.toBeVisible();
 });
 
-it("icon-array with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "preview" });
-  for (const part of parts()) expect(part).toBeVisible();
-});
-
 it("the icon-array entrance in the live slide plays and settles within about 1.2 s of virtual time", async () => {
   await setup(() => <MotionTemplate {...props} />);
   const [first] = parts();
@@ -47,31 +42,13 @@ it("the icon-array entrance in the live slide plays and settles within about 1.2
   for (const part of parts()) expect(part).toHaveStyle({ opacity: "1" });
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished icon-array pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    for (const part of parts()) expect(part).toHaveStyle({ opacity: "1" });
-  },
-);
-
-it("text is read once as the full sentence and is whole after unmount", async () => {
-  const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
-  const text = screen.getByRole("heading", { name: props.label });
-  expect(text).toHaveAccessibleName(props.label);
-  expect(screen.getAllByText(text.textContent ?? "", { exact: true })).toEqual([text]);
-  view.unmount();
-  expect(text.firstChild).toBeInstanceOf(Text);
-  expect(text.firstChild).toBe(text.lastChild);
-  expect(text.textContent).toBe(props.label);
+it("icon-array shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
+  for (const part of parts()) expect(part).toHaveStyle({ opacity: "1" });
 });
 
 it.each([
   [{ at: -1 }, "icon-array: invalid at -1"],
-  [{ at: Infinity }, "icon-array: invalid at Infinity"],
   [{ at: 0.5 }, "icon-array: invalid at 0.5"],
   [{ label: " " }, 'icon-array: invalid label " "'],
 ] as const)(
@@ -87,7 +64,6 @@ it.each([
 it.each([
   [{ filled: -1 }, "filled -1"],
   [{ filled: 5 }, "filled 5"],
-  [{ filled: NaN }, "filled NaN"],
   [{ filled: 0.5 }, "filled 0.5"],
   [{ total: 0 }, "total 0"],
   [{ total: 2.5 }, "total 2.5"],

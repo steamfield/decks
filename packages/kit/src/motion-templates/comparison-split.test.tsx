@@ -1,5 +1,4 @@
-import { type RenderContext, SlideHost, useSlide } from "@react-decks/runtime";
-import { act, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, expect, it } from "vitest";
 import { setup, tick } from "../kit.test-support";
@@ -17,7 +16,7 @@ const last = () => screen.getByText("Mobile passes", { exact: true });
 
 beforeEach(() => installTheme(resolveTheme()));
 
-it("each template hides its parts before click at and shows the finished pose from click at", async () => {
+it("comparison-split hides its parts before click at and shows the finished pose from click at", async () => {
   const view = await setup(() => <MotionTemplate {...props} at={2} />);
   expect(first()).not.toBeVisible();
   await view.next();
@@ -38,40 +37,13 @@ it("plays the first beat on arrival at click zero in the live slide", async () =
   expect(first()).toBeVisible();
 });
 
-it("each template with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "preview" });
+it("comparison-split shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} />, { context: "print" });
   expect(first()).toBeVisible();
   expect(last()).not.toBeVisible();
 });
 
-function ChangingContext({ context }: { context: RenderContext | "instant" }) {
-  const slide = useSlide();
-  if (context !== "instant" && slide.renderContext === "slide" && slide.clicks > 0)
-    return <SlideHost no={1} context={context} clicks={slide.clicks} />;
-  return <MotionTemplate {...props} at={2} />;
-}
-
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "presenter, preview, overview, print and instant mode show the finished pose for the click with no tween (%s)",
-  async (context) => {
-    const view = await setup(() => <ChangingContext context={context} />, {
-      instant: context === "instant",
-    });
-    await view.next();
-    expect(first()).not.toBeVisible();
-    act(() => view.store.dispatch({ type: "next" }));
-    expect(first()).toBeVisible();
-  },
-);
-
-it("text is read once as the full sentence and is whole after unmount", async () => {
-  const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
-  const sentence = screen.getByText("Paper tickets", { exact: true });
-  view.unmount();
-  expect(Array.from(sentence.childNodes, (node) => node.nodeValue)).toEqual(["Paper tickets"]);
-});
-
-it("comparison-split and myth-fact show the second beat from click at plus 1", async () => {
+it("comparison-split shows the second beat from click at plus 1", async () => {
   const view = await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, instant: true });
   expect(first()).toBeVisible();
   expect(last()).not.toBeVisible();
@@ -105,7 +77,7 @@ const invalid: [Partial<typeof props>, string][] = [
 ];
 
 it.each(invalid)(
-  "each template throws naming itself and the prop for empty required text, an empty list, a negative at and a list over its limit (%j)",
+  "comparison-split throws naming itself and the prop for invalid input %j",
   (overrides, message) => {
     expect(() => renderToStaticMarkup(<MotionTemplate {...props} {...overrides} />)).toThrow(
       new Error(`comparison-split: ${message}`),

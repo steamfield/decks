@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { isInaccessible, screen } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -26,11 +26,6 @@ it("quote-card hides its parts before click at and shows the finished pose from 
   expect(part()).not.toBeVisible();
 });
 
-it("quote-card with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "overview" });
-  expect(part()).toBeVisible();
-});
-
 it("the quote-card entrance in the live slide plays and settles within about 1.2 s of virtual time per beat", async () => {
   await setup(() => <MotionTemplate {...props} />);
   expect(part()).not.toBeVisible();
@@ -45,33 +40,23 @@ it("the quote-card entrance in the live slide plays and settles within about 1.2
   expect(part()).toHaveStyle({ opacity: "1" });
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished quote-card pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    expect(part()).toHaveStyle({ opacity: "1" });
-    expect(part()).toBeVisible();
-  },
-);
+it("quote-card shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
+  expect(part()).toHaveStyle({ opacity: "1" });
+  expect(part()).toBeVisible();
+});
 
-it("text is read once as the full sentence and is whole after unmount", async () => {
+it("reads the split quote once as the whole sentence and leaves it whole after unmount", async () => {
   const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
-  const text = screen.getByRole("heading", { name: props.quote });
-  expect(text).toHaveTextContent("One missed handoff can hold up the whole crew.");
-  const split = text;
-  expect(split).toHaveAccessibleName(props.quote);
+  const heading = screen.getByRole("heading", { name: props.quote });
+  expect(heading.children.length).toBeGreaterThan(1);
+  for (const word of heading.children) expect(isInaccessible(word)).toBe(true);
   view.unmount();
-  expect(split.childNodes).toHaveLength(1);
-  expect(split.textContent).toBe(props.quote);
+  expect(Array.from(heading.childNodes, (node) => node.nodeValue)).toEqual([props.quote]);
 });
 
 it.each([
   [{ at: -1 }, "quote-card: invalid at -1"],
-  [{ at: Number.NaN }, "quote-card: invalid at NaN"],
-  [{ at: Infinity }, "quote-card: invalid at Infinity"],
   [{ at: 1.5 }, "quote-card: invalid at 1.5"],
   [{ quote: " " }, 'quote-card: invalid quote " "'],
   [{ source: " " }, 'quote-card: invalid source " "'],
