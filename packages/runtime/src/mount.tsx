@@ -5,8 +5,8 @@ import { Deck } from "./deck";
 import { installEmbed } from "./embed/embed";
 import type { RemoteLink } from "./remote/remote-link";
 import { connectWindow } from "./remote/window-link";
-import { settled } from "./settle/settle";
-import type { DeckSource } from "./source";
+import { busy, settled } from "./settle/settle";
+import { createSlideModules, type DeckSource } from "./source";
 import { createBroadcastTransport } from "./store/broadcast-transport";
 import { createDeckStore } from "./store/store";
 import { createPresenter } from "./transitions/transition";
@@ -31,7 +31,16 @@ export function mountDeck(
   const store = createDeckStore(source.manifest, { transport, present: createPresenter(source) });
   const stopRemote =
     transport && options?.remote ? connectWindow(store, options.remote) : undefined;
-  const api = { settled };
+  const api = {
+    settled,
+    busy,
+    /** Lets film warm the destination and its neighbours before measuring motion. */
+    async preload(slide: number) {
+      const modules = createSlideModules(source);
+      const neighbours = source.manifest.slides.slice(Math.max(0, slide - 2), slide + 1);
+      await Promise.all(neighbours.map(({ id }) => modules.get(id)?.load()));
+    },
+  };
   window.__deck = api;
   const embed = installEmbed(source.manifest, store);
   const reactRoot = createRoot(

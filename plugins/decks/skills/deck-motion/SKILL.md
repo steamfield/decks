@@ -31,4 +31,4 @@ The same component can render in `slide`, `presenter`, `preview`, `overview` and
 
 ## Verify motion as a viewer
 
-Walk forward, backward, press again mid-tween, jump to a later click, reload there and revisit the slide. Compare with `?motion=instant`, reduced motion, presenter current/preview, overview and print. The settled state must be the same regardless of navigation direction. Use `window.__deck.settled()` for automation instead of sleeping. Screenshots verify settled frames; watch live pacing separately.
+Walk forward, backward, press again mid-tween, jump to a later click, reload there and revisit the slide. Compare with `?motion=instant`, reduced motion, presenter current/preview, overview and print. The settled state must be the same regardless of navigation direction. Use `window.__deck.settled()` for automation instead of sleeping. Film an authored beat with `decks film <deck> <slide> <click> --out beat.png`. Read the frames in order to check where a stroke grows, a chart changes or a mark reaches its destination. Click 0 films the transition from the preceding visible slide. Watch live playback to judge pacing.

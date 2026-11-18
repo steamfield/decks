@@ -9,22 +9,28 @@ export function registerSettleProbe(isBusy: () => boolean): () => void {
   };
 }
 
+/** Reports fonts and registered motion probes that capture tools must still advance. */
+export function busy(): string[] {
+  const reasons = document.fonts?.status === "loading" ? ["loading fonts"] : [];
+  for (const probe of probes) if (probe()) reasons.push(probe.name || "settle probe");
+  return reasons;
+}
+
 export async function settled(): Promise<void> {
   await document.fonts?.ready;
   return new Promise((resolve) => {
     let quietFrames = 0;
     function frame() {
-      const busy =
-        document.fonts?.status === "loading" ||
+      const running =
         transitionInFlight() ||
-        [...probes].some((probe) => probe()) ||
+        busy().length > 0 ||
         (document.getAnimations?.() ?? []).some((animation) => {
           const end = animation.effect?.getComputedTiming().endTime;
           return (
             animation.playState === "running" && typeof end === "number" && Number.isFinite(end)
           );
         });
-      quietFrames = busy ? 0 : quietFrames + 1;
+      quietFrames = running ? 0 : quietFrames + 1;
       if (quietFrames === 2) resolve();
       else requestAnimationFrame(frame);
     }
@@ -34,6 +40,6 @@ export async function settled(): Promise<void> {
 
 declare global {
   interface Window {
-    __deck?: { settled(): Promise<void> };
+    __deck?: { settled(): Promise<void>; busy(): string[]; preload(slide: number): Promise<void> };
   }
 }
