@@ -1,3 +1,4 @@
+import { constants } from "node:os";
 import { type ParseArgsOptionsConfig, parseArgs, stripVTControlCharacters } from "node:util";
 import { defineCommand, renderUsage, runCommand, showUsage } from "citty";
 import pc from "picocolors";
@@ -51,10 +52,12 @@ const commands = {
         remote,
       });
       if (remote) {
-        process.once("SIGINT", async () => {
-          process.exitCode = 130;
+        // Closing removes the built remote page, whose HTML carries the token, from the temp dir.
+        const stop = async (signal: NodeJS.Signals) => {
+          process.exitCode = 128 + constants.signals[signal];
           await server.close();
-        });
+        };
+        for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"] as const) process.once(signal, stop);
       } else console.log(pc.green(server.url));
     },
   }),

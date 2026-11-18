@@ -3,7 +3,8 @@ import { createServer } from "node:net";
 import { join } from "node:path";
 import { TERM_ATTACH, TERM_GONE } from "@react-decks/core";
 import { expect, it, onTestFinished, vi } from "vitest";
-import { cli, fixture } from "../dev/server.test-support";
+import { cli, fixture, repoPath } from "../dev/server.test-support";
+import { cliProcess } from "./cli-process.test-support";
 
 it.each([false, true])("dev answers terminal attach only with --live-term=%s", async (enabled) => {
   const { dir } = await fixture(onTestFinished, {
@@ -180,18 +181,34 @@ it("keeps the LAN presenter disabled when a port accompanies --no-remote", async
   expect(child.output().stdout).not.toContain("Remote presenter:");
 });
 
-it.each(["SIGINT", "SIGTERM"] as const)("deletes the remote page after %s", async (signal) => {
-  const { dir } = await fixture(onTestFinished);
-  const temp = join(dir, "temp");
-  await mkdir(temp);
-  vi.stubEnv("TMPDIR", temp);
-  onTestFinished(() => {
-    vi.unstubAllEnvs();
-  });
-  const child = cli(dir, ["dev", ".", "--remote", "--port", "0", "--remote-port", "0"]);
-  await child.url();
-  expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toHaveLength(1);
-  child.child.kill(signal);
-  await child.exit;
-  expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toEqual([]);
-});
+it.each(["SIGINT", "SIGTERM", "SIGHUP"] as const)(
+  "deletes the remote page after %s",
+  async (signal) => {
+    const { dir } = await fixture(onTestFinished);
+    const temp = join(dir, "temp");
+    await mkdir(temp);
+    vi.stubEnv("TMPDIR", temp);
+    onTestFinished(() => {
+      vi.unstubAllEnvs();
+    });
+    // Node runs the CLI itself, as the published bin does: the tsx wrapper relays only SIGINT and
+    // SIGTERM, and would die on SIGHUP while the CLI it started kept running.
+    const child = cliProcess(
+      process.execPath,
+      [
+        "--import",
+        "tsx",
+        "--conditions=@steamfield/decks/source",
+        repoPath("packages/node/src/cli/cli.ts"),
+        ...["dev", ".", "--remote", "--port", "0", "--remote-port", "0"],
+      ],
+      { cwd: dir, env: { ...process.env, NO_COLOR: "1", NODE_NO_WARNINGS: "1" } },
+    );
+    onTestFinished(child.close);
+    await child.url();
+    expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toHaveLength(1);
+    child.child.kill(signal);
+    await child.exit;
+    expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toEqual([]);
+  },
+);

@@ -23,6 +23,10 @@ import { manifestModule, notesModule } from "./virtual-modules";
 
 const prefix = "virtual:react-decks/";
 
+/** Whether a `vite.server.host` value binds the dev server to loopback only. */
+const isLoopback = (host: string) =>
+  host === "localhost" || host === "::1" || (isIP(host) === 4 && host.startsWith("127."));
+
 export function reactDecks(deck: ResolvedDeck): Plugin[] {
   return createDeckPlugins(deck).plugins;
 }
@@ -149,7 +153,7 @@ export function createDeckPlugins(
       }
       if (command === "serve") configSource ??= await readConfig();
       const host = current.config.vite?.server?.host;
-      if (options.remote && host !== undefined && host !== "127.0.0.1")
+      if (options.remote && (host === true || (typeof host === "string" && !isLoopback(host))))
         reporting.logger.warn(
           `Remote presenter: overriding dev server host "${host}" with loopback.`,
         );
@@ -177,16 +181,7 @@ export function createDeckPlugins(
       if (!options.remote) return;
       const { host, hmr, ws, port } = config.server;
       let setting: string | undefined;
-      if (
-        host === true ||
-        (typeof host === "string" &&
-          !(
-            host === "localhost" ||
-            host === "::1" ||
-            (isIP(host) === 4 && host.startsWith("127."))
-          ))
-      )
-        setting = "host";
+      if (host === true || (typeof host === "string" && !isLoopback(host))) setting = "host";
       else if (hmr === false) setting = "hmr";
       else if (ws === false) setting = "ws";
       else if (ws?.server) setting = "ws.server";

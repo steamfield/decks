@@ -17,6 +17,8 @@ export function deckConfig(title: string, host = "127.0.0.1") {
     server: {host: ${JSON.stringify(host)}}, optimizeDeps: {noDiscovery: true, include: []},
     plugins: [{ name: "window-barrier", configureServer(server) {
       server.ws.on("test:barrier", (data, client) => client.send("test:barrier", data));
+      server.ws.on("test:address", (_data, client) =>
+        client.send("test:address", server.httpServer.address()));
     }}]
   }};`;
 }
@@ -65,11 +67,13 @@ export async function connectWindow(devUrl: string) {
   const intents: unknown[] = [];
   const frames: unknown[] = [];
   const barriers: number[] = [];
+  const addresses: unknown[] = [];
   socket.on("message", (data) => {
     const frame = JSON.parse(data.toString());
     frames.push(frame);
     if (frame.event === REMOTE_INTENT) intents.push(frame.data);
     if (frame.event === "test:barrier") barriers.push(frame.data);
+    if (frame.event === "test:address") addresses.push(frame.data);
   });
   onTestFinished(() => socket.terminate());
   await once(socket, "open");
@@ -83,7 +87,13 @@ export async function connectWindow(devUrl: string) {
     socket.send(JSON.stringify({ type: "custom", event: REMOTE_POSITION, data }));
     await barrier();
   }
-  return { socket, intents, report, barrier, frames };
+  /** The dev server's bound TCP address, as its own `httpServer.address()` reports it. */
+  async function address() {
+    socket.send(JSON.stringify({ type: "custom", event: "test:address" }));
+    await waitForWatcher(() => expect(addresses).toHaveLength(1));
+    return addresses[0];
+  }
+  return { socket, intents, report, barrier, frames, address };
 }
 
 export const play = { slide: 1, click: 0, view: "play", focused: true } as const;
