@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <title>Trail Desk patrol handoff</title>
+  <rect width="960" height="540" fill="#f2f0e6"/>
+  <path d="M0 0h960v74H0z" fill="#163e35"/>
+  <g font-family="system-ui, sans-serif">
+    <path d="m27 50 16-29 17 29h-8l-9-15-9 15z" fill="#d9f39a"/>
+    <text x="74" y="49" fill="#f2f0e6" font-size="32" font-weight="600">Trail Desk</text>
+    <text x="770" y="45" fill="#d9f39a" font-size="20">Field operations</text>
+    <text x="38" y="153" fill="#17392e" font-size="55" font-weight="650" letter-spacing="-2">Patrol handoff</text>
+    <text x="40" y="196" fill="#506658" font-size="25">North Inlet station</text>
+    <path d="M40 231h880M40 345h880M40 461h880" fill="none" stroke="#a5b2a1" stroke-width="2"/>
+    <g fill="#254b3d" font-size="30" font-weight="600">
+      <text x="42" y="281">Lake patrol</text>
+      <text x="42" y="397">Ridge patrol</text>
+    </g>
+    <g fill="#486354" font-size="22">
+      <text x="42" y="315">West shore to the footbridge</text>
+      <text x="42" y="431">Lookout trail to the upper pass</text>
+    </g>
+    <g fill="#deead4">
+      <rect x="746" y="258" width="165" height="46" rx="23"/>
+      <rect x="746" y="374" width="165" height="46" rx="23"/>
+    </g>
+    <g fill="#2f573c" font-size="20" text-anchor="middle">
+      <text x="829" y="289">Checked in</text>
+      <text x="829" y="405">On the trail</text>
+    </g>
+  </g>
+</svg>

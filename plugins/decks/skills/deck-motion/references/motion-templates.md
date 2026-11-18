@@ -40,4 +40,10 @@ Install the kit theme in the deck’s `setup.ts` so the graphics can read its hu
 | `spotlight` | Point out a detail in an image. Supply `src`, `alt`, a short `label` and the point’s `x` and `y` as fractions from the image’s top-left corner. | `<MotionTemplate template="spotlight" src="field.svg" alt="Six paths meeting at a buoy" x={0.54} y={0.5} label="Harbour entrance" />` |
 ## Images and identity: device-mockup, photo-reveal, logo-reveal
 
+| Template | When it fits | Props | Example |
+| --- | --- | --- | --- |
+| `device-mockup` | Show the screen a user sees during a product walkthrough. | `src`, `alt`, `device` (`laptop`, `phone`, or `browser`), `caption?` | `<MotionTemplate template="device-mockup" device="laptop" src="./trail-desk.svg" alt="Patrol handoff in Trail Desk" caption="Both crews can read the handoff before they leave." />` |
+| `photo-reveal` | Set the scene before describing what happened there. | `src`, `alt`, `caption`, `credit?` | `<MotionTemplate template="photo-reveal" src="./north-inlet.svg" alt="Pines along the shoreline" caption="Fog rolls through North Inlet." credit="Field sketch by Mira Chen" />` |
+| `logo-reveal` | Introduce a partner or close on a publication's mark. | `src`, `alt`, `tagline?` | `<MotionTemplate template="logo-reveal" src="./inlet-press.svg" alt="Inlet Press" tagline="Field guides for the long way home." />` |
+
 ## People and proportions: icon-array, team-grid, venn-overlap

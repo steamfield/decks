@@ -1,0 +1,48 @@
+.mockup {
+  margin: auto 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.6em;
+  color: var(--od-text);
+  font-family: var(--od-font-sans);
+}
+.mockup > div {
+  position: relative;
+  width: min(100%, 102cqh);
+}
+.mockup .phone {
+  width: min(100%, 27cqh);
+}
+.mockup svg {
+  display: block;
+  width: 100%;
+}
+.mockup img {
+  position: absolute;
+  object-fit: cover;
+  object-position: center top;
+}
+.laptop img {
+  left: 7%;
+  top: 4%;
+  width: 86%;
+  height: 84%;
+}
+.phone img {
+  left: 4%;
+  top: 6%;
+  width: 92%;
+  height: 87%;
+  border-radius: var(--od-radius);
+}
+.browser img {
+  left: 1%;
+  top: 8%;
+  width: 98%;
+  height: 90%;
+}
+.mockup p {
+  margin: 0;
+  text-align: center;
+  text-wrap: balance;
+}
