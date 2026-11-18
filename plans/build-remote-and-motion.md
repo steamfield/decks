@@ -370,3 +370,14 @@ paths; the remote page build reuses `config()` and the RFC says so.
   host from main and from this branch right after; neither LiveTerm nor that deck changed in this
   build. Follow-up, outside this build: the brightest-pixel probe is sensitive to antialiasing
   under load.
+
+- 2026-11-18, catalog research (Riley asked whether a standard set exists): marketplaces
+  (Envato, VideoHive, Adobe Stock mogrts, Premiere Essential Graphics, infographic kits,
+  broadcast packages, PowerPoint packs) share titles, lower thirds, openers, logo reveals,
+  transitions, callouts, timelines, closers, device mockups, photo slideshows, team slides,
+  icon arrays and Venn diagrams. The first 15 cover the core. Added six single-beat templates
+  in two Astra lanes (D: device-mockup, photo-reveal, logo-reveal; E: icon-array, team-grid,
+  venn-overlap), slides 65-70. Left out: countdown (wall-clock time cannot follow the seekable
+  click model that film, print and presenter rely on), tickers, bugs, backgrounds, credits rolls,
+  over-the-shoulder and social formats (video-only or theme chrome), maps and pricing tables
+  (data viz and comparison-split cover them).
