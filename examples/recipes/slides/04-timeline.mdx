@@ -1,0 +1,28 @@
+---
+title: The pilot ended manual sorting.
+transition: iris
+---
+
+export function Milestone({ date, children }) {
+  const label = new Intl.DateTimeFormat("en-US", {
+    month: "short", day: "numeric", timeZone: "UTC",
+  }).format(new Date(date));
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "9ch 1fr", gap: 48, paddingBlock: 8 }}>
+      <time className="od-mono" dateTime={date} style={{ color: "var(--od-cyan-soft)" }}>{label}</time>
+      <span>{children}</span>
+    </div>
+  );
+}
+
+<Cover>
+  <h1 className="od-title" style={{ fontSize: "calc(64px * var(--deck-text-scale, 1))" }}>The pilot ended manual sorting.</h1>
+  <Steps from={1} className="od-h2">
+    <Milestone date="2025-04-07">Pilot opened.</Milestone>
+    <Milestone date="2025-04-14">West joined.</Milestone>
+    <Milestone date="2025-04-21">Rules went live.</Milestone>
+    <Milestone date="2025-04-28">Manual sorting ended.</Milestone>
+  </Steps>
+  <small style={{ fontSize: "calc(30px * var(--deck-text-scale, 1))", color: "var(--od-text-secondary)" }}>Demo data · Dispatch pilot milestones</small>
+</Cover>

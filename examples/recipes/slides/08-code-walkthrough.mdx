@@ -1,0 +1,25 @@
+---
+title: Urgent requests take the priority route.
+---
+
+<Cover>
+  <h1 className="od-title" style={{ fontSize: "calc(64px * var(--deck-text-scale, 1))" }}>Urgent requests take the priority route.</h1>
+  <div style={{ width: "100%" }}>
+
+````md magic-move "route.ts"
+```ts
+const queue = "general";
+```
+
+```ts {1}
+const queue = request.urgent ? "priority" : "general";
+```
+
+```ts {all}
+const queue = request.urgent ? "priority" : "general";
+dispatch(queue, request);
+```
+````
+
+  </div>
+</Cover>

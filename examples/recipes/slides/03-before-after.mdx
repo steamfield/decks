@@ -1,0 +1,19 @@
+---
+title: Routing rules give each request an owner.
+transition: rise
+---
+
+<h1 className="od-title" style={{ position: "absolute", top: "var(--deck-pad-y)", insetInline: "var(--deck-pad-x)", fontSize: "calc(64px * var(--deck-text-scale, 1))" }}>
+  Routing rules give each request an owner.
+</h1>
+
+<TwoCol align="center">
+  <div>
+    <h2 className="od-h2" style={{ fontSize: "calc(42px * var(--deck-text-scale, 1))" }}>Before</h2>
+    <div className="od-body" style={{ fontSize: "calc(44px * var(--deck-text-scale, 1))" }}>A dispatcher manually picks a queue.</div>
+  </div>
+  <Step at={1}>
+    <h2 className="od-h2" style={{ fontSize: "calc(42px * var(--deck-text-scale, 1))" }}>After</h2>
+    <div className="od-body" style={{ fontSize: "calc(44px * var(--deck-text-scale, 1))" }}>The rules assign an owner at intake.</div>
+  </Step>
+</TwoCol>

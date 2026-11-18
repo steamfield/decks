@@ -10,6 +10,9 @@
   "motion": {
     "dir": "examples/motion"
   },
+  "recipes": {
+    "dir": "examples/recipes"
+  },
   "agents": {
     "dir": "examples/building-for-agents"
   },

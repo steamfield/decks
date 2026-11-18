@@ -17,6 +17,8 @@ Read [workflow and definition of done](references/workflow.md). Follow this orde
 6. Verify throughout: `decks check`, `decks lint <deck>`, inspect changed slides and click states, then `decks build <deck>`. Fix problems and repeat the affected checks.
 7. Before delivery, review all visible strings and notes for prose defects; run the fact-check in `decks:deck-data` on every data-driven deck. Finish with the checks, screenshots and PDF inspection in the definition of done.
 
+For a conventional slide, start with a copyable pattern in [slide recipes](references/recipes.md).
+
 Do not invent a fact because the outline needs it. Missing or contradictory evidence changes the claim, the visual or the outline. Tell the author what is unresolved.
 
 A clean linter and a successful build do not establish presentation quality. Read the rendered slides at audience size, and walk the talk in both directions.
