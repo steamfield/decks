@@ -47,3 +47,9 @@ Install the kit theme in the deck’s `setup.ts` so the graphics can read its hu
 | `logo-reveal` | Introduce a partner or close on a publication's mark. | `src`, `alt`, `tagline?` | `<MotionTemplate template="logo-reveal" src="./inlet-press.svg" alt="Inlet Press" tagline="Field guides for the long way home." />` |
 
 ## People and proportions: icon-array, team-grid, venn-overlap
+
+| Template | When it fits | Example |
+| --- | --- | --- |
+| `icon-array` | Show a share of a group. Give it a `total` of 1–100 people, the number `filled`, and a `label` explaining the share. | `<MotionTemplate template="icon-array" total={16} filled={4} label="One seat in four goes to an apprentice." />` |
+| `team-grid` | Introduce the people responsible for the work. Supply 2–6 `people` with a `name`, `role`, and optional portrait `src`. Initials stand in for a portrait. | `<MotionTemplate template="team-grid" people={[{ name: "Ada Reed", role: "Workshop lead", src: "./ada-reed.svg" }, { name: "Mina Park", role: "Apprentice mentor" }]} />` |
+| `venn-overlap` | Name what two or three groups share. Use short labels for `sets` and their `overlap` so each fits inside its region. | `<MotionTemplate template="venn-overlap" sets={["Design", "Fieldwork", "Training"]} overlap="Pilot" />` |
