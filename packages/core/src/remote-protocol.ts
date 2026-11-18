@@ -30,14 +30,17 @@ export interface RemoteDeck {
   readonly slides: readonly RemoteSlide[];
 }
 
-/** Relay to remote page. `startedAt` is when the relay first saw the position change. */
+/**
+ * Relay to remote page. `elapsed` is the talk time in ms when the message was sent (null before
+ * the first position change), so the page counts on from it without comparing clocks.
+ */
 export type RemoteServerMessage =
   | { readonly type: "deck"; readonly deck: RemoteDeck }
   | {
       readonly type: "position";
       readonly slide: number;
       readonly click: number;
-      readonly startedAt: number | null;
+      readonly elapsed: number | null;
     }
   | { readonly type: "waiting" }
   | { readonly type: "pong" };

@@ -99,7 +99,7 @@ export interface RemoteSlide {
 export interface RemoteDeck { title: string; slides: readonly RemoteSlide[] }
 export type RemoteServerMessage =   // relay -> remote page
   | { type: "deck"; deck: RemoteDeck }
-  | { type: "position"; slide: number; click: number; startedAt: number | null }
+  | { type: "position"; slide: number; click: number; elapsed: number | null }
   | { type: "waiting" }
   | { type: "pong" };
 export type RemoteClientMessage =   // remote page -> relay
