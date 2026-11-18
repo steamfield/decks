@@ -1,5 +1,6 @@
 import {
   Chart,
+  type ChartHandle,
   type ChartSpec,
   type LayerSpec,
   type MarkEvent,
@@ -11,15 +12,31 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { useScriptedDemo } from "../story/scripted-demo";
 import { useChartEntrance } from "./chart-entrance";
 
+function withoutAnimation(spec: ChartSpec | LayerSpec): ChartSpec | LayerSpec {
+  if ("layer" in spec)
+    return { ...spec, animation: false, layer: spec.layer.map(withoutAnimation) };
+  if (!spec.overrides) return { ...spec, animation: false };
+  const overrides = { ...spec.overrides };
+  for (const size of ["compact", "medium", "full"] as const) {
+    if (overrides[size]?.animation !== undefined)
+      overrides[size] = { ...overrides[size], animation: false };
+  }
+  return { ...spec, animation: false, overrides };
+}
+
 export function OpenChart({
   spec,
+  step,
   onMarkHover,
   onMarkLeave,
 }: {
   spec: ChartSpec | LayerSpec;
+  /** Target step for an update, false to snap, omitted on arrival. */
+  step?: number | false;
   onMarkHover?: (event: MarkEvent) => void;
   onMarkLeave?: () => void;
 }) {
+  const chart = useRef<ChartHandle>(null);
   const scale = useSlideScale();
   const { renderContext } = useSlide();
   const { isActive, playCount, clicks } = useScriptedDemo();
@@ -39,9 +56,19 @@ export function OpenChart({
     isActive &&
     renderContext === "slide" &&
     mode === "live" &&
-    (visit.current !== playCount ? clicks : entryClick.current) === 0;
-  const animatedSpec = { ...spec, animation: animated ? (spec.animation ?? true) : false };
-  useChartEntrance(animatedSpec.animation, animated && mode !== null, playCount);
+    (step === undefined
+      ? (visit.current !== playCount ? clicks : entryClick.current) === 0
+      : step !== false);
+  const animatedSpec = animated
+    ? { ...spec, animation: spec.animation ?? true }
+    : withoutAnimation(spec);
+  useChartEntrance(
+    spec.animation ?? true,
+    animated,
+    playCount,
+    typeof step === "number" ? step : undefined,
+    chart,
+  );
   return (
     <div
       className="oc-slide-chart"
@@ -54,7 +81,8 @@ export function OpenChart({
     >
       {mode !== null && (
         <Chart
-          key={`${playCount}-${animated}`}
+          key={playCount}
+          ref={chart}
           spec={animatedSpec}
           darkMode="force"
           autoResize

@@ -147,17 +147,20 @@ export function countClicks(
         for (const specifier of statement.specifiers) {
           const local = specifier.local.name;
           names.delete(local);
-          if (
-            (statement.source.value !== "@react-decks/motion" &&
-              statement.source.value !== PUBLIC_SPECIFIERS.motion) ||
-            specifier.type !== "ImportSpecifier"
-          )
-            continue;
+          if (specifier.type !== "ImportSpecifier") continue;
           const imported =
             specifier.imported.type === "Identifier"
               ? specifier.imported.name
               : specifier.imported.value;
-          if (typeof imported === "string" && stepNames.has(imported)) names.set(local, imported);
+          const source = statement.source.value;
+          if (
+            typeof imported === "string" &&
+            stepNames.has(imported) &&
+            (source === "@react-decks/motion" ||
+              source === PUBLIC_SPECIFIERS.motion ||
+              (imported === "ChartSteps" && source === "@steamfield/decks/kit"))
+          )
+            names.set(local, imported);
         }
         continue;
       }
@@ -247,6 +250,25 @@ export function countClicks(
               );
           }
         if (children) total = Math.max(total, from + children - 1);
+      } else if (motion === "ChartSteps") {
+        const at = integerAttribute(node, "at", file);
+        const attr = node.attributes?.find(
+          (a) => a.type === "mdxJsxAttribute" && a.name === "specs",
+        );
+        const value = attr?.type === "mdxJsxAttribute" ? attr.value : undefined;
+        const statement =
+          typeof value === "object" && value !== null ? value.data?.estree?.body[0] : undefined;
+        const array = statement?.type === "ExpressionStatement" ? statement.expression : undefined;
+        if (
+          array?.type !== "ArrayExpression" ||
+          array.elements.some((item) => item?.type === "SpreadElement")
+        )
+          throw new DeckError(
+            `<${node.name} specs={${typeof value === "object" && value !== null ? value.value : String(value)}}>: specs must be a literal array. To compute it, set clicks: in the frontmatter.`,
+            file,
+            node.position?.start,
+          );
+        total = Math.max(total, at + array.elements.length - 2);
       } else {
         const at = integerAttribute(node, "at", file);
         const hasUntil = node.attributes?.some(
