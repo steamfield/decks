@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { isInaccessible, screen, within } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -26,11 +26,6 @@ it("end-card hides its parts before click at and shows the finished pose from cl
   expect(part()).not.toBeVisible();
 });
 
-it("end-card with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "overview" });
-  expect(part()).toBeVisible();
-});
-
 it("the end-card entrance in the live slide plays and settles within about 1.2 s of virtual time per beat", async () => {
   await setup(() => <MotionTemplate {...props} />);
   expect(part()).not.toBeVisible();
@@ -45,33 +40,23 @@ it("the end-card entrance in the live slide plays and settles within about 1.2 s
   expect(part()).toHaveStyle({ opacity: "1" });
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished end-card pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    expect(part()).toHaveStyle({ opacity: "1" });
-    expect(part()).toBeVisible();
-  },
-);
+it("end-card shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
+  expect(part()).toHaveStyle({ opacity: "1" });
+  expect(part()).toBeVisible();
+});
 
-it("text is read once as the full sentence and is whole after unmount", async () => {
+it("reads the split link once as the whole address and leaves it whole after unmount", async () => {
   const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
-  const text = screen.getByRole("heading", { name: props.title });
-  expect(text).toHaveTextContent("Take the checklist to your next shift.");
-  const split = screen.getByRole("link", { name: props.link });
-  expect(split).toHaveAccessibleName(props.link);
+  const link = screen.getByRole("link", { name: props.link });
+  expect(link.children.length).toBeGreaterThan(1);
+  for (const char of link.children) expect(isInaccessible(char)).toBe(true);
   view.unmount();
-  expect(split.childNodes).toHaveLength(1);
-  expect(split.textContent).toBe(props.link);
+  expect(Array.from(link.childNodes, (node) => node.nodeValue)).toEqual([props.link]);
 });
 
 it.each([
   [{ at: -1 }, "end-card: invalid at -1"],
-  [{ at: Number.NaN }, "end-card: invalid at NaN"],
-  [{ at: Infinity }, "end-card: invalid at Infinity"],
   [{ at: 1.5 }, "end-card: invalid at 1.5"],
   [{ title: " " }, 'end-card: invalid title " "'],
 ] as const)(

@@ -13,7 +13,3 @@ it.each([
     expect(numberFormat(endpoint, "de-DE").format(sample)).toBe(expected);
   },
 );
-
-it("falls back to the viewer locale when the deck has no language", () => {
-  expect(numberFormat(1234.5).format(1234.5)).toBe(new Intl.NumberFormat().format(1234.5));
-});

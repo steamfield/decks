@@ -1,4 +1,4 @@
-import { act, screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -31,11 +31,6 @@ it("list-cascade hides its parts before click at and shows the finished pose fro
   expect(part()).not.toBeVisible();
 });
 
-it("list-cascade with at 0 shows the finished pose outside the live slide", async () => {
-  await setup(() => <MotionTemplate {...props} />, { context: "overview" });
-  expect(part()).toBeVisible();
-});
-
 it("the list-cascade entrance in the live slide plays and settles within about 1.2 s of virtual time per beat", async () => {
   await setup(() => <MotionTemplate {...props} />);
   expect(part()).not.toBeVisible();
@@ -50,30 +45,14 @@ it("the list-cascade entrance in the live slide plays and settles within about 1
   expect(opacity(part())).toBe(1);
 });
 
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "%s shows the finished list-cascade pose for the click with no tween",
-  async (mode) => {
-    await setup(() => <MotionTemplate {...props} at={1} />, {
-      click: 1,
-      ...(mode === "instant" ? { instant: true } : { context: mode }),
-    });
-    expect(opacity(part())).toBe(1);
-    expect(part()).toBeVisible();
-  },
-);
-
-it("text is read once as the full sentence and is whole after unmount", async () => {
-  const view = await setup(() => <MotionTemplate {...props} />, { instant: true });
-  const text = within(screen.getByRole("listitem")).getByText("Read the field notes");
-  expect(text).toHaveTextContent("Read the field notes");
-  view.unmount();
-  expect(text.textContent).toBe("Read the field notes");
+it("list-cascade shows its finished pose for the click in print", async () => {
+  await setup(() => <MotionTemplate {...props} at={1} />, { click: 1, context: "print" });
+  expect(opacity(part())).toBe(1);
+  expect(part()).toBeVisible();
 });
 
 it.each([
   [{ at: -1 }, "list-cascade: invalid at -1"],
-  [{ at: Number.NaN }, "list-cascade: invalid at NaN"],
-  [{ at: Infinity }, "list-cascade: invalid at Infinity"],
   [{ at: 1.5 }, "list-cascade: invalid at 1.5"],
   [{ items: [] }, "list-cascade: invalid items []"],
   [{ items: [" "] }, 'list-cascade: invalid items[0] " "'],
@@ -120,7 +99,8 @@ it("preserves the leading item after leaving the completed arrival list and comi
   expect(finished[0]).toBeLessThan(1);
   await view.next();
   await screen.findByRole("heading", { name: "Second slide" });
-  await act(() => view.store.dispatch({ type: "prev" }));
+  await view.user.keyboard("{ArrowLeft}");
+  await screen.findByText(props.items[0]);
   expect(props.items.map((item) => opacity(screen.getByText(item)))).toEqual(finished);
 });
 

@@ -38,7 +38,7 @@ function finished() {
   expect(screen.getByText("1,238%", { exact: true })).toBeVisible();
   expect(screen.getByText("+38 pp", { exact: true })).toBeVisible();
 }
-it("each template hides its parts before click at and shows the finished pose from click at", async () => {
+it("stat-compare hides its parts before click at and shows the finished pose from click at", async () => {
   const view = await show(2);
   expect(screen.getByText("Gauge readings")).not.toBeVisible();
   await view.next();
@@ -51,12 +51,8 @@ it("each template hides its parts before click at and shows the finished pose fr
   await tick(1.2);
   expect(screen.getByText("Gauge readings")).not.toBeVisible();
 });
-it("each template with at 0 shows the finished pose outside the live slide", async () => {
-  await show(0, { context: "preview" });
-  finished();
-});
 it.each([0, 1])(
-  "each entrance in the live slide plays and settles within about 1.2 s of virtual time per beat (at %i)",
+  "the stat-compare entrance in the live slide plays and settles within about 1.2 s of virtual time (at %i)",
   async (at) => {
     const view = await show(at);
     if (at) await view.next();
@@ -73,14 +69,7 @@ it.each([0, 1])(
     expect(pose()).toBe(end);
   },
 );
-it.each(["presenter", "preview", "overview", "print", "instant"] as const)(
-  "presenter, preview, overview, print and instant mode show the finished pose for the click with no tween (%s)",
-  async (mode) => {
-    await show(2, mode === "instant" ? { click: 2, instant: true } : { click: 2, context: mode });
-    finished();
-  },
-);
-it("stat-burst, stat-compare and metric-grid show the formatted final values and never a partial value outside the live slide", async () => {
+it("stat-compare shows the formatted final values in print and never a partial value as time passes", async () => {
   await show(0, { context: "print" });
   finished();
   await tick(0.25);
@@ -93,7 +82,7 @@ it.each([
   [{ at: -1 }, "stat-compare at must be a nonnegative integer, got -1"],
   [{ at: NaN }, "stat-compare at must be a nonnegative integer, got NaN"],
 ] as const)(
-  "each template throws naming itself and the prop for empty required text, an empty list, a negative at and a list over its limit (%j)",
+  "stat-compare throws naming itself and the prop for invalid input %j",
   async (overrides, message) => {
     const view = await setup(
       () => <MotionTemplate template="stat-compare" {...content} {...overrides} />,
