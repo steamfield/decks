@@ -225,6 +225,20 @@ describe.skipIf(skipBrowserTests)("browser captures", () => {
       /Cannot capture[\s\S]*Broken capture frame/,
     );
   });
+
+  browserTest("fails capture with the startup error when the deck never mounts", async () => {
+    const { dir } = await fixture(onTestFinished, {
+      "setup.ts": 'throw new Error("Setup broke before mount");',
+    });
+    const outDir = join(dir, "site");
+    await build(await loadDeck(dir), { outDir, ogImage: false });
+    const browser = await launchBrowser();
+    onTestFinished(() => browser.close());
+    // A 5 s settle bound: the error must arrive long before any readiness timeout would.
+    await expect(openBuiltDeck(browser, outDir, "./", "#/1", undefined, 5_000)).rejects.toThrow(
+      /Cannot capture[\s\S]*Setup broke before mount/,
+    );
+  });
 });
 
 it.each([

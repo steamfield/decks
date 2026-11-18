@@ -101,8 +101,21 @@ export async function openBuiltPage(
       if (message.type() === "error") errors.push(message.text());
     });
     await beforeLoad?.(page);
+    // An exception before mount means window.__deck never appears; fail with it, not a timeout.
+    const startupError = new Promise<never>((_, reject) =>
+      page.once("pageerror", (error) =>
+        reject(
+          new DeckError(`Cannot capture ${outDir}: ${error.message}`, undefined, undefined, {
+            cause: error,
+          }),
+        ),
+      ),
+    );
+    startupError.catch(() => {});
     await page.goto(`${url}${path}`);
-    await page.waitForFunction("window.__deck !== undefined");
+    const ready = page.waitForFunction("window.__deck !== undefined");
+    ready.catch(() => {});
+    await Promise.race([ready, startupError]);
     return { page, errors, close: () => server.close() };
   } catch (cause) {
     await server.close();
