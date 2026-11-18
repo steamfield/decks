@@ -1,0 +1,30 @@
+.figure {
+  margin: auto 0;
+  font-family: var(--od-font-sans);
+  position: absolute;
+  z-index: 1;
+  inset: auto auto 8% 6%;
+  max-width: 88%;
+  padding: 0.35em 0.8em;
+  background: var(--od-surface);
+}
+.figure h1 {
+  margin: 0;
+  color: var(--od-text);
+  line-height: 1.08;
+}
+.figure p {
+  margin: 0;
+  color: var(--od-text-secondary);
+}
+.bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2.8em;
+  background: currentColor;
+  transform-origin: left;
+  z-index: 1;
+}
+.mask {
+  overflow: hidden;
+}
