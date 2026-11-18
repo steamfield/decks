@@ -25,10 +25,12 @@ These are plugin skills, invoked as `decks:<name>`. Follow their linked referenc
 | Make a deck or change its structure | `decks:building-a-deck`, which routes the full workflow |
 | Write, shorten or revise visible text | `decks:writing-slides` |
 | Choose a layout, typography, theme or visual hierarchy | `decks:deck-design` |
-| Add reveals, transitions, demos or story beats | `decks:deck-motion` |
+| Add reveals, transitions, demos or story beats, or film a step to check its motion | `decks:deck-motion` |
 | Add a motion graphic: an animated title, stat, timeline, quote, section break, kinetic type or 3D | `decks:deck-motion`, its motion-templates reference first |
 | Add or edit a chart, table, map or Ink visualization | `decks:visualization`, then `decks:deck-data` before writing any figure |
 | Add numbers, refresh evidence or fact-check | `decks:deck-data` |
+| Check that slides fit the canvas, or review rendered layout | `decks:deck-design`, then `decks inspect <deck>` ([CLI](references/project.md#cli)) |
+| Present a talk, or read notes and control it from an iPad, phone or second laptop | [presenting controls](references/project.md#presenting-controls), then the installed presenting guide |
 
 For a six-slide story about Q3 numbers: load `building-a-deck`, then `writing-slides`, `deck-design`, `deck-motion`, and `deck-data`; load `visualization` before selecting marks or writing a chart spec. Source the actual Q3 data before drafting numeric claims. Finish the building workflow, including `decks check`, `decks lint`, visual QA and the fact-check in `deck-data`.
 

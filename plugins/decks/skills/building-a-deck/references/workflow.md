@@ -76,6 +76,7 @@ Run from the project containing `decks.json`:
 decks check
 decks lint q3
 decks build q3
+decks inspect q3
 decks shot q3 2 0 --out slide-2-c0.png
 decks shot q3 2 1 --out slide-2-c1.png
 decks export q3 --out q3.pdf
@@ -83,7 +84,7 @@ decks export q3 --out q3.pdf
 
 The screenshot commands above illustrate the scaffold's two states; capture every state of every new or changed slide, not just that slide. Use `--width` and `--height` to check 4:3 and 21:9 framing as well as 16:9. Screenshots settle a single instant state; also walk live forward/backward motion in `decks dev`.
 
-Inspect the PNGs for clipping, overlaps, unreadable sources, card/mark collisions and headline wraps. Inspect the PDF for every click state, not only its page count. An all-click export should contain the sum of `clicks + 1` across visible slides. Use `--final` only for a requested final-state handout.
+`decks inspect` lists content that leaves the canvas or clips its own text at each slide's last click; fix each line, or give a deliberate crop `overflow: clip`. It cannot see overlaps or poor contrast, so inspect the PNGs for clipping, overlaps, unreadable sources, card/mark collisions and headline wraps. Inspect the PDF for every click state, not only its page count. An all-click export should contain the sum of `clicks + 1` across visible slides. Use `--final` only for a requested final-state handout.
 
 After a source or copy change, rerun the relevant fact-check and lint; after a visual or motion change, inspect affected states again. Do not claim an unavailable source or failed capture passed. Report the exact error and the work left to verify.
 
@@ -94,7 +95,7 @@ Run `decks film q3 2 1 --out slide-2-c1-film.png` and open the PNG. Read across 
 ## Definition of done
 
 - The requested arc and slide count are complete; no scaffold placeholders remain.
-- `decks check`, `decks lint <deck>` and `decks build <deck>` pass. Review warnings too. These commands do not enforce every word budget, design rule or factual claim.
+- `decks check`, `decks lint <deck>`, `decks build <deck>` and `decks inspect <deck>` pass. Review warnings too. These commands do not enforce every word budget, design rule or factual claim.
 - Prose review covers headlines, cards, labels, captions, chips, chart chrome and notes. Fix sentence shapes that phrase matching cannot catch. A fresh read-only reviewer is useful for a full new deck.
 - Every figure and real person/anecdote traces to evidence; the `decks:deck-data` fact-check report records current results. Load-bearing mismatches, unsourced or unverifiable claims are resolved. Deliberate attributed flags are reported.
 - Every changed click state is inspected, along with forward/backward navigation, later-click reload, presenter, overview, instant motion and alternate aspect ratios. Text scaling does not break key content.

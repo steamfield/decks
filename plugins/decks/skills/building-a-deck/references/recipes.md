@@ -1,10 +1,10 @@
 # Slide recipes
 
-Use this checkout’s CLI, or a Decks build that includes `ChartSteps`, the MDX `Camera` component,
+These need a Decks version newer than 1.1.0, which added `ChartSteps`, the MDX `Camera` component
 and the `rise` and `iris` presets. Paste one complete MDX block into a file under `slides/` in a
 conventional `decks new` deck. The snippets use the scaffold’s kit theme and stylesheet and
-include their own demo content. Run `bun run decks dev examples/recipes` from the repository
-root to try the fixture.
+include their own demo content. In the Decks repository, `bun run decks dev recipes` serves them
+as a deck.
 
 ## Big number
 

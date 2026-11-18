@@ -28,4 +28,4 @@ Decide what each slide needs the audience to see first. Give that thing the spac
 
 ## Review the rendered deck
 
-Choose the form the evidence needs before styling it. Inspect the cover and one representative content slide before extending the system. Then inspect every state at presentation size and as thumbnails. Check at 16:9, 4:3 and 21:9, and enlarge the text with the viewer controls. Shorten copy or change layout when it does not fit; shrinking it defeats the purpose.
+Choose the form the evidence needs before styling it. Inspect the cover and one representative content slide before extending the system. Then inspect every state at presentation size and as thumbnails. Check at 16:9, 4:3 and 21:9, and enlarge the text with the viewer controls. Run `decks inspect <deck>` to list content that leaves the canvas or clips its own text; add `--width` and `--height` for the other aspect ratios. Shorten copy or change layout when it does not fit; shrinking it defeats the purpose.

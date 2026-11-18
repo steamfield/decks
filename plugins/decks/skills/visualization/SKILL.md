@@ -29,6 +29,6 @@ Write the finding and identify the comparison the audience should make. Choose t
 
 Bars encode length and must start at zero. Line/scatter domains can be tight when appropriate, with explicit bounds and enough context to prevent exaggeration. Preserve missing values and uncertainty. Do not crop a range, filter rows or change a denominator to strengthen a headline. Show source, period and units; derive all rows and callouts from sourced constants.
 
-Use `OpenChart` from the kit for chart and layer specs. It is slide-aware, dark, and scaled for the frame. It does not accept every OpenChart visualization type: tables, graphs, Sankey, tilemaps and geographic maps require their own public OpenChart renderer and a separate context/scale check. A map or network is useful only if geography or relationships carry the claim.
+Use `OpenChart` from the kit for chart and layer specs. It is slide-aware, dark, and scaled for the frame. For a chart whose data changes on each click, use the kit's `ChartSteps` ([charts on slides](references/presentation.md#chartsteps)). It does not accept every OpenChart visualization type: tables, graphs, Sankey, tilemaps and geographic maps require their own public OpenChart renderer and a separate context/scale check. A map or network is useful only if geography or relationships carry the claim.
 
 Finish with `decks lint <deck>`, `decks check`, a build and rendered inspection. Apply the `decks:deck-data` fact-check to the new or changed claims. A valid spec can still be unreadable or misleading.

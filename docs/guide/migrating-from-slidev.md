@@ -39,10 +39,11 @@ Decks used to be a Slidev addon, `slidev-addon-decks`. It is now its own React f
 | a four-backtick `md magic-move` fence | the same fence; `{*}` emphasis becomes `{all}`. See [code-blocks.md](code-blocks.md) |
 | `<Toc />`, `<Link to="5">` | `<Toc />`, `<Link to={5}>` (a number); see [slides.md](slides.md) |
 | the bottom-left navigation controls and `g` | the control tray and `g`; see [presenting.md](presenting.md) |
+| `slidev --remote` (presenter control from a phone) | `decks dev <deck> --remote`, a token-protected presenter page for a second device on the same network; see [presenting.md](presenting.md#remote-presenter) |
 
 ## Commands
 
-`bunx -p slidev-addon-decks decks <cmd>` becomes `bunx -p @steamfield/decks decks <cmd>`. `dev`, `build`, `new`, `check`, `lint`, `export`, `shot`, `hook` and `init` exist; `list`, `snap`, `snap diff`, `fact-extract` and `review-prose` do not yet. `decks.json` entries change from `{ "entry": "path/slides.md", "name": ... }` to `{ "dir": "path" }`.
+`bunx -p slidev-addon-decks decks <cmd>` becomes `bunx -p @steamfield/decks decks <cmd>`. `dev`, `build`, `new`, `check`, `lint`, `export`, `shot`, `hook` and `init` exist, along with `film` and `inspect`, which the addon did not have (see [cli.md](cli.md)); `list`, `snap`, `snap diff`, `fact-extract` and `review-prose` do not yet. `decks.json` entries change from `{ "entry": "path/slides.md", "name": ... }` to `{ "dir": "path" }`.
 
 ## Checking a port
 
