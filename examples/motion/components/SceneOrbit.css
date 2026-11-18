@@ -1,0 +1,9 @@
+.orbit-studio {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  width: min(100%, 1500px);
+  aspect-ratio: 2;
+  margin: auto;
+  background: var(--gallery-panel);
+  overflow: hidden;
+}

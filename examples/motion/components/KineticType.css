@@ -1,0 +1,12 @@
+.kinetic-type {
+  --emphasis: 0%;
+  max-width: 13ch;
+  margin: auto 0;
+  font-size: calc(160px * var(--deck-text-scale, 1));
+  line-height: 1.1;
+  letter-spacing: -0.055em;
+}
+.kinetic-type span {
+  display: inline-block;
+  color: color-mix(in srgb, var(--gallery-ink), var(--gallery-accent) var(--emphasis, 0%));
+}
