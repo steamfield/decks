@@ -35,11 +35,9 @@ export async function startRemoteServer(
         .map((addr) => addr.address),
     ),
   );
-  const name = hostname().toLowerCase();
-  const hosts = [
-    ...(addresses.size ? addresses : ["127.0.0.1"]),
-    name.endsWith(".local") ? name : `${name}.local`,
-  ];
+  // Bonjour answers for the first label only; a DHCP domain (`mbp.lan`) is not part of the name.
+  const name = `${hostname().toLowerCase().split(".")[0]}.local`;
+  const hosts = [...(addresses.size ? addresses : ["127.0.0.1"]), name];
   let origins: string[] = [];
   const authorized = (req: IncomingMessage) =>
     origins.includes(`http://${req.headers.host?.toLowerCase()}`) &&

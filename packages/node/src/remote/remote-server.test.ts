@@ -107,9 +107,7 @@ test("prints the remote URLs after the dev URL", async () => {
   );
   const urls = [
     ...new Set(hosts.length ? hosts : ["127.0.0.1"]),
-    hostname()
-      .toLowerCase()
-      .replace(/(?:\.local)?$/, ".local"),
+    `${hostname().toLowerCase().split(".")[0]}.local`,
   ].map((host) => `http://${host}:${app.url.port}/${app.url.search}`);
   const output = app.lines.join("\n");
   expect(output.indexOf(app.devUrl)).toBeGreaterThanOrEqual(0);
@@ -210,6 +208,19 @@ test("serves the printed mDNS name when the machine is named Talk-Mac.local", as
   const [response] = await once(req, "response");
   response.resume();
   expect(response.statusCode).toBe(200);
+});
+
+test("prints the mDNS name without the DHCP domain the hostname carries", async () => {
+  const host = vi.spyOn(os, "hostname").mockReturnValue("Rileys-MBP.lan");
+  syncBuiltinESMExports();
+  onTestFinished(() => {
+    host.mockRestore();
+    syncBuiltinESMExports();
+  });
+  const app = await remoteFixture();
+  expect(
+    app.lines.filter((line) => /\.local:/.test(line)).map((line) => new URL(line).hostname),
+  ).toEqual(["rileys-mbp.local"]);
 });
 
 test("accepts Vite's loopback and shared socket defaults from a config plugin", async () => {
