@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { PNG } from "pngjs";
 import { expect, it, onTestFinished } from "vitest";
 import { cli, fixture, skipBrowserTests } from "../../dev/server.test-support";
+import { frameTimes } from "./film";
 
 // A loaded worker needs about 11 seconds per CLI build and two Chromium passes.
 const timeout = 90_000;
@@ -131,3 +132,12 @@ export function Broken() {
     });
   },
 );
+
+it.each([
+  [600, 6, [0, 120, 240, 360, 480, 600]],
+  [917, 4, [0, 306, 611, 917]],
+  [0, 3, [0, 0, 0]],
+  [1000, 2, [0, 1000]],
+])("spaces %i ms over %i frames from 0 to the span", (span, count, expected) => {
+  expect(frameTimes(span, count)).toEqual(expected);
+});

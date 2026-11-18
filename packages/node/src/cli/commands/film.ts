@@ -86,7 +86,7 @@ export const film = defineCommand({
         }
       };
       const { span } = await pass(outDir);
-      const times = Array.from({ length: count }, (_, i) => Math.round((i * span) / (count - 1)));
+      const times = frameTimes(span, count);
       const { frames } = await pass(outDir, times);
       const sheetPage = await browser.newPage({
         viewport: { width, height },
@@ -105,4 +105,9 @@ export const film = defineCommand({
 
 function invalidFrames(value: string) {
   return new DeckError(`Invalid --frames "${value}". Use a whole number from 2 to 24.`);
+}
+
+/** Evenly spaced frame times over a step's span: the first at 0, the last at the span. */
+export function frameTimes(span: number, count: number): number[] {
+  return Array.from({ length: count }, (_, i) => Math.round((i * span) / (count - 1)));
 }
