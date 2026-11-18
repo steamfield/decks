@@ -270,6 +270,28 @@ export function countClicks(
             node.position?.start,
           );
         total = Math.max(total, at + array.elements.length - 2);
+      } else if (motion === "Camera" || motion === "ShapeMorph") {
+        // MDX applies JSX props in source order, so the last occurrence wins.
+        const attributes = node.attributes?.toReversed();
+        const at = integerAttribute({ ...node, attributes }, "at", file);
+        const prop = motion === "Camera" ? "stops" : "paths";
+        const attribute = attributes?.find(
+          (attribute) => attribute.type === "mdxJsxAttribute" && attribute.name === prop,
+        );
+        const value = attribute?.type === "mdxJsxAttribute" ? attribute.value : undefined;
+        const statement =
+          typeof value === "object" && value !== null ? value.data?.estree?.body[0] : undefined;
+        const array = statement?.type === "ExpressionStatement" ? statement.expression : undefined;
+        if (
+          array?.type !== "ArrayExpression" ||
+          array.elements.some((item) => item?.type === "SpreadElement")
+        )
+          throw new DeckError(
+            `<${node.name}> ${prop} must be an array literal of known length. To compute it, set clicks: in the frontmatter.`,
+            file,
+            node.position?.start,
+          );
+        total = Math.max(total, at + array.elements.length - 2);
       } else {
         const at = integerAttribute(node, "at", file);
         const hasUntil = node.attributes?.some(

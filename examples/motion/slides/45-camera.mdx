@@ -1,0 +1,15 @@
+---
+title: Camera
+---
+
+<h1>Camera</h1>
+<code>{'<Camera stops={[overview, spring, harbour]} at={2}>'}</code>
+<div style={{ height: 600, background: "var(--gallery-panel)" }}>
+  <Camera at={2} stops={[{ x: 600, y: 300, zoom: 1 }, { x: 250, y: 200, zoom: 2 }, { x: 950, y: 350, zoom: 1.5 }]}>
+    <svg width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-label="River route from the spring to the harbour" style={{ display: "block" }}>
+      <path d="M100 80Q200 100 250 200T530 285Q650 205 735 315T950 350Q1050 335 1180 480" fill="none" stroke="var(--gallery-accent)" strokeWidth="12" strokeLinecap="round" />
+      <g fill="var(--gallery-warm)" stroke="var(--gallery-panel)" strokeWidth="5"><circle cx="250" cy="200" r="14" /><circle cx="530" cy="285" r="14" /><circle cx="950" cy="350" r="14" /></g>
+      <Step at={1} as="g"><g fill="var(--gallery-ink)" fontSize="32" textAnchor="middle"><text x="250" y="155">Spring</text><text x="530" y="350">Crossing</text><text x="950" y="305">Harbour</text></g></Step>
+    </svg>
+  </Camera>
+</div>

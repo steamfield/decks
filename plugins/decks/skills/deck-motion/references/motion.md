@@ -68,6 +68,32 @@ Ranges use the ordinary code-block syntax: commas and hyphens select lines, `|` 
 
 Only an adjacent forward click into the next code version morphs in the active live slide. Backward navigation, jumps, first render, instant motion and other contexts show their click's code immediately. Print follows each page's click; final-only print shows the last version. The compiler supplies `MagicMove` and keyed tokens; do not author the component or tokenize code in the browser. Invalid options and ranges report the slide file and line.
 
+## Camera
+
+Use `Camera` to walk an audience through one dense diagram or map. Give its container a height. Each stop frames a point in the children's CSS pixels, measured from their top-left corner. A zoom of 1 keeps their natural size. For an SVG whose rendered width changes, convert landmark positions from its `viewBox` to CSS pixels when choosing stops.
+
+```mdx
+<div style={{ height: 600 }}>
+  <Camera at={1} stops={[{ x: 600, y: 300, zoom: 1 }, { x: 250, y: 200, zoom: 2 }]}>
+    <RouteMap />
+  </Camera>
+</div>
+```
+
+Stop 0 shows before click `at`. Stop 1 arrives on click `at`, and stop `i` arrives on click `at + i - 1`. The last stop holds. A literal array contributes `at + stops.length - 2` to the slide's click total. Set frontmatter `clicks` when the array comes from data, uses a spread, or lives inside a React component. An explicit total replaces the inferred count for the whole slide.
+
+## ShapeMorph
+
+Use `ShapeMorph` when the audience needs to follow the same shape as its outline changes. Place it inside an SVG and set the fill or stroke on the SVG or its enclosing group.
+
+```mdx
+<svg viewBox="0 0 100 100" role="img" aria-label="A triangle becomes a square">
+  <ShapeMorph at={1} paths={["M50 10L90 90H10Z", "M10 10H90V90H10Z"]} />
+</svg>
+```
+
+Path 0 shows before `at`, path 1 arrives on `at`, and each following click selects the next path. The last path holds. If either outline is empty or contains only move commands, the target path appears immediately. A literal array contributes `at + paths.length - 2`. For a computed array, a spread, or a morph inside a React component, set frontmatter `clicks` to the total for the whole slide.
+
 ## Tokens
 
 Import `duration`, `ease`, `stagger` and `gsap` from `@steamfield/decks/motion`. `duration.quick`, `.base`, `.slow` correspond to `--deck-dur-quick`, `--deck-dur-base`, `--deck-dur-slow`. `ease.enter`, `.exit`, `.settle`, `.draw` correspond to `--deck-ease-enter`, `--deck-ease-exit`, `--deck-ease-settle`, `--deck-ease-draw`. `stagger` corresponds to `--deck-stagger`.
