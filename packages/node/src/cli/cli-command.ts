@@ -26,15 +26,36 @@ const commands = {
       deck: deckArg,
       port: { type: "string", description: "Port to listen on" },
       open: { type: "boolean", default: false, description: "Open the deck in a browser" },
+      remote: {
+        type: "boolean",
+        description: "Serve the remote presenter on the LAN",
+      },
+      "remote-port": { type: "string", description: "Port for the remote presenter" },
       "live-term": { type: "boolean", default: false, description: "Enable live terminal panes" },
     },
     async run({ args }) {
       const { deck } = await resolveDeck(args.deck);
-      if (args.port !== undefined && (!/^\d+$/.test(args.port) || Number(args.port) > 65535))
-        throw new DeckError(`Invalid --port "${args.port}". Use a whole number from 0 to 65535.`);
-      const port = args.port === undefined ? undefined : Number(args.port);
-      const server = await dev(deck, { port, open: args.open, liveTerm: args["live-term"] });
-      console.log(pc.green(server.url));
+      const parsePort = (name: string, value?: string) => {
+        if (value === undefined) return;
+        if (!/^\d+$/.test(value) || Number(value) > 65535)
+          throw new DeckError(`Invalid --${name} "${value}". Use a whole number from 0 to 65535.`);
+        return Number(value);
+      };
+      const port = parsePort("port", args.port);
+      const remotePort = parsePort("remote-port", args["remote-port"]);
+      const remote = (args.remote ?? remotePort !== undefined) ? { port: remotePort } : undefined;
+      const server = await dev(deck, {
+        port,
+        open: args.open,
+        liveTerm: args["live-term"],
+        remote,
+      });
+      if (remote) {
+        process.once("SIGINT", async () => {
+          process.exitCode = 130;
+          await server.close();
+        });
+      } else console.log(pc.green(server.url));
     },
   }),
   build: defineCommand({
@@ -94,6 +115,11 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
       rawArgs.slice(1).some((arg) => /^--(?:no-)?live-term(?:=|$)/.test(arg))
     )
       throw new DeckError("--live-term is only available on decks dev.");
+    if (
+      command !== "dev" &&
+      rawArgs.slice(1).some((arg) => /^--(?:no-)?remote(?:-port)?(?:=|$)/.test(arg))
+    )
+      throw new DeckError("--remote is only available on decks dev.");
     if (command !== undefined && Object.hasOwn(tools, command)) {
       try {
         await runCommand(main, { rawArgs });
@@ -121,6 +147,8 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
               port: { type: "string" },
               open: { type: "boolean" },
               "live-term": { type: "boolean" },
+              remote: { type: "boolean" },
+              "remote-port": { type: "string" },
             };
       try {
         const { positionals } = parseArgs({
@@ -145,7 +173,7 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
             throw new DeckError(
               options[option.slice(2)]?.type === "boolean"
                 ? `${option} does not take a value. Use ${option} or --no-${option.slice(2)}.`
-                : `${option} needs a value. Pass ${option} ${option === "--port" ? "<n>, a whole number from 0 to 65535" : option === "--out" ? "<dir>" : "<path>"}.`,
+                : `${option} needs a value. Pass ${option} ${option === "--port" || option === "--remote-port" ? "<n>, a whole number from 0 to 65535" : option === "--out" ? "<dir>" : "<path>"}.`,
             );
         }
         if (

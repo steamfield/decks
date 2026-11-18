@@ -8,9 +8,12 @@ import {
   createServer,
   defaultClientConditions,
   type InlineConfig,
-  type Plugin,
+  type PluginOption,
   build as viteBuild,
 } from "vite";
+import { createRelay } from "../remote/relay";
+import { buildRemotePage } from "../remote/remote-page";
+import { startRemoteServer } from "../remote/remote-server";
 import { liveTerm } from "../term/plugin";
 import { launchBrowser, openBuiltDeck, waitForCapture } from "./browser";
 import type { ResolvedDeck } from "./config";
@@ -23,7 +26,10 @@ export interface DevServer {
   close(): Promise<void>;
 }
 
-function config(deck: ResolvedDeck, plugins: Plugin[] = reactDecks(deck)): InlineConfig {
+function config(
+  deck: ResolvedDeck,
+  plugins: PluginOption[] = [reactDecks(deck), deck.config.vite?.plugins ?? []],
+): InlineConfig {
   const require = createRequire(import.meta.url);
   const sourceMotion = import.meta.url.endsWith(".ts")
     ? require.resolve("@react-decks/motion")
@@ -38,7 +44,7 @@ function config(deck: ResolvedDeck, plugins: Plugin[] = reactDecks(deck)): Inlin
   return {
     configFile: false,
     root: deck.dir,
-    plugins: [plugins, deck.config.vite?.plugins ?? []],
+    plugins,
     resolve: {
       dedupe: ["react", "react-dom"],
       ...(source
@@ -76,10 +82,19 @@ export const firstDevPort = 3030;
 
 export async function dev(
   deck: ResolvedDeck,
-  options?: { port?: number; open?: boolean; liveTerm?: boolean },
+  options?: { port?: number; open?: boolean; liveTerm?: boolean; remote?: { port?: number } },
 ): Promise<DevServer> {
   const port = options?.port ?? (await getPort({ port: portNumbers(firstDevPort, 65535) }));
-  const lifecycle = createDeckPlugins(deck);
+  const relay = options?.remote ? createRelay({ title: deck.config.title, slides: [] }) : undefined;
+  let closeRemote: (() => Promise<void>) | undefined;
+  const lifecycle = createDeckPlugins(deck, { remote: !!relay, relay });
+  if (relay)
+    lifecycle.plugins.push({
+      name: "deck-remote-lifecycle",
+      async closeServer({ reason }) {
+        if (reason === "close") await closeRemote?.();
+      },
+    });
   if (options?.liveTerm) lifecycle.plugins.push(liveTerm(deck.dir));
   let server: Awaited<ReturnType<typeof createServer>> | undefined;
   try {
@@ -96,12 +111,22 @@ export async function dev(
           },
         },
         ...lifecycle.plugins,
+        deck.config.vite?.plugins ?? [],
       ]),
       server: { port, strictPort: options?.port !== undefined, open: options?.open ?? false },
     });
     await server.listen();
     const url = server.resolvedUrls?.local[0];
     if (!url) throw new Error(`${deck.dir}: Vite did not provide a local URL`);
+    if (relay && options?.remote) {
+      closeRemote = await startRemoteServer(
+        url,
+        options.remote.port,
+        relay,
+        (token) => buildRemotePage(deck, token, config),
+        server.config.logger,
+      );
+    }
     const running = server;
     return {
       url,
