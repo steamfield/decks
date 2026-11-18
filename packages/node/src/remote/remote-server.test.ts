@@ -44,8 +44,8 @@ test("refuses the page with 403 and logs the address when the token is missing o
   ]);
 });
 
-async function refused(url: URL, origin: string) {
-  const socket = new WebSocket(url, { origin });
+async function refused(url: URL, origin: string, host?: string) {
+  const socket = new WebSocket(url, { origin, headers: host ? { host } : {} });
   // ws reports a rejected handshake as a client error when its response is not intercepted.
   onTestFinished(() => socket.terminate());
   const result = await Promise.race([
@@ -68,6 +68,28 @@ test("refuses a socket upgrade from a foreign Origin", async () => {
   expect(app.warnings).toHaveLength(1);
 });
 
+test("refuses the page and the socket with the right token under a foreign Host", async () => {
+  const app = await remoteFixture();
+  // A DNS-rebound name reaches the same address and port but sends its own Host and Origin.
+  const host = `evil.example:${app.url.port}`;
+  const req = get({
+    hostname: "127.0.0.1",
+    port: app.url.port,
+    path: app.url.pathname + app.url.search,
+    headers: { host },
+  });
+  const [response] = await once(req, "response");
+  response.resume();
+  expect(response.statusCode).toBe(403);
+  await refused(app.socketUrl, `http://${host}`, host);
+});
+
+test("a localhost dev host with --remote is loopback and logs no override warning", async () => {
+  const app = await remoteFixture({ "deck.config.ts": deckConfig("Test deck", "localhost") });
+  expect(await (await fetch(app.devUrl)).text()).toContain("<title>Test deck</title>");
+  expect(app.warnings).toEqual([]);
+});
+
 test("keeps the remote socket open and routing across a deck.config.ts restart", async () => {
   const app = await remoteFixture();
   const remote = await connectRemote(app);
@@ -84,12 +106,8 @@ test("keeps the remote socket open and routing across a deck.config.ts restart",
   );
   expect(remote.messages.slice(3)).toContainEqual({ type: "waiting" });
   expect(app.warnings.join("\n")).toContain("overriding dev server host");
-  if (app.url.hostname !== "127.0.0.1") {
-    const lan = new URL(app.devUrl);
-    lan.hostname = app.url.hostname;
-    await expect(fetch(lan)).rejects.toThrow();
-  }
   const window = await connectWindow(app.devUrl);
+  expect(await window.address()).toMatchObject({ address: "127.0.0.1" });
   await window.report(play);
   await waitForWatcher(() =>
     expect(remote.messages.at(-1)).toEqual({ type: "position", slide: 1, click: 0, elapsed: null }),

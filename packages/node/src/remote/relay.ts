@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import type {
   RemoteClientMessage,
   RemoteDeck,
@@ -53,6 +54,8 @@ export function createRelay(deck: RemoteDeck) {
       return () => remotes.delete(remote);
     },
     updateDeck(updated: RemoteDeck) {
+      // Every slide save rebuilds the payload; one that only changed slide body text is equal.
+      if (isDeepStrictEqual(updated, deck)) return;
       deck = updated;
       broadcast({ type: "deck", deck });
     },

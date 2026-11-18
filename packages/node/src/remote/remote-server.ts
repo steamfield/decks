@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import { hostname, networkInterfaces } from "node:os";
 import type { RemoteServerMessage } from "@react-decks/core";
@@ -39,9 +39,15 @@ export async function startRemoteServer(
   const name = `${hostname().toLowerCase().split(".")[0]}.local`;
   const hosts = [...(addresses.size ? addresses : ["127.0.0.1"]), name];
   let origins: string[] = [];
+  const expected = Buffer.from(token);
+  // Constant time, so response timing does not reveal how much of a guessed token matched.
+  const tokenMatches = (given: string | null | undefined) => {
+    const actual = Buffer.from(given ?? "");
+    return actual.length === expected.length && timingSafeEqual(actual, expected);
+  };
   const authorized = (req: IncomingMessage) =>
     origins.includes(`http://${req.headers.host?.toLowerCase()}`) &&
-    URL.parse(req.url ?? "/", origins[0])?.searchParams.get("token") === token;
+    tokenMatches(URL.parse(req.url ?? "/", origins[0])?.searchParams.get("token"));
   const refused = (req: IncomingMessage) =>
     logger.warn(`Remote presenter: refused request from ${req.socket.remoteAddress}`);
   const page = await buildPage(token);

@@ -30,6 +30,36 @@ test("pushes a fresh deck payload when a slide's notes change", async () => {
   });
 });
 
+test("an edit to slide body text alone publishes no new deck payload", async () => {
+  const body = "---\nclicks: 0\n---\n# Talk";
+  const app = await remoteFixture({ "slides/01-first.mdx": body });
+  const remote = await connectRemote(app);
+  await remote.at(1, { type: "waiting" });
+  const window = await connectWindow(app.devUrl);
+  // Loading the slide puts it in the module graph, so its edit reaches the window as a frame.
+  await fetch(new URL("/slides/01-first.mdx", app.devUrl));
+  await app.put("slides/01-first.mdx", `${body}\n\nMore talk.`);
+  await waitForWatcher(() => expect(window.frames.length).toBeGreaterThan(1));
+  // The sentinel: a notes edit after the body edit must be the only new payload.
+  await app.put("slides/01-first.mdx", `${body}\n\nMore talk.\n\n<Notes>\n\nA note.\n\n</Notes>`);
+  const noted = {
+    type: "deck",
+    deck: {
+      title: "Test deck",
+      slides: [
+        {
+          id: "01-first",
+          title: "01-first",
+          clicks: 0,
+          notes: [{ click: 0, html: "<p>A note.</p>" }],
+        },
+      ],
+    },
+  };
+  await waitForWatcher(() => expect(remote.messages).toContainEqual(noted));
+  expect(remote.messages).toEqual([{ type: "deck", deck: firstDeck }, { type: "waiting" }, noted]);
+});
+
 test("leaves hidden slides out of the payload", async () => {
   const remote = await connectRemote(
     await remoteFixture({ "slides/02-secret.mdx": "---\nhide: true\n---\n# Hidden" }),
