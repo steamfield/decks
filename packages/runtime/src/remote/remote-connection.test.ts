@@ -16,7 +16,9 @@ it("the page pings every 5 seconds", async () => {
   const advance = clock();
   const page = remotePage();
   page.present();
-  await advance(5000);
+  await advance(4999);
+  expect(page.sent).toEqual([]);
+  await advance(1);
   expect(page.sent).toEqual([{ type: "ping" }]);
   page.deliver({ type: "pong" });
   await advance(5000);
@@ -136,13 +138,22 @@ const deckFrame = (slide: unknown) =>
 
 it.each([
   ["an unparsable frame", "{"],
-  ["an unknown message type", '{"type":"new-protocol"}'],
-  ["a deck with an invalid slide", deckFrame({ ...validSlide, title: 3 })],
+  ["a deck with a non-string title", '{"type":"deck","deck":{"title":3,"slides":[]}}'],
+  ["a deck with a non-string slide title", deckFrame({ ...validSlide, title: 3 })],
+  ["a deck with a null click count", deckFrame({ ...validSlide, clicks: null })],
+  ["a deck with a non-string note", deckFrame({ ...validSlide, notes: [{ click: 1, html: 4 }] })],
+  ["a position with a non-finite slide", '{"type":"position","click":1,"slide":1e400,"elapsed":0}'],
   ["a position with a non-numeric click", '{"type":"position","click":"1","slide":1,"elapsed":0}'],
+  [
+    "a position with a non-numeric elapsed",
+    '{"type":"position","click":1,"slide":1,"elapsed":"started"}',
+  ],
 ])("%s leaves the last notes visible and a later position still arrives", (_kind, frame) => {
   const page = remotePage();
   page.present();
+  const before = document.body.textContent;
   act(() => page.sockets[0]?.frame(frame));
+  expect(document.body.textContent).toBe(before);
   expect(screen.getByRole("heading", { name: "Arrival" })).toBeVisible();
   expect(screen.getByText("Introduce the site.")).toBeVisible();
   page.position(2);
