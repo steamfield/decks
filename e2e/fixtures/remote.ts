@@ -53,7 +53,7 @@ async function startRemote(browser: Browser, dir: string, mode?: "clock" | "live
     await expect.poll(printedRemoteURL, { message: "CLI prints the remote URL" }).toBeDefined();
     const remoteURL = printedRemoteURL();
     if (!remoteURL) throw new Error("Missing remote URL in decks dev output");
-    expect((await fetch(remoteURL, { signal: AbortSignal.timeout(5000) })).status).toBe(200);
+    expect((await fetch(remoteURL)).status).toBe(200);
     // Warm the cold dev server (dependency optimizer, first transforms) as deckServer does,
     // so a test's first page load is not racing it.
     const warm = await browser.newPage();

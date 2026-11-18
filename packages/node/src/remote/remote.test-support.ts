@@ -1,4 +1,6 @@
+import { lookup } from "node:dns/promises";
 import { once } from "node:events";
+import { get } from "node:http";
 import { REMOTE_INTENT, REMOTE_POSITION, type RemotePosition } from "@react-decks/core";
 import { createLogger } from "vite";
 import { expect, onTestFinished } from "vitest";
@@ -97,3 +99,30 @@ export async function connectWindow(devUrl: string) {
 }
 
 export const play = { slide: 1, click: 0, view: "play", focused: true } as const;
+
+/**
+ * The body of a GET to a dev URL, connecting as a browser would: a `localhost` URL is tried at
+ * each address the name resolves to. Vite can listen on ::1 while Node's own clients connect to
+ * 127.0.0.1 only (Linux containers), which a browser falls back from.
+ */
+export async function pageText(url: string) {
+  const { hostname, port, pathname, search, host } = new URL(url);
+  const addresses =
+    hostname === "localhost" ? await lookup(hostname, { all: true }) : [{ address: hostname }];
+  const failures: unknown[] = [];
+  for (const { address } of addresses) {
+    const request = get({ hostname: address, port, path: pathname + search, headers: { host } });
+    try {
+      const [response] = await once(request, "response");
+      const body = [];
+      for await (const chunk of response) body.push(chunk);
+      return Buffer.concat(body).toString();
+    } catch (cause) {
+      failures.push(cause);
+    }
+  }
+  throw new AggregateError(
+    failures,
+    `Cannot GET ${url} at ${addresses.map((a) => a.address).join(", ")}`,
+  );
+}

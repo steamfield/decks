@@ -14,6 +14,7 @@ import {
   connectWindow,
   deckConfig,
   firstDeck,
+  pageText,
   play,
   remoteFixture,
 } from "./remote.test-support";
@@ -84,7 +85,7 @@ test("refuses the page and the socket with the right token under a foreign Host"
 
 test("a localhost dev host with --remote is loopback and logs no override warning", async () => {
   const app = await remoteFixture({ "deck.config.ts": deckConfig("Test deck", "localhost") });
-  expect(await (await fetch(app.devUrl)).text()).toContain("<title>Test deck</title>");
+  expect(await pageText(app.devUrl)).toContain("<title>Test deck</title>");
   expect(app.warnings).toEqual([]);
 });
 
@@ -229,5 +230,5 @@ test("accepts Vite's loopback and shared socket defaults from a config plugin", 
   });
   const server = await dev(await loadDeck(dir), { port: 0, remote: { port: 0 } });
   onTestFinished(() => server.close());
-  expect(await (await fetch(server.url)).text()).toContain("<title>Shared transport</title>");
+  expect(await pageText(server.url)).toContain("<title>Shared transport</title>");
 });
