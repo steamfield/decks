@@ -35,7 +35,7 @@ export function Spotlight({
     const image = photo.current;
     if (!image) return;
     let waiting = true;
-    const unregister = registerSettleProbe(() => waiting);
+    const unregister = registerSettleProbe(() => waiting, "image load");
     function finish() {
       waiting = false;
       if (image?.naturalWidth) setImageState("ready");

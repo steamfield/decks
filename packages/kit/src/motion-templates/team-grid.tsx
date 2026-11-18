@@ -23,7 +23,7 @@ export function TeamGrid({ people, at = 0, accent = "cyan" }: TemplateProps<"tea
   const [photos, setPhotos] = useState<ReadonlyMap<string, boolean>>(new Map());
   const ready = people.every(({ src }) => !src || photos.has(src));
   useLayoutEffect(() => {
-    if (!ready) return registerSettleProbe(() => true);
+    if (!ready) return registerSettleProbe(() => true, "portrait load");
   }, [ready]);
 
   const beat = useRef<gsap.core.Timeline | null>(null);

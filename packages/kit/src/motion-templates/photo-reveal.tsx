@@ -30,7 +30,7 @@ export function PhotoReveal({
     const img = figure.current?.querySelector("img");
     // A cached image can already have dimensions before the browser delivers its load event.
     if (img?.complete && img.naturalWidth > 0 && img.naturalHeight > 0) setImage("ready");
-    return registerSettleProbe(() => true);
+    return registerSettleProbe(() => true, "image load");
   }, [image]);
 
   function finishImage(img?: HTMLImageElement) {
