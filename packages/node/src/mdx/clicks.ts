@@ -15,6 +15,9 @@ export const stepNames = new Set([
   "CountUp",
   "Draw",
   "Mark",
+  "Camera",
+  "ShapeMorph",
+  "ChartSteps",
 ]);
 
 const parser = unified().use(remarkParse).use(remarkMdx);

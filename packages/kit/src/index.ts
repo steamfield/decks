@@ -24,6 +24,7 @@ export { hash, hashRange, hashSigned } from "./geometry/hash";
 export * as parliament from "./geometry/parliament";
 export { type RippleOptions, rippleProgress } from "./geometry/ripple";
 export { clamp01, lerp, stackEndLabels, stagger, xScale, yScale } from "./geometry/scales";
+export { ChartSteps } from "./ink/chart-steps";
 export { CodeInk } from "./ink/code-ink";
 export { tokenizeSql } from "./ink/code-tokens";
 export { Graph3D } from "./ink/graph-3d";
@@ -43,6 +44,7 @@ export {
 } from "./ink/ink-timeline";
 export { InkTimelineCursor } from "./ink/ink-timeline-cursor";
 export { OpenChart } from "./ink/open-chart";
+export { Scene3D } from "./ink/scene-3d";
 export { Underline } from "./ink/underline";
 export { UnitGrid, type UnitGridHandle } from "./ink/unit-grid";
 export { useStageEntrance } from "./story/entrance";

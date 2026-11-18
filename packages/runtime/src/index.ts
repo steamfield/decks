@@ -22,6 +22,8 @@ export {
 export { Center, Cover, ImageSide, Section, TwoCol } from "./layouts/layouts";
 export { mountDeck } from "./mount";
 export { Notes } from "./notes";
+export { mountRemote } from "./remote/mount-remote";
+export type { RemoteLink } from "./remote/remote-link";
 export { registerSettleProbe } from "./settle/settle";
 export { Link } from "./slides/link";
 export { SlideHost } from "./slides/slide-host";

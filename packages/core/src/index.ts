@@ -13,6 +13,16 @@ export {
 } from "./navigation";
 export { type NoteSegment, noteClickCount, segmentNotes } from "./notes";
 export {
+  REMOTE_INTENT,
+  REMOTE_POSITION,
+  type RemoteClientMessage,
+  type RemoteDeck,
+  type RemoteIntent,
+  type RemotePosition,
+  type RemoteServerMessage,
+  type RemoteSlide,
+} from "./remote-protocol";
+export {
   createMemoryHub,
   createSyncSession,
   type MemoryHub,

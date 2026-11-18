@@ -5,8 +5,10 @@ import { authorError, bugNotice, DeckError } from "../dev/errors";
 import { build, dev } from "../dev/server";
 import { check } from "./commands/check";
 import { exportDeck } from "./commands/export";
+import { film } from "./commands/film";
 import { hook } from "./commands/hook";
 import { init } from "./commands/init";
+import { inspect } from "./commands/inspect";
 import { lint } from "./commands/lint";
 import { newDeck } from "./commands/new";
 import { shot } from "./commands/shot";
@@ -51,7 +53,7 @@ const commands = {
     },
   }),
 };
-const tools = { new: newDeck, check, lint, hook, export: exportDeck, shot, init };
+const tools = { new: newDeck, check, lint, hook, export: exportDeck, shot, film, inspect, init };
 const main = defineCommand({
   meta: { name: "decks", description: "Develop and build React slide decks" },
   subCommands: { ...commands, ...tools },

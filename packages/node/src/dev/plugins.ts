@@ -22,7 +22,7 @@ export function reactDecks(deck: ResolvedDeck): Plugin[] {
   return createDeckPlugins(deck).plugins;
 }
 
-export function createDeckPlugins(deck: ResolvedDeck) {
+export function createDeckPlugins(deck: ResolvedDeck, options: { remote?: boolean } = {}) {
   let current = deck;
   let configSource: string | undefined;
   let restarting = Promise.resolve();
@@ -134,7 +134,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
     },
     async load(id) {
       if (normalizePath(id) === htmlFile) return deckHtml(current, false);
-      if (id === `\0${prefix}entry`) return entryModule(current);
+      if (id === `\0${prefix}entry`) return entryModule(current, options.remote === true);
       if (id === `\0${prefix}components`) return (await scanDeck()).componentsCode;
       if (id === `\0${prefix}layers`) return layersModule(deck.dir, deck.config.credit);
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;

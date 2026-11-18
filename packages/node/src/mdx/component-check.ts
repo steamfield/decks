@@ -11,6 +11,8 @@ const provided = [
   "Morph",
   "Mark",
   "MagicMove",
+  "Camera",
+  "ShapeMorph",
   "Center",
   "Cover",
   "Section",
