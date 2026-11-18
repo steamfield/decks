@@ -25,6 +25,25 @@ Decided with Riley on 2026-11-17 and 2026-11-18 (RFC 0009's four decisions are i
   uses its run's model.
 - Cut on purpose: particles, parallax layers, slide images on the remote, the MCP server (#8).
 
+## Phases (ce:build, decided 2026-11-18)
+
+No timebox. Every lane is a Codex run through foreman (`gpt-6.2-astra` or `gpt-6.2-sol` as
+the model column says) that writes its contract's tests first, sees them fail, then
+implements. Phases land on `feat/remote-and-motion` and are tagged there (`rm-phase-N`);
+at the end the branch merges to main locally and every worktree and run is cleaned up; no
+push unless Riley says so. Scaffold SHA: `9031e0f`.
+
+| Phase | Lanes | Depends on | Demo |
+| --- | --- | --- | --- |
+| 1 remote presenter | 1A remote server, 1B remote client | scaffold | `bun run decks dev basic --remote`, open the printed URL on an iPad, step the deck from it |
+| 2 agent tooling | 1C film, 2C inspect | phase 1 | `bun run decks film motion <push slide> 0`; `bun run decks inspect motion` |
+| 3 data and transitions | 1D ChartSteps, 1E transitions | phase 1 | `bun run decks dev motion`, slides 35-43 |
+| 4 motion graphics | 2A Camera and ShapeMorph, 2B motion graphics (Astra) | phase 2 | slides 44-48, filmed |
+| 5 recipes | 2D recipes | phases 3 and 4 | `bun run decks dev recipes` |
+
+Phases 2 and 3 run together after phase 1 (four lanes). The unit names below (1A-2D) are
+the lane names; the phase they land in is this table's.
+
 ## Execution
 
 I orchestrate; Codex runs implement. Contracts come from `.claude/delegate/contract.md`, with
