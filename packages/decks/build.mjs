@@ -59,5 +59,11 @@ await rm(new URL("docs/", import.meta.url), { recursive: true, force: true });
 await cp(new URL("../../docs/guide/", import.meta.url), new URL("docs/", import.meta.url), {
   recursive: true,
 });
+// Each motion template is shipped as readable source, a reference for writing custom motion.
+await cp(
+  new URL("../kit/src/motion-templates/", import.meta.url),
+  new URL("docs/motion-templates/", import.meta.url),
+  { recursive: true, filter: (source) => !/\.test\.|test-support/.test(source) },
+);
 await cp(new URL("../../LICENSE", import.meta.url), new URL("LICENSE", import.meta.url));
 await chmod(new URL("dist/cli.js", import.meta.url), 0o755);

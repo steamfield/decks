@@ -18,6 +18,7 @@ export const stepNames = new Set([
   "Camera",
   "ShapeMorph",
   "ChartSteps",
+  "MotionTemplate",
 ]);
 
 const parser = unified().use(remarkParse).use(remarkMdx);

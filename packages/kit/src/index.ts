@@ -47,6 +47,11 @@ export { OpenChart } from "./ink/open-chart";
 export { Scene3D } from "./ink/scene-3d";
 export { Underline } from "./ink/underline";
 export { UnitGrid, type UnitGridHandle } from "./ink/unit-grid";
+export { MotionTemplate } from "./motion-templates/motion-template";
+export type {
+  MotionTemplateName,
+  MotionTemplateProps,
+} from "./motion-templates/motion-template-props";
 export { useStageEntrance } from "./story/entrance";
 export { useScriptedDemo } from "./story/scripted-demo";
 export { useStage } from "./story/stage";
