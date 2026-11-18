@@ -32,7 +32,7 @@ export function VennOverlap({
                 cy="50"
                 r="49"
                 fill="currentColor"
-                fillOpacity={0.1 + i * 0.06}
+                style={{ fillOpacity: 0.1 + i * 0.06 }}
                 stroke="currentColor"
                 strokeWidth="0.45"
               />
