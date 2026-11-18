@@ -1,0 +1,44 @@
+.flow {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 1em;
+  width: 100%;
+  margin: auto 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--od-font-sans);
+}
+ol.flow > li {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+}
+.connector {
+  position: absolute;
+  left: -1em;
+  width: 1em;
+  top: 50%;
+  height: 0.075em;
+  background: currentColor;
+  transform-origin: left;
+}
+.box {
+  display: grid;
+  align-content: space-between;
+  gap: 1.1em;
+  flex: 1;
+  min-width: 0;
+  padding: 0.65em;
+  border: 0.06em solid currentColor;
+  border-radius: var(--od-radius);
+  background: var(--od-surface);
+}
+.box span {
+  font-family: var(--od-font-mono);
+}
+.box strong {
+  color: var(--od-text);
+  overflow-wrap: anywhere;
+}

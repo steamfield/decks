@@ -1,0 +1,24 @@
+@layer react-decks {
+  .statements {
+    margin: auto 0;
+    display: grid;
+    gap: 1.3em;
+    color: var(--od-text);
+    font-family: var(--od-font-serif);
+    overflow-wrap: anywhere;
+  }
+  .statements h1 {
+    margin: 0;
+    font-family: inherit;
+  }
+  .strike {
+    background-image: linear-gradient(var(--accent), var(--accent));
+    background-repeat: no-repeat;
+    background-position: left 54%;
+    box-decoration-break: clone;
+  }
+  .fact {
+    color: var(--accent);
+    -webkit-text-fill-color: currentColor;
+  }
+}

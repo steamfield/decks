@@ -159,7 +159,8 @@ export function countClicks(
             stepNames.has(imported) &&
             (source === "@react-decks/motion" ||
               source === PUBLIC_SPECIFIERS.motion ||
-              (imported === "ChartSteps" && source === "@steamfield/decks/kit"))
+              ((imported === "ChartSteps" || imported === "MotionTemplate") &&
+                source === "@steamfield/decks/kit"))
           )
             names.set(local, imported);
         }
@@ -251,6 +252,57 @@ export function countClicks(
               );
           }
         if (children) total = Math.max(total, from + children - 1);
+      } else if (motion === "MotionTemplate") {
+        const attributes = node.attributes?.toReversed();
+        const attributeValue = (name: string) => {
+          const attr = attributes?.find((a) => a.type === "mdxJsxAttribute" && a.name === name);
+          return attr?.type === "mdxJsxAttribute" ? attr.value : undefined;
+        };
+        const expressionOf = (name: string) => {
+          const value = attributeValue(name);
+          const statement =
+            value && typeof value === "object" ? value.data?.estree?.body[0] : undefined;
+          return statement?.type === "ExpressionStatement" ? statement.expression : undefined;
+        };
+        const template = expressionOf("template");
+        const name = template?.type === "Literal" ? template.value : attributeValue("template");
+        if (typeof name !== "string")
+          throw new DeckError(
+            `<${node.name}> template must be a literal string. To compute it, set clicks: in the frontmatter.`,
+            file,
+            node.position?.start,
+          );
+        const at =
+          attributeValue("at") === undefined
+            ? 0
+            : integerAttribute(
+                { ...node, attributes, name: `${node.name} template=${JSON.stringify(name)}` },
+                "at",
+                file,
+              );
+        let beats = name === "comparison-split" || name === "myth-fact" ? 2 : 1;
+        const list =
+          name === "timeline-sweep"
+            ? "events"
+            : name === "process-flow"
+              ? "steps"
+              : name === "list-cascade"
+                ? "items"
+                : undefined;
+        if (list) {
+          const array = expressionOf(list);
+          if (
+            array?.type !== "ArrayExpression" ||
+            array.elements.some((item) => item?.type === "SpreadElement")
+          )
+            throw new DeckError(
+              `<${node.name}> ${list} must be an array literal of known length. To compute it, set clicks: in the frontmatter.`,
+              file,
+              node.position?.start,
+            );
+          beats = array.elements.length;
+        }
+        total = Math.max(total, at + beats - 1);
       } else if (motion === "ChartSteps") {
         const at = integerAttribute(node, "at", file);
         const attr = node.attributes?.find(
