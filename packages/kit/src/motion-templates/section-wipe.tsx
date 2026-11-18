@@ -28,7 +28,7 @@ export function SectionWipe({
       <div className={styles.number} ref={numeral}>
         {number}
       </div>
-      <h1 ref={heading}>{title}</h1>
+      <h2 ref={heading}>{title}</h2>
     </div>
   );
   useTemplateMotion(at, (tl) => {

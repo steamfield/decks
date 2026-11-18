@@ -43,7 +43,7 @@ export function IconArray({
           );
         })}
       </svg>
-      <h1 ref={heading}>{label}</h1>
+      <h2 ref={heading}>{label}</h2>
     </div>
   );
   useTemplateMotion(at, (tl) => {

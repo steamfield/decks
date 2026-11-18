@@ -21,7 +21,7 @@ export function QuoteCard({ quote, source, at = 0, accent = "cyan" }: TemplatePr
         <path pathLength="1" strokeDasharray="1" d="M76 6 C60 12 50 26 51 44 L71 44" />
       </svg>
       <blockquote>
-        <h1 ref={heading}>{quote}</h1>
+        <h2 ref={heading}>{quote}</h2>
       </blockquote>
       <figcaption className="od-body" ref={credit}>
         {source}

@@ -28,7 +28,7 @@ for (const [name, words] of demos) {
       const graphic = () =>
         page.locator("[data-deck-active]").evaluate(
           (slide, { name, i }) => {
-            const heading = slide.querySelectorAll("h1")[1];
+            const heading = slide.querySelectorAll("h2")[0];
             let target: Element | null | undefined = heading;
             if (name === "timeline-sweep")
               target = slide.querySelector("ol")?.previousElementSibling;

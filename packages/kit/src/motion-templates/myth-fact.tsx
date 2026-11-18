@@ -17,14 +17,14 @@ export function MythFact({ myth, fact, at = 0, accent = "cyan" }: TemplateProps<
   const answer = useRef<HTMLHeadingElement>(null);
   const layout = (
     <div className={styles.statements} style={{ "--accent": ink(accent, 3) }}>
-      <h1 ref={claim}>
+      <h2 ref={claim}>
         <span ref={strike} className={styles.strike}>
           {myth}
         </span>
-      </h1>
-      <h1 ref={answer}>
+      </h2>
+      <h2 ref={answer}>
         <span className={styles.fact}>{fact}</span>
-      </h1>
+      </h2>
     </div>
   );
 

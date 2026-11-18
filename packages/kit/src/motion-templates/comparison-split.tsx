@@ -37,7 +37,7 @@ export function ComparisonSplit({
   const divider = useRef<HTMLDivElement>(null);
   const panel = (side: typeof left) => (
     <>
-      <h1>{side.title}</h1>
+      <h2>{side.title}</h2>
       <ul>
         {Array.from(side.points.entries(), ([i, point]) => (
           <li key={`point-${i + 1}`}>{point}</li>
@@ -55,7 +55,7 @@ export function ComparisonSplit({
 
   const land = (tl: gsap.core.Timeline, side: HTMLDivElement, position?: string) =>
     tl.fromTo(
-      side.querySelectorAll("h1, li"),
+      side.querySelectorAll("h2, li"),
       { autoAlpha: 0, y: 22 },
       { autoAlpha: 1, y: 0, duration: duration.base, ease: ease.enter, stagger },
       position,

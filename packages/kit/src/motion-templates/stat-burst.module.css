@@ -5,7 +5,7 @@
   justify-items: center;
   gap: 0.5em;
 }
-.figure h1 {
+.figure h2 {
   margin: 0;
   color: var(--od-text);
   line-height: 1.08;
@@ -29,16 +29,16 @@
   width: 100%;
   height: 100%;
 }
-.dial h1 {
+.dial h2 {
   position: relative;
   font-variant-numeric: tabular-nums;
 }
-.dial h1::after {
+.dial h2::after {
   content: attr(aria-label);
   visibility: hidden;
   white-space: nowrap;
 }
-.dial h1 span {
+.dial h2 span {
   position: absolute;
   inset: 0;
   text-align: center;

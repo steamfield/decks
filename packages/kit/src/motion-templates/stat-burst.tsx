@@ -40,9 +40,9 @@ export function StatBurst({
             transform="rotate(-90 50 50)"
           />
         </svg>
-        <h1 aria-label={format(value)}>
+        <h2 aria-label={format(value)}>
           <span aria-hidden="true">{format(count.progress * value)}</span>
-        </h1>
+        </h2>
       </div>
       <figcaption className="od-body" ref={caption}>
         {label}
