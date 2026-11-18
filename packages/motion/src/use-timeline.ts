@@ -1,6 +1,7 @@
 import { useSlide } from "@react-decks/runtime";
 import { type DependencyList, useLayoutEffect, useRef } from "react";
-import { gsap, motionMode } from "./tokens";
+import { shouldTweenStep } from "./stepped";
+import { gsap } from "./tokens";
 
 export function useTimeline(
   build: (tl: gsap.core.Timeline, beat: (n: number) => void) => void,
@@ -54,13 +55,7 @@ export function useTimeline(
     const remaining = Math.abs(targetTime - s.tl.time()) / rate;
     s.tween?.kill();
     s.tween = null;
-    if (
-      s.current >= 0 &&
-      isActive &&
-      renderContext === "slide" &&
-      motionMode() === "live" &&
-      Math.abs(clicks - s.current) === 1
-    ) {
+    if (shouldTweenStep(s.current, clicks, isActive, renderContext)) {
       s.tween = s.tl.tweenTo(label, {
         ease: "none",
         overwrite: true,
