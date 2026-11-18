@@ -1,6 +1,6 @@
 # Fix brittle and false-green tests
 
-Status: not started. Written 2026-11-15 from a four-part audit of the whole test suite.
+Status: done (lanes A-E merged; Phase 6, optional, not done). Written 2026-11-15 from a four-part audit of the whole test suite.
 
 ## Why this exists
 
