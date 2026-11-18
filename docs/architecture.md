@@ -59,7 +59,8 @@ than hand-written code asks for it by name.
 | Error boundary around each slide | `react-error-boundary` | `runtime` |
 | Keyboard shortcuts | `tinykeys` | `runtime` |
 | Class name composition | `clsx` (declared; nothing imports it yet) | `runtime` |
-| Timelines, custom eases, count-up | `gsap` with `CustomEase`. `@gsap/react` is declared in `motion` and not imported. Text splitting uses `Intl.Segmenter` and SVG drawing uses `pathLength` with CSS (section 5.1), so `SplitText` and `DrawSVGPlugin` are not used | `motion`, `kit` |
+| Timelines, custom eases, count-up | `gsap` with `CustomEase`. `@gsap/react` is declared in `motion` and not imported. The built-in step primitives split text with `Intl.Segmenter` and draw SVG with `pathLength` and CSS (section 5.1). `SplitText`, `MorphSVGPlugin`, `MotionPathPlugin` and `DrawSVGPlugin` are registered and exported by `motion` for deck-authored motion graphics and `ShapeMorph` | `motion`, `kit` |
+| Remote presenter socket | `ws` | `node` |
 | MDX compile | `@mdx-js/rollup` | `node` |
 | Parsing MDX outside the compiler (click counts, notes) | `unified` + `remark-parse` + `remark-mdx` | `node` |
 | Frontmatter | `remark-frontmatter` in the MDX pipeline (it keeps frontmatter out of the rendered slide); `gray-matter` reads the metadata | `node` |
@@ -77,7 +78,7 @@ than hand-written code asks for it by name.
 | Fonts | `@fontsource*` packages in decks. The kit ships Inter as woff2 files in `styles/fonts/`, taken from `@fontsource-variable/inter`, with no dependency | decks, `kit` |
 | Charts | `@opendata-ai/openchart-react` and `@opendata-ai/openchart-core` | `kit` |
 | Story scales | `d3-scale` | `kit` |
-| QR codes | `uqr` | `kit` |
+| QR codes | `uqr` | `kit`, `node` |
 | Tests | `vitest`, `@testing-library/react`, `user-event`, `jest-dom`, `@playwright/test` (`toHaveScreenshot` for pixel checks) | workspace |
 
 Not built yet (planned for 1.0.0-rc), with libraries not installed yet: browser automation

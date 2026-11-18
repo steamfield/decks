@@ -30,6 +30,8 @@ Only the config and slides are required by the framework. `data/`, `data-sources
 
 Move the pointer to the bottom-left corner of the play view to reveal the control tray, or Tab to its buttons. It holds Previous, Next, the slide counter (opens go-to), Overview, Open presenter, fullscreen when supported, and smaller/larger text. The tray is absent in embedded and bridge decks and other views. Use `f` for fullscreen, `o` for overview, `p` for the presenter window, and `g` for go-to. Cmd/Ctrl `+` and `-` change text size; Cmd/Ctrl `0` resets it.
 
+Run `decks dev <deck> --remote` to read notes and control the deck from an iPad or second laptop. Connect both devices to the same network, open the deck on the presenting laptop, then scan the QR code or open the URL printed in its terminal on the second device. The remote shows the current notes, next slide title and talk timer.
+
 ## Public import roots
 
 | Import | Use |
@@ -55,6 +57,10 @@ Use `decks <command> --help` to confirm the installed version's flags.
 | `decks build <deck> [--out dir] [--base path]` | Build a static site; default output `dist/{name}`, base `./`, overridable by registry defaults. Output is emptied, with protections against unrelated directories. |
 | `decks shot <deck> <slide> [clicks] [--out file.png] [--width N] [--height N]` | Build and capture one settled frame with instant motion. Defaults: click 0, 1920x1080, `slide-<slide>-c<clicks>.png`. Owns its browser and preview server. |
 | `decks export <deck> [--out file.pdf] [--final]` | Build and export all click states to PDF; `--final` exports only each slide's final click. Default PDF is `<outDir>/<name>.pdf`, using the registry output default. |
+
+Run `decks inspect <deck> [--width N] [--height N]` to check each visible slide at its last click.
+It reports elements outside the canvas and boxes that clip text, and exits 1 when it finds either.
+Use `decks film <deck> <slide> [click]` for a PNG contact sheet of the motion into one click or slide.
 
 Screenshot and PDF commands use Chromium. If the CLI reports it missing, follow its instruction: `npx playwright install chromium`. A capture failure is a failed verification, not a successful export. Build also generates an `og.png` preview from the first slide when `public/og.png` is absent; missing Chromium skips that preview with a warning rather than failing the build.
 

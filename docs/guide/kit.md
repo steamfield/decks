@@ -355,6 +355,23 @@ Use `useFrameScale()` only for values handed to `OpenChart`. Anything drawn in o
 
 `slideChartTheme` needs an installed theme, so the deck must call `installTheme` in `setup.ts`.
 
+## `ChartSteps`
+
+A chart whose data changes per click: show 2019, then add 2024, then highlight the leader. Marks move to their new values through OpenChart's update animation instead of the chart entering again.
+
+```mdx
+---
+clicks: 3
+---
+
+import { ChartSteps } from "@steamfield/decks/kit";
+import { series } from "../data/regions";
+
+<ChartSteps specs={series} at={1} />
+```
+
+`specs[0]` shows before click `at`, `specs[1]` on click `at`, and `specs[i]` on click `at + i - 1`; the last holds. Keep the mark type and the fields and types of the x, y, colour and key encodings the same across specs, or it throws naming the two specs; give each datum a stable key so its mark can be followed. An inline array is counted (`at + specs.length - 2`); specs imported from a data module need `clicks` in the frontmatter. One click forward or back animates; a jump, instant motion and every other view show the target spec directly. OpenChart itself snaps instead of animating during the entrance, under reduced motion, for marks it cannot tween (ticks), when scale types or transforms change, and past 500 SVG marks.
+
 ## The stylesheet
 
 `@import "@steamfield/decks/kit/styles.css";` at the top of the deck's `styles/index.css` loads everything the components need: the Inter font, a small reset scoped to slides, the `od-*` classes, the story frame and marks, and the `story` transition. Put your own rules after it. `examples/building-for-agents/styles/index.css` imports it first and then restyles the headline, the cover and the card with the theme's variables.

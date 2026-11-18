@@ -1,0 +1,38 @@
+.photo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  margin: 0;
+  color: var(--od-text);
+  font-family: var(--od-font-sans);
+}
+.photo img,
+.scrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.photo img {
+  object-fit: cover;
+}
+.scrim {
+  inset: auto 0 0;
+  height: 65%;
+  background: linear-gradient(to top, var(--od-canvas), transparent);
+}
+.caption {
+  position: absolute;
+  inset: auto 6% 12%;
+}
+.photo h2 {
+  max-width: 24ch;
+  margin: 0;
+  border-left: 0.065em solid;
+  padding-left: 0.35em;
+  text-wrap: balance;
+}
+.photo p {
+  margin: 0.5em 0 0;
+  color: var(--od-text-secondary);
+}

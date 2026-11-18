@@ -80,10 +80,28 @@ Both slide boxes take the shape of the audience window, so you see the framing t
 
 Every window of the same deck in the same browser follows the others. Navigate in the presenter window and the audience window moves, and the other way around. A window opened or reloaded mid-talk joins at the talk's position.
 
-- Sync runs over the browser's `BroadcastChannel`, so the windows must be in the same browser profile on the same machine, on the same origin. There is no remote control from another device.
+- Sync runs over the browser's `BroadcastChannel`, so the windows must be in the same browser profile on the same machine, on the same origin. To present from another device, see [Remote presenter](#remote-presenter).
 - Windows are matched by deck name and URL path. Two different decks served from one origin do not drive each other. `/dir/` and `/dir/index.html` count as the same deck.
 - Remote slide changes are added to each window's history, so Back in any window steps the whole room back one slide.
 - An embedded deck (`?embedded`) does not sync.
+
+## Remote presenter
+
+When the talk leaves the deck for an editor, a terminal or a browser, the laptop's screen is usually mirrored to the projector, and there is no private screen left for the presenter window. `decks dev <deck> --remote` puts the notes and the controls on a second device instead: an iPad, a phone or another laptop on the same network.
+
+```sh
+bunx decks dev talk --remote
+```
+
+After the dev server's address the terminal prints `Remote presenter:` with one URL per network address and a QR code for the first. Open one on the second device. The page shows the slide number and click, the current and next slide titles, the notes for the current click, the talk timer and the time, with Previous, Next and a list of slides to jump to. Arrow keys, Page Up and Page Down and Space work too, so a clicker paired with a second laptop drives the deck. Next on the remote advances the deck even while another app has focus on the laptop; switch back to the browser and the slide is where the remote says.
+
+- The dev server itself stays on the laptop only (loopback); `--remote` starts a second, small server on the network that serves the remote page and relays its requests to one deck window. It never serves slide code or the live terminal. `--remote-port` picks its port.
+- Every URL carries a random token that changes each time `decks dev` starts. Without it the page and its socket are refused. The traffic is plain HTTP, so anyone on the same open network who sees the URL can read the notes and step the deck, which also runs a live terminal slide's prepared commands. On venue wifi, prefer a phone hotspot that both devices join.
+- Venue networks often keep devices from reaching each other. Open the URL on the second device before you go on stage; if it does not load, join both devices to a phone hotspot, or connect a second Mac with a Thunderbolt cable.
+- The timer starts at the first slide change and survives a reload of the remote. Reset timer on the remote restarts it.
+- If the connection drops, the remote keeps the last notes on screen under a "Disconnected" line and reconnects on its own. A link from an earlier `decks dev` run says it has expired; scan the new code.
+- Over plain HTTP an iPad cannot keep its screen awake by itself: set Auto-Lock to Never for the talk.
+- The remote shows titles and notes, not slide images.
 
 ## Overview
 

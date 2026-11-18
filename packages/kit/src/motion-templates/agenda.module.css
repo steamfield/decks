@@ -1,0 +1,33 @@
+.agenda {
+  margin: auto 0;
+  padding: 0;
+  display: grid;
+  gap: 0.32em;
+  list-style: none;
+}
+.agenda li {
+  font: 500 1.3em / 1.2 var(--od-font-sans);
+  display: flex;
+  align-items: baseline;
+  gap: 0.65em;
+  color: var(--od-text-muted);
+}
+.agenda li:has(.done) {
+  color: var(--od-text-faint);
+}
+.agenda li[aria-current] {
+  font-weight: 650;
+}
+.marker {
+  width: 2ch;
+  font-family: var(--od-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.done {
+  position: absolute;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}

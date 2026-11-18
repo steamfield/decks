@@ -52,15 +52,8 @@ export async function waitForCapture(page: Page, timeout = 30_000): Promise<void
   }
 }
 
-/** Each capture owns a preview server on an OS-assigned port. */
-export async function openBuiltDeck(
-  browser: Browser,
-  outDir: string,
-  base: string,
-  path: string,
-  viewport = { width: 1920, height: 1080 },
-  settleTimeout = 30_000,
-) {
+/** A Vite preview of the built deck in `outDir`, on an OS-assigned port. */
+export async function startPreview(outDir: string, base: string) {
   const server = await preview({
     configFile: false,
     base,
@@ -68,10 +61,28 @@ export async function openBuiltDeck(
     preview: { host: "127.0.0.1", port: 0, open: false },
     logLevel: "silent",
   });
+  const url = server.resolvedUrls?.local[0];
+  if (!url) {
+    await server.close();
+    throw new Error(`${outDir}: Vite preview did not provide a local URL`);
+  }
+  return { url, outDir, base, close: () => server.close() };
+}
+
+/**
+ * Opens `path` on a running preview. The page is loaded but not waited on; `beforeLoad` runs
+ * before navigation (to install a clock, say). `errors` collects page errors and console errors
+ * as they happen. `close()` closes the page; the preview stays up for the next one.
+ */
+export async function openPreviewPage(
+  browser: Browser,
+  { url, outDir, base }: Awaited<ReturnType<typeof startPreview>>,
+  path: string,
+  viewport = { width: 1920, height: 1080 },
+  beforeLoad?: (page: Page) => Promise<void>,
+) {
+  const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
   try {
-    const url = server.resolvedUrls?.local[0];
-    if (!url) throw new Error(`${outDir}: Vite preview did not provide a local URL`);
-    const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
     const errors: string[] = [];
     if (/^https?:\/\//.test(base)) {
       const assets = new URL(base);
@@ -96,13 +107,71 @@ export async function openBuiltDeck(
     page.on("console", (message) => {
       if (message.type() === "error") errors.push(message.text());
     });
+    await beforeLoad?.(page);
+    // An exception before mount means window.__deck never appears; fail with it, not a timeout.
+    const startupError = new Promise<never>((_, reject) =>
+      page.once("pageerror", (error) =>
+        reject(
+          new DeckError(`Cannot capture ${outDir}: ${error.message}`, undefined, undefined, {
+            cause: error,
+          }),
+        ),
+      ),
+    );
+    startupError.catch(() => {});
     await page.goto(`${url}${path}`);
-    await page.waitForFunction("window.__deck !== undefined");
-    await waitForCapture(page, settleTimeout);
-    if (errors.length) throw new DeckError(`Cannot capture ${outDir}: ${errors.join("; ")}`);
-    return { page, close: () => server.close() };
+    const ready = page.waitForFunction("window.__deck !== undefined");
+    ready.catch(() => {});
+    await Promise.race([ready, startupError]);
+    return { page, errors, close: () => page.close() };
+  } catch (cause) {
+    await page.close();
+    throw cause;
+  }
+}
+
+/** A page on its own preview server; `close()` closes both. */
+export async function openBuiltPage(
+  browser: Browser,
+  outDir: string,
+  base: string,
+  path: string,
+  viewport = { width: 1920, height: 1080 },
+  beforeLoad?: (page: Page) => Promise<void>,
+) {
+  const server = await startPreview(outDir, base);
+  try {
+    const capture = await openPreviewPage(browser, server, path, viewport, beforeLoad);
+    const close = async () => {
+      try {
+        await capture.close();
+      } finally {
+        await server.close();
+      }
+    };
+    return { ...capture, close };
   } catch (cause) {
     await server.close();
+    throw cause;
+  }
+}
+
+/** A built deck opened and settled for capture. */
+export async function openBuiltDeck(
+  browser: Browser,
+  outDir: string,
+  base: string,
+  path: string,
+  viewport = { width: 1920, height: 1080 },
+  settleTimeout = 30_000,
+) {
+  const { page, errors, close } = await openBuiltPage(browser, outDir, base, path, viewport);
+  try {
+    await waitForCapture(page, settleTimeout);
+    if (errors.length) throw new DeckError(`Cannot capture ${outDir}: ${errors.join("; ")}`);
+    return { page, close };
+  } catch (cause) {
+    await close();
     throw cause;
   }
 }

@@ -107,4 +107,46 @@ describe.skipIf(skipBrowserTests)("capture failures", () => {
     onTestFinished(() => browser.close());
     await expect(openBuiltDeck(browser, outDir, "./", "#/1")).rejects.toThrow(DeckError);
   });
+
+  it.each<{ name: string; files: Record<string, string>; bound: number; error: RegExp }>([
+    {
+      name: "the deck throws before mount",
+      files: { "setup.ts": 'throw new Error("Setup broke before mount");' },
+      // A 5 s settle bound: the startup error must arrive long before any readiness timeout.
+      bound: 5_000,
+      error: /Cannot capture[\s\S]*Setup broke before mount/,
+    },
+    {
+      name: "the slide never settles",
+      files: {
+        "styles/index.css":
+          "@keyframes capture-long { to { opacity: 1; } } h1 { animation: capture-long 3600s; }",
+      },
+      bound: 100,
+      error: /Timed out after 100 ms/,
+    },
+  ])(
+    "rejects with its cause and leaves no page open when $name",
+    async ({ files, bound, error }) => {
+      const { dir } = await fixture(onTestFinished, files);
+      const outDir = join(dir, "site");
+      await build(await loadDeck(dir), { outDir, ogImage: false });
+      const browser = await launchBrowser();
+      onTestFinished(() => browser.close());
+      await expect(openBuiltDeck(browser, outDir, "./", "#/1", undefined, bound)).rejects.toThrow(
+        error,
+      );
+      expect(browser.contexts().flatMap((context) => context.pages())).toEqual([]);
+    },
+  );
+
+  it("leaves no page open when the capture is closed normally", async () => {
+    const { dir } = await fixture(onTestFinished);
+    const outDir = join(dir, "site");
+    await build(await loadDeck(dir), { outDir, ogImage: false });
+    const browser = await launchBrowser();
+    onTestFinished(() => browser.close());
+    await (await openBuiltDeck(browser, outDir, "./", "#/1")).close();
+    expect(browser.contexts().flatMap((context) => context.pages())).toEqual([]);
+  });
 });

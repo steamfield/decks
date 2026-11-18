@@ -115,7 +115,7 @@ export function SlideHost({
 }
 
 function LoadingSlide() {
-  useLayoutEffect(() => registerSettleProbe(() => true), []);
+  useLayoutEffect(() => registerSettleProbe(() => true, "slide load"), []);
   return null;
 }
 

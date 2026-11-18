@@ -4,6 +4,12 @@ export { clicksForSlide, type StepState, stepState } from "./clicks";
 export { type DeckLocation, type DeckView, formatHash, parseLocation } from "./location";
 export { assertManifest, type CanvasSize, type DeckManifest, type SlideMeta } from "./manifest";
 export {
+  MOTION_TEMPLATE_BEATS,
+  MOTION_TEMPLATE_NAMES,
+  type MotionTemplateBeatName,
+  type MotionTemplateBeatRule,
+} from "./motion-template-beats";
+export {
   clampNav,
   type NavAction,
   type NavDirection,
@@ -12,6 +18,16 @@ export {
   navigate,
 } from "./navigation";
 export { type NoteSegment, noteClickCount, segmentNotes } from "./notes";
+export {
+  REMOTE_INTENT,
+  REMOTE_POSITION,
+  type RemoteClientMessage,
+  type RemoteDeck,
+  type RemoteIntent,
+  type RemotePosition,
+  type RemoteServerMessage,
+  type RemoteSlide,
+} from "./remote-protocol";
 export {
   createMemoryHub,
   createSyncSession,

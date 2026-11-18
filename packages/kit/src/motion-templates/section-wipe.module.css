@@ -1,0 +1,25 @@
+.section {
+  margin: auto 0;
+  max-width: 82%;
+  font-family: var(--od-font-sans);
+  color: var(--od-text);
+}
+.panel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.number,
+.section h2 {
+  position: relative;
+  margin: 0;
+}
+.number {
+  font: 500 4.2em / 1 var(--od-font-mono);
+  letter-spacing: -0.065em;
+  color: var(--od-text-secondary);
+}
+.section h2 {
+  margin-top: 0.25em;
+  text-wrap: balance;
+}

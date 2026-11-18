@@ -1,9 +1,11 @@
 import { useSlide } from "@react-decks/runtime";
 import { type DependencyList, useLayoutEffect, useRef } from "react";
-import { gsap, motionMode } from "./tokens";
+import { shouldTweenStep } from "./stepped";
+import { gsap } from "./tokens";
 
+/** A build may return a cleanup for resources that outlive the timeline, such as split text. */
 export function useTimeline(
-  build: (tl: gsap.core.Timeline, beat: (n: number) => void) => void,
+  build: (tl: gsap.core.Timeline, beat: (n: number) => void) => void | (() => void),
   deps: DependencyList = [],
 ): void {
   const { clicks, isActive, renderContext } = useSlide();
@@ -20,17 +22,20 @@ export function useTimeline(
   useLayoutEffect(() => {
     const tl = gsap.timeline({ paused: true });
     let last = -1;
+    let cleanup: (() => void) | undefined;
     try {
-      builder.current(tl, (n) => {
+      const result = builder.current(tl, (n) => {
         if (n !== last + 1 || (n === 0 && tl.getChildren().length > 0)) {
           throw new Error(`Invalid label beat${n}; expected beat${last + 1} first`);
         }
         tl.addLabel(`beat${n}`);
         last = n;
       });
+      if (typeof result === "function") cleanup = result;
       if (last < 0) throw new Error("Missing label beat0");
     } catch (error) {
       tl.kill();
+      cleanup?.();
       throw error;
     }
     const built: NonNullable<typeof state.current> = { tl, current: -1, last, tween: null };
@@ -39,6 +44,7 @@ export function useTimeline(
       built.tween?.kill();
       tl.kill();
       state.current = null;
+      cleanup?.();
     };
   }, [...deps]);
   useLayoutEffect(() => {
@@ -54,13 +60,7 @@ export function useTimeline(
     const remaining = Math.abs(targetTime - s.tl.time()) / rate;
     s.tween?.kill();
     s.tween = null;
-    if (
-      s.current >= 0 &&
-      isActive &&
-      renderContext === "slide" &&
-      motionMode() === "live" &&
-      Math.abs(clicks - s.current) === 1
-    ) {
+    if (shouldTweenStep(s.current, clicks, isActive, renderContext)) {
       s.tween = s.tl.tweenTo(label, {
         ease: "none",
         overwrite: true,

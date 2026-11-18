@@ -1,0 +1,5 @@
+@import "@steamfield/decks/kit/styles.css";
+
+[data-deck-slide] pre {
+  font-size: calc(46px * var(--deck-text-scale, 1));
+}

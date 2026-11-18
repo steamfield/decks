@@ -1,0 +1,38 @@
+---
+title: Every request passes through a routing desk.
+---
+
+<Center>
+  <h1 className="od-title" style={{ fontSize: "calc(64px * var(--deck-text-scale, 1))" }}>Every request passes through a routing desk.</h1>
+  <div role="region" aria-label="Routing diagram" style={{ width: 920, height: 480, background: "var(--od-surface)" }}>
+    <Camera at={1} stops={[
+      { x: 460, y: 240, zoom: 1 },
+      { x: 240, y: 150, zoom: 1.35 },
+      { x: 460, y: 240, zoom: 1.35 },
+      { x: 680, y: 340, zoom: 1.35 },
+    ]}>
+      <svg width="920" height="480" viewBox="0 0 920 480" role="img" aria-label="Request flow from intake to dispatch" style={{ display: "block" }}>
+        <desc>Web and phone requests meet at intake, pass through the routing desk, and leave dispatch in the general or priority queue.</desc>
+        <g fill="none" stroke="var(--od-text-muted)" strokeWidth="3">
+          <path d="M60 65V105H240V115M60 225V195H240V185M340 150H370V240H395M525 240H555V340H580M780 340H820V265H860M780 340H820V415H860" />
+        </g>
+        <g fill="var(--od-canvas)" stroke="var(--od-cyan-soft)" strokeWidth="3">
+          <rect x="140" y="115" width="200" height="70" rx="12" />
+          <rect x="395" y="195" width="130" height="90" rx="12" />
+          <rect x="580" y="305" width="200" height="70" rx="12" />
+        </g>
+        <g fill="var(--od-text)" textAnchor="middle" dominantBaseline="central" style={{ fontSize: "calc(42px * var(--deck-text-scale, 1))" }}>
+          <text x="240" y="150">Intake</text>
+          <text x="460" y="240">Rules</text>
+          <text x="680" y="340">Dispatch</text>
+        </g>
+        <g fill="var(--od-text)" textAnchor="middle" dominantBaseline="central" style={{ fontSize: "calc(30px * var(--deck-text-scale, 1))" }}>
+          <text x="60" y="48">Web</text>
+          <text x="60" y="245">Phone</text>
+          <text x="860" y="247">Priority</text>
+          <text x="860" y="435">General</text>
+        </g>
+      </svg>
+    </Camera>
+  </div>
+</Center>

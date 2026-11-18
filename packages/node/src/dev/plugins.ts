@@ -1,5 +1,7 @@
+import { isIP } from "node:net";
 import { dirname, join } from "node:path";
 import mdx from "@mdx-js/rollup";
+import { REMOTE_INTENT, REMOTE_POSITION, type RemoteIntent } from "@react-decks/core";
 import react from "@vitejs/plugin-react";
 import remarkFrontmatter from "remark-frontmatter";
 import { mergeConfig, normalizePath, type Plugin, type ViteDevServer } from "vite";
@@ -8,6 +10,9 @@ import { checkComponents } from "../mdx/component-check";
 import { removeNotes } from "../mdx/notes";
 import { readSource } from "../mdx/read-source";
 import { readSlide, scanSlidesWithCounts } from "../mdx/slides";
+import type { createRelay } from "../remote/relay";
+import { positionMessage } from "../remote/remote-messages";
+import { remotePayload } from "../remote/remote-payload";
 import { loadDeck, type ResolvedDeck } from "./config";
 import { deckHtml, entryModule } from "./entry";
 import { errorReporting } from "./error-reporting";
@@ -18,11 +23,18 @@ import { manifestModule, notesModule } from "./virtual-modules";
 
 const prefix = "virtual:react-decks/";
 
+/** Whether a `vite.server.host` value binds the dev server to loopback only. */
+const isLoopback = (host: string) =>
+  host === "localhost" || host === "::1" || (isIP(host) === 4 && host.startsWith("127."));
+
 export function reactDecks(deck: ResolvedDeck): Plugin[] {
   return createDeckPlugins(deck).plugins;
 }
 
-export function createDeckPlugins(deck: ResolvedDeck) {
+export function createDeckPlugins(
+  deck: ResolvedDeck,
+  options: { remote?: boolean; relay?: ReturnType<typeof createRelay> } = {},
+) {
   let current = deck;
   let configSource: string | undefined;
   let restarting = Promise.resolve();
@@ -72,6 +84,36 @@ export function createDeckPlugins(deck: ResolvedDeck) {
       })();
     return scan;
   };
+  let payloadRevision = 0;
+  const refreshRemote = async (
+    server: ViteDevServer,
+    scanned?: Awaited<ReturnType<typeof scanDeck>>,
+  ) => {
+    const relay = options.relay;
+    if (!relay) return;
+    const revision = ++payloadRevision;
+    const deck = current;
+    const http = server.httpServer;
+    try {
+      const payload = await remotePayload(
+        deck,
+        (scanned ?? (await scanDeck())).slides,
+        reporting.report,
+      );
+      const publish = () => {
+        if (!closing && revision === payloadRevision) relay.updateDeck(payload);
+      };
+      // A later configureServer hook can still reject a replacement deck.
+      if (http?.listening) publish();
+      else http?.once("listening", publish);
+    } catch (cause) {
+      if (cause instanceof DeckError) reporting.report(cause);
+      else
+        server.config.logger.error(
+          cause instanceof Error ? (cause.stack ?? cause.message) : String(cause),
+        );
+    }
+  };
   const rememberScan = (error: DeckError) => {
     scanFailures.set(error.file ?? error.message, error);
     if (serving) reporting.report(error);
@@ -95,6 +137,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
         const module = graph?.getModuleById(`\0${prefix}${name}`);
         if (module) graph?.invalidateModule(module);
       }
+      if (changedModules.has("manifest")) void refreshRemote(server);
       changedModules.clear();
       server.ws.send({ type: "full-reload" });
     }, 100);
@@ -109,6 +152,11 @@ export function createDeckPlugins(deck: ResolvedDeck) {
         reporting = errorReporting(reportLogger, deck.dir);
       }
       if (command === "serve") configSource ??= await readConfig();
+      const host = current.config.vite?.server?.host;
+      if (options.remote && (host === true || (typeof host === "string" && !isLoopback(host))))
+        reporting.logger.warn(
+          `Remote presenter: overriding dev server host "${host}" with loopback.`,
+        );
       return mergeConfig(
         mergeConfig(
           { root: deckDir, publicDir: normalizePath(join(deck.dir, "public")) },
@@ -119,6 +167,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
           customLogger: serving ? reporting.logger : inline.customLogger,
           server: {
             // Caught React errors already have a slide fallback or a compiler diagnostic.
+            ...(options.remote ? { host: "127.0.0.1" } : {}),
             forwardConsole: { unhandledErrors: true, logLevels: ["warn"] },
             ...(inline.server?.port === undefined
               ? {}
@@ -128,13 +177,28 @@ export function createDeckPlugins(deck: ResolvedDeck) {
         },
       );
     },
+    configResolved(config) {
+      if (!options.remote) return;
+      const { host, hmr, ws, port } = config.server;
+      let setting: string | undefined;
+      if (host === true || (typeof host === "string" && !isLoopback(host))) setting = "host";
+      else if (hmr === false) setting = "hmr";
+      else if (ws === false) setting = "ws";
+      else if (ws?.server) setting = "ws.server";
+      else if (ws?.port && ws.port !== port) setting = "ws.port";
+      if (setting)
+        throw new DeckError(
+          `vite.server.${setting} is incompatible with --remote. Use the dev server's loopback HMR transport.`,
+          configFile,
+        );
+    },
     resolveId(id) {
       if (id.startsWith(prefix) || id.startsWith(`/${prefix}`)) return `\0${id.replace(/^\//, "")}`;
       if (normalizePath(id) === htmlFile) return id;
     },
     async load(id) {
       if (normalizePath(id) === htmlFile) return deckHtml(current, false);
-      if (id === `\0${prefix}entry`) return entryModule(current);
+      if (id === `\0${prefix}entry`) return entryModule(current, options.remote === true);
       if (id === `\0${prefix}components`) return (await scanDeck()).componentsCode;
       if (id === `\0${prefix}layers`) return layersModule(deck.dir, deck.config.credit);
       if (id !== `\0${prefix}manifest` && id !== `\0${prefix}notes`) return;
@@ -175,6 +239,25 @@ export function createDeckPlugins(deck: ResolvedDeck) {
       const servedDeck = current;
       // Vite replaces the server behind this proxy during restart; errors belong to its config.
       const servedConfig = server.config;
+      const relay = options.relay;
+      if (relay) {
+        const windows = new WeakMap<object, (intent: RemoteIntent) => void>();
+        server.ws.on(REMOTE_POSITION, (message: unknown, client) => {
+          const parsed = positionMessage.safeParse(message);
+          if (!parsed.success) {
+            server.config.logger.warn(`Remote presenter: malformed ${REMOTE_POSITION}`);
+            return;
+          }
+          let window = windows.get(client.socket);
+          if (!window) {
+            const send = (intent: RemoteIntent) => client.send(REMOTE_INTENT, intent);
+            windows.set(client.socket, send);
+            client.socket.once("close", () => relay.disconnect(send));
+            window = send;
+          }
+          relay.report(window, parsed.data);
+        });
+      }
       server.ws.on("connection", (_socket, _request) => {
         const configError = configErrors.get(servedConfig);
         if (configError) server.ws.send({ type: "error", err: overlay(configError) });
@@ -209,6 +292,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
               let source = await readChangedSource(configFile);
               if (closing) return;
               if (source === configSource && !configErrors.has(server.config)) return;
+              const previousDeck = current;
               try {
                 current = await loadDeck(deck.dir, deck.name);
               } catch (cause) {
@@ -223,7 +307,10 @@ export function createDeckPlugins(deck: ResolvedDeck) {
               const previousConfig = server.config;
               await server.restart();
               // Vite logs creation failures and resolves restart without replacing the server.
-              if (server.config === previousConfig) return;
+              if (server.config === previousConfig) {
+                current = previousDeck;
+                return;
+              }
               configSource = source;
               if (configErrors.delete(previousConfig)) {
                 reporting.fixed(configFile, "deck.config.ts is valid again, restarting.");
@@ -271,6 +358,7 @@ export function createDeckPlugins(deck: ResolvedDeck) {
         componentsCode = scanned.componentsCode;
         motionNames = scanned.motionNames;
         componentNames = scanned.componentNames;
+        await refreshRemote(server, scanned);
       } catch (cause) {
         if (!(cause instanceof DeckError)) throw cause;
       }
@@ -339,7 +427,8 @@ export function createDeckPlugins(deck: ResolvedDeck) {
         metadata.set(key, next);
         totals.set(key, total);
         const wasScanFailed = scanFailures.size > 0;
-        if (wasScanFailed) await scanDeck();
+        const scanned = wasScanFailed ? await scanDeck() : undefined;
+        void refreshRemote(context.server, scanned);
         const graph = this.environment.moduleGraph;
         const notes = graph.getModuleById(`\0${prefix}notes`);
         if (notes) graph.invalidateModule(notes);

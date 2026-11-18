@@ -1,12 +1,12 @@
 import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { parseArgs } from "node:util";
 import { defineCommand } from "citty";
 import { launchBrowser, openBuiltDeck } from "../../dev/browser";
 import { DeckError } from "../../dev/errors";
 import { build } from "../../dev/server";
 import { scanSlides } from "../../mdx/slides";
+import { commandPositionals, wholeNumber } from "../command-args";
 import { resolveDeck } from "../registry";
 
 export const shot = defineCommand({
@@ -20,25 +20,15 @@ export const shot = defineCommand({
     height: { type: "string", default: "1080", description: "PNG height" },
   },
   setup({ rawArgs }) {
-    try {
-      const { positionals } = parseArgs({
-        args: rawArgs,
-        options: { out: { type: "string" }, width: { type: "string" }, height: { type: "string" } },
-        allowPositionals: true,
-      });
-      if (positionals.length > 3)
-        throw new DeckError(
-          `Unexpected argument "${positionals[3]}". Pass a deck, slide and optional click.`,
-        );
-    } catch (cause) {
-      if (cause instanceof DeckError) throw cause;
+    const positionals = commandPositionals(rawArgs, {
+      out: { type: "string" },
+      width: { type: "string" },
+      height: { type: "string" },
+    });
+    if (positionals.length > 3)
       throw new DeckError(
-        cause instanceof Error ? cause.message : String(cause),
-        undefined,
-        undefined,
-        { cause },
+        `Unexpected argument "${positionals[3]}". Pass a deck, slide and optional click.`,
       );
-    }
   },
   async run({ args }) {
     const { deck } = await resolveDeck(args.deck);
@@ -77,10 +67,3 @@ export const shot = defineCommand({
     }
   },
 });
-
-function wholeNumber(value: string, name: string, min: number): number {
-  const number = Number(value);
-  if (!/^\d+$/.test(value) || !Number.isSafeInteger(number) || number < min)
-    throw new DeckError(`Invalid ${name} "${value}". Use a whole number ${min} or greater.`);
-  return number;
-}

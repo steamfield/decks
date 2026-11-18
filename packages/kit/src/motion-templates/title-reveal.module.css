@@ -1,0 +1,25 @@
+.figure {
+  margin: auto 0;
+  font-family: var(--od-font-sans);
+}
+.figure h2 {
+  margin: 0;
+  color: var(--od-text);
+  max-width: 23ch;
+  text-wrap: balance;
+  line-height: normal;
+}
+.figure figcaption {
+  margin: 0;
+  color: var(--od-text-secondary);
+}
+.figure h2 span {
+  display: inline-block;
+}
+.rule {
+  width: 3em;
+  height: 0.12em;
+  background: currentColor;
+  transform-origin: left;
+  margin: 0.65em 0;
+}

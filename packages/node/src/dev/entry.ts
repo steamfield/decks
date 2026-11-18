@@ -1,11 +1,22 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { REMOTE_INTENT, REMOTE_POSITION } from "@react-decks/core";
 import type { ResolvedDeck } from "./config";
 import { PUBLIC_SPECIFIERS } from "./specifiers";
 
-export function entryModule(deck: ResolvedDeck): string {
+/** `remote` is set by `decks dev --remote`; the window then reports to the remote relay. */
+export function entryModule(deck: ResolvedDeck, remote = false): string {
+  const options = remote
+    ? `, undefined, { remote: import.meta.hot && {
+    report(position) { import.meta.hot.send("${REMOTE_POSITION}", position); },
+    onIntent(apply) {
+      import.meta.hot.on("${REMOTE_INTENT}", apply);
+      return () => import.meta.hot.off("${REMOTE_INTENT}", apply);
+    }
+  } }`
+    : "";
   return `${existsSync(join(deck.dir, "setup.ts")) ? 'import "/setup.ts";\n' : ""}import { mountDeck, Center, Cover, Section, TwoCol, ImageSide, Toc, Link } from "${PUBLIC_SPECIFIERS.runtime}";
-import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock, Mark, MagicMove } from "${PUBLIC_SPECIFIERS.motion}";
+import { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, CodeBlock, Mark, MagicMove, Camera, ShapeMorph } from "${PUBLIC_SPECIFIERS.motion}";
 ${existsSync(join(deck.dir, "styles/index.css")) ? 'import "/styles/index.css";' : ""}
 Promise.all([
   import("virtual:react-decks/manifest"),
@@ -13,9 +24,9 @@ Promise.all([
   import("virtual:react-decks/layers")
 ]).then(([{ manifest, slides, frontmatter }, { components }, { layers }]) => {
 mountDeck({ manifest, slides, frontmatter, layers,
-  components: { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, Mark, MagicMove, pre: CodeBlock, Center, Cover, Section, TwoCol, ImageSide, Toc, Link, ...components },
+  components: { Step, Steps, Stagger, TextReveal, Highlight, CountUp, Draw, Morph, Mark, MagicMove, Camera, ShapeMorph, pre: CodeBlock, Center, Cover, Section, TwoCol, ImageSide, Toc, Link, ...components },
   loadNotes: () => import("virtual:react-decks/notes").then(module => module.notes)
-});
+}${options});
 }).catch(error => {
   reportError(error);
   document.getElementById("deck-root").textContent = "The deck failed to start: " + error.message;

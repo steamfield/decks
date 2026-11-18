@@ -25,6 +25,27 @@ Decided with Riley on 2026-11-17 and 2026-11-18 (RFC 0009's four decisions are i
   uses its run's model.
 - Cut on purpose: particles, parallax layers, slide images on the remote, the MCP server (#8).
 
+## Phases (ce:build, decided 2026-11-18)
+
+No timebox. Every lane is a Codex run through foreman (`gpt-6.2-astra` or `gpt-6.2-sol` as
+the model column says) that writes its contract's tests first, sees them fail, then
+implements. Phases land on `feat/remote-and-motion` and are tagged there (`rm-phase-N`);
+at the end the branch merges to main locally and every worktree and run is cleaned up; no
+push unless Riley says so. Scaffold SHA: `9031e0f`.
+
+| Phase | Lanes | Depends on | Demo |
+| --- | --- | --- | --- |
+| 1 remote presenter | 1A remote server, 1B remote client | scaffold | `bun run decks dev basic --remote`, open the printed URL on an iPad, step the deck from it |
+| 2 agent tooling | 1C film, 2C inspect | phase 1 | `bun run decks film motion <push slide> 0`; `bun run decks inspect motion` |
+| 3 data and transitions | 1D ChartSteps, 1E transitions | phase 1 | `bun run decks dev motion`, slides 35-43 |
+| 4 motion graphics library | 2A Camera and ShapeMorph, 2B motion graphics (Astra) | phase 2 | slides 45-49, filmed |
+| 5 motion templates | templates A, B, C (five templates each, all Astra) | phase 4 | `bun run decks dev motion`, slides 50-64, each filmed |
+| 5b discoverability (mine) | guide, skills, deck-author agent | phase 5 | a fresh agent asked for a deck proposes motion graphics where they fit |
+| 6 recipes | 2D recipes | phases 3 and 5 | `bun run decks dev recipes` |
+
+Phases 2 and 3 run together after phase 1 (four lanes). The unit names below (1A-2D) are
+the lane names; the phase they land in is this table's.
+
 ## Execution
 
 I orchestrate; Codex runs implement. Contracts come from `.claude/delegate/contract.md`, with
@@ -46,9 +67,10 @@ the file name is the one assigned here. Names are prefixed by kind so `slideNo()
 | File | Unit |
 | --- | --- |
 | `35-chart-steps.mdx` | 1D |
-| `36-transition-rise.mdx` … `43-transition-cube.mdx` (rise, cover, reveal, wipe, iris, blur, flip, cube) | 1E |
-| `44-camera.mdx`, `45-shape-morph.mdx` | 2A |
-| `46-kinetic-type.mdx`, `47-path-follow.mdx`, `48-scene-3d.mdx` | 2B |
+| `36-transition-rise.mdx` … `43-transition-cube.mdx` (rise, cover, reveal, wipe, iris, blur, flip, cube), `44-transition-end.mdx` | 1E |
+| `45-camera.mdx`, `46-shape-morph.mdx` | 2A |
+| `47-kinetic-type.mdx`, `48-path-follow.mdx`, `49-scene-3d.mdx` | 2B |
+| `50-mt-title-reveal.mdx` … `64-mt-spotlight.mdx` | templates A, B, C |
 
 Skill files, one owner each per phase: 1C `building-a-deck/references/workflow.md` (a film
 section) and `deck-motion/SKILL.md` ("Verify motion as a viewer"); 1D
@@ -99,7 +121,7 @@ export interface RemoteSlide {
 export interface RemoteDeck { title: string; slides: readonly RemoteSlide[] }
 export type RemoteServerMessage =   // relay -> remote page
   | { type: "deck"; deck: RemoteDeck }
-  | { type: "position"; slide: number; click: number; startedAt: number | null }
+  | { type: "position"; slide: number; click: number; elapsed: number | null }
   | { type: "waiting" }
   | { type: "pong" };
 export type RemoteClientMessage =   // remote page -> relay
@@ -244,6 +266,54 @@ gsap's plugins; this unit makes that safe and teaches it.
   talks over it), each with a short gsap example from slides 46-48, and a "film it and read
   the sheet" check.
 
+## Motion templates (phase 5)
+
+Riley, 2026-11-18: besides the library, about fifteen ready-made motion graphics an agent fills
+in, made discoverable so an agent building a deck knows it can use motion graphics and where
+they fit. The agent picks a template and writes the words; the template takes colour, type and
+timing from the deck theme and motion tokens. Each template is one readable source file, which
+the build copies into the package's `docs/motion-templates/`, so an agent writing custom motion
+can read a finished one first.
+
+```tsx
+import { MotionTemplate } from "@steamfield/decks/kit";
+
+<MotionTemplate template="title-reveal" title="Agents read your docs first." subtitle="Write them for that reader." />
+<MotionTemplate template="myth-fact" myth="Agents skip the docs." fact="They read them first, and literally." />
+```
+
+| Lane | Templates | Slides |
+| --- | --- | --- |
+| A titles and numbers | `title-reveal`, `lower-third`, `stat-burst`, `stat-compare`, `metric-grid` | `50-mt-*` to `54-mt-*` |
+| B text and structure | `list-cascade`, `quote-card`, `section-wipe`, `agenda`, `end-card` | `55-mt-*` to `59-mt-*` |
+| C diagrams and narrative | `timeline-sweep`, `process-flow`, `comparison-split`, `myth-fact`, `spotlight`, plus the `MotionTemplate` click-counting branch | `60-mt-*` to `64-mt-*` |
+
+Typed props for all fifteen are in the scaffold (`motion-template-props.ts`). Every template is
+built on `useTimeline`, uses only theme variables and motion tokens, keeps text as real text,
+shows its finished pose outside the live slide, and is filmed in its run. One beat at click
+`at` except `list-cascade`, `timeline-sweep`, `process-flow` (one click per item) and
+`comparison-split`, `myth-fact` (two beats).
+
+### Discoverability (mine, after phase 5)
+
+An agent building a new deck must learn that motion graphics exist, which template fits where,
+and when to write custom motion instead:
+
+- `docs/guide/motion-templates.md` (new, ships in the package): every template with a one-line
+  use, props, an example, and a "where motion graphics fit in a talk" section: the opening
+  title, section breaks, the one number the talk turns on, a myth to correct, a before/after,
+  a process or timeline the speaker walks through, the close; and where they do not: dense
+  data slides, every slide, anything the speaker must talk over.
+- `deck-motion/SKILL.md`: the template table and the placement rules, pointing at
+  `motion-templates.md` and `motion-graphics.md`.
+- `building-a-deck`: in planning the arc, mark the slides that get a motion graphic; in
+  verification, film them.
+- `working-with-decks`: route "motion graphics", "animated title", "kinetic" requests to
+  deck-motion.
+- `plugins/decks/agents/deck-author.md`: one line that motion templates exist and when to use
+  them.
+- `docs/guide/kit.md` and `README.md` in the guide: link the new page.
+
 ## Phase 3 (mine)
 
 - Guide: `presenting.md` remote section and `cli.md` (`--remote`, `film`, `inspect`);
@@ -283,3 +353,31 @@ frontmatter; ChartSteps keeps one `Chart` instance and throws on unmorphable spe
 components are not default MDX components; examples filenames, skill sections and the remote
 flag plumbing are assigned up front; 2D waits for 2A and 2C, and 2C fixes nothing outside its
 paths; the remote page build reuses `config()` and the RFC says so.
+
+## Decisions during the build
+
+- 2026-11-18, phase 1 questions: the remote page keeps its token in its URL (no stripping, no
+  `sessionStorage`), so a reload works against the strict 403; the iPad is not projected.
+  After a failed socket handshake the page GETs its own tokenized URL: only a 403 means the
+  link expired. The first window report after `waiting` is pushed regardless of dedup; the
+  first report sets the position with `elapsed: null` and the first change starts the talk;
+  reports arrive in arrival order (a late presenter report can briefly win; accepted for v1).
+  `--remote` forces the dev server to loopback even when `vite.server.host` is configured,
+  with a logged line. A window in print never reports. RFC 0009 is updated at phase 3 docs.
+- 2026-11-18, gate after the motion-graphics merge: one failure,
+  `examples/building-for-agents/components/LiveTerm.test.ts:119`, an ANSI glyph colour one unit
+  past its tolerance (17 > 16) on m1-mini while other runs loaded the host. It passed on the same
+  host from main and from this branch right after; neither LiveTerm nor that deck changed in this
+  build. Follow-up, outside this build: the brightest-pixel probe is sensitive to antialiasing
+  under load.
+
+- 2026-11-18, catalog research (Riley asked whether a standard set exists): marketplaces
+  (Envato, VideoHive, Adobe Stock mogrts, Premiere Essential Graphics, infographic kits,
+  broadcast packages, PowerPoint packs) share titles, lower thirds, openers, logo reveals,
+  transitions, callouts, timelines, closers, device mockups, photo slideshows, team slides,
+  icon arrays and Venn diagrams. The first 15 cover the core. Added six single-beat templates
+  in two Astra lanes (D: device-mockup, photo-reveal, logo-reveal; E: icon-array, team-grid,
+  venn-overlap), slides 65-70. Left out: countdown (wall-clock time cannot follow the seekable
+  click model that film, print and presenter rely on), tickers, bugs, backgrounds, credits rolls,
+  over-the-shoulder and social formats (video-only or theme chrome), maps and pricing tables
+  (data viz and comparison-split cover them).

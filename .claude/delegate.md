@@ -24,6 +24,15 @@ procedure around it.
   worktree, merge with `--no-ff`, archive the run. After merging several runs, run the whole
   gate on a cold Vite cache (`find . -path '*/node_modules/.vite' -prune -exec rm -rf {} +`)
   and `bun run check:isolated` and `bun run test:tarball`: integration faults surface there.
+- Never commit, merge or edit in the integration worktree while its own gate runs: `rr` on a
+  local host reads the tree live, so a mid-gate merge fails the gate on half-merged files.
+- A unit's scoped checks include `rr rd-test -- tests/` (the repo-wide guards), not only its
+  own package; a kit guard otherwise first fails in the orchestrator's gate.
+- When several units share a mechanism (a template hook, a registry), write it in the
+  scaffold before they start; three units asking the same question is the sign it was missed.
+- `foreman status` fails on a worktree with hundreds of MB of gitignored files (Playwright
+  traces in `test-results/`); delete `test-results/` before committing a unit, and read a
+  run's state from `foreman events` meanwhile.
 - Run gates in a worktree, not the main checkout, when anyone may be editing the checkout:
   Playwright's dev servers watch the source.
 - Your own inline edits get the delegate's discipline: after changing a package, run

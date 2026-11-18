@@ -1,0 +1,24 @@
+.card {
+  margin: auto 0;
+  max-width: 34em;
+  display: grid;
+  gap: 0.65em;
+  font-family: var(--od-font-sans);
+  color: var(--od-text);
+}
+.card svg {
+  width: 2.2em;
+  stroke-width: 8;
+}
+.card blockquote,
+.card h2 {
+  margin: 0;
+}
+.card h2 {
+  max-width: 24ch;
+  font-family: var(--od-font-serif);
+  text-wrap: balance;
+}
+.card figcaption {
+  color: var(--od-text-secondary);
+}

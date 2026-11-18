@@ -90,3 +90,62 @@ it("settled waits two consecutive quiet frames and unregister removes a busy pro
   act(unmount);
   expect(window.__deck).toBeUndefined();
 });
+
+it("reports active probes to capture tools until they become idle or unregister", async () => {
+  const root = document.createElement("div");
+  let unmount = () => {};
+  await act(async () => {
+    unmount = mountDeck(makeSource(), root);
+  });
+  onTestFinished(() => act(unmount));
+  let pending = true;
+  const unregister = registerSettleProbe(function chart() {
+    return pending;
+  });
+  onTestFinished(unregister);
+  const anonymous = registerSettleProbe(() => true);
+  onTestFinished(anonymous);
+  expect(window.__deck?.busy()).toEqual(["chart", "settle probe"]);
+  pending = false;
+  expect(window.__deck?.busy()).toEqual(["settle probe"]);
+  anonymous();
+  expect(window.__deck?.busy()).toEqual([]);
+});
+
+it("reports a labelled busy probe by its label", async () => {
+  const root = document.createElement("div");
+  let unmount = () => {};
+  await act(async () => {
+    unmount = mountDeck(makeSource(), root);
+  });
+  onTestFinished(() => act(unmount));
+  const unregister = registerSettleProbe(() => true, "chart update");
+  onTestFinished(unregister);
+  expect(window.__deck?.busy()).toEqual(["chart update"]);
+});
+
+it("film preload waits for the hidden neighbour of the destination", async () => {
+  const source = makeSource();
+  const neighbour = Promise.withResolvers<{ default: () => ReactElement }>();
+  const root = document.createElement("div");
+  let unmount = () => {};
+  await act(async () => {
+    unmount = mountDeck(
+      {
+        ...source,
+        slides: { ...source.slides, "slide-3": () => neighbour.promise },
+      },
+      root,
+    );
+  });
+  onTestFinished(() => act(unmount));
+  const result: string[] = [];
+  const ready = window.__deck?.preload(2).then(() => result.push("ready"));
+  await act(async () => {
+    await window.__deck?.preload(1);
+  });
+  expect(result).toEqual([]);
+  neighbour.resolve({ default: () => <h1>Third slide</h1> });
+  await ready;
+  expect(result).toEqual(["ready"]);
+});

@@ -3,13 +3,19 @@ import { useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Deck } from "./deck";
 import { installEmbed } from "./embed/embed";
-import { settled } from "./settle/settle";
-import type { DeckSource } from "./source";
+import type { RemoteLink } from "./remote/remote-link";
+import { connectWindow } from "./remote/window-link";
+import { busy, settled } from "./settle/settle";
+import { createSlideModules, type DeckSource } from "./source";
 import { createBroadcastTransport } from "./store/broadcast-transport";
 import { createDeckStore } from "./store/store";
 import { createPresenter } from "./transitions/transition";
 
-export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
+export function mountDeck(
+  source: DeckSource,
+  root?: HTMLElement,
+  options?: { remote?: RemoteLink },
+): () => void {
   const element = root ?? document.getElementById("deck-root");
   if (!element) throw new Error("Missing mount element #deck-root");
   const location = parseLocation(window.location.hash, window.location.search);
@@ -23,7 +29,18 @@ export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
           syncChannelId(source.manifest.name, window.location.pathname.replace(/index\.html$/, "")),
         );
   const store = createDeckStore(source.manifest, { transport, present: createPresenter(source) });
-  const api = { settled };
+  const stopRemote =
+    transport && options?.remote ? connectWindow(store, options.remote) : undefined;
+  const api = {
+    settled,
+    busy,
+    /** Lets film warm the destination and its neighbours before measuring motion. */
+    async preload(slide: number) {
+      const modules = createSlideModules(source);
+      const neighbours = source.manifest.slides.slice(Math.max(0, slide - 2), slide + 1);
+      await Promise.all(neighbours.map(({ id }) => modules.get(id)?.load()));
+    },
+  };
   window.__deck = api;
   const embed = installEmbed(source.manifest, store);
   const reactRoot = createRoot(
@@ -42,6 +59,7 @@ export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
     </>,
   );
   return () => {
+    stopRemote?.();
     embed?.dispose();
     reactRoot.unmount();
     store.destroy();

@@ -117,6 +117,13 @@ frames and stops finite animations) with a small `maxDiffPixelRatio`, and mask l
 | `expect(await read())` on live DOM | a locator assertion or `expect.poll` |
 | CSS-class selectors | role, label, text; `data-deck-*` where the DOM contract is the subject |
 
+## Resource timing
+
+A wait that counts loaded modules through `performance.getEntriesByType("resource")` must raise
+the buffer first (`page.addInitScript(() => performance.setResourceTimingBufferSize(5000))`):
+Chromium keeps 250 entries by default, and a large deck's modules, styles and images outrun it,
+so the count never reaches its target.
+
 ## Diagnosing a flaky test
 
 1. Reproduce: `bun run test:e2e <spec> --repeat-each=30 --workers=8 --retries=0`, or a Vitest

@@ -2,6 +2,7 @@ import { expect, type Page } from "@playwright/test";
 import { loadDeck, scanSlides } from "@steamfield/decks/node";
 import { test as motionTest } from "./motion.fixture";
 import { slideNo } from "./motion-gallery";
+import { seekTransition } from "./transition-seek";
 
 const gallery = await scanSlides(await loadDeck("examples/motion"));
 const gallerySize = gallery.length;
@@ -23,6 +24,9 @@ export { settled as settle } from "./deck-driver";
 import { settled as settle } from "./deck-driver";
 
 export async function open(page: Page, slide = slideNo("push"), search = "") {
+  // The wait below counts slide modules in resource timing, whose default buffer (250 entries)
+  // the gallery's modules, styles and images outgrow.
+  await page.addInitScript(() => performance.setResourceTimingBufferSize(5000));
   await page.goto(`/${search}#/${slide}`);
   await expect(page.locator("[data-deck-active]")).toHaveAttribute(
     "data-deck-slide",
@@ -73,6 +77,13 @@ export async function keys(page: Page, names: string[]) {
       window.dispatchEvent(new Event("restore-key-batch"));
       window.dispatchEvent(new Event("release-key-batch"));
     });
+}
+
+/** Presses `key` and seeks the slide change's root snapshots to each progress point. */
+export async function seekRootTransition(page: Page, key: string, points: number[]) {
+  const samples = seekTransition(page, "root", points);
+  await keys(page, [key]);
+  return samples;
 }
 
 export const test = motionTest.extend({

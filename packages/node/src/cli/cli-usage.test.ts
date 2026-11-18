@@ -1,7 +1,10 @@
+import { mkdir, readdir } from "node:fs/promises";
 import { createServer } from "node:net";
+import { join } from "node:path";
 import { TERM_ATTACH, TERM_GONE } from "@react-decks/core";
 import { expect, it, onTestFinished, vi } from "vitest";
-import { cli, fixture } from "../dev/server.test-support";
+import { cli, fixture, repoPath } from "../dev/server.test-support";
+import { cliProcess } from "./cli-process.test-support";
 
 it.each([false, true])("dev answers terminal attach only with --live-term=%s", async (enabled) => {
   const { dir } = await fixture(onTestFinished, {
@@ -161,3 +164,54 @@ it("names a missing argument after the deck and points at help", async () => {
     "decks shot: missing <slide>. Run decks shot --help for usage.\n",
   );
 });
+
+it.each([[["--remote"]], [["--remote-port", "3040"]]])(
+  "rejects %j on decks build with the only-on-dev message",
+  async (args) => {
+    const { dir } = await fixture(onTestFinished);
+    const process = cli(dir, ["build", ".", ...args]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toBe("decks build: --remote is only available on decks dev.\n");
+  },
+);
+
+it("prints only the dev URL when a remote port accompanies --no-remote", async () => {
+  const { dir } = await fixture(onTestFinished);
+  const child = cli(dir, ["dev", ".", "--no-remote", "--port", "0", "--remote-port", "0"]);
+  const url = await child.url();
+  // The remote banner follows the dev URL, so the whole output is read once the process is gone.
+  await child.close();
+  expect(child.output()).toEqual({ stdout: `${url}\n`, stderr: "" });
+});
+
+it.each(["SIGINT", "SIGTERM", "SIGHUP"] as const)(
+  "deletes the remote page after %s",
+  async (signal) => {
+    const { dir } = await fixture(onTestFinished);
+    const temp = join(dir, "temp");
+    await mkdir(temp);
+    vi.stubEnv("TMPDIR", temp);
+    onTestFinished(() => {
+      vi.unstubAllEnvs();
+    });
+    // Node runs the CLI itself, as the published bin does: the tsx wrapper relays only SIGINT and
+    // SIGTERM, and would die on SIGHUP while the CLI it started kept running.
+    const child = cliProcess(
+      process.execPath,
+      [
+        "--import",
+        "tsx",
+        "--conditions=@steamfield/decks/source",
+        repoPath("packages/node/src/cli/cli.ts"),
+        ...["dev", ".", "--remote", "--port", "0", "--remote-port", "0"],
+      ],
+      { cwd: dir, env: { ...process.env, NO_COLOR: "1", NODE_NO_WARNINGS: "1" } },
+    );
+    onTestFinished(child.close);
+    await child.url();
+    expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toHaveLength(1);
+    child.child.kill(signal);
+    await child.exit;
+    expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toEqual([]);
+  },
+);

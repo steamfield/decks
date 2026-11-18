@@ -4,6 +4,8 @@
 
 Write the audience, the decision or understanding the talk should leave, the time available, and the sources. Sketch one claim per slide and one change per story beat. Do not draft layout labels and call them headlines.
 
+Mark the slides where the talk turns (the opening, the one number, a myth to correct, a section break, a walked-through process, the close) as motion-graphic slides. Each gets a `MotionTemplate` from `decks:deck-motion`'s motion-templates reference; most decks have three to six, never on every slide.
+
 Conventional content slides need one dominant body block. A chart can carry the slide; it does not also need a list explaining the chart. Story slides need a persistent visual, a claim headline, a card and a source link. Use a cover or close where it has a purpose. Do not add section dividers to satisfy a template.
 
 For work split among agents, define ownership of slides, source modules, theme and reusable components before delegating. Finish research before dependent slides, and establish the visual system with a representative slide. A reviewer proposing a new number must name its source row or constant. Review in a separate read-only context; never change branches in another agent's worktree.
@@ -84,6 +86,10 @@ The screenshot commands above illustrate the scaffold's two states; capture ever
 Inspect the PNGs for clipping, overlaps, unreadable sources, card/mark collisions and headline wraps. Inspect the PDF for every click state, not only its page count. An all-click export should contain the sum of `clicks + 1` across visible slides. Use `--final` only for a requested final-state handout.
 
 After a source or copy change, rerun the relevant fact-check and lint; after a visual or motion change, inspect affected states again. Do not claim an unavailable source or failed capture passed. Report the exact error and the work left to verify.
+
+### Film a step
+
+Run `decks film q3 2 1 --out slide-2-c1-film.png` and open the PNG. Read across each row to follow the motion into click 1. To inspect the transition into slide 2, use click 0. The labels show virtual milliseconds and the last frame shows the settled pose. Use `--frames 12` for a closer look at a short beat.
 
 ## Definition of done
 

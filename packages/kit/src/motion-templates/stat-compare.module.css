@@ -1,0 +1,30 @@
+.figure {
+  margin: auto 0;
+  font-family: var(--od-font-sans);
+  display: grid;
+  gap: 0.65em;
+}
+.figure h2 {
+  margin: 0;
+  color: var(--od-text);
+  line-height: 1.08;
+}
+.figure figcaption {
+  margin: 0;
+  color: var(--od-text-secondary);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+.row svg {
+  flex: none;
+  width: 2.4em;
+}
+.row strong {
+  color: inherit;
+  border-bottom: 0.08em solid currentColor;
+}

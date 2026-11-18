@@ -68,6 +68,32 @@ Ranges use the ordinary code-block syntax: commas and hyphens select lines, `|` 
 
 Only an adjacent forward click into the next code version morphs in the active live slide. Backward navigation, jumps, first render, instant motion and other contexts show their click's code immediately. Print follows each page's click; final-only print shows the last version. The compiler supplies `MagicMove` and keyed tokens; do not author the component or tokenize code in the browser. Invalid options and ranges report the slide file and line.
 
+## Camera
+
+Use `Camera` to walk an audience through one dense diagram or map. Give its container a height. Each stop frames a point in the children's CSS pixels, measured from their top-left corner. A zoom of 1 keeps their natural size. For an SVG whose rendered width changes, convert landmark positions from its `viewBox` to CSS pixels when choosing stops.
+
+```mdx
+<div style={{ height: 600 }}>
+  <Camera at={1} stops={[{ x: 600, y: 300, zoom: 1 }, { x: 250, y: 200, zoom: 2 }]}>
+    <RouteMap />
+  </Camera>
+</div>
+```
+
+Stop 0 shows before click `at`. Stop 1 arrives on click `at`, and stop `i` arrives on click `at + i - 1`. The last stop holds. A literal array contributes `at + stops.length - 2` to the slide's click total. Set frontmatter `clicks` when the array comes from data, uses a spread, or lives inside a React component. An explicit total replaces the inferred count for the whole slide.
+
+## ShapeMorph
+
+Use `ShapeMorph` when the audience needs to follow the same shape as its outline changes. Place it inside an SVG and set the fill or stroke on the SVG or its enclosing group.
+
+```mdx
+<svg viewBox="0 0 100 100" role="img" aria-label="A triangle becomes a square">
+  <ShapeMorph at={1} paths={["M50 10L90 90H10Z", "M10 10H90V90H10Z"]} />
+</svg>
+```
+
+Path 0 shows before `at`, path 1 arrives on `at`, and each following click selects the next path. The last path holds. If either outline is empty or contains only move commands, the target path appears immediately. A literal array contributes `at + paths.length - 2`. For a computed array, a spread, or a morph inside a React component, set frontmatter `clicks` to the total for the whole slide.
+
 ## Tokens
 
 Import `duration`, `ease`, `stagger` and `gsap` from `@steamfield/decks/motion`. `duration.quick`, `.base`, `.slow` correspond to `--deck-dur-quick`, `--deck-dur-base`, `--deck-dur-slow`. `ease.enter`, `.exit`, `.settle`, `.draw` correspond to `--deck-ease-enter`, `--deck-ease-exit`, `--deck-ease-settle`, `--deck-ease-draw`. `stagger` corresponds to `--deck-stagger`.
@@ -98,6 +124,24 @@ An omitted position appends. `"<"` means the previous inserted tween's start; a 
 
 In `presenter`, `preview`, `overview` and `print`, in an inactive slide, and in instant/reduced motion, show the completed pose for the local click. Overview uses the final click; preview can show the next click rather than the current one. No animation, timers or WebGL there. Custom SVG ids use `useId()` because several instances can coexist.
 
-Deck config `transition` supplies the fallback; slide frontmatter overrides the boundary from that slide to the next in either direction. Built-ins: `fade`, `push`, `zoom`, `cut`; `story` comes from the kit stylesheet. Prefer a consistent quiet transition and reserve changes for meaningful boundaries. The story transition preserves headline/card positions. Use `Morph` for authored object hand-offs instead of manually assigning unscoped view-transition names.
+Deck config `transition` supplies the fallback. Slide frontmatter overrides the boundary from that slide to the next in either direction. Most decks use one or two transitions. Keep a quiet default and save a second transition for meaningful boundaries.
+
+| Preset | When to use it |
+| --- | --- |
+| `fade` | Move between slides with a quiet cross-fade. |
+| `push` | Carry a horizontal sequence across slides. |
+| `zoom` | Move between a big picture and its detail. |
+| `cut` | Change slides immediately, such as during a rapid comparison. |
+| `rise` | Carry a vertical sequence across slides. |
+| `cover` | Bring in a new slide over the current one, like a panel. |
+| `reveal` | Slide the current view away to show what's underneath. |
+| `wipe` | Sweep across two views of the same subject. |
+| `iris` | Center a reveal on a focal point, at most once per deck. |
+| `blur` | Shift focus to a new subject at a section break. |
+| `flip` | Turn from a question to its answer, like a card. |
+| `cube` | Turn between distinct faces of one subject. |
+| `story` | Preserve headline and card positions across story stages. Provided by the kit stylesheet. |
+
+Use `Morph` for authored object hand-offs so the framework scopes their view-transition names.
 
 `?motion=instant#/2?clicks=1` checks a settled state directly. `window.__deck.settled()` waits for registered motion; after a change in another window, wait for navigation to arrive before waiting for settlement. A custom canvas animation needs the public `registerSettleProbe` API and cleanup if capture must await it; prefer built-in primitives over adding such a loop.

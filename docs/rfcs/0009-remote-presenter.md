@@ -1,6 +1,6 @@
 # RFC 0009: a remote presenter on a second device
 
-Status: Ready. Reviewed by a devil's-advocate pass and decided with Riley on 2026-11-17.
+Status: Done. Shipped on `feat/remote-and-motion` (2026-11-18): the relay is `packages/node/src/remote/`, the window link and page are `packages/runtime/src/remote/`, and the user guide is `docs/guide/presenting.md`.
 
 ## Problem
 
@@ -88,9 +88,10 @@ shows "Waiting for the deck".
 - Generates a 128-bit token at start and prints the remote URL with each LAN IPv4 address
   (first) and the mDNS name (`<host>.local`), plus a QR code, in the terminal only. The token
   is never sent to a deck window, so it can never appear on the projector.
-- Every request needs the token: the page load as a query parameter, which the page moves to
-  `sessionStorage` and strips from the URL, and the WebSocket upgrade, which also checks that
-  `Origin` is the remote server's own origin. A wrong token gets a 403 and a logged line
+- Every request needs the token: the page load as a query parameter, which stays in the
+  page's URL so a reload stays authenticated (the device is not projected), and the WebSocket
+  upgrade, which also checks that `Origin` is the remote server's own origin. After a failed
+  handshake the page requests its own URL again: only a 403 means the link has expired. A wrong token gets a 403 and a logged line
   naming the client address.
 - The deck payload is built in `plugins.ts` from the same `scanDeck()` result that feeds
   `buildManifest` and `renderNotes`: per slide, its title, click count and rendered note
@@ -99,8 +100,8 @@ shows "Waiting for the deck".
 - The relay accepts three intent shapes from a remote, validated with zod as
   `term/plugin.ts` does; anything else closes the socket. Windows send position updates
   (`{ slide, click }` with the window's view and focus) over HMR custom events.
-- Timer: the relay records when it first sees the position change, and pushes that start
-  time with every position. The remote's timer survives its own reload or the iPad sleeping.
+- Timer: the relay records when it first sees the position change, and pushes the elapsed
+  talk time with every position, so the page never compares clocks with the laptop. The remote's timer survives its own reload or the iPad sleeping.
   "Reset timer" on the remote resets the relay's start. The presenter window keeps its own
   timer, as today.
 
