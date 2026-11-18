@@ -136,7 +136,7 @@ export function InkCampusMapStage() {
     // Resizing should refit the cluster without the adapter's camera flight.
     if (instance && focus) instance.fitBounds(focus.target, { duration: 0 });
   }, [mapPx]);
-  useEffect(() => registerSettleProbe(() => busy.current), []);
+  useEffect(() => registerSettleProbe(() => busy.current, "map camera tween"), []);
   useEffect(() => {
     if (!animated || mapPx === 0 || !spec.animation) return;
     // GeoMap exposes no completion event. Its update starts on the next frame.

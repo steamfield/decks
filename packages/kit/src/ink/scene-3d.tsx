@@ -49,7 +49,7 @@ export function Scene3D({
   useLayoutEffect(() => {
     if (!live || three) return;
     let active = true;
-    const removeProbe = registerSettleProbe(() => true);
+    const removeProbe = registerSettleProbe(() => true, "Scene3D load");
     void import("three").then(
       (module) => {
         if (active) setThree(module);

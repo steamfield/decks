@@ -1,3 +1,4 @@
+import { createServer } from "node:http";
 import { expect, it, onTestFinished } from "vitest";
 import { cli, fixture, skipBrowserTests } from "../../dev/server.test-support";
 
@@ -148,4 +149,41 @@ browserTest("reports a page error raised while measuring the slide", async () =>
     stdout: "",
     stderr: "decks inspect: Cannot capture slide 1 (01-first.mdx): Broken during measurement\n",
   });
+});
+
+browserTest("inspects every slide against one preview server", async () => {
+  // Each slide reports the origin it was served from, and holds settling until that lands.
+  const origins: string[] = [];
+  const server = createServer((request, response) => {
+    origins.push(new URL(request.url ?? "/", "http://recorder").searchParams.get("origin") ?? "");
+    response.end();
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  onTestFinished(() => new Promise<void>((resolve) => server.close(() => resolve())));
+  const address = server.address();
+  if (!address || typeof address === "string") throw new Error(`No TCP address: ${address}`);
+  const { port } = address;
+  const result = await inspect({
+    "slides/01-first.mdx": "<ReportOrigin />",
+    "slides/02-second.mdx": "<ReportOrigin />",
+    "slides/03-third.mdx": "<ReportOrigin />",
+    "components/ReportOrigin.tsx": [
+      'import { useLayoutEffect } from "react";',
+      'import { registerSettleProbe, useSlide } from "@react-decks/runtime";',
+      "export function ReportOrigin() {",
+      "  const { isActive } = useSlide();",
+      "  useLayoutEffect(() => {",
+      "    if (!isActive) return;",
+      "    let sent = false;",
+      `    fetch("http://127.0.0.1:${port}/?origin=" + encodeURIComponent(location.origin), { mode: "no-cors" })`,
+      "      .finally(() => { sent = true; });",
+      '    return registerSettleProbe(() => !sent, "origin report");',
+      "  }, [isActive]);",
+      "  return <p>Reported</p>;",
+      "}",
+    ].join("\n"),
+  });
+  expect(result).toEqual({ code: 0, stdout: "no layout findings in 3 slides\n", stderr: "" });
+  expect(origins).toHaveLength(3);
+  expect(new Set(origins).size).toBe(1);
 });
