@@ -3,13 +3,19 @@ import { useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Deck } from "./deck";
 import { installEmbed } from "./embed/embed";
+import type { RemoteLink } from "./remote/remote-link";
+import { connectWindow } from "./remote/window-link";
 import { settled } from "./settle/settle";
 import type { DeckSource } from "./source";
 import { createBroadcastTransport } from "./store/broadcast-transport";
 import { createDeckStore } from "./store/store";
 import { createPresenter } from "./transitions/transition";
 
-export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
+export function mountDeck(
+  source: DeckSource,
+  root?: HTMLElement,
+  options?: { remote?: RemoteLink },
+): () => void {
   const element = root ?? document.getElementById("deck-root");
   if (!element) throw new Error("Missing mount element #deck-root");
   const location = parseLocation(window.location.hash, window.location.search);
@@ -23,6 +29,8 @@ export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
           syncChannelId(source.manifest.name, window.location.pathname.replace(/index\.html$/, "")),
         );
   const store = createDeckStore(source.manifest, { transport, present: createPresenter(source) });
+  const stopRemote =
+    transport && options?.remote ? connectWindow(store, options.remote) : undefined;
   const api = { settled };
   window.__deck = api;
   const embed = installEmbed(source.manifest, store);
@@ -42,6 +50,7 @@ export function mountDeck(source: DeckSource, root?: HTMLElement): () => void {
     </>,
   );
   return () => {
+    stopRemote?.();
     embed?.dispose();
     reactRoot.unmount();
     store.destroy();

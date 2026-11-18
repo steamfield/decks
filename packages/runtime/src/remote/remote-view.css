@@ -1,0 +1,114 @@
+@layer react-decks {
+  .rd-remote-page {
+    color-scheme: dark;
+    color: CanvasText;
+    background: Canvas;
+    --rd-ui-panel: color-mix(in oklab, currentColor 8%, transparent);
+    --rd-ui-line: color-mix(in oklab, currentColor 28%, transparent);
+    --rd-ui-dim: color-mix(in oklab, currentColor 72%, transparent);
+    position: fixed;
+    inset: 0;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(5rem, 1fr) auto;
+    gap: 0.8rem;
+    padding: clamp(0.75rem, 2.4vmin, 1.75rem);
+    overflow: auto;
+    font:
+      1.125rem / 1.45 system-ui,
+      sans-serif;
+  }
+
+  .rd-remote-page h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    line-height: 1.15;
+  }
+
+  .rd-remote-page header p {
+    margin: 0.25rem 0 0;
+    color: var(--rd-ui-dim);
+  }
+
+  .rd-remote-page .rd-remote-banner {
+    padding: 0.5rem 0.875rem;
+    margin-block: 0 0.5rem;
+    border: 1px solid var(--rd-ui-line);
+    color: inherit;
+  }
+
+  .rd-remote-position,
+  .rd-remote-clock {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rd-remote-notes {
+    overflow: auto;
+    background: var(--rd-ui-panel);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: max(20px, 1.5rem);
+  }
+
+  .rd-remote-notes::after {
+    content: "";
+    display: block;
+    block-size: 100%;
+  }
+
+  .rd-remote-notes > div {
+    border-inline-start: 3px solid transparent;
+    padding-inline-start: 0.75rem;
+    color: var(--rd-ui-dim);
+  }
+
+  .rd-remote-notes [aria-current="true"] {
+    color: inherit;
+    border-inline-start-color: currentColor;
+  }
+
+  .rd-remote-notes :is(p, ul, ol) {
+    margin-block: 0 0.75em;
+  }
+
+  .rd-remote-controls,
+  .rd-remote-buttons {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .rd-remote-controls button,
+  .rd-remote-controls select {
+    min-height: 56px;
+    min-width: 0;
+    border: 1px solid var(--rd-ui-line);
+    border-radius: 0.375rem;
+    padding-inline: 0.875rem;
+    background: var(--rd-ui-panel);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .rd-remote-controls :disabled {
+    color: var(--rd-ui-dim);
+    cursor: default;
+  }
+
+  .rd-remote-clock button {
+    margin-inline-start: auto;
+  }
+
+  .rd-remote-clock [role="timer"] {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .rd-remote-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+}

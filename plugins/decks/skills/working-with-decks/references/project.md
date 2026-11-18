@@ -30,6 +30,8 @@ Only the config and slides are required by the framework. `data/`, `data-sources
 
 Move the pointer to the bottom-left corner of the play view to reveal the control tray, or Tab to its buttons. It holds Previous, Next, the slide counter (opens go-to), Overview, Open presenter, fullscreen when supported, and smaller/larger text. The tray is absent in embedded and bridge decks and other views. Use `f` for fullscreen, `o` for overview, `p` for the presenter window, and `g` for go-to. Cmd/Ctrl `+` and `-` change text size; Cmd/Ctrl `0` resets it.
 
+Run `decks dev <deck> --remote` to read notes and control the deck from an iPad or second laptop. Connect both devices to the same network, open the deck on the presenting laptop, then scan the QR code or open the URL printed in its terminal on the second device. The remote shows the current notes, next slide title and talk timer.
+
 ## Public import roots
 
 | Import | Use |
