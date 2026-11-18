@@ -43,7 +43,7 @@ Films one step and writes a contact sheet: the motion of arriving at `slide` and
 
 ## `decks inspect <deck> [--width 1920] [--height 1080]`
 
-Builds the deck, opens every visible slide at its last click, and prints each element whose box leaves the canvas and each box that clips its own text, one line per finding with the slide, its file, a short selector, the start of the text and the overflow in pixels. At most ten lines per slide are printed; the summary counts all of them. It exits 1 when there are findings. Screen-reader-only text, the inside of an SVG and textless `aria-hidden` decoration are not findings; a deliberate crop, such as a backdrop bleeding past the edge, still is, so read each line before fixing it. Same browser requirement as `export`.
+Builds the deck, opens every visible slide at its last click, and prints each element whose box leaves the canvas and each box that clips its own text, one line per finding with the slide, its file, a short selector, the start of the text and the overflow in pixels. At most ten lines per slide are printed; the summary counts all of them. It exits 1 when there are findings. Screen-reader-only text, the inside of an SVG, textless `aria-hidden` decoration and anything cropped by an ancestor with `overflow: clip` (a `Camera` viewport, a text mask) are not findings. Use `overflow: clip` for a deliberate crop; `hidden`, `auto` and `scroll` are reported, so read each line before fixing it. Same browser requirement as `export`.
 
 ## `decks init [--force]`
 

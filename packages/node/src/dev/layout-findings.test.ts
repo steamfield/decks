@@ -46,6 +46,37 @@ browserTest("reports a box with overflow hidden that clips its text", async () =
   });
 });
 
+browserTest("treats overflow clip as a deliberate crop and still reports hidden", async () => {
+  const result = await inspectSlide(
+    [
+      '<p style={{overflow: "clip", height: 38, lineHeight: "30px"}}>Masked line<br />Cropped line</p>',
+      '<p className="card" style={{overflow: "hidden", height: 38, lineHeight: "30px"}}>First line<br />Second line</p>',
+    ].join("\n\n"),
+  );
+  expect(result).toEqual({
+    code: 1,
+    stdout: [
+      'slide 1 (01-first.mdx): clipped by 22px bottom: p.card "First line Second line"',
+      "1 finding in 1 slide\n",
+    ].join("\n"),
+    stderr: "",
+  });
+});
+
+browserTest(
+  "measures what a clipping ancestor leaves visible, not the content it crops",
+  async () => {
+    const result = await inspectSlide(
+      [
+        '<div style={{overflow: "clip", width: 400, height: 200}}><div style={{width: 3000, marginLeft: -900}}>Cropped tour</div></div>',
+        '<div className="loose" style={{width: 400, height: 200}}><div style={{width: 3000, marginLeft: -900}}>Loose tour</div></div>',
+      ].join("\n\n"),
+    );
+    expect(result.stdout).not.toContain("Cropped tour");
+    expect(result.stdout).toContain('div "Loose tour"');
+  },
+);
+
 browserTest("reports nothing for a slide whose content fits", async () => {
   const result = await inspectSlide(
     [

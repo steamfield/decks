@@ -35,7 +35,8 @@ export async function layoutFindings(
       return xEnd <= xStart || yEnd <= yStart;
     }
 
-    function visit(element, ancestorReported) {
+    // The part of the page clipping ancestors leave visible; content outside it is cropped on purpose.
+    function visit(element, ancestorReported, visible) {
       if (element.matches('[data-deck-layer="above"], [data-deck-layer="credit"]')) return;
       if (element.getAttribute("aria-hidden") === "true" && !element.textContent?.trim()) return;
       const style = getComputedStyle(element);
@@ -50,22 +51,29 @@ export async function layoutFindings(
       let reported = ancestorReported;
       if (element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) {
         let outside;
-        if (!ancestorReported && bounds.width > 0 && bounds.height > 0) {
+        const shown = {
+          left: Math.max(bounds.left, visible.left),
+          right: Math.min(bounds.right, visible.right),
+          top: Math.max(bounds.top, visible.top),
+          bottom: Math.min(bounds.bottom, visible.bottom),
+        };
+        if (!ancestorReported && shown.right > shown.left && shown.bottom > shown.top) {
           const edges = [
-            { side: "left", pixels: frame.left - bounds.left },
-            { side: "right", pixels: bounds.right - frame.right },
-            { side: "top", pixels: frame.top - bounds.top },
-            { side: "bottom", pixels: bounds.bottom - frame.bottom },
+            { side: "left", pixels: frame.left - shown.left },
+            { side: "right", pixels: shown.right - frame.right },
+            { side: "top", pixels: frame.top - shown.top },
+            { side: "bottom", pixels: shown.bottom - frame.bottom },
           ];
           outside = edges.reduce((largest, edge) =>
             edge.pixels > largest.pixels ? edge : largest,
           );
         }
         const extendsCanvas = outside && outside.pixels > 1;
-        const horizontal =
-          style.overflowX === "visible" ? 0 : element.scrollWidth - element.clientWidth;
-        const bottom =
-          style.overflowY === "visible" ? 0 : element.scrollHeight - element.clientHeight;
+        // overflow: clip crops on purpose (a camera viewport, a text mask); hidden, auto and
+        // scroll are where text is lost by accident.
+        const crops = (overflow) => overflow !== "visible" && overflow !== "clip";
+        const horizontal = crops(style.overflowX) ? element.scrollWidth - element.clientWidth : 0;
+        const bottom = crops(style.overflowY) ? element.scrollHeight - element.clientHeight : 0;
         const clipped = Math.max(horizontal, bottom);
 
         if (extendsCanvas || clipped > 1) {
@@ -95,10 +103,16 @@ export async function layoutFindings(
         }
       }
       if (element.localName === "svg") return;
-      for (const child of element.children) visit(child, reported);
+      const inner = {
+        left: style.overflowX === "visible" ? visible.left : Math.max(visible.left, bounds.left),
+        right: style.overflowX === "visible" ? visible.right : Math.min(visible.right, bounds.right),
+        top: style.overflowY === "visible" ? visible.top : Math.max(visible.top, bounds.top),
+        bottom: style.overflowY === "visible" ? visible.bottom : Math.min(visible.bottom, bounds.bottom),
+      };
+      for (const child of element.children) visit(child, reported, inner);
     }
 
-    visit(slide, false);
+    visit(slide, false, { left: -Infinity, right: Infinity, top: -Infinity, bottom: Infinity });
     return findings;
   })()`);
   if (typeof result === "string") throw new DeckError(result);
