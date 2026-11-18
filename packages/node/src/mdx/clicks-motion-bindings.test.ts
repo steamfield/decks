@@ -20,6 +20,27 @@ describe("motion bindings", () => {
     });
     expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(3);
   });
+  it.each([
+    {
+      component: 'export { ChartSteps as Bars } from "@steamfield/decks/kit";',
+      slide: "<Bars at={2} specs={[a, b, c]} />",
+      clicks: 3,
+    },
+    {
+      component: 'export { MotionTemplate } from "@react-decks/kit";',
+      slide: '<MotionTemplate template="myth-fact" at={2} myth="m" fact="f" />',
+      clicks: 3,
+    },
+  ])(
+    "counts a kit component the deck re-exports: $component",
+    async ({ component, slide, clicks }) => {
+      const { dir } = await fixture({
+        "components/graphics.tsx": component,
+        "slides/01-first.mdx": slide,
+      });
+      expect((await scanSlides(await loadDeck(dir)))[0]?.meta.clicks).toBe(clicks);
+    },
+  );
   it("counts Step re-exported from motion by the deck", async () => {
     const { dir } = await fixture({
       "components/motion.tsx": 'export { Step } from "@react-decks/motion";',
