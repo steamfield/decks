@@ -22,10 +22,10 @@ it.skipIf(skipBrowserTests)(
       return PNG.sync.write(png);
     });
     const sheet = PNG.sync.read(await contactSheet(page, frames, [0, 100, 200, 300]));
-    expect(await page.getByRole("figure").count()).toBe(4);
-    for (const label of ["0 ms", "100 ms", "200 ms", "300 ms"]) {
-      expect(await page.getByText(label, { exact: true }).isVisible()).toBe(true);
-    }
+    // Vitest's expect.poll re-reads the live page, as a Playwright locator assertion would.
+    await expect.poll(() => page.getByRole("figure").count()).toBe(4);
+    for (const label of ["0 ms", "100 ms", "200 ms", "300 ms"])
+      await expect.poll(() => page.getByText(label, { exact: true }).isVisible()).toBe(true);
     expect(sheet.width).toBe(300);
     const row = sheet.height / 2;
     const samples = [

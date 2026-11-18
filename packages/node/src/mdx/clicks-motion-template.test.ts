@@ -5,32 +5,44 @@ const file = "slides/01-ferry.mdx";
 const imported = 'import { MotionTemplate as Graphic } from "@steamfield/decks/kit"';
 const count = (props: string) => readSlide(`${imported}\n\n<Graphic ${props} />`, file).clicks;
 
-it("counts at for one-beat templates, at plus 1 for two-beat templates, and at plus length minus 1 for a literal list", () => {
-  for (const name of [
-    "title-reveal",
-    "lower-third",
-    "stat-burst",
-    "stat-compare",
-    "metric-grid",
-    "quote-card",
-    "section-wipe",
-    "agenda",
-    "end-card",
-    "spotlight",
-  ]) {
-    expect(count(`template="${name}" at={3}`)).toBe(3);
-    expect(count(`template="${name}"`)).toBe(0);
-  }
-  for (const name of ["comparison-split", "myth-fact"])
-    expect(count(`template={"${name}"}`)).toBe(1);
-  for (const [name, list] of [
-    ["timeline-sweep", "events"],
-    ["process-flow", "steps"],
-    ["list-cascade", "items"],
-  ]) {
-    expect(count(`template="${name}" ${list}={[a,b,c]} at={3}`)).toBe(5);
-    expect(count(`template="${name}" ${list}={[a]}`)).toBe(0);
-  }
+it.each([
+  "agenda",
+  "device-mockup",
+  "end-card",
+  "icon-array",
+  "logo-reveal",
+  "lower-third",
+  "metric-grid",
+  "photo-reveal",
+  "quote-card",
+  "section-wipe",
+  "spotlight",
+  "stat-burst",
+  "stat-compare",
+  "team-grid",
+  "title-reveal",
+  "venn-overlap",
+])("counts at for the one-beat template %s, and 0 without at", (name) => {
+  expect([count(`template="${name}" at={3}`), count(`template="${name}"`)]).toEqual([3, 0]);
+});
+
+it.each([
+  ["comparison-split", 'template={"comparison-split"}', 1],
+  ["myth-fact", 'template={"myth-fact"}', 1],
+  ["myth-fact", 'template="myth-fact" at={3}', 4],
+])("counts at plus 1 for the two-beat template %s: %s", (_name, props, clicks) => {
+  expect(count(props)).toBe(clicks);
+});
+
+it.each([
+  ["timeline-sweep", "events"],
+  ["process-flow", "steps"],
+  ["list-cascade", "items"],
+])("counts at plus length minus 1 for the %s literal %s list", (name, list) => {
+  expect([
+    count(`template="${name}" ${list}={[a,b,c]} at={3}`),
+    count(`template="${name}" ${list}={[a]}`),
+  ]).toEqual([5, 0]);
 });
 
 it("throws the set-clicks error for a non-literal list without frontmatter clicks", () => {

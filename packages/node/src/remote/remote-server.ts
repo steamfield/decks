@@ -11,6 +11,14 @@ import type { createRelay } from "./relay";
 import { clientMessage, maxPayload } from "./remote-messages";
 import type { buildRemotePage } from "./remote-page";
 
+/**
+ * The `.local` name Bonjour answers for a machine called `hostname`, lowercased. Bonjour answers
+ * for the first label only, so a DHCP domain (`mbp.lan`) or an existing `.local` is dropped.
+ */
+export function mdnsName(hostname: string): string {
+  return `${hostname.toLowerCase().split(".")[0]}.local`;
+}
+
 export async function startRemoteServer(
   devUrl: string,
   requestedPort: number | undefined,
@@ -35,9 +43,7 @@ export async function startRemoteServer(
         .map((addr) => addr.address),
     ),
   );
-  // Bonjour answers for the first label only; a DHCP domain (`mbp.lan`) is not part of the name.
-  const name = `${hostname().toLowerCase().split(".")[0]}.local`;
-  const hosts = [...(addresses.size ? addresses : ["127.0.0.1"]), name];
+  const hosts = [...(addresses.size ? addresses : ["127.0.0.1"]), mdnsName(hostname())];
   let origins: string[] = [];
   const expected = Buffer.from(token);
   // Constant time, so response timing does not reveal how much of a guessed token matched.

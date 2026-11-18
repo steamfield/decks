@@ -10,7 +10,11 @@ import { fixture, skipBrowserTests } from "./server.test-support";
 // One real build, then measure and sample in separate Chromium pages.
 const timeout = 60_000;
 
-async function filmStep(content: string, files: Record<string, string> = {}) {
+async function filmStep(
+  content: string,
+  files: Record<string, string> = {},
+  step = { from: "#/1", slide: 1, click: 1 },
+) {
   const { dir } = await fixture(onTestFinished, {
     "slides/01-first.mdx": `---\nclicks: 1\n---\n${content}`,
     "styles/index.css":
@@ -26,21 +30,22 @@ async function filmStep(content: string, files: Record<string, string> = {}) {
       browser,
       out,
       "./",
-      "#/1",
+      step.from,
       { width: 320, height: 180 },
       installFilmClock,
     );
     try {
       await capture.page.clock.runFor(offset);
-      return await captureStep(capture.page, 1, 1, times);
+      return await captureStep(capture.page, step.slide, step.click, times);
     } finally {
       await capture.page.close();
       await capture.close();
     }
   }
   const { span } = await pass();
-  const { frames } = await pass([0, Math.round(span / 2), span]);
-  return { span, frames, pass };
+  /** The second pass, sampling the start, middle and end of the measured span. */
+  const threeFrames = async () => (await pass([0, Math.round(span / 2), span])).frames;
+  return { span, threeFrames, pass };
 }
 
 function filmBeat() {
@@ -73,15 +78,15 @@ describe.skipIf(skipBrowserTests)("controlled step capture", () => {
   it("films a CSS step reveal on a click with the same three-way difference", {
     timeout,
   }, async () => {
-    const { frames } = await filmStep(
+    const { threeFrames } = await filmStep(
       '<div className="field"><Step at={1}><div className="ink" /></Step></div>',
     );
-    expectReveal(frames);
+    expectReveal(await threeFrames());
   });
 
   it("films a gsap useTimeline beat with the same three-way difference", { timeout }, async () => {
-    const { frames } = await filmBeat();
-    expectReveal(frames);
+    const { threeFrames } = await filmBeat();
+    expectReveal(await threeFrames());
   });
 
   it("replays a timeline at the same pixels across different page startup times", {
@@ -97,15 +102,31 @@ describe.skipIf(skipBrowserTests)("controlled step capture", () => {
   it("a step with no motion gives a span of 0 and identical frames, and succeeds", {
     timeout,
   }, async () => {
-    const { span, frames } = await filmStep("<Panel />", {
+    const { span, threeFrames } = await filmStep("<Panel />", {
       "components/Panel.tsx": `import {useSlide} from "@react-decks/runtime";
 export function Panel() {return <div className={useSlide().clicks ? "ink" : "field"} />}`,
     });
+    const frames = await threeFrames();
     expect(frames.map(pixel)).toEqual([255, 255, 255]);
     expect(span).toBe(0);
-    expect(frames).toHaveLength(3);
     expect(frames[1]).toEqual(frames[0]);
     expect(frames[2]).toEqual(frames[0]);
+  });
+
+  it("a cut from a slide with a focused input gives a span of 0 and shows the destination", {
+    timeout,
+  }, async () => {
+    const { span, threeFrames } = await filmStep(
+      "",
+      {
+        "slides/01-first.mdx":
+          '---\ntransition: cut\n---\n<div className="field"><input autoFocus aria-label="Answer" /></div>',
+        "slides/02-next.mdx": '<div className="ink" />',
+      },
+      { from: "#/1?clicks=0", slide: 2, click: 0 },
+    );
+    expect(span).toBe(0);
+    expect((await threeFrames()).map(pixel)).toEqual([255, 255, 255]);
   });
 });
 
@@ -132,10 +153,10 @@ export function Scene() {
 
 describe.skipIf(skipBrowserTests)("authored Web Animations", () => {
   it("includes a reveal that starts on the second animation frame", { timeout }, async () => {
-    const { frames } = await webAnimation(
+    const { threeFrames } = await webAnimation(
       "requestAnimationFrame(() => requestAnimationFrame(() => reveal(300)));",
     );
-    expectReveal(frames);
+    expectReveal(await threeFrames());
   });
 
   it("keeps animation birth on the same tick when a sample falls before it", {
@@ -170,7 +191,7 @@ describe.skipIf(skipBrowserTests)("authored Web Animations", () => {
   it("resumes a diagram from its authored pause and films only the remaining duration", {
     timeout,
   }, async () => {
-    const { frames, span } = await webAnimation(
+    const { threeFrames, span } = await webAnimation(
       "saved.current.play();",
       `
       saved.current = ink.animate([{opacity: 0}, {opacity: 1}], {duration: 600, fill: "forwards"});
@@ -179,13 +200,14 @@ describe.skipIf(skipBrowserTests)("authored Web Animations", () => {
     `,
     );
     expect(span).toBe(480);
-    expect(frames.map(pixel)[0]).toBe(51);
-    expect(frames.map(pixel)[2]).toBe(255);
+    // Opacity resumes at 120 / 600 and samples 360 / 600 and 600 / 600: white over black.
+    expect((await threeFrames()).map(pixel)).toEqual([51, 153, 255]);
   });
 
   it("shows the click's immediate paint at zero while its reveal begins", { timeout }, async () => {
-    const { frames } = await webAnimation("reveal(300);", "", "rgb(75, 75, 75)");
-    expect(frames.map(pixel)[0]).toBe(75);
+    const { threeFrames } = await webAnimation("reveal(300);", "", "rgb(75, 75, 75)");
+    // The grey background at zero, then white ink at half and full opacity over it.
+    expect((await threeFrames()).map(pixel)).toEqual([75, 165, 255]);
   });
 
   it("reports different measurement and capture spans before labelling a sheet", {

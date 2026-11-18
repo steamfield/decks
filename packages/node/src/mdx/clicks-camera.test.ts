@@ -25,7 +25,6 @@ for (const [name, prop, literal] of [
     expect(readSlide(source, file).clicks).toBe(4);
   });
   it(`frontmatter clicks replaces the count (${name})`, () => {
-    expect(readSlide(element(literal), file).clicks).toBe(4);
     expect(readSlide(`---\nclicks: 0\n---\n${element(literal)}`, file).clicks).toBe(0);
     expect(readSlide(`---\nclicks: 0\n---\n${element("items")}`, file).clicks).toBe(0);
   });

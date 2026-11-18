@@ -1,11 +1,9 @@
 import { once } from "node:events";
 import { get } from "node:http";
-import { syncBuiltinESMExports } from "node:module";
-import { createServer } from "node:net";
-import os, { hostname, networkInterfaces } from "node:os";
+import { createServer, isIPv4 } from "node:net";
 import getPort from "get-port";
 import { createLogger } from "vite";
-import { expect, onTestFinished, test, vi } from "vitest";
+import { expect, onTestFinished, test } from "vitest";
 import WebSocket from "ws";
 import { loadDeck } from "../dev/config";
 import { dev } from "../dev/server";
@@ -19,7 +17,7 @@ import {
   play,
   remoteFixture,
 } from "./remote.test-support";
-import { startRemoteServer } from "./remote-server";
+import { mdnsName, startRemoteServer } from "./remote-server";
 
 test("refuses the page with 403 and logs the address when the token is missing or wrong", async () => {
   const app = await remoteFixture();
@@ -39,8 +37,8 @@ test("refuses the page with 403 and logs the address when the token is missing o
     expect(Buffer.concat(body).toString()).toMatch(/forbidden/i);
   }
   expect(app.warnings).toEqual([
-    expect.stringContaining("127.0.0.1"),
-    expect.stringContaining("127.0.0.1"),
+    "Remote presenter: refused request from 127.0.0.1",
+    "Remote presenter: refused request from 127.0.0.1",
   ]);
 });
 
@@ -59,13 +57,13 @@ test("refuses a socket upgrade without the token", async () => {
   const app = await remoteFixture();
   app.socketUrl.search = "";
   await refused(app.socketUrl, app.url.origin);
-  expect(app.warnings).toHaveLength(1);
+  expect(app.warnings).toEqual([`Remote presenter: refused request from ${app.url.hostname}`]);
 });
 
 test("refuses a socket upgrade from a foreign Origin", async () => {
   const app = await remoteFixture();
   await refused(app.socketUrl, "http://foreign.invalid");
-  expect(app.warnings).toHaveLength(1);
+  expect(app.warnings).toEqual([`Remote presenter: refused request from ${app.url.hostname}`]);
 });
 
 test("refuses the page and the socket with the right token under a foreign Host", async () => {
@@ -116,22 +114,38 @@ test("keeps the remote socket open and routing across a deck.config.ts restart",
   await waitForWatcher(() => expect(window.intents).toEqual([{ type: "next" }]));
 });
 
-test("prints the remote URLs after the dev URL", async () => {
+test("prints the dev URL, then LAN IPv4 remote URLs and the mDNS one last, each serving 200", async () => {
   const app = await remoteFixture();
-  const hosts = Object.values(networkInterfaces()).flatMap((nic) =>
-    (nic ?? [])
-      .filter((address) => address.family === "IPv4" && !address.internal)
-      .map((address) => address.address),
+  const urls = app.lines.filter((line) => line.includes("?token=")).map((line) => new URL(line));
+  expect(app.lines.slice(0, 2)).toEqual([app.devUrl, "Remote presenter:"]);
+  expect(app.lines.indexOf(urls[0]?.href ?? "")).toBeGreaterThan(1);
+  const kinds = urls.map(({ hostname }) =>
+    isIPv4(hostname) ? "IPv4" : hostname.endsWith(".local") ? "mDNS" : hostname,
   );
-  const urls = [
-    ...new Set(hosts.length ? hosts : ["127.0.0.1"]),
-    `${hostname().toLowerCase().split(".")[0]}.local`,
-  ].map((host) => `http://${host}:${app.url.port}/${app.url.search}`);
-  const output = app.lines.join("\n");
-  expect(output.indexOf(app.devUrl)).toBeGreaterThanOrEqual(0);
-  expect(output.indexOf("Remote presenter:")).toBeGreaterThan(output.indexOf(app.devUrl));
-  expect(output.indexOf(app.url.href)).toBeGreaterThan(output.indexOf("Remote presenter:"));
-  expect(output.match(/http:\/\/[^\s]+\?token=[\da-f]+/g)).toEqual(urls);
+  expect(kinds).toEqual([...urls.slice(1).map(() => "IPv4"), "mDNS"]);
+  // Each request names its printed host, as a phone resolving that name would send it.
+  const statuses = await Promise.all(
+    urls.map(async (url) => {
+      const req = get({
+        hostname: "127.0.0.1",
+        port: url.port,
+        path: url.pathname + url.search,
+        headers: { host: url.host },
+      });
+      const [response] = await once(req, "response");
+      response.resume();
+      return response.statusCode;
+    }),
+  );
+  expect(statuses).toEqual(urls.map(() => 200));
+});
+
+test.each([
+  ["Talk-Mac.local", "talk-mac.local"],
+  ["rileys-mbp.lan", "rileys-mbp.local"],
+  ["m4", "m4.local"],
+])("names the machine %s as %s for mDNS", (hostname, name) => {
+  expect(mdnsName(hostname)).toBe(name);
 });
 
 test.each(["hmr", "ws", "ws.port", "ws.server", "host"])(
@@ -206,47 +220,12 @@ test("moves to the next free port if another listener takes the default during s
   expect(await (await fetch(url)).text()).toBe("Remote page");
 });
 
-test("serves the printed mDNS name when the machine is named Talk-Mac.local", async () => {
-  const host = vi.spyOn(os, "hostname").mockReturnValue("Talk-Mac.local");
-  syncBuiltinESMExports();
-  onTestFinished(() => {
-    host.mockRestore();
-    syncBuiltinESMExports();
-  });
-  const app = await remoteFixture();
-  const line = app.lines.find((line) => line.startsWith("http://talk-mac.local:"));
-  if (!line) throw Error("Missing talk-mac.local URL");
-  const url = new URL(line);
-  const req = get({
-    hostname: "127.0.0.1",
-    port: url.port,
-    path: url.pathname + url.search,
-    headers: { host: url.host },
-  });
-  const [response] = await once(req, "response");
-  response.resume();
-  expect(response.statusCode).toBe(200);
-});
-
-test("prints the mDNS name without the DHCP domain the hostname carries", async () => {
-  const host = vi.spyOn(os, "hostname").mockReturnValue("Rileys-MBP.lan");
-  syncBuiltinESMExports();
-  onTestFinished(() => {
-    host.mockRestore();
-    syncBuiltinESMExports();
-  });
-  const app = await remoteFixture();
-  expect(
-    app.lines.filter((line) => /\.local:/.test(line)).map((line) => new URL(line).hostname),
-  ).toEqual(["rileys-mbp.local"]);
-});
-
 test("accepts Vite's loopback and shared socket defaults from a config plugin", async () => {
   const { dir } = await fixture(onTestFinished, {
     "deck.config.ts": `export default {title:"Shared transport",
     vite:{plugins:[{name:"loopback-default", config:()=>({server:{host:false,ws:{port:0}}})}]}}`,
   });
-  const server = await dev(await loadDeck(dir), { port: await getPort(), remote: { port: 0 } });
+  const server = await dev(await loadDeck(dir), { port: 0, remote: { port: 0 } });
   onTestFinished(() => server.close());
   expect(await (await fetch(server.url)).text()).toContain("<title>Shared transport</title>");
 });
