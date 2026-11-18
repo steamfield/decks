@@ -364,3 +364,9 @@ paths; the remote page build reuses `config()` and the RFC says so.
   reports arrive in arrival order (a late presenter report can briefly win; accepted for v1).
   `--remote` forces the dev server to loopback even when `vite.server.host` is configured,
   with a logged line. A window in print never reports. RFC 0009 is updated at phase 3 docs.
+- 2026-11-18, gate after the motion-graphics merge: one failure,
+  `examples/building-for-agents/components/LiveTerm.test.ts:119`, an ANSI glyph colour one unit
+  past its tolerance (17 > 16) on m1-mini while other runs loaded the host. It passed on the same
+  host from main and from this branch right after; neither LiveTerm nor that deck changed in this
+  build. Follow-up, outside this build: the brightest-pixel probe is sensitive to antialiasing
+  under load.
