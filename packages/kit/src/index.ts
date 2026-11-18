@@ -51,6 +51,7 @@ export { MotionTemplate } from "./motion-templates/motion-template";
 export type {
   MotionTemplateName,
   MotionTemplateProps,
+  TemplateProps,
 } from "./motion-templates/motion-template-props";
 export { useTemplateMotion } from "./motion-templates/use-template-motion";
 export { useStageEntrance } from "./story/entrance";
