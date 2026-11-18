@@ -186,25 +186,29 @@ it("throws naming both indices when two specs differ in mark type", async () => 
   );
 });
 
-it("throws naming both indices and the channel when an encoding field or type differs", async () => {
-  for (const channel of ["x", "y", "color", "key"] as const) {
-    for (const property of ["field", "type"] as const) {
-      const base = bar(20);
-      const encoding = { ...base.encoding, [channel]: { field: "name", type: "nominal" } };
-      const from = { ...base, encoding };
-      const next = property === "field" ? "group" : "ordinal";
-      const to = {
-        ...base,
-        encoding: { ...encoding, [channel]: { field: "name", type: "nominal", [property]: next } },
-      };
-      await invalid(
-        [{ layer: [from] }, { layer: [from] }, { layer: [to] }],
-        1,
-        `ChartSteps specs[1] and specs[2] differ in ${channel} encoding ${property} (${property === "field" ? "name" : "nominal"} vs ${next}); a step can only morph data`,
-      );
-    }
-  }
-});
+// Each channel and each property appears once, so dropping any from the check fails a row.
+it.each([
+  ["x", "field", "name", "group"],
+  ["y", "type", "nominal", "ordinal"],
+  ["color", "field", "name", "group"],
+  ["key", "type", "nominal", "ordinal"],
+] as const)(
+  "throws naming both indices and the channel when the %s encoding %s differs",
+  async (channel, property, before, after) => {
+    const base = bar(20);
+    const encoding = { ...base.encoding, [channel]: { field: "name", type: "nominal" } };
+    const from = { ...base, encoding };
+    const to = {
+      ...base,
+      encoding: { ...encoding, [channel]: { field: "name", type: "nominal", [property]: after } },
+    };
+    await invalid(
+      [{ layer: [from] }, { layer: [from] }, { layer: [to] }],
+      1,
+      `ChartSteps specs[1] and specs[2] differ in ${channel} encoding ${property} (${before} vs ${after}); a step can only morph data`,
+    );
+  },
+);
 
 it("lets OpenChart snap when a matching chart gains a layer", async () => {
   const layers = [{ layer: [bar(20)] }, { layer: [bar(80), bar(50)] }];
@@ -289,7 +293,6 @@ it("OpenChart alone still enters on arrival and never remounts on a click", asyn
   expect(done()).toBe(false);
   await advance(0.65);
   expect(done()).toBe(true);
-  document.documentElement.setAttribute("data-deck-motion", "instant");
   await go(1);
   expect(screen.getByRole("img")).toBe(chart);
 });

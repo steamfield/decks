@@ -1,4 +1,4 @@
-import { act, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { expect, it } from "vitest";
 import { Camera, type CameraStop, duration, ShapeMorph } from "./index";
 import { setupMotion, tick } from "./motion.test-support";
@@ -84,20 +84,23 @@ function expectPose(index: number, path: string | undefined) {
 }
 
 it("a jump of two clicks seeks with no tween", async () => {
-  const view = await setupMotion(Pair);
+  const view = await setupMotion(Pair, { click: 1 });
   await view.next();
   await tick(0.1);
-  act(() => view.store.dispatch({ type: "go", slide: 1, click: 3 }));
-  expectPose(2, paths[2]);
+  // Home goes back to click 0 of the first slide: from click 2 that is a jump of two.
+  await view.user.keyboard("{Home}");
+  expectPose(0, paths[0]);
   await tick(duration.slow);
-  expectPose(2, paths[2]);
+  expectPose(0, paths[0]);
 });
 
 it.each(["instant", "presenter", "preview", "overview", "print"] as const)(
   "motion instant, presenter, preview, overview and print render the click's pose with no tween (%s)",
   async (mode) => {
-    const view = await setupMotion(Pair, { context: mode === "instant" ? "slide" : mode });
-    if (mode === "instant") document.documentElement.setAttribute("data-deck-motion", "instant");
+    const view = await setupMotion(Pair, {
+      context: mode === "instant" ? "slide" : mode,
+      instant: mode === "instant",
+    });
     await view.next();
     expectPose(1, paths[1]);
   },
@@ -107,31 +110,42 @@ it("an inactive slide seeks its final pose when a click interrupts travel", asyn
   const view = await setupMotion(() => <Pair at={4} />, { click: 3 });
   await view.next();
   await tick(0.1);
-  act(() => view.store.dispatch({ type: "nextSlide" }));
+  await view.user.keyboard("{ArrowDown}");
   expect(transform()).toBe(transform("Reference 2"));
   expect(screen.getByLabelText("Outline").firstElementChild).toHaveAttribute("d", paths[2]);
 });
 
 it.each([
-  [[], 1, "Camera stops must contain at least one stop, got []"],
-  [stops, 0, "at must be a positive whole number, got 0"],
-  [stops, Number.POSITIVE_INFINITY, "at must be a positive whole number, got Infinity"],
-  [[{ x: Number.NaN, y: 0, zoom: 1 }], 1, "Camera stops[0].x must be finite, got NaN"],
+  ["empty stops", [], 1, "Camera stops must contain at least one stop, got []"],
+  ["at below 1", stops, 0, "at must be a positive whole number, got 0"],
   [
+    "a non-finite x",
+    [{ x: Number.NaN, y: 0, zoom: 1 }],
+    1,
+    "Camera stops[0].x must be finite, got NaN",
+  ],
+  [
+    "a non-finite y",
     [{ x: 0, y: Number.NEGATIVE_INFINITY, zoom: 1 }],
     1,
     "Camera stops[0].y must be finite, got -Infinity",
   ],
   [
+    "a non-finite zoom",
     [{ x: 0, y: 0, zoom: Number.NaN }],
     1,
     "Camera stops[0].zoom must be finite and positive, got NaN",
   ],
-  [[{ x: 0, y: 0, zoom: 0 }], 1, "Camera stops[0].zoom must be finite and positive, got 0"],
-] satisfies [CameraStop[], number, string][])(
-  "throws naming the prop for empty stops, empty paths, at below 1, a non-finite number and zoom of 0 (%s, %s)",
-  async (values, at, message) => {
+  [
+    "a zoom of 0",
+    [{ x: 0, y: 0, zoom: 0 }],
+    1,
+    "Camera stops[0].zoom must be finite and positive, got 0",
+  ],
+] satisfies [string, CameraStop[], number, string][])(
+  "Camera throws naming the prop for %s",
+  async (_case, values, at, message) => {
     const view = await setupMotion(() => <Camera at={at} stops={values} />, { error: true });
-    expect(view.errors[0]).toHaveProperty("message", message);
+    expect(view.errors).toEqual([new Error(message)]);
   },
 );

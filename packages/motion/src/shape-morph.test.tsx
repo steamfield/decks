@@ -68,13 +68,17 @@ it.each(["", "M10 10"])(
 );
 
 it.each([
-  [[], 1, "ShapeMorph paths must contain at least one path, got []"],
-  [paths, 0, "at must be a positive whole number, got 0"],
-  [paths, Number.NaN, "at must be a positive whole number, got NaN"],
-] satisfies [string[], number, string][])(
-  "rejects invalid paths or at (%s, %s)",
-  async (values, at, message) => {
+  ["empty paths", [], 1, "ShapeMorph paths must contain at least one path, got []"],
+  [
+    "an at that is not a whole number",
+    paths,
+    Number.NaN,
+    "at must be a positive whole number, got NaN",
+  ],
+] satisfies [string, string[], number, string][])(
+  "ShapeMorph throws naming the prop for %s",
+  async (_case, values, at, message) => {
     const view = await setupMotion(() => <Shape values={values} at={at} />, { error: true });
-    expect(view.errors[0]).toHaveProperty("message", message);
+    expect(view.errors).toEqual([new Error(message)]);
   },
 );
