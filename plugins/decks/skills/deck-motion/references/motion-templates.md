@@ -24,3 +24,9 @@ on arrival) and `accent` picks a theme hue. Each template's source ships in the 
 ## Images and identity: device-mockup, photo-reveal, logo-reveal
 
 ## People and proportions: icon-array, team-grid, venn-overlap
+
+| Template | When it fits | Example |
+| --- | --- | --- |
+| `icon-array` | Show a share of a group. Give it a `total` of 1–100 people, the number `filled`, and a `label` explaining the share. | `<MotionTemplate template="icon-array" total={16} filled={4} label="One seat in four goes to an apprentice." />` |
+| `team-grid` | Introduce the people responsible for the work. Supply 2–6 `people` with a `name`, `role`, and optional portrait `src`. Initials stand in for a portrait. | `<MotionTemplate template="team-grid" people={[{ name: "Ada Reed", role: "Workshop lead", src: "./ada-reed.svg" }, { name: "Mina Park", role: "Apprentice mentor" }]} />` |
+| `venn-overlap` | Name what two or three groups share. Use short labels for `sets` and their `overlap` so each fits inside its region. | `<MotionTemplate template="venn-overlap" sets={["Design", "Fieldwork", "Training"]} overlap="Pilot" />` |

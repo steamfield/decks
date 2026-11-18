@@ -1,0 +1,42 @@
+.people {
+  margin: auto 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65em;
+  list-style: none;
+}
+.people li {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  padding: 0.8em 1em;
+  background: var(--od-surface-raised);
+  border: var(--od-hairline) solid var(--od-border);
+  border-radius: var(--od-radius);
+}
+.people img,
+.initials {
+  box-sizing: border-box;
+  width: 2.5em;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.55em;
+}
+.initials {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+  font-family: var(--od-font-mono);
+  font-weight: 600;
+}
+.people h2 {
+  font-size: 1.15em;
+  line-height: 1.14;
+  margin: 0;
+  color: var(--od-text);
+}
+.people p {
+  margin: 0.2em 0 0;
+  color: var(--od-text-muted);
+}

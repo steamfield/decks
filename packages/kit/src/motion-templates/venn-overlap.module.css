@@ -1,0 +1,73 @@
+.diagram {
+  position: relative;
+  width: min(78%, 116cqh);
+  aspect-ratio: 2;
+  margin: auto;
+  isolation: isolate;
+}
+.three {
+  aspect-ratio: 1.7;
+}
+.region {
+  position: absolute;
+  width: 50%;
+  aspect-ratio: 1;
+  left: 14%;
+  top: 0;
+}
+.region:nth-child(2) {
+  left: 36%;
+}
+.three .region {
+  width: 44%;
+  left: 18%;
+}
+.three .region:nth-child(2) {
+  left: 38%;
+}
+.three .region:nth-child(3) {
+  left: 28%;
+  top: auto;
+  bottom: 0;
+}
+.region svg {
+  display: block;
+  width: 100%;
+}
+.region p,
+.diagram .shared {
+  position: absolute;
+  translate: -50% -50%;
+  text-align: center;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--od-text);
+}
+.region p {
+  top: 50%;
+  left: 25%;
+  width: 38%;
+}
+.region:nth-child(2) p {
+  left: 75%;
+}
+.three .region p {
+  top: 32%;
+}
+.three .region:nth-child(3) p {
+  left: 50%;
+  top: 78%;
+  width: 56%;
+}
+.diagram .shared {
+  left: 50%;
+  top: 50%;
+  width: 24%;
+  font-size: 1.2em;
+}
+.three .shared {
+  top: 48%;
+  width: 17%;
+}
