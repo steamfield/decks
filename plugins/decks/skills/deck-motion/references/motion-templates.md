@@ -12,3 +12,7 @@ on arrival) and `accent` picks a theme hue. Each template's source ships in the 
 ## Text and structure: list-cascade, quote-card, section-wipe, agenda, end-card
 
 ## Diagrams and narrative: timeline-sweep, process-flow, comparison-split, myth-fact, spotlight
+
+## Images and identity: device-mockup, photo-reveal, logo-reveal
+
+## People and proportions: icon-array, team-grid, venn-overlap

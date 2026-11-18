@@ -50,6 +50,48 @@ export type MotionTemplateProps = TemplateBase &
     | { readonly template: "comparison-split"; readonly left: Side; readonly right: Side }
     | { readonly template: "myth-fact"; readonly myth: string; readonly fact: string }
     | {
+        readonly template: "device-mockup";
+        /** Screenshot URL; the deck's own asset import or a public path. */
+        readonly src: string;
+        readonly alt: string;
+        readonly device: "laptop" | "phone" | "browser";
+        readonly caption?: string;
+      }
+    | {
+        readonly template: "photo-reveal";
+        readonly src: string;
+        readonly alt: string;
+        readonly caption: string;
+        readonly credit?: string;
+      }
+    | {
+        readonly template: "logo-reveal";
+        /** An SVG or raster logo. */
+        readonly src: string;
+        readonly alt: string;
+        readonly tagline?: string;
+      }
+    | {
+        readonly template: "icon-array";
+        /** How many of `total` icons are highlighted ("1 in 4" is 25 of 100, or 1 of 4). */
+        readonly filled: number;
+        readonly total: number;
+        readonly label: string;
+      }
+    | {
+        readonly template: "team-grid";
+        readonly people: readonly {
+          readonly name: string;
+          readonly role: string;
+          readonly src?: string;
+        }[];
+      }
+    | {
+        readonly template: "venn-overlap";
+        readonly sets: readonly [string, string] | readonly [string, string, string];
+        readonly overlap: string;
+      }
+    | {
         readonly template: "spotlight";
         /** Image URL; the deck's own asset import or a public path. */
         readonly src: string;

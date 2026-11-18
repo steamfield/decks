@@ -1,20 +1,26 @@
 import type { ReactNode } from "react";
 import { Agenda } from "./agenda";
 import { ComparisonSplit } from "./comparison-split";
+import { DeviceMockup } from "./device-mockup";
 import { EndCard } from "./end-card";
+import { IconArray } from "./icon-array";
 import { ListCascade } from "./list-cascade";
+import { LogoReveal } from "./logo-reveal";
 import { LowerThird } from "./lower-third";
 import { MetricGrid } from "./metric-grid";
 import type { MotionTemplateProps } from "./motion-template-props";
 import { MythFact } from "./myth-fact";
+import { PhotoReveal } from "./photo-reveal";
 import { ProcessFlow } from "./process-flow";
 import { QuoteCard } from "./quote-card";
 import { SectionWipe } from "./section-wipe";
 import { Spotlight } from "./spotlight";
 import { StatBurst } from "./stat-burst";
 import { StatCompare } from "./stat-compare";
+import { TeamGrid } from "./team-grid";
 import { TimelineSweep } from "./timeline-sweep";
 import { TitleReveal } from "./title-reveal";
+import { VennOverlap } from "./venn-overlap";
 
 /**
  * A ready-made motion graphic: pick a template, give it the words, and it takes colour, type
@@ -55,5 +61,17 @@ export function MotionTemplate(props: MotionTemplateProps): ReactNode {
       return <MythFact key={key} {...props} />;
     case "spotlight":
       return <Spotlight key={key} {...props} />;
+    case "device-mockup":
+      return <DeviceMockup key={key} {...props} />;
+    case "photo-reveal":
+      return <PhotoReveal key={key} {...props} />;
+    case "logo-reveal":
+      return <LogoReveal key={key} {...props} />;
+    case "icon-array":
+      return <IconArray key={key} {...props} />;
+    case "team-grid":
+      return <TeamGrid key={key} {...props} />;
+    case "venn-overlap":
+      return <VennOverlap key={key} {...props} />;
   }
 }
