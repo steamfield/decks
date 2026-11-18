@@ -1,0 +1,25 @@
+.logo {
+  margin: auto 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.65em;
+  color: var(--od-text);
+  font-family: var(--od-font-sans);
+}
+.logo img {
+  width: min(74%, 24em);
+  height: 28cqh;
+  object-fit: contain;
+}
+.logo hr {
+  width: 3.6em;
+  height: 0.085em;
+  border: 0;
+  margin: 0;
+}
+.logo p {
+  margin: 0;
+  color: var(--od-text-secondary);
+  text-align: center;
+  text-wrap: balance;
+}

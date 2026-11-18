@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="855" height="220" viewBox="0 0 855 220">
+  <title>Inlet Press</title>
+  <g stroke="#172826" stroke-width="4" stroke-linejoin="round">
+    <path d="m28 66 57-27v134l-57 28z" fill="#efb983"/>
+    <path d="m85 39 58 27v135l-58-28z" fill="#96bab0"/>
+    <path d="m143 66 57-27v134l-57 28z" fill="#dddcbe"/>
+  </g>
+  <path d="m42 145 31-43 44 33 39-36 29-17" fill="none" stroke="#244a40" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="234" y="158" font-family="Georgia, serif" font-size="139" letter-spacing="-6" fill="#f4eedc">Inlet Press</text>
+</svg>
