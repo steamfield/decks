@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0
 
 ### Package (`@steamfield/decks`)
 
@@ -11,6 +11,7 @@
 - `ChartSteps` changes an OpenChart's data per click through its update animation.
 - Eight more slide transitions: `rise`, `cover`, `reveal`, `wipe`, `iris`, `blur`, `flip`, `cube`.
 - `window.__deck.busy()` and `window.__deck.preload(slide)` are public reads for capture tools; `registerSettleProbe` takes an optional label.
+- Fixes: a deck component that re-exports `ChartSteps` or `MotionTemplate` from the kit gets its clicks counted; two fast presses on a `morphSteps` slide run both live-terminal commands; capture (`film`, `shot`, `export`, `inspect`) runs animations on the main thread, so a frame never shows progress the page did not have.
 
 ### Repo
 
