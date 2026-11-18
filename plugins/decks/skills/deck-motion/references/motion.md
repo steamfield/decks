@@ -12,8 +12,13 @@ Without explicit `clicks`, the compiler uses the maximum contribution in MDX:
 | `TextReveal`, `CountUp` | `at` |
 | `Steps` with k children | `from + k - 1` |
 | Fenced code with k emphasis states | `at + k - 1` |
+| `Camera` or `ShapeMorph` with a literal array of n stops or paths | `at + n - 2` |
+| `ChartSteps` with a literal `specs` array of n specs | `at + n - 2` |
+| `MotionTemplate` with a literal `template` | `at` plus the template's clicks, minus 1 (one for most, two for `comparison-split` and `myth-fact`, one per literal item for `list-cascade`, `timeline-sweep` and `process-flow`) |
 
 Counted values must be literal nonnegative integers, and `until` must exceed `at`. Computed/spread props or counted elements in expressions need an explicit frontmatter total. `Steps` accepts JSX children or a single Markdown list; Markdown inside JSX needs blank lines around it.
+
+A file in `components/` that re-exports a motion component by name, or the kit's `ChartSteps` or `MotionTemplate`, keeps it counted under its exported name: `export { ChartSteps as Bars } from "@steamfield/decks/kit";` lets `<Bars at={2} specs={[a, b, c]} />` add three clicks with no frontmatter. A deck component that renders one of them internally is not counted.
 
 Inside React components, the compiler cannot count steps or timeline labels. Set MDX `clicks` explicitly. An explicit total overrides counting, so check it manually. `Notes` never adds clicks.
 

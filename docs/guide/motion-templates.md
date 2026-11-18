@@ -51,8 +51,10 @@ for the click. Its text stays real text, so it is read once, as a sentence, by a
 
 Most templates use one click, at `at`. `list-cascade`, `timeline-sweep` and `process-flow` take
 one click per item, from `at`; `comparison-split` and `myth-fact` take two, `at` and `at + 1`.
-With a literal list in the MDX the deck counts these clicks itself. When the list comes from a
-data module, set `clicks:` in the slide's frontmatter.
+With a literal `template` and a literal list in the MDX the deck counts these clicks itself,
+whether the slide imports `MotionTemplate` or a file in `components/` re-exports it from
+`@steamfield/decks/kit`. When the list comes from a data module, or the template sits inside a
+deck component, set `clicks:` in the slide's frontmatter.
 
 ## Where a motion graphic fits
 

@@ -55,7 +55,7 @@ export const month = new Date(`${BYLINE.month}-01`).toLocaleDateString('en-US', 
 | `title` | string | the slide's id | Shown in the overview and used as the tile's accessible name. |
 | `clicks` | whole number, 0 or greater | counted from the slide | Number of clicks after the initial state. Set it when a component paces itself from the click, or when the count cannot be read from the MDX. See [motion.md](motion.md). |
 | `hide` | `true`, `false` | `false` | A hidden slide is dropped before numbering and never compiled. |
-| `transition` | non-empty string | the deck's `transition`, else `fade` | Transition between this slide and the next one, in both directions. Built in: `cut`, `fade`, `push`, `zoom`. |
+| `transition` | non-empty string | the deck's `transition`, else `fade` | Transition between this slide and the next one, in both directions. Built in: `cut`, `fade`, `push`, `zoom`, `rise`, `cover`, `reveal`, `wipe`, `iris`, `blur`, `flip`, `cube` (see [motion.md](motion.md#slide-transitions)). |
 | `morphSteps` | `true`, `false` | `false` | Clicks on this slide run through a view transition, so a `Morph` can move between clicks. |
 | `layers` | `false`, `"above"`, `"below"` | both layers | Which of the deck's layers this slide shows. `false` shows neither. It does not affect the credit. |
 
@@ -92,7 +92,7 @@ Every slide can use these names with no import.
 | Source | Names |
 | --- | --- |
 | The deck's `components/*.tsx` | Every named export under its own name; a default export under the file's basename. |
-| Motion (`@steamfield/decks/motion`) | `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph`, `Mark` |
+| Motion (`@steamfield/decks/motion`) | `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Morph`, `Mark`, `Camera`, `ShapeMorph` |
 | Layouts (`@steamfield/decks`) | `Center`, `Cover`, `Section`, `TwoCol`, `ImageSide` |
 | Navigation (`@steamfield/decks`) | `Toc`, `Link` |
 | Built in | `Notes`; fenced code blocks render through `CodeBlock` |
@@ -112,7 +112,7 @@ Kit components are not provided automatically. Re-export the ones you want, as `
 export { StoryCover } from "@steamfield/decks/kit";
 ```
 
-or import them in the slide.
+or import them in the slide. Either way, `ChartSteps` and `MotionTemplate` add their clicks to the slide's total.
 
 A capitalized JSX name that is not provided, exported from `components/`, or imported or declared in the slide is a compile error:
 

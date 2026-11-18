@@ -33,6 +33,8 @@ Kit components are not available in slides automatically. Import them in your st
 export { StoryCover } from "@steamfield/decks/kit";
 ```
 
+`ChartSteps` and `MotionTemplate` re-exported this way still add their clicks to the slide's total, as they do when the slide imports them (see [motion.md](motion.md#how-the-total-is-counted)).
+
 ## What the package exports
 
 | Export | What it is |
@@ -40,7 +42,9 @@ export { StoryCover } from "@steamfield/decks/kit";
 | `resolveTheme`, `installTheme`, `theme`, `ink`; types `Theme`, `Hue` | The theme. |
 | `StoryStage`, `StoryLayer`, `StoryCard`, `StoryCover`, `StoryLink`, `STAGE` | Story stage components and the stage's 1920x1080 box. |
 | `useStage`, `useScriptedDemo` | Hooks that drive a stage from clicks. |
-| `OpenChart`, `slideChartTheme`, `scaleChartTheme`, `slideChartAnimation`, `useFrameScale` | Charts. |
+| `OpenChart`, `ChartSteps`, `slideChartTheme`, `scaleChartTheme`, `slideChartAnimation`, `useFrameScale` | Charts, and a chart whose data changes per click. |
+| `MotionTemplate`, `useTemplateMotion`; types `MotionTemplateProps`, `MotionTemplateName`, `TemplateProps` | Ready-made motion graphics and the hook they are built on. See [motion-templates.md](motion-templates.md). |
+| `Scene3D` | A three.js scene on the click timeline, with a still poster everywhere else. |
 | `OdQrCard`, `OdByline`, `OdCoverHead`, `OdEyebrow`, `OdLogo` | A QR code card, a byline row, the cover's brand row, a small overline label, and the theme's brand mark. |
 | `InkLine`, `InkBars`, `InkTimeline`, `InkTimelineCursor`, `InkRule`, `InkNumber`, `InkChip`, `InkCardRect`, `InkPing`, `UnitGrid`, `Underline`, `CodeInk`, `Graph3D`; handle types `LineHandle`, `BarsHandle`, `GrowHandle`, `RuleHandle`, `UnitGridHandle`, data types `InkBarRow`, `InkStep`, `DrawOptions` | Marks for story stages: lines, bars, timelines, rules, figures that count up, chips, card outlines, focus rings, unit grids (waffles), underlines, SQL with ink, and a 3D graph (live WebGL on the slide, an SVG still everywhere else). A mark that grows itself exposes a handle the stage adds to its timeline through a ref. |
 | `useStageEntrance`, `useStageMap`, `entrance`, `fadeIn`, `fadeOutInPlace`, `riseIn`, `easeHeight`, `RISE`, `prefersReducedMotion`, `resolvePosition` | Lower-level stage helpers: a one-shot entrance, stage-to-overlay coordinates, gsap tween presets, the reduced-motion check, and timeline position resolution. |
@@ -371,6 +375,47 @@ import { series } from "../data/regions";
 ```
 
 `specs[0]` shows before click `at`, `specs[1]` on click `at`, and `specs[i]` on click `at + i - 1`; the last holds. Keep the mark type and the fields and types of the x, y, colour and key encodings the same across specs, or it throws naming the two specs; give each datum a stable key so its mark can be followed. An inline array is counted (`at + specs.length - 2`); specs imported from a data module need `clicks` in the frontmatter. One click forward or back animates; a jump, instant motion and every other view show the target spec directly. OpenChart itself snaps instead of animating during the entrance, under reduced motion, for marks it cannot tween (ticks), when scale types or transforms change, and past 500 SVG marks.
+
+## `Scene3D`
+
+A three.js scene whose camera and objects move on the slide's clicks. `examples/motion/components/SceneOrbit.tsx`, trimmed:
+
+```tsx
+import { Scene3D } from "@steamfield/decks/kit";
+import { duration, ease } from "@steamfield/decks/motion";
+import type { ComponentProps } from "react";
+
+const setup: ComponentProps<typeof Scene3D>["setup"] = ({ three, scene, camera }, tl, beat) => {
+  const cube = new three.Mesh(new three.BoxGeometry(1.4, 1.4, 1.4), new three.MeshStandardMaterial());
+  scene.add(cube, new three.AmbientLight("white", 1.2));
+  camera.position.z = 12;
+  beat(0);
+  tl.to(camera.position, { z: 8, duration: duration.base, ease: ease.settle });
+  beat(1);
+  return () => {
+    cube.geometry.dispose();
+    cube.material.dispose();
+  };
+};
+
+export function SceneOrbit() {
+  return (
+    <div style={{ height: 600 }}>
+      <Scene3D label="A cube seen up close" setup={setup} poster={<CubePoster />} />
+    </div>
+  );
+}
+```
+
+Props: `setup`, `poster` and `label`.
+
+- `setup({ three, scene, camera }, tl, beat)` builds the scene and its timeline. `three` is the three.js module, and `tl` and `beat` work as in `useTimeline` (see [motion.md](motion.md#usetimelinebuild-deps)): call `beat(0)` first, and the tweens between `beat(n - 1)` and `beat(n)` play on click `n`. The scene is drawn on every timeline update. Return a cleanup that disposes what you created; `Scene3D` disposes the renderer itself.
+- `poster` is what shows everywhere the scene does not run: the presenter window, the overview, print, an inactive slide, instant motion, and a browser without WebGL 2 (which also logs a warning naming the slide). Draw it as the scene looks at its last beat, usually an SVG.
+- `label` is the accessible name of the scene, which has the `img` role.
+- The scene fills its parent, so give the parent a size.
+- three.js loads the first time a scene goes live, and `window.__deck.settled()` waits for it.
+- `setup` is read once each time the scene goes live, so define it outside the component; a new function on each render does not rebuild the scene.
+- The steps inside `setup` are not counted, so the slide sets `clicks:` to the last beat.
 
 ## The stylesheet
 

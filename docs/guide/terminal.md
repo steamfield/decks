@@ -81,7 +81,7 @@ The kit ships no terminal skin. The pane reads `--deck-term-font`, `--deck-term-
 
 ## While presenting
 
-A click into the pane gives it the keyboard; `Escape` gives the keys back to the deck. Pressing next while a command still runs queues the next command until the prompt returns. Every audience window shows the same shell, and each command runs once whichever window advanced, the presenter included. The presenter's own preview of the slide shows the fallback. Reloading a window reattaches to the running shell and replays its recent output. If the shell exits or its connection drops, the pane goes back to its fallback with the reason.
+A click into the pane gives it the keyboard; `Escape` gives the keys back to the deck. Pressing next while a command still runs queues the next command until the prompt returns. Two quick presses run both commands in order, even on a `morphSteps` slide where the browser shows them as one change. A move that skips clicks in one step runs none of the commands it skips. Every audience window shows the same shell, and each command runs once whichever window advanced, the presenter included. The presenter's own preview of the slide shows the fallback. Reloading a window reattaches to the running shell and replays its recent output. If the shell exits or its connection drops, the pane goes back to its fallback with the reason.
 
 The dev server only starts shells when it listens on a loopback address, its hot-update socket shares the page's port, and Vite's socket token and Host checks are on. A deck's `vite` config that changes any of these turns the terminal off with a line in the dev log saying why. None of the checks can be turned off: anything that can reach the socket can type into the shell.
 
