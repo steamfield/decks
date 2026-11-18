@@ -7,6 +7,8 @@ on arrival) and `accent` picks a theme hue. Each template's source ships in the 
 `docs/motion-templates/<name>.tsx`; read one before writing custom motion with
 `useTimeline` (see [motion-graphics.md](motion-graphics.md)).
 
-## Single-beat templates: title-reveal, lower-third, stat-burst
+## Titles and numbers: title-reveal, lower-third, stat-burst, stat-compare, metric-grid
 
-## Stepped and full-canvas templates: list-cascade, quote-card, section-wipe
+## Text and structure: list-cascade, quote-card, section-wipe, agenda, end-card
+
+## Diagrams and narrative: timeline-sweep, process-flow, comparison-split, myth-fact, spotlight
