@@ -66,3 +66,32 @@ test("only the last detach forgets the watermark, so a sole reloaded window can 
   shell().data(marker);
   expect(shell().writes).toEqual(["sleep 3", "\r", "echo done", "\r"]);
 });
+
+test("two presses coalesced into one report run both commands in order", async () => {
+  const { sessions, shell, a } = setup();
+  const three = { ...pane, commands: [...pane.commands, "echo third"] };
+  sessions.attach(three, a.socket);
+  shell().data(marker);
+  const report = (click: number, seq: number) =>
+    sessions.position(three.id, click, false, a.socket, { seq, started: 1, origin: "a" });
+  report(0, 1);
+  // Two presses publish seq 2 and 3; a coalesced transition presents only the second.
+  report(2, 3);
+  await vi.advanceTimersByTimeAsync(600);
+  shell().data(marker);
+  await vi.advanceTimersByTimeAsync(600);
+  expect(shell().writes).toEqual(["sleep 3", "\r", "echo done", "\r"]);
+});
+
+test("a jump of two clicks in one press runs nothing", async () => {
+  const { sessions, shell, a } = setup();
+  const three = { ...pane, commands: [...pane.commands, "echo third"] };
+  sessions.attach(three, a.socket);
+  shell().data(marker);
+  const report = (click: number, seq: number) =>
+    sessions.position(three.id, click, false, a.socket, { seq, started: 1, origin: "a" });
+  report(0, 1);
+  report(2, 2);
+  await vi.advanceTimersByTimeAsync(600);
+  expect(shell().writes).toEqual([]);
+});
