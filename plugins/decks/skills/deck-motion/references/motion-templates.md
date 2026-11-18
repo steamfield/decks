@@ -11,6 +11,14 @@ on arrival) and `accent` picks a theme hue. Each template's source ships in the 
 
 ## Text and structure: list-cascade, quote-card, section-wipe, agenda, end-card
 
+| Template | When it fits | Example |
+| --- | --- | --- |
+| `list-cascade` | Walk through up to six `items` one click at a time. Each new item draws a marker and the previous one dims. | `<MotionTemplate template="list-cascade" items={["Read the shift notes", "Trace the missed handoff"]} />` |
+| `quote-card` | Pause on someone's words. The `quote` appears word by word, followed by its `source`. | `<MotionTemplate template="quote-card" quote="We kept two copies of the same log." source="Shift lead, demo interview" />` |
+| `section-wipe` | Introduce a new chapter with a full-canvas wipe, its `number` as text and its `title`. | `<MotionTemplate template="section-wipe" number="02" title="Where the handoff breaks" />` |
+| `agenda` | Reorient the audience between sections. Give it up to seven `items` and a one-based `current` section. | `<MotionTemplate template="agenda" items={["Field notes", "Handoff gaps", "Trial run"]} current={2} />` |
+| `end-card` | Close with a `title` and an optional `link` that the audience can follow. | `<MotionTemplate template="end-card" title="Take the checklist to your next shift." link="https://example.org/checklist" />` |
+
 ## Diagrams and narrative: timeline-sweep, process-flow, comparison-split, myth-fact, spotlight
 
 ## Images and identity: device-mockup, photo-reveal, logo-reveal

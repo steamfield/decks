@@ -1,0 +1,29 @@
+.card {
+  margin: auto 0;
+  display: grid;
+  justify-items: start;
+  gap: 0.65em;
+  color: var(--od-text);
+  font-family: var(--od-font-sans);
+}
+.card h1 {
+  margin: 0;
+  max-width: 19ch;
+  text-wrap: balance;
+}
+.rule {
+  height: 0.1em;
+  width: 4em;
+  margin: 0;
+  transform-origin: left;
+}
+.card a {
+  max-width: 100%;
+  color: var(--od-text-secondary);
+  font-family: var(--od-font-mono);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.card a:is(:hover, :focus-visible) {
+  text-decoration: underline;
+}
