@@ -15,10 +15,14 @@ import { gsap } from "./index";
 
 export async function setupMotion(
   Subject: ComponentType,
-  options: { click?: number; context?: RenderContext; error?: boolean } = {},
+  options: { click?: number; context?: RenderContext; error?: boolean; instant?: boolean } = {},
 ) {
   const previousMotion = document.documentElement.getAttribute("data-deck-motion");
-  window.history.replaceState(null, "", `/#/1${options.click ? `?clicks=${options.click}` : ""}`);
+  window.history.replaceState(
+    null,
+    "",
+    `/${options.instant ? "?motion=instant" : ""}#/1${options.click ? `?clicks=${options.click}` : ""}`,
+  );
   function Content() {
     const slide = useSlide();
     const deck = useDeck();
