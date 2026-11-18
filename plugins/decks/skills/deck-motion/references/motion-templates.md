@@ -38,6 +38,7 @@ Install the kit theme in the deck’s `setup.ts` so the graphics can read its hu
 | `comparison-split` | Introduce two alternatives in turn. Give both `left` and `right` a `title` and one to four `points`. | `<MotionTemplate template="comparison-split" left={{ title: "Paper", points: ["Buy at the kiosk"] }} right={{ title: "Mobile", points: ["Book from home"] }} />` |
 | `myth-fact` | Let the audience consider a claim before you correct it. Supply the two sentences in `myth` and `fact`. | `<MotionTemplate template="myth-fact" myth="The tide sets the departure time." fact="The ramp adjusts to the tide." />` |
 | `spotlight` | Point out a detail in an image. Supply `src`, `alt`, a short `label` and the point’s `x` and `y` as fractions from the image’s top-left corner. | `<MotionTemplate template="spotlight" src="field.svg" alt="Six paths meeting at a buoy" x={0.54} y={0.5} label="Harbour entrance" />` |
+
 ## Images and identity: device-mockup, photo-reveal, logo-reveal
 
 | Template | When it fits | Props | Example |
@@ -53,3 +54,7 @@ Install the kit theme in the deck’s `setup.ts` so the graphics can read its hu
 | `icon-array` | Show a share of a group. Give it a `total` of 1–100 people, the number `filled`, and a `label` explaining the share. | `<MotionTemplate template="icon-array" total={16} filled={4} label="One seat in four goes to an apprentice." />` |
 | `team-grid` | Introduce the people responsible for the work. Supply 2–6 `people` with a `name`, `role`, and optional portrait `src`. Initials stand in for a portrait. | `<MotionTemplate template="team-grid" people={[{ name: "Ada Reed", role: "Workshop lead", src: "./ada-reed.svg" }, { name: "Mina Park", role: "Apprentice mentor" }]} />` |
 | `venn-overlap` | Name what two or three groups share. Use short labels for `sets` and their `overlap` so each fits inside its region. | `<MotionTemplate template="venn-overlap" sets={["Design", "Fieldwork", "Training"]} overlap="Pilot" />` |
+
+## Clicks
+
+Most templates take one click, at `at`; with `at` 0 the entrance plays on arrival and adds no click. `comparison-split` and `myth-fact` take two, `at` and `at + 1`. `list-cascade`, `timeline-sweep` and `process-flow` take one per item, starting at `at`. The deck counts these when `template` is a literal string and the list is a literal array, whether the slide imports `MotionTemplate` or a `components/` file re-exports it by name. Set frontmatter `clicks` when the list comes from a data module or the template sits inside a deck component.

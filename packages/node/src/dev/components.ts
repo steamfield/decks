@@ -6,6 +6,15 @@ import { stepNames } from "../mdx/clicks";
 import { DeckError } from "./errors";
 import { PUBLIC_SPECIFIERS } from "./specifiers";
 
+// Step components (counted for clicks) come from motion, and ChartSteps and MotionTemplate
+// from the kit; a deck may re-export either under its own name.
+const stepModules = new Set([
+  "@react-decks/motion",
+  PUBLIC_SPECIFIERS.motion,
+  "@react-decks/kit",
+  "@steamfield/decks/kit",
+]);
+
 export async function componentsModule(dir: string) {
   const files = (await glob("components/*.tsx", { cwd: dir })).sort();
   const components = new Map<string, { file: string; value: string }>();
@@ -46,8 +55,7 @@ export async function componentsModule(dir: string) {
         motionNames.delete(name);
         const imported = entry.importName.name;
         if (
-          (entry.moduleRequest?.value === "@react-decks/motion" ||
-            entry.moduleRequest?.value === PUBLIC_SPECIFIERS.motion) &&
+          stepModules.has(entry.moduleRequest?.value ?? "") &&
           imported &&
           stepNames.has(imported)
         )

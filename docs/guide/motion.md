@@ -19,6 +19,9 @@ When a slide's frontmatter has no `clicks`, the total is read from the MDX sourc
 | `Steps` with `from` and `k` children (JSX elements, or one list with `k` items) | `from + k - 1` |
 | A fenced code block with `k` highlight steps and `at=<n>` | `at + k - 1` (see [code-blocks.md](code-blocks.md)) |
 | A magic-move fence | `at` plus each version's highlight steps (at least 1 each), minus 1 (see [code-blocks.md](code-blocks.md)) |
+| `Camera` with a literal `stops` array, `ShapeMorph` with a literal `paths` array | `at + length - 2` |
+| `ChartSteps` from the kit with a literal `specs` array | `at + specs.length - 2` (see [kit.md](kit.md#chartsteps)) |
+| `MotionTemplate` from the kit with a literal `template` | `at` (default 0) plus the template's clicks, minus 1 (see [motion-templates.md](motion-templates.md#clicks)) |
 
 So this slide has two clicks with no `clicks:` line:
 
@@ -34,7 +37,7 @@ The count is static. It reads the source and never runs it, which sets these rul
 - No spread attributes on a counted element (`<Step {...props}>`).
 - No counted element inside a JavaScript expression (`{show && <Step at={1} />}`, a `.map()`).
 - Children of `Steps` must be JSX elements or a single markdown list.
-- A motion component counts under another name when a file in `components/` re-exports it from `@steamfield/decks/motion` (`export { Step as Reveal } from "@steamfield/decks/motion"`), or when the slide imports it from there.
+- A motion component counts under another name when a file in `components/` re-exports it from `@steamfield/decks/motion` (`export { Step as Reveal } from "@steamfield/decks/motion"`), or when the slide imports it from there. The kit's `ChartSteps` and `MotionTemplate` count the same way when a `components/` file re-exports them from `@steamfield/decks/kit` (`export { ChartSteps } from "@steamfield/decks/kit"`), or when the slide imports them from there.
 - A deck component that only shares a name with a motion component (`components/Step.tsx`) is not counted.
 
 Steps inside a deck component are not seen, and neither is a component that paces itself from `useSlide().clicks` or `useTimeline`. Such a slide sets the total itself:
@@ -456,5 +459,7 @@ A component that animates outside gsap and CSS (a canvas loop, a chart library) 
 ```tsx
 import { registerSettleProbe } from "@steamfield/decks";
 
-useEffect(() => registerSettleProbe(() => busy.current), []);
+useEffect(() => registerSettleProbe(() => busy.current, "route animation"), []);
 ```
+
+The second argument is an optional label. `window.__deck.busy()` returns what is holding `settled()` back right now, as a list of strings: `"loading fonts"` while fonts load, and each busy probe's label (or its function's name). A capture that gives up waiting can print it to say why. `window.__deck.preload(slide)` loads the code for a slide (1-based) and the slides either side of it, and resolves when they have loaded, so a capture can arrive at a slide without waiting on its module.

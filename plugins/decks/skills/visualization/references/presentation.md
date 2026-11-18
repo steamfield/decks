@@ -18,7 +18,7 @@ Use `ChartSteps` when the speaker can explain one change per click. Import it fr
 
 Keep the mark type and the fields and types of the x, y, color and key encodings the same across specs. Give each datum a stable identity so the audience can follow its mark. Keep a common quantitative domain when bar lengths need to be comparable.
 
-An inline array such as `specs={[first, second, third]}` contributes `at + specs.length - 2` to the slide's maximum click. For an imported or computed array, set `clicks` in the slide frontmatter. That value covers every step on the slide.
+An inline array such as `specs={[first, second, third]}` contributes `at + specs.length - 2` to the slide's maximum click, whether the slide imports `ChartSteps` or a `components/` file re-exports it by name. For an imported or computed array, or a `ChartSteps` inside a deck component, set `clicks` in the slide frontmatter. That value covers every step on the slide.
 
 One click forward or back on the live slide requests OpenChart’s update animation. Bars, lines and points support it. Some marks, including ticks, always snap. A jump, instant motion, presenter, preview, overview and print show the target immediately. OpenChart also snaps during an entrance, under reduced motion, or when scale types or transforms change. For SVG, its default limit is 500 marks in either layout. Canvas points have a higher default, and an authored `animation.update.maxMarks` overrides the cap. Switching to reduced motion during a running tween can let it finish. Subsequent steps respect the preference.
 

@@ -23,7 +23,7 @@ Only `title` is required. An unknown key is an error that lists the known ones. 
 | `info` | `string` | none | One line about the deck. It becomes the page's `description` and the text of a shared link's preview. |
 | `url` | `string` (a URL) | none | Where the built deck is published. Adds `og:url`, and with `public/og.png` or `og.jpg` in the deck an absolute `og:image` for link previews. |
 | `canvas` | `{ width: number; height: number }` | `{ width: 1920, height: 1080 }` | The design canvas in pixels. Both must be positive. |
-| `transition` | `string` | none (slides fade) | Default slide transition: `cut`, `fade`, `push`, `zoom`, or a name your CSS defines. Must not be empty. |
+| `transition` | `string` | none (slides fade) | Default slide transition: `cut`, `fade`, `push`, `zoom`, `rise`, `cover`, `reveal`, `wipe`, `iris`, `blur`, `flip`, `cube`, or a name your CSS defines. Must not be empty. |
 | `htmlAttrs` | `Record<string, string>` | none | Attributes set on `<html>`. Each key must be a valid HTML attribute name. |
 | `credit` | `boolean` | `true` | The "Created with Decks" credit on every slide. `false` removes it. |
 | `vite` | Vite `UserConfig` | none | Merged into the framework's Vite config. `vite.plugins` are added after the framework's. |

@@ -209,6 +209,9 @@ export function createSessions(options: {
               (stamp.started === s.stamp.started && stamp.origin < s.stamp.origin))))
       )
         return;
+      // One press publishes one sync stamp, so a report whose click moved as far as its stamp
+      // did is consecutive presses a coalesced view transition presented at once, not a jump.
+      const presses = s.stamp && s.stamp.origin === stamp.origin ? stamp.seq - s.stamp.seq : 1;
       s.stamp = stamp;
       const previous = s.click;
       s.click = click;
@@ -223,22 +226,32 @@ export function createSessions(options: {
           return;
         }
       }
-      if (
-        click <= 0 ||
-        s.pane.commands[click - 1] === undefined ||
-        s.ran.has(click) ||
-        s.queued.includes(click) ||
-        !s.pane.commands
-          .slice(0, click - 1)
-          .every((_, index) => s.ran.has(index + 1) || s.queued.includes(index + 1))
-      ) {
-        broadcast(s, TERM_STATE, state(s));
-        return;
+      const steps =
+        click - previous > 1 && click - previous === presses
+          ? Array.from({ length: click - previous }, (_, i) => previous + i + 1)
+          : [click];
+      // `run` broadcasts the state it leaves; anything after it still needs one.
+      let unsent = true;
+      for (const step of steps) {
+        if (
+          step <= 0 ||
+          s.pane.commands[step - 1] === undefined ||
+          s.ran.has(step) ||
+          s.queued.includes(step) ||
+          !s.pane.commands
+            .slice(0, step - 1)
+            .every((_, index) => s.ran.has(index + 1) || s.queued.includes(index + 1))
+        )
+          continue;
+        if (s.busy || !s.ready || s.queued.length > 0) {
+          s.queued.push(step);
+          unsent = true;
+        } else {
+          run(s, step);
+          unsent = false;
+        }
       }
-      if (s.busy || !s.ready || s.queued.length > 0) {
-        s.queued.push(click);
-        broadcast(s, TERM_STATE, state(s));
-      } else run(s, click);
+      if (unsent) broadcast(s, TERM_STATE, state(s));
     },
     input(id: string, data: string, client: TermClient) {
       const s = find(id, client);
