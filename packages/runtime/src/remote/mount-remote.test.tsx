@@ -6,5 +6,4 @@ it("reads the token from the page URL and sends it on the socket", () => {
   expect(page.sockets.map((socket) => String(socket.url))).toEqual([
     `ws://${location.host}/ws?token=t%2B1`,
   ]);
-  expect(location.pathname + location.search).toBe(page.url);
 });

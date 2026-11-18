@@ -141,7 +141,9 @@ it("film preload waits for the hidden neighbour of the destination", async () =>
   onTestFinished(() => act(unmount));
   const result: string[] = [];
   const ready = window.__deck?.preload(2).then(() => result.push("ready"));
-  await act(async () => {});
+  await act(async () => {
+    await window.__deck?.preload(1);
+  });
   expect(result).toEqual([]);
   neighbour.resolve({ default: () => <h1>Third slide</h1> });
   await ready;

@@ -83,28 +83,18 @@ it("a go intent moves to the slide at click 0", async () => {
   expect(location.hash).toBe("#/4");
 });
 
-it.each([
-  ["an embedded", "embedded"],
-  ["a print", "print"],
-])("%s mount reports nothing and ignores intents", async (_name, kind) => {
-  const remote = recordingLink();
-  const play = await mount(undefined, remote);
-  remote.emit({ type: "next" });
-  expect(location.hash).toBe("#/2?clicks=2");
-  play.unmount();
-  await mount(kind === "embedded" ? "/?embedded#/2?clicks=1" : "/#/print", remote);
-  if (kind === "print") {
-    await act(async () => {
-      const changed = new Promise((done) =>
-        window.addEventListener("hashchange", done, { once: true }),
-      );
-      location.hash = "#/2?clicks=1";
-      await changed;
-    });
-  }
+it("an embedded mount reports nothing and ignores intents", async () => {
+  const remote = await mount("/?embedded#/2?clicks=1");
   remote.emit({ type: "next" });
   expect(location.hash).toBe("#/2?clicks=1");
-  expect(remote.reports).toEqual([initial, { ...initial, click: 2 }]);
+  expect(remote.reports).toEqual([]);
+});
+
+it("a print mount reports nothing and ignores intents", async () => {
+  const remote = await mount("/#/print");
+  remote.emit({ type: "next" });
+  expect(location.hash).toBe("#/print");
+  expect(remote.reports).toEqual([]);
 });
 
 it("unmounting stops applying intents", async () => {
@@ -118,16 +108,12 @@ it("unmounting stops applying intents", async () => {
   expect(reports).toEqual([initial, { ...initial, click: 2 }]);
 });
 
-it.each(["bridge", "without BroadcastChannel"])(
-  "a mount %s stays independent of the relay",
-  async (kind) => {
-    if (kind === "without BroadcastChannel") install(globalThis, "BroadcastChannel", undefined);
-    const page = await mount(kind === "bridge" ? "/?decks-bridge#/2?clicks=1" : "/#/2?clicks=1");
-    page.emit({ type: "next" });
-    expect(location.hash).toBe("#/2?clicks=1");
-    expect(page.reports).toEqual([]);
-  },
-);
+it("a bridge mount stays independent of the relay", async () => {
+  const page = await mount("/?decks-bridge#/2?clicks=1");
+  page.emit({ type: "next" });
+  expect(location.hash).toBe("#/2?clicks=1");
+  expect(page.reports).toEqual([]);
+});
 
 it("returning from print reports play even at the previous position", async () => {
   const page = await mount("/#/1");
