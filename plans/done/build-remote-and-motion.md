@@ -1,5 +1,7 @@
 # Build: remote-and-motion
 
+Status: done 2026-11-18. Merged to main; final gate 3,455 tests and 24 tarball checks green. Nothing pushed.
+
 ## Context
 
 Two threads from 2026-11-17.
