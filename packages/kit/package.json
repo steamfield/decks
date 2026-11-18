@@ -14,6 +14,7 @@
     "@react-decks/motion": "workspace:*",
     "@react-decks/runtime": "workspace:*",
     "@types/d3-scale": "4.0.9",
+    "@types/three": "0.185.0",
     "@xterm/xterm": "6.0.0",
     "d3-scale": "4.0.2",
     "gsap": "3.15.1",
