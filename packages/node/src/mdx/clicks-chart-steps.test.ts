@@ -24,3 +24,9 @@ it("throws the set-clicks error for a non-literal specs without frontmatter clic
 it("frontmatter clicks replaces the count", () => {
   expect(readSlide(`---\nclicks: 5\n---\n${dynamic}`, file).clicks).toBe(5);
 });
+
+it("counts the last specs prop when the prop is repeated, as MDX applies it", () => {
+  expect(
+    readSlide(`${imported}\n\n<CS at={2} specs={[only]} specs={[a, b, c, d]} />`, file).clicks,
+  ).toBe(4);
+});

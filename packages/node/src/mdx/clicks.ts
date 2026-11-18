@@ -1,3 +1,4 @@
+import { MOTION_TEMPLATE_BEATS, MOTION_TEMPLATE_NAMES } from "@react-decks/core";
 import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { type PluggableList, unified } from "unified";
@@ -78,6 +79,36 @@ function integerAttribute(node: ClickNode, name: string, file: string): number {
     file,
     node.position?.start,
   );
+}
+
+/**
+ * The length of the array literal passed as `prop`, or a `DeckError` built by `problem` from the
+ * prop's source text when it is anything else (an identifier, a spread). MDX applies JSX props in
+ * source order, so a repeated prop counts its last occurrence.
+ */
+function arrayLiteralLength(
+  node: ClickNode,
+  prop: string,
+  file: string,
+  problem: (source: string) => string,
+): number {
+  const attribute = node.attributes?.findLast(
+    (attribute) => attribute.type === "mdxJsxAttribute" && attribute.name === prop,
+  );
+  const value = attribute?.type === "mdxJsxAttribute" ? attribute.value : undefined;
+  const statement =
+    typeof value === "object" && value !== null ? value.data?.estree?.body[0] : undefined;
+  const array = statement?.type === "ExpressionStatement" ? statement.expression : undefined;
+  if (
+    array?.type !== "ArrayExpression" ||
+    array.elements.some((item) => item?.type === "SpreadElement")
+  )
+    throw new DeckError(
+      problem(typeof value === "object" && value !== null ? value.value : String(value)),
+      file,
+      node.position?.start,
+    );
+  return array.elements.length;
 }
 
 function rejectExpressionSteps(
@@ -280,70 +311,50 @@ export function countClicks(
                 "at",
                 file,
               );
-        let beats = name === "comparison-split" || name === "myth-fact" ? 2 : 1;
-        const list =
-          name === "timeline-sweep"
-            ? "events"
-            : name === "process-flow"
-              ? "steps"
-              : name === "list-cascade"
-                ? "items"
-                : undefined;
-        if (list) {
-          const array = expressionOf(list);
-          if (
-            array?.type !== "ArrayExpression" ||
-            array.elements.some((item) => item?.type === "SpreadElement")
-          )
-            throw new DeckError(
-              `<${node.name}> ${list} must be an array literal of known length. To compute it, set clicks: in the frontmatter.`,
-              file,
-              node.position?.start,
-            );
-          beats = array.elements.length;
-        }
-        total = Math.max(total, at + beats - 1);
-      } else if (motion === "ChartSteps") {
-        const at = integerAttribute(node, "at", file);
-        const attr = node.attributes?.find(
-          (a) => a.type === "mdxJsxAttribute" && a.name === "specs",
-        );
-        const value = attr?.type === "mdxJsxAttribute" ? attr.value : undefined;
-        const statement =
-          typeof value === "object" && value !== null ? value.data?.estree?.body[0] : undefined;
-        const array = statement?.type === "ExpressionStatement" ? statement.expression : undefined;
-        if (
-          array?.type !== "ArrayExpression" ||
-          array.elements.some((item) => item?.type === "SpreadElement")
-        )
+        const known = MOTION_TEMPLATE_NAMES.find((candidate) => candidate === name);
+        if (!known)
           throw new DeckError(
-            `<${node.name} specs={${typeof value === "object" && value !== null ? value.value : String(value)}}>: specs must be a literal array. To compute it, set clicks: in the frontmatter.`,
+            `<${node.name} template=${JSON.stringify(name)}>: unknown template. Valid templates: ${MOTION_TEMPLATE_NAMES.join(", ")}.`,
             file,
             node.position?.start,
           );
-        total = Math.max(total, at + array.elements.length - 2);
+        const rule = MOTION_TEMPLATE_BEATS[known];
+        const beats =
+          rule.kind === "one"
+            ? 1
+            : rule.kind === "two"
+              ? 2
+              : arrayLiteralLength(
+                  node,
+                  rule.prop,
+                  file,
+                  () =>
+                    `<${node.name}> ${rule.prop} must be an array literal of known length. To compute it, set clicks: in the frontmatter.`,
+                );
+        total = Math.max(total, at + beats - 1);
+      } else if (motion === "ChartSteps") {
+        const at = integerAttribute(node, "at", file);
+        const specs = arrayLiteralLength(
+          node,
+          "specs",
+          file,
+          (source) =>
+            `<${node.name} specs={${source}}>: specs must be a literal array. To compute it, set clicks: in the frontmatter.`,
+        );
+        total = Math.max(total, at + specs - 2);
       } else if (motion === "Camera" || motion === "ShapeMorph") {
         // MDX applies JSX props in source order, so the last occurrence wins.
         const attributes = node.attributes?.toReversed();
         const at = integerAttribute({ ...node, attributes }, "at", file);
         const prop = motion === "Camera" ? "stops" : "paths";
-        const attribute = attributes?.find(
-          (attribute) => attribute.type === "mdxJsxAttribute" && attribute.name === prop,
-        );
-        const value = attribute?.type === "mdxJsxAttribute" ? attribute.value : undefined;
-        const statement =
-          typeof value === "object" && value !== null ? value.data?.estree?.body[0] : undefined;
-        const array = statement?.type === "ExpressionStatement" ? statement.expression : undefined;
-        if (
-          array?.type !== "ArrayExpression" ||
-          array.elements.some((item) => item?.type === "SpreadElement")
-        )
-          throw new DeckError(
+        const length = arrayLiteralLength(
+          node,
+          prop,
+          file,
+          () =>
             `<${node.name}> ${prop} must be an array literal of known length. To compute it, set clicks: in the frontmatter.`,
-            file,
-            node.position?.start,
-          );
-        total = Math.max(total, at + array.elements.length - 2);
+        );
+        total = Math.max(total, at + length - 2);
       } else {
         const at = integerAttribute(node, "at", file);
         const hasUntil = node.attributes?.some(
