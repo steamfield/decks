@@ -1,0 +1,29 @@
+.figure {
+  margin: auto 0;
+  font-family: var(--od-font-sans);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 0.5em;
+}
+.figure h1 {
+  margin: 0;
+  color: var(--od-text);
+  line-height: 1.08;
+}
+.figure p {
+  margin: 0;
+  color: var(--od-text-secondary);
+}
+.tile {
+  border-top: 0.12em solid currentColor;
+  background: var(--od-surface);
+  padding: 0.75em;
+}
+.tile h1 {
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.tile p {
+  margin-top: 0.5em;
+}
