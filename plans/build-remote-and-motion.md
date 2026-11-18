@@ -38,8 +38,8 @@ push unless Riley says so. Scaffold SHA: `9031e0f`.
 | 1 remote presenter | 1A remote server, 1B remote client | scaffold | `bun run decks dev basic --remote`, open the printed URL on an iPad, step the deck from it |
 | 2 agent tooling | 1C film, 2C inspect | phase 1 | `bun run decks film motion <push slide> 0`; `bun run decks inspect motion` |
 | 3 data and transitions | 1D ChartSteps, 1E transitions | phase 1 | `bun run decks dev motion`, slides 35-43 |
-| 4 motion graphics library | 2A Camera and ShapeMorph, 2B motion graphics (Astra) | phase 2 | slides 44-48, filmed |
-| 5 motion templates | 2E templates A, 2F templates B (both Astra) | phase 4 | `bun run decks dev motion`, slides 49-54, each filmed |
+| 4 motion graphics library | 2A Camera and ShapeMorph, 2B motion graphics (Astra) | phase 2 | slides 45-49, filmed |
+| 5 motion templates | 2E templates A, 2F templates B (both Astra) | phase 4 | `bun run decks dev motion`, slides 50-55, each filmed |
 | 6 recipes | 2D recipes | phases 3 and 5 | `bun run decks dev recipes` |
 
 Phases 2 and 3 run together after phase 1 (four lanes). The unit names below (1A-2D) are
@@ -66,11 +66,11 @@ the file name is the one assigned here. Names are prefixed by kind so `slideNo()
 | File | Unit |
 | --- | --- |
 | `35-chart-steps.mdx` | 1D |
-| `36-transition-rise.mdx` … `43-transition-cube.mdx` (rise, cover, reveal, wipe, iris, blur, flip, cube) | 1E |
-| `44-camera.mdx`, `45-shape-morph.mdx` | 2A |
-| `46-kinetic-type.mdx`, `47-path-follow.mdx`, `48-scene-3d.mdx` | 2B |
-| `49-title-reveal.mdx` … `51-stat-burst.mdx` | 2E |
-| `52-list-cascade.mdx` … `54-section-wipe.mdx` | 2F |
+| `36-transition-rise.mdx` … `43-transition-cube.mdx` (rise, cover, reveal, wipe, iris, blur, flip, cube), `44-transition-end.mdx` | 1E |
+| `45-camera.mdx`, `46-shape-morph.mdx` | 2A |
+| `47-kinetic-type.mdx`, `48-path-follow.mdx`, `49-scene-3d.mdx` | 2B |
+| `50-title-reveal.mdx` … `52-stat-burst.mdx` | 2E |
+| `53-list-cascade.mdx` … `55-section-wipe.mdx` | 2F |
 
 Skill files, one owner each per phase: 1C `building-a-deck/references/workflow.md` (a film
 section) and `deck-motion/SKILL.md` ("Verify motion as a viewer"); 1D
@@ -307,8 +307,8 @@ never a raw colour. Every template:
 Phase 5 scaffold (mine): `packages/kit/src/motion-templates/` with `motion-template.tsx` (the
 dispatcher over a registry), `registry.ts`, one stub file per template, the `MotionTemplate`
 and `MotionTemplateName` exports, `MotionTemplate` in `stepNames`, the `build.mjs` copy into
-`docs/motion-templates/`, and slide filenames `49-title-reveal.mdx` to
-`54-section-wipe.mdx`. 2E owns the first three template files and slides, 2F the last three;
+`docs/motion-templates/`, and slide filenames `50-title-reveal.mdx` to
+`55-section-wipe.mdx`. 2E owns the first three template files and slides, 2F the last three;
 each lane adds its templates' rows to `deck-motion/references/motion-graphics.md` under a
 heading the scaffold creates for it.
 
