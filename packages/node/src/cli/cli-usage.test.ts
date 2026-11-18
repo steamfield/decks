@@ -1,4 +1,6 @@
+import { mkdir, readdir } from "node:fs/promises";
 import { createServer } from "node:net";
+import { join } from "node:path";
 import { TERM_ATTACH, TERM_GONE } from "@react-decks/core";
 import { expect, it, onTestFinished, vi } from "vitest";
 import { cli, fixture } from "../dev/server.test-support";
@@ -160,4 +162,36 @@ it("names a missing argument after the deck and points at help", async () => {
   expect(process.output().stderr).toBe(
     "decks shot: missing <slide>. Run decks shot --help for usage.\n",
   );
+});
+
+it("rejects --remote and --remote-port on decks build with the only-on-dev message", async () => {
+  const { dir } = await fixture(onTestFinished);
+  for (const args of [["--remote"], ["--remote-port", "3040"]]) {
+    const process = cli(dir, ["build", ".", ...args]);
+    expect((await process.exit)[0]).toBe(1);
+    expect(process.output().stderr).toBe("decks build: --remote is only available on decks dev.\n");
+  }
+});
+
+it("keeps the LAN presenter disabled when a port accompanies --no-remote", async () => {
+  const { dir } = await fixture(onTestFinished);
+  const child = cli(dir, ["dev", ".", "--no-remote", "--port", "0", "--remote-port", "0"]);
+  await child.url();
+  expect(child.output().stdout).not.toContain("Remote presenter:");
+});
+
+it.each(["SIGINT", "SIGTERM"] as const)("deletes the remote page after %s", async (signal) => {
+  const { dir } = await fixture(onTestFinished);
+  const temp = join(dir, "temp");
+  await mkdir(temp);
+  vi.stubEnv("TMPDIR", temp);
+  onTestFinished(() => {
+    vi.unstubAllEnvs();
+  });
+  const child = cli(dir, ["dev", ".", "--remote", "--port", "0", "--remote-port", "0"]);
+  await child.url();
+  expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toHaveLength(1);
+  child.child.kill(signal);
+  await child.exit;
+  expect((await readdir(temp)).filter((name) => name.startsWith("deck-remote-"))).toEqual([]);
 });
