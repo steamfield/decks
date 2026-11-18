@@ -1,0 +1,13 @@
+---
+title: Chart steps
+clicks: 3
+---
+
+import { ChartSteps } from "@steamfield/decks/kit";
+import { chartSpecs } from "../data/chart-steps";
+
+<h1>Chart steps</h1>
+<p>Tickets by service desk · Demo data</p>
+<div style={{ flex: 1, minHeight: 0 }}>
+  <ChartSteps specs={chartSpecs} at={1} />
+</div>

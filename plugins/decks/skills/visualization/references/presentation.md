@@ -12,6 +12,16 @@ The slide theme's design-size defaults are title 30, subtitle 22, body 21, small
 
 Use the shared `slideChartAnimation`, not raw timing numbers per spec. The wrapper enables chart animation only for eligible live slide arrivals at click 0; other contexts, instant motion and later-click arrivals settle. Do not wrap it in a second decorative entrance.
 
+## ChartSteps
+
+Use `ChartSteps` when the speaker can explain one change per click. Import it from `@steamfield/decks/kit` and pass an ordered array of chart or layer specs. With `<ChartSteps specs={series} at={2} />`, clicks 0 and 1 show `series[0]`, click 2 shows `series[1]`, and click 3 shows `series[2]`. The last spec stays visible on later clicks.
+
+Keep the mark type and the fields and types of the x, y, color and key encodings the same across specs. Give each datum a stable identity so the audience can follow its mark. Keep a common quantitative domain when bar lengths need to be comparable.
+
+An inline array such as `specs={[first, second, third]}` contributes `at + specs.length - 2` to the slide's maximum click. For an imported or computed array, set `clicks` in the slide frontmatter. That value covers every step on the slide.
+
+One click forward or back on the live slide requests OpenChart’s update animation. Bars, lines and points support it. Some marks, including ticks, always snap. A jump, instant motion, presenter, preview, overview and print show the target immediately. OpenChart also snaps during an entrance, under reduced motion, or when scale types or transforms change. For SVG, its default limit is 500 marks in either layout. Canvas points have a higher default, and an authored `animation.update.maxMarks` overrides the cap. Switching to reduced motion during a running tween can let it finish. Subsequent steps respect the preference.
+
 ## Theme and color
 
 Start from `scaleChartTheme(slideChartTheme, scale)`. Spread nested overrides so you preserve fonts, spacing and chrome. Colors must be resolved JavaScript strings from `ink()` or `theme()`, never CSS variables or hex literals in specs. Set categorical colors through the theme, with stable assignments across related charts.
