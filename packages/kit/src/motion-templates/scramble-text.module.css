@@ -1,0 +1,29 @@
+.figure {
+  margin: auto 0;
+  font-family: var(--od-font-sans);
+  display: grid;
+  justify-items: start;
+  gap: 0.4em;
+}
+/* The scrambled glyphs are wider or narrower than the word, so the word's own width is held by
+   an invisible copy and the moving text sits over it. */
+.figure h2 {
+  position: relative;
+  margin: 0;
+  font-size: 2.6em;
+  font-weight: 800;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.figure h2::after {
+  content: attr(aria-label);
+  visibility: hidden;
+}
+.figure h2 span {
+  position: absolute;
+  inset: 0;
+}
+.figure figcaption {
+  margin: 0;
+  color: var(--od-text-secondary);
+}

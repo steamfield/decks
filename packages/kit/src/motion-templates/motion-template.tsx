@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import { Agenda } from "./agenda";
+import { BarBoard } from "./bar-board";
+import { CommandLine } from "./command-line";
 import { ComparisonSplit } from "./comparison-split";
 import { DeviceMockup } from "./device-mockup";
+import { DonutBuild } from "./donut-build";
 import { EndCard } from "./end-card";
 import { IconArray } from "./icon-array";
 import { ListCascade } from "./list-cascade";
@@ -13,6 +16,7 @@ import { MythFact } from "./myth-fact";
 import { PhotoReveal } from "./photo-reveal";
 import { ProcessFlow } from "./process-flow";
 import { QuoteCard } from "./quote-card";
+import { ScrambleText } from "./scramble-text";
 import { SectionWipe } from "./section-wipe";
 import { Spotlight } from "./spotlight";
 import { StatBurst } from "./stat-burst";
@@ -21,6 +25,7 @@ import { TeamGrid } from "./team-grid";
 import { TimelineSweep } from "./timeline-sweep";
 import { TitleReveal } from "./title-reveal";
 import { VennOverlap } from "./venn-overlap";
+import { WordSwap } from "./word-swap";
 
 /**
  * A ready-made motion graphic: pick a template, give it the words, and it takes colour, type
@@ -73,5 +78,15 @@ export function MotionTemplate(props: MotionTemplateProps): ReactNode {
       return <TeamGrid key={key} {...props} />;
     case "venn-overlap":
       return <VennOverlap key={key} {...props} />;
+    case "word-swap":
+      return <WordSwap key={key} {...props} />;
+    case "bar-board":
+      return <BarBoard key={key} {...props} />;
+    case "command-line":
+      return <CommandLine key={key} {...props} />;
+    case "scramble-text":
+      return <ScrambleText key={key} {...props} />;
+    case "donut-build":
+      return <DonutBuild key={key} {...props} />;
   }
 }

@@ -1,0 +1,58 @@
+.swap {
+  margin: auto 0;
+  display: grid;
+  justify-items: start;
+  font-family: var(--od-font-sans);
+  font-size: 3.2em;
+  font-weight: 850;
+  line-height: 1.02;
+  color: var(--od-text);
+  word-spacing: 0.08em;
+}
+/* The lead cannot wrap, so the shared rise also closes its tracking. */
+.leads {
+  display: grid;
+  justify-items: start;
+  white-space: nowrap;
+}
+.lead {
+  display: block;
+}
+/* SplitText's word and mask spans must be boxes: a transform does nothing to inline text. */
+.lead span {
+  display: inline-block;
+  transform-origin: left bottom;
+}
+/* A mask is the word's line box, which is tighter than its glyphs. The padding gives every
+   ascender, descender and overhang room, and the negative margin keeps the layout unchanged. */
+.lead > * {
+  padding: 0.22em 0.08em;
+  margin: -0.22em -0.08em;
+}
+.slot {
+  display: grid;
+  justify-items: start;
+  margin-top: 0.12em;
+  white-space: nowrap;
+}
+/* The colour is its own box behind the letters, so it can wipe without cropping them. */
+.plate {
+  position: relative;
+  grid-area: 1 / 1;
+  padding: 0.02em 0.16em 0.09em 0.12em;
+}
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--od-muted);
+}
+.word {
+  position: relative;
+  display: inline-block;
+}
+.onAccent {
+  color: var(--od-canvas);
+}
+.word span {
+  display: inline-block;
+}
