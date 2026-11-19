@@ -41,7 +41,7 @@ CustomEase.create(ease.enter, "0.16,1,0.3,1");
 CustomEase.create(ease.exit, "0.7,0,0.84,0");
 CustomEase.create(ease.settle, "0.32,0.72,0,1");
 CustomEase.create(ease.draw, "0.65,0,0.35,1");
-CustomEase.create(ease.snap, "M0,0 C0.06,0.6 0.12,0.9 0.3,0.97 0.5,1.004 0.72,1 1,1");
+CustomEase.create(ease.snap, "M0,0 C0.06,0.6 0.12,0.9 0.3,0.97 0.5,1 0.72,1 1,1");
 CustomEase.create(ease.punch, "M0,0 C0.1,0.7 0.18,1.13 0.4,1.06 0.58,0.99 0.8,1 1,1");
 CustomEase.create(ease.leave, "M0,0 C0.3,-0.06 0.62,0.18 1,1");
 CustomEase.create(ease.slam, "0.76,0,0.24,1");

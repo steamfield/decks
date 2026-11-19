@@ -10,7 +10,10 @@ describe("motion tokens", () => {
       expect(root).toMatch(new RegExp(`--deck-dur-${name}: ${seconds * 1000}ms`));
     }
     expect(root).toContain(`--deck-stagger: ${stagger * 1000}ms`);
-    for (const [name, registered] of Object.entries(ease)) {
+    // The role curves (snap, punch, leave, slam) are JavaScript-only: three are multi-segment
+    // curves CSS cannot express. packages/motion/src/tokens.test.ts checks them.
+    for (const name of ["enter", "exit", "settle", "draw"] as const) {
+      const registered = ease[name];
       const curve = root.match(new RegExp(`--deck-ease-${name}: cubic-bezier\\(([^)]+)\\)`))?.[1];
       if (!curve) throw new Error(`Missing CSS curve ${name}`);
       const expected = gsap.parseEase(curve);

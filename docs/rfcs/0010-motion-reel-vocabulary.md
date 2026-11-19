@@ -54,7 +54,7 @@ the repo, which is why it ships with an opt-out.
 
 | Token | Curve (from `examples/motion-reel/components/ease.ts`) | Role |
 | --- | --- | --- |
-| `ease.snap` | `M0,0 C0.06,0.6 0.12,0.9 0.3,0.97 0.5,1.004 0.72,1 1,1` | Type arriving, and any tween that encodes a value: fast attack, long soft settle |
+| `ease.snap` | `M0,0 C0.06,0.6 0.12,0.9 0.3,0.97 0.5,1 0.72,1 1,1` | Type arriving, and any tween that encodes a value: fast attack, long soft settle |
 | `ease.punch` | `M0,0 C0.1,0.7 0.18,1.13 0.4,1.06 0.58,0.99 0.8,1 1,1` | An accent that encodes nothing: a plate, a marker, a label's scale. Overshoots about 13% once |
 | `ease.leave` | `M0,0 C0.3,-0.06 0.62,0.18 1,1` | Something leaving: a small gather, then away |
 | `ease.slam` | `0.76,0,0.24,1` | A plate or band crossing the canvas |
