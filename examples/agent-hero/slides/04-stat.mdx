@@ -1,0 +1,22 @@
+---
+title: A build now takes 4 minutes, down from 14.
+---
+
+import { AFTER, BEFORE, STAT_HEADLINE, WEEKS } from "../data/build-times";
+
+<h1 className="hero-head">{STAT_HEADLINE}</h1>
+
+<div className="hero-stat">
+  <figure className="is-then">
+    <strong>{BEFORE}<small>min</small></strong>
+    <figcaption>Median build, week 1</figcaption>
+  </figure>
+  <figure className="is-now">
+    <strong>{AFTER}<small>min</small></strong>
+    <figcaption>Median build, week {WEEKS.length}</figcaption>
+  </figure>
+</div>
+
+<Notes>
+Week 1 against the latest week. The weekly medians are in data/build-times.csv.
+</Notes>

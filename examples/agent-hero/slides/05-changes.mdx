@@ -1,0 +1,21 @@
+---
+title: 3 changes took 10 minutes off every build.
+---
+
+import { CHANGES, CHANGES_HEADLINE } from "../data/changes";
+
+<h1 className="hero-head">{CHANGES_HEADLINE}</h1>
+
+<ol className="hero-changes">
+  {CHANGES.map(({ label, week, saved }) => (
+    <li key={label}>
+      {label}
+      <span>week {week}</span>
+      <strong>−{saved} min</strong>
+    </li>
+  ))}
+</ol>
+
+<Notes>
+In the order they shipped. The minutes saved are the drop in the weekly median around each change.
+</Notes>

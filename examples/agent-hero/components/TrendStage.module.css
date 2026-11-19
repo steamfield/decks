@@ -1,0 +1,18 @@
+/* The chart spans the frame under the one-line headline and stops above the card. */
+.chart {
+  position: absolute;
+  left: calc(5.7 * var(--lw));
+  right: calc(5.7 * var(--lw));
+  top: calc(17 * var(--sh));
+  height: calc(52 * var(--sh));
+}
+.source {
+  position: absolute;
+  right: calc(5.7 * var(--lw));
+  bottom: calc(12 * var(--sh));
+  margin: 0;
+  max-width: calc(40 * var(--lw));
+  text-align: right;
+  font-size: calc(1 * var(--sw) * var(--deck-text-scale, 1));
+  color: var(--od-text-muted);
+}

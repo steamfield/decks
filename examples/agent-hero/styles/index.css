@@ -1,0 +1,204 @@
+@import "@steamfield/decks/kit/styles.css";
+
+/* Broadcast identity from examples/motion-reel: ink-black canvas, paper-white Inter at display
+   weights, one acid signal. Colours come from theme.json. The kit stylesheet is imported for the
+   story stage on 03-trend, and ships Inter. */
+:root {
+  color-scheme: dark;
+}
+/* The footer in layers/above.tsx sits in the band the credit would use, so the kit (the story
+   frame on 03-trend) keeps its content above it the same way. */
+[data-deck-slide] {
+  --deck-credit-space: 64px;
+}
+
+/* Workaround from examples/guide-demos, pending a framework follow-up: motion templates render
+   tiny in a deck that imports the kit stylesheet. The kit's base.css pins padding and font size
+   with !important, so the frame has to as well. Values follow examples/motion-reel. */
+[data-deck-slide]:not(:has(.od-slide.is-story)) {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  overflow: clip;
+  background: var(--od-canvas);
+  font-family: var(--od-font-sans);
+  font-weight: 500;
+  /* biome-ignore lint/complexity/noImportantStyles: overrides the kit's !important frame (see above) */
+  padding: 88px 112px !important;
+  /* biome-ignore lint/complexity/noImportantStyles: overrides the kit's !important frame (see above) */
+  font-size: calc(48px * var(--deck-text-scale, 1)) !important;
+  /* biome-ignore lint/complexity/noImportantStyles: overrides the kit's !important frame (see above) */
+  line-height: 1.2 !important;
+  -webkit-font-smoothing: antialiased;
+}
+:where([data-deck-slide]) :where(h1, h2, p, ol, ul) {
+  margin: 0;
+}
+/* Template headlines are h2s sized in em; the kit's compat.css pins h2 to 1.875rem. */
+[data-deck-slide] h2 {
+  font-size: 2.3em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+}
+
+/* The footer band, from layers/above.tsx: the team and the occasion, on every slide. */
+.hero-footer {
+  position: absolute;
+  inset: auto 112px 0;
+  height: var(--deck-credit-space);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: var(--od-hairline, 1px) solid var(--od-border);
+  font-family: var(--od-font-mono);
+  font-size: calc(22px * var(--deck-text-scale, 1));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--od-text-muted);
+}
+
+/* A plain slide headline: the size a title-reveal headline plays at, without the motion. */
+[data-deck-slide] .hero-head {
+  margin: 0;
+  font-size: 1.5em;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+/* The cover's title-reveal at display size. */
+.hero-cover {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: 1.4em;
+}
+
+/* word-swap sizes its phrase at 3.2em; this plays it at 190px, as examples/motion-reel does. */
+.hero-swap {
+  font-size: calc(190px / 3.2 * var(--deck-text-scale, 1));
+}
+.hero-swap h2 {
+  letter-spacing: -0.055em;
+}
+
+/* 08-saved: the kit stylesheet's compat rule indents every slide `li` (margin-left 1.1em),
+   which pushes bar-board's rows past its label column. Its rows are list items, so reset them. */
+.hero-board {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+[data-deck-slide] .hero-board li {
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+}
+
+/* 05-changes: one row per change, in the order they shipped. */
+.hero-changes {
+  margin: auto 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+[data-deck-slide] .hero-changes li {
+  display: grid;
+  grid-template-columns: 1fr 8ch 6ch;
+  align-items: baseline;
+  gap: 48px;
+  padding-block: 36px;
+  margin: 0;
+  padding-inline: 0;
+  border-top: var(--od-hairline, 1px) solid var(--od-border);
+  font-size: 1.25em;
+  line-height: 1.2;
+}
+.hero-changes span {
+  font-family: var(--od-font-mono);
+  font-size: 0.6em;
+  color: var(--od-text-muted);
+}
+.hero-changes strong {
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--od-signal);
+}
+
+/* 04-stat: the two medians, side by side, static. */
+.hero-stat {
+  margin: auto 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 120px;
+}
+.hero-stat figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hero-stat strong {
+  font-size: 6em;
+  font-weight: 850;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+.hero-stat strong small {
+  margin-left: 0.15em;
+  font-size: 0.3em;
+  letter-spacing: -0.02em;
+}
+.hero-stat figcaption {
+  font-family: var(--od-font-mono);
+  font-size: 0.6em;
+  color: var(--od-text-muted);
+}
+.hero-stat .is-now strong {
+  color: var(--od-signal);
+}
+.hero-stat .is-then strong {
+  color: var(--od-text-muted);
+}
+
+/* 06-close-crowded and 09-close: the closing panel. Its height is fixed, so copy that does not
+   fit is cut off at the panel's edge (06 shows that mistake; 09 is the fitted version). */
+.hero-close {
+  margin: auto 0;
+  box-sizing: border-box;
+  height: 720px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  padding: 72px 88px;
+  background: var(--od-surface);
+  border-left: 12px solid var(--od-signal);
+}
+[data-deck-slide] .hero-close ul {
+  padding-left: 1em;
+  list-style: square;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  font-size: 1.05em;
+  line-height: 1.25;
+}
+[data-deck-slide] .hero-close li p {
+  margin-top: 8px;
+  font-size: 0.7em;
+  color: var(--od-text-secondary);
+}
+[data-deck-slide] .hero-close li {
+  margin: 0;
+  padding-left: 0.3em;
+  line-height: 1.25;
+}
+.hero-close li::marker {
+  color: var(--od-signal);
+}

@@ -1,0 +1,20 @@
+---
+title: Cached deps saved 5 of the 10 minutes.
+clicks: 1
+---
+
+import { MotionTemplate } from "@steamfield/decks/kit";
+import { SAVED_HEADLINE, SAVED_ROWS, SAVED_SOURCE } from "../data/changes";
+
+<h1 className="hero-head">{SAVED_HEADLINE}</h1>
+
+<div className="hero-board">
+  <MotionTemplate template="bar-board" accent="amber" rows={SAVED_ROWS} suffix=" min" source={SAVED_SOURCE} />
+</div>
+
+<Notes>
+Minutes saved per build by each change, largest first.
+
+[click]
+The cache alone saved half of it.
+</Notes>

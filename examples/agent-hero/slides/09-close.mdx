@@ -1,0 +1,22 @@
+---
+title: Keep the build at 4 minutes.
+---
+
+import { CLOSE_HEADLINE } from "../data/build-times";
+
+<div className="hero-close">
+  <h1 className="hero-head">{CLOSE_HEADLINE}</h1>
+  <ul>
+    <li>Pin new dependencies so the cache stays warm.</li>
+    <li>Give slow tests their own shard.</li>
+    <li>Build on the slim base image.</li>
+  </ul>
+</div>
+
+<Notes>
+A new version changes the lockfile, and a changed lockfile rebuilds the cache from scratch on the next run.
+The runner splits tests by file, so one slow file holds up the whole shard it lands in.
+Each package the image adds is downloaded again on every runner that starts a job.
+Watch the weekly median on the build dashboard: it updates every Monday from the CI logs, and a rise there usually traces back to one recent change.
+Ask in #platform before you add a step to the pipeline: we can tell you what it will cost and where it fits.
+</Notes>
