@@ -8,7 +8,7 @@
 //   Done. What the agent says.            the lead word, then the rest
 //
 // The site renders it as the landing's terminal (src/lib/transcript-fence.ts). For the hero's
-// session (`agent-hero`), src/content-drift.test.ts keeps each fence equal to its turn in
+// session (`agent-hero`), src/data/guide-transcripts.test.ts keeps each fence equal to its turn in
 // src/data/agent-session.ts.
 
 export type TranscriptRef = { deck: string; turn: string };

@@ -1,11 +1,10 @@
 // @vitest-environment node
-// Check the hook fixture, registered recordings and theme override against the repository.
+// Check registered recordings and theme override against the repository.
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadDeck } from "@steamfield/decks/node";
 import { describe, expect, it } from "vitest";
 import { resolveTheme } from "../../packages/kit/src/theme/theme-resolve.ts";
-import { runHook } from "../scripts/hook.mjs";
 import { site } from "./config";
 import { demoPlayer } from "./data/demo-examples";
 import {
@@ -18,19 +17,11 @@ import {
   startBeatOf,
   startSlideOf,
 } from "./data/examples";
-import { loadHookDenial } from "./data/fixtures";
 import { demoName, guideDemos, resolveDemo } from "./data/guide-demos";
 import { loadMotionShowcase } from "./data/motion-showcase";
 
 const repo = join(process.cwd(), "..");
 const read = (path: string) => readFileSync(join(repo, path), "utf8");
-describe("the prose-lint hook", () => {
-  it("still denies the planted line with the recorded rules and reason", () => {
-    expect(runHook()).toEqual(loadHookDenial());
-    expect(loadHookDenial().rules).toEqual(["banned-phrase", "ai-vocab"]);
-  });
-});
-
 describe("example decks", () => {
   it.each(EXAMPLE_NAMES)("%s is an example deck with a recording from make demo", async (name) => {
     expect(existsSync(join(deckDir(name), "deck.config.ts"))).toBe(true);

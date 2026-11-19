@@ -1,7 +1,6 @@
-// Build-time loaders for the recorded fixtures the landing page quotes. The run
-// comes from a real stream-json log (scripts/excerpt-run.mjs); the hook denial
-// is the package's hook answering a planted line (scripts/capture-hook.mjs).
-// src/content-drift.test.ts checks both.
+// Build-time loader for the recorded runs the landing page quotes. A run comes
+// from a real stream-json log (scripts/excerpt-run.mjs); src/content-drift.test.ts
+// checks it.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -19,23 +18,12 @@ export type AgentRun = {
   steps: RunStep[];
 };
 
-export type HookDenial = {
-  hook: string;
-  tool: string;
-  file: string;
-  line: string;
-  decision: string;
-  rules: string[];
-  reason: string[];
-};
-
 // Builds and tests run from site/.
 function fixture<T>(name: string): T {
   return JSON.parse(readFileSync(join(process.cwd(), "fixtures", name), "utf8")) as T;
 }
 
 export const loadRun = (name: string) => fixture<AgentRun>(name);
-export const loadHookDenial = () => fixture<HookDenial>("hook-denial.json");
 
 /** "87 turns, 8.3 minutes, $3.17": the run's own figures, rounded for reading. */
 export function runFigures(run: Pick<AgentRun, "turns" | "durationMs" | "costUsd">) {
