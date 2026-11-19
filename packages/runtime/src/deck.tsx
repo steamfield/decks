@@ -1,7 +1,7 @@
 import { type ReactElement, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useDeckAttention } from "./embed/deck-attention";
 import { DeckContext, PresentationContext, useDeckContext, useDeckSelector } from "./hooks";
-import { motionMode, subscribeMotionMode } from "./motion-mode";
+import { deckMotionMode, subscribeMotionMode } from "./motion-mode";
 import { useDeckKeys } from "./navigation/deck-keys";
 import { GoToDialog } from "./navigation/go-to-dialog";
 import { createSlideModules, type DeckSource } from "./source";
@@ -22,7 +22,7 @@ function DeckView(): ReactElement {
     html.setAttribute("data-deck-view", view);
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     function updateMotion() {
-      html.setAttribute("data-deck-motion", motionMode(view, reduced?.matches === true));
+      html.setAttribute("data-deck-motion", deckMotionMode(view, reduced?.matches === true));
     }
     updateMotion();
     reduced?.addEventListener("change", updateMotion);

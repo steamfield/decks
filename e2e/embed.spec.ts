@@ -245,6 +245,8 @@ test("Messages from another sender and malformed commands do not navigate or ack
       { type: "other", cmd: "next" },
       { type: "decks:cmd", cmd: "other" },
       { type: "decks:cmd", cmd: "go", slide: "2", beat: 0 },
+      { type: "decks:cmd", cmd: "go", slide: 3, beat: 0, direction: "sideways" },
+      { type: "decks:cmd", cmd: "show", slide: Number.POSITIVE_INFINITY, beat: 0 },
     ])
       window.sendEmbed(data);
   });

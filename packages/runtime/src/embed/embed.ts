@@ -77,6 +77,9 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
       return;
     const direction = navDirection(previous, nav);
     requestId = undefined;
+    // A move the show did not command (a viewer's key, a URL change) is not part of it; release
+    // before React commits it so its entrances play live.
+    setInstantMove(false);
     report(direction === "none" ? null : direction, nav);
   });
   const unsubscribeCaptions = subscribeCaptions(() => {
