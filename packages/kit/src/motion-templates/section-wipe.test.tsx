@@ -9,7 +9,8 @@ const props = {
   number: "02",
   title: "Where the handoff breaks",
 } as const;
-const part = () => screen.getByText(props.title);
+// The title is split into masked words, so it is found by the label SplitText gives it.
+const part = () => screen.getByLabelText(props.title);
 beforeEach(() => installTheme(resolveTheme()));
 
 it("section-wipe hides its parts before click at and shows the finished pose from click at", async () => {

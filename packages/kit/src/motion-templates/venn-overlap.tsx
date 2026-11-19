@@ -52,14 +52,14 @@ export function VennOverlap({
     tl.fromTo(
       regions.current.children,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
     );
     const spread = sets.length === 3 ? 70 : 40;
     Array.from(regions.current.children).forEach((region, i) => {
       tl.fromTo(
         region,
         { xPercent: [-spread, spread, 0][i], yPercent: i === 2 ? 8 : 0 },
-        { xPercent: 0, yPercent: 0, duration: duration.slow, ease: ease.enter },
+        { xPercent: 0, yPercent: 0, duration: duration.slow, ease: ease.snap },
         duration.quick,
       );
     });
@@ -67,7 +67,7 @@ export function VennOverlap({
     tl.fromTo(
       shared.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.base, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.base, ease: ease.snap },
       duration.slow,
     );
   });

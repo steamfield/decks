@@ -49,12 +49,12 @@ export function QuoteCard({ quote, source, at = 0, accent = "cyan" }: TemplatePr
     tl.fromTo(
       marks.current.children,
       { strokeDashoffset: 1 },
-      { strokeDashoffset: 0, duration: duration.base, stagger, ease: ease.enter },
+      { strokeDashoffset: 0, duration: duration.base, stagger, ease: ease.snap },
     );
     tl.fromTo(
       heading.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
       duration.quick,
     );
     tl.fromTo(
@@ -65,14 +65,14 @@ export function QuoteCard({ quote, source, at = 0, accent = "cyan" }: TemplatePr
         opacity: 1,
         duration: duration.base,
         stagger: Math.min(stagger, duration.base / Math.max(1, words.length - 1)),
-        ease: ease.enter,
+        ease: ease.snap,
       },
       duration.quick,
     );
     tl.fromTo(
       credit.current,
       { autoAlpha: 0, x: "-0.5em" },
-      { autoAlpha: 1, x: 0, duration: duration.base, ease: ease.enter },
+      { autoAlpha: 1, x: 0, duration: duration.base, ease: ease.snap },
       `>-=${duration.quick}`,
     );
   });

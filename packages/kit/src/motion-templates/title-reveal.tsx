@@ -1,7 +1,8 @@
-import { duration, ease, SplitText, stagger } from "@react-decks/motion";
+import { duration, ease, SplitText } from "@react-decks/motion";
 import { useLayoutEffect, useRef } from "react";
 import { ink } from "../theme/theme";
 import type { TemplateProps } from "./motion-template-props";
+import { riseWords } from "./rise-words";
 import styles from "./title-reveal.module.css";
 import { useTemplateMotion } from "./use-template-motion";
 
@@ -32,42 +33,39 @@ export function TitleReveal({
   const layout = (
     <figure className={styles.figure} ref={figure} style={{ color: ink(accent, 3) }}>
       <h2 ref={headline}>{title}</h2>
-      <div className={styles.rule} ref={rule} aria-hidden="true" />
       {subtitle && (
-        <figcaption className="od-body" ref={caption}>
-          {subtitle}
-        </figcaption>
+        <>
+          <div className={styles.rule} ref={rule} aria-hidden="true" />
+          <figcaption className="od-body" ref={caption}>
+            {subtitle}
+          </figcaption>
+        </>
       )}
     </figure>
   );
   useTemplateMotion(at, (tl) => {
-    // Beat 1: words rise through their masks. The rule reaches across as the last word lands.
-    const parts = words.current?.words ?? [];
-    const spread = Math.min(duration.base, stagger * Math.max(0, parts.length - 1));
+    // Beat 1: words rise through their masks. With a subtitle, the rule reaches across before
+    // the last word lands and the subtitle follows it up.
     tl.fromTo(
       figure.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
       0,
     );
-    tl.fromTo(
-      parts,
-      { yPercent: 110 },
-      { yPercent: 0, stagger: { amount: spread }, duration: duration.base, ease: ease.enter },
-      0,
-    );
-    tl.fromTo(
-      rule.current,
-      { scaleX: 0 },
-      { scaleX: 1, duration: duration.base, ease: ease.enter },
-      spread + duration.quick,
-    );
+    const last = riseWords(tl, headline.current, words.current?.words ?? [], 0);
+    if (rule.current)
+      tl.fromTo(
+        rule.current,
+        { scaleX: 0 },
+        { scaleX: 1, duration: duration.base, ease: ease.punch },
+        last + duration.quick,
+      );
     if (caption.current)
       tl.fromTo(
         caption.current,
         { yPercent: 30, opacity: 0 },
-        { yPercent: 0, opacity: 1, duration: duration.base, ease: ease.enter },
-        spread + duration.base,
+        { yPercent: 0, opacity: 1, duration: duration.base, ease: ease.snap },
+        last + duration.quick,
       );
   });
   return layout;

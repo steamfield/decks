@@ -37,18 +37,19 @@ export function Agenda({ items, current, at = 0, accent = "cyan" }: TemplateProp
   );
   useTemplateMotion(at, (tl) => {
     if (!list.current) return;
-    // The route appears in order; the current section steps out of the column.
+    // The route appears in order; the current section steps out of the column as it appears.
     const rows = list.current.children;
+    const each = Math.min(stagger, duration.base / Math.max(1, rows.length - 1));
     tl.fromTo(
       rows,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.base, stagger, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.base, stagger: each, ease: ease.snap },
     );
     tl.fromTo(
       rows.item(current - 1),
       { x: 0 },
-      { x: "0.75em", duration: duration.slow, ease: ease.enter },
-      stagger * (current - 1),
+      { x: "0.75em", duration: duration.slow, ease: ease.punch },
+      each * (current - 1),
     );
   });
   return layout;

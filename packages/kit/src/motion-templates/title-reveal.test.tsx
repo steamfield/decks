@@ -1,6 +1,7 @@
+import { CustomEase, duration, ease, gsap, rise } from "@react-decks/motion";
 import { isInaccessible, screen } from "@testing-library/react";
 import { useState } from "react";
-import { beforeEach, expect, it } from "vitest";
+import { beforeEach, expect, it, onTestFinished } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
 import { MotionTemplate } from "./motion-template";
@@ -92,4 +93,32 @@ it("reads the split title once as the whole sentence and leaves it whole after u
     expect(isInaccessible(screen.getByText(word))).toBe(true);
   view.unmount();
   expect(heading.innerHTML).toBe(content.title);
+});
+
+it("draws the accent rule only under a subtitle", async () => {
+  const bare = await setup(() => <MotionTemplate template="title-reveal" title={content.title} />, {
+    context: "print",
+  });
+  expect(screen.getByRole("figure").children).toHaveLength(1);
+  bare.unmount();
+  await show(0, { context: "print" });
+  expect(screen.getByRole("figure").children).toHaveLength(3);
+});
+
+it("a deck that re-registers ease.snap in its setup.ts moves the title on its own curve", async () => {
+  const kitSnap = CustomEase.get(ease.snap);
+  onTestFinished(() => {
+    gsap.registerEase(ease.snap, kitSnap);
+  });
+  const midpoint = async () => {
+    const view = await show(0);
+    await tick(duration.slow / 2);
+    const y = gsap.getProperty(screen.getByText("The"), "yPercent");
+    view.unmount();
+    return y;
+  };
+  expect(await midpoint()).toBeCloseTo(rise.clear * (1 - kitSnap(0.5)), 3);
+  // The opt-out the motion guide documents: the plain curve under the role's name.
+  const plain = CustomEase.create(ease.snap, "0.16,1,0.3,1");
+  expect(await midpoint()).toBeCloseTo(rise.clear * (1 - plain(0.5)), 3);
 });

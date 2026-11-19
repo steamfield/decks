@@ -37,20 +37,20 @@ export function ListCascade({ items, at = 0, accent = "cyan" }: TemplateProps<"l
       tl.fromTo(
         row,
         { autoAlpha: 0, x: "-0.45em" },
-        { autoAlpha: 1, x: 0, duration: duration.slow, ease: ease.enter },
+        { autoAlpha: 1, x: 0, duration: duration.slow, ease: ease.snap },
         start,
       );
       tl.fromTo(
         row.firstElementChild,
         { scaleX: 0 },
-        { scaleX: 1, duration: duration.base, ease: ease.enter },
+        { scaleX: 1, duration: duration.base, ease: ease.punch },
         start,
       );
       if (row.previousElementSibling)
         tl.fromTo(
           row.previousElementSibling.children,
           { opacity: 1 },
-          { opacity: 0.64, immediateRender: false, duration: duration.base, ease: ease.enter },
+          { opacity: 0.64, immediateRender: false, duration: duration.base, ease: ease.leave },
           start,
         );
     };

@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef } from "react";
 import { ink } from "../theme/theme";
 import styles from "./end-card.module.css";
 import type { TemplateProps } from "./motion-template-props";
+import { riseWords } from "./rise-words";
 import { useTemplateMotion } from "./use-template-motion";
 
 export function EndCard({ title, link, at = 0, accent = "cyan" }: TemplateProps<"end-card">) {
@@ -11,6 +12,7 @@ export function EndCard({ title, link, at = 0, accent = "cyan" }: TemplateProps<
   const heading = useRef<HTMLHeadingElement>(null);
   const rule = useRef<HTMLSpanElement>(null);
   const address = useRef<HTMLAnchorElement>(null);
+  const words = useRef<SplitText | null>(null);
   const split = useRef<SplitText | null>(null);
   const layout = (
     <div className={styles.card}>
@@ -29,22 +31,34 @@ export function EndCard({ title, link, at = 0, accent = "cyan" }: TemplateProps<
     </div>
   );
   useLayoutEffect(() => {
+    if (!heading.current) return;
+    const parts = SplitText.create(heading.current, { type: "words", mask: "words", tag: "span" });
+    words.current = parts;
+    return () => {
+      parts.revert();
+      words.current = null;
+    };
+  }, []);
+  useLayoutEffect(() => {
     if (!address.current) return;
     const chars = SplitText.create(address.current, { type: "chars", tag: "span" });
     split.current = chars;
     return () => chars.revert();
   }, []);
   useTemplateMotion(at, (tl) => {
-    // The title rises, the rule extends beneath it, then the address types on.
+    // The title's words rise through their masks, the rule punches out beneath them before the
+    // last word lands, then the address types on.
     tl.fromTo(
       heading.current,
-      { autoAlpha: 0, yPercent: 22 },
-      { autoAlpha: 1, yPercent: 0, duration: duration.slow, ease: ease.enter },
+      { autoAlpha: 0 },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
+      0,
     );
+    riseWords(tl, heading.current, words.current?.words ?? [], 0);
     tl.fromTo(
       rule.current,
       { scaleX: 0 },
-      { scaleX: 1, duration: duration.base, ease: ease.enter },
+      { scaleX: 1, duration: duration.base, ease: ease.punch },
       duration.quick,
     );
     if (address.current && split.current) {
@@ -52,7 +66,7 @@ export function EndCard({ title, link, at = 0, accent = "cyan" }: TemplateProps<
       tl.fromTo(
         address.current,
         { autoAlpha: 0 },
-        { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+        { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
         duration.base,
       );
       tl.fromTo(
@@ -62,7 +76,7 @@ export function EndCard({ title, link, at = 0, accent = "cyan" }: TemplateProps<
           opacity: 1,
           duration: stagger,
           stagger: Math.min(stagger, duration.slow / Math.max(1, chars.length - 1)),
-          ease: ease.enter,
+          ease: ease.snap,
         },
         duration.base,
       );

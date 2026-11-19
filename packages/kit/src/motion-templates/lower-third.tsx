@@ -32,31 +32,31 @@ export function LowerThird({ name, role, at = 0, accent = "cyan" }: TemplateProp
     tl.fromTo(
       figure.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
       0,
     );
     tl.fromTo(
       bar.current,
       { scaleX: 0 },
-      { scaleX: 1, duration: duration.base, ease: ease.enter },
+      { scaleX: 1, duration: duration.base, ease: ease.slam },
       0,
     );
     tl.fromTo(
       nameLine.current,
       { xPercent: -100 },
-      { xPercent: 0, duration: duration.slow, ease: ease.enter },
+      { xPercent: 0, duration: duration.slow, ease: ease.snap },
       duration.quick,
     );
     tl.fromTo(
       roleLine.current,
       { xPercent: -100 },
-      { xPercent: 0, duration: duration.slow, ease: ease.enter },
+      { xPercent: 0, duration: duration.slow, ease: ease.snap },
       duration.base,
     );
     tl.fromTo(
       bar.current,
       { scaleX: 1 },
-      { scaleX: 0.08, immediateRender: false, duration: duration.base, ease: ease.enter },
+      { scaleX: 0.08, immediateRender: false, duration: duration.base, ease: ease.snap },
       duration.base,
     );
   });

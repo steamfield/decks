@@ -111,20 +111,20 @@ function DeviceEntrance({ figure, at }: { figure: RefObject<HTMLElement | null>;
     tl.fromTo(
       card,
       { autoAlpha: 0, y: "0.75em" },
-      { autoAlpha: 1, y: "0em", duration: duration.slow, ease: ease.enter },
+      { autoAlpha: 1, y: "0em", duration: duration.slow, ease: ease.snap },
     );
     if (screen)
       tl.fromTo(
         screen,
         { opacity: 0 },
-        { opacity: 1, duration: duration.base, ease: ease.enter },
+        { opacity: 1, duration: duration.base, ease: ease.snap },
         duration.quick,
       );
     if (caption)
       tl.fromTo(
         caption,
         { opacity: 0, yPercent: 25 },
-        { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
+        { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.snap },
         duration.base,
       );
   });
