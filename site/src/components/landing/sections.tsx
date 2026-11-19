@@ -157,13 +157,16 @@ export function ExampleGallery({ examples }: { examples: Example[] }) {
             className="example-row"
           >
             {example.poster ? (
-              <img
-                src={`${example.poster.base}-640.webp`}
-                width={640}
-                height={360}
-                loading="lazy"
-                alt=""
-              />
+              <picture>
+                <source type="image/avif" srcSet={`${example.poster.base}-640.avif`} />
+                <img
+                  src={`${example.poster.base}-640.webp`}
+                  width={640}
+                  height={360}
+                  loading="lazy"
+                  alt=""
+                />
+              </picture>
             ) : (
               <span className="gallery-empty" />
             )}
