@@ -29,5 +29,4 @@ export const TEMPLATE_CLICKS = [
 /** The finding, built from the counts so the headline cannot drift from the bars. */
 export const ONE_CLICK_HEADLINE = `${oneClick.length} of ${TEMPLATES.length} take one click.`;
 
-export const TEMPLATE_CLICKS_SOURCE =
-  "Templates by clicks · core/src/motion-template-beats.ts";
+export const TEMPLATE_CLICKS_SOURCE = "Templates by clicks · core/src/motion-template-beats.ts";
