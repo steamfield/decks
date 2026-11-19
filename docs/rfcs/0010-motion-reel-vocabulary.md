@@ -1,6 +1,6 @@
 # RFC 0010: the motion-reel style as the kit's motion vocabulary
 
-Status: Draft. Revised after a product and UX review (2026-11-19); the decisions it changed
+Status: Done. Merged to main in b0bb6d2 (2026-11-19). Revised after a product and UX review; the decisions it changed
 are listed under "Review changes".
 
 ## Problem
