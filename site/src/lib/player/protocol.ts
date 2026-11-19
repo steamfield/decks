@@ -72,12 +72,51 @@ export function parseDeckMessage(data: unknown): DeckMessage | null {
   }
 }
 
+type Request = { requestId?: number };
+const tagged = ({ requestId }: Request) => (requestId === undefined ? {} : { requestId });
+
 export const command = {
-  next: (): Command => ({ type: "decks:cmd", cmd: "next" }),
-  prev: (): Command => ({ type: "decks:cmd", cmd: "prev" }),
-  nextSlide: (): Command => ({ type: "decks:cmd", cmd: "nextSlide" }),
-  prevSlide: (): Command => ({ type: "decks:cmd", cmd: "prevSlide" }),
-  go: (slide: number, beat = 0): Command => ({ type: "decks:cmd", cmd: "go", slide, beat }),
+  next: (request: Request = {}): Command => ({
+    type: "decks:cmd",
+    cmd: "next",
+    ...tagged(request),
+  }),
+  prev: (request: Request = {}): Command => ({
+    type: "decks:cmd",
+    cmd: "prev",
+    ...tagged(request),
+  }),
+  nextSlide: (request: Request = {}): Command => ({
+    type: "decks:cmd",
+    cmd: "nextSlide",
+    ...tagged(request),
+  }),
+  prevSlide: (request: Request = {}): Command => ({
+    type: "decks:cmd",
+    cmd: "prevSlide",
+    ...tagged(request),
+  }),
+  /** With `direction`, the transition plays that way whatever the slide order. */
+  go: (
+    slide: number,
+    beat = 0,
+    { direction, ...request }: Request & { direction?: "forward" | "backward" } = {},
+  ): Command => ({
+    type: "decks:cmd",
+    cmd: "go",
+    slide,
+    beat,
+    ...(direction ? { direction } : {}),
+    ...tagged(request),
+  }),
+  /** Puts the position on screen settled: no transition and no entrance motion. */
+  show: (slide: number, beat = 0, request: Request = {}): Command => ({
+    type: "decks:cmd",
+    cmd: "show",
+    slide,
+    beat,
+    ...tagged(request),
+  }),
 };
 
 /** True on the deck's last beat of its last slide: PLAY stops there. */
