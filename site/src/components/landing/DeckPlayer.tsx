@@ -12,6 +12,7 @@ import {
 import { track } from "../../lib/analytics";
 import { Events } from "../../lib/events";
 import {
+  DEMO_SIZES,
   draftLine,
   type Example,
   firstStorySlide,
@@ -139,12 +140,23 @@ function moved(example: Example, from: Position, message: Command): Position {
 }
 const equal = (a: Position, b: Position) => a.slide === b.slide && a.beat === b.beat;
 
+type Range = { first: number; last: number };
+const within = (range: Range | undefined, slide: number) =>
+  !range || (slide >= range.first && slide <= range.last);
+
+/** `moved`, held inside the player's slide range when it has one. */
+function movedOn(example: Example, range: Range | undefined, from: Position, message: Command) {
+  const to = moved(example, from, message);
+  return within(range, to.slide) ? to : from;
+}
+
 export function DeckPlayer({
   examples,
   initial = 0,
   autoplay = true,
   priority = false,
   gallery = false,
+  range,
   onSlide,
 }: {
   examples: Example[];
@@ -152,6 +164,11 @@ export function DeckPlayer({
   autoplay?: boolean;
   priority?: boolean;
   gallery?: boolean;
+  /**
+   * Stay inside these slides (a guide demo): steps, Play and the counter cover them only, there
+   * is no rail, and an autoplaying player replays the range once from its first step.
+   */
+  range?: Range;
   onSlide?: (slide: number) => void;
 }) {
   const [index, setIndex] = useState(initial);
@@ -228,11 +245,11 @@ export function DeckPlayer({
       openingHold.current = false;
       track(Events.beatStepped, { cmd: message.cmd });
       if (phaseRef.current !== "ready" && phaseRef.current !== "booting") boot(desired.current);
-      desired.current = moved(example, desired.current, message);
+      desired.current = movedOn(example, range, desired.current, message);
       refreshDesired((value) => value + 1);
       flush();
     },
-    [example, boot, flush],
+    [example, range, boot, flush],
   );
 
   const pause = useCallback(() => {
@@ -353,7 +370,9 @@ export function DeckPlayer({
           state.requestId !== flight.current
         )
           return;
-        if (flight.current === null) desired.current = { slide: state.slide, beat: state.beat };
+        // A key the deck handles itself (Space, End) can leave a demo's range; steer it back.
+        if (flight.current === null && within(range, state.slide))
+          desired.current = { slide: state.slide, beat: state.beat };
         flight.current = null;
         clearTimeout(navigationTimer.current);
       }
@@ -370,19 +389,24 @@ export function DeckPlayer({
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [example, step, send, flush]);
+  }, [example, range, step, send, flush]);
 
   useEffect(() => {
     if (!example || !playing || phase !== "ready" || !deck?.settled || flight.current !== null)
       return;
-    if (atEnd(deck)) {
+    const atLast = range ? deck.slide >= range.last && deck.beat >= deck.beats : atEnd(deck);
+    if (atLast && !(range && openingHold.current)) {
       setPlaying(false);
       return;
     }
     const timer = setTimeout(
       () => {
         openingHold.current = false;
-        desired.current = moved(example, desired.current, command.next());
+        // A demo starts on its finished last step, so its opening play is a replay.
+        desired.current =
+          range && atLast
+            ? { slide: range.first, beat: 0 }
+            : movedOn(example, range, desired.current, command.next());
         refreshDesired((value) => value + 1);
         flush();
       },
@@ -391,7 +415,7 @@ export function DeckPlayer({
         : dwellMs(mirrorCopy(deck, meta?.slideTitles ?? example.slideTitles)),
     );
     return () => clearTimeout(timer);
-  }, [playing, phase, deck, meta, example, flush]);
+  }, [playing, phase, deck, meta, example, range, flush]);
 
   useEffect(() => {
     const onVisibility = () => {
@@ -473,6 +497,7 @@ export function DeckPlayer({
   const steps = stepsOf(shown);
   const inputPosition = desired.current;
   const running = playing;
+  const ended = range ? shown.slide >= range.last && shown.beat >= shown.beats : atEnd(shown);
   const status = loading
     ? "Loading interactive deck…"
     : phase === "ready"
@@ -486,11 +511,13 @@ export function DeckPlayer({
     }
     track(Events.playerPlayed, { example: example.name });
     setPlaying(true);
-    if (phase === "ready" && atEnd(shown)) {
-      desired.current = { slide: firstStorySlide(example), beat: 0 };
+    // A demo starts at its last step, so Play before the deck answers replays too.
+    if (ended && (phase === "ready" || range)) {
+      desired.current = { slide: range ? range.first : firstStorySlide(example), beat: 0 };
       refreshDesired((value) => value + 1);
       flush();
-    } else if (phase === "failed" || phase === "poster") boot(desired.current);
+    }
+    if (phase === "failed" || phase === "poster") boot(desired.current);
   };
   const retry = () => {
     setPlaying(false);
@@ -578,12 +605,18 @@ export function DeckPlayer({
               <span className="sr-only">{status}</span>
             </span>
             <span className="counter">
-              <span aria-hidden="true">
-                Slide {shown.slide} · Step {shown.beat + 1} of {steps}
-              </span>
-              <span className="sr-only">
-                Slide {shown.slide} of {shown.slides}, step {shown.beat + 1} of {steps}
-              </span>
+              {range ? (
+                `${range.last > range.first ? `Slide ${shown.slide - range.first + 1} of ${range.last - range.first + 1} · ` : ""}Step ${shown.beat + 1} of ${steps}`
+              ) : (
+                <>
+                  <span aria-hidden="true">
+                    Slide {shown.slide} · Step {shown.beat + 1} of {steps}
+                  </span>
+                  <span className="sr-only">
+                    Slide {shown.slide} of {shown.slides}, step {shown.beat + 1} of {steps}
+                  </span>
+                </>
+              )}
             </span>
           </div>
           <div className="player-controls">
@@ -591,11 +624,14 @@ export function DeckPlayer({
               <Control
                 label="Step back"
                 icon="back"
-                disabled={equal(inputPosition, moved(example, inputPosition, command.prev()))}
+                disabled={equal(
+                  inputPosition,
+                  movedOn(example, range, inputPosition, command.prev()),
+                )}
                 onClick={() => step(command.prev())}
               />
               <Control
-                label={running ? "Pause" : phase === "ready" && atEnd(shown) ? "Replay" : "Play"}
+                label={running ? "Pause" : phase === "ready" && ended ? "Replay" : "Play"}
                 icon={running ? "pause" : "play"}
                 onClick={play}
                 primary
@@ -603,7 +639,10 @@ export function DeckPlayer({
               <Control
                 label="Step forward"
                 icon="next"
-                disabled={equal(inputPosition, moved(example, inputPosition, command.next()))}
+                disabled={equal(
+                  inputPosition,
+                  movedOn(example, range, inputPosition, command.next()),
+                )}
                 onClick={() => step(command.next())}
               />
             </div>
@@ -640,18 +679,22 @@ export function DeckPlayer({
                   <source
                     type="image/avif"
                     srcSet={posterSrcset(example.poster, "avif")}
-                    sizes="100vw"
+                    sizes={range ? DEMO_SIZES : "100vw"}
                   />
                   <source
                     type="image/webp"
                     srcSet={posterSrcset(example.poster, "webp")}
-                    sizes="100vw"
+                    sizes={range ? DEMO_SIZES : "100vw"}
                   />
                   <img
                     src={`${example.poster.base}-${example.poster.width >= 1920 ? 1920 : 1280}.webp`}
                     width={example.poster.width}
                     height={example.poster.height}
-                    alt={`${example.title}, slide ${example.startSlide} of ${example.slides}`}
+                    alt={
+                      range
+                        ? example.title
+                        : `${example.title}, slide ${example.startSlide} of ${example.slides}`
+                    }
                     fetchPriority={priority && index === initial ? "high" : "auto"}
                   />
                 </picture>
@@ -674,7 +717,7 @@ export function DeckPlayer({
             )}
           </div>
         </div>
-        {example.slides > 1 && (
+        {example.slides > 1 && !range && (
           <nav className="player-rail js-only" aria-label="Slides" ref={rail}>
             {Array.from({ length: example.slides }, (_, i) => (
               <button

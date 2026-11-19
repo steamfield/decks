@@ -1,0 +1,18 @@
+---
+title: Comparison split
+---
+
+import { MotionTemplate } from "@steamfield/decks/kit";
+
+<MotionTemplate
+  template="comparison-split"
+  at={1}
+  left={{
+    title: "Weekly releases",
+    points: ["One deploy every Thursday", "A fix waits up to six days", "Rollback reverts the whole week"],
+  }}
+  right={{
+    title: "On every merge",
+    points: ["Each merge ships within an hour", "A fix reaches users the same day", "Rollback reverts one change"],
+  }}
+/>

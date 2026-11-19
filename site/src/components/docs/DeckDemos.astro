@@ -1,0 +1,14 @@
+---
+// Rendered on a docs page whose guide has demo fences: the landing's dark tokens for the
+// player stage, the player's stylesheet (a client script's CSS imports are not linked), and the
+// script that mounts live players over the posters.
+import { landingCss } from "../../lib/tokens";
+import "../../styles/player.css";
+import "../../styles/deck-demos.css";
+---
+
+<style is:inline set:html={landingCss(undefined, ".deck-demo-stage")}></style>
+<script>
+  import { mountDeckDemos } from "../../scripts/deck-demos";
+  mountDeckDemos();
+</script>

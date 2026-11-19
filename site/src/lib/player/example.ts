@@ -81,6 +81,9 @@ export type Example = {
 export const POSTER_WIDTHS = [640, 1280] as const;
 
 /** srcset for one format: "/posters/tides-640.avif 640w, /posters/tides-1280.avif 1280w". */
+/** A guide demo poster's width: the docs column, or the viewport below the docs layout's breakpoint. */
+export const DEMO_SIZES = "(min-width: 1024px) 860px, 100vw";
+
 export const posterSrcset = (poster: Poster, ext: "avif" | "webp") =>
   [...POSTER_WIDTHS, ...(poster.width >= 1920 ? [1920] : [])]
     .map((width) => `${poster.base}-${width}.${ext} ${width}w`)

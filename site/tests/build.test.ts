@@ -20,6 +20,7 @@ import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
 import { loadExamples } from "../src/data/examples";
+import { demoName, guideDemos } from "../src/data/guide-demos";
 import { guideId } from "../src/lib/guide";
 import { deckDemoCount } from "./mdx";
 
@@ -199,6 +200,23 @@ describe("the whole site", () => {
       }
     }
     expect(broken).toEqual([]);
+  });
+
+  it("server-renders each guide demo as its poster above its code, in page order", () => {
+    const pages = Map.groupBy(guideDemos(), (demo) => demo.page);
+    expect(pages.size).toBeGreaterThan(0);
+    for (const [file, demos] of pages) {
+      const doc = page("dist", pagePath(guideId(file)));
+      const figures = [...doc.querySelectorAll("figure[data-deck-demo]")];
+      expect(
+        figures.map((figure) => figure.querySelector("img")?.getAttribute("src")),
+        file,
+      ).toEqual(demos.map((demo) => `/posters/demos/${demo.deck}/${demoName(demo)}-1280.webp`));
+      for (const [index, figure] of figures.entries())
+        expect(figure.querySelector("pre")?.textContent, `${file} demo ${index + 1}`).toContain(
+          demos[index]?.code.split("\n")[0]?.trim() ?? "",
+        );
+    }
   });
 
   it("hydrates only the islands site.islands lists, and none on docs pages", () => {

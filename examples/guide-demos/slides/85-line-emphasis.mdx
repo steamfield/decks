@@ -1,0 +1,21 @@
+---
+title: Retry only the failures a retry can fix.
+---
+
+<Cover>
+
+<p className="od-h2">Retry only the failures a retry can fix.</p>
+
+```ts {3-4|5|6|8} at=1 lines title="fetch-with-retry.ts"
+export async function fetchWithRetry(url: string, attempts = 3) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const response = await fetch(url);
+    if (response.ok) return response;
+    if (!isRetryable(response.status)) throw new HttpError(response);
+    await sleep(250 * 2 ** attempt);
+  }
+  throw new Error(`${url} failed after ${attempts} attempts`);
+}
+```
+
+</Cover>

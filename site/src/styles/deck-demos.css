@@ -1,0 +1,55 @@
+/* A guide demo (src/lib/markdown.ts): the dark player stage above the fence's code. */
+.deck-demo {
+  margin-block: 1.75rem;
+}
+.deck-demo-stage {
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 24px;
+  --radius-lg: 8px;
+  --header-height: 0px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --brand-rule: linear-gradient(
+    90deg,
+    var(--color-rule-1),
+    var(--color-rule-2) 35%,
+    var(--color-rule-3) 70%,
+    var(--color-rule-4)
+  );
+}
+.deck-demo-stage :focus-visible {
+  outline-color: var(--color-accent);
+}
+.deck-demo-stage > picture img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.deck-demo [data-code-block] {
+  margin-block: 0;
+}
+.deck-demo [data-code-block] pre {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.deck-demo > figcaption {
+  margin-top: 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+/* One toolbar row at the docs column's width, as the landing's motion showcase does. */
+@container deck-player (min-width: 480px) and (max-width: 899px) {
+  .deck-demo-stage .player-toolbar {
+    grid-template-columns: 1fr auto auto;
+  }
+  .deck-demo-stage :is(.player-position, .player-transport, .player-actions) {
+    grid-area: auto;
+  }
+  .deck-demo-stage .player-status::before,
+  .deck-demo-stage .player-status > [aria-hidden] {
+    display: inline-block;
+  }
+}

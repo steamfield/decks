@@ -46,4 +46,23 @@ describe("docs Markdown", () => {
     const { code } = await render("| a | b |\n| - | - |\n| 1 | 2 |\n");
     expect(code).toMatch(/<div data-table-scroll="" tabindex="0" role="region"[^>]*><table>/);
   });
+
+  it("renders a demo fence as its slide's poster above the code and links the slide", async () => {
+    const { code } = await render(
+      '```mdx demo="guide-demos/title-reveal"\n<MotionTemplate template="title-reveal" />\n```\n',
+    );
+    expect(code).toMatch(/<figure class="deck-demo not-prose" data-deck-demo="">/);
+    expect(code).toMatch(
+      /<img src="\/posters\/demos\/guide-demos\/title-reveal-1280\.webp"[^>]*loading="lazy"/,
+    );
+    expect(code).toMatch(/<figure data-code-block="">/);
+    expect(code).not.toContain("data-demo=");
+    expect(code).toContain('href="/d/guide-demos/#/2"');
+  });
+
+  it("names the demo slide it cannot find", async () => {
+    await expect(render('```mdx demo="guide-demos/no-such-slide"\nx\n```\n')).rejects.toThrow(
+      /no-such-slide/,
+    );
+  });
 });

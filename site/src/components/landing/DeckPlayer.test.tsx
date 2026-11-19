@@ -717,3 +717,92 @@ describe("blog players", () => {
     window.__decksPick = undefined;
   });
 });
+
+describe("guide demo players", () => {
+  // A guide demo: slides of a larger deck, starting at the range's last step.
+  const demo = example("guide-demos", "Stagger demo", { startBeat: 1 });
+  const one = { first: 2, last: 2 };
+
+  it("counts steps on its slide only and lists no other slides", () => {
+    render(<DeckPlayer examples={[demo]} autoplay={false} range={one} />);
+    expect(screen.queryByRole("navigation", { name: "Slides" })).toBeNull();
+    expect(screen.getByText("Step 2 of 2")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Stagger demo" })).toBeInTheDocument();
+    const d = deck();
+    d.state({ beat: 1 });
+    expect(screen.getByRole("button", { name: "Step forward" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Replay" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Step back" }));
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 0, requestId: 1 }]);
+    d.state({ beat: 0, requestId: 1 });
+    expect(screen.getByRole("button", { name: "Step back" })).toBeDisabled();
+  });
+
+  it("replays from the range's first step and stops at its last, never on the next slide", () => {
+    render(<DeckPlayer examples={[demo]} autoplay={false} range={one} />);
+    const d = deck();
+    d.state({ beat: 1 });
+    fireEvent.click(screen.getByRole("button", { name: "Replay" }));
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 0, requestId: 1 }]);
+    d.state({ beat: 0, requestId: 1 });
+    act(() => vi.advanceTimersByTime(9000));
+    expect(d.sent.at(-1)).toEqual({
+      type: "decks:cmd",
+      cmd: "go",
+      slide: 2,
+      beat: 1,
+      requestId: 2,
+    });
+    d.state({ beat: 1, requestId: 2 });
+    act(() => vi.advanceTimersByTime(9000));
+    expect(d.sent).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Replay" })).toBeInTheDocument();
+  });
+
+  it("replays when Play is pressed before the deck has answered", () => {
+    render(<DeckPlayer examples={[demo]} autoplay={false} range={one} />);
+    fireEvent.click(screen.getByRole("button", { name: "Play" }));
+    const d = deck();
+    d.state({ beat: 1 });
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 0, requestId: 1 }]);
+  });
+
+  it("steers the deck back when a key the deck handles itself leaves the range", () => {
+    render(<DeckPlayer examples={[demo]} autoplay={false} range={one} />);
+    const d = deck();
+    d.state({ beat: 1 });
+    // End or Space inside the iframe: the deck moves without asking the player.
+    d.state({ slide: 3, beat: 0, beats: 0, lead: "", body: "" });
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 1, requestId: 1 }]);
+  });
+
+  it("plays a two-slide range across the slide change and counts slides within it", () => {
+    const pair = { ...demo, startSlide: 3, startBeat: 0 };
+    render(<DeckPlayer examples={[pair]} autoplay={false} range={{ first: 2, last: 3 }} />);
+    expect(screen.getByText("Slide 2 of 2 · Step 1 of 1")).toBeInTheDocument();
+    const d = deck();
+    d.state({ slide: 3, beat: 0, beats: 0 });
+    fireEvent.click(screen.getByRole("button", { name: "Replay" }));
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 0, requestId: 1 }]);
+    d.state({ beat: 0, requestId: 1 });
+    expect(screen.getByText("Slide 1 of 2 · Step 1 of 2")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
+    d.state({ beat: 1, requestId: 2 });
+    fireEvent.click(screen.getByRole("button", { name: "Step forward" }));
+    expect(d.sent.at(-1)).toMatchObject({ cmd: "go", slide: 3, beat: 0 });
+  });
+
+  it("replays once on its own when motion is allowed, then stops at the end", () => {
+    motion(true);
+    render(<DeckPlayer examples={[demo]} range={one} />);
+    const d = deck();
+    d.state({ beat: 1 });
+    act(() => vi.advanceTimersByTime(1500));
+    expect(d.sent).toEqual([{ type: "decks:cmd", cmd: "go", slide: 2, beat: 0, requestId: 1 }]);
+    d.state({ beat: 0, requestId: 1 });
+    act(() => vi.advanceTimersByTime(9000));
+    d.state({ beat: 1, requestId: 2 });
+    act(() => vi.advanceTimersByTime(9000));
+    expect(d.sent).toHaveLength(2);
+  });
+});

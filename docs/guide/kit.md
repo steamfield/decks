@@ -148,6 +148,17 @@ clicks: 2
 <TideDayStage />
 ```
 
+This one plays live on the docs site; its stage is `examples/guide-demos/components/demo-pager-stage.tsx`:
+
+```mdx demo="guide-demos/story-stage"
+---
+title: Runbooks cut the pages that wake people up.
+clicks: 2
+---
+
+<PagerStage />
+```
+
 The stage component holds the copy, the timeline and the drawing. A condensed `examples/tides-slide/components/TideDayStage.tsx`:
 
 ```tsx
@@ -343,7 +354,7 @@ const chartSpec = useMemo<ComponentProps<typeof OpenChart>["spec"]>(() => {
   const base = scaleChartTheme(slideChartTheme, scale);
   return {
     ...SPEC,
-    data: [...SPEC.data],
+    data: [...(SPEC.data ?? [])],
     theme: { ...base, colors: { ...base.colors, categorical: [DATA] } },
     animation: slideChartAnimation,
   };
@@ -353,6 +364,51 @@ const chartSpec = useMemo<ComponentProps<typeof OpenChart>["spec"]>(() => {
 <div className="oc-chart" style={place(CHART)}>
   <OpenChart spec={chartSpec} />
 </div>
+```
+
+A whole slide that defines its chart inline, playing live on the docs site:
+
+```mdx demo="guide-demos/open-chart"
+import { useMemo } from "react";
+import { ink, OpenChart, scaleChartTheme, slideChartAnimation, slideChartTheme, theme, useFrameScale } from "@steamfield/decks/kit";
+import { HOURLY_PAGES } from "../data/demo-hourly-pages";
+
+export function HourlyPagesChart() {
+  const scale = useFrameScale();
+  const spec = useMemo(() => {
+    const { fonts } = slideChartTheme;
+    const base = scaleChartTheme({ ...slideChartTheme, fonts: { ...fonts, sizes: { ...fonts.sizes, axisTick: 28, body: 26 } } }, scale);
+    return {
+      mark: { type: "line", point: true, interpolate: "monotone" },
+      data: HOURLY_PAGES,
+      encoding: {
+        x: { field: "hour", type: "ordinal", sort: null },
+        y: { field: "pages", type: "quantitative", scale: { domain: [0, 6] }, axis: { title: "Pages per hour", tickCount: 4 } },
+      },
+      legend: { show: false },
+      responsive: false,
+      watermark: false,
+      theme: { ...base, colors: { ...base.colors, categorical: [ink("cyan", 3)], axis: theme().text.secondary } },
+      animation: slideChartAnimation,
+    };
+  }, [scale]);
+  return (
+    <div style={{ width: "100%", height: 440 }}>
+      <OpenChart spec={spec} />
+    </div>
+  );
+}
+
+<Cover>
+  <p className="od-h2">Night pages peak in the hour after the deploy.</p>
+  <div style={{ width: "100%" }}>
+    <HourlyPagesChart />
+    <p className="od-caption">Pages per hour over four weeks; the deploy runs at midnight. Illustrative figures.</p>
+  </div>
+  <Step at={1} as="p" enter="rise" className="od-lede">
+    The nightly deploy moves to 2 p.m. next sprint.
+  </Step>
+</Cover>
 ```
 
 Use `useFrameScale()` only for values handed to `OpenChart`. Anything drawn in ordinary slide CSS or SVG is already scaled with the canvas.
@@ -372,6 +428,25 @@ import { ChartSteps } from "@steamfield/decks/kit";
 import { series } from "../data/regions";
 
 <ChartSteps specs={series} at={1} />
+```
+
+The demo below plays on the docs site. It passes the frame scale to its spec builder, so the chart's fonts stay in proportion in the small player:
+
+```mdx demo="guide-demos/chart-steps"
+---
+clicks: 2
+---
+
+import { ChartSteps, useFrameScale } from "@steamfield/decks/kit";
+import { monthlyPages } from "../data/demo-monthly-pages";
+
+<Cover>
+  <p className="od-h2">Night pages fell once runbooks shipped.</p>
+  <div style={{ width: "100%", height: 560 }}>
+    <ChartSteps specs={monthlyPages(useFrameScale())} at={1} />
+  </div>
+  <p className="od-caption">Night pages per month, July to December. Illustrative figures.</p>
+</Cover>
 ```
 
 `specs[0]` shows before click `at`, `specs[1]` on click `at`, and `specs[i]` on click `at + i - 1`; the last holds. Keep the mark type and the fields and types of the x, y, colour and key encodings the same across specs, or it throws naming the two specs; give each datum a stable key so its mark can be followed. An inline array is counted (`at + specs.length - 2`); specs imported from a data module need `clicks` in the frontmatter. One click forward or back animates; a jump, instant motion and every other view show the target spec directly. OpenChart itself snaps instead of animating during the entrance, under reduced motion, for marks it cannot tween (ticks), when scale types or transforms change, and past 500 SVG marks.
@@ -407,6 +482,15 @@ export function SceneOrbit() {
 }
 ```
 
+On the docs site this slide plays live; its `setup` and poster are in `examples/guide-demos/components/demo-rack-scene.tsx`:
+
+```mdx demo="guide-demos/scene-3d"
+<Cover>
+  <p className="od-h2">Checkout is the service that wakes people up.</p>
+  <RackScene />
+</Cover>
+```
+
 Props: `setup`, `poster` and `label`.
 
 - `setup({ three, scene, camera }, tl, beat)` builds the scene and its timeline. `three` is the three.js module, and `tl` and `beat` work as in `useTimeline` (see [motion.md](motion.md#usetimelinebuild-deps)): call `beat(0)` first, and the tweens between `beat(n - 1)` and `beat(n)` play on click `n`. The scene is drawn on every timeline update. Return a cleanup that disposes what you created; `Scene3D` disposes the renderer itself.
@@ -430,5 +514,17 @@ Every `font-size` in the stylesheet follows the text scale rule, and yours shoul
 Set `transition: "story"` in `deck.config.ts`, or on one slide's frontmatter. It needs the kit stylesheet.
 
 Between two slides the frame cross-fades over 600ms while the new slide settles in from a short drift, downward going forward and upward going back. The headline (`.od-story-head`) and the card (`.od-story-card`) hold their places and cross-fade where they stand, so consecutive story slides read as one surface changing. Entering from a slide without a headline or card, they rise in with the frame, the card slightly after the headline.
+
+On the docs site two story slides play live across the transition (`examples/guide-demos/slides/91-story-transition-from.mdx` and `92-story-transition.mdx`); the first carries it:
+
+```mdx demo="guide-demos/story-transition-from..story-transition"
+---
+title: In July, most alerts had no runbook.
+clicks: 1
+transition: story
+---
+
+<CoverageJulyStage />
+```
 
 The hand-off only happens in the play view with live motion. With instant motion, or in the presenter window, slides cut.

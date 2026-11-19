@@ -1,5 +1,6 @@
 ---
 import type { GetStaticPaths } from "astro";
+import DeckDemos from "../../components/docs/DeckDemos.astro";
 import { docsGroups } from "../../config";
 import DocsLayout from "../../layouts/DocsLayout.astro";
 import { getDocs, getDocEntries, render } from "../../lib/collection";
@@ -29,4 +30,5 @@ const { prev, next } = pageLinks(nav, entry.id);
   next={next}
 >
   <Content />
+  {/demo="/.test(entry.body ?? "") && <DeckDemos />}
 </DocsLayout>

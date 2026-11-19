@@ -1,0 +1,1250 @@
+{
+  "title": "Guide demos",
+  "slides": 78,
+  "slideTitles": [
+    "Guide demos",
+    "Title reveal",
+    "Lower third",
+    "Stat burst",
+    "Stat compare",
+    "Metric grid",
+    "List cascade",
+    "Quote card",
+    "Section wipe",
+    "Agenda",
+    "End card",
+    "Timeline sweep",
+    "Process flow",
+    "Comparison split",
+    "Myth fact",
+    "Spotlight",
+    "Device mockup",
+    "Photo reveal",
+    "Logo reveal",
+    "Icon array",
+    "Team grid",
+    "Venn overlap",
+    "Word swap",
+    "Bar board",
+    "Command line",
+    "Scramble text",
+    "Donut build",
+    "Step",
+    "Steps",
+    "Stagger",
+    "TextReveal",
+    "Highlight",
+    "CountUp",
+    "Draw",
+    "Mark",
+    "Role curves",
+    "Camera",
+    "ShapeMorph",
+    "Morph from",
+    "Morph",
+    "Morph steps",
+    "Magic move",
+    "Transition fade from",
+    "Transition fade",
+    "Transition push from",
+    "Transition push",
+    "Transition zoom from",
+    "Transition zoom",
+    "Transition rise from",
+    "Transition rise",
+    "Transition cover from",
+    "Transition cover",
+    "Transition reveal from",
+    "Transition reveal",
+    "Transition wipe from",
+    "Transition wipe",
+    "Transition iris from",
+    "Transition iris",
+    "Transition blur from",
+    "Transition blur",
+    "Transition flip from",
+    "Transition flip",
+    "Transition cube from",
+    "Transition cube",
+    "Transition cut from",
+    "Transition cut",
+    "Every outage gets a written review.",
+    "What a quarter of on-call taught us about alerts.",
+    "Automate the fix before you page a person.",
+    "Write the runbook before the alert.",
+    "Every alert routes to one owner.",
+    "Retry only the failures a retry can fix.",
+    "Runbooks cut the pages that wake people up.",
+    "Night pages fell once runbooks shipped.",
+    "Night pages peak in the hour after the deploy.",
+    "Checkout is the service that wakes people up.",
+    "In July, most alerts had no runbook.",
+    "By October, most alerts had one."
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 4,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 10,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 10,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 11,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 11,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 12,
+      "beat": 0,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 12,
+      "beat": 1,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 12,
+      "beat": 2,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 12,
+      "beat": 3,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 12,
+      "beat": 4,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 13,
+      "beat": 0,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 13,
+      "beat": 1,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 13,
+      "beat": 2,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 13,
+      "beat": 3,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 13,
+      "beat": 4,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 14,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 14,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 14,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 15,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 15,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 15,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 16,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 16,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 17,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 17,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 18,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 18,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 19,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 19,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 20,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 20,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 21,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 21,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 22,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 22,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 23,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 23,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 23,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 23,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 24,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 24,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 24,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 25,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 25,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 26,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 26,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 27,
+      "beat": 0,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 27,
+      "beat": 1,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 27,
+      "beat": 2,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 27,
+      "beat": 3,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 27,
+      "beat": 4,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 28,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 28,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 28,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 29,
+      "beat": 0,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 29,
+      "beat": 1,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 29,
+      "beat": 2,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 29,
+      "beat": 3,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 29,
+      "beat": 4,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 30,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 30,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 30,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 31,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 31,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 32,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 32,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 32,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 33,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 33,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 34,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 34,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 34,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 35,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 35,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 35,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 0,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 1,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 2,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 3,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 4,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 5,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 37,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 37,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 37,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 38,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 38,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 39,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 40,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 41,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 41,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 42,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 42,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 42,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 42,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 43,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 44,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 45,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 46,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 47,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 48,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 49,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 50,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 51,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 52,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 53,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 54,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 55,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 56,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 57,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 58,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 59,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 60,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 61,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 62,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 63,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 64,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 65,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 66,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 67,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 67,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 68,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 68,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 69,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 69,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 70,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 70,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 71,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 71,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 72,
+      "beat": 0,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 72,
+      "beat": 1,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 72,
+      "beat": 2,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 72,
+      "beat": 3,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 72,
+      "beat": 4,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 73,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Night pages per week, by service.",
+      "body": "Pages between 10 p.m. and 7 a.m. Illustrative figures."
+    },
+    {
+      "slide": 73,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Checkout paged more than the rest.",
+      "body": "16 pages a week, against 14 for the other 4 services combined."
+    },
+    {
+      "slide": 73,
+      "beat": 2,
+      "beats": 2,
+      "lead": "Its runbooks cut that to 4.",
+      "body": "Each alert now links the steps that fix it, and most fixes run on their own."
+    },
+    {
+      "slide": 74,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 74,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 74,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 75,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 75,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 76,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 76,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 77,
+      "beat": 0,
+      "beats": 1,
+      "lead": "Each dot is one alert rule.",
+      "body": "40 rules can page the platform team. Illustrative figures."
+    },
+    {
+      "slide": 77,
+      "beat": 1,
+      "beats": 1,
+      "lead": "12 of 40 linked a runbook.",
+      "body": "For the rest, whoever was paged started from scratch."
+    },
+    {
+      "slide": 78,
+      "beat": 0,
+      "beats": 1,
+      "lead": "The same 40 rules, one quarter later.",
+      "body": "Each team wrote the runbooks for its own alerts."
+    },
+    {
+      "slide": 78,
+      "beat": 1,
+      "beats": 1,
+      "lead": "34 of 40 now link a runbook.",
+      "body": "The alerts still without one are up for removal."
+    }
+  ]
+}
