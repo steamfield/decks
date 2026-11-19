@@ -15,7 +15,7 @@ html[data-page="landing"] {
   --radius-lg: 8px;
   --header-height: 56px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  /* The brand rule: the theme's step-2 hues, on the player and the closing CTA. */
+  /* The brand rule: the theme's step-2 hues, on the players, the hero's window and the closing CTA. */
   --brand-rule: linear-gradient(
     90deg,
     var(--color-rule-1),
@@ -842,10 +842,19 @@ html:not(.js) .motion-showcase :is(.player-loading, .player-status) {
   gap: 12px;
   --sf-font-size: 12px;
 }
+/* The brand rule as the window's top border. The window clips its overflow, so the rule can't be
+   drawn over the border as on the player: the top border is transparent over the gradient, the
+   canvas fills the padding box, and the border follows the rounded corners. */
+/* A window one step above the canvas, with its title bar one step above that, edged like the
+   install block beside it; dividers inside stay at the quieter line. */
 .agent-session-window {
-  border-color: var(--color-line);
+  --sf-demo-subtle-bg: var(--color-raised);
+  border-color: var(--color-line-strong);
+  border-top: 2px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--color-canvas);
+  background:
+    linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
+    var(--brand-rule) border-box;
 }
 .agent-session-window [data-part="window-bar"] {
   flex-wrap: wrap;
@@ -853,7 +862,7 @@ html:not(.js) .motion-showcase :is(.player-loading, .player-status) {
   min-height: 44px;
   padding: 6px 8px 6px 14px;
   border-bottom-color: var(--color-line);
-  background: var(--color-panel);
+  background: var(--color-raised);
 }
 .agent-session-window [data-part="window-controls"] {
   flex: 1 1 auto;
@@ -929,6 +938,10 @@ html:not(.js) .motion-showcase :is(.player-loading, .player-status) {
 }
 .agent-session-stage {
   padding: 12px;
+}
+/* Nested inside the window's 8px corner with 12px of padding, the slide takes the small radius. */
+.agent-session-stage .deck-stage {
+  border-radius: var(--radius-sm);
 }
 .agent-session-fineprint {
   color: var(--color-muted);
