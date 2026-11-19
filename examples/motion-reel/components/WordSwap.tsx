@@ -1,106 +1,112 @@
 import { useTemplateMotion } from "@steamfield/decks/kit";
 import { duration, type gsap, SplitText, stagger } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef } from "react";
-import { punch, snap } from "./ease";
+import { CLEAR, LEAN, leave, punch, slam, snap } from "./ease";
 import styles from "./WordSwap.module.css";
-
-const SHOWN = "inset(0% 0% 0% 0%)";
 
 /**
  * A sentence whose last words change on each click. The lead lines rise through per-word masks
- * while their tracking tightens; each swap wipes the old plate off the top as the next one
- * comes up from below, and the last plate lands with a scale punch.
+ * while their tracking closes. A swap is one sweep from left to right: the old plate shrinks
+ * off to the right as its letters lift away, and the next plate grows in from the left with its
+ * letters rising onto it one at a time. Nothing clips the plate's letters, so none is ever cut.
  */
 export function WordSwap({ lead, words }: { lead: readonly string[]; words: readonly string[] }) {
   const heading = useRef<HTMLHeadingElement>(null);
-  const split = useRef<SplitText | null>(null);
+  const leadWords = useRef<SplitText | null>(null);
+  const letters = useRef<SplitText[]>([]);
   useLayoutEffect(() => {
-    const lines = heading.current?.querySelectorAll(`.${styles.lead}`);
-    if (!lines?.length) return;
-    const parts = SplitText.create(lines, { type: "words", mask: "words", tag: "span" });
-    split.current = parts;
+    const root = heading.current;
+    if (!root) return;
+    const parts = SplitText.create(root.querySelectorAll(`.${styles.lead}`), {
+      type: "words",
+      mask: "words",
+      tag: "span",
+    });
+    const chars = Array.from(root.querySelectorAll(`.${styles.word}`), (word) =>
+      SplitText.create(word, { type: "chars", tag: "span" }),
+    );
+    leadWords.current = parts;
+    letters.current = chars;
     return () => {
       parts.revert();
-      split.current = null;
+      for (const split of chars) split.revert();
+      leadWords.current = null;
+      letters.current = [];
     };
   }, []);
   const plates = () => Array.from(heading.current?.querySelectorAll(`.${styles.plate}`) ?? []);
 
+  /** The plate grows in from the left and its letters rise onto it, starting together. */
+  function arrive(tl: gsap.core.Timeline, index: number, at: number, accent: boolean) {
+    const plate = plates()[index];
+    if (!plate) return;
+    tl.fromTo(
+      plate.firstElementChild,
+      { scaleX: 0, transformOrigin: "left center" },
+      {
+        scaleX: 1,
+        transformOrigin: "left center",
+        duration: accent ? duration.slow : duration.base,
+        ease: accent ? punch : slam,
+      },
+      at,
+    );
+    tl.fromTo(
+      letters.current[index]?.chars ?? [],
+      { opacity: 0, yPercent: 24, skewY: LEAN },
+      {
+        opacity: 1,
+        yPercent: 0,
+        skewY: 0,
+        duration: duration.base,
+        ease: accent ? punch : snap,
+        stagger: stagger / 3,
+      },
+      at + duration.quick / 2,
+    );
+  }
+
   function swap(index: number) {
     return (tl: gsap.core.Timeline) => {
       const from = plates()[index];
-      const to = plates()[index + 1];
-      if (!from || !to) return;
+      if (!from) return;
       const start = tl.duration();
-      const last = index + 1 === words.length - 1;
-      // The plate on screen was posed by an earlier tween, so its tweens must not render early.
-      tl.fromTo(
-        from,
-        { clipPath: SHOWN },
-        {
-          clipPath: "inset(0% 0% 100% 0%)",
-          immediateRender: false,
-          duration: duration.base,
-          ease: snap,
-        },
-        start,
-      );
+      // The plate on screen was posed by an earlier tween, so its exit must not render early.
+      const exit = { immediateRender: false, duration: duration.base, ease: leave };
       tl.fromTo(
         from.firstElementChild,
-        { yPercent: 0 },
-        { yPercent: -70, immediateRender: false, duration: duration.base, ease: snap },
+        { scaleX: 1, transformOrigin: "right center" },
+        { scaleX: 0, transformOrigin: "right center", ...exit },
         start,
       );
       tl.fromTo(
-        to,
-        { clipPath: "inset(100% 0% 0% 0%)", scale: last ? 0.82 : 1 },
-        {
-          clipPath: SHOWN,
-          scale: 1,
-          duration: last ? duration.slow : duration.base,
-          ease: last ? punch : snap,
-        },
-        start + duration.quick / 2,
+        letters.current[index]?.chars ?? [],
+        { opacity: 1, yPercent: 0 },
+        { opacity: 0, yPercent: -45, ...exit, duration: duration.quick, stagger: stagger / 4 },
+        start,
       );
-      tl.fromTo(
-        to.firstElementChild,
-        { yPercent: 70 },
-        { yPercent: 0, duration: duration.base, ease: snap },
-        start + duration.quick / 2,
-      );
+      arrive(tl, index + 1, start + duration.quick / 2, index + 1 === words.length - 1);
     };
   }
 
   useTemplateMotion(
     0,
     (tl) => {
-      const first = plates()[0];
       const lines = heading.current?.querySelectorAll(`.${styles.lead}`) ?? [];
       tl.fromTo(
         lines,
-        { letterSpacing: "0.04em" },
+        { letterSpacing: "0em" },
         { letterSpacing: "-0.055em", duration: duration.slow, ease: snap },
         0,
       );
       tl.fromTo(
-        split.current?.words ?? [],
-        { yPercent: 115 },
-        { yPercent: 0, duration: duration.slow, ease: snap, stagger },
+        leadWords.current?.words ?? [],
+        { yPercent: CLEAR, skewY: LEAN },
+        { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap, stagger },
         0,
       );
-      if (!first) return;
-      tl.fromTo(
-        first,
-        { clipPath: "inset(0% 100% 0% 0%)" },
-        { clipPath: SHOWN, duration: duration.base, ease: snap },
-        duration.base,
-      );
-      tl.fromTo(
-        first.firstElementChild,
-        { xPercent: -40 },
-        { xPercent: 0, duration: duration.slow, ease: snap },
-        duration.base,
-      );
+      // The plate starts before the last lead word lands, so the sentence arrives in one move.
+      arrive(tl, 0, duration.quick, false);
     },
     words.slice(1).map((_, index) => swap(index)),
   );
@@ -115,6 +121,7 @@ export function WordSwap({ lead, words }: { lead: readonly string[]; words: read
       <span className={styles.slot} aria-hidden="true">
         {words.map((word, index) => (
           <span key={word} className={styles.plate} data-tone={index % 3}>
+            <span className={styles.fill} />
             <span className={styles.word}>{word}</span>
           </span>
         ))}

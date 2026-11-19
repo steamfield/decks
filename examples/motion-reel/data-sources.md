@@ -39,7 +39,26 @@ Definition: a template is one value of the `template` prop of `MotionTemplate`.
 The slide's `title` in frontmatter spells the number out as 21. It is the same count; recount
 and change the title if `TEMPLATES` changes.
 
-## Slide 5 (`05-clicks`): It moves when you click.
+## Slide 5 (`05-one-click`): 16 of the 21 templates take one click.
+
+| Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
+| --- | --- | --- | --- | --- |
+| `TEMPLATE_CLICKS`: one per item | 3 templates | confirmed | `docs/guide/motion-templates.md`, "Clicks": "`list-cascade`, `timeline-sweep` and `process-flow` take one click per item, from `at`" | 2026-11-18 |
+| `TEMPLATE_CLICKS`: two clicks | 2 templates | confirmed | The same section: "`comparison-split` and `myth-fact` take two, `at` and `at + 1`" | 2026-11-18 |
+| `TEMPLATE_CLICKS`: one click | 16 templates | confirmed | The same section: "Most templates use one click, at `at`." Derived: 21 - 3 - 2 | 2026-11-18 |
+| `ONE_CLICK_HEADLINE` | "16 of 21 take one click." | confirmed | Built in `data/template-clicks.ts` from the two counts | 2026-11-18 |
+
+Definition: population is the 21 names in `TEMPLATES`. Each is in exactly one group: the three
+the guide names as one click per item, the two it names as two clicks, and every other name.
+"Clicks taken" is what the template adds to a slide's click total; with `at` 0 a one-click
+template plays on arrival and adds none.
+
+Derivation: `data/template-clicks.ts` filters `TEMPLATES` by the two named lists, so the rows
+always sum to `TEMPLATES.length`. The bars start at zero on a 0 to 20 axis; no rounding.
+
+The slide's `title` in frontmatter types 16 and 21. Recount and change it if the rows change.
+
+## Slide 6 (`06-clicks`): It moves when you click.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |
@@ -47,14 +66,14 @@ and change the title if `TEMPLATES` changes.
 | Back plays it in reverse | no figure | confirmed | `docs/guide/motion.md` line 60: "Going back a click plays the same transition in reverse." | 2026-11-18 |
 | Reload holds the frame | no figure | confirmed | `docs/guide/motion.md` line 9: "The click is in the URL (`#/5?clicks=2`), so a reload or a shared link lands on the same state." | 2026-11-18 |
 
-## Slide 6 (`06-views`): The same deck renders in the presenter, the overview, print and PDF.
+## Slide 7 (`07-views`): The same deck renders in the presenter, the overview, print and PDF.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |
 | `OUTPUTS`: presenter, overview | no figure | confirmed | `docs/guide/presenting.md` line 3: "Press `p` for a presenter window with notes, `o` for an overview of every slide" | 2026-11-18 |
 | `OUTPUTS`: print, PDF | no figure | confirmed | `docs/guide/cli.md`, `decks export`: "opens its print view (`#/print`) in Chromium and writes a PDF with one page per click step of every visible slide" | 2026-11-18 |
 
-## Slide 7 (`07-package`): It ships in one package.
+## Slide 8 (`08-package`): It ships in one package.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |
@@ -79,17 +98,24 @@ presets in `packages/runtime/src/transitions/transition.css`, `cut` is the hard 
 `story` comes from the kit's stylesheet. The 5 views are the contexts a slide component can be
 rendered in; `preview` is the presenter window's next-step pane.
 
-## Slide 8 (`08-install`): One line installs it.
+## Slide 9 (`09-install`): One line installs it.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |
 | `INSTALL` | `bun add @steamfield/decks react react-dom` | confirmed | `README.md` line 6; `docs/guide/getting-started.md` line 39 | 2026-11-18 |
 
-## Slide 9 (`09-end`): Ask your agent for a deck.
+## Slide 10 (`10-end`): This reel is a Decks slide deck.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |
+| The reel is a slide deck | 10 MDX slides | confirmed | `examples/motion-reel/slides/*.mdx`, registered as `motion-reel` in `decks.json` | 2026-11-18 |
+| The left arrow steps back through it | no figure | confirmed | `docs/guide/presenting.md` line 12: "`ArrowLeft` ... Previous click, or the previous slide at its last click." | 2026-11-18 |
 | `SITE` | `https://decks.steamfield.io` | confirmed | `packages/decks/package.json` `homepage` | 2026-11-18 |
+
+## Every slide: the position layer
+
+`layers/above.tsx` prints "slide N / total · click n / total" from `useSlide()` and `useDeck()`.
+The numbers are the running deck's own state, not constants.
 
 ## Assets
 
@@ -108,4 +134,4 @@ rendered in; `preview` is the presenter window's next-step pane.
 
 | Pending item | What resolves it | Owner |
 | --- | --- | --- |
-| The four counts | Rerun the commands above after any release that adds a template, transition, step component or render context; update `data/reel.ts` and the title of `03-count`. | deck author |
+| The four counts | Rerun the commands above after any release that adds a template, transition, step component or render context; update `data/reel.ts`, `data/template-clicks.ts` and the titles of `03-count` and `05-one-click`. | deck author |

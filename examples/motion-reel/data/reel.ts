@@ -58,14 +58,14 @@ export const STEP_COMPONENTS = [
 /** Where one slide can render: `RenderContext` in packages/runtime/src/hooks.ts. */
 export const RENDER_CONTEXTS = ["slide", "presenter", "preview", "overview", "print"] as const;
 
-/** The scoreboard on slide 07-package. */
+/** The scoreboard on slide 08-package. */
 export const PACKAGE_COUNTS = [
   { value: STEP_COMPONENTS.length, label: "step components" },
   { value: TRANSITIONS.length, label: "slide transitions" },
   { value: RENDER_CONTEXTS.length, label: "views of every slide" },
 ];
 
-/** The outputs named on slide 06-views: docs/guide/presenting.md and docs/guide/cli.md. */
+/** The outputs named on slide 07-views: docs/guide/presenting.md and docs/guide/cli.md. */
 export const OUTPUTS = ["Presenter.", "Overview.", "Print.", "PDF."] as const;
 
 /** The install line: README.md and docs/guide/getting-started.md. */

@@ -68,3 +68,21 @@ body {
   display: grid;
   gap: 72px;
 }
+/* The deck's position, from layers/above.tsx: quiet, in the corner, on every slide. */
+.reel-position {
+  position: absolute;
+  right: 56px;
+  bottom: 36px;
+  font-family: var(--od-font-mono);
+  font-size: calc(22px * var(--deck-text-scale, 1));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--od-text-faint);
+}
+/* The closing hint under the end card. */
+.reel-hint {
+  font-size: calc(44px * var(--deck-text-scale, 1));
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--od-text-secondary);
+}

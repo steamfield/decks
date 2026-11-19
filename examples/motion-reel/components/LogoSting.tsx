@@ -1,7 +1,7 @@
 import { ink, useTemplateMotion } from "@steamfield/decks/kit";
 import { duration, type gsap, SplitText, stagger } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef } from "react";
-import { punch, snap } from "./ease";
+import { CLEAR, LEAN, punch, slam, snap } from "./ease";
 import styles from "./LogoSting.module.css";
 
 // The Decks mark on its 32-unit square (site/src/lib/brand.ts): two slides on the diagonal,
@@ -15,8 +15,8 @@ const GAP =
   "M5 11.25H20a4.5 4.5 0 0 1 4.5 4.5V24.25a4.5 4.5 0 0 1-4.5 4.5H5a4.5 4.5 0 0 1-4.5-4.5V15.75a4.5 4.5 0 0 1 4.5-4.5Z";
 
 /**
- * The logo sting: a dot lands, opens into the front slide, the back slide kicks out from
- * behind it, and the wordmark rises a letter at a time. With a `tagline`, the next click
+ * The logo sting, in one overlapping move: a dot lands and is already opening into the front
+ * slide as the back slide kicks out from behind it and the wordmark rises a letter at a time. With a `tagline`, the next click
  * draws a rule under the wordmark and brings the line up through a mask.
  */
 export function LogoSting({ tagline, compact = false }: { tagline?: string; compact?: boolean }) {
@@ -49,14 +49,15 @@ export function LogoSting({ tagline, compact = false }: { tagline?: string; comp
     tl.fromTo(
       rule.current,
       { drawSVG: "0%" },
-      { drawSVG: "100%", duration: duration.base, ease: snap },
+      { drawSVG: "100%", duration: duration.slow, ease: slam },
       start,
     );
+    // The line comes up while the rule is still drawing over it.
     tl.fromTo(
       words.current?.words ?? [],
-      { yPercent: 115 },
-      { yPercent: 0, duration: duration.slow, ease: snap, stagger },
-      start + duration.quick,
+      { yPercent: CLEAR, skewY: LEAN },
+      { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap, stagger: stagger / 2 },
+      start + duration.quick / 2,
     );
   };
 
@@ -73,26 +74,27 @@ export function LogoSting({ tagline, compact = false }: { tagline?: string; comp
         front.current,
         { morphSVG: DOT },
         { morphSVG: FRONT, duration: duration.base, ease: snap },
-        duration.base,
+        duration.quick,
       );
       // The back slide waits exactly under the front one, then kicks out to its offset.
       tl.fromTo(
         back.current,
         { x: -7, y: 8 },
         { x: 0, y: 0, duration: duration.slow, ease: punch },
-        duration.base + duration.quick,
+        duration.base,
       );
       tl.fromTo(
         wordmark.current,
         { letterSpacing: "0.08em" },
         { letterSpacing: "-0.06em", duration: duration.slow, ease: snap },
-        duration.base,
+        duration.quick,
       );
+      // The letters start while the mark is still opening, each leaning in and settling upright.
       tl.fromTo(
         letters.current?.chars ?? [],
-        { yPercent: 115 },
-        { yPercent: 0, duration: duration.slow, ease: snap, stagger },
-        duration.base,
+        { yPercent: CLEAR, skewY: LEAN },
+        { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap, stagger },
+        duration.quick,
       );
     },
     tagline ? [reveal] : [],

@@ -1,0 +1,17 @@
+---
+title: This reel is a Decks slide deck.
+clicks: 1
+---
+
+import { MotionTemplate } from "@steamfield/decks/kit";
+import { SITE } from "../data/reel";
+
+<LogoSting compact />
+
+<div className="reel-xl">
+  <MotionTemplate template="end-card" at={1} accent="amber" title="This reel is a Decks slide deck." link={SITE} />
+</div>
+
+<Step at={1} enter="rise">
+  <p className="reel-hint">Step back through it with the left arrow, then ask your agent for one.</p>
+</Step>

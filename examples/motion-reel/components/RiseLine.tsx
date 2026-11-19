@@ -1,10 +1,14 @@
 import { useTemplateMotion } from "@steamfield/decks/kit";
 import { duration, SplitText, stagger } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef } from "react";
-import { snap } from "./ease";
+import { CLEAR, LEAN, snap } from "./ease";
 import styles from "./RiseLine.module.css";
 
-/** A headline whose words rise through their own masks as the slide arrives. */
+/**
+ * A headline whose words rise through their own masks as the slide arrives. Each word comes up
+ * leaning and settles upright while the line's tracking closes, so the sentence lands as one
+ * gesture.
+ */
 export function RiseLine({ children }: { children: string }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const split = useRef<SplitText | null>(null);
@@ -19,9 +23,16 @@ export function RiseLine({ children }: { children: string }) {
   }, []);
   useTemplateMotion(0, (tl) => {
     tl.fromTo(
+      heading.current,
+      { letterSpacing: "-0.02em" },
+      { letterSpacing: "-0.055em", duration: duration.slow, ease: snap },
+      0,
+    );
+    tl.fromTo(
       split.current?.words ?? [],
-      { yPercent: 115 },
-      { yPercent: 0, duration: duration.slow, ease: snap, stagger: stagger / 2 },
+      { yPercent: CLEAR, skewY: LEAN },
+      { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap, stagger: stagger / 2 },
+      0,
     );
   });
   return (
