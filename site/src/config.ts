@@ -71,11 +71,9 @@ export const site = {
     "Build animated presentations with coding agents using Decks, a React slide framework. Add interactive charts, scaffold slides and trace figures to their sources.",
   /** The hero's one-line lede. */
   heroDescription:
-    "Your coding agent turns your data and a brief into an animated React slide deck, then changes it when you ask.",
+    "Give your coding agent a CSV and a sentence about the talk. It writes the slides as React and MDX in your repo, and edits them when you ask.",
   /** The hero's scripted agent session (AgentSession, src/data/agent-session.ts). */
   agentSession: {
-    fineprint:
-      "An illustrative session with a fictional team's data. Every slide shown is a Decks slide from examples/agent-hero.",
     openDeck: "Open the finished deck",
     /** The stage's accessible name: what the agent has built, before turn 1 and after each turn. */
     stageLabels: [

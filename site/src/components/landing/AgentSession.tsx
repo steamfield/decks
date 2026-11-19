@@ -319,7 +319,6 @@ export function AgentSession({ src, href, posters, children }: Props) {
       </DemoWindow>
       {children}
       <p className="agent-session-fineprint">
-        {copy.fineprint}{" "}
         <a href={href} onClick={() => track(Events.exampleOpened, { example: "agent-hero" })}>
           {copy.openDeck} <span aria-hidden="true">→</span>
         </a>
