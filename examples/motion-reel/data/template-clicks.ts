@@ -30,4 +30,4 @@ export const TEMPLATE_CLICKS = [
 export const ONE_CLICK_HEADLINE = `${oneClick.length} of ${TEMPLATES.length} take one click.`;
 
 export const TEMPLATE_CLICKS_SOURCE =
-  "Templates by clicks taken · packages/core/src/motion-template-beats.ts";
+  "Templates by clicks · core/src/motion-template-beats.ts";
