@@ -118,17 +118,27 @@ export type MotionTemplateProps = TemplateBase &
         readonly template: "bar-board";
         /** 2 to 6 rows, largest first; labels up to 16 characters. */
         readonly rows: readonly Datum[];
+        /** Up to 60 characters. */
         readonly source: string;
+        /** Up to 8 characters. */
         readonly prefix?: string;
+        /** Up to 8 characters. */
         readonly suffix?: string;
       }
     | { readonly template: "command-line"; readonly command: string }
-    | { readonly template: "scramble-text"; readonly text: string; readonly label?: string }
+    | {
+        readonly template: "scramble-text";
+        readonly text: string;
+        /** Up to 40 characters. */
+        readonly label?: string;
+      }
     | {
         readonly template: "donut-build";
         /** 2 to 5 parts of a whole, drawn one per click; labels up to 16 characters. */
         readonly segments: readonly Datum[];
+        /** Up to 8 characters. */
         readonly prefix?: string;
+        /** Up to 8 characters. */
         readonly suffix?: string;
       }
   );
