@@ -41,7 +41,7 @@ export function BarBoard({
       tl.fromTo(
         board.current,
         { clipPath: "inset(0% 100% 0% 0%)" },
-        { clipPath: "inset(0% 0% 0% 0%)", duration: duration.slow, ease: slam },
+        { clipPath: "inset(0% 0% 0% 0%)", duration: duration.base, ease: slam },
         0,
       );
       tl.fromTo(
@@ -51,9 +51,10 @@ export function BarBoard({
         duration.quick,
       );
       rows.forEach((row, index) => {
-        // The first bar waits for the wipe to uncover it; each next one starts three staggers
-        // later, before the one above has settled: in sequence, but overlapping.
-        const at = duration.base + index * stagger * 3;
+        // The first bar starts once the wipe has fully uncovered the board, so no growth happens
+        // behind its edge; each next one starts three staggers later, before the one above has
+        // settled: in sequence, but overlapping.
+        const at = duration.base + stagger + index * stagger * 3;
         tl.fromTo(
           bars()[index] ?? null,
           { width: "0%" },
