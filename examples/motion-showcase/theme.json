@@ -1,0 +1,18 @@
+{
+  "surfaces": { "canvas": "#f3ebd7", "canvas-cover": "{surfaces.canvas}", "surface": "#dfc9a8" },
+  "text": { "primary": "#192d55", "secondary": "#414e60", "highlight": "#fff9e7" },
+  "ramps": {
+    "cyan": ["#14274d", "#173a70", "#214b91", "#507bb2"],
+    "amber": ["#804834", "#b76245", "#e5a076", "#f6c7a2"],
+    "rose": ["#94391d", "#bc4826", "#da6039", "#ec9b74"]
+  },
+  "accents": {
+    "blue": "{ramps.cyan.3}",
+    "lino": "{ramps.amber.3}",
+    "recess": "{ramps.amber.2}",
+    "edge": "{ramps.amber.1}",
+    "paper": "{text.highlight}",
+    "bench": "#dccbad"
+  },
+  "fonts": { "sans": "Georgia, 'Times New Roman', serif", "mono": "ui-monospace, Menlo, monospace" }
+}

@@ -1,0 +1,13 @@
+.face.face {
+  width: 1200px;
+  max-width: none;
+}
+.section {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  pointer-events: none;
+}
+.section text {
+  font: calc(36px * var(--deck-text-scale, 1)) / 1 var(--od-font-mono);
+}
