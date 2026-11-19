@@ -306,6 +306,7 @@ export function AgentSession({ src, href, posters, children }: Props) {
                 label={label}
                 onController={onController}
                 initialHash={`/${turns[0]?.hold.slide ?? 1}`}
+                sizes={STAGE_SIZES}
               />
             ) : (
               <>

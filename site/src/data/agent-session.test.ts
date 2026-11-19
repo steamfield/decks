@@ -76,7 +76,10 @@ describe("what the session names exists", () => {
       const file = `packages/node/src/cli/commands/${command}.ts`;
       if (!existsSync(join(repo, file))) continue; // dev and build live in the dev server
       const required = read(file).match(/type: "positional", required: true/g)?.length ?? 0;
-      const given = args.split(/\s+/).slice(2).filter((word) => !word.startsWith("-")).length;
+      const given = args
+        .split(/\s+/)
+        .slice(2)
+        .filter((word) => !word.startsWith("-")).length;
       expect(given, args).toBeGreaterThanOrEqual(required);
     }
   });

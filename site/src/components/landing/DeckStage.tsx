@@ -13,13 +13,22 @@ type Props = {
   onController?: (controller: StageController) => void;
   /** Where the deck boots, as `/<slide>?clicks=<beat>`. */
   initialHash?: string;
+  /** The poster's `sizes`, matching the slot the stage fills. */
+  sizes?: string;
 };
 
 /**
  * The landing session's deck: the slide alone, driven by a script through its controller.
  * The poster covers the frame until the first command after ready has settled.
  */
-export function DeckStage({ src, poster, label, onController, initialHash = "" }: Props) {
+export function DeckStage({
+  src,
+  poster,
+  label,
+  onController,
+  initialHash = "",
+  sizes = "100vw",
+}: Props) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [liveSrc, setLiveSrc] = useState<string | null>(null);
   const live = liveSrc === src;
@@ -61,8 +70,8 @@ export function DeckStage({ src, poster, label, onController, initialHash = "" }
       />
       {!live && (
         <picture>
-          <source type="image/avif" srcSet={posterSrcset(poster, "avif")} sizes="100vw" />
-          <source type="image/webp" srcSet={posterSrcset(poster, "webp")} sizes="100vw" />
+          <source type="image/avif" srcSet={posterSrcset(poster, "avif")} sizes={sizes} />
+          <source type="image/webp" srcSet={posterSrcset(poster, "webp")} sizes={sizes} />
           <img
             src={`${poster.base}-${poster.width >= 1920 ? 1920 : 1280}.webp`}
             width={poster.width}
