@@ -17,9 +17,24 @@
 .number {
   font: 500 4.2em / 1 var(--od-font-mono);
   letter-spacing: -0.065em;
+  white-space: nowrap;
   color: var(--od-text-secondary);
 }
 .section h2 {
   margin-top: 0.25em;
   text-wrap: balance;
+}
+/* SplitText's word and mask spans must be boxes: a transform does nothing to inline text. */
+.number span,
+.section h2 span {
+  display: inline-block;
+  transform-origin: left bottom;
+}
+/* A mask is the word's line box, which is tighter than its glyphs; the numeral's line height is
+   1 and its tracking pulls the last digit past its box. The padding gives every glyph and the
+   arriving lean room, and the negative margin keeps the layout unchanged. */
+.number > *,
+.section h2 > * {
+  padding: 0.22em 0.12em;
+  margin: -0.22em -0.12em;
 }

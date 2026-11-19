@@ -66,37 +66,37 @@ export function StatCompare({
     tl.fromTo(
       figure.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
       0,
     );
     tl.fromTo(
       arrow.current,
       { drawSVG: "0%" },
-      { drawSVG: "100%", duration: duration.base, ease: ease.enter },
+      { drawSVG: "100%", duration: duration.base, ease: ease.snap },
       duration.quick,
     );
     tl.fromTo(
       tip.current,
       { drawSVG: "0%" },
-      { drawSVG: "100%", duration: duration.quick, ease: ease.enter },
+      { drawSVG: "100%", duration: duration.quick, ease: ease.snap },
       duration.base,
     );
     tl.fromTo(
       destination.current,
       { opacity: 0 },
-      { opacity: 1, duration: duration.quick, ease: ease.enter },
+      { opacity: 1, duration: duration.quick, ease: ease.snap },
       duration.base,
     );
     tl.fromTo(
       count,
       { progress: 0 },
-      { progress: 1, duration: duration.slow, ease: ease.enter },
+      { progress: 1, duration: duration.slow, ease: ease.snap },
       duration.base,
     );
     tl.fromTo(
       change.current,
       { opacity: 0, yPercent: 40 },
-      { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
+      { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.snap },
       duration.slow,
     );
   });

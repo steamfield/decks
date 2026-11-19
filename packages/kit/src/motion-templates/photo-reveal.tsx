@@ -75,33 +75,33 @@ function PhotoEntrance({ figure, at }: { figure: RefObject<HTMLElement | null>; 
     const scrim = card.querySelector('[aria-hidden="true"]');
     const credit = card.querySelector("p");
     // The near crop eases back to the full image as shade rises from the bottom edge.
-    tl.fromTo(card, { autoAlpha: 0 }, { autoAlpha: 1, duration: duration.base, ease: ease.enter });
+    tl.fromTo(card, { autoAlpha: 0 }, { autoAlpha: 1, duration: duration.base, ease: ease.snap });
     if (image)
       tl.fromTo(
         image,
         { scale: 1.08 },
-        { scale: 1, duration: duration.slow + duration.base, ease: ease.enter },
+        { scale: 1, duration: duration.slow + duration.base, ease: ease.snap },
         0,
       );
     if (scrim)
       tl.fromTo(
         scrim,
         { yPercent: 100 },
-        { yPercent: 0, duration: duration.slow, ease: ease.enter },
+        { yPercent: 0, duration: duration.slow, ease: ease.slam },
         0,
       );
     // The caption reaches its baseline first, followed by the credit.
     tl.fromTo(
       card.querySelector("h2"),
       { opacity: 0, yPercent: 32 },
-      { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
+      { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.snap },
       duration.quick,
     );
     if (credit)
       tl.fromTo(
         credit,
         { opacity: 0, yPercent: 30 },
-        { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
+        { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.snap },
         duration.base,
       );
   });

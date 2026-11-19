@@ -85,7 +85,7 @@ export function Spotlight({
 
   useTemplateMotion(at, (tl) => {
     // The dim image establishes the field before the ring traces the point.
-    const timing = { duration: duration.slow, ease: ease.enter };
+    const timing = { duration: duration.slow, ease: ease.snap };
     tl.fromTo(photo.current, { autoAlpha: 0 }, { autoAlpha: 1, ...timing });
     tl.fromTo(
       ring.current,
@@ -98,13 +98,13 @@ export function Spotlight({
     tl.fromTo(
       leader.current,
       { scaleX: 0 },
-      { scaleX: 1, duration: duration.base, ease: ease.enter },
+      { scaleX: 1, duration: duration.base, ease: ease.punch },
       `<${duration.quick}`,
     );
     tl.fromTo(
       caption.current,
       { autoAlpha: 0, x: 16 },
-      { autoAlpha: 1, x: 0, duration: duration.base, ease: ease.enter },
+      { autoAlpha: 1, x: 0, duration: duration.base, ease: ease.snap },
       `<${duration.quick}`,
     );
   });

@@ -55,7 +55,7 @@ export function MetricGrid({ metrics, at = 0, accent = "cyan" }: TemplateProps<"
     tl.fromTo(
       figure.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
       0,
     );
     tiles.current.forEach((tile, index) => {
@@ -64,13 +64,13 @@ export function MetricGrid({ metrics, at = 0, accent = "cyan" }: TemplateProps<"
       tl.fromTo(
         tile,
         { yPercent: 18, opacity: 0 },
-        { yPercent: 0, opacity: 1, duration: duration.base, ease: ease.enter },
+        { yPercent: 0, opacity: 1, duration: duration.base, ease: ease.snap },
         start,
       );
       tl.fromTo(
         counts,
         { [index]: 0 },
-        { [index]: 1, duration: duration.slow, ease: ease.enter },
+        { [index]: 1, duration: duration.slow, ease: ease.snap },
         start,
       );
     });

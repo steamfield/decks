@@ -53,13 +53,21 @@ export function ComparisonSplit({
     </div>
   );
 
-  const land = (tl: gsap.core.Timeline, side: HTMLDivElement, position?: string) =>
+  const land = (tl: gsap.core.Timeline, side: HTMLDivElement, position?: string) => {
+    const parts = side.querySelectorAll("h2, li");
     tl.fromTo(
-      side.querySelectorAll("h2, li"),
+      parts,
       { autoAlpha: 0, y: 22 },
-      { autoAlpha: 1, y: 0, duration: duration.base, ease: ease.enter, stagger },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: duration.base,
+        ease: ease.snap,
+        stagger: { amount: Math.min(duration.base, stagger * (parts.length - 1)) },
+      },
       position,
     );
+  };
   useTemplateMotion(
     at,
     (tl) => {
@@ -73,12 +81,12 @@ export function ComparisonSplit({
         tl.fromTo(
           divider.current,
           { autoAlpha: 0, yPercent: 18 },
-          { autoAlpha: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
+          { autoAlpha: 1, yPercent: 0, duration: duration.base, ease: ease.punch },
         );
         tl.fromTo(
           before.current,
           { opacity: 1 },
-          { opacity: 0.65, duration: duration.base, ease: ease.enter },
+          { opacity: 0.65, duration: duration.base, ease: ease.leave },
           "<",
         );
         land(tl, after.current, `<${duration.quick}`);

@@ -32,6 +32,9 @@ export function riseWords(
     at,
   );
   if (heading && getComputedStyle(heading).whiteSpace === "nowrap") {
+    // A rebuild on the same heading (effects re-run, as under StrictMode) finds the open tracking
+    // an earlier build left inline; the resting value is the stylesheet's.
+    heading.style.removeProperty("letter-spacing");
     const style = getComputedStyle(heading);
     const resting = Number.parseFloat(style.letterSpacing) || 0;
     const open = resting + OPEN * Number.parseFloat(style.fontSize);

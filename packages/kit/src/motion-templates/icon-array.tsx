@@ -52,7 +52,7 @@ export function IconArray({
     tl.fromTo(
       grid.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.base, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.base, ease: ease.snap },
     );
     // Colour travels across each row. Even a hundred people take the same sweep.
     if (filled)
@@ -62,7 +62,7 @@ export function IconArray({
         {
           attr: { fill: highlight },
           duration: duration.quick,
-          ease: ease.enter,
+          ease: ease.snap,
           stagger: { amount: duration.base },
         },
         duration.quick,
@@ -71,7 +71,7 @@ export function IconArray({
     tl.fromTo(
       heading.current,
       { autoAlpha: 0, xPercent: 4 },
-      { autoAlpha: 1, xPercent: 0, duration: duration.base, ease: ease.enter },
+      { autoAlpha: 1, xPercent: 0, duration: duration.base, ease: ease.snap },
       filled ? duration.quick + duration.base : duration.quick,
     );
   });
