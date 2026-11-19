@@ -11,6 +11,14 @@
       "loop": true
     },
     {
+      "name": "motion-showcase",
+      "startSlide": 1,
+      "provenance": "agent",
+      "attribution": {
+        "label": "Codex wrote this deck from a brief. A human reviewed it without edits."
+      }
+    },
+    {
       "name": "aisd-showcase",
       "startSlide": 1,
       "provenance": "talk",

@@ -1,0 +1,45 @@
+---
+import { Code } from "astro:components";
+import type { SlideSource } from "../../data/motion-showcase";
+
+interface Props {
+  source: SlideSource;
+  hidden: boolean;
+}
+const { source, hidden } = Astro.props;
+---
+
+<figure class="panel motion-source" hidden={hidden}>
+  <figcaption>
+    <code>{source.file}</code>
+    <span>{source.lines} lines</span>
+  </figcaption>
+  <div data-nosnippet>
+    <Code
+      code={source.source}
+      lang="mdx"
+      embeddedLangs={["tsx", "yaml"]}
+      themes={{ dark: "github-dark-default" }}
+      defaultColor={false}
+      wrap={null}
+      role="region"
+      aria-label={`Source for ${source.file}`}
+    />
+  </div>
+  {source.components.length > 0 && (
+    <div class="motion-components">
+      <h3>Local component files</h3>
+      <dl>
+        {source.components.map(({ file, names, lines }) => (
+          <div>
+            <dt>
+              <code>{file}</code>
+              {file !== `${names}.tsx` && <small>{names}</small>}
+            </dt>
+            <dd>{lines} lines</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )}
+</figure>

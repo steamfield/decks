@@ -4,6 +4,8 @@ import {
   type KeyboardEvent,
   useCallback,
   useEffect,
+  useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -143,12 +145,14 @@ export function DeckPlayer({
   autoplay = true,
   priority = false,
   gallery = false,
+  onSlide,
 }: {
   examples: Example[];
   initial?: number;
   autoplay?: boolean;
   priority?: boolean;
   gallery?: boolean;
+  onSlide?: (slide: number) => void;
 }) {
   const [index, setIndex] = useState(initial);
   const example = examples[index] ?? examples[0];
@@ -231,14 +235,40 @@ export function DeckPlayer({
     [example, boot, flush],
   );
 
+  const pause = useCallback(() => {
+    openingHold.current = false;
+    setPlaying(false);
+  }, []);
+  const wantsAutoplay = useEffectEvent(
+    () => autoplay && Boolean(window.matchMedia?.(MOTION).matches) && !document.hidden,
+  );
   useEffect(() => {
     const first = examples[initial] ?? examples[0];
-    if (!first) return;
-    openingHold.current =
-      autoplay && Boolean(window.matchMedia?.(MOTION).matches) && !document.hidden;
-    setPlaying(openingHold.current);
+    const element = wrapper.current;
+    if (!first || !element) return;
+    const bounds = element.getBoundingClientRect();
+    let seen = bounds.top < window.innerHeight && bounds.bottom >= 0;
+    openingHold.current = wantsAutoplay();
+    setPlaying(openingHold.current && seen);
     boot(startOf(first));
-  }, [examples, initial, boot, autoplay]);
+    // The source can hydrate a narrow player from below before the player itself is visible.
+    const observer =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(([entry]) => {
+            if (entry?.isIntersecting) {
+              if (!seen && openingHold.current && wantsAutoplay() && phaseRef.current !== "failed")
+                setPlaying(true);
+              seen = true;
+            } else if (seen) pause();
+          });
+    observer?.observe(element);
+    return () => observer?.disconnect();
+  }, [examples, initial, boot, pause]);
+
+  useEffect(() => {
+    if (!autoplay) pause();
+  }, [autoplay, pause]);
 
   useEffect(() => {
     setCanFullscreen(document.fullscreenEnabled === true);
@@ -364,26 +394,12 @@ export function DeckPlayer({
   }, [playing, phase, deck, meta, example, flush]);
 
   useEffect(() => {
-    const pause = () => {
-      openingHold.current = false;
-      setPlaying(false);
-    };
     const onVisibility = () => {
       if (document.hidden) pause();
     };
     document.addEventListener("visibilitychange", onVisibility);
-    const observer =
-      typeof IntersectionObserver === "undefined"
-        ? null
-        : new IntersectionObserver(([entry]) => {
-            if (entry && !entry.isIntersecting) pause();
-          });
-    if (wrapper.current) observer?.observe(wrapper.current);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      observer?.disconnect();
-    };
-  }, []);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [pause]);
   useEffect(
     () => () => {
       clearTimeout(bootTimer.current);
@@ -394,6 +410,15 @@ export function DeckPlayer({
 
   // Keep the current slide visible in a rail that scrolls sideways (long decks, phones).
   const railSlide = deck?.slide ?? target.current.slide;
+  const visibleSlide =
+    phase === "ready" || (phase === "failed" && positioned.current)
+      ? deck?.settled
+        ? deck.slide
+        : undefined
+      : example?.startSlide;
+  useLayoutEffect(() => {
+    if (visibleSlide !== undefined) onSlide?.(visibleSlide);
+  }, [onSlide, visibleSlide]);
   useEffect(() => {
     const list = rail.current;
     const current = list?.children[railSlide - 1] as HTMLElement | undefined;
@@ -525,9 +550,8 @@ export function DeckPlayer({
       <div
         ref={wrapper}
         role="group"
-        aria-label={`Deck player: ${example.title}. Arrow keys step, Shift moves a slide.`}
-        // biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard navigation applies to this player.
-        tabIndex={0}
+        aria-label={`Deck player: ${example.title}.${phase === "poster" ? "" : " Arrow keys step, Shift moves a slide."}`}
+        tabIndex={phase === "poster" ? undefined : 0}
         onKeyDown={onKeyDown}
         className="player"
         data-player

@@ -17,7 +17,7 @@ test("the files and graph slides survive two complete forward and reverse walks"
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  const player = page.getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
   await page
     .getByRole("link")
     .filter({ has: page.getByText(example.title, { exact: true }) })
@@ -25,7 +25,7 @@ test("the files and graph slides survive two complete forward and reverse walks"
   await expect(player.locator("iframe")).toHaveAttribute("src", /\/d\/opendata-pitch\//);
   await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
   await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
-  const frame = page.frameLocator("iframe");
+  const frame = player.frameLocator("iframe");
   // The scale-graph slide's number, from the deck's own slide files (sorted, as the deck numbers them).
   const graphSlide =
     readdirSync("../examples/opendata-pitch/slides")

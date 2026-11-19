@@ -1,0 +1,157 @@
+{
+  "title": "A linocut in blue ink",
+  "slides": 7,
+  "slideTitles": [
+    "This school starts with a single fish.",
+    "A gouge cuts lines into the fish.",
+    "The roller inks the raised fish.",
+    "The groove stays dry.",
+    "Pressure transfers the ink to paper.",
+    "The print faces the other way.",
+    "The same block prints a school."
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    }
+  ]
+}

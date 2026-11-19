@@ -40,6 +40,7 @@ async function expectNoCopyControl(page: Page) {
   await expect(controls.filter({ visible: true })).toHaveCount(0);
 }
 const hero = examples[0];
+const player = (page: Page) => page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
 
 // Headless Chromium denies the decks' screen wake lock; the deck logs that and carries on.
 const IGNORED = /Wake Lock permission request denied/;
@@ -72,10 +73,9 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(page.locator("html")).toHaveClass(/\bdark\b/);
     await expect(page.locator("[data-theme-toggle]")).toHaveCount(0);
     // Audit the hydrated player (its transport bar), not the server-rendered poster.
-    const player = page.getByRole("group", { name: /^Deck player:/ });
-    await player.scrollIntoViewIfNeeded();
-    await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
-    await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+    await player(page).scrollIntoViewIfNeeded();
+    await expect(player(page).getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
+    await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
     await axe(page);
     expect(errors).toEqual([]);
   });
@@ -200,10 +200,22 @@ test.describe("without JavaScript", () => {
     page,
   }) => {
     await page.goto("/");
-    await expect(page.locator(".player-canvas img")).toBeVisible();
+    await expect(player(page).locator(".player-canvas img")).toBeVisible();
     await expect(page.locator(".player video")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Play" })).toBeHidden();
+    await expect(player(page).getByRole("button", { name: "Play" })).toBeHidden();
     await expectNoCopyControl(page);
+    const motion = examples.find((example) => example.name === "motion-showcase");
+    if (!motion) throw new Error("Missing motion-showcase example");
+    const section = page.locator("#motion");
+    await expect(section.getByRole("img")).toBeVisible();
+    await expect(section.getByRole("listitem")).toHaveText(motion.slideTitles);
+    const cover = readdirSync("../examples/motion-showcase/slides")
+      .filter((file) => file.endsWith(".mdx"))
+      .sort()[0];
+    await expect(section.getByRole("figure").locator("pre")).toHaveJSProperty(
+      "textContent",
+      readFileSync(`../examples/motion-showcase/slides/${cover}`, "utf8").trimEnd(),
+    );
     for (const example of examples) {
       await expect(page.locator(`#examples a[data-example="${example.name}"]`)).toHaveAttribute(
         "href",
@@ -225,17 +237,16 @@ async function withStubDecks(page: Page) {
     route.fulfill({ contentType: "text/html", body: stub }),
   );
 }
-const player = (page: Page) => page.locator("[data-player]");
-const lead = (page: Page) => page.locator(".caption-lead");
+const lead = (page: Page) => player(page).locator(".caption-lead");
 // The player's announcer; copy buttons have live regions of their own.
-const live = (page: Page) => page.locator("[data-player] [aria-live=polite]");
+const live = (page: Page) => player(page).locator("[aria-live=polite]");
 const startSlide = hero?.startSlide ?? 1;
 const startBeat = hero?.startBeat ?? 0;
 async function position(page: Page) {
-  return page.frameLocator("iframe").locator("#where").textContent();
+  return player(page).frameLocator("iframe").locator("#where").textContent();
 }
 async function commands(page: Page) {
-  return page
+  return player(page)
     .locator("iframe")
     .evaluate(
       (frame: HTMLIFrameElement) =>
@@ -255,18 +266,20 @@ test.describe("the interactive player", () => {
   }) => {
     const errors = collectErrors(page);
     await expect(player(page)).toHaveAttribute("data-phase", "ready");
-    await expect(page.locator("iframe")).not.toHaveAttribute("inert", "");
-    await expect(page.locator("iframe")).not.toHaveAttribute("tabindex", "-1");
-    await expect(page.locator("iframe")).toHaveAttribute("title", /interactive deck/);
-    await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+    await expect(player(page).locator("iframe")).not.toHaveAttribute("inert", "");
+    await expect(player(page).locator("iframe")).not.toHaveAttribute("tabindex", "-1");
+    await expect(player(page).locator("iframe")).toHaveAttribute("title", /interactive deck/);
+    await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
     expect(await position(page)).toBe(`slide ${startSlide} beat ${startBeat}`);
-    await page
+    await player(page)
       .getByRole("navigation", { name: "Slides" })
       .getByRole("button", { name: /^Slide 2\b/ })
       .click();
     await expect.poll(() => position(page)).toBe("slide 2 beat 0");
     await expect(
-      page.getByRole("navigation", { name: "Slides" }).getByRole("button", { name: /^Slide 2\b/ }),
+      player(page)
+        .getByRole("navigation", { name: "Slides" })
+        .getByRole("button", { name: /^Slide 2\b/ }),
     ).toHaveAttribute("aria-current", "step");
     await expect(lead(page)).toHaveText("First beat lead.");
     expect(errors).toEqual([]);
@@ -301,14 +314,14 @@ test.describe("the interactive player", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await player(page).scrollIntoViewIfNeeded();
     await expect(player(page)).toHaveAttribute("data-phase", "booting");
-    await expect(page.locator("iframe")).toHaveCSS("visibility", "hidden");
-    await expect(page.locator(".player-canvas img")).toBeVisible();
+    await expect(player(page).locator("iframe")).toHaveCSS("visibility", "hidden");
+    await expect(player(page).locator(".player-canvas img")).toBeVisible();
     await page.evaluate(async () => {
       await document.fonts.ready;
     });
     const before = await bounds();
     try {
-      await page.getByRole("button", { name: "Step forward", exact: true }).click();
+      await player(page).getByRole("button", { name: "Step forward", exact: true }).click();
       await expect(player(page)).toHaveAttribute("data-phase", "booting");
       expect(await bounds()).toEqual(before);
     } finally {
@@ -347,11 +360,11 @@ test.describe("the interactive player", () => {
   });
   test("iframe keys update the host and manual input pauses Play", async ({ page }) => {
     await expect(player(page)).toHaveAttribute("data-phase", "ready");
-    await page.getByRole("button", { name: "Play", exact: true }).click();
-    await page.frameLocator("iframe").locator("body").click();
+    await player(page).getByRole("button", { name: "Play", exact: true }).click();
+    await player(page).frameLocator("iframe").locator("body").click();
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => position(page)).toBe(`slide ${startSlide} beat ${startBeat + 1}`);
-    await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+    await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
     await expect(live(page)).toContainText(`step ${startBeat + 2} of`);
   });
   test("a featured selection loads that live deck at its start, paused", async ({ page }) => {
@@ -371,7 +384,10 @@ test.describe("the interactive player", () => {
       "aria-label",
       new RegExp(`^Deck player: ${pick.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.`),
     );
-    await expect(page.locator("iframe")).toHaveAttribute("src", new RegExp(`/d/${pick.name}/`));
+    await expect(player(page).locator("iframe")).toHaveAttribute(
+      "src",
+      new RegExp(`/d/${pick.name}/`),
+    );
     await expect.poll(() => position(page)).toBe(`slide ${pick.startSlide} beat ${pick.startBeat}`);
   });
 });
@@ -388,10 +404,10 @@ test("autoplays the real iframe without recorded media when motion is allowed", 
   await page.goto("/");
   await player(page).scrollIntoViewIfNeeded();
   await expect(player(page)).toHaveAttribute("data-phase", "ready");
-  await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
+  await expect(player(page).getByRole("button", { name: "Pause", exact: true })).toBeVisible();
   await expect(live(page)).toContainText(`step ${startBeat + 2} of`, { timeout: 10_000 });
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+  await player(page).getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
   await expect(page.locator("video")).toHaveCount(0);
   expect(recordings).toEqual([]);
 });
@@ -406,7 +422,7 @@ test("reduced motion loads a paused live deck without recorded media", async ({ 
   await page.goto("/");
   await player(page).scrollIntoViewIfNeeded();
   await expect(player(page)).toHaveAttribute("data-phase", "ready");
-  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+  await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
   expect(await position(page)).toBe(`slide ${startSlide} beat ${startBeat}`);
   await expect(page.locator("video")).toHaveCount(0);
   expect(recordings).toEqual([]);
@@ -417,7 +433,7 @@ for (const width of [360, 768, 800, 1024, 1280, 1440, 1920]) {
     await page.setViewportSize({ width, height: 800 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
-    const box = await page.locator(".player-canvas").boundingBox();
+    const box = await player(page).locator(".player-canvas").boundingBox();
     const gutter = width < 768 ? 16 : 32;
     const frame = await player(page).boundingBox();
     expect(box).not.toBeNull();
@@ -452,7 +468,7 @@ for (const width of [360, 768, 800, 1024, 1280, 1440, 1920]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,
     );
-    for (const text of [lead(page), page.locator(".caption-body")]) {
+    for (const text of [lead(page), player(page).locator(".caption-body")]) {
       if (await text.count())
         expect(
           await text.evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize)),
@@ -464,24 +480,24 @@ for (const width of [360, 768, 800, 1024, 1280, 1440, 1920]) {
 test("the toolbar remains above the canvas while scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 600 });
   await page.goto("/");
-  await page
+  await player(page)
     .locator(".player-canvas")
     .evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY + 150));
-  const toolbar = await page.locator(".player-toolbar").boundingBox();
+  const toolbar = await player(page).locator(".player-toolbar").boundingBox();
   expect(toolbar?.y).toBeGreaterThanOrEqual(0);
   expect(toolbar?.y).toBeLessThan(100);
-  await expect(page.getByRole("button", { name: "Step forward" })).toBeVisible();
+  await expect(player(page).getByRole("button", { name: "Step forward" })).toBeVisible();
 });
 
 test("at 360px transport controls have 44px touch targets", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/");
   for (const label of ["Step back", "Step forward"]) {
-    const box = await page.getByRole("button", { name: label }).boundingBox();
+    const box = await player(page).getByRole("button", { name: label }).boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
   }
-  await expect(page.getByRole("link", { name: "Open deck", exact: true })).toBeVisible();
+  await expect(player(page).getByRole("link", { name: "Open deck", exact: true })).toBeVisible();
 });
 
 test("hovering and focusing real campus marks pauses the live deck", async ({ page }) => {
@@ -494,28 +510,28 @@ test("hovering and focusing real campus marks pauses the live deck", async ({ pa
   if (!aisd) throw new Error("examples.json has no aisd-showcase for the campus marks");
   await page.getByText("More", { exact: true }).click();
   await page.getByRole("button", { name: aisd.title, exact: true }).click();
-  await expect(page.locator("iframe")).toHaveAttribute("src", /\/d\/aisd-showcase\//);
+  await expect(player(page).locator("iframe")).toHaveAttribute("src", /\/d\/aisd-showcase\//);
   await expect(player(page)).toHaveAttribute("data-phase", "ready");
   // The More list stays open after a pick and covers the transport on a phone.
   await page.getByText("More", { exact: true }).click();
-  await page.getByRole("button", { name: "Play", exact: true }).click();
-  const frame = page.frameLocator("iframe");
+  await player(page).getByRole("button", { name: "Play", exact: true }).click();
+  const frame = player(page).frameLocator("iframe");
   const campus = frame.getByRole("button", { name: /: grade [A-F],/ }).first();
   const label = await campus.getAttribute("aria-label");
-  await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
+  await expect(player(page).getByRole("button", { name: "Pause", exact: true })).toBeVisible();
   await campus.hover();
   await expect(frame.getByRole("tooltip")).toBeVisible();
   await expect(frame.getByRole("tooltip")).toContainText(label?.split(": grade")[0] ?? "");
-  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+  await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
   await page.clock.runFor(15_000);
-  await expect(page.locator(".counter")).toContainText("Slide 1 · Step 1 of 4");
-  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await expect(player(page).locator(".counter")).toContainText("Slide 1 · Step 1 of 4");
+  await player(page).getByRole("button", { name: "Play", exact: true }).click();
   await campus.focus();
-  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+  await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
   await page.clock.runFor(15_000);
-  await expect(page.locator(".counter")).toContainText("Slide 1 · Step 1 of 4");
+  await expect(player(page).locator(".counter")).toContainText("Slide 1 · Step 1 of 4");
   await page.keyboard.press("Enter");
-  await expect(page.locator(".counter")).toContainText("Slide 1 · Step 1 of 4");
+  await expect(player(page).locator(".counter")).toContainText("Slide 1 · Step 1 of 4");
   await page.keyboard.press("ArrowRight");
   await expect(live(page)).toContainText("Slide 1 of 3, step 2 of 4.");
 });

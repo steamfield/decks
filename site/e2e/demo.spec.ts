@@ -1,5 +1,7 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { loadExamples } from "../src/data/examples";
+import { deckDir, loadExamples } from "../src/data/examples";
 import { announcement, mirrorCopy } from "../src/lib/player/format";
 
 const examples = loadExamples();
@@ -15,7 +17,7 @@ for (const example of examples) {
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
-    const player = page.getByRole("group", { name: /^Deck player:/ });
+    const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
     await player.scrollIntoViewIfNeeded();
     await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
     await page
@@ -27,13 +29,13 @@ for (const example of examples) {
       new RegExp(`/d/${example.name}/`),
     );
     await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
-    await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+    await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
     const at = example.states.findIndex(
       (state) => state.slide === example.startSlide && state.beat === example.startBeat,
     );
     if (at < 0) throw new Error(`${example.name}: no recorded start`);
     if (example.name === "aisd-showcase") {
-      await page
+      await player
         .frameLocator("iframe")
         .getByRole("button", { name: /: grade [A-F],/ })
         .first()
@@ -53,7 +55,7 @@ for (const example of examples) {
       ).toBeVisible();
     }
     for (const [index, state] of example.states.slice(at, at + 3).entries()) {
-      if (index) await page.getByRole("button", { name: "Step forward", exact: true }).click();
+      if (index) await player.getByRole("button", { name: "Step forward", exact: true }).click();
       const caption = mirrorCopy(state, example.slideTitles);
       await expect(
         player.getByText(
@@ -71,7 +73,7 @@ for (const example of examples) {
         await expect(
           player.getByRole("paragraph").and(player.getByText(caption.body, { exact: true })),
         ).toBeVisible();
-      await expect(page.frameLocator("iframe").locator("[data-deck-active]")).toHaveAttribute(
+      await expect(player.frameLocator("iframe").locator("[data-deck-active]")).toHaveAttribute(
         "data-deck-slide",
         String(state.slide),
       );
@@ -79,11 +81,11 @@ for (const example of examples) {
   });
 }
 
-test("a phone can load all four decks from the examples menu", async ({ page }) => {
+test("a phone can load every deck from the examples menu", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const player = page.getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
   await player.scrollIntoViewIfNeeded();
   const menu = player.getByRole("navigation", { name: "Example decks" });
   await expect(menu.getByText("More", { exact: true })).toBeVisible();
@@ -98,7 +100,7 @@ test("a phone can load all four decks from the examples menu", async ({ page }) 
       new RegExp(`/d/${example.name}/`),
     );
     await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
-    await expect(page.locator(".counter")).toContainText(
+    await expect(player.locator(".counter")).toContainText(
       `Slide ${example.startSlide} · Step ${example.startBeat + 1}`,
     );
   }
@@ -125,7 +127,7 @@ test("a phone shows the hero's poster until the uniformly scaled live deck is re
   });
   const opening = page.waitForRequest(`**/d/${hero.name}/index.html*`);
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  const player = page.getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
   await player.scrollIntoViewIfNeeded();
   try {
     await opening;
@@ -141,7 +143,7 @@ test("a phone shows the hero's poster until the uniformly scaled live deck is re
   }
   await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
   await expect(player.getByRole("img")).toHaveCount(0);
-  const slide = await page.frameLocator("iframe").locator("[data-deck-active]").boundingBox();
+  const slide = await player.frameLocator("iframe").locator("[data-deck-active]").boundingBox();
   const frame = await player.locator("iframe").boundingBox();
   expect(slide).not.toBeNull();
   expect(frame).not.toBeNull();
@@ -154,10 +156,10 @@ test("a phone shows the hero's poster until the uniformly scaled live deck is re
 test("Play advances the live hero deck with its recorded caption", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const player = page.getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
   await player.scrollIntoViewIfNeeded();
   await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
-  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await player.getByRole("button", { name: "Play", exact: true }).click();
   await expect(
     player
       .getByRole("paragraph")
@@ -165,9 +167,61 @@ test("Play advances the live hero deck with its recorded caption", async ({ page
   ).toBeVisible({
     timeout: 15_000,
   });
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
-  await expect(page.frameLocator("iframe").locator("html")).toHaveAttribute(
+  await player.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(player.frameLocator("iframe").locator("html")).toHaveAttribute(
     "data-deck-view",
     "play",
   );
+});
+
+test("the motion panel opens the displayed slide's MDX after a jump", async ({ page }) => {
+  const dir = join(deckDir("motion-showcase"), "slides");
+  const files = readdirSync(dir)
+    .filter((file) => file.endsWith(".mdx"))
+    .sort();
+  const last = files.at(-1);
+  if (!last) throw new Error("Missing motion-showcase slides");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const section = page.locator("#motion");
+  const player = section.getByRole("group", { name: /^Deck player:/ });
+  await player.scrollIntoViewIfNeeded();
+  await expect(player.getByRole("status")).toContainText("Live deck");
+  await player.getByRole("navigation", { name: "Slides" }).getByRole("button").last().click();
+  await expect(player.frameLocator("iframe").locator("[data-deck-active]")).toHaveAttribute(
+    "data-deck-slide",
+    String(files.length),
+  );
+  await expect(section.getByRole("figure").locator("figcaption code")).toHaveText(`slides/${last}`);
+  await expect(section.getByRole("figure").locator("pre")).toHaveJSProperty(
+    "textContent",
+    readFileSync(join(dir, last), "utf8").trimEnd(),
+  );
+});
+
+test("approaching from below starts the player on sight and focusing its source pauses it", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 600 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#install");
+  const section = page.locator("#motion");
+  const player = section.getByRole("group", { name: /^Deck player:/ });
+  const code = section.getByRole("figure").getByRole("region");
+  await code.evaluate((element) => element.scrollIntoView({ block: "start", behavior: "instant" }));
+  await expect(player).not.toBeInViewport();
+  await expect(player.getByRole("status")).toContainText("Live deck");
+  await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+  await player.scrollIntoViewIfNeeded();
+  await expect(player.getByRole("button", { name: "Pause" })).toBeVisible();
+  await expect(player.getByText(/Slide 2 · Step 1 of/)).toBeVisible({ timeout: 15_000 });
+  const frame = player.locator("iframe");
+  const initialSrc = await frame.getAttribute("src");
+  await code.evaluate((element) => {
+    if (element instanceof HTMLElement) element.focus({ preventScroll: true });
+  });
+  await expect(code).toBeFocused();
+  await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+  await expect(frame).toHaveAttribute("src", initialSrc ?? "");
+  await expect(player.getByText(/Slide 2 · Step 1 of/)).toBeVisible();
 });
