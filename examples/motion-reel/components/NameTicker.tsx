@@ -1,10 +1,10 @@
 import { useTemplateMotion } from "@steamfield/decks/kit";
-import { duration, type gsap, stagger } from "@steamfield/decks/motion";
+import { duration, ease, type gsap, rise, stagger } from "@steamfield/decks/motion";
 import { useRef } from "react";
-import { CLEAR, LEAN, leave, slam, snap } from "./ease";
 import styles from "./NameTicker.module.css";
 
-const PER_ROW = 3;
+// Four names a row keeps the 26 templates to seven rows, which fit the canvas with a margin.
+const PER_ROW = 4;
 // How far, in design pixels, the rows drift on when the band takes over.
 const DRIFT = 64;
 // The shear a row travels with, in degrees: it leans into its direction and stands up on landing.
@@ -46,7 +46,7 @@ export function NameTicker({
               x: i % 2 ? DRIFT : -DRIFT,
               immediateRender: false,
               duration: duration.slow,
-              ease: snap,
+              ease: ease.snap,
             },
             start,
           );
@@ -54,14 +54,14 @@ export function NameTicker({
         tl.fromTo(
           band.current,
           { clipPath: "inset(0% 100% 0% 0%)" },
-          { clipPath: SHOWN, duration: duration.slow, ease: slam },
+          { clipPath: SHOWN, duration: duration.slow, ease: ease.slam },
           start,
         );
         // The line starts up while the band is still crossing, so the two read as one move.
         tl.fromTo(
           next,
-          { yPercent: CLEAR, skewY: LEAN },
-          { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap },
+          { yPercent: rise.clear, skewY: rise.lean },
+          { yPercent: 0, skewY: 0, duration: duration.slow, ease: ease.snap },
           start + duration.quick,
         );
         return;
@@ -69,14 +69,19 @@ export function NameTicker({
       tl.fromTo(
         lineEls()[index - 1] ?? null,
         { yPercent: 0 },
-        { yPercent: -CLEAR, immediateRender: false, duration: duration.base, ease: leave },
+        {
+          yPercent: -rise.clear,
+          immediateRender: false,
+          duration: duration.base,
+          ease: ease.leave,
+        },
         start,
       );
       // The next line follows the old one up, in the same direction, before it has gone.
       tl.fromTo(
         next,
-        { yPercent: CLEAR, skewY: LEAN },
-        { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap },
+        { yPercent: rise.clear, skewY: rise.lean },
+        { yPercent: 0, skewY: 0, duration: duration.slow, ease: ease.snap },
         start + duration.quick / 2,
       );
     };
@@ -89,7 +94,7 @@ export function NameTicker({
         tl.fromTo(
           row,
           { xPercent: i % 2 ? 100 : -100, skewX: i % 2 ? SHEAR : -SHEAR },
-          { xPercent: 0, skewX: 0, duration: duration.slow, ease: snap },
+          { xPercent: 0, skewX: 0, duration: duration.slow, ease: ease.snap },
           (i * stagger) / 2,
         );
       });
