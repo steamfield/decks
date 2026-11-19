@@ -1,0 +1,17 @@
+---
+title: It moves when you click.
+clicks: 3
+transition: cover
+---
+
+import { MotionTemplate } from "@steamfield/decks/kit";
+
+<RiseLine>It moves when you click.</RiseLine>
+
+<div className="reel-xl">
+  <MotionTemplate template="list-cascade" at={1} accent="amber" items={[
+    "One click plays one beat.",
+    "Back plays it in reverse.",
+    "Reload holds the frame.",
+  ]} />
+</div>

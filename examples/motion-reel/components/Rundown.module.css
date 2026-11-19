@@ -1,0 +1,63 @@
+.rundown {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 80px;
+}
+.lead {
+  margin: 0 0 0.5em;
+  font-size: calc(64px * var(--deck-text-scale, 1));
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  word-spacing: 0.06em;
+  color: var(--od-text-secondary);
+}
+/* SplitText's word and mask spans must be boxes: a transform does nothing to inline text. */
+.lead span {
+  display: inline-block;
+}
+.items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  font-size: calc(176px * var(--deck-text-scale, 1));
+  font-weight: 850;
+  line-height: 1.06;
+  letter-spacing: -0.055em;
+}
+/* The resting pose: the first item is live, the others wait dimmed. */
+.items li {
+  position: relative;
+  opacity: 0.26;
+}
+.items li:first-child {
+  opacity: 1;
+  transform: translateX(0.5em);
+}
+.marker {
+  position: absolute;
+  inset: 44% auto auto -0.5em;
+  width: 0.34em;
+  height: 0.12em;
+  background: var(--od-signal);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.items li:first-child .marker {
+  transform: scaleX(1);
+}
+.mask {
+  display: block;
+  overflow: clip;
+  padding-bottom: 0.04em;
+}
+.label {
+  display: block;
+}
+.plate {
+  width: 640px;
+  height: 640px;
+}
