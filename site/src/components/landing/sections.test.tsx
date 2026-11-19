@@ -1,33 +1,15 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { AgentRun, HookDenial } from "../../data/fixtures";
 import type { Example } from "../../lib/player/example";
 import {
   CompareTable,
   DeckProse,
   ExampleGallery,
   FileTree,
-  HookPanel,
   ReleaseBanner,
   Requirements,
   Section,
-  Transcript,
 } from "./sections";
-
-const run: AgentRun = {
-  source: "smoke.jsonl",
-  session: "s",
-  prompt: "make a deck",
-  turns: 87,
-  durationMs: 495_917,
-  costUsd: 3.1690836,
-  toolCalls: 85,
-  shownCalls: 3,
-  steps: [
-    { calls: ["Skill(building-a-deck)"], note: "Loads the workflow.", output: "Launching skill" },
-    { calls: ["Read(a.md)", "Read(b.md)"], note: "", output: "" },
-  ],
-};
 
 const example = (name: string, label: string, kind = "talk"): Example =>
   ({
@@ -86,32 +68,6 @@ describe("landing sections", () => {
     const row = screen.getByRole("heading", { name: "Going back" }).parentElement as HTMLElement;
     expect(row).toHaveTextContent("v-click and a chart librarySnaps.");
     expect(row).toHaveTextContent("Decks story slideReverses.");
-  });
-
-  it("labels the transcript as an abbreviated real run with its own figures", () => {
-    render(<Transcript run={run} deck="the tides deck" />);
-    const figure = screen.getByRole("figure");
-    expect(figure).toHaveTextContent("The run that drafted the tides deck, abbreviated");
-    expect(figure).toHaveTextContent("87 turns, 8 minutes, $3.17. 3 of 85 tool calls shown.");
-    expect(figure).toHaveTextContent('claude -p "make a deck"');
-    expect(within(figure).getAllByRole("listitem")).toHaveLength(3);
-  });
-
-  it("shows the planted line and the hook's own denial, kept out of the prose lint", () => {
-    const denial: HookDenial = {
-      hook: ".claude/hooks/decks.sh",
-      tool: "Write",
-      file: "pages/01.md",
-      line: "<p>At its core.</p>",
-      decision: "deny",
-      rules: ["banned-phrase", "ai-vocab"],
-      reason: ["BLOCKED: found.", "stdin:1 [banned-phrase]"],
-    };
-    render(<HookPanel denial={denial} />);
-    const line = screen.getByText("<p>At its core.</p>");
-    expect(line.closest("[data-lint-skip]")).not.toBeNull();
-    expect(screen.getByText(/BLOCKED: found\./)).toBeInTheDocument();
-    expect(screen.getByText("ai-vocab")).toBeInTheDocument();
   });
 
   it("links each example deck with its poster and how it was made", () => {

@@ -12,16 +12,13 @@ import {
   DeckProse,
   ExampleGallery,
   FileTree,
-  HookPanel,
   ReleaseBanner,
   Requirements,
   Section,
-  Transcript,
 } from "../components/landing/sections";
 import { agents, site } from "../config";
 import { phoneScript } from "../data/agent-session";
-import { ENTRIES, entryFor, loadExample, loadExamples } from "../data/examples";
-import { loadHookDenial, loadRun, runFigures } from "../data/fixtures";
+import { entryFor, loadExample, loadExamples } from "../data/examples";
 import { loadMotionShowcase } from "../data/motion-showcase";
 import { loadProjectFiles, setupCommands } from "../data/project";
 import "../styles/landing.css";
@@ -33,11 +30,6 @@ const showcase = site.motionShowcase;
 const motionDeck = examples.find((example) => example.name === showcase.example);
 const motion = motionDeck && loadMotionShowcase(motionDeck.name);
 const templatesLink = motion && showcase.templates(motion.templates);
-const agentEntry = ENTRIES.find((entry) => entry.name === "keeling");
-const agentExample = examples.find((example) => example.name === "keeling");
-const agentRun = agentEntry?.run ? loadRun(agentEntry.run.fixture) : null;
-const agentFigures = agentRun ? runFigures(agentRun) : null;
-const denial = loadHookDenial();
 const sessionEntry = entryFor("agent-hero");
 if (!sessionEntry) throw new Error("src/data/examples.json has no agent-hero entry for the hero");
 const sessionDeck = loadExample(sessionEntry);
@@ -144,46 +136,6 @@ const files = loadProjectFiles();
     </Section>
   )}
 
-  {agentRun && agentFigures && agentExample && (
-    <Section
-      id="agent"
-      tone="band"
-      title={`Claude Code drafted this deck from one prompt in ${agentFigures.minutes} minutes.`}
-      lede="The Keeling curve deck below was recorded with the earlier Slidev addon, then a second Claude Code session revised it. The current setup uses React."
-    >
-      <div class="agent-evidence">
-        <div class="agent-prompt">
-          <p class="evidence-label">The prompt</p>
-          <blockquote>{agentRun.prompt}</blockquote>
-          <dl class="run-figures">
-            <div>
-              <dt>Draft time</dt>
-              <dd>{agentFigures.minutes} min</dd>
-            </div>
-            <div>
-              <dt>Claude usage</dt>
-              <dd>{agentFigures.cost}</dd>
-            </div>
-            <div>
-              <dt>Agent turns</dt>
-              <dd>{agentFigures.turns}</dd>
-            </div>
-          </dl>
-          <p class="agent-links">
-            <a href={agentExample.href} data-example={agentExample.name}>
-              Load the Keeling deck in the player <span aria-hidden="true">→</span>
-            </a>
-            <a href="/docs/cli/#decks-init---force">
-              Writing decks with an agent <span aria-hidden="true">→</span>
-            </a>
-          </p>
-          <HookPanel denial={denial} />
-        </div>
-        <Transcript run={agentRun} deck="the Keeling curve deck" />
-      </div>
-    </Section>
-  )}
-
   <Section
     id="install"
     title="Install it, then ask your agent for a deck."
@@ -234,7 +186,7 @@ const files = loadProjectFiles();
     id="examples"
     tone="band"
     title="Every example is a deck you can open and edit."
-    lede="Pick one to load it into the player at the top of the page. Each row says how the deck was made."
+    lede="The player below plays each example deck as built, and each row under it says how that deck was made."
   >
     <DeckPlayer client:visible examples={examples} gallery />
     {hero && <DeckProse example={hero} />}
@@ -265,7 +217,7 @@ const files = loadProjectFiles();
         <a href="/docs/slides/">
           Write React and MDX slides <span aria-hidden="true">→</span>
         </a>
-        <a href="/docs/cli/#decks-init---force">
+        <a href="/docs/agents/">
           Write with an agent <span aria-hidden="true">→</span>
         </a>
         <a href="/docs/kit/#theme">

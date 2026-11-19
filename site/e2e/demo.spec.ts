@@ -18,7 +18,7 @@ for (const example of examples) {
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
-    const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
+    const player = page.locator("#examples").getByRole("group", { name: /^Deck player:/ });
     await player.scrollIntoViewIfNeeded();
     await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
     await page
@@ -86,7 +86,7 @@ test("a phone can load every deck from the examples menu", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator("#examples").getByRole("group", { name: /^Deck player:/ });
   await player.scrollIntoViewIfNeeded();
   const menu = player.getByRole("navigation", { name: "Example decks" });
   await expect(menu.getByText("More", { exact: true })).toBeVisible();
@@ -107,13 +107,13 @@ test("a phone can load every deck from the examples menu", async ({ page }) => {
   }
 });
 
-const hero = examples[0];
-if (!hero) throw new Error("examples.json has no examples");
-const heroStart = hero.states.findIndex(
-  (state) => state.slide === hero.startSlide && state.beat === hero.startBeat,
+const first = examples[0];
+if (!first) throw new Error("examples.json has no examples");
+const firstStart = first.states.findIndex(
+  (state) => state.slide === first.startSlide && state.beat === first.startBeat,
 );
 
-test("a phone shows the hero's poster until the uniformly scaled live deck is ready", async ({
+test("a phone shows the gallery player's poster until the uniformly scaled live deck is ready", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
@@ -122,20 +122,20 @@ test("a phone shows the hero's poster until the uniformly scaled live deck is re
   const gate = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route(`**/d/${hero.name}/index.html*`, async (route) => {
+  await page.route(`**/d/${first.name}/index.html*`, async (route) => {
     await gate;
     await route.continue();
   });
-  const opening = page.waitForRequest(`**/d/${hero.name}/index.html*`);
+  const opening = page.waitForRequest(`**/d/${first.name}/index.html*`);
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator("#examples").getByRole("group", { name: /^Deck player:/ });
   await player.scrollIntoViewIfNeeded();
   try {
     await opening;
     await expect(player.getByRole("status")).toContainText("Loading interactive deck");
     await expect(
       player.getByRole("img", {
-        name: `${hero.title}, slide ${hero.startSlide} of ${hero.slides}`,
+        name: `${first.title}, slide ${first.startSlide} of ${first.slides}`,
       }),
     ).toBeVisible();
     await expect(player.locator("iframe")).toBeHidden();
@@ -154,17 +154,17 @@ test("a phone shows the hero's poster until the uniformly scaled live deck is re
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });
 
-test("Play advances the live hero deck with its recorded caption", async ({ page }) => {
+test("Play advances the gallery player's live deck with its recorded caption", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator("#examples").getByRole("group", { name: /^Deck player:/ });
   await player.scrollIntoViewIfNeeded();
   await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
   await player.getByRole("button", { name: "Play", exact: true }).click();
   await expect(
     player
       .getByRole("paragraph")
-      .and(player.getByText(hero.states[heroStart + 1]?.lead ?? "", { exact: true })),
+      .and(player.getByText(first.states[firstStart + 1]?.lead ?? "", { exact: true })),
   ).toBeVisible({
     timeout: 15_000,
   });

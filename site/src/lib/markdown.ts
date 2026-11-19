@@ -10,6 +10,7 @@ import { demoPlayer } from "../data/demo-examples";
 import { parseDemo } from "../data/guide-demos";
 import { guideLink } from "./guide";
 import { DEMO_SIZES, posterSrcset } from "./player/example";
+import { transcriptFences, transcriptMeta } from "./transcript-fence";
 
 const guidePage: HastPluginEntry = ({ fileURL }) =>
   fileURL?.pathname.includes("/docs/guide/")
@@ -137,7 +138,8 @@ export const docsHastPlugins = [
     headingAnchors: { label: () => "Link to this section" },
   }),
   deckDemos,
+  transcriptFences,
 ];
 
-/** Carries `title="..."` and `demo="..."` from a fence's info string onto the highlighted `<pre>`. */
-export const docsShikiTransformers = [codeMeta(), demoMeta];
+/** Carries `title`, `demo` and `transcript` from a fence's info string onto the highlighted `<pre>`. */
+export const docsShikiTransformers = [codeMeta(), demoMeta, transcriptMeta];

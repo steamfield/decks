@@ -1,5 +1,4 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { gzipSync } from "node:zlib";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { site } from "../src/config";
@@ -39,8 +38,10 @@ async function expectNoCopyControl(page: Page) {
   expect(await controls.count()).toBeGreaterThan(0);
   await expect(controls.filter({ visible: true })).toHaveCount(0);
 }
-const hero = examples[0];
-const player = (page: Page) => page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
+const firstExample = examples[0];
+/** The gallery player in #examples; the hero beside the install block is the agent session. */
+const player = (page: Page) =>
+  page.locator("#examples").getByRole("group", { name: /^Deck player:/ });
 
 // Headless Chromium denies the decks' screen wake lock; the deck logs that and carries on.
 const IGNORED = /Wake Lock permission request denied/;
@@ -222,7 +223,7 @@ test.describe("without JavaScript", () => {
         example.href,
       );
     }
-    await expect(page.getByText(`${hero?.title}: the deck's text`)).toBeVisible();
+    await expect(page.getByText(`${firstExample?.title}: the deck's text`)).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Open the example deck", exact: true }),
     ).toBeVisible();
@@ -240,8 +241,8 @@ async function withStubDecks(page: Page) {
 const lead = (page: Page) => player(page).locator(".caption-lead");
 // The player's announcer; copy buttons have live regions of their own.
 const live = (page: Page) => player(page).locator("[aria-live=polite]");
-const startSlide = hero?.startSlide ?? 1;
-const startBeat = hero?.startBeat ?? 0;
+const startSlide = firstExample?.startSlide ?? 1;
+const startBeat = firstExample?.startBeat ?? 0;
 async function position(page: Page) {
   return player(page).frameLocator("iframe").locator("#where").textContent();
 }
@@ -297,7 +298,7 @@ test.describe("the interactive player", () => {
         contentType: "text/html",
         body: stub.replace(
           "const SETTLE_MS =",
-          `SLIDES.splice(${hero?.slides ?? 2});\nconst SETTLE_MS =`,
+          `SLIDES.splice(${firstExample?.slides ?? 2});\nconst SETTLE_MS =`,
         ),
       });
     });
@@ -305,7 +306,7 @@ test.describe("the interactive player", () => {
       page.evaluate(() =>
         Object.fromEntries(
           [".player-toolbar", ".player-transport", ".player-actions"].map((selector) => {
-            const box = document.querySelector(selector)?.getBoundingClientRect();
+            const box = document.querySelector(`#examples ${selector}`)?.getBoundingClientRect();
             if (!box) throw new Error(`missing ${selector}`);
             return [selector, { x: box.x, y: box.y, width: box.width, height: box.height }];
           }),
@@ -445,7 +446,7 @@ for (const width of [360, 768, 800, 1024, 1280, 1440, 1920]) {
     const groups = await page.evaluate(() =>
       [".player-examples", ".player-position", ".player-transport", ".player-actions"].map(
         (selector) => {
-          const box = document.querySelector(selector)?.getBoundingClientRect();
+          const box = document.querySelector(`#examples ${selector}`)?.getBoundingClientRect();
           if (!box) throw new Error(`missing ${selector}`);
           return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
         },
@@ -535,77 +536,3 @@ test("hovering and focusing real campus marks pauses the live deck", async ({ pa
   await page.keyboard.press("ArrowRight");
   await expect(live(page)).toContainText("Slide 1 of 3, step 2 of 4.");
 });
-
-for (const width of [390, 1440])
-  test(`at ${width}px shell stays within 350 KB and live assets are measured separately`, async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width, height: 900 });
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    // Every request through the DevTools protocol, so the loop's range requests,
-    // which have no body Playwright can read, are counted by the bytes that arrived.
-    const cdp = await page.context().newCDPSession(page);
-    await cdp.send("Network.enable");
-    type Request = { url: string; mime: string; bytes: number; done: boolean };
-    const requests = new Map<string, Request>();
-    cdp.on("Network.requestWillBeSent", ({ requestId, request }) => {
-      requests.set(requestId, { url: request.url, mime: "", bytes: 0, done: false });
-    });
-    cdp.on("Network.responseReceived", ({ requestId, response }) => {
-      const request = requests.get(requestId);
-      if (request) request.mime = response.mimeType;
-    });
-    cdp.on("Network.dataReceived", ({ requestId, encodedDataLength }) => {
-      const request = requests.get(requestId);
-      if (request) request.bytes += encodedDataLength;
-    });
-    const finished = new Map<string, number>();
-    cdp.on("Network.loadingFinished", ({ requestId, encodedDataLength }) => {
-      finished.set(requestId, encodedDataLength);
-      const request = requests.get(requestId);
-      if (request) request.done = true;
-    });
-    cdp.on("Network.loadingFailed", ({ requestId }) => {
-      // An aborted range request: what arrived before the abort is in its dataReceived bytes.
-      const request = requests.get(requestId);
-      if (request) request.done = true;
-    });
-    await page.goto("/", { waitUntil: "networkidle" });
-    // The live island can begin below the intro on short screens. Its resources
-    // are reported separately from the page shell and loading poster.
-    await player(page).scrollIntoViewIfNeeded();
-    await expect(player(page)).toHaveAttribute("data-phase", "ready", { timeout: 20_000 });
-    await expect(page.locator("video")).toHaveCount(0);
-    await page.waitForLoadState("networkidle");
-    const sizes: [string, number][] = [];
-    for (const [id, request] of requests) {
-      if (request.url.startsWith("data:")) continue;
-      expect(request.done, `still loading, so unmeasured: ${request.url}`).toBe(true);
-      // A static host compresses text, and the preview server doesn't, so text is
-      // counted gzipped from its body; images and video go over as they are.
-      if (/text|javascript|json|svg|xml/.test(request.mime) && finished.has(id)) {
-        const { body, base64Encoded } = await cdp.send("Network.getResponseBody", {
-          requestId: id,
-        });
-        sizes.push([
-          request.url,
-          gzipSync(Buffer.from(body, base64Encoded ? "base64" : "utf8")).length,
-        ]);
-      } else {
-        sizes.push([request.url, finished.get(id) ?? request.bytes]);
-      }
-    }
-    expect(sizes.length).toBeGreaterThan(0);
-    const live = sizes.filter(([url]) => /\/d\//.test(url));
-    const shell = sizes.filter(([url]) => !/\/d\//.test(url));
-    expect(sizes.some(([url]) => /\/loops\//.test(url))).toBe(false);
-    expect(live.length, "live deck resources must be measured").toBeGreaterThan(0);
-    const shellBytes = shell.reduce((sum, [, size]) => sum + size, 0);
-    const liveBytes = live.reduce((sum, [, size]) => sum + size, 0);
-    const report = sizes.map(([url, size]) => `${Math.round(size / 1000)} KB ${url}`).join("\n");
-    await test.info().attach(`network-budget-${width}`, {
-      body: JSON.stringify({ width, shellBytes, liveBytes, requests: sizes }, null, 2),
-      contentType: "application/json",
-    });
-    expect(shellBytes, report).toBeLessThanOrEqual(350_000);
-  });

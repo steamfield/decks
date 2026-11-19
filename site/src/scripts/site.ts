@@ -74,7 +74,7 @@ function setupCopyButtons() {
 
 /**
  * The example gallery: each thumbnail links to the deck's static build. With
- * JavaScript, a click loads that deck into the hero player instead and scrolls
+ * JavaScript, a click loads that deck into the gallery player instead and scrolls
  * to it. A pick made before the player hydrates waits on window.__decksPick.
  */
 function setupGallery() {

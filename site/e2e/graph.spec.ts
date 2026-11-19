@@ -17,7 +17,7 @@ test("the files and graph slides survive two complete forward and reverse walks"
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  const player = page.locator(".hero").getByRole("group", { name: /^Deck player:/ });
+  const player = page.locator("#examples").getByRole("group", { name: /^Deck player:/ });
   await page
     .getByRole("link")
     .filter({ has: page.getByText(example.title, { exact: true }) })

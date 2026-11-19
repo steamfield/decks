@@ -3,11 +3,8 @@
 // Page callouts are plain panels: the slide's story card never doubles as chrome.
 import type { CSSProperties, ReactNode } from "react";
 import type { Comparison, Link, Requirement } from "../../config";
-import type { AgentRun, HookDenial } from "../../data/fixtures";
-import { runFigures } from "../../data/fixtures";
 import { treeLines } from "../../lib/file-tree";
 import type { Example, ProvenanceKind } from "../../lib/player/example";
-import { runMinutes } from "../../lib/player/format";
 
 export function ReleaseBanner({ announcement }: { announcement: Link | null }) {
   if (!announcement) return null;
@@ -131,95 +128,6 @@ export function CompareTable({ rows }: { rows: Comparison[] }) {
         </div>
       ))}
     </div>
-  );
-}
-
-/** The recorded run's excerpt, every step at once: no inner scroll, no replay. */
-export function Transcript({ run, deck }: { run: AgentRun; deck: string }) {
-  const figures = runFigures(run);
-  return (
-    <figure className="panel transcript terminal" data-block>
-      <figcaption>
-        <span className="terminal-dots" aria-hidden="true" />
-        <span className="text-ink font-medium">The run that drafted {deck}, abbreviated</span>
-        <span className="text-muted">
-          {figures.turns} turns, {runMinutes(figures.minutes)}, {figures.cost}. {run.shownCalls} of{" "}
-          {run.toolCalls} tool calls shown.
-        </span>
-      </figcaption>
-      <ol>
-        <li className="transcript-prompt">
-          <span data-nosnippet="">
-            <span aria-hidden="true" className="run-glyph select-none">
-              ❯{" "}
-            </span>
-            claude -p "{run.prompt}"
-          </span>
-        </li>
-        {run.steps.map((step, index) => (
-          <li
-            // biome-ignore lint/suspicious/noArrayIndexKey: two steps can show the same commands (a check round run twice), and steps never reorder.
-            key={`${index}-${step.calls.join()}`}
-            className="transcript-step"
-          >
-            <div className="min-w-0" data-nosnippet="">
-              {step.calls.map((call) => (
-                <p key={call} className="text-ink break-words">
-                  <span aria-hidden="true" className="run-glyph select-none">
-                    ●{" "}
-                  </span>
-                  {call}
-                </p>
-              ))}
-              {step.output && (
-                <p className="text-ink-2 break-words">
-                  <span aria-hidden="true" className="text-muted select-none">
-                    {"  "}⎿{" "}
-                  </span>
-                  {step.output}
-                </p>
-              )}
-            </div>
-            {step.note && <p className="transcript-note">{step.note}</p>}
-          </li>
-        ))}
-      </ol>
-    </figure>
-  );
-}
-
-/** A planted line, the write hook's real answer, and a plain note that it was a test. */
-export function HookPanel({ denial }: { denial: HookDenial }) {
-  return (
-    <figure className="panel hook-panel" data-block>
-      <figcaption>
-        <p className="text-ink font-medium">A test write, blocked by the hook</p>
-        <p className="text-muted text-sm">
-          We sent this line to the write hook of a project set up with <code>decks init</code>, as a{" "}
-          {denial.tool} to <code>{denial.file}</code>. <code>{denial.hook}</code> blocks a write to
-          deck prose when the text matches a list of phrases common in AI-written prose, including
-          the captions in a story slide's code.
-        </p>
-      </figcaption>
-      <div className="flex flex-col gap-3 p-4" data-lint-skip data-nosnippet="">
-        <pre className="hook-line">
-          <code>{denial.line}</code>
-        </pre>
-        <p className="text-ink text-sm">
-          Decision: <strong>{denial.decision}</strong>. Rules:{" "}
-          {denial.rules.map((rule, index) => (
-            <span key={rule}>
-              {index > 0 && ", "}
-              <code>{rule}</code>
-            </span>
-          ))}
-          .
-        </p>
-        <pre className="hook-reason">
-          <code>{denial.reason.join("\n")}</code>
-        </pre>
-      </div>
-    </figure>
   );
 }
 

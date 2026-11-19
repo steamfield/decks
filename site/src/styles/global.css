@@ -240,3 +240,43 @@
 html:not(.js) .js-only {
   display: none;
 }
+
+/* A guide transcript fence (src/lib/transcript-fence.ts): the landing's terminal, static. */
+.transcript-fence {
+  @apply border-line bg-canvas my-7 overflow-hidden rounded-md border;
+}
+.transcript-fence > figcaption {
+  @apply border-line bg-panel text-muted flex items-center gap-3 border-b px-4 py-2 text-xs;
+}
+.transcript-fence .terminal-dots {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 10px;
+  background:
+    radial-gradient(circle at 5px 5px, var(--color-line-strong) 4px, transparent 4.5px),
+    radial-gradient(circle at 20px 5px, var(--color-line-strong) 4px, transparent 4.5px),
+    radial-gradient(circle at 35px 5px, var(--color-line-strong) 4px, transparent 4.5px);
+}
+.transcript-fence [data-lines] {
+  @apply px-4 py-3 font-mono text-[13px] leading-relaxed;
+}
+.transcript-fence [data-lines] > p {
+  @apply m-0 break-words whitespace-pre-wrap;
+}
+.transcript-fence [data-line="prompt"] {
+  @apply text-ink;
+}
+.transcript-fence [data-line="call"],
+.transcript-fence [data-line="output"] {
+  @apply text-muted;
+}
+.transcript-fence [data-line="reply"] {
+  @apply text-ink-2;
+}
+.transcript-fence [data-line="reply"] strong {
+  @apply text-ink font-semibold;
+}
+.transcript-fence [data-line="prompt"] > span[aria-hidden],
+.transcript-fence [data-line="call"] > span[aria-hidden] {
+  user-select: none;
+}

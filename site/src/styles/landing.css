@@ -422,29 +422,6 @@ html[data-page="landing"] :focus-visible {
   font-size: 0.8125rem;
 }
 
-.hook-panel > figcaption {
-  flex-direction: column;
-  border-bottom-color: color-mix(in srgb, var(--color-block) 30%, var(--color-line));
-}
-
-.hook-line {
-  border: 1px solid color-mix(in srgb, var(--color-block) 35%, var(--color-line));
-  border-radius: var(--radius-sm);
-  background: var(--color-canvas);
-  padding: 0.75rem;
-  font-size: 13px;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-.hook-reason {
-  color: var(--color-ink-2);
-  font-size: 12px;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
 .compare-head {
   display: none;
 }
@@ -538,40 +515,6 @@ html[data-page="landing"] :focus-visible {
 .disclosure-content {
   padding-bottom: 24px;
 }
-.evidence-label {
-  color: var(--color-muted);
-  font-size: 14px;
-}
-.agent-prompt blockquote {
-  font-size: 24px;
-  line-height: 1.45;
-  letter-spacing: -0.02em;
-}
-.run-figures {
-  display: flex;
-  gap: 32px;
-}
-.run-figures dt {
-  color: var(--color-muted);
-  font-size: 12px;
-  margin-bottom: 8px;
-}
-.run-figures dd {
-  color: var(--color-ink);
-  font-family: var(--font-mono);
-  font-size: 20px;
-  font-variant-numeric: tabular-nums;
-}
-.run-figures > div {
-  border-left: 2px solid var(--color-agent);
-  padding-left: 12px;
-}
-.run-figures > div:nth-child(2) {
-  border-left-color: var(--color-talk);
-}
-.run-figures > div:nth-child(3) {
-  border-left-color: var(--color-template);
-}
 .requirements-grid {
   display: grid;
   grid-template-columns: 1.35fr 1fr;
@@ -623,32 +566,6 @@ html[data-page="landing"] :focus-visible {
   gap: 48px;
 }
 
-/* Agent evidence: the prompt and its figures beside the run in a terminal. */
-.agent-evidence {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  align-items: start;
-  gap: 48px 64px;
-}
-.agent-prompt {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  min-width: 0;
-}
-.agent-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 14px;
-}
-.agent-links a {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-.agent-links a:hover {
-  text-decoration: underline;
-}
 /* Tool-call bullets and the prompt caret in the run. */
 .run-glyph {
   color: var(--color-data);
@@ -673,12 +590,6 @@ html[data-page="landing"] :focus-visible {
 .terminal > figcaption > .text-muted {
   flex-basis: 100%;
   font-size: 13px;
-}
-.hook-panel {
-  border-color: color-mix(in srgb, var(--color-block) 45%, var(--color-line));
-}
-.hook-panel strong {
-  color: var(--color-block);
 }
 
 /* Install: the commands beside three label-and-detail rows. */
@@ -835,11 +746,6 @@ html[data-page="landing"] :focus-visible {
   }
 }
 
-@media (max-width: 1023px) {
-  .agent-evidence {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 @media (max-width: 767px) {
   .landing-section {
     padding-block: 72px;
@@ -861,15 +767,6 @@ html[data-page="landing"] :focus-visible {
   }
   .evidence-disclosure > summary span {
     display: none;
-  }
-  .agent-prompt blockquote {
-    font-size: 22px;
-  }
-  .run-figures {
-    gap: 24px;
-  }
-  .run-figures dd {
-    font-size: 18px;
   }
   .section-body {
     gap: 32px;

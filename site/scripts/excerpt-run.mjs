@@ -1,8 +1,7 @@
-// Builds fixtures/<run>.json, the static transcript excerpt on the landing page,
+// Builds fixtures/<run>.json, a recorded run's figures and excerpt (an example's provenance line),
 // from a Claude Code stream-json log (`claude -p ... --output-format stream-json`).
 //
-//   node scripts/excerpt-run.mjs keeling-1 <path/to/keeling-run.jsonl>   # the hero
-//   node scripts/excerpt-run.mjs smoke-1 <path/to/smoke-1.jsonl>         # tides
+//   node scripts/excerpt-run.mjs smoke-1 <path/to/smoke-1.jsonl>   # tides
 //
 // It keeps the calls a reader needs to follow the run (skill, scaffold, rules,
 // sources, data and stage files, check, lint, build) with their first output
@@ -20,12 +19,6 @@ const firstLine = (text, pattern) =>
     .split("\n")
     .map((line) => line.trim())
     .find((line) => (pattern ? pattern.test(line) : line.length > 0)) ?? "";
-
-/** `cat > data/record.ts <<'EOF'` targets in one Bash call, matching `pattern`. */
-const heredocTargets = (command, pattern) =>
-  [...command.matchAll(/cat > (\S+) <<'EOF'/g)]
-    .map((match) => match[1] ?? "")
-    .filter((file) => pattern.test(file));
 
 /**
  * The simple commands in one Bash call, as a reader would name them: heredoc
@@ -185,111 +178,6 @@ const RUNS = {
         out: (c) => firstLine(c.output, /built in/),
       },
     ],
-  },
-
-  // The Keeling deck, drafted in a fresh project with only bun add and decks init.
-  // The agent wrote its files through Bash heredocs, so those are shown as such.
-  "keeling-1": {
-    prompt: "make a 5-slide story deck about what the Keeling curve shows about atmospheric CO2",
-    short: (file) => file.replace(/^.*\/scratchpad\/keeling\//, ""),
-    steps: (short) => {
-      const decks = /^bunx -p slidev-addon-decks decks /;
-      const checkRound = /^bunx -p slidev-addon-decks decks check 2>&1 \| tail -15;/;
-      const recheck = /&& bunx -p slidev-addon-decks decks check 2>&1 \| tail -2 &&/;
-      const heredocs = (pattern) => (c) =>
-        heredocTargets(c.input.command, pattern).map((file) => `Bash(cat > ${file})`);
-      return [
-        {
-          name: "skill",
-          find: (c) => c.name === "Skill",
-          show: (c) => `Skill(${c.input.skill})`,
-          note: "Loads the deck-building workflow that decks init installed.",
-          out: (c) => firstLine(c.output),
-        },
-        {
-          name: "rules",
-          find: (c) =>
-            c.name === "Bash" && /cat \.claude\/rules\/story-stage\.md/.test(c.input.command),
-          show: run(/^cat \.claude\/rules\//),
-          note: "Reads the stage, data and writing rules before drafting.",
-        },
-        {
-          name: "scaffold",
-          find: (c) => c.name === "Bash" && /^bunx -p \S+ decks new keeling /.test(c.input.command),
-          show: run(/^bunx -p \S+ decks new /),
-          note: "Scaffolds a story deck and registers it.",
-          out: (c) => firstLine(c.output, /^Scaffolded/),
-        },
-        {
-          name: "NOAA CSVs",
-          find: (c) =>
-            c.name === "Bash" && /gml\.noaa\.gov\/webdata\/ccgg\/trends\/co2/.test(c.input.command),
-          show: () => "Bash(curl gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv ...)",
-          note: "NOAA's Mauna Loa monthly, annual and growth-rate files.",
-        },
-        {
-          name: "exemplar",
-          find: (c) =>
-            c.name === "Bash" &&
-            c.input.command.startsWith(
-              "E=node_modules/slidev-addon-decks/agent/exemplars/tides; cat",
-            ),
-          show: () => "Bash(cat node_modules/slidev-addon-decks/agent/exemplars/tides/...)",
-          note: "Reads the story deck the package ships as an example.",
-        },
-        {
-          name: "NOAA seasonal cycle",
-          find: (c) =>
-            c.name === "Bash" && /gml\.noaa\.gov\/education\/carbon_toolkit/.test(c.input.command),
-          show: () => "Bash(curl gml.noaa.gov/education/carbon_toolkit/basics.html)",
-          note: "NOAA's explanation of the seasonal cycle.",
-        },
-        {
-          name: "data modules",
-          find: (c) =>
-            c.name === "Bash" && heredocTargets(c.input.command, /\.(py|ts)$/).length > 0,
-          all: true,
-          show: heredocs(/\.(py|ts)$/),
-          note: "A script that copies the CSVs into one generated file, then one data module per slide.",
-        },
-        {
-          name: "stages",
-          find: (c) =>
-            c.name === "Bash" && heredocTargets(c.input.command, /Stage\.vue$/).length > 0,
-          all: true,
-          show: heredocs(/Stage\.vue$/),
-          note: "One stage component per story slide.",
-        },
-        {
-          name: "data-sources.md",
-          find: (c) => c.name === "Write" && /data-sources\.md$/.test(c.input.file_path),
-          show: (c) => `Write(${short(c.input.file_path)})`,
-          note: "The fact-check input: each figure and where it came from.",
-        },
-        {
-          name: "first check round",
-          find: (c) => c.name === "Bash" && checkRound.test(c.input.command),
-          show: run(decks),
-          out: (c) => firstLine(c.output, /All page files/),
-        },
-        {
-          name: "screenshots",
-          find: (c) =>
-            c.name === "Bash" &&
-            /^for n in 2 3 4 5; do bunx \S+ \S+ decks shot /.test(c.input.command),
-          show: run(decks),
-          note: "Screenshots slides 2 to 5 at every click, then reads the images and fixes what they show.",
-          out: (c) => firstLine(c.output, /^errors:/),
-        },
-        {
-          name: "second check round",
-          find: (c) => c.name === "Bash" && recheck.test(c.input.command),
-          show: run(decks),
-          note: "Checks, lints and builds again after the fixes, then lists every figure for the fact-check.",
-          out: (c) => firstLine(c.output, /built in/),
-        },
-      ];
-    },
   },
 };
 
