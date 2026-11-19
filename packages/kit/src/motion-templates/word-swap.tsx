@@ -1,4 +1,5 @@
 import { duration, ease, type gsap, rise, SplitText, stagger } from "@react-decks/motion";
+import { useSlide } from "@react-decks/runtime";
 import { useLayoutEffect, useRef } from "react";
 import { ink } from "../theme/theme";
 import type { TemplateProps } from "./motion-template-props";
@@ -8,9 +9,9 @@ import styles from "./word-swap.module.css";
 
 /**
  * A sentence whose last phrase changes on each click. The lead lines rise through their masks;
- * the phrase sits on a plate. A swap is one sweep from left to right: the old plate shrinks off
- * to the right as its letters lift away, and the next grows in from the left with its letters
- * rising onto it. Nothing clips a plate's letters, so none is ever cut.
+ * the phrase sits on a plate. On a swap the old plate lifts away and fades, and the next grows in
+ * from the left with its letters rising onto it. Nothing clips a plate's letters, so none is ever
+ * cut.
  */
 export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps<"word-swap">) {
   if (!Number.isInteger(at) || at < 0)
@@ -33,6 +34,9 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
           `word-swap ${prop}[${index}] must be at most ${limit} characters, got ${JSON.stringify(text)}`,
         );
     });
+  const { clicks } = useSlide();
+  // The phrase on the plate for this click; before `at` the heading is still hidden.
+  const current = words[Math.min(Math.max(clicks - at, 0), words.length - 1)];
   const heading = useRef<HTMLHeadingElement>(null);
   const leads = useRef<HTMLSpanElement>(null);
   const leadWords = useRef<SplitText | null>(null);
@@ -97,18 +101,20 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
       const from = plates()[index];
       if (!from) return;
       const start = tl.duration();
+      // The exit moves the plate itself, never its fill or letters: with `at` 0 the arrival
+      // replays on every return to the slide, and it poses the first plate's fill and letters,
+      // so an exit on those would be undone and the first phrase would show under the current.
       // The plate on screen was posed by an earlier tween, so its exit must not render early.
-      const exit = { immediateRender: false, duration: duration.base, ease: ease.leave };
       tl.fromTo(
-        from.firstElementChild,
-        { scaleX: 1, transformOrigin: "right center" },
-        { scaleX: 0, transformOrigin: "right center", ...exit },
-        start,
-      );
-      tl.fromTo(
-        letters.current[index]?.chars ?? [],
+        from,
         { opacity: 1, yPercent: 0 },
-        { opacity: 0, yPercent: -45, ...exit, duration: duration.quick, stagger: stagger / 4 },
+        {
+          opacity: 0,
+          yPercent: -45,
+          immediateRender: false,
+          duration: duration.quick,
+          ease: ease.leave,
+        },
         start,
       );
       arrive(tl, index + 1, start + duration.quick / 2);
@@ -126,17 +132,17 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
   );
 
   return (
-    <h2 className={styles.swap} ref={heading} aria-label={`${lead.join(" ")} ${words.join(" ")}`}>
+    <h2 className={styles.swap} ref={heading} aria-label={`${lead.join(" ")} ${current}`}>
       <span className={styles.leads} ref={leads} aria-hidden="true">
-        {lead.map((line) => (
-          <span key={line} className={styles.lead}>
+        {Array.from(lead.entries(), ([index, line]) => (
+          <span key={`${index}-${line}`} className={styles.lead}>
             {line}
           </span>
         ))}
       </span>
       <span className={styles.slot} aria-hidden="true">
-        {words.map((word, index) => (
-          <span key={word} className={styles.plate}>
+        {Array.from(words.entries(), ([index, word]) => (
+          <span key={`${index}-${word}`} className={styles.plate}>
             <span
               className={styles.fill}
               style={index === last ? { backgroundColor: ink(accent, 3) } : undefined}

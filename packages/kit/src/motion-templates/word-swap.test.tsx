@@ -1,30 +1,20 @@
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
-import { setup, tick } from "../kit.test-support";
+import { readableGlyphs, setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
 import { MotionTemplate } from "./motion-template";
 
 const content = { lead: ["We used to ship"], words: ["quarterly", "weekly", "daily"] };
-const name = "We used to ship quarterly weekly daily";
 beforeEach(() => installTheme(resolveTheme()));
 
-function show(at: number, options?: Parameters<typeof setup>[1]) {
-  return setup(() => <MotionTemplate template="word-swap" {...content} at={at} />, options);
+function show(at: number, options?: Parameters<typeof setup>[1], words = content.words) {
+  return setup(
+    () => <MotionTemplate template="word-swap" lead={content.lead} words={words} at={at} />,
+    options,
+  );
 }
-function opacity(element: Element) {
-  let value = 1;
-  for (let part: Element | null = element; part; part = part.parentElement)
-    value *= Number(getComputedStyle(part).opacity || 1);
-  return value;
-}
-/** The plate letters a viewer can read: every single-letter box that is fully opaque. */
-function plate() {
-  const heading = screen.getByRole("heading", { name });
-  return Array.from(heading.querySelectorAll("*"))
-    .filter((el) => !el.children.length && el.textContent?.length === 1 && opacity(el) === 1)
-    .map((el) => el.textContent)
-    .join("");
-}
+/** The plate letters a viewer can read. */
+const plate = () => readableGlyphs(screen.getByRole("heading"));
 
 it("word-swap hides the plate before click at and shows the first phrase from click at", async () => {
   const view = await show(2);
@@ -40,20 +30,35 @@ it("word-swap hides the plate before click at and shows the first phrase from cl
   expect(plate()).toBe("");
 });
 
-it("swaps in the next phrase on each click and back again going back", async () => {
+it("swaps in the next phrase on each click, names the heading after it, and back again", async () => {
   const view = await show(0);
   await tick(1.2);
   expect(plate()).toBe("quarterly");
+  expect(screen.getByRole("heading")).toHaveAccessibleName("We used to ship quarterly");
   for (const word of ["weekly", "daily"]) {
     await view.next();
     await tick(1.2);
     expect(plate()).toBe(word);
+    expect(screen.getByRole("heading")).toHaveAccessibleName(`We used to ship ${word}`);
   }
   for (const word of ["weekly", "quarterly"]) {
     await view.previous();
     await tick(1.2);
     expect(plate()).toBe(word);
+    expect(screen.getByRole("heading")).toHaveAccessibleName(`We used to ship ${word}`);
   }
+});
+
+it("swaps between repeated phrases one plate at a time", async () => {
+  const view = await show(0, undefined, ["faster", "faster", "fastest"]);
+  await tick(1.2);
+  const seen = [plate()];
+  for (let click = 0; click < 2; click++) {
+    await view.next();
+    await tick(1.2);
+    seen.push(plate());
+  }
+  expect(seen).toEqual(["faster", "faster", "fastest"]);
 });
 
 it("going back mid-swap restores the previous phrase whole", async () => {
@@ -65,6 +70,18 @@ it("going back mid-swap restores the previous phrase whole", async () => {
   await view.previous();
   await tick(1.2);
   expect(plate()).toBe("quarterly");
+});
+
+it("returning from the next slide to the last click shows only the last phrase", async () => {
+  const view = await show(0, { click: 3 });
+  await tick(1.2);
+  expect(plate()).toBe("daily");
+  await act(async () => view.store.dispatch({ type: "next" }));
+  await screen.findByRole("heading", { name: "Second slide" });
+  await act(async () => view.store.dispatch({ type: "prev" }));
+  await screen.findByRole("button", { name: "Next click" });
+  await tick(1.2);
+  expect(plate()).toBe("daily");
 });
 
 it("the lead rises and the first plate lands within 1.2 s of arrival", async () => {
@@ -85,7 +102,7 @@ it("the lead rises and the first plate lands within 1.2 s of arrival", async () 
 it("word-swap shows only the phrase for the click in print", async () => {
   await show(1, { click: 3, context: "print" });
   expect(plate()).toBe("daily");
-  expect(screen.getByRole("heading", { name })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "We used to ship daily" })).toBeVisible();
 });
 
 it("accepts two 18-character lines and five 16-character phrases", async () => {
@@ -95,7 +112,7 @@ it("accepts two 18-character lines and five 16-character phrases", async () => {
     click: 3,
     instant: true,
   });
-  expect(screen.getByRole("heading", { name: [...lead, ...words].join(" ") })).toBeVisible();
+  expect(screen.getByRole("heading", { name: [...lead, words[3]].join(" ") })).toBeVisible();
 });
 
 it.each([

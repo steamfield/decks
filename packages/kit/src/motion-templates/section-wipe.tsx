@@ -20,8 +20,15 @@ export function SectionWipe({
   const heading = useRef<HTMLHeadingElement>(null);
   const splits = useRef<SplitText[]>([]);
   useLayoutEffect(() => {
-    const parts = [numeral.current, heading.current].flatMap((part) =>
-      part ? [SplitText.create(part, { type: "words", mask: "words", tag: "span" })] : [],
+    // The heading takes the label SplitText gives it; the numeral is a plain block, which may not
+    // carry a name, so its words stay readable instead.
+    const parts = (
+      [
+        [numeral.current, "none"],
+        [heading.current, "auto"],
+      ] as const
+    ).flatMap(([part, aria]) =>
+      part ? [SplitText.create(part, { type: "words", mask: "words", tag: "span", aria })] : [],
     );
     splits.current = parts;
     return () => {
