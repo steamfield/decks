@@ -5,6 +5,11 @@ import { position, settled, slideNo } from "./fixtures/motion-gallery";
 // The default theme's cyan step 3 (the accent) and its muted text (the neutral).
 const accent = "rgb(34, 211, 238)";
 const neutral = "rgb(161, 161, 170)";
+// Its primary text, its canvas, and the amber and rose step 3 the palette plates take.
+const text = "rgb(247, 248, 248)";
+const canvas = "rgb(9, 9, 11)";
+const amber = "rgb(251, 191, 36)";
+const rose = "rgb(251, 113, 133)";
 
 type Seen = (element: Element) => number;
 
@@ -25,67 +30,87 @@ test.beforeEach(async ({ page }) => {
 
 const active = (page: Page) => page.locator("[data-deck-active]");
 
+/**
+ * The word-swap heading's name, its plate's readable letters and their colours, and every
+ * plate's fill colour (a fill is the plate's only box without text).
+ */
+const readWordSwap = (page: Page) =>
+  active(page)
+    .getByRole("heading", { level: 2 })
+    .evaluate((heading) => {
+      const spans = Array.from(heading.querySelectorAll("span"));
+      const seen = Reflect.get(window, "seen") as Seen;
+      const letters = spans
+        .filter((el) => !el.children.length && el.textContent?.length === 1)
+        .filter((el) => seen(el) === 1);
+      return {
+        name: heading.getAttribute("aria-label"),
+        plate: letters.map((el) => el.textContent).join(""),
+        ink: Array.from(new Set(letters.map((el) => getComputedStyle(el).color))),
+        fills: spans
+          .filter((el) => !el.textContent)
+          .map((el) => getComputedStyle(el).backgroundColor),
+      };
+    });
+const wordSwapPoses = ["quarterly", "weekly", "daily"].map((plate) => ({
+  name: `We ship ${plate}`,
+  plate,
+  ink: [canvas],
+  fills: [amber, rose, accent],
+}));
+
 /** Each fixture's reader, which reads its pose as a viewer would, and its pose at each click. */
 const fixtures: { name: string; read: (page: Page) => Promise<unknown>; poses: unknown[] }[] = [
-  {
-    name: "word-swap",
-    // The plate's readable letters, and which plates are filled with the accent.
-    read: (page) =>
-      active(page)
-        .getByRole("heading", { name: "We ship quarterly weekly daily" })
-        .evaluate((heading, accent) => {
-          const spans = Array.from(heading.querySelectorAll("span"));
-          const seen = Reflect.get(window, "seen") as Seen;
-          return {
-            plate: spans
-              .filter((el) => !el.children.length && el.textContent?.length === 1)
-              .filter((el) => seen(el) === 1)
-              .map((el) => el.textContent)
-              .join(""),
-            accented: spans
-              .filter((el) => !el.textContent)
-              .map((el) => getComputedStyle(el).backgroundColor === accent),
-          };
-        }, accent),
-    poses: ["", "quarterly", "weekly", "daily"].map((plate) => ({
-      plate,
-      accented: [false, false, true],
-    })),
-  },
+  { name: "word-swap", read: readWordSwap, poses: wordSwapPoses },
   {
     name: "bar-board",
-    // Each row's name, how visible its value is, how far forward it sits, and its bar's colour.
+    // The board's left edge colour, and each row's name, how visible its value is, how far forward
+    // it sits, its bar's colour and its value's colour.
     read: (page) =>
       active(page)
         .getByRole("listitem", { includeHidden: true })
-        .evaluateAll((rows) =>
-          rows.map((row) => {
-            const bar = row.lastElementChild?.firstElementChild;
-            const value = row.lastElementChild?.lastElementChild;
-            return [
-              row.getAttribute("aria-label"),
-              value ? (Reflect.get(window, "seen") as Seen)(value) : null,
-              getComputedStyle(row).opacity,
-              bar ? getComputedStyle(bar).backgroundColor : null,
-            ];
-          }),
-        ),
+        .evaluateAll((rows) => {
+          const board = rows[0]?.parentElement?.parentElement;
+          return {
+            edge: board ? getComputedStyle(board).borderLeftColor : null,
+            rows: rows.map((row) => {
+              const bar = row.lastElementChild?.firstElementChild;
+              const value = row.lastElementChild?.lastElementChild;
+              return [
+                row.getAttribute("aria-label"),
+                value ? (Reflect.get(window, "seen") as Seen)(value) : null,
+                getComputedStyle(row).opacity,
+                bar ? getComputedStyle(bar).backgroundColor : null,
+                value ? getComputedStyle(value).color : null,
+              ];
+            }),
+          };
+        }),
     poses: [
-      [
-        ["North pier: 42", 0, "1", neutral],
-        ["East ramp: 30", 0, "1", neutral],
-        ["South dock: 17", 0, "1", neutral],
-      ],
-      [
-        ["North pier: 42", 1, "1", neutral],
-        ["East ramp: 30", 1, "1", neutral],
-        ["South dock: 17", 1, "1", neutral],
-      ],
-      [
-        ["North pier: 42", 1, "1", accent],
-        ["East ramp: 30", 0.4, "0.4", neutral],
-        ["South dock: 17", 0.4, "0.4", neutral],
-      ],
+      {
+        edge: accent,
+        rows: [
+          ["North pier: 42", 0, "1", neutral, text],
+          ["East ramp: 30", 0, "1", neutral, text],
+          ["South dock: 17", 0, "1", neutral, text],
+        ],
+      },
+      {
+        edge: accent,
+        rows: [
+          ["North pier: 42", 1, "1", neutral, text],
+          ["East ramp: 30", 1, "1", neutral, text],
+          ["South dock: 17", 1, "1", neutral, text],
+        ],
+      },
+      {
+        edge: accent,
+        rows: [
+          ["North pier: 42", 1, "1", accent, accent],
+          ["East ramp: 30", 0.4, "0.4", neutral, text],
+          ["South dock: 17", 0.4, "0.4", neutral, text],
+        ],
+      },
     ],
   },
   {
@@ -119,9 +144,10 @@ const fixtures: { name: string; read: (page: Page) => Promise<unknown>; poses: u
     // The centre's total, the legend labels a viewer sees, and the colour of each drawn arc.
     read: async (page) => {
       const centre = await active(page)
-        .getByRole("heading", { level: 2, includeHidden: true })
-        .evaluate((heading) =>
-          (Reflect.get(window, "seen") as Seen)(heading) ? heading.textContent : "",
+        .getByRole("figure", { includeHidden: true })
+        .getByRole("paragraph", { includeHidden: true })
+        .evaluate((total) =>
+          (Reflect.get(window, "seen") as Seen)(total) ? total.textContent : "",
         );
       const labels = await active(page)
         .getByRole("listitem", { includeHidden: true })
@@ -170,3 +196,19 @@ for (const { name, read, poses } of fixtures) {
     }
   });
 }
+
+test("word-swap shows only its last phrase after leaving from the last click and coming back", async ({
+  page,
+}) => {
+  const no = slideNo("mt-word-swap");
+  const last = wordSwapPoses.length - 1;
+  await page.goto(`/#/${no}?clicks=${last}`);
+  await position(page, no, last);
+  await settled(page, no, last);
+  await page.keyboard.press("ArrowRight");
+  await position(page, no + 1);
+  await page.keyboard.press("ArrowLeft");
+  await position(page, no, last);
+  await settled(page, no, last);
+  await expect.poll(() => readWordSwap(page)).toEqual(wordSwapPoses[last]);
+});

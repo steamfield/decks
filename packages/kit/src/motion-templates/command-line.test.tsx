@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
-import { setup, tick } from "../kit.test-support";
+import { accessibleText, readableGlyphs, setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
 import { MotionTemplate } from "./motion-template";
 
@@ -14,13 +14,7 @@ function show(at: number, options?: Parameters<typeof setup>[1]) {
 }
 
 /** The glyphs a viewer can read, in order: each typed character is fully opaque. */
-function typed() {
-  const code = screen.getByText((_, element) => element?.tagName === "CODE");
-  return Array.from(code.children)
-    .filter((char) => getComputedStyle(char).opacity === "1")
-    .map((char) => char.textContent)
-    .join("");
-}
+const typed = () => readableGlyphs(screen.getByRole("code"));
 
 it("command-line hides its command before click at and shows it whole from click at", async () => {
   const view = await show(2);
@@ -52,9 +46,9 @@ it("command-line shows the whole command in print", async () => {
   expect(typed()).toBe(glyphs);
 });
 
-it("reads the command as one string", async () => {
+it("reads the command to a screen reader as one string", async () => {
   await show(0, { instant: true });
-  expect(screen.getByText((_, element) => element?.tagName === "CODE")).toHaveTextContent(command);
+  expect(accessibleText(screen.getByRole("code"))).toBe(command);
 });
 
 it("accepts a 48-character command", async () => {

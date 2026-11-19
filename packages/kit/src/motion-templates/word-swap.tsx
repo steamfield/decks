@@ -1,6 +1,8 @@
 import { duration, ease, type gsap, rise, SplitText, stagger } from "@react-decks/motion";
+import { useSlide } from "@react-decks/runtime";
 import { useLayoutEffect, useRef } from "react";
-import { ink } from "../theme/theme";
+import { ink, theme } from "../theme/theme";
+import { HUE_NAMES, type Hue } from "../theme/theme-resolve";
 import type { TemplateProps } from "./motion-template-props";
 import { riseWords } from "./rise-words";
 import { useTemplateMotion } from "./use-template-motion";
@@ -8,11 +10,18 @@ import styles from "./word-swap.module.css";
 
 /**
  * A sentence whose last phrase changes on each click. The lead lines rise through their masks;
- * the phrase sits on a plate. A swap is one sweep from left to right: the old plate shrinks off
- * to the right as its letters lift away, and the next grows in from the left with its letters
- * rising onto it. Nothing clips a plate's letters, so none is ever cut.
+ * the phrase sits on a plate. On a swap the old plate lifts away and fades, and the next grows in
+ * from the left with its letters rising onto it. Nothing clips a plate's letters, so none is ever
+ * cut. The last plate takes the accent; with the `palette` tone each plate before it takes the
+ * next of the theme's hues, skipping the accent, and with `neutral` they take the muted surface.
  */
-export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps<"word-swap">) {
+export function WordSwap({
+  lead,
+  words,
+  tone = "palette",
+  at = 0,
+  accent = "cyan",
+}: TemplateProps<"word-swap">) {
   if (!Number.isInteger(at) || at < 0)
     throw new Error(`word-swap at must be a nonnegative integer, got ${at}`);
   if (lead.length < 1 || lead.length > 2)
@@ -33,6 +42,9 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
           `word-swap ${prop}[${index}] must be at most ${limit} characters, got ${JSON.stringify(text)}`,
         );
     });
+  const { clicks } = useSlide();
+  // The phrase on the plate for this click; before `at` the heading is still hidden.
+  const current = words[Math.min(Math.max(clicks - at, 0), words.length - 1)];
   const heading = useRef<HTMLHeadingElement>(null);
   const leads = useRef<HTMLSpanElement>(null);
   const leadWords = useRef<SplitText | null>(null);
@@ -59,6 +71,12 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
     };
   }, []);
   const last = words.length - 1;
+  // Slate is the theme's grey, so the palette is the coloured hues in theme order. Every ramp's
+  // step 3 is lighter than its step 1, which clears 3:1 on the canvas, so canvas-coloured letters
+  // stay readable on any coloured plate.
+  const hues = HUE_NAMES.filter((hue) => hue !== "slate" && hue !== accent);
+  const hueOf = (index: number): Hue | undefined =>
+    index === last ? accent : tone === "palette" ? hues[index % hues.length] : undefined;
   const plates = () => Array.from(heading.current?.querySelectorAll(`.${styles.plate}`) ?? []);
 
   /** The plate grows in from the left and its letters rise onto it, starting together. */
@@ -97,18 +115,20 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
       const from = plates()[index];
       if (!from) return;
       const start = tl.duration();
+      // The exit moves the plate itself, never its fill or letters: with `at` 0 the arrival
+      // replays on every return to the slide, and it poses the first plate's fill and letters,
+      // so an exit on those would be undone and the first phrase would show under the current.
       // The plate on screen was posed by an earlier tween, so its exit must not render early.
-      const exit = { immediateRender: false, duration: duration.base, ease: ease.leave };
       tl.fromTo(
-        from.firstElementChild,
-        { scaleX: 1, transformOrigin: "right center" },
-        { scaleX: 0, transformOrigin: "right center", ...exit },
-        start,
-      );
-      tl.fromTo(
-        letters.current[index]?.chars ?? [],
+        from,
         { opacity: 1, yPercent: 0 },
-        { opacity: 0, yPercent: -45, ...exit, duration: duration.quick, stagger: stagger / 4 },
+        {
+          opacity: 0,
+          yPercent: -45,
+          immediateRender: false,
+          duration: duration.quick,
+          ease: ease.leave,
+        },
         start,
       );
       arrive(tl, index + 1, start + duration.quick / 2);
@@ -126,26 +146,32 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
   );
 
   return (
-    <h2 className={styles.swap} ref={heading} aria-label={`${lead.join(" ")} ${words.join(" ")}`}>
+    <h2 className={styles.swap} ref={heading} aria-label={`${lead.join(" ")} ${current}`}>
       <span className={styles.leads} ref={leads} aria-hidden="true">
-        {lead.map((line) => (
-          <span key={line} className={styles.lead}>
+        {Array.from(lead.entries(), ([index, line]) => (
+          <span key={`${index}-${line}`} className={styles.lead}>
             {line}
           </span>
         ))}
       </span>
       <span className={styles.slot} aria-hidden="true">
-        {words.map((word, index) => (
-          <span key={word} className={styles.plate}>
-            <span
-              className={styles.fill}
-              style={index === last ? { backgroundColor: ink(accent, 3) } : undefined}
-            />
-            <span className={index === last ? `${styles.word} ${styles.onAccent}` : styles.word}>
-              {word}
+        {Array.from(words.entries(), ([index, word]) => {
+          const hue = hueOf(index);
+          return (
+            <span key={`${index}-${word}`} className={styles.plate}>
+              <span
+                className={styles.fill}
+                style={{ backgroundColor: hue ? ink(hue, 3) : theme().surfaces.muted }}
+              />
+              <span
+                className={styles.word}
+                style={hue ? { color: theme().surfaces.canvas } : undefined}
+              >
+                {word}
+              </span>
             </span>
-          </span>
-        ))}
+          );
+        })}
       </span>
     </h2>
   );

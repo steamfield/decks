@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { isInaccessible, screen } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -39,6 +39,12 @@ it("the section-wipe entrance in the live slide plays and settles within about 1
   }
   expect(opacities.some((opacity) => opacity > 0 && opacity < 1)).toBe(true);
   expect(part()).toHaveStyle({ opacity: "1" });
+});
+
+it("reads the number as text rather than as a label on a block", async () => {
+  await setup(() => <MotionTemplate {...props} />, { instant: true });
+  expect(isInaccessible(screen.getByText(props.number))).toBe(false);
+  expect(screen.queryByLabelText(props.number)).toBeNull();
 });
 
 it("section-wipe shows its finished pose for the click in print", async () => {

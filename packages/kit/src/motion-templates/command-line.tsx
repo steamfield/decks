@@ -19,7 +19,8 @@ export function CommandLine({ command, at = 0, accent = "cyan" }: TemplateProps<
   const split = useRef<SplitText | null>(null);
   useLayoutEffect(() => {
     if (!code.current) return;
-    const chars = SplitText.create(code.current, { type: "chars", tag: "span" });
+    // A <code> may not carry a name, so the characters stay readable instead of being labelled.
+    const chars = SplitText.create(code.current, { type: "chars", tag: "span", aria: "none" });
     split.current = chars;
     return () => {
       chars.revert();

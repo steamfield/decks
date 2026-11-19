@@ -50,7 +50,7 @@ export function ScrambleText({
     tl.fromTo(
       figure.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
       0,
     );
     // The plugin writes the text node, not the element, so the text is never parsed as HTML. Its

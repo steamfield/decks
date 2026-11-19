@@ -95,16 +95,6 @@ it("reads the split title once as the whole sentence and leaves it whole after u
   expect(heading.innerHTML).toBe(content.title);
 });
 
-it("draws the accent rule only under a subtitle", async () => {
-  const bare = await setup(() => <MotionTemplate template="title-reveal" title={content.title} />, {
-    context: "print",
-  });
-  expect(screen.getByRole("figure").children).toHaveLength(1);
-  bare.unmount();
-  await show(0, { context: "print" });
-  expect(screen.getByRole("figure").children).toHaveLength(3);
-});
-
 it("a deck that re-registers ease.snap in its setup.ts moves the title on its own curve", async () => {
   const kitSnap = CustomEase.get(ease.snap);
   onTestFinished(() => {

@@ -1,4 +1,5 @@
 import { duration, ease, rise, stagger, useTween } from "@react-decks/motion";
+import { useSlide } from "@react-decks/runtime";
 import { useMemo, useRef } from "react";
 import { ink, theme } from "../theme/theme";
 import styles from "./bar-board.module.css";
@@ -6,18 +7,23 @@ import { numberFormat, useNumberLocale } from "./format-number";
 import type { TemplateProps } from "./motion-template-props";
 import { useTemplateMotion } from "./use-template-motion";
 
-/** The tick step: the smallest of 1, 2, 2.5 and 5 (times a power of ten) giving at most 5 steps. */
+/**
+ * The tick step: the smallest of 1, 2, 2.5 and 5 (times a power of ten) giving at most 5 steps,
+ * and the fraction digits its multiples need, so a step of 0.025 labels 0.075 and not 0.08.
+ */
 function tickStep(top: number) {
   const rough = top / 5;
-  const power = 10 ** Math.floor(Math.log10(rough));
-  return [1, 2, 2.5, 5, 10].map((multiple) => multiple * power).find((step) => step >= rough) ?? 0;
+  const exponent = Math.floor(Math.log10(rough));
+  const multiple = [1, 2, 2.5, 5, 10].find((each) => each * 10 ** exponent >= rough) ?? 10;
+  const digits = -exponent + (multiple === 2.5 ? 1 : 0) - (multiple === 10 ? 1 : 0);
+  return { step: multiple * 10 ** exponent, digits: Math.max(0, digits) };
 }
 
 /**
  * A ranked board. Click 1 wipes it across and grows the bars one after another, each starting
  * before the last has landed, with its value counting beside it. Click 2 turns the leading bar
- * to the accent and dims the rest. Bars are lengths on an axis from zero to the tick above the
- * longest, so the picture and the numbers cannot disagree.
+ * (every bar tied for the lead) to the accent and dims the rest. Bars are lengths on an axis from
+ * zero to the tick above the longest, so the picture and the numbers cannot disagree.
  */
 export function BarBoard({
   rows,
@@ -52,19 +58,45 @@ export function BarBoard({
   });
   if (!source.trim())
     throw new Error(`bar-board source must contain text, got ${JSON.stringify(source)}`);
+  if (source.length > 60)
+    throw new Error(
+      `bar-board source must be at most 60 characters, got ${JSON.stringify(source)}`,
+    );
+  for (const [prop, affix] of [
+    ["prefix", prefix],
+    ["suffix", suffix],
+  ] as const)
+    if (affix.length > 8)
+      throw new Error(
+        `bar-board ${prop} must be at most 8 characters, got ${JSON.stringify(affix)}`,
+      );
   const top = rows[0]?.value ?? 0;
-  if (top === 0) throw new Error("bar-board rows need a value above 0");
-  const step = tickStep(top);
+  if (top === 0)
+    throw new Error(
+      `bar-board rows need a largest value above 0, got rows[0] ${JSON.stringify(rows[0])}`,
+    );
+  // Every row tied for the lead shares the accent; rows are sorted, so they come first.
+  const leaders = rows.filter((row) => row.value === top).length;
+  const { step, digits } = tickStep(top);
   const ceiling = Math.ceil(top / step - 1e-9) * step;
   const ticks = Array.from({ length: Math.round(ceiling / step) + 1 }, (_, index) => index * step);
   const board = useRef<HTMLDivElement>(null);
   const credit = useRef<HTMLParagraphElement>(null);
   const counts = useTween(Object.fromEntries(rows.map((_, index) => [index, 0])));
+  const { clicks } = useSlide();
   const locale = useNumberLocale();
   const formats = useMemo(() => rows.map((row) => numberFormat(row.value, locale)), [rows, locale]);
-  const axisFormat = useMemo(() => numberFormat(step, locale), [step, locale]);
+  const axisFormat = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: digits }),
+    [digits, locale],
+  );
   const format = (index: number, value: number) =>
     `${prefix}${formats[index]?.format(value) ?? ""}${suffix}`;
+  // The value column is as wide as the longest finished value, so a full-length bar's value
+  // stays on the board.
+  const widest = rows
+    .map((row, index) => format(index, row.value))
+    .reduce((longest, next) => (next.length > longest.length ? next : longest));
   const plain = theme().text.muted;
   const parts = (name: string | undefined) =>
     Array.from(board.current?.querySelectorAll(`.${name}`) ?? []);
@@ -115,17 +147,22 @@ export function BarBoard({
     [
       (tl) => {
         const start = tl.duration();
-        // Beat 2: the leader takes the accent, and every other row steps back.
+        // Beat 2: the leaders' bars and values take the accent, and every other row steps back.
         const timing = { immediateRender: false, duration: duration.base, ease: ease.snap };
-        const rowsOnBoard = parts(styles.row);
         tl.fromTo(
-          parts(styles.bar)[0] ?? null,
+          parts(styles.bar).slice(0, leaders),
           { backgroundColor: plain },
           { backgroundColor: ink(accent, 3), ...timing },
           start,
         );
         tl.fromTo(
-          rowsOnBoard.slice(1),
+          parts(styles.value).slice(0, leaders),
+          { color: theme().text.primary },
+          { color: ink(accent, 3), ...timing },
+          start,
+        );
+        tl.fromTo(
+          parts(styles.row).slice(leaders),
           { opacity: 1 },
           { opacity: 0.4, ...timing, stagger: stagger / 2 },
           start,
@@ -136,25 +173,22 @@ export function BarBoard({
 
   return (
     <figure className={styles.figure}>
-      <div className={styles.board} ref={board}>
+      <div className={styles.board} ref={board} style={{ borderLeftColor: ink(accent, 3) }}>
         <ul className={styles.rows}>
-          {rows.map((row, index) => (
+          {Array.from(rows.entries(), ([index, row]) => (
             <li
-              key={row.label}
+              // Two rows may share a label; the index keeps their keys apart.
+              key={`${index}-${row.label}`}
               className={styles.row}
               aria-label={`${row.label}: ${format(index, row.value)}`}
+              aria-current={index < leaders && clicks > at ? "true" : undefined}
             >
               <span className={styles.label} aria-hidden="true">
                 {row.label}
               </span>
               <span className={styles.track} aria-hidden="true">
                 <span className={styles.bar} style={{ backgroundColor: plain }} />
-                <span className={styles.value}>
-                  {
-                    // snap settles from a hair past 1, so the count is held at its value.
-                    format(index, Math.min(row.value, counts[index] ?? 0))
-                  }
-                </span>
+                <span className={styles.value}>{format(index, counts[index] ?? 0)}</span>
               </span>
             </li>
           ))}
@@ -166,6 +200,7 @@ export function BarBoard({
             </span>
           ))}
         </div>
+        <span className={styles.reserve} aria-hidden="true" data-value={widest} />
       </div>
       <figcaption className={styles.source}>
         <p ref={credit}>{source}</p>

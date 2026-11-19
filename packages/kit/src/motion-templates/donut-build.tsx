@@ -41,8 +41,20 @@ export function DonutBuild({
         `donut-build segments[${index}].value must be a finite number above 0, got ${segment.value}`,
       );
   });
-  const sums = segments.map((_, index) =>
-    segments.slice(0, index + 1).reduce((sum, segment) => sum + segment.value, 0),
+  for (const [prop, affix] of [
+    ["prefix", prefix],
+    ["suffix", suffix],
+  ] as const)
+    if (affix.length > 8)
+      throw new Error(
+        `donut-build ${prop} must be at most 8 characters, got ${JSON.stringify(affix)}`,
+      );
+  const sums = useMemo(
+    () =>
+      segments.map((_, index) =>
+        segments.slice(0, index + 1).reduce((sum, segment) => sum + segment.value, 0),
+      ),
+    [segments],
   );
   const whole = sums[sums.length - 1] ?? 0;
   const dial = useRef<HTMLDivElement>(null);
@@ -57,20 +69,15 @@ export function DonutBuild({
   );
   // The centre shows every running total in one format: the one with the most decimals.
   const centre = useMemo(() => {
-    return segments
-      .map((_, index) =>
-        numberFormat(
-          segments.slice(0, index + 1).reduce((sum, segment) => sum + segment.value, 0),
-          locale,
-        ),
-      )
+    return sums
+      .map((sum) => numberFormat(sum, locale))
       .reduce((best, next) =>
         (next.resolvedOptions().maximumFractionDigits ?? 0) >
         (best.resolvedOptions().maximumFractionDigits ?? 0)
           ? next
           : best,
       );
-  }, [segments, locale]);
+  }, [sums, locale]);
   const neutral = theme().text.muted;
   const lit = ink(accent, 3);
   const arcs = () => Array.from(ring.current?.querySelectorAll("circle") ?? []).slice(1);
@@ -79,7 +86,9 @@ export function DonutBuild({
     return (tl: gsap.core.Timeline) => {
       const start = tl.duration();
       const from = ((sums[index - 1] ?? 0) / whole) * 100;
-      const to = Math.max(from, ((sums[index] ?? 0) / whole) * 100 - GAP);
+      const end = ((sums[index] ?? 0) / whole) * 100;
+      // A segment narrower than two gaps gives up half its share instead, so it still shows.
+      const to = end - Math.min(GAP, (end - from) / 2);
       // An arc's sweep and the centre's number encode values, so both settle on snap.
       tl.fromTo(
         arcs()[index] ?? null,
@@ -129,9 +138,9 @@ export function DonutBuild({
       <div className={styles.dial} ref={dial}>
         <svg ref={ring} viewBox="0 0 100 100" aria-hidden="true">
           <circle className={styles.track} cx="50" cy="50" r="40" />
-          {segments.map((segment) => (
+          {Array.from(segments.entries(), ([index, segment]) => (
             <circle
-              key={segment.label}
+              key={`${index}-${segment.label}`}
               className={styles.arc}
               cx="50"
               cy="50"
@@ -141,21 +150,15 @@ export function DonutBuild({
             />
           ))}
         </svg>
-        <h2>
-          {
-            // snap settles from a hair past 1, so each segment's share is held at its value.
-            `${prefix}${centre.format(
-              segments.reduce(
-                (sum, segment, index) => sum + segment.value * Math.min(1, drawn[index] ?? 0),
-                0,
-              ),
-            )}${suffix}`
-          }
-        </h2>
+        <p>
+          {`${prefix}${centre.format(
+            segments.reduce((sum, segment, index) => sum + segment.value * (drawn[index] ?? 0), 0),
+          )}${suffix}`}
+        </p>
       </div>
       <ol className={`od-body ${styles.legend}`} ref={legend}>
-        {segments.map((segment, index) => (
-          <li key={segment.label}>
+        {Array.from(segments.entries(), ([index, segment]) => (
+          <li key={`${index}-${segment.label}`}>
             <span>{segment.label}</span>
             <span className={styles.value}>
               {`${prefix}${formats[index]?.format(segment.value) ?? ""}${suffix}`}
