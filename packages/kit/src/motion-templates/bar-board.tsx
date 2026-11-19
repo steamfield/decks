@@ -147,12 +147,18 @@ export function BarBoard({
     [
       (tl) => {
         const start = tl.duration();
-        // Beat 2: the leaders take the accent, and every other row steps back.
+        // Beat 2: the leaders' bars and values take the accent, and every other row steps back.
         const timing = { immediateRender: false, duration: duration.base, ease: ease.snap };
         tl.fromTo(
           parts(styles.bar).slice(0, leaders),
           { backgroundColor: plain },
           { backgroundColor: ink(accent, 3), ...timing },
+          start,
+        );
+        tl.fromTo(
+          parts(styles.value).slice(0, leaders),
+          { color: theme().text.primary },
+          { color: ink(accent, 3), ...timing },
           start,
         );
         tl.fromTo(
@@ -167,7 +173,7 @@ export function BarBoard({
 
   return (
     <figure className={styles.figure}>
-      <div className={styles.board} ref={board}>
+      <div className={styles.board} ref={board} style={{ borderLeftColor: ink(accent, 3) }}>
         <ul className={styles.rows}>
           {Array.from(rows.entries(), ([index, row]) => (
             <li

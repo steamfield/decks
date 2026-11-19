@@ -17,6 +17,8 @@
   grid-template-columns: var(--label) 1fr auto;
   grid-template-rows: minmax(0, 1fr) auto;
   padding: 0.8em 0.75em 0.5em;
+  /* The accent edge; its colour is set inline from the accent prop. */
+  border-left: 0.2em solid;
   background: var(--od-surface);
   font-size: 1.1em;
   color: var(--od-text);
