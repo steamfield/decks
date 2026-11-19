@@ -34,6 +34,14 @@
 .wordmark span,
 .tagline span {
   display: inline-block;
+  transform-origin: left bottom;
+}
+/* A mask is the glyph's line box, which is tighter than the glyph. The padding gives every
+   ascender, descender and overhang room, and the negative margin keeps the layout unchanged. */
+.wordmark > *,
+.tagline > * {
+  padding: 0.22em 0.16em;
+  margin: -0.22em -0.16em;
 }
 .rule {
   width: 100%;

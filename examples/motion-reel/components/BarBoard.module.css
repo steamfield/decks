@@ -1,0 +1,28 @@
+.figure {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+/* The board is a flat plate with the signal edge the command bar and the list markers share. */
+.board {
+  flex: 1;
+  min-height: 0;
+  padding: 36px 48px 24px 40px;
+  border-left: 20px solid var(--od-signal);
+  background: var(--od-surface);
+}
+/* The source line rises inside this box; the padding keeps its descenders clear of the edge. */
+.source {
+  overflow: clip;
+  padding: 0.25em 0;
+  margin: -0.25em 0;
+  font-size: calc(30px * var(--deck-text-scale, 1));
+  font-weight: 500;
+  color: var(--od-text-muted);
+}
+.source p {
+  margin: 0;
+}

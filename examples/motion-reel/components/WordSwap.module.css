@@ -15,34 +15,46 @@
 /* SplitText's word and mask spans must be boxes: a transform does nothing to inline text. */
 .lead span {
   display: inline-block;
+  transform-origin: left bottom;
 }
-/* The padding keeps descenders inside each word's mask. */
+/* A mask is the word's line box, which is tighter than its glyphs. The padding gives every
+   ascender, descender and overhang room, and the negative margin keeps the layout unchanged. */
 .lead > * {
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
+  padding: 0.22em 0.08em;
+  margin: -0.22em -0.08em;
 }
 .slot {
   display: grid;
   justify-items: start;
-  margin-top: 0.1em;
+  margin-top: 0.12em;
 }
+/* The colour is its own box behind the letters, so it can wipe without cropping them. */
 .plate {
+  position: relative;
   grid-area: 1 / 1;
-  padding: 0 0.16em 0.07em 0.12em;
-  overflow: clip;
-  transform-origin: left center;
+  padding: 0.02em 0.16em 0.09em 0.12em;
   color: var(--od-canvas);
 }
-.plate[data-tone="0"] {
+.fill {
+  position: absolute;
+  inset: 0;
+}
+.plate[data-tone="0"] .fill {
   background: var(--od-cyan-bright);
 }
 .plate[data-tone="1"] {
-  background: var(--od-plate);
   color: var(--od-text);
 }
-.plate[data-tone="2"] {
+.plate[data-tone="1"] .fill {
+  background: var(--od-plate);
+}
+.plate[data-tone="2"] .fill {
   background: var(--od-signal);
 }
 .word {
+  position: relative;
+  display: inline-block;
+}
+.word span {
   display: inline-block;
 }

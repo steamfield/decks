@@ -1,5 +1,5 @@
 import { useTemplateMotion } from "@steamfield/decks/kit";
-import { duration, SplitText } from "@steamfield/decks/motion";
+import { duration, SplitText, stagger } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef } from "react";
 import { slam } from "./ease";
 import styles from "./InstallLine.module.css";
@@ -25,16 +25,17 @@ export function InstallLine({ command, at = 0 }: { command: string; at?: number 
       { clipPath: "inset(0% 100% 0% 0%)" },
       { clipPath: "inset(0% 0% 0% 0%)", duration: duration.base, ease: slam },
     );
-    // Each character appears whole, in order, so the line reads as typed.
+    // The typing starts while the bar is still opening. Each character appears whole, in order.
     tl.fromTo(
       chars,
       { opacity: 0 },
       {
         opacity: 1,
-        duration: 0,
+        duration: stagger,
         stagger: { amount: duration.slow },
         ease: "none",
       },
+      duration.quick,
     );
   });
   return (

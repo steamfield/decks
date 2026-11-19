@@ -1,12 +1,14 @@
 import { useTemplateMotion } from "@steamfield/decks/kit";
 import { duration, type gsap, stagger } from "@steamfield/decks/motion";
 import { useRef } from "react";
-import { slam, snap } from "./ease";
+import { CLEAR, LEAN, leave, slam, snap } from "./ease";
 import styles from "./NameTicker.module.css";
 
 const PER_ROW = 3;
 // How far, in design pixels, the rows drift on when the band takes over.
 const DRIFT = 64;
+// The shear a row travels with, in degrees: it leans into its direction and stands up on landing.
+const SHEAR = 14;
 const SHOWN = "inset(0% 0% 0% 0%)";
 
 /**
@@ -55,24 +57,26 @@ export function NameTicker({
           { clipPath: SHOWN, duration: duration.slow, ease: slam },
           start,
         );
+        // The line starts up while the band is still crossing, so the two read as one move.
         tl.fromTo(
           next,
-          { yPercent: 110 },
-          { yPercent: 0, duration: duration.base, ease: snap },
-          start + duration.base,
+          { yPercent: CLEAR, skewY: LEAN },
+          { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap },
+          start + duration.quick,
         );
         return;
       }
       tl.fromTo(
         lineEls()[index - 1] ?? null,
         { yPercent: 0 },
-        { yPercent: -110, immediateRender: false, duration: duration.base, ease: snap },
+        { yPercent: -CLEAR, immediateRender: false, duration: duration.base, ease: leave },
         start,
       );
+      // The next line follows the old one up, in the same direction, before it has gone.
       tl.fromTo(
         next,
-        { yPercent: 110 },
-        { yPercent: 0, duration: duration.base, ease: snap },
+        { yPercent: CLEAR, skewY: LEAN },
+        { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap },
         start + duration.quick / 2,
       );
     };
@@ -84,8 +88,8 @@ export function NameTicker({
       rowEls().forEach((row, i) => {
         tl.fromTo(
           row,
-          { xPercent: i % 2 ? 100 : -100 },
-          { xPercent: 0, duration: duration.slow, ease: snap },
+          { xPercent: i % 2 ? 100 : -100, skewX: i % 2 ? SHEAR : -SHEAR },
+          { xPercent: 0, skewX: 0, duration: duration.slow, ease: snap },
           (i * stagger) / 2,
         );
       });
