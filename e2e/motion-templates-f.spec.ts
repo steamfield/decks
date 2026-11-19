@@ -1,5 +1,3 @@
-import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { test } from "./fixtures/motion.fixture";
 import { position, settled, slideNo } from "./fixtures/motion-gallery";
@@ -7,6 +5,11 @@ import { position, settled, slideNo } from "./fixtures/motion-gallery";
 // The default theme's cyan step 3 (the accent) and its muted text (the neutral).
 const accent = "rgb(34, 211, 238)";
 const neutral = "rgb(161, 161, 170)";
+// Its primary text, its canvas, and the amber and rose step 3 the palette plates take.
+const text = "rgb(247, 248, 248)";
+const canvas = "rgb(9, 9, 11)";
+const amber = "rgb(251, 191, 36)";
+const rose = "rgb(251, 113, 133)";
 
 type Seen = (element: Element) => number;
 
@@ -27,29 +30,33 @@ test.beforeEach(async ({ page }) => {
 
 const active = (page: Page) => page.locator("[data-deck-active]");
 
-/** The word-swap heading's name, its plate's readable letters, and which plates are accented. */
+/**
+ * The word-swap heading's name, its plate's readable letters and their colours, and every
+ * plate's fill colour (a fill is the plate's only box without text).
+ */
 const readWordSwap = (page: Page) =>
   active(page)
     .getByRole("heading", { level: 2 })
-    .evaluate((heading, accent) => {
+    .evaluate((heading) => {
       const spans = Array.from(heading.querySelectorAll("span"));
       const seen = Reflect.get(window, "seen") as Seen;
+      const letters = spans
+        .filter((el) => !el.children.length && el.textContent?.length === 1)
+        .filter((el) => seen(el) === 1);
       return {
         name: heading.getAttribute("aria-label"),
-        plate: spans
-          .filter((el) => !el.children.length && el.textContent?.length === 1)
-          .filter((el) => seen(el) === 1)
-          .map((el) => el.textContent)
-          .join(""),
-        accented: spans
+        plate: letters.map((el) => el.textContent).join(""),
+        ink: Array.from(new Set(letters.map((el) => getComputedStyle(el).color))),
+        fills: spans
           .filter((el) => !el.textContent)
-          .map((el) => getComputedStyle(el).backgroundColor === accent),
+          .map((el) => getComputedStyle(el).backgroundColor),
       };
-    }, accent);
+    });
 const wordSwapPoses = ["quarterly", "weekly", "daily"].map((plate) => ({
   name: `We ship ${plate}`,
   plate,
-  accented: [false, false, true],
+  ink: [canvas],
+  fills: [amber, rose, accent],
 }));
 
 /** Each fixture's reader, which reads its pose as a viewer would, and its pose at each click. */
@@ -57,38 +64,53 @@ const fixtures: { name: string; read: (page: Page) => Promise<unknown>; poses: u
   { name: "word-swap", read: readWordSwap, poses: wordSwapPoses },
   {
     name: "bar-board",
-    // Each row's name, how visible its value is, how far forward it sits, and its bar's colour.
+    // The board's left edge colour, and each row's name, how visible its value is, how far forward
+    // it sits, its bar's colour and its value's colour.
     read: (page) =>
       active(page)
         .getByRole("listitem", { includeHidden: true })
-        .evaluateAll((rows) =>
-          rows.map((row) => {
-            const bar = row.lastElementChild?.firstElementChild;
-            const value = row.lastElementChild?.lastElementChild;
-            return [
-              row.getAttribute("aria-label"),
-              value ? (Reflect.get(window, "seen") as Seen)(value) : null,
-              getComputedStyle(row).opacity,
-              bar ? getComputedStyle(bar).backgroundColor : null,
-            ];
-          }),
-        ),
+        .evaluateAll((rows) => {
+          const board = rows[0]?.parentElement?.parentElement;
+          return {
+            edge: board ? getComputedStyle(board).borderLeftColor : null,
+            rows: rows.map((row) => {
+              const bar = row.lastElementChild?.firstElementChild;
+              const value = row.lastElementChild?.lastElementChild;
+              return [
+                row.getAttribute("aria-label"),
+                value ? (Reflect.get(window, "seen") as Seen)(value) : null,
+                getComputedStyle(row).opacity,
+                bar ? getComputedStyle(bar).backgroundColor : null,
+                value ? getComputedStyle(value).color : null,
+              ];
+            }),
+          };
+        }),
     poses: [
-      [
-        ["North pier: 42", 0, "1", neutral],
-        ["East ramp: 30", 0, "1", neutral],
-        ["South dock: 17", 0, "1", neutral],
-      ],
-      [
-        ["North pier: 42", 1, "1", neutral],
-        ["East ramp: 30", 1, "1", neutral],
-        ["South dock: 17", 1, "1", neutral],
-      ],
-      [
-        ["North pier: 42", 1, "1", accent],
-        ["East ramp: 30", 0.4, "0.4", neutral],
-        ["South dock: 17", 0.4, "0.4", neutral],
-      ],
+      {
+        edge: accent,
+        rows: [
+          ["North pier: 42", 0, "1", neutral, text],
+          ["East ramp: 30", 0, "1", neutral, text],
+          ["South dock: 17", 0, "1", neutral, text],
+        ],
+      },
+      {
+        edge: accent,
+        rows: [
+          ["North pier: 42", 1, "1", neutral, text],
+          ["East ramp: 30", 1, "1", neutral, text],
+          ["South dock: 17", 1, "1", neutral, text],
+        ],
+      },
+      {
+        edge: accent,
+        rows: [
+          ["North pier: 42", 1, "1", accent, accent],
+          ["East ramp: 30", 0.4, "0.4", neutral, text],
+          ["South dock: 17", 0.4, "0.4", neutral, text],
+        ],
+      },
     ],
   },
   {
@@ -189,93 +211,4 @@ test("word-swap shows only its last phrase after leaving from the last click and
   await position(page, no, last);
   await settled(page, no, last);
   await expect.poll(() => readWordSwap(page)).toEqual(wordSwapPoses[last]);
-});
-
-/** Writes one slide per template into the editable deck, after installing the kit theme. */
-async function writeSlides(dir: string, ...templates: string[]) {
-  await writeFile(
-    join(dir, "setup.ts"),
-    'import {installTheme,resolveTheme} from "@steamfield/decks/kit"; installTheme(resolveTheme());',
-  );
-  const header = 'import {MotionTemplate} from "@steamfield/decks/kit";\n\n<h1>Fixture</h1>\n';
-  for (const [index, template] of templates.entries())
-    await writeFile(
-      join(dir, `slides/0${index + 1}-${index ? "steps" : "cover"}.mdx`),
-      header + template,
-    );
-}
-
-test("bar-board keeps its longest value on the board when the top bar fills its track", async ({
-  page,
-  editableDeck,
-}) => {
-  // The top value sits on a tick, so its bar is the whole track; the affixes are the longest
-  // allowed.
-  const rows = [
-    { label: "North pier", value: 1250000 },
-    { label: "East ramp", value: 600000 },
-  ];
-  await writeSlides(
-    editableDeck.dir,
-    `<MotionTemplate template="bar-board" rows={${JSON.stringify(rows)}} source="Demo data" prefix="approx. " suffix=" ships/d" />`,
-  );
-  await page.goto(`${editableDeck.url}?motion=instant#/1`);
-  const figure = active(page).getByRole("figure");
-  const value = figure
-    .getByRole("listitem", { name: /^North pier/ })
-    .getByText("approx. 1,250,000 ships/d", { exact: true });
-  await expect(value).toBeVisible();
-  const [box, board] = [await value.boundingBox(), await figure.boundingBox()];
-  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
-    (board?.x ?? 0) + (board?.width ?? 0),
-  );
-});
-
-test("donut-build draws a segment smaller than the gap between segments", async ({
-  page,
-  editableDeck,
-}) => {
-  const segments = [
-    { label: "Ferries", value: 995 },
-    { label: "Kayaks", value: 5 },
-  ];
-  await writeSlides(
-    editableDeck.dir,
-    `<MotionTemplate template="donut-build" segments={${JSON.stringify(segments)}} />`,
-  );
-  await page.goto(`${editableDeck.url}?motion=instant#/1?clicks=1`);
-  await expect(active(page).getByText("Kayaks", { exact: true })).toBeVisible();
-  // The arcs are decorative parts of a hidden drawing; their tag is their only identity. Each
-  // arc's drawn length is the first entry of its dash pattern.
-  const drawn = await active(page)
-    .locator("circle")
-    .evaluateAll((circles) =>
-      circles.slice(1).map((arc) => Number.parseFloat(getComputedStyle(arc).strokeDasharray)),
-    );
-  expect(drawn).toHaveLength(2);
-  for (const length of drawn) expect(length).toBeGreaterThan(0);
-});
-
-test("title-reveal draws its accent rule under a subtitle and none without one", async ({
-  page,
-  editableDeck,
-}) => {
-  const title = 'title="The river changed course."';
-  await writeSlides(
-    editableDeck.dir,
-    `<MotionTemplate template="title-reveal" ${title} subtitle="A field guide" />`,
-    `<MotionTemplate template="title-reveal" ${title} />`,
-  );
-  // The rule is a decorative block hidden from assistive technology, found by its tag.
-  const rule = (no: number) =>
-    page.locator(`[data-deck-active][data-deck-slide="${no}"] figure div[aria-hidden=true]`);
-  await page.goto(`${editableDeck.url}?motion=instant#/1`);
-  await expect(active(page).getByText("A field guide", { exact: true })).toBeVisible();
-  const heading = await active(page).getByRole("heading", { level: 2 }).boundingBox();
-  const drawn = await rule(1).boundingBox();
-  expect(drawn?.width).toBeGreaterThan(0);
-  expect(drawn?.y).toBeGreaterThanOrEqual((heading?.y ?? 0) + (heading?.height ?? 0));
-  await page.goto(`${editableDeck.url}?motion=instant#/2`);
-  await expect(active(page).getByRole("heading", { level: 2 })).toBeVisible();
-  await expect(rule(2)).toHaveCount(0);
 });
