@@ -54,7 +54,7 @@ the guide names as one click per item, the two it names as two clicks, and every
 template plays on arrival and adds none.
 
 Derivation: `data/template-clicks.ts` filters `TEMPLATES` by the two named lists, so the rows
-always sum to `TEMPLATES.length`. The bars start at zero on a 0 to 20 axis; no rounding.
+always sum to `TEMPLATES.length`. The bars are drawn by `components/BarBoard.tsx` from these rows, on an axis from 0 to 20; a bar is its value over 20 of the track. No rounding.
 
 The slide's `title` in frontmatter types 16 and 21. Recount and change it if the rows change.
 

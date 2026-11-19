@@ -6,13 +6,71 @@
   flex-direction: column;
   gap: 24px;
 }
-/* The board is a flat plate with the signal edge the command bar and the list markers share. */
+/* The board is a flat plate with the signal edge the command bar and the list markers share.
+   Labels sit in a fixed column, so every bar and the axis share one zero and one scale. */
 .board {
+  --label: 400px;
   flex: 1;
   min-height: 0;
-  padding: 36px 48px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 150px 28px 40px;
   border-left: 20px solid var(--od-signal);
   background: var(--od-surface);
+  font-size: calc(54px * var(--deck-text-scale, 1));
+}
+.rows {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 22px;
+}
+.rows li {
+  display: grid;
+  grid-template-columns: var(--label) 1fr;
+  align-items: stretch;
+}
+.group {
+  align-self: center;
+  padding-right: 28px;
+  text-align: right;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.track {
+  display: flex;
+  align-items: center;
+  border-left: 3px solid var(--od-border-axis);
+}
+.bar {
+  align-self: stretch;
+  flex: none;
+}
+.value {
+  margin-left: 0.3em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transform-origin: left center;
+}
+/* Ticks hang from the same zero as the bars: the axis starts where the label column ends. */
+.axis {
+  position: relative;
+  height: 1.3em;
+  margin: 14px 0 0 var(--label);
+  border-top: 3px solid var(--od-border-axis);
+  font-size: 0.8em;
+  font-variant-numeric: tabular-nums;
+  color: var(--od-text-muted);
+}
+.axis span {
+  position: absolute;
+  top: 0.2em;
+  translate: -50% 0;
 }
 /* The source line rises inside this box; the padding keeps its descenders clear of the edge. */
 .source {
