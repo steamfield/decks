@@ -65,6 +65,10 @@ export function createStageController(iframe: HTMLIFrameElement): StageControlle
 
   function post(entry: Pending) {
     iframe.contentWindow?.postMessage(entry.message, origin);
+  }
+
+  /** The command's deadline runs from the call, so a deck that never sends ready also fails. */
+  function arm(entry: Pending) {
     entry.timer = setTimeout(() => {
       if (pending !== entry) return;
       pending = null;
@@ -94,6 +98,7 @@ export function createStageController(iframe: HTMLIFrameElement): StageControlle
     return new Promise<StageResult>((resolve, reject) => {
       const entry: Pending = { id: serial, name: nameOf(message), message, resolve, reject };
       pending = entry;
+      arm(entry);
       if (isReady) post(entry);
     });
   }

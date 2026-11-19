@@ -10,6 +10,12 @@ export const Events = {
   beatStepped: "beat_stepped",
   /** An example deck was picked from the gallery; `example` is the deck name. */
   exampleSelected: "example_selected",
+  /** The hero's agent session reached a turn's prompt; `turn` counts from 1. */
+  agentDemoTurnReached: "agent_demo_turn_reached",
+  /** The hero's agent session played through its last turn, once per page view. */
+  agentDemoCompleted: "agent_demo_completed",
+  /** A finished example deck was opened from a link; `example` is the deck name. */
+  exampleOpened: "example_opened",
   /** The Quickstart docs page was viewed. */
   docsQuickstartViewed: "docs_quickstart_viewed",
 } as const;

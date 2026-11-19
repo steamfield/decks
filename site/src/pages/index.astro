@@ -1,6 +1,9 @@
 ---
+import { existsSync } from "node:fs";
 import ThemeCompare from "../components/blog/ThemeCompare.astro";
 import CopyBlock from "../components/CopyBlock.astro";
+import { StaticTranscript } from "@steamfield/ui/react/agent-demo";
+import { AgentSession } from "../components/landing/AgentSession";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
 import MotionSource from "../components/landing/MotionSource.astro";
@@ -16,7 +19,8 @@ import {
   Transcript,
 } from "../components/landing/sections";
 import { agents, site } from "../config";
-import { ENTRIES, loadExamples } from "../data/examples";
+import { phoneScript } from "../data/agent-session";
+import { ENTRIES, entryFor, loadExample, loadExamples } from "../data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../data/fixtures";
 import { loadMotionShowcase } from "../data/motion-showcase";
 import { loadProjectFiles, setupCommands } from "../data/project";
@@ -34,6 +38,25 @@ const agentExample = examples.find((example) => example.name === "keeling");
 const agentRun = agentEntry?.run ? loadRun(agentEntry.run.fixture) : null;
 const agentFigures = agentRun ? runFigures(agentRun) : null;
 const denial = loadHookDenial();
+const sessionEntry = entryFor("agent-hero");
+if (!sessionEntry) throw new Error("src/data/examples.json has no agent-hero entry for the hero");
+const sessionDeck = loadExample(sessionEntry);
+if (!sessionDeck.poster)
+  throw new Error(
+    "public/posters/agent-hero-1280.avif is missing: run node scripts/demo.mjs --only agent-hero",
+  );
+const extraPoster = (name: string) => {
+  if (!existsSync(`public/posters/agent-hero-${name}-1920.webp`))
+    throw new Error(
+      `public/posters/agent-hero-${name}-1920.webp is missing: run node scripts/demo.mjs --only agent-hero`,
+    );
+  return { base: `/posters/agent-hero-${name}`, width: 1920, height: 1080 };
+};
+const sessionPosters = {
+  start: sessionDeck.poster,
+  cover: extraPoster("cover"),
+  finished: extraPoster("finished"),
+};
 const files = loadProjectFiles();
 ---
 
@@ -41,24 +64,15 @@ const files = loadProjectFiles();
   <ReleaseBanner slot="banner" announcement={site.announcement} />
 
   <section aria-labelledby="hero-title" class="hero">
-    <div class="page-column hero-head">
-      <div>
+    <div class="page-column hero-grid">
+      <div class="hero-text">
         <h1 id="hero-title" class="hero-title hero-in">
           {site.tagline}
         </h1>
         <p class="hero-lede hero-in" style="--delay: 120ms">
           {site.heroDescription}
         </p>
-      </div>
-      <div class="hero-intro hero-in" style="--delay: 240ms">
-        <CopyBlock
-          id="copy-copy-the-install-commands"
-          lines={site.quickstart}
-          label="Copy the install commands"
-          track="install_copied"
-          trackMethod="hero"
-        />
-        <div class="hero-actions">
+        <div class="hero-actions hero-in" style="--delay: 240ms">
           <a class="button-primary" href="#install">
             Install Decks
           </a>
@@ -66,13 +80,39 @@ const files = loadProjectFiles();
             Read the quickstart <span aria-hidden="true">→</span>
           </a>
         </div>
+      </div>
+      <div class="hero-demo">
+        <AgentSession
+          client:media="(prefers-reduced-motion: no-preference)"
+          src={`${sessionDeck.href}index.html`}
+          href={sessionDeck.href}
+          posters={sessionPosters}
+        >
+          <noscript>
+            <div class="agent-session-static">
+              <StaticTranscript script={phoneScript} layout="terminal" />
+              <img
+                class="agent-session-cover"
+                src={`${sessionPosters.cover.base}-1280.webp`}
+                width={sessionPosters.cover.width}
+                height={sessionPosters.cover.height}
+                alt={site.agentSession.stageLabels[1]}
+              />
+            </div>
+          </noscript>
+        </AgentSession>
+      </div>
+      <div class="hero-install">
+        <CopyBlock
+          id="copy-copy-the-install-commands"
+          lines={site.quickstart}
+          label="Copy the install commands"
+          track="install_copied"
+          trackMethod="hero"
+        />
         <p class="hero-fineprint">{site.heroFineprint}</p>
       </div>
     </div>
-    <div class="page-column hero-in-media" style="--delay: 360ms">
-      <DeckPlayer client:visible examples={examples} priority gallery />
-    </div>
-    {hero && <DeckProse example={hero} />}
   </section>
 
   {motionDeck && motion && templatesLink && (
@@ -196,6 +236,8 @@ const files = loadProjectFiles();
     title="Every example is a deck you can open and edit."
     lede="Pick one to load it into the player at the top of the page. Each row says how the deck was made."
   >
+    <DeckPlayer client:visible examples={examples} gallery />
+    {hero && <DeckProse example={hero} />}
     <ExampleGallery examples={examples} />
   </Section>
 

@@ -69,8 +69,24 @@ export const site = {
   tagline: "Build animated presentations with coding agents.",
   description:
     "Build animated presentations with coding agents using Decks, a React slide framework. Add interactive charts, scaffold slides and trace figures to their sources.",
+  /** The hero's one-line lede. */
   heroDescription:
-    "Decks is a React slide framework for animated data storytelling, built as an alternative to Slidev. Give your coding agent a brief, then review the animated charts and trace the figures to their sources.",
+    "Your coding agent turns your data and a brief into an animated React slide deck, then changes it when you ask.",
+  /** The hero's scripted agent session (AgentSession, src/data/agent-session.ts). */
+  agentSession: {
+    fineprint:
+      "An illustrative session with a fictional team's data. Every slide shown is a Decks slide from examples/agent-hero.",
+    openDeck: "Open the finished deck",
+    /** The stage's accessible name: what the agent has built, before turn 1 and after each turn. */
+    stageLabels: [
+      "An empty first slide, before the agent starts",
+      "The five-slide build-time talk the agent drafted from the CSV",
+      "The build-time talk, now opening on a reel of three words",
+      "The build-time talk, with a scoreboard of the minutes each change saved",
+      "The build-time talk, with its closing slide fixed to fit",
+      "The finished build-time talk, built and exported to a PDF",
+    ],
+  },
   /** Absolute production URL: canonicals, the sitemap, OG images and llms.txt use it. */
   url: "https://decks.steamfield.io",
   repo,
@@ -195,7 +211,7 @@ export const site = {
   /** From the package's package.json. */
   license,
   /** Components that hydrate on the landing page. The build test fails on any other island. */
-  islands: ["DeckPlayer", "MotionShowcase", "InstallTabs"],
+  islands: ["AgentSession", "DeckPlayer", "MotionShowcase", "InstallTabs"],
 };
 
 /** Docs sidebar groups, in order. A page's `group` frontmatter must be one of these ids. */
