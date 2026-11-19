@@ -88,14 +88,6 @@ Bash decks lint agent-hero
 Done. The close was clipped at the bottom, so it keeps three bullets and the rest moved to the notes.
 ```
 
-```mdx demo="agent-hero/close-fitted"
-<ul>
-    <li>Pin new dependencies so the cache stays warm.</li>
-    <li>Give slow tests their own shard.</li>
-    <li>Build on the slim base image.</li>
-  </ul>
-```
-
 ## What keeps it honest
 
 | Check | What it catches |
