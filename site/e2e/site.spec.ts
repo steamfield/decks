@@ -204,17 +204,17 @@ test.describe("without JavaScript", () => {
     await expect(page.locator(".player video")).toHaveCount(0);
     await expect(player(page).getByRole("button", { name: "Play" })).toBeHidden();
     await expectNoCopyControl(page);
-    const motion = examples.find((example) => example.name === "motion-showcase");
-    if (!motion) throw new Error("Missing motion-showcase example");
+    const motion = examples.find((example) => example.name === site.motionShowcase.example);
+    if (!motion) throw new Error(`Missing ${site.motionShowcase.example} example`);
     const section = page.locator("#motion");
     await expect(section.getByRole("img")).toBeVisible();
     await expect(section.getByRole("listitem")).toHaveText(motion.slideTitles);
-    const cover = readdirSync("../examples/motion-showcase/slides")
+    const cover = readdirSync(`../examples/${site.motionShowcase.example}/slides`)
       .filter((file) => file.endsWith(".mdx"))
       .sort()[0];
     await expect(section.getByRole("figure").locator("pre")).toHaveJSProperty(
       "textContent",
-      readFileSync(`../examples/motion-showcase/slides/${cover}`, "utf8").trimEnd(),
+      readFileSync(`../examples/${site.motionShowcase.example}/slides/${cover}`, "utf8").trimEnd(),
     );
     for (const example of examples) {
       await expect(page.locator(`#examples a[data-example="${example.name}"]`)).toHaveAttribute(

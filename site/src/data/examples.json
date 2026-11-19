@@ -11,11 +11,11 @@
       "loop": true
     },
     {
-      "name": "motion-showcase",
+      "name": "motion-reel",
       "startSlide": 1,
       "provenance": "agent",
       "attribution": {
-        "label": "Codex wrote this deck from a brief. A human reviewed it without edits."
+        "label": "A Claude Code agent (Fable) wrote this deck from a brief and revised it from review notes."
       }
     },
     {

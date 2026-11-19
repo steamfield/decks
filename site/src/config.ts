@@ -53,12 +53,12 @@ export const site = {
   /** The home page's <title> and OG title. */
   title: "Animated presentations with coding agents | Decks",
   motionShowcase: {
-    example: "motion-showcase",
-    heading: (longest: number) => `The longest slide takes ${longest} lines of MDX.`,
-    lede: (slides: number) =>
-      `Follow a linocut from block to paper across ${slides} slides. Each file calls the components that draw the print and move it.`,
+    example: "motion-reel",
+    heading: (slides: number, longest: number) =>
+      `This reel is a ${slides}-slide deck, and its longest slide is ${longest} lines of MDX.`,
+    lede: "Every frame in the player is a slide. Step through it with its controls or the arrow keys, and the source beside it follows. Each slide fills in a motion template or calls a component built on gsap.",
     credit:
-      "Codex (gpt-6.2-astra) wrote the deck from a written brief. It used the deck-motion skill and its references, deck-design and writing-slides. A human reviewed the deck and made no edits.",
+      "A Claude Code agent (Fable) wrote the deck from a written brief, using the deck-motion skill and its references, deck-design and writing-slides, then revised it from a human's review notes. Nobody edited it by hand.",
     motion: { href: "/docs/motion/", label: "Write a motion sequence" },
     templates: (count: number) => ({
       href: "/docs/motion-templates/",

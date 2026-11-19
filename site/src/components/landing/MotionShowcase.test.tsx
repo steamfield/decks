@@ -3,13 +3,14 @@ import { join } from "node:path";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, it } from "vitest";
+import { site } from "../../config";
 import { deckDir, loadExamples } from "../../data/examples";
 import { MotionShowcase } from "./MotionShowcase";
 
 it("keeps the displayed file until the deck reports the next slide on screen", async () => {
-  const examples = loadExamples().filter((item) => item.name === "motion-showcase");
+  const examples = loadExamples().filter((item) => item.name === site.motionShowcase.example);
   const [example] = examples;
-  const slides = readdirSync(join(deckDir("motion-showcase"), "slides"))
+  const slides = readdirSync(join(deckDir(site.motionShowcase.example), "slides"))
     .filter((file) => file.endsWith(".mdx"))
     .sort()
     .map((file) => `slides/${file}`);

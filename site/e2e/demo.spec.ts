@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
+import { site } from "../src/config";
 import { deckDir, loadExamples } from "../src/data/examples";
 import { announcement, mirrorCopy } from "../src/lib/player/format";
 
@@ -175,12 +176,12 @@ test("Play advances the live hero deck with its recorded caption", async ({ page
 });
 
 test("the motion panel opens the displayed slide's MDX after a jump", async ({ page }) => {
-  const dir = join(deckDir("motion-showcase"), "slides");
+  const dir = join(deckDir(site.motionShowcase.example), "slides");
   const files = readdirSync(dir)
     .filter((file) => file.endsWith(".mdx"))
     .sort();
   const last = files.at(-1);
-  if (!last) throw new Error("Missing motion-showcase slides");
+  if (!last) throw new Error(`Missing ${site.motionShowcase.example} slides`);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const section = page.locator("#motion");

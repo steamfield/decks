@@ -6,6 +6,7 @@ import { loadDeck } from "@steamfield/decks/node";
 import { describe, expect, it } from "vitest";
 import { resolveTheme } from "../../packages/kit/src/theme/theme-resolve.ts";
 import { runHook } from "../scripts/hook.mjs";
+import { site } from "./config";
 import {
   deckDir,
   ENTRIES,
@@ -92,14 +93,15 @@ describe("the WARM still's theme.json", () => {
   });
 });
 
-it("counts the linocut slides, source lines and available motion templates from the repository", () => {
-  const show = loadMotionShowcase("motion-showcase");
-  const dir = deckDir("motion-showcase");
+it("counts the motion section's slides, source lines and available motion templates from the repository", () => {
+  const name = site.motionShowcase.example;
+  const show = loadMotionShowcase(name);
+  const dir = deckDir(name);
   const lineCount = (file: string) =>
     readFileSync(file, "utf8").match(/[^\n]*\n|[^\n]+$/g)?.length ?? 0;
-  expect(show.slides).toHaveLength(loadRecording("motion-showcase")?.slides ?? -1);
+  expect(show.slides).toHaveLength(loadRecording(name)?.slides ?? -1);
   expect(show.slides[0]?.components).toContainEqual(
-    expect.objectContaining({ names: "CoverFish", file: "Fish.tsx" }),
+    expect.objectContaining({ names: "WordSwap", file: "WordSwap.tsx" }),
   );
   const fileLines = show.slides.map((slide) => {
     for (const component of slide.components) {

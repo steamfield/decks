@@ -1,14 +1,16 @@
 {
-  "title": "A linocut in blue ink",
-  "slides": 7,
+  "title": "Motion reel",
+  "slides": 9,
   "slideTitles": [
-    "This school starts with a single fish.",
-    "A gouge cuts lines into the fish.",
-    "The roller inks the raised fish.",
-    "The groove stays dry.",
-    "Pressure transfers the ink to paper.",
-    "The print faces the other way.",
-    "The same block prints a school."
+    "Your agent writes the motion.",
+    "Decks makes React slides that move on every click.",
+    "Decks ships 21 motion templates.",
+    "Pick a template and write its words.",
+    "It moves when you click.",
+    "The same deck renders in the presenter, the overview, print and PDF.",
+    "It ships in one package.",
+    "One line installs it.",
+    "Ask your agent for a deck."
   ],
   "startSlide": 1,
   "startBeat": 0,
@@ -16,53 +18,53 @@
     {
       "slide": 1,
       "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 1,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 1,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 1,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
       "beats": 0,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 2,
-      "beat": 0,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 2,
-      "beat": 1,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 2,
-      "beat": 2,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 2,
-      "beat": 3,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 3,
-      "beat": 0,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 3,
-      "beat": 1,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
       "slide": 4,
       "beat": 0,
       "beats": 2,
@@ -114,42 +116,70 @@
     {
       "slide": 6,
       "beat": 0,
-      "beats": 1,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 6,
       "beat": 1,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 7,
-      "beat": 0,
       "beats": 3,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 7,
-      "beat": 1,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 7,
+      "slide": 6,
       "beat": 2,
       "beats": 3,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 7,
+      "slide": 6,
       "beat": 3,
       "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 1,
+      "beats": 1,
       "lead": "",
       "body": ""
     }

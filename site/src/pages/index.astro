@@ -79,8 +79,8 @@ const files = loadProjectFiles();
     <Section
       id="motion"
       tone="band"
-      title={showcase.heading(motion.longest)}
-      lede={showcase.lede(motion.slides.length)}
+      title={showcase.heading(motion.slides.length, motion.longest)}
+      lede={showcase.lede}
     >
       <MotionShowcase client:visible examples={[motionDeck]}>
         {motion.slides.map((source, index) => (
