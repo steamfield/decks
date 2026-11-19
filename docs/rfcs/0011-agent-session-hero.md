@@ -1,6 +1,6 @@
 # RFC 0011: an agent session as the landing hero, and a guide page on working with agents
 
-Status: Draft. Revised after a landing-page review (the decisions it changed are listed under "Review changes"); the session is scripted rather than recorded, at the user's direction.
+Status: Done. Merged to main in eb04d1e (2026-11-19). Revised after a landing-page review (the decisions it changed are listed under "Review changes"); the session is scripted rather than recorded, at the user's direction.
 
 ## Problem
 

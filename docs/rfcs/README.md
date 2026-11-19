@@ -16,7 +16,7 @@ They are follow-up work: nothing here blocks the deck in progress. An RFC is dra
 | [0008](0008-live-terminal.md) | A live terminal pane on a slide, with a recorded fallback | Done | building-for-agents |
 | [0009](0009-remote-presenter.md) | A remote presenter on a second device | Done | a mirrored-screen demo talk |
 | [0010](0010-motion-reel-vocabulary.md) | The motion-reel style as the kit's motion vocabulary | Done | motion-reel |
-| [0011](0011-agent-session-hero.md) | An agent session as the landing hero, and a guide page on working with agents | Draft | agent-hero |
+| [0011](0011-agent-session-hero.md) | An agent session as the landing hero, and a guide page on working with agents | Done | agent-hero |
 
 Statuses: Draft, Ready (reviewed and executable, awaiting a go-ahead), Accepted, In progress, Done, Rejected. An RFC that's done keeps its file, with a line at the top naming the commit that landed it.
 
