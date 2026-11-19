@@ -18,7 +18,7 @@ function show(at: number, options?: Parameters<typeof setup>[1], data = segments
     options,
   );
 }
-const centre = () => screen.getByRole("heading", { level: 2, hidden: true });
+const centre = () => screen.getByRole("paragraph", { hidden: true });
 /** The legend labels a viewer can see, in order. */
 function shown() {
   return segments
@@ -124,16 +124,30 @@ it("formats the centre and the legend in the deck language with prefix and suffi
   expect(screen.getByText("€800k")).toBeVisible();
 });
 
-it("accepts five segments with 16-character labels", async () => {
+it("accepts five segments with 16-character labels and 8-character affixes", async () => {
   const five = Array.from({ length: 5 }, (_, index) => ({
     label: `${index}`.padEnd(16, "x"),
     value: 20,
   }));
-  await setup(() => <MotionTemplate template="donut-build" segments={five} suffix="%" />, {
+  const affixes = { prefix: "p".repeat(8), suffix: "q".repeat(8) };
+  await setup(() => <MotionTemplate template="donut-build" segments={five} {...affixes} />, {
     click: 3,
     instant: true,
   });
-  expect(centre()).toHaveTextContent("80%");
+  expect(centre()).toHaveTextContent("pppppppp80qqqqqqqq");
+});
+
+it("shows segments with the same label as separate legend entries", async () => {
+  const twins = [
+    { label: "Fares", value: 50 },
+    { label: "Fares", value: 50 },
+  ];
+  await setup(() => <MotionTemplate template="donut-build" segments={twins} suffix="%" />, {
+    click: 1,
+    instant: true,
+  });
+  expect(screen.getAllByText("Fares")).toHaveLength(2);
+  expect(centre()).toHaveTextContent("100%");
 });
 
 it.each([
@@ -157,6 +171,14 @@ it.each([
   [
     { segments: [...segments.slice(0, 1), { label: "None", value: 0 }] },
     "donut-build segments[1].value must be a finite number above 0, got 0",
+  ],
+  [
+    { prefix: "p".repeat(9) },
+    `donut-build prefix must be at most 8 characters, got "${"p".repeat(9)}"`,
+  ],
+  [
+    { suffix: "q".repeat(9) },
+    `donut-build suffix must be at most 8 characters, got "${"q".repeat(9)}"`,
   ],
 ] as const)("donut-build throws naming the offending value for %j", async (invalid, message) => {
   const { errors } = await setup(

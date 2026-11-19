@@ -27,9 +27,14 @@
 .track {
   stroke: var(--od-muted);
 }
-.dial h2 {
+/* The centre is a figure, not a heading, but it keeps the slide's h2 size and weight. */
+.dial p {
   position: relative;
   margin: 0;
+  font-size: calc(1.875rem * var(--deck-text-scale, 1));
+  font-weight: 510;
+  line-height: 2.25rem;
+  letter-spacing: -0.022em;
   color: var(--od-text);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
