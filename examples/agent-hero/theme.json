@@ -1,0 +1,31 @@
+{
+  "surfaces": {
+    "canvas": "#08080d",
+    "canvas-cover": "{surfaces.canvas}",
+    "surface": "#171722",
+    "surface-raised": "#20202e"
+  },
+  "text": {
+    "primary": "#f6f3ea",
+    "secondary": "#cbc8d8",
+    "muted": "#9d9aae"
+  },
+  "ramps": {
+    "amber": ["#b5c400", "#cfe600", "#e5ff3c", "#f0ff8c"]
+  },
+  "accents": {
+    "signal": "{ramps.amber.3}",
+    "plate": "{ramps.violet.1}"
+  },
+  "fonts": {
+    "sans": "Inter, system-ui, sans-serif",
+    "mono": "ui-monospace, 'SF Mono', Menlo, Consolas, monospace"
+  },
+  "shape": {
+    "radius": "0px"
+  },
+  "brand": {
+    "name": "Platform team",
+    "url": "decks.steamfield.io"
+  }
+}
