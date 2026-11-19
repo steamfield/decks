@@ -1,6 +1,6 @@
 {
   "name": "@steamfield/decks",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "React slide decks for animated, data-driven talks: MDX slides, motion, story stages, charts, and a CLI, built with coding agents.",
   "license": "Apache-2.0",
   "repository": {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1
+
+### Package (`@steamfield/decks`)
+
+- A deck opened inside another page (`?embedded` or `?decks-bridge`) writes every move with `replaceState`. Before, each slide change pushed an entry into the host tab's history, so Back stepped the embedded deck instead of leaving the page.
+
 ## 1.3.0
 
 ### Package (`@steamfield/decks`)
