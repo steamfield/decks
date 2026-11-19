@@ -48,6 +48,8 @@ Each target also has a `bun run <target>` alias in `package.json`. `make demo` n
 | `src/data/examples.ts` | Build-time example loader: recordings, posters, loops, run figures and edits from generated files |
 | `src/data/fixtures.ts`, `src/data/project.ts` | The recorded run and hook denial loaders; the file tree from a real `decks init` run |
 | `src/components/landing/DeckPlayer.tsx` | The showcase island: title bar (example switcher, position, transport), poster/interactive frame, slide rail, captions, acknowledged navigation, playback and gallery picks |
+| `src/components/landing/MotionShowcase.tsx`, `MotionSource.astro` | The motion section: its own player and build-time Shiki source panels, synchronized to the settled slide; which deck it plays and its copy live in `site.motionShowcase` in `src/config.ts` |
+| `src/data/motion-showcase.ts` | Reads the featured deck's slide MDX, local component credits and line counts, and the kit template count at build time |
 | `src/components/landing/sections.tsx` | Static sections (requirements, file tree, comparison, transcript, hook panel, gallery, no-JS deck text) |
 | `src/components/CopyBlock.astro`, `InstallTabs.tsx` | Multi-line copy blocks and the install tabs |
 | `src/lib/player/` | `protocol.ts` (embed contract), `format.ts` (captions, counter), `example.ts` (types, `stateAt`, `markAt`, `draftLine`) |
