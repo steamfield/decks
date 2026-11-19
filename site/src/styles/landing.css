@@ -868,3 +868,86 @@ html[data-page="landing"] :focus-visible {
     min-height: 44px;
   }
 }
+
+.motion-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+.motion-source figcaption,
+.motion-components dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.motion-source figcaption {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-ink);
+}
+.motion-source figcaption span,
+.motion-components dd,
+.motion-components small {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+.motion-source pre {
+  overflow-x: auto;
+  padding: 20px;
+  background: var(--color-canvas);
+  font: 14px / 1.65 var(--font-mono);
+  tab-size: 2;
+}
+.motion-components {
+  border-top: 1px solid var(--color-line);
+  padding: 16px 20px;
+}
+.motion-components h3 {
+  margin-bottom: 8px;
+  color: var(--color-ink-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+.motion-components dl > div {
+  padding-block: 4px;
+  font-size: 14px;
+}
+.motion-components small {
+  margin-inline-start: 10px;
+}
+.motion-credit {
+  display: grid;
+  max-width: 48rem;
+  gap: 12px;
+  color: var(--color-ink-2);
+  line-height: 1.6;
+}
+@media (min-width: 1024px) {
+  .motion-showcase {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+  .motion-source pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+@container deck-player (min-width: 480px) and (max-width: 899px) {
+  .motion-showcase .player-toolbar {
+    grid-template-columns: 1fr auto auto;
+  }
+  .motion-showcase :is(.player-position, .player-transport, .player-actions) {
+    grid-area: auto;
+  }
+  .motion-showcase .player-status::before,
+  .motion-showcase .player-status > [aria-hidden] {
+    display: inline-block;
+  }
+  .motion-showcase .player-rail {
+    grid-auto-columns: minmax(11rem, 1fr);
+  }
+}
+html:not(.js) .motion-showcase :is(.player-loading, .player-status) {
+  display: none;
+}

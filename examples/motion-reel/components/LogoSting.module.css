@@ -1,0 +1,62 @@
+.sting {
+  margin: auto;
+  display: grid;
+  justify-items: center;
+  gap: 0.5em;
+  font-size: calc(300px * var(--deck-text-scale, 1));
+}
+.compact {
+  margin: 0;
+  justify-items: start;
+  font-size: calc(120px * var(--deck-text-scale, 1));
+}
+.lockup {
+  display: flex;
+  align-items: center;
+  gap: 0.14em;
+}
+.mark {
+  width: 1.05em;
+  height: 1.05em;
+  overflow: visible;
+}
+.gap {
+  fill: var(--od-canvas);
+}
+.wordmark {
+  font-size: 1em;
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+/* SplitText's letter, word and mask spans must be boxes: a transform does nothing to inline text. */
+.wordmark span,
+.tagline span {
+  display: inline-block;
+  transform-origin: left bottom;
+}
+/* A mask is the glyph's line box, which is tighter than the glyph. The padding gives every
+   ascender, descender and overhang room, and the negative margin keeps the layout unchanged. */
+.wordmark > *,
+.tagline > * {
+  padding: 0.22em 0.16em;
+  margin: -0.22em -0.16em;
+}
+.rule {
+  width: 100%;
+  height: 0.03em;
+  margin-top: -0.2em;
+  overflow: visible;
+}
+.rule line {
+  stroke: var(--od-signal);
+  stroke-width: 2;
+}
+.tagline {
+  font-size: 0.24em;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  word-spacing: 0.06em;
+}

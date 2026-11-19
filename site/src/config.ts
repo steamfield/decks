@@ -52,6 +52,19 @@ export const site = {
   packageName: "@steamfield/decks",
   /** The home page's <title> and OG title. */
   title: "Animated presentations with coding agents | Decks",
+  motionShowcase: {
+    example: "motion-reel",
+    heading: (slides: number, longest: number) =>
+      `This reel is a ${slides}-slide deck, and its longest slide is ${longest} lines of MDX.`,
+    lede: "Every frame in the player is a slide. Step through it with its controls or the arrow keys, and its MDX source follows. Each slide fills in a motion template or calls a component built on gsap.",
+    credit:
+      "A Claude Code agent (Fable) wrote the deck from a written brief, using the deck-motion skill and its references, deck-design and writing-slides, then revised it from a human's review notes. Nobody edited it by hand.",
+    motion: { href: "/docs/motion/", label: "Write a motion sequence" },
+    templates: (count: number) => ({
+      href: "/docs/motion-templates/",
+      label: `Browse all ${count} motion templates`,
+    }),
+  },
   /** The H1. */
   tagline: "Build animated presentations with coding agents.",
   description:
@@ -182,7 +195,7 @@ export const site = {
   /** From the package's package.json. */
   license,
   /** Components that hydrate on the landing page. The build test fails on any other island. */
-  islands: ["DeckPlayer", "InstallTabs"],
+  islands: ["DeckPlayer", "MotionShowcase", "InstallTabs"],
 };
 
 /** Docs sidebar groups, in order. A page's `group` frontmatter must be one of these ids. */

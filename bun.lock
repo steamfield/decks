@@ -77,6 +77,22 @@
         "react-dom": "19.3.1",
       },
     },
+    "examples/motion-reel": {
+      "name": "@steamfield/example-motion-reel",
+      "dependencies": {
+        "@steamfield/decks": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+    },
+    "examples/motion-showcase": {
+      "name": "@steamfield/example-motion-showcase",
+      "dependencies": {
+        "@steamfield/decks": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+    },
     "examples/opendata-pitch": {
       "name": "@react-decks/example-opendata-pitch",
       "dependencies": {
@@ -575,6 +591,10 @@
     "@steamfield/example-building-for-agents": ["@steamfield/example-building-for-agents@workspace:examples/building-for-agents"],
 
     "@steamfield/example-motion": ["@steamfield/example-motion@workspace:examples/motion"],
+
+    "@steamfield/example-motion-reel": ["@steamfield/example-motion-reel@workspace:examples/motion-reel"],
+
+    "@steamfield/example-motion-showcase": ["@steamfield/example-motion-showcase@workspace:examples/motion-showcase"],
 
     "@steamfield/example-terminal": ["@steamfield/example-terminal@workspace:examples/terminal"],
 

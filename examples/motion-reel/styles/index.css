@@ -1,0 +1,88 @@
+/* Broadcast identity: ink-black canvas, paper-white Inter at display weights, and three flat
+   colours (the mark's cyan and violet, plus one acid signal). Colours come from theme.json. */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+:root {
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  background: var(--od-canvas);
+  color: var(--od-text);
+  font-family: var(--od-font-sans);
+}
+[data-deck-slide] {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 88px 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  overflow: clip;
+  background: var(--od-canvas);
+  font-size: calc(52px * var(--deck-text-scale, 1));
+  font-weight: 500;
+  line-height: 1.2;
+  -webkit-font-smoothing: antialiased;
+}
+:where([data-deck-slide]) :where(h1, h2, p) {
+  margin: 0;
+}
+:where([data-deck-slide]) h2 {
+  font-size: 2.3em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+}
+/* A motion template sizes itself in em, so its wrapper sets how large it plays. */
+.reel-xl {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: 1.5em;
+}
+.reel-lg {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: 1.32em;
+}
+.reel-centered {
+  align-items: center;
+  text-align: center;
+}
+/* The counted number is the picture: it plays larger than a template headline. */
+.reel-figure h2 {
+  font-size: 3.2em;
+  font-weight: 850;
+}
+/* A headline and what answers it, centred on the canvas as one block. */
+.reel-stack {
+  margin: auto 0;
+  display: grid;
+  gap: 72px;
+}
+/* The deck's position, from layers/above.tsx: quiet, in the corner, on every slide. */
+.reel-position {
+  position: absolute;
+  right: 56px;
+  bottom: 36px;
+  font-family: var(--od-font-mono);
+  font-size: calc(22px * var(--deck-text-scale, 1));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--od-text-faint);
+}
+/* The closing hint under the end card. */
+.reel-hint {
+  font-size: calc(44px * var(--deck-text-scale, 1));
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--od-text-secondary);
+}

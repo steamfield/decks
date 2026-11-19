@@ -1,0 +1,70 @@
+/* Full bleed: the rows are wider than the canvas on purpose, and this box crops them. */
+.ticker {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  overflow: clip;
+}
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: calc(108px * var(--deck-text-scale, 1));
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.row {
+  display: flex;
+  gap: 0.45em;
+  width: max-content;
+  padding: 0 0.3em;
+}
+/* A lane pins its row to one edge, so a row wider than the canvas bleeds off the other. */
+.lane {
+  position: relative;
+  height: 1.12em;
+}
+.lane .row {
+  position: absolute;
+  left: 0;
+}
+.lane[data-side="end"] .row {
+  left: auto;
+  right: 0;
+}
+.lane:nth-child(3n + 2) {
+  color: var(--od-cyan-bright);
+}
+.lane:nth-child(3n) {
+  color: var(--od-violet);
+}
+.band {
+  position: absolute;
+  inset: 50% 0 auto;
+  translate: 0 -50%;
+  padding: 0.22em 112px 0.3em;
+  background: var(--od-signal);
+  color: var(--od-canvas);
+  font-size: calc(190px * var(--deck-text-scale, 1));
+  font-weight: 850;
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+  word-spacing: 0.08em;
+  white-space: nowrap;
+}
+/* The lines roll inside this box, so one leaving never shows in the band's padding. */
+.lines {
+  display: grid;
+  overflow: clip;
+  padding: 0.2em 0.1em;
+  margin: -0.2em -0.1em;
+}
+.band p {
+  grid-area: 1 / 1;
+  margin: 0;
+  transform-origin: left bottom;
+}

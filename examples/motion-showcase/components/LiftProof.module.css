@@ -1,0 +1,12 @@
+.table {
+  width: 100%;
+}
+.labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-items: center;
+  font: calc(34px * var(--deck-text-scale, 1)) / 1.35 var(--od-font-mono);
+}
+.labels span {
+  display: inline-block;
+}

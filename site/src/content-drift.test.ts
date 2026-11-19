@@ -6,6 +6,7 @@ import { loadDeck } from "@steamfield/decks/node";
 import { describe, expect, it } from "vitest";
 import { resolveTheme } from "../../packages/kit/src/theme/theme-resolve.ts";
 import { runHook } from "../scripts/hook.mjs";
+import { site } from "./config";
 import {
   deckDir,
   ENTRIES,
@@ -17,6 +18,7 @@ import {
   startSlideOf,
 } from "./data/examples";
 import { loadHookDenial } from "./data/fixtures";
+import { loadMotionShowcase } from "./data/motion-showcase";
 
 const repo = join(process.cwd(), "..");
 const read = (path: string) => readFileSync(join(repo, path), "utf8");
@@ -89,4 +91,28 @@ describe("the WARM still's theme.json", () => {
     expect(resolved.surfaces.canvas).not.toBe(resolveTheme(defaults).surfaces.canvas);
     expect(resolved.fonts).toEqual(resolveTheme(defaults).fonts);
   });
+});
+
+it("counts the motion section's slides, source lines and available motion templates from the repository", () => {
+  const name = site.motionShowcase.example;
+  const show = loadMotionShowcase(name);
+  const dir = deckDir(name);
+  const lineCount = (file: string) =>
+    readFileSync(file, "utf8").match(/[^\n]*\n|[^\n]+$/g)?.length ?? 0;
+  expect(show.slides).toHaveLength(loadRecording(name)?.slides ?? -1);
+  expect(show.slides[0]?.components).toContainEqual(
+    expect.objectContaining({ names: "WordSwap", file: "WordSwap.tsx" }),
+  );
+  const fileLines = show.slides.map((slide) => {
+    for (const component of slide.components) {
+      expect(component.lines).toBe(lineCount(join(dir, "components", component.file)));
+    }
+    expect(slide.source).toBe(readFileSync(join(dir, slide.file), "utf8").replace(/\r?\n$/, ""));
+    const count = lineCount(join(dir, slide.file));
+    expect(slide.lines).toBe(count);
+    return count;
+  });
+  expect(show.longest).toBe(Math.max(...fileLines));
+  const props = read("packages/kit/src/motion-templates/motion-template-props.ts");
+  expect(show.templates).toBe([...props.matchAll(/readonly template: "/g)].length);
 });

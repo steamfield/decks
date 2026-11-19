@@ -1,0 +1,209 @@
+{
+  "title": "Motion reel",
+  "slides": 10,
+  "slideTitles": [
+    "Your agent writes the motion.",
+    "Decks makes React slides that move on every click.",
+    "Decks ships 21 motion templates.",
+    "Pick a template and write its words.",
+    "16 of the 21 templates take one click.",
+    "It moves when you click.",
+    "The same deck renders in the presenter, the overview, print and PDF.",
+    "It ships in one package.",
+    "One line installs it.",
+    "This reel is a Decks slide deck."
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 1,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 1,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 1,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 4,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 10,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 10,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    }
+  ]
+}

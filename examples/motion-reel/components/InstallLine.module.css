@@ -1,0 +1,22 @@
+.bar {
+  justify-self: start;
+  align-self: start;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  padding: 0.55em 0.8em 0.6em;
+  border-left: 0.5em solid var(--od-signal);
+  background: var(--od-surface);
+  font-family: var(--od-font-mono);
+  font-size: calc(58px * var(--deck-text-scale, 1));
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.prompt {
+  color: var(--od-signal);
+}
+.bar code {
+  font: inherit;
+  color: var(--od-text);
+}

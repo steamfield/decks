@@ -3,6 +3,8 @@ import ThemeCompare from "../components/blog/ThemeCompare.astro";
 import CopyBlock from "../components/CopyBlock.astro";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
+import MotionSource from "../components/landing/MotionSource.astro";
+import { MotionShowcase } from "../components/landing/MotionShowcase";
 import {
   DeckProse,
   ExampleGallery,
@@ -16,12 +18,17 @@ import {
 import { agents, site } from "../config";
 import { ENTRIES, loadExamples } from "../data/examples";
 import { loadHookDenial, loadRun, runFigures } from "../data/fixtures";
+import { loadMotionShowcase } from "../data/motion-showcase";
 import { loadProjectFiles, setupCommands } from "../data/project";
 import "../styles/landing.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const examples = loadExamples();
 const [hero] = examples;
+const showcase = site.motionShowcase;
+const motionDeck = examples.find((example) => example.name === showcase.example);
+const motion = motionDeck && loadMotionShowcase(motionDeck.name);
+const templatesLink = motion && showcase.templates(motion.templates);
 const agentEntry = ENTRIES.find((entry) => entry.name === "keeling");
 const agentExample = examples.find((example) => example.name === "keeling");
 const agentRun = agentEntry?.run ? loadRun(agentEntry.run.fixture) : null;
@@ -67,6 +74,35 @@ const files = loadProjectFiles();
     </div>
     {hero && <DeckProse example={hero} />}
   </section>
+
+  {motionDeck && motion && templatesLink && (
+    <Section
+      id="motion"
+      tone="band"
+      title={showcase.heading(motion.slides.length, motion.longest)}
+      lede={showcase.lede}
+    >
+      <MotionShowcase client:visible examples={[motionDeck]}>
+        {motion.slides.map((source, index) => (
+          <MotionSource source={source} hidden={index + 1 !== motionDeck.startSlide} />
+        ))}
+      </MotionShowcase>
+      <div class="no-js-only" data-nosnippet>
+        <ol class="list-decimal pl-6">
+          {motionDeck.slideTitles.map((title) => (
+            <li>{title}</li>
+          ))}
+        </ol>
+      </div>
+      <div class="motion-credit">
+        <p>{showcase.credit}</p>
+        <p>
+          <a href={showcase.motion.href}>{showcase.motion.label}</a> ·{" "}
+          <a href={templatesLink.href}>{templatesLink.label}</a>
+        </p>
+      </div>
+    </Section>
+  )}
 
   {agentRun && agentFigures && agentExample && (
     <Section

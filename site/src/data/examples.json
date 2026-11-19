@@ -11,6 +11,14 @@
       "loop": true
     },
     {
+      "name": "motion-reel",
+      "startSlide": 1,
+      "provenance": "agent",
+      "attribution": {
+        "label": "A Claude Code agent (Fable) wrote this deck from a brief and revised it from review notes."
+      }
+    },
+    {
       "name": "aisd-showcase",
       "startSlide": 1,
       "provenance": "talk",
