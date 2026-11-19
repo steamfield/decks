@@ -1,0 +1,19 @@
+.bar {
+  margin: auto 0;
+  align-self: start;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  padding: 0.55em 0.8em 0.6em;
+  border-left: 0.5em solid var(--od-border-axis);
+  background: var(--od-surface-raised);
+  font-family: var(--od-font-mono);
+  font-size: 1.2em;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.bar code {
+  font: inherit;
+  color: var(--od-text);
+}

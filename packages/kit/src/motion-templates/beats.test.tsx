@@ -101,6 +101,25 @@ const fixtures: { readonly [Name in MotionTemplateName]: TemplateProps<Name> } =
     sets: ["Workshop", "Field crew", "Design"],
     overlap: "Pilot",
   },
+  "word-swap": { template: "word-swap", lead: ["We ship"], words: ["quarterly", "weekly"] },
+  "bar-board": {
+    template: "bar-board",
+    rows: [
+      { label: "North", value: 42 },
+      { label: "South", value: 17 },
+    ],
+    source: "Harbour log",
+  },
+  "command-line": { template: "command-line", command: "bun add @steamfield/decks" },
+  "scramble-text": { template: "scramble-text", text: "Decoded", label: "Status" },
+  "donut-build": {
+    template: "donut-build",
+    segments: [
+      { label: "Mobile", value: 58 },
+      { label: "Desktop", value: 42 },
+    ],
+    suffix: "%",
+  },
 };
 
 /** How many clicks the table says a template's beats take, for the fixture's props. */
