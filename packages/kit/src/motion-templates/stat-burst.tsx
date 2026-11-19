@@ -54,25 +54,20 @@ export function StatBurst({
     tl.fromTo(
       figure.current,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: duration.quick, ease: ease.enter },
+      { autoAlpha: 1, duration: duration.quick, ease: ease.snap },
       0,
     );
-    tl.fromTo(
-      count,
-      { progress: 0 },
-      { progress: 1, duration: duration.slow, ease: ease.enter },
-      0,
-    );
+    tl.fromTo(count, { progress: 0 }, { progress: 1, duration: duration.slow, ease: ease.snap }, 0);
     tl.fromTo(
       ring.current,
       { drawSVG: "0%" },
-      { drawSVG: "100%", duration: duration.slow, ease: ease.enter },
+      { drawSVG: "100%", duration: duration.slow, ease: ease.snap },
       0,
     );
     tl.fromTo(
       caption.current,
       { opacity: 0, yPercent: 40 },
-      { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
+      { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.snap },
       duration.slow - duration.quick,
     );
   });

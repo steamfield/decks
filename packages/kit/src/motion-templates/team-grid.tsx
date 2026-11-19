@@ -141,7 +141,7 @@ function CardEntrance({
     tl.fromTo(
       cards.current.children,
       { autoAlpha: 0, yPercent: 12 },
-      { autoAlpha: 1, yPercent: 0, duration: duration.base, ease: ease.enter, stagger },
+      { autoAlpha: 1, yPercent: 0, duration: duration.base, ease: ease.snap, stagger },
     );
   });
   return null;

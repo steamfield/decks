@@ -8,10 +8,37 @@ import {
   useDeck,
   useSlide,
 } from "@react-decks/runtime";
-import { act, render, screen } from "@testing-library/react";
+import { act, isInaccessible, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentType } from "react";
 import { onTestFinished, vi } from "vitest";
+
+/**
+ * The split glyphs a viewer can read under `root`, in order: every single-character box that is
+ * fully opaque, with its ancestors. SplitText's glyph boxes carry no role, label or text of their
+ * own to query by, so this is the one place a test walks the markup for them.
+ */
+export function readableGlyphs(root: Element) {
+  const opacity = (element: Element) => {
+    let value = 1;
+    for (let part: Element | null = element; part; part = part.parentElement)
+      value *= Number(getComputedStyle(part).opacity || 1);
+    return value;
+  };
+  return Array.from(root.querySelectorAll("*"))
+    .filter((el) => !el.children.length && el.textContent?.length === 1 && opacity(el) === 1)
+    .map((el) => el.textContent)
+    .join("");
+}
+
+/** The text a screen reader reads out under `root`: every text outside a hidden subtree. */
+export function accessibleText(root: Element) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let text = "";
+  for (let node = walker.nextNode(); node; node = walker.nextNode())
+    if (node.parentElement && !isInaccessible(node.parentElement)) text += node.textContent;
+  return text;
+}
 
 gsap.ticker.remove(gsap.updateRoot);
 let clock = gsap.globalTimeline.time();

@@ -1,6 +1,6 @@
 # Motion templates
 
-A motion template is one of twenty-one finished motion graphics you fill in: pick one, write its words, and it
+A motion template is one of twenty-six finished motion graphics you fill in: pick one, write its words, and it
 takes its colours, type and timing from the deck's theme and motion tokens. It needs no CSS, no
 timeline code and no durations.
 
@@ -25,7 +25,7 @@ for the click. Its text stays real text, so it is read once, as a sentence, by a
 
 | Template | What the audience sees | Props |
 | --- | --- | --- |
-| `title-reveal` | The headline's words rise into place one after another, an accent rule draws under them, the subtitle fades up | `title`, `subtitle?` |
+| `title-reveal` | The headline's words rise through their masks one after another, leaning and settling upright; with a subtitle, an accent rule draws under them and the subtitle rises | `title`, `subtitle?` |
 | `lower-third` | A name and role slide out from behind an accent block in the lower third, over whatever else is on the slide | `name`, `role` |
 | `stat-burst` | A number counts up while a ring draws around it; the label slides in under it | `value`, `label`, `suffix?` |
 | `stat-compare` | The before value, an arrow, then the after value counting up with the signed change beside it | `from`, `to`, `label`, `suffix?` |
@@ -46,11 +46,17 @@ for the click. Its text stays real text, so it is read once, as a sentence, by a
 | `icon-array` | A grid of person icons; the first `filled` of `total` fill with the accent ("1 in 4") | `filled`, `total` (up to 100), `label` |
 | `team-grid` | Two to six cards rise in, each with a photo or initials, a name and a role | `people` (`{ name, role, src? }[]`) |
 | `venn-overlap` | Two or three circles slide together; the overlap label lands in the shared region | `sets` (2 or 3 labels), `overlap` |
+| `word-swap` | A fixed lead rises; the last phrase sits on a plate and swaps on each click, the old plate lifting away as the next grows in from the left; plates take the theme's hues and the last lands in the accent | `lead` (1 or 2 lines, up to 18 characters), `words` (2 to 5, up to 16 characters), `tone?` (`palette`, the default, or `neutral` for grey plates) |
+| `bar-board` | A ranked board wipes across, bars grow one after another with their values counting beside them; the next click turns the leader to the accent and dims the rest | `rows` (`{ label, value }[]`, 2 to 6, largest first, labels up to 16 characters), `source` (up to 60), `prefix?`, `suffix?` (up to 8 each) |
+| `command-line` | A command bar wipes across and the command types on into it | `command` (up to 48 characters) |
+| `scramble-text` | A word decodes from random glyphs into place, left to right | `text` (up to 16 characters), `label?` (up to 40) |
+| `donut-build` | A ring draws one segment per click while the centre counts the running total | `segments` (`{ label, value }[]`, 2 to 5, labels up to 16 characters), `prefix?`, `suffix?` (up to 8 each) |
 
 ### Clicks
 
-Most templates use one click, at `at`. `list-cascade`, `timeline-sweep` and `process-flow` take
-one click per item, from `at`; `comparison-split` and `myth-fact` take two, `at` and `at + 1`.
+Most templates use one click, at `at`. `list-cascade`, `timeline-sweep`, `process-flow`,
+`word-swap` and `donut-build` take one click per item, from `at`; `comparison-split`, `myth-fact`
+and `bar-board` take two, `at` and `at + 1`.
 With a literal `template` and a literal list in the MDX the deck counts these clicks itself,
 whether the slide imports `MotionTemplate` or a file in `components/` re-exports it from
 `@steamfield/decks/kit`. When the list comes from a data module, or the template sits inside a
@@ -63,6 +69,11 @@ A motion graphic earns its place at the moments a talk turns, not on every slide
 | Moment | Template |
 | --- | --- |
 | The opening title, or a thesis stated on its own | `title-reveal` |
+| One sentence whose ending changes ("we ship monthly, weekly, daily") | `word-swap` |
+| A ranking whose leader is the point | `bar-board` |
+| The parts of one whole, added one at a time | `donut-build` |
+| A name, code or word that should land with a flourish | `scramble-text` |
+| The install line or the one command to run | `command-line` |
 | Introducing a speaker or a quoted person | `lower-third` |
 | The one number the talk turns on | `stat-burst` |
 | A before and after, a change over time | `stat-compare` |
@@ -81,6 +92,13 @@ A motion graphic earns its place at the moments a talk turns, not on every slide
 | Two or three ideas that meet in one | `venn-overlap` |
 | A quote that carries an argument | `quote-card` |
 | The close | `end-card` |
+
+`bar-board` and `donut-build` carry a single headline comparison, one ranking or one share,
+that the slide's claim is about: at most six rows and no time axis. Anything with an axis over
+time, more rows, or several steps of evidence is a sourced chart through `OpenChart` or
+`ChartSteps`. Both kinds read their figures from the deck's `data/*.ts`. The motion on a value
+(a bar's length, an arc, a counter) never overshoots, so the picture never shows a number the
+data does not have.
 
 Leave them out of dense data slides (a chart carries those), of slides the speaker talks over
 the whole time, and of runs of consecutive slides: three motion graphics in a row read as a

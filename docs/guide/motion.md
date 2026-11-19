@@ -264,6 +264,36 @@ Use the tokens instead of raw durations and curves, in JavaScript and in CSS. Th
 
 The JavaScript `ease` values are gsap ease names, and `ease.settle` is gsap's default ease.
 
+Four more curves are named by the role a tween plays, and are what the motion templates use.
+They exist only in JavaScript, because three of them are multi-segment curves CSS cannot
+express.
+
+| JavaScript | Use it for |
+| --- | --- |
+| `ease.snap` | Type arriving, and any tween that encodes a value (a bar's length, an arc's sweep, a line's progress, a rank, a counter's number): a fast attack, then a long soft settle |
+| `ease.punch` | An accent that encodes nothing (a plate, a marker, a rule, a label's scale): it runs past its mark once, about 13%, then settles back |
+| `ease.leave` | Something leaving: a small gather, then away |
+| `ease.slam` | A plate or band crossing the canvas, at even speed through the middle |
+
+Never put `ease.punch` on a value. An overshooting bar shows a number it does not have while
+the axis is on screen.
+
+`rise` holds the two constants masked type uses: `rise.clear` (135, how far a word travels to
+clear its mask, as a percentage of its own height) and `rise.lean` (5, the degrees it arrives
+leaning before it settles upright).
+
+A deck that wants the plainer feel the templates had before 1.3 re-creates the role curves in
+its `setup.ts`; every template then moves on them:
+
+```ts
+import { CustomEase, ease } from "@steamfield/decks/motion";
+
+CustomEase.create(ease.snap, "0.16,1,0.3,1");
+CustomEase.create(ease.punch, "0.16,1,0.3,1");
+CustomEase.create(ease.leave, "0.7,0,0.84,0");
+CustomEase.create(ease.slam, "0.32,0.72,0,1");
+```
+
 ```tsx
 import { duration, ease, gsap } from "@steamfield/decks/motion";
 
@@ -358,7 +388,7 @@ It indexes and counts like `Camera`. An outline that is empty or only moves the 
 
 ## Motion graphics with gsap
 
-For motion beyond the primitives, write a deck component on `useTimeline` (above) and use gsap's plugins, which `@steamfield/decks/motion` registers and exports: `SplitText`, `MorphSVGPlugin`, `MotionPathPlugin`, `DrawSVGPlugin` and `CustomEase`. A build can return a cleanup function, which runs when the timeline is rebuilt or the slide unmounts; return `() => split.revert()` after splitting text so the original text comes back. Because `useTimeline` seeks every beat, the motion steps with clicks, reverses, and shows its finished state in the presenter, overview and print without extra code. For 3D, `Scene3D` in the kit (see [kit.md](kit.md)) puts a three.js scene on the same timeline. Ready-made motion graphics are in [motion-templates.md](motion-templates.md).
+For motion beyond the primitives, write a deck component on `useTimeline` (above) and use gsap's plugins, which `@steamfield/decks/motion` registers and exports: `SplitText`, `MorphSVGPlugin`, `MotionPathPlugin`, `DrawSVGPlugin`, `ScrambleTextPlugin` and `CustomEase`. A build can return a cleanup function, which runs when the timeline is rebuilt or the slide unmounts; return `() => split.revert()` after splitting text so the original text comes back. Because `useTimeline` seeks every beat, the motion steps with clicks, reverses, and shows its finished state in the presenter, overview and print without extra code. For 3D, `Scene3D` in the kit (see [kit.md](kit.md)) puts a three.js scene on the same timeline. Ready-made motion graphics are in [motion-templates.md](motion-templates.md).
 
 ## `Morph`
 

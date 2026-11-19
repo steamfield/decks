@@ -42,7 +42,7 @@ export function TimelineSweep({
   const arrive = (index: number) => (tl: gsap.core.Timeline) => {
     const item = list.current?.children[index];
     if (!item || !line.current || !head.current) return;
-    const timing = { duration: duration.slow, ease: ease.draw };
+    const timing = { duration: duration.slow, ease: ease.snap };
     // The track draws on the first click. The playhead travels to each date in turn.
     const column = 100 / events.length;
     if (index === 0) {

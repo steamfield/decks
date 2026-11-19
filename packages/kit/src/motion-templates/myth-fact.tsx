@@ -35,7 +35,7 @@ export function MythFact({ myth, fact, at = 0, accent = "cyan" }: TemplateProps<
       tl.fromTo(
         claim.current,
         { autoAlpha: 0, y: 24 },
-        { autoAlpha: 1, y: 0, duration: duration.slow, ease: ease.enter },
+        { autoAlpha: 1, y: 0, duration: duration.slow, ease: ease.snap },
       );
     },
     [
@@ -48,13 +48,13 @@ export function MythFact({ myth, fact, at = 0, accent = "cyan" }: TemplateProps<
             backgroundSize: "100% 0.06em",
             opacity: 0.6,
             duration: duration.slow,
-            ease: ease.enter,
+            ease: ease.slam,
           },
         );
         tl.fromTo(
           answer.current,
           { autoAlpha: 0, y: 24 },
-          { autoAlpha: 1, y: 0, duration: duration.slow, ease: ease.enter },
+          { autoAlpha: 1, y: 0, duration: duration.slow, ease: ease.snap },
           `<${duration.quick}`,
         );
       },

@@ -13,7 +13,7 @@ Install the kit theme in the deck’s `setup.ts` so the graphics can read its hu
 
 | Template | When to use it and what to supply | Example |
 | --- | --- | --- |
-| `title-reveal` | Open a talk with a short `title`. Spaces separate the staggered words. A headline without spaces rises as one phrase. Add a `subtitle` for context. | `<MotionTemplate template="title-reveal" title="The river changed course." />` |
+| `title-reveal` | Open a talk with a short `title`, or put any headline on a slide that should arrive with the reel's rise. Spaces separate the staggered words. A headline without spaces rises as one phrase. Add a `subtitle` for context; the accent rule draws only under a subtitle. | `<MotionTemplate template="title-reveal" title="The river changed course." />` |
 | `lower-third` | Introduce a speaker over the current slide with their `name` and `role`. | `<MotionTemplate template="lower-third" name="Mara Lin" role="River survey lead" />` |
 | `stat-burst` | Pause on one measurement. Supply the numeric `value`, its `label`, and an optional `suffix` for units. | `<MotionTemplate template="stat-burst" value={36} suffix=" km" label="River surveyed" />` |
 | `stat-compare` | Compare `from` and `to` with a shared `label`. With `suffix="%"`, both values show `%` and their difference shows percentage points (`+38 pp`). Any other `suffix` also applies to the difference. | `<MotionTemplate template="stat-compare" from={42} to={30} suffix=" min" label="Time to process a sample" />` |
@@ -55,6 +55,18 @@ Install the kit theme in the deck’s `setup.ts` so the graphics can read its hu
 | `team-grid` | Introduce the people responsible for the work. Supply 2–6 `people` with a `name`, `role`, and optional portrait `src`. Initials stand in for a portrait. | `<MotionTemplate template="team-grid" people={[{ name: "Ada Reed", role: "Workshop lead", src: "./ada-reed.svg" }, { name: "Mina Park", role: "Apprentice mentor" }]} />` |
 | `venn-overlap` | Name what two or three groups share. Use short labels for `sets` and their `overlap` so each fits inside its region. | `<MotionTemplate template="venn-overlap" sets={["Design", "Fieldwork", "Training"]} overlap="Pilot" />` |
 
+## Kinetic type and single-figure data: word-swap, scramble-text, command-line, bar-board, donut-build
+
+| Template | When it fits | Example |
+| --- | --- | --- |
+| `word-swap` | One sentence whose ending changes with each click. One or two `lead` lines (up to 18 characters each) and 2–5 `words` (up to 16 characters each). Plates take the theme's hues and the last word lands in the accent; `tone="neutral"` gives grey plates for a sober deck. | `<MotionTemplate template="word-swap" lead={["We ship"]} words={["monthly.", "weekly.", "daily."]} />` |
+| `scramble-text` | A short name or code that should land with a flourish: `text` up to 16 characters, optional `label`. | `<MotionTemplate template="scramble-text" text="TIDE-7" label="The build that fixed the handoff" />` |
+| `command-line` | The one command the audience should run, up to 48 characters. | `<MotionTemplate template="command-line" command="npm create harbour@latest" />` |
+| `bar-board` | A ranking whose leader is the slide's claim. 2–6 `rows` of `{ label, value }`, largest first (unsorted rows throw), a `source` (up to 60 characters), optional `prefix` and `suffix` (up to 8). Click 2 highlights the leader, or every row tied with it. Rows come from `data/*.ts`. | `<MotionTemplate template="bar-board" rows={REGIONS} source="Port authority, 2025" suffix=" ships" />` |
+| `donut-build` | The parts of one whole, one per click. 2–5 `segments` of `{ label, value }`. Segments imported from `data/*.ts` are not a literal list, so set `clicks:` in the frontmatter; a literal array is counted. | `<MotionTemplate template="donut-build" segments={CARGO_SHARE} suffix="%" />` |
+
+`bar-board` and `donut-build` are for one headline comparison of at most six rows with no time axis. Anything larger, over time, or in several steps of evidence is a sourced chart (`OpenChart`, `ChartSteps`) under the visualization skill. Values move on `ease.snap` and never overshoot.
+
 ## Clicks
 
-Most templates take one click, at `at`; with `at` 0 the entrance plays on arrival and adds no click. `comparison-split` and `myth-fact` take two, `at` and `at + 1`. `list-cascade`, `timeline-sweep` and `process-flow` take one per item, starting at `at`. The deck counts these when `template` is a literal string and the list is a literal array, whether the slide imports `MotionTemplate` or a `components/` file re-exports it by name. Set frontmatter `clicks` when the list comes from a data module or the template sits inside a deck component.
+Most templates take one click, at `at`; with `at` 0 the entrance plays on arrival and adds no click. `comparison-split`, `myth-fact` and `bar-board` take two, `at` and `at + 1`. `list-cascade`, `timeline-sweep`, `process-flow`, `word-swap` and `donut-build` take one per item, starting at `at`. The deck counts these when `template` is a literal string and the list is a literal array, whether the slide imports `MotionTemplate` or a `components/` file re-exports it by name. Set frontmatter `clicks` when the list comes from a data module or the template sits inside a deck component.

@@ -24,7 +24,7 @@ Motion earns its place when it directs the next comparison, preserves an object'
 | `Camera`, `ShapeMorph` | One dense picture is toured region by region, or one shape changes while the audience follows it. |
 | [Custom motion graphics](references/motion-graphics.md) | No template fits: use `useTimeline` with gsap's plugins for masked type, a marker that draws a route, or a `Scene3D` camera move. Start from the closest template's source. |
 
-Use only motion tokens: `duration`, `ease` and `stagger` from `@steamfield/decks/motion`, or `DUR`, `SETTLE`, `DRAW`, `TRACE` from `@steamfield/decks/kit`. CSS uses the corresponding `--deck-dur-*`, `--deck-ease-*` and `--deck-stagger` variables. Use `slideChartAnimation` for OpenChart. No per-slide raw millisecond values or invented easing curves.
+Use only motion tokens: `duration`, `ease` (including the role curves `snap`, `punch`, `leave` and `slam`), `rise` and `stagger` from `@steamfield/decks/motion`, or `DUR`, `SETTLE`, `DRAW`, `TRACE` from `@steamfield/decks/kit`. CSS uses the corresponding `--deck-dur-*`, `--deck-ease-*` and `--deck-stagger` variables. Use `slideChartAnimation` for OpenChart. No per-slide raw millisecond values or invented easing curves.
 
 ## Motion graphics belong at the turns
 
@@ -32,7 +32,7 @@ Plan them with the arc, not after it. When sketching the slides, mark the three 
 
 ## Entrances preserve continuity
 
-An entrance establishes the scene once on arrival. A beat changes evidence when the speaker advances. Keep all state needed at click k in the seekable beat timeline; an entrance must not be the only place that establishes a later beat's data state. Avoid bounces, pulsing decoration and a new entrance on every render.
+An entrance establishes the scene once on arrival. A beat changes evidence when the speaker advances. Keep all state needed at click k in the seekable beat timeline; an entrance must not be the only place that establishes a later beat's data state. Avoid pulsing decoration and a new entrance on every render. An overshoot (`ease.punch`) belongs only on something that encodes no value, such as a plate, a marker or a rule; a bar, an arc, a line or a counter moves on `ease.snap`, because an overshooting mark shows a value it does not have.
 
 The same component can render in `slide`, `presenter`, `preview`, `overview` and `print`. Outside the active live slide, render the settled state for that instance's click, without animation, timers or WebGL. Use framework hooks and primitives to get that behavior. Do not add a second playhead or use mount as the arrival signal.
 

@@ -7,6 +7,7 @@ const count = (props: string) => readSlide(`${imported}\n\n<Graphic ${props} />`
 
 it.each([
   "agenda",
+  "command-line",
   "device-mockup",
   "end-card",
   "icon-array",
@@ -15,6 +16,7 @@ it.each([
   "metric-grid",
   "photo-reveal",
   "quote-card",
+  "scramble-text",
   "section-wipe",
   "spotlight",
   "stat-burst",
@@ -27,6 +29,7 @@ it.each([
 });
 
 it.each([
+  ["bar-board", 'template="bar-board" at={2}', 3],
   ["comparison-split", 'template={"comparison-split"}', 1],
   ["myth-fact", 'template={"myth-fact"}', 1],
   ["myth-fact", 'template="myth-fact" at={3}', 4],
@@ -38,6 +41,8 @@ it.each([
   ["timeline-sweep", "events"],
   ["process-flow", "steps"],
   ["list-cascade", "items"],
+  ["word-swap", "words"],
+  ["donut-build", "segments"],
 ])("counts at plus length minus 1 for the %s literal %s list", (name, list) => {
   expect([
     count(`template="${name}" ${list}={[a,b,c]} at={3}`),
@@ -85,7 +90,7 @@ it("names an unknown template literal and lists the valid templates", () => {
     expect.objectContaining({
       name: "DeckError",
       file,
-      message: `${file}:3:1: <Graphic template="title-revael">: unknown template. Valid templates: agenda, comparison-split, device-mockup, end-card, icon-array, list-cascade, logo-reveal, lower-third, metric-grid, myth-fact, photo-reveal, process-flow, quote-card, section-wipe, spotlight, stat-burst, stat-compare, team-grid, timeline-sweep, title-reveal, venn-overlap.`,
+      message: `${file}:3:1: <Graphic template="title-revael">: unknown template. Valid templates: agenda, bar-board, command-line, comparison-split, device-mockup, donut-build, end-card, icon-array, list-cascade, logo-reveal, lower-third, metric-grid, myth-fact, photo-reveal, process-flow, quote-card, scramble-text, section-wipe, spotlight, stat-burst, stat-compare, team-grid, timeline-sweep, title-reveal, venn-overlap, word-swap.`,
     }),
   );
 });

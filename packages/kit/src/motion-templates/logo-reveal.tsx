@@ -69,12 +69,12 @@ function LogoEntrance({ figure, at }: { figure: RefObject<HTMLElement | null>; a
     const rule = card.querySelector("hr");
     const tagline = card.querySelector("p");
     // The mask opens from the centre while the mark settles to its printed size.
-    tl.fromTo(card, { autoAlpha: 0 }, { autoAlpha: 1, duration: duration.quick, ease: ease.enter });
+    tl.fromTo(card, { autoAlpha: 0 }, { autoAlpha: 1, duration: duration.quick, ease: ease.snap });
     if (logo)
       tl.fromTo(
         logo,
         { clipPath: "inset(0% 50% 0% 50%)", scale: 1.06 },
-        { clipPath: "inset(0% 0% 0% 0%)", scale: 1, duration: duration.slow, ease: ease.enter },
+        { clipPath: "inset(0% 0% 0% 0%)", scale: 1, duration: duration.slow, ease: ease.snap },
         0,
       );
     // The underline grows from its midpoint and the tagline comes up underneath.
@@ -82,14 +82,14 @@ function LogoEntrance({ figure, at }: { figure: RefObject<HTMLElement | null>; a
       tl.fromTo(
         rule,
         { scaleX: 0 },
-        { scaleX: 1, duration: duration.base, ease: ease.enter },
+        { scaleX: 1, duration: duration.base, ease: ease.punch },
         duration.quick,
       );
     if (tagline)
       tl.fromTo(
         tagline,
         { opacity: 0, yPercent: 24 },
-        { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.enter },
+        { opacity: 1, yPercent: 0, duration: duration.base, ease: ease.snap },
         duration.base,
       );
   });

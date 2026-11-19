@@ -16,7 +16,7 @@ With npm, `npm i @steamfield/decks react react-dom` and `npx -p @steamfield/deck
 | --- | --- |
 | `@steamfield/decks` | Hooks (`useDeck`, `useSlide`), layouts, views, deck types |
 | `@steamfield/decks/motion` | `Step`, `Steps`, `Stagger`, `TextReveal`, `Highlight`, `CountUp`, `Draw`, `Mark`, `Morph`, `Camera`, `ShapeMorph`, `CodeBlock`, `useTween`, `useTimeline`, and gsap with SplitText, MorphSVG, MotionPath, DrawSVG and CustomEase registered |
-| `@steamfield/decks/kit` | The theme, story stages (`StoryStage`, `StoryCard`, `useStage`), Ink marks, `OpenChart`, `ChartSteps`, `Graph3D`, `Scene3D`, and `MotionTemplate` (21 fill-in motion graphics) |
+| `@steamfield/decks/kit` | The theme, story stages (`StoryStage`, `StoryCard`, `useStage`), Ink marks, `OpenChart`, `ChartSteps`, `Graph3D`, `Scene3D`, and `MotionTemplate` (26 fill-in motion graphics) |
 | `@steamfield/decks/kit/styles.css` | The kit stylesheet and self-hosted Inter |
 | `@steamfield/decks/node` | `defineDeck` for `deck.config.ts`, and the programmatic `dev` and `build` |
 

@@ -19,6 +19,12 @@ export interface Side {
   readonly points: readonly string[];
 }
 
+/** One labelled value: a bar on a board or a segment of a ring. */
+export interface Datum {
+  readonly label: string;
+  readonly value: number;
+}
+
 export type MotionTemplateProps = TemplateBase &
   (
     | { readonly template: "title-reveal"; readonly title: string; readonly subtitle?: string }
@@ -100,6 +106,46 @@ export type MotionTemplateProps = TemplateBase &
         readonly x: number;
         readonly y: number;
         readonly label: string;
+      }
+    | {
+        readonly template: "word-swap";
+        /** One or two fixed lines, up to 18 characters each. */
+        readonly lead: readonly string[];
+        /** 2 to 5 phrases, up to 16 characters each; each click swaps in the next. */
+        readonly words: readonly string[];
+        /**
+         * The plates' colours; the last plate always takes `accent`. `"palette"` (the default)
+         * gives each plate before it the next of the theme's hues (cyan, amber, rose, emerald,
+         * violet), skipping `accent`; `"neutral"` gives them the theme's muted surface.
+         */
+        readonly tone?: "palette" | "neutral";
+      }
+    | {
+        readonly template: "bar-board";
+        /** 2 to 6 rows, largest first; labels up to 16 characters. */
+        readonly rows: readonly Datum[];
+        /** Up to 60 characters. */
+        readonly source: string;
+        /** Up to 8 characters. */
+        readonly prefix?: string;
+        /** Up to 8 characters. */
+        readonly suffix?: string;
+      }
+    | { readonly template: "command-line"; readonly command: string }
+    | {
+        readonly template: "scramble-text";
+        readonly text: string;
+        /** Up to 40 characters. */
+        readonly label?: string;
+      }
+    | {
+        readonly template: "donut-build";
+        /** 2 to 5 parts of a whole, drawn one per click; labels up to 16 characters. */
+        readonly segments: readonly Datum[];
+        /** Up to 8 characters. */
+        readonly prefix?: string;
+        /** Up to 8 characters. */
+        readonly suffix?: string;
       }
   );
 

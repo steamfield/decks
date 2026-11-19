@@ -40,12 +40,12 @@ export function ProcessFlow({ steps, at = 0, accent = "cyan" }: TemplateProps<"p
       tl.fromTo(
         item.firstElementChild,
         { scaleX: 0 },
-        { scaleX: 1, duration: duration.base, ease: ease.enter },
+        { scaleX: 1, duration: duration.base, ease: ease.snap },
       );
     tl.fromTo(
       box,
       { autoAlpha: 0, y: 16 },
-      { autoAlpha: 1, y: 0, duration: duration.slow, ease: ease.enter },
+      { autoAlpha: 1, y: 0, duration: duration.slow, ease: ease.snap },
       index > 0 ? `<${duration.quick}` : ">",
     );
   };

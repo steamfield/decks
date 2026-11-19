@@ -62,11 +62,29 @@ body {
   font-size: 3.2em;
   font-weight: 850;
 }
-/* A headline and what answers it, centred on the canvas as one block. */
+/* The title-reveal headline at the reel's display size. It never wraps, so its tracking closes
+   as the words rise. */
+.reel-headline h2 {
+  font-size: calc(150px * var(--deck-text-scale, 1));
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+}
+/* word-swap sizes its phrase at 3.2em; this plays it at 190px. */
+.reel-swap {
+  font-size: calc(190px / 3.2 * var(--deck-text-scale, 1));
+}
+.reel-swap h2 {
+  letter-spacing: -0.055em;
+}
+/* A headline and what answers it, centred on the canvas as one block. A column, so the command
+   bar keeps its own width; the font size plays command-line's 1.2em at 58px. */
 .reel-stack {
   margin: auto 0;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 72px;
+  font-size: calc(58px / 1.2 * var(--deck-text-scale, 1));
 }
 /* The deck's position, from layers/above.tsx: quiet, in the corner, on every slide. */
 .reel-position {

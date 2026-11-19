@@ -11,6 +11,17 @@
   max-width: 19ch;
   text-wrap: balance;
 }
+/* SplitText's word and mask spans must be boxes: a transform does nothing to inline text. */
+.card h2 span {
+  display: inline-block;
+  transform-origin: left bottom;
+}
+/* A mask is the word's line box, which is tighter than its glyphs. The padding gives every
+   ascender, descender and the arriving lean room, and the negative margin keeps the layout. */
+.card h2 > * {
+  padding: 0.22em 0.08em;
+  margin: -0.22em -0.08em;
+}
 .rule {
   height: 0.1em;
   width: 4em;

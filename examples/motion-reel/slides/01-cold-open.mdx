@@ -6,6 +6,8 @@ transition: cut
 
 import { MotionTemplate } from "@steamfield/decks/kit";
 
-<WordSwap lead={["Your agent", "writes"]} words={["the slides.", "the charts.", "the motion."]} />
+<div className="reel-swap">
+  <MotionTemplate template="word-swap" accent="amber" lead={["Your agent", "writes"]} words={["the slides.", "the charts.", "the motion."]} />
+</div>
 
 <MotionTemplate template="lower-third" at={3} accent="violet" name="Decks" role="A React slide framework for animated talks" />

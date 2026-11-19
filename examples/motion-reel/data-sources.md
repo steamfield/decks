@@ -2,7 +2,8 @@
 
 Every figure on screen is counted from this repository and held in `data/reel.ts`. Slides read
 the constants; none types a number. All counts below were taken on 2026-11-18 at
-`@steamfield/decks` 1.2.0. Paths are from the repository root.
+`@steamfield/decks` 1.2.0, and the template counts (slides 3 to 5) again on 2026-11-19, after
+RFC 0010 added five templates. Paths are from the repository root.
 
 ## Slide 1 (`01-cold-open`): Your agent writes the motion.
 
@@ -18,45 +19,66 @@ the constants; none types a number. All counts below were taken on 2026-11-18 at
 | The mark: two offset slides, cyan over violet | geometry on a 32-unit square | confirmed | `site/src/lib/brand.ts` `MARK` (front rect `x 2, y 12.75, 21 x 14.5, rx 3`; back slide offset to `x 9, y 4.75`; 1.5-unit gap). Redrawn in `components/LogoSting.tsx` with the back slide whole. | 2026-11-18 |
 | Motion is driven by clicks | no figure | confirmed | `docs/guide/motion.md` line 3: "Motion in a deck is driven by clicks." | 2026-11-18 |
 
-## Slide 3 (`03-count`) and slide 4 (`04-templates`): Decks ships 21 motion templates.
+## Slide 3 (`03-count`) and slide 4 (`04-templates`): Decks ships 26 motion templates.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |
-| `TEMPLATES.length` | 21 templates | confirmed | The table under "The templates" in `docs/guide/motion-templates.md` | 2026-11-18 |
-| `TEMPLATES` | the 21 names | confirmed | The same table, in its order; cross-checked against the `case` labels in `packages/kit/src/motion-templates/motion-template.tsx` | 2026-11-18 |
+| `TEMPLATES.length` | 26 templates | confirmed | The `template` variants of `MotionTemplateProps` in `packages/kit/src/motion-templates/motion-template-props.ts` | 2026-11-19 |
+| `TEMPLATES` | the 26 names | confirmed | The `case` labels in `packages/kit/src/motion-templates/motion-template.tsx`, in their order; cross-checked against `MOTION_TEMPLATE_NAMES` in `packages/core/src/motion-template-beats.ts` | 2026-11-19 |
 
 Raw result:
 
 ```
-$ awk '/^## The templates/,/^### Clicks/' docs/guide/motion-templates.md | grep -c '^| `'
-21
+$ grep -c 'readonly template: "' packages/kit/src/motion-templates/motion-template-props.ts
+26
+$ grep -c '^    case "' packages/kit/src/motion-templates/motion-template.tsx
+26
 $ ls packages/kit/src/motion-templates/*.module.css | wc -l
-21
+26
 ```
 
 Definition: a template is one value of the `template` prop of `MotionTemplate`.
 
-The slide's `title` in frontmatter spells the number out as 21. It is the same count; recount
+The guide's table (`docs/guide/motion-templates.md`, "The templates") still lists 21 on this
+date: RFC 0010 added `word-swap`, `bar-board`, `command-line`, `scramble-text` and
+`donut-build` to the kit before the guide. The code is the source until the guide catches up;
+rerun the guide count then (`awk '/^## The templates/,/^### Clicks/'
+docs/guide/motion-templates.md | grep -c '^| `'`) and expect 26.
+
+The slide's `title` in frontmatter spells the number out as 26. It is the same count; recount
 and change the title if `TEMPLATES` changes.
 
-## Slide 5 (`05-one-click`): 16 of the 21 templates take one click.
+## Slide 5 (`05-one-click`): 18 of the 26 templates take one click.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |
-| `TEMPLATE_CLICKS`: one per item | 3 templates | confirmed | `docs/guide/motion-templates.md`, "Clicks": "`list-cascade`, `timeline-sweep` and `process-flow` take one click per item, from `at`" | 2026-11-18 |
-| `TEMPLATE_CLICKS`: two clicks | 2 templates | confirmed | The same section: "`comparison-split` and `myth-fact` take two, `at` and `at + 1`" | 2026-11-18 |
-| `TEMPLATE_CLICKS`: one click | 16 templates | confirmed | The same section: "Most templates use one click, at `at`." Derived: 21 - 3 - 2 | 2026-11-18 |
-| `ONE_CLICK_HEADLINE` | "16 of 21 take one click." | confirmed | Built in `data/template-clicks.ts` from the two counts | 2026-11-18 |
+| `TEMPLATE_CLICKS`: one per item | 5 templates | confirmed | `MOTION_TEMPLATE_BEATS` in `packages/core/src/motion-template-beats.ts`, `kind: "list"`: `donut-build`, `list-cascade`, `process-flow`, `timeline-sweep`, `word-swap` | 2026-11-19 |
+| `TEMPLATE_CLICKS`: two clicks | 3 templates | confirmed | The same table, `kind: "two"`: `bar-board`, `comparison-split`, `myth-fact` | 2026-11-19 |
+| `TEMPLATE_CLICKS`: one click | 18 templates | confirmed | The same table, `kind: "one"`. Derived: 26 - 5 - 3 | 2026-11-19 |
+| `ONE_CLICK_HEADLINE` | "18 of 26 take one click." | confirmed | Built in `data/template-clicks.ts` from the two counts | 2026-11-19 |
 
-Definition: population is the 21 names in `TEMPLATES`. Each is in exactly one group: the three
-the guide names as one click per item, the two it names as two clicks, and every other name.
-"Clicks taken" is what the template adds to a slide's click total; with `at` 0 a one-click
-template plays on arrival and adds none.
+Raw result:
+
+```
+$ grep -c ': { kind: "one" }' packages/core/src/motion-template-beats.ts
+18
+$ grep -c ': { kind: "list"' packages/core/src/motion-template-beats.ts
+5
+$ grep -c ': { kind: "two" }' packages/core/src/motion-template-beats.ts
+3
+```
+
+Definition: population is the 26 names in `TEMPLATES`. Each is in exactly one group by its
+beat kind in the table the click counter and the templates both read: one click per list item,
+two clicks, or one. "Clicks taken" is what the template adds to a slide's click total; with
+`at` 0 a one-click template plays on arrival and adds none.
 
 Derivation: `data/template-clicks.ts` filters `TEMPLATES` by the two named lists, so the rows
-always sum to `TEMPLATES.length`. The bars are drawn by `components/BarBoard.tsx` from these rows, on an axis from 0 to 20; a bar is its value over 20 of the track. No rounding.
+always sum to `TEMPLATES.length`. The bars are drawn by the kit's `bar-board` template from
+these rows, largest first, on an axis from 0 to 20 (the tick above 18, at a step of 5); a bar
+is its value over 20 of the track. No rounding.
 
-The slide's `title` in frontmatter types 16 and 21. Recount and change it if the rows change.
+The slide's `title` in frontmatter types 18 and 26. Recount and change it if the rows change.
 
 ## Slide 6 (`06-clicks`): It moves when you click.
 
@@ -134,4 +156,4 @@ The numbers are the running deck's own state, not constants.
 
 | Pending item | What resolves it | Owner |
 | --- | --- | --- |
-| The four counts | Rerun the commands above after any release that adds a template, transition, step component or render context; update `data/reel.ts`, `data/template-clicks.ts` and the titles of `03-count` and `05-one-click`. | deck author |
+| The four counts | Rerun the commands above after any release that adds a template, transition, step component or render context; update `data/reel.ts`, `data/template-clicks.ts` and the titles of `03-count` and `05-one-click`. Once the guide's template table lists 26, move slides 3 to 5 back to it as their source. | deck author |

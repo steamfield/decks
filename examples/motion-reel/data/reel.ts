@@ -1,7 +1,11 @@
 // Every figure in the reel is counted from this repository, never typed from memory.
-// Counted 2026-11-18 at @steamfield/decks 1.2.0; the commands are in ../data-sources.md.
+// Counted 2026-11-18 at @steamfield/decks 1.2.0, and the templates recounted 2026-11-19 after
+// RFC 0010 added five; the commands are in ../data-sources.md.
 
-/** The `template` names `MotionTemplate` accepts: the table in docs/guide/motion-templates.md. */
+/**
+ * The `template` names `MotionTemplate` accepts, in the order of the `case` labels in
+ * packages/kit/src/motion-templates/motion-template.tsx.
+ */
 export const TEMPLATES = [
   "title-reveal",
   "lower-third",
@@ -24,6 +28,11 @@ export const TEMPLATES = [
   "icon-array",
   "team-grid",
   "venn-overlap",
+  "word-swap",
+  "bar-board",
+  "command-line",
+  "scramble-text",
+  "donut-build",
 ] as const;
 
 /** Slide transition presets: the table under "Slide transitions" in docs/guide/motion.md. */

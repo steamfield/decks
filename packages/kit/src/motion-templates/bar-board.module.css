@@ -1,0 +1,99 @@
+.figure {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  font-family: var(--od-font-sans);
+}
+/* Labels sit in a fixed column, so every bar and the axis share one zero and one scale. The last
+   column is as wide as the longest value, so a full-length bar's value stays on the board. */
+.board {
+  --label: 7.5em;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--label) 1fr auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 0.8em 0.75em 0.5em;
+  /* The accent edge; its colour is set inline from the accent prop. */
+  border-left: 0.2em solid;
+  background: var(--od-surface);
+  font-size: 1.1em;
+  color: var(--od-text);
+}
+.rows {
+  grid-column: 1 / -1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-auto-rows: 1fr;
+  row-gap: 0.4em;
+}
+.row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: stretch;
+}
+.label {
+  align-self: center;
+  padding-right: 0.5em;
+  text-align: right;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.track {
+  display: flex;
+  align-items: center;
+  border-left: 0.06em solid var(--od-border-axis);
+}
+.bar {
+  align-self: stretch;
+  flex: none;
+}
+.value,
+.reserve::after {
+  margin-left: 0.3em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* Holds the value column open with an invisible copy of the longest value. */
+.reserve::after {
+  content: attr(data-value);
+  visibility: hidden;
+}
+/* Ticks hang from the same zero as the bars: the axis is the bars' column. */
+.axis {
+  grid-column: 2;
+  position: relative;
+  height: 1.1em;
+  margin-top: 0.2em;
+  border-top: 0.06em solid var(--od-border-axis);
+  font-variant-numeric: tabular-nums;
+  color: var(--od-text-muted);
+}
+.axis span {
+  position: absolute;
+  top: 0.2em;
+  translate: -50% 0;
+  font-size: 0.8em;
+}
+/* The source line rises inside this box; the padding keeps its descenders clear of the edge. */
+.source {
+  overflow: clip;
+  padding: 0.25em 0;
+  margin: -0.25em 0;
+  font-size: 0.6em;
+  font-weight: 500;
+  color: var(--od-text-muted);
+}
+.source p {
+  margin: 0;
+}
