@@ -1,6 +1,7 @@
 // Drives one deck iframe for the landing page's scripted session. One command is in flight at
 // a time: each resolves when the deck reports its requestId settled, and a newer call
-// supersedes it, because the deck never reports a superseded move settled.
+// supersedes it, because the deck never reports a superseded move settled. A paused stage
+// holds a play between steps until it resumes.
 
 import { type Command, command, type DeckState, parseDeckMessage } from "../player/protocol";
 
@@ -15,8 +16,10 @@ export type PlayRange = {
   stepBeatsOn: readonly number[];
 };
 
+/** How a command ended: settled on a deck state, or superseded by a newer call. */
 export type StageResult = { cancelled: true } | { cancelled: false; state: DeckState };
 
+/** Drives one deck iframe; made by `createStageController`. */
 export type StageController = {
   ready(): Promise<void>;
   show(slide: number, beat: number): Promise<StageResult>;
@@ -26,6 +29,13 @@ export type StageController = {
     options?: { direction?: "forward" | "backward" },
   ): Promise<StageResult>;
   play(range: PlayRange, options: { dwellMs: number }): Promise<StageResult>;
+  /**
+   * Holds any play, now or later: its dwell stops counting down and it sends no further step
+   * until `resume`. A step already sent still settles. `show`, `go` and `cancel` still work.
+   */
+  pause(): void;
+  /** Lets a held play go on: the dwell it was in runs for the time it had left. */
+  resume(): void;
   cancel(): void;
   dispose(): void;
 };
@@ -44,16 +54,26 @@ type Pending = {
   timer?: ReturnType<typeof setTimeout>;
 };
 
+/** A play's wait between steps. `timer` is unset while the stage is paused. */
+type Dwell = {
+  resolve: (go: boolean) => void;
+  remainingMs: number;
+  startedAt: number;
+  timer?: ReturnType<typeof setTimeout>;
+};
+
 const nameOf = (message: Command) =>
   "slide" in message ? `${message.cmd} ${message.slide}.${message.beat}` : message.cmd;
 
+/** Creates the controller for one deck iframe; it listens to the deck until `dispose`. */
 export function createStageController(iframe: HTMLIFrameElement): StageController {
   const origin = window.location.origin;
   let isReady = false;
   let disposed = false;
+  let paused = false;
   let serial = 0;
   let pending: Pending | null = null;
-  let dwell: { timer: ReturnType<typeof setTimeout>; resolve: (go: boolean) => void } | null = null;
+  let dwell: Dwell | null = null;
   let markReady: () => void = () => {};
   let failReady: (error: Error) => void = () => {};
   const readiness = new Promise<void>((resolve, reject) => {
@@ -103,13 +123,20 @@ export function createStageController(iframe: HTMLIFrameElement): StageControlle
     });
   }
 
+  function countDown(entry: Dwell) {
+    entry.startedAt = performance.now();
+    entry.timer = setTimeout(() => {
+      dwell = null;
+      entry.resolve(true);
+    }, entry.remainingMs);
+  }
+
+  /** Resolves true after `ms` of unpaused time, or false when superseded first. */
   function wait(ms: number) {
     return new Promise<boolean>((resolve) => {
-      const timer = setTimeout(() => {
-        dwell = null;
-        resolve(true);
-      }, ms);
-      dwell = { timer, resolve };
+      const entry: Dwell = { resolve, remainingMs: ms, startedAt: 0 };
+      dwell = entry;
+      if (!paused) countDown(entry);
     });
   }
 
@@ -177,6 +204,19 @@ export function createStageController(iframe: HTMLIFrameElement): StageControlle
           );
       }
       return result;
+    },
+    pause() {
+      if (paused) return;
+      paused = true;
+      if (dwell?.timer === undefined) return;
+      clearTimeout(dwell.timer);
+      dwell.timer = undefined;
+      dwell.remainingMs = Math.max(0, dwell.remainingMs - (performance.now() - dwell.startedAt));
+    },
+    resume() {
+      if (!paused) return;
+      paused = false;
+      if (dwell) countDown(dwell);
     },
     cancel: supersede,
     dispose() {

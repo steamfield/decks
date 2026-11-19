@@ -1,5 +1,11 @@
 import { expect, type Page, test } from "@playwright/test";
+import { site } from "../src/config";
 import { phoneScript, turns } from "../src/data/agent-session";
+
+const labels = site.agentSession.stageLabels;
+// The transcripts' names in AgentSession.tsx, which imports CSS and so can't load here.
+const LIVE_TRANSCRIPT = "Agent session transcript";
+const STILL_TRANSCRIPT = "Agent session transcript, every turn";
 
 // The hero's session against the real built agent-hero deck. One ordered log in the page holds
 // what the transcript showed (from its DOM) and where the deck settled (from its postMessages),
@@ -21,7 +27,7 @@ function record() {
   const log: Entry[] = [];
   window.sessionLog = log;
   window.addEventListener("message", (event) => {
-    const frame = document.querySelector<HTMLIFrameElement>(".agent-session iframe");
+    const frame = document.querySelector<HTMLIFrameElement>('iframe[src^="/d/agent-hero/"]');
     if (!frame || event.source !== frame.contentWindow) return;
     const data = event.data as {
       type?: string;
@@ -39,7 +45,9 @@ function record() {
     return "tool";
   };
   const watch = () => {
-    const turnsList = document.querySelector('.agent-session-live [data-part="turns"]');
+    const turnsList = document.querySelector(
+      '[role="group"][aria-label="Agent session transcript"] [data-part="turns"]',
+    );
     if (!turnsList) throw new Error("the hero has no session transcript");
     for (const node of turnsList.children) log.push({ kind: kindOf(node) });
     // The thinking dots come and go between a prompt and its first call; they are not a step.
@@ -121,16 +129,20 @@ test.describe("without JavaScript", () => {
 
   test("the hero shows every prompt and lead beside the drafted cover", async ({ page }) => {
     await page.goto("/");
-    const hero = page.locator(".agent-session-static");
+    const transcript = page.getByRole("group", { name: STILL_TRANSCRIPT, exact: true });
     for (const step of phoneScript.steps)
-      if (step.kind === "user") await expect(hero.getByText(step.text)).toBeVisible();
-    await expect(hero.getByText("Done.")).toHaveCount(5);
-    await expect(hero.locator("img.agent-session-cover")).toBeVisible();
-    await expect(hero.locator("img.agent-session-cover")).toHaveAttribute(
-      "src",
-      /agent-hero-cover-1280\.webp$/,
+      if (step.kind === "user") await expect(transcript.getByText(step.text)).toBeVisible();
+    await expect(transcript.getByText("Done.")).toHaveCount(5);
+    const cover = page.getByRole("img", { name: labels[1] });
+    await expect(cover).toBeVisible();
+    await expect(cover).toHaveAttribute("src", /agent-hero-cover-1280\.webp$/);
+    // The playing session's window and its stage stay hidden.
+    await expect(page.getByRole("group", { name: LIVE_TRANSCRIPT, exact: true })).toHaveCount(0);
+    await expect(page.getByRole("img", { name: labels[0] })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: site.agentSession.openDeck })).toHaveAttribute(
+      "href",
+      `/d/agent-hero/#/${turns.at(-1)?.result.first}`,
     );
-    await expect(hero.locator(".agent-session-window")).toBeHidden();
   });
 });
 
@@ -139,21 +151,53 @@ test("reduced motion shows the whole transcript and the finished deck, and drive
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.addInitScript(record);
+  const posters: string[] = [];
+  page.on("request", (request) => {
+    const path = new URL(request.url()).pathname;
+    if (path.startsWith("/posters/agent-hero")) posters.push(path);
+  });
   await page.goto("/");
-  // The island hydrates only when motion is allowed: this view is the server's HTML.
   await page.waitForLoadState("load");
-  await expect(page.locator("astro-island:has(.agent-session)")).toHaveAttribute("ssr", "");
-  const session = page.locator(".agent-session");
-  await expect(session.getByText("Ship it.")).toBeVisible();
-  const finished = session.getByRole("img", { name: /^The finished build-time talk/ });
+  await expect(
+    page.getByRole("group", { name: STILL_TRANSCRIPT, exact: true }).getByText("Ship it."),
+  ).toBeVisible();
+  const finished = page.getByRole("img", { name: labels.at(-1) });
   await expect(finished).toBeVisible();
-  await expect(session.getByRole("img", { name: /^An empty first slide/ })).toBeHidden();
+  await expect(page.getByRole("img", { name: labels[0] })).toHaveCount(0);
   const poster = finished.locator("img");
   await expect
     .poll(() => poster.evaluate((img: HTMLImageElement) => img.currentSrc))
     .toMatch(/\/posters\/agent-hero-finished-\d+\.(avif|webp)$/);
-  await expect(session.getByRole("button", { name: "Pause" })).toHaveCount(0);
-  // No deck frame means no command can reach a deck; the log saw no deck either.
-  await expect(session.locator("iframe")).toHaveCount(0);
+  // The island hydrates only when motion is allowed: no controls, and no deck frame, so no
+  // command can reach a deck; the log saw no deck either.
+  await expect(page.getByRole("button", { name: "Pause" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Replay" })).toHaveCount(0);
+  await expect(page.locator("iframe")).toHaveCount(0);
   expect((await sessionLog(page)).filter((entry) => entry.kind === "deck")).toEqual([]);
+  // Only the finished poster loads: the start poster is a source the picture passes over.
+  expect(posters.every((path) => /^\/posters\/agent-hero-finished-\d+\./.test(path))).toBe(true);
+  expect(posters).toHaveLength(1);
+});
+
+test("hydration keeps the server's poster image, so the stage never repaints it", async ({
+  page,
+}) => {
+  // A deck that never answers keeps the poster up for as long as the test looks.
+  await page.route("**/d/agent-hero/**", (route) => route.abort());
+  await page.addInitScript(() => {
+    if (window !== window.top) return;
+    // Tags the poster the parser inserts, before any script has run.
+    new MutationObserver((_, observer) => {
+      const img = document.querySelector('[role="img"][aria-labelledby] picture > img');
+      if (!img) return;
+      img.setAttribute("data-from-server", "");
+      observer.disconnect();
+    }).observe(document, { childList: true, subtree: true });
+  });
+  await page.goto("/");
+  // Hydrated: the controls exist only on the client.
+  await expect(page.getByRole("button", { name: "Replay" })).toBeVisible();
+  const stage = page.getByRole("img", { name: labels[0] });
+  await expect(stage).toBeVisible();
+  await expect(stage.locator("img")).toHaveAttribute("data-from-server", "");
 });

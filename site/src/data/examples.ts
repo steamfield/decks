@@ -18,6 +18,7 @@ import {
   editSize,
   type Loop,
   type LoopMark,
+  type Poster,
   type Provenance,
   type ProvenanceKind,
   type RunSummary,
@@ -120,10 +121,34 @@ export function loadEdits(name: string): Omit<Edits, "by"> | null {
   return existsSync(path) ? (readJson(path) as Omit<Edits, "by">) : null;
 }
 
+/** The poster `make demo` shot as public/posters/<file>-<width>, or null when it hasn't. */
+function posterOf(file: string): Poster | null {
+  const shot = (width: number) => existsSync(join(site, "public/posters", `${file}-${width}.avif`));
+  if (!shot(1280)) return null;
+  const wide = shot(1920);
+  return { base: `/posters/${file}`, width: wide ? 1920 : 1280, height: wide ? 1080 : 720 };
+}
+
+/**
+ * The entry's further posters (its `posters` in examples.json), by name. Throws when one has
+ * not been shot, since a page that names it has nothing to show in its place.
+ */
+export function loadPosters(entry: ExampleEntry): Record<string, Poster> {
+  return Object.fromEntries(
+    (entry.posters ?? []).map(({ name }) => {
+      const poster = posterOf(`${entry.name}-${name}`);
+      if (!poster)
+        throw new Error(
+          `public/posters/${entry.name}-${name}-1280.avif is missing: run node scripts/demo.mjs --only ${entry.name}`,
+        );
+      return [name, poster];
+    }),
+  );
+}
+
 export function loadExample(entry: ExampleEntry): Example {
   const { name } = entry;
   const recording = loadRecording(name);
-  const hasPoster = existsSync(join(site, "public/posters", `${name}-1280.avif`));
   const fixture = entry.edits ? loadEdits(name) : null;
   const edits = fixture && entry.edits ? { ...fixture, by: entry.edits.by } : null;
   return {
@@ -138,13 +163,7 @@ export function loadExample(entry: ExampleEntry): Example {
     startBeat: recording?.startBeat ?? 0,
     states: recording?.states ?? [],
     provenance: provenanceOf(entry, edits),
-    poster: hasPoster
-      ? {
-          base: `/posters/${name}`,
-          width: existsSync(join(site, "public/posters", `${name}-1920.avif`)) ? 1920 : 1280,
-          height: existsSync(join(site, "public/posters", `${name}-1920.avif`)) ? 1080 : 720,
-        }
-      : null,
+    poster: posterOf(name),
     loop: entry.loop ? loadLoop(name) : null,
     run: loadRunSummary(entry),
     edits,

@@ -46,11 +46,11 @@ window.addEventListener("message", (event) => {
 createRoot(root).render(
   <DeckStage
     src="/d/agent-hero/index.html"
-    poster={{ base: "/posters/guide-demos", width: 1920, height: 1080 }}
+    poster={{ base: "/posters/agent-hero", width: 1920, height: 1080 }}
     label="The deck the agent built"
     initialHash="/1"
     onController={(controller) => {
-      window.stage = controller;
+      window.stage = controller ?? undefined;
     }}
   />,
 );
