@@ -59,7 +59,7 @@ than hand-written code asks for it by name.
 | Error boundary around each slide | `react-error-boundary` | `runtime` |
 | Keyboard shortcuts | `tinykeys` | `runtime` |
 | Class name composition | `clsx` (declared; nothing imports it yet) | `runtime` |
-| Timelines, custom eases, count-up | `gsap` with `CustomEase`. `@gsap/react` is declared in `motion` and not imported. The built-in step primitives split text with `Intl.Segmenter` and draw SVG with `pathLength` and CSS (section 5.1). `SplitText`, `MorphSVGPlugin`, `MotionPathPlugin` and `DrawSVGPlugin` are registered and exported by `motion` for deck-authored motion graphics and `ShapeMorph` | `motion`, `kit` |
+| Timelines, custom eases, count-up | `gsap` with `CustomEase`. `@gsap/react` is declared in `motion` and not imported. The built-in step primitives split text with `Intl.Segmenter` and draw SVG with `pathLength` and CSS (section 5.1). `SplitText`, `MorphSVGPlugin`, `MotionPathPlugin`, `DrawSVGPlugin` and `ScrambleTextPlugin` are registered and exported by `motion` for deck-authored motion graphics and `ShapeMorph`; `motion`'s tokens add the role curves `ease.snap`, `ease.punch`, `ease.leave`, `ease.slam` and the `rise` mask constants (RFC 0010) | `motion`, `kit` |
 | Remote presenter socket | `ws` | `node` |
 | MDX compile | `@mdx-js/rollup` | `node` |
 | Parsing MDX outside the compiler (click counts, notes) | `unified` + `remark-parse` + `remark-mdx` | `node` |

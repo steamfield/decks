@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Package (`@steamfield/decks`)
+
+- The motion templates move to the style of the landing page's motion reel: headlines rise through masks with a lean, accents overshoot once and settle, beats overlap. Their looks change; their props and clicks do not. A deck that wants the previous feel re-creates the role curves in its `setup.ts` (see "Motion tokens" in `docs/guide/motion.md`). `title-reveal` draws its accent rule only under a subtitle.
+- Role curves in the motion tokens: `ease.snap`, `ease.punch`, `ease.leave`, `ease.slam`, and the `rise` constants for masked type. `ScrambleTextPlugin` is registered and exported.
+- Five new motion templates: `word-swap`, `bar-board`, `command-line`, `scramble-text` and `donut-build`.
+
+### Repo
+
+- RFC 0010 (the motion-reel style as the kit's motion vocabulary). The motion-reel deck uses the kit's templates in place of four of its own components.
+
 ## 1.2.0
 
 ### Package (`@steamfield/decks`)
