@@ -46,5 +46,5 @@ export const BEFORE_LAST_CHANGE = Math.round(WEEKS[lastShipped - 2]?.minutes ?? 
 
 export const TREND_SOURCE = "Weekly median CI build, data/build-times.csv. Illustrative figures.";
 
-/** The close on 06-close-crowded and 09-close. */
+/** The close on 06-close and 09-close-fitted. */
 export const CLOSE_HEADLINE = `Keep the build at ${AFTER} minutes.`;

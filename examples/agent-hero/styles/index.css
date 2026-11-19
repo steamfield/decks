@@ -166,7 +166,7 @@
   color: var(--od-text-muted);
 }
 
-/* 06-close-crowded and 09-close: the closing panel. Its height is fixed, so copy that does not
+/* 06-close and 09-close-fitted: the closing panel. Its height is fixed, so copy that does not
    fit is cut off at the panel's edge (06 shows that mistake; 09 is the fitted version). */
 .hero-close {
   margin: auto 0;

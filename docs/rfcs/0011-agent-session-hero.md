@@ -120,7 +120,7 @@ A prospect gives the hero 10 to 40 seconds. In that time the demo has to show th
 | Data storytelling: charts that build in steps, with figures traced to a source | Beat 1: a story-stage chart advancing in beats, and `data-sources.md` being written |
 | Motion graphics that look produced | Beats 2 and 3: a reel opener and a scoreboard build |
 | Refining by conversation | Beats 2–4: each is one plain-English sentence |
-| The agent checks its own work | Beat 4: `decks film` and `inspect` catch a slide that overflows at presenter size, the agent fixes it, and `lint` passes |
+| The agent checks its own work | Beat 4: `decks inspect` catches a slide that overflows at presenter size, the agent fixes it and looks with `shot`, and `lint` passes |
 | It ships as a real talk | Beat 5: a static build and a PDF |
 | It's your repo: MDX and React files you can read and diff | Every beat: the tool calls name the files they write |
 
@@ -141,7 +141,7 @@ Each beat follows the ask, work, land rhythm. The prompt types in about 0.8s, an
 | 1 | "Turn build-times.csv into a 5-slide talk for Thursday's all-hands: our builds went from 14 minutes to 4." | loads `building-a-deck` and `deck-data`; reads the CSV; writes `data-sources.md` and `slides/01…05.mdx`; `decks check` ✓ | an empty first slide | a quick flip through all five slides: the `title-reveal` cover, a story stage whose chart steps through the weeks, a stat slide, the three changes that did it, and a close | ~11s |
 | 2 | "Open with a reel: 'Builds were slow.', then 'flaky.', then 'fast.'" | adds `slides/00-reel.mdx` (`word-swap`) | the cover | the swap through exactly those words | ~6s |
 | 3 | "Make the drop hit harder: show what each change saved, scoreboard style." | moves the stat slide to `bar-board` | the plain stat slide | the minutes each change saved snapping in as bars, largest first, the biggest saver accented | ~6s |
-| 4 | "Check every slide at presenter size." | `decks film`, `decks inspect` (the close overflows its box), the fix, `decks lint` ✓ | the crowded close | the fixed close | ~6s |
+| 4 | "Check every slide at presenter size." | `decks inspect` (the close overflows its box), the fix, `decks shot` of the slide, `decks lint` ✓ | the crowded close | the fixed close | ~6s |
 | 5 | "Ship it." | `decks build` → `dist/`; `decks export --final` → `talk.pdf` | the fixed close | the reel playing once more, as the finished deck opens | ~5s |
 
 The total is about 35 seconds, then a 4-second hold on the finished deck, then it loops. The test for the length: by 12 seconds, a viewer who stops watching has already seen a whole deck made from data. By 30 seconds they've seen the motion, the refining and the checks.

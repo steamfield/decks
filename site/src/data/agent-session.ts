@@ -31,7 +31,7 @@ export const agentSession: DemoScript = {
     {
       kind: "tool-call",
       name: "Write",
-      args: "data-sources.md, slides/02-cover.mdx … 06-close-crowded.mdx",
+      args: "data-sources.md, slides/02-cover.mdx … 06-close.mdx",
     },
     { kind: "tool-call", name: "Bash", args: "decks check", output: ok },
     {
@@ -68,14 +68,14 @@ export const agentSession: DemoScript = {
     },
 
     { kind: "user", text: "Check every slide at presenter size.", typingMs: 800 },
-    { kind: "tool-call", name: "Bash", args: "decks film agent-hero" },
     {
       kind: "tool-call",
       name: "Bash",
       args: "decks inspect agent-hero",
       output: [{ text: "slide 6: clipped at the bottom", tone: "warn" }],
     },
-    { kind: "tool-call", name: "Edit", args: "slides/09-close.mdx" },
+    { kind: "tool-call", name: "Edit", args: "slides/06-close.mdx" },
+    { kind: "tool-call", name: "Bash", args: "decks shot agent-hero 6" },
     { kind: "tool-call", name: "Bash", args: "decks lint agent-hero", output: ok },
     {
       kind: "agent-text",

@@ -97,7 +97,7 @@ click 2 all 12 with weeks 10 to 12 accented. The splits come from `changes.csv`'
 | `CHANGES` | 3 rows: label, week shipped, minutes saved | illustrative, fictional team | every row of `changes.csv` | 2026-11-19 |
 | `TOTAL_SAVED` | 10 minutes | illustrative, fictional team | 5 + 3 + 2 | 2026-11-19 |
 
-## Slide 6 (`06-close-crowded`) and slide 9 (`09-close`): Keep the build at 4 minutes.
+## Slide 6 (`06-close`) and slide 9 (`09-close-fitted`): Keep the build at 4 minutes.
 
 | Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
 | --- | --- | --- | --- | --- |

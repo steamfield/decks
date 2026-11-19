@@ -60,7 +60,7 @@ describe("the scripted session's shape", () => {
 describe("what the session names exists", () => {
   it("names only real decks commands, with flags that command takes", () => {
     const used = bash.map((args) => /^decks (\w+)/.exec(args)?.[1] ?? "");
-    expect(used).toEqual(["check", "check", "check", "film", "inspect", "lint", "build", "export"]);
+    expect(used).toEqual(["check", "check", "check", "inspect", "shot", "lint", "build", "export"]);
     for (const [index, args] of bash.entries()) {
       const command = used[index] ?? "";
       expect(subcommands, args).toContain(command);
@@ -68,6 +68,17 @@ describe("what the session names exists", () => {
         expect(toolFlags(command), `${args}: ${flag}`).toContain(flag);
     }
     expect(bash.join(" ")).toContain("--final");
+  });
+
+  it("passes every positional argument each command requires", () => {
+    for (const args of bash) {
+      const command = /^decks (\w+)/.exec(args)?.[1] ?? "";
+      const file = `packages/node/src/cli/commands/${command}.ts`;
+      if (!existsSync(join(repo, file))) continue; // dev and build live in the dev server
+      const required = read(file).match(/type: "positional", required: true/g)?.length ?? 0;
+      const given = args.split(/\s+/).slice(2).filter((word) => !word.startsWith("-")).length;
+      expect(given, args).toBeGreaterThanOrEqual(required);
+    }
   });
 
   it("loads only skills the plugin ships", () => {
@@ -96,11 +107,11 @@ describe("what the session names exists", () => {
       "data/build-times.csv",
       "data-sources.md",
       "slides/02-cover.mdx",
-      "06-close-crowded.mdx",
+      "06-close.mdx",
       "slides/07-reel.mdx",
       "data/changes.csv",
       "slides/08-saved.mdx",
-      "slides/09-close.mdx",
+      "slides/06-close.mdx",
     ]);
     for (const path of paths) {
       // A bare name after an ellipsis is a slide in the same directory.
@@ -168,7 +179,7 @@ describe("the session says what the deck shows", () => {
   });
 
   it("reports the overflow on the slide that is built to overflow", () => {
-    expect(slideFiles[5]).toBe("06-close-crowded.mdx");
+    expect(slideFiles[5]).toBe("06-close.mdx");
     const inspect = calls.find((call) => call.args?.startsWith("decks inspect"));
     expect(inspect?.output?.map(lineText)).toEqual(["slide 6: clipped at the bottom"]);
     expect(turns[3]?.hold.slide).toBe(6);
@@ -194,14 +205,14 @@ describe("where the player holds and lands", () => {
       "01-blank",
       "02-cover",
       "04-stat",
-      "06-close-crowded",
-      "09-close",
+      "06-close",
+      "09-close-fitted",
     ]);
     // A new slide starts from something already on screen; a refine from the slide it replaces.
     for (const turn of turns.filter((t) => t.kind === "new"))
       expect(turn.hold.slide).toBeLessThan(turn.result.first);
     expect(stage(turns[2]?.result.first ?? 0)).toBe("08-saved");
-    expect(stage(turns[3]?.result.first ?? 0)).toBe("09-close");
+    expect(stage(turns[3]?.result.first ?? 0)).toBe("09-close-fitted");
     // The revisit holds where the session last landed.
     expect(turns[4]?.hold.slide).toBe(turns[3]?.result.last);
   });
