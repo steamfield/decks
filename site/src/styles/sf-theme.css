@@ -27,6 +27,16 @@
   --sf-font: var(--font-mono);
   --sf-focus: var(--color-ink);
 
+  /* The agent demo and its window (AgentSession.tsx imports their stylesheets). */
+  --sf-ok: var(--color-pass);
+  --sf-fail: var(--color-block);
+  --sf-warn: var(--color-talk);
+  --sf-demo-subtle-bg: var(--color-panel);
+  --sf-demo-border-subtle: var(--color-line);
+  --sf-demo-caret: var(--color-data);
+  --sf-demo-shadow: none;
+  --sf-window-dot: var(--color-line-strong);
+
   /* The consent banner (BaseLayout.astro, only in builds with a PostHog key). */
   --sf-consent-background: var(--color-panel);
   --sf-consent-foreground: var(--color-ink);

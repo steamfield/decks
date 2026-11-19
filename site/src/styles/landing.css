@@ -98,11 +98,11 @@ html[data-page="landing"] :focus-visible {
   opacity: 0.9;
 }
 
-/* Hero: a statement on the left, the install path on the right, the deck below. */
+/* Hero: a narrow statement column beside the agent session, the install block under the demo. */
 .hero {
   position: relative;
   isolation: isolate;
-  padding-block: 72px 96px;
+  padding-block: 40px 96px;
 }
 /* A faint violet dot grid, echoing a chart grid, fading out from the headline. */
 .hero::before {
@@ -119,16 +119,37 @@ html[data-page="landing"] :focus-visible {
   mask-image: radial-gradient(ellipse 75% 60% at 25% 25%, #000 20%, transparent 75%);
   pointer-events: none;
 }
-.hero-head {
+.hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 31rem;
-  gap: 32px 64px;
-  align-items: end;
-  margin-bottom: 48px;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "text demo"
+    "text install";
+  gap: 20px 48px;
+  align-items: start;
+}
+.hero-text {
+  grid-area: text;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 8px;
+}
+.hero-demo {
+  grid-area: demo;
+  min-width: 0;
+}
+.hero-install {
+  grid-area: install;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
 }
 .hero-title {
   max-width: 13em;
-  font-size: clamp(2.75rem, 5.4vw, 4.5rem);
+  font-size: clamp(2.25rem, 3.5vw, 3rem);
   line-height: 1;
   font-weight: 600;
   letter-spacing: -0.045em;
@@ -136,16 +157,10 @@ html[data-page="landing"] :focus-visible {
 }
 .hero-lede {
   max-width: 38rem;
-  margin-top: 24px;
   color: var(--color-ink-2);
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.55;
   text-wrap: pretty;
-}
-.hero-intro {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 .hero-actions {
   display: flex;
@@ -194,10 +209,6 @@ html[data-page="landing"] :focus-visible {
     animation: hero-rise 640ms var(--ease-out) both;
     animation-delay: var(--delay, 0ms);
   }
-  .hero-in-media {
-    animation: hero-media 800ms var(--ease-out) both;
-    animation-delay: var(--delay, 0ms);
-  }
 }
 @keyframes hero-rise {
   from {
@@ -206,18 +217,15 @@ html[data-page="landing"] :focus-visible {
     filter: blur(3px);
   }
 }
-@keyframes hero-media {
-  from {
-    /* No scale: the player's geometry stays exact while it enters. */
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
 
 @media (max-width: 1023px) {
-  .hero-head {
-    grid-template-columns: 1fr;
-    align-items: start;
+  .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas:
+      "text"
+      "demo"
+      "install";
   }
 }
 @media (max-width: 767px) {
@@ -235,15 +243,33 @@ html[data-page="landing"] :focus-visible {
     display: none;
   }
   .hero {
-    padding-block: 40px 64px;
+    padding-block: 24px 64px;
   }
-  .hero-head {
-    gap: 24px;
-    margin-bottom: 32px;
+  /* The phone reads the headline, then the deck, the transcript and the install block. */
+  .hero-grid {
+    grid-template-areas: none;
+    gap: 20px;
+  }
+  .hero-text {
+    display: contents;
+  }
+  .hero-title {
+    order: 0;
+  }
+  .hero-demo {
+    grid-area: auto;
+    order: 1;
+  }
+  .hero-install {
+    grid-area: auto;
+    order: 2;
   }
   .hero-lede {
-    margin-top: 16px;
+    order: 3;
     font-size: 17px;
+  }
+  .hero-text > .hero-actions {
+    order: 4;
   }
   .hero-actions a {
     flex: 1;
@@ -586,7 +612,7 @@ html[data-page="landing"] :focus-visible {
  * the hero; provenance, run output and the hook's verdict carry their hues.
  */
 
-.hero-intro .copy-line::before {
+.hero-install .copy-line::before {
   color: var(--color-action);
 }
 
@@ -968,4 +994,182 @@ html:not(.js) .motion-showcase :is(.player-loading, .player-status) {
   height: 100%;
   border: 0;
   object-fit: contain;
+}
+
+/*
+ * The hero's agent session: one terminal window holding the transcript beside the
+ * deck it builds, the stage about 60% of the width. The title bar carries the only
+ * controls: the step strip, play/pause and replay.
+ */
+.agent-session {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  --sf-font-size: 12px;
+}
+.agent-session-window {
+  border-color: var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-canvas);
+}
+.agent-session-window [data-part="window-bar"] {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  min-height: 44px;
+  padding: 6px 8px 6px 14px;
+  border-bottom-color: var(--color-line);
+  background: var(--color-panel);
+}
+.agent-session-window [data-part="window-controls"] {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.agent-session-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 16px;
+  font-family: var(--font-sans);
+}
+.agent-session-steps {
+  display: flex;
+  gap: 2px;
+}
+.agent-session-controls button {
+  min-height: 32px;
+  border-radius: var(--radius-sm);
+  padding-inline: 8px;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 150ms;
+}
+.agent-session-controls button:hover {
+  color: var(--color-ink);
+}
+.agent-session-steps button[aria-current="step"] {
+  color: var(--color-data);
+}
+.agent-session-toggle {
+  border: 1px solid var(--color-line-strong);
+}
+.agent-session-body {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+}
+/* The transcript fills the stage's height and scrolls; the stage alone sets the row. */
+.agent-session-transcript {
+  position: relative;
+  border-right: 1px solid var(--color-line);
+}
+.agent-session-transcript > [data-part="agent-demo"] {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.agent-session [data-part="transcript"] {
+  height: 100%;
+}
+.agent-session [data-part="turns"] {
+  padding: 12px 14px;
+}
+.agent-session [data-part="message"][data-from="user"] {
+  color: var(--color-ink);
+}
+.agent-session [data-part="tool-call"],
+.agent-session [data-part="tool-label"] {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+.agent-session [data-from="agent"] [data-part="text"] {
+  color: var(--color-ink-2);
+}
+.agent-session [data-part="lead"] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.agent-session-stage {
+  padding: 12px;
+}
+.agent-session-fineprint {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.agent-session-fineprint a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+/* Reduced motion: the whole transcript beside the finished deck, with no JavaScript needed
+   (the island hydrates only when motion is allowed). */
+.agent-session .agent-session-still {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-session .agent-session-live {
+    display: none;
+  }
+  .agent-session .agent-session-still {
+    display: flex;
+  }
+  .agent-session .deck-stage.agent-session-still {
+    display: block;
+  }
+}
+/* Without JavaScript: the five prompts and leads beside the drafted cover. */
+.agent-session-static {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 12px;
+  align-items: start;
+}
+.agent-session-cover {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+}
+@media (max-width: 767px) {
+  .agent-session-body,
+  .agent-session-static {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .agent-session-stage,
+  .agent-session-cover {
+    order: -1;
+  }
+  .agent-session-stage {
+    padding: 8px;
+  }
+  /* One row of controls at phone width: the strip on the left, the toggles on the right. */
+  .agent-session-window [data-part="window-bar"] {
+    padding-inline: 6px;
+  }
+  .agent-session-window [data-part="window-dots"] {
+    display: none;
+  }
+  .agent-session-controls {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .agent-session-steps {
+    gap: 0;
+    margin-right: auto;
+  }
+  .agent-session-controls button {
+    padding-inline: 5px;
+    font-size: 12px;
+  }
+  .agent-session-transcript {
+    height: 13rem;
+    border-right: 0;
+    border-top: 1px solid var(--color-line);
+  }
 }

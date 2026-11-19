@@ -169,6 +169,16 @@ describe("the stage controller", () => {
     await outcome;
   });
 
+  it("rejects a command when the deck never sends ready, counting from the call", async () => {
+    const d = deck();
+    const s = start(d.frame);
+    const move = s.show(1, 0);
+    const outcome = expect(move).rejects.toThrow("The deck did not settle show 1.0 within 15 s");
+    await vi.advanceTimersByTimeAsync(STAGE_TIMEOUT_MS);
+    await outcome;
+    expect(d.sent).toEqual([]);
+  });
+
   it("plays a range: beats on stepped slides, whole slides elsewhere, to the end of the last", async () => {
     const d = answeringDeck();
     const s = start(d.frame);
