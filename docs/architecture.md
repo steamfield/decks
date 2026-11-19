@@ -941,8 +941,9 @@ declare global {
 
 ### Motion mode
 
-`Deck` sets `data-deck-motion` from one function, `motionMode(view, reducedMotion)`
-(`motion-mode.ts`, runtime-internal). It is `instant` when the view is not `play`, or
+`Deck` sets `data-deck-motion` from one function, `deckMotionMode(view, reducedMotion)`
+(`motion-mode.ts`, runtime-internal; named apart from `@react-decks/motion`'s public
+`motionMode()`, which reads the attribute). It is `instant` when the view is not `play`, or
 `(prefers-reduced-motion: reduce)` matches (followed live; where `matchMedia` is missing, as
 in jsdom, it counts as not matching), or the page's search string has `motion=instant`
 (what the parity script, `shot` and print use), or an embed `show` move holds the instant
@@ -953,9 +954,19 @@ The override only downgrades: it can make a `live` deck `instant` for one move, 
 makes a reduced-motion or non-`play` deck `live`. The embed sets it synchronously before it
 dispatches a `show`, so the presenter (step 2 below) and the entrance effects that run after
 commit both see `instant`. Any later command replaces it: a `show` keeps it, anything else
-releases it before dispatch. Otherwise it is released when that move's `settled()` resolves
-and the move is still the latest, so an older move's settle never releases a newer `show`'s
-override. Releasing does not stop a tween that was already running when the `show` arrived.
+releases it before dispatch. A presented move that no command made (a viewer's key, a URL
+change, a remote state) releases it when the store notifies, before the move is reported, so
+that move's entrances run live; its slide transition was already decided as instant by the
+presenter. Otherwise it is released when that move's `settled()` resolves and the move is
+still the latest, so an older move's settle never releases a newer `show`'s override.
+Releasing does not stop a tween that was already running when the `show` arrived.
+
+The override sets the document's one `data-deck-motion` attribute, so for that move every
+component that follows the attribute sees `instant`, including `Graph3D`, `Scene3D` and
+`LiveTerm`, which tear down their live content and remount it when the mode returns to
+`live`. A `show` therefore reports settled before such a scene has remounted. This is
+accepted: the driven frame is a scripted stage, and a host that needs the live scene waits
+for it the way it waits for any slide's own loading.
 
 ### Presented and logical state
 
