@@ -130,3 +130,64 @@ test("a show sent before a go settles lands without motion and then restores liv
   expect(log["data-deck-motion"]).toEqual(["instant", "live"]);
   await expect(frame.locator("html")).toHaveAttribute("data-deck-motion", "live");
 });
+
+test("go to the current position with a direction leaves the next move its natural direction", async ({
+  page,
+  embedURL,
+}) => {
+  const frame = await bootShow(page, embedURL, 1);
+  await frame.getByRole("heading", { name: "Show cover" }).click();
+  await record(frame);
+  await step(page, "go", 1, { slide: 1, beat: 0, direction: "backward" });
+  // A viewer's key: a later command would set its own direction and hide a leaked one.
+  await page.keyboard.press("PageDown");
+  await page.waitForFunction(() =>
+    window.embedMessages.some((m) => m.slide === 2 && m.settled === true),
+  );
+  const log = await readLog(frame);
+  expect(log["data-deck-transition"]).toContain("push");
+  expect(log["data-deck-nav"]).toContain("forward");
+  expect(log["data-deck-nav"]).not.toContain("backward");
+});
+
+test("a viewer's move while a show settles plays its entrance live", async ({ page, embedURL }) => {
+  const frame = await bootShow(page, embedURL, 2);
+  await frame.getByRole("heading", { name: "Entrance beat 0" }).click();
+  await record(frame);
+  // A paused finite animation holds settled(), so the key press lands before the show settles.
+  await frame.evaluate(() => {
+    const hold = document.body.animate([{ opacity: 1 }, { opacity: 0.99 }], { duration: 1000 });
+    hold.id = "show-hold";
+    hold.playbackRate = 0;
+  });
+  await page.evaluate(() =>
+    window.sendEmbed({ type: "decks:cmd", cmd: "show", slide: 1, beat: 0, requestId: 1 }),
+  );
+  await page.waitForFunction(() =>
+    window.embedMessages.some((m) => m.requestId === 1 && m.settled === false),
+  );
+  await expect(frame.locator("html")).toHaveAttribute("data-deck-motion", "instant");
+  const before = await page.evaluate(() => window.embedMessages.length);
+  await page.keyboard.press("PageDown");
+  await expect(frame.locator("[data-deck-active]")).toHaveAttribute("data-deck-slide", "2");
+  await frame.evaluate(() => {
+    for (const animation of document.getAnimations())
+      if (animation.id === "show-hold") animation.cancel();
+  });
+  await page.waitForFunction(
+    (from) => window.embedMessages.slice(from).some((m) => m.settled === true),
+    before,
+  );
+  const settledStates = await page.evaluate(
+    (from) => window.embedMessages.slice(from).filter((m) => m.settled === true),
+    before,
+  );
+  expect(settledStates).toEqual([
+    expect.objectContaining({ slide: 2, beat: 0, direction: "forward" }),
+  ]);
+  expect(settledStates[0]).not.toHaveProperty("requestId");
+  const log = await readLog(frame);
+  expect(log["data-deck-motion"]).toEqual(["instant", "live"]);
+  expect(between(log.opacity)).toBe(true);
+  expect(log.opacity.at(-1)).toBe("1");
+});

@@ -7,7 +7,7 @@ const listeners = new Set<() => void>();
  * The deck's motion mode: instant outside play, under reduced motion or `?motion=instant`, and
  * for a move an embed host asked to show without motion. The override only ever downgrades.
  */
-export function motionMode(view: DeckView, reducedMotion: boolean): "live" | "instant" {
+export function deckMotionMode(view: DeckView, reducedMotion: boolean): "live" | "instant" {
   return instantMove ||
     view !== "play" ||
     reducedMotion ||
