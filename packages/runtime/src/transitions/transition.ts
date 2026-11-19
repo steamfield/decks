@@ -5,6 +5,12 @@ import type { DeckState } from "../store/store";
 import "./transition.css";
 
 let active: { transition?: ViewTransition; pending: boolean; owner: object } | undefined;
+let forcedDirection: "forward" | "backward" | undefined;
+
+/** Sets the direction the next presented move plays in, whatever the slide order. */
+export function forceNextDirection(direction: "forward" | "backward" | undefined) {
+  forcedDirection = direction;
+}
 
 export function transitionName(manifest: DeckManifest, from: DeckState, to: DeckState) {
   const distance = to.nav.slide - from.nav.slide;
@@ -71,7 +77,9 @@ export function runTransition(apply: () => void, name: string, direction: string
 export function createPresenter(source: DeckSource) {
   const modules = createSlideModules(source);
   function present({ from, to }: { from: DeckState; to: DeckState }, apply: () => void) {
-    const direction = navDirection(from.nav, to.nav);
+    const natural = navDirection(from.nav, to.nav);
+    const direction = natural === "none" ? natural : (forcedDirection ?? natural);
+    forcedDirection = undefined;
     const name = transitionName(source.manifest, from, to);
     const target = source.manifest.slides[to.nav.slide - 1];
     const mustNotAnimate =

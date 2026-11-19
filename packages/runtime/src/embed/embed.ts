@@ -5,8 +5,10 @@ import {
   navDirection,
   parseLocation,
 } from "@react-decks/core";
+import { setInstantMove } from "../motion-mode";
 import { settled } from "../settle/settle";
 import type { DeckStore } from "../store/store";
+import { forceNextDirection } from "../transitions/transition";
 import { embedCaption, subscribeCaptions } from "./embed-caption";
 import { embedActive, routeEmbedNavigation } from "./embed-navigation";
 import type { EmbedDirection, EmbedMessage } from "./protocol";
@@ -54,6 +56,8 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
       void settled()
         .then(() => {
           if (disposed || token !== move) return;
+          // A show's instant motion lasts until its own move settles, after entrances ran.
+          setInstantMove(false);
           state(true);
           pending = false;
           caption = JSON.stringify(embedCaption());
@@ -89,6 +93,7 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
       return;
     if (!started || !("cmd" in data) || store.getState().view !== "play") return;
     let action: NavAction;
+    let direction: "forward" | "backward" | undefined;
     switch (data.cmd) {
       case "next":
       case "prev":
@@ -96,17 +101,21 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
       case "prevSlide":
         action = { type: data.cmd };
         break;
-      case "go": {
+      case "go":
+      case "show": {
         const slide = "slide" in data ? data.slide : undefined;
         const beat = "beat" in data ? data.beat : 0;
+        const forced = data.cmd === "go" && "direction" in data ? data.direction : undefined;
         if (
           typeof slide !== "number" ||
           !Number.isFinite(slide) ||
           typeof beat !== "number" ||
-          !Number.isFinite(beat)
+          !Number.isFinite(beat) ||
+          (forced !== undefined && forced !== "forward" && forced !== "backward")
         )
           return;
         action = { type: "go", slide: Math.round(slide), click: Math.round(beat) };
+        direction = forced;
         break;
       }
       default:
@@ -119,14 +128,23 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
         : undefined;
     const before = parseLocation(window.location.hash, window.location.search);
     commanding = true;
+    // Set before dispatch: the presenter reads both while it decides how to play this move.
+    setInstantMove(data.cmd === "show");
+    forceNextDirection(direction);
     try {
       store.dispatch(action);
       const after = parseLocation(window.location.hash, window.location.search);
-      const direction = navDirection(before, after);
-      report(direction === "none" ? null : direction, { slide: after.slide, click: after.click });
+      const natural = navDirection(before, after);
+      report(natural === "none" ? null : (direction ?? natural), {
+        slide: after.slide,
+        click: after.click,
+      });
     } catch (error) {
+      setInstantMove(false);
       onError(error);
     } finally {
+      // An unchanged position never reaches the presenter, so it must not keep the direction.
+      forceNextDirection(undefined);
       commanding = false;
     }
   }
@@ -177,6 +195,7 @@ export function installEmbed(manifest: DeckManifest, store: DeckStore) {
     dispose() {
       disposed = true;
       ++move;
+      setInstantMove(false);
       unsubscribe();
       unsubscribeCaptions();
       window.removeEventListener("message", onMessage);

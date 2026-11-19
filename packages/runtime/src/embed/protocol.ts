@@ -1,6 +1,15 @@
 export type EmbedCommand = { requestId?: number } & (
   | { type: "decks:cmd"; cmd: "next" | "prev" | "nextSlide" | "prevSlide" }
-  | { type: "decks:cmd"; cmd: "go"; slide: number; beat: number }
+  | {
+      type: "decks:cmd";
+      cmd: "go";
+      slide: number;
+      beat: number;
+      /** Plays the transition this way regardless of slide order. */
+      direction?: "forward" | "backward";
+    }
+  /** Puts the position on screen settled: no transition and no entrance motion. */
+  | { type: "decks:cmd"; cmd: "show"; slide: number; beat: number }
 );
 
 export type EmbedDirection = "forward" | "backward" | null;
@@ -25,7 +34,7 @@ export type EmbedMeta = { title: string; slides: number; slideTitles: string[] }
 
 export type EmbedMessage =
   | { type: "decks:ready" }
-  | { type: "decks:navigate"; cmd: Exclude<EmbedCommand["cmd"], "go"> }
+  | { type: "decks:navigate"; cmd: Exclude<EmbedCommand["cmd"], "go" | "show"> }
   | { type: "decks:interaction" }
   | { type: "decks:error"; message: string }
   | ({ type: "decks:meta" } & EmbedMeta)
