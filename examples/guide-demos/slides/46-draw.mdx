@@ -1,0 +1,17 @@
+---
+title: Draw
+---
+
+<Center>
+  <p className="od-h2">The crew skipped the ridge and took the valley road.</p>
+  <svg viewBox="0 0 1400 500" width="1400" height="500" role="img" aria-label="The planned route over the ridge, then the valley road the crew took">
+    <g fill="none" strokeWidth="10" strokeLinecap="round">
+      <Draw at={1} until={2}>
+        <path d="M 80 400 C 340 400 220 150 520 260 S 890 450 1320 60" stroke="var(--od-text-muted)" />
+      </Draw>
+      <Draw at={2}>
+        <path d="M 80 400 C 300 330 520 330 760 300 S 1100 180 1320 60" stroke="var(--od-cyan)" />
+      </Draw>
+    </g>
+  </svg>
+</Center>

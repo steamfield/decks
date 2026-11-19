@@ -5,7 +5,10 @@
 // the data-* hooks they emit.
 import { codeMeta, createHastPlugins } from "@steamfield/ui/markdown";
 import { defineHastPlugin, type HastPluginEntry } from "satteri";
+import { demoPlayer } from "../data/demo-examples";
+import { parseDemo } from "../data/guide-demos";
 import { guideLink } from "./guide";
+import { DEMO_SIZES, posterSrcset } from "./player/example";
 
 const guidePage: HastPluginEntry = ({ fileURL }) =>
   fileURL?.pathname.includes("/docs/guide/")
@@ -23,12 +26,111 @@ const guidePage: HastPluginEntry = ({ fileURL }) =>
       })
     : null;
 
+type HastElement = {
+  type: "element";
+  tagName: string;
+  properties: Record<string, unknown>;
+  children: HastNode[];
+};
+type HastNode = HastElement | { type: "text"; value: string };
+const el = (
+  tagName: string,
+  properties: Record<string, unknown>,
+  children: HastNode[] = [],
+): HastElement => ({ type: "element", tagName, properties, children });
+const isElement = (node: unknown): node is HastElement =>
+  typeof node === "object" && node !== null && (node as HastElement).type === "element";
+
+/** Marks a fence whose info string carries `demo="deck/slide"` (see src/data/guide-demos.ts). */
+const demoMeta = {
+  name: "deck-demo-meta",
+  pre(this: { options: { meta?: { __raw?: string } } }, node: HastElement) {
+    const ref = parseDemo(this.options.meta?.__raw);
+    if (ref) node.properties["data-demo"] = `${ref.deck}/${ref.first}..${ref.last}`;
+  },
+};
+
+/**
+ * Turns a framed demo fence into a figure: the demo's poster (the server-rendered, no-JavaScript
+ * state) above the code. src/scripts/deck-demos.ts mounts the live player over the poster.
+ */
+const deckDemos: HastPluginEntry = () =>
+  defineHastPlugin({
+    name: "deck-demos",
+    element: {
+      filter: ["figure"],
+      visit(node, context) {
+        const pre = (node.children as unknown[]).find(
+          (child): child is HastElement => isElement(child) && child.tagName === "pre",
+        );
+        const marked = pre?.properties["data-demo"] ?? pre?.properties.dataDemo;
+        if (!pre || typeof marked !== "string") return;
+        const [deck, span] = marked.split("/");
+        const [first, last] = (span ?? "").split("..");
+        if (!deck || !first || !last) throw new Error(`Malformed demo marker ${marked}`);
+        delete pre.properties["data-demo"];
+        delete pre.properties.dataDemo;
+        const { example, range } = demoPlayer({ deck, first, last });
+        const poster = example.poster;
+        const stage = poster
+          ? el("picture", {}, [
+              el("source", {
+                type: "image/avif",
+                srcSet: posterSrcset(poster, "avif"),
+                sizes: DEMO_SIZES,
+              }),
+              el("source", {
+                type: "image/webp",
+                srcSet: posterSrcset(poster, "webp"),
+                sizes: DEMO_SIZES,
+              }),
+              el("img", {
+                src: `${poster.base}-1280.webp`,
+                width: poster.width,
+                height: poster.height,
+                alt: example.title,
+                loading: "lazy",
+                decoding: "async",
+              }),
+            ])
+          : el("p", {}, [{ type: "text", value: "Run make demo to shoot this demo's poster." }]);
+        context.replaceNode(
+          node as never,
+          el("figure", { className: ["deck-demo", "not-prose"], dataDeckDemo: "" }, [
+            el(
+              "div",
+              {
+                className: ["deck-demo-stage"],
+                dataDeckDemoPlayer: JSON.stringify({ example, range }),
+              },
+              [stage],
+            ),
+            node as unknown as HastElement,
+            el("figcaption", {}, [
+              { type: "text", value: "Live demo: " },
+              el(
+                "a",
+                {
+                  href: `${example.href}#/${range.first}`,
+                  target: "_blank",
+                  rel: "noopener",
+                },
+                [{ type: "text", value: "open this slide in a new tab" }],
+              ),
+            ]),
+          ]) as never,
+        );
+      },
+    },
+  });
+
 export const docsHastPlugins = [
   guidePage,
   ...createHastPlugins({
     headingAnchors: { label: () => "Link to this section" },
   }),
+  deckDemos,
 ];
 
-/** Carries `title="..."` from a fence's info string onto the highlighted `<pre>`. */
-export const docsShikiTransformers = [codeMeta()];
+/** Carries `title="..."` and `demo="..."` from a fence's info string onto the highlighted `<pre>`. */
+export const docsShikiTransformers = [codeMeta(), demoMeta];

@@ -36,5 +36,8 @@
   },
   "motion-reel": {
     "dir": "examples/motion-reel"
+  },
+  "guide-demos": {
+    "dir": "examples/guide-demos"
   }
 }

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { Window } from "happy-dom";
 import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
-import { EXAMPLE_NAMES } from "../src/data/examples";
+import { loadExamples } from "../src/data/examples";
 import { deckDemoCount, inspectMdx } from "./mdx";
 
 const parser = new new Window().DOMParser();
@@ -166,7 +166,9 @@ function expectDemoSource(source: string) {
       if (prop.type !== "mdxJsxAttribute") continue;
       expect(params).toContain(prop.name);
       expect(typeof prop.value, "Use literal MDX demo props").toBe("string");
-      if (prop.name === "example") expect(EXAMPLE_NAMES).toContain(prop.value);
+      if (prop.name === "example")
+          // DeckDemo resolves listed examples only.
+          expect(loadExamples().map((item) => item.name)).toContain(prop.value);
     }
   }
 }

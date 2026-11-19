@@ -3,8 +3,9 @@
 // embed contract into fixtures/examples/<name>.json, takes each poster from the
 // same build through the same contract the player uses (at the start step, once
 // the deck reports it settled, so entrances have finished drawing), records the
-// hero loop for each example marked `loop`, and takes the normal and warm stills
-// with the repository's `decks shot` CLI.
+// hero loop for each example marked `loop`, shoots a poster for each live demo in the
+// package guide (src/data/guide-demos.ts) at its last step, and takes the normal and
+// warm stills with the repository's `decks shot` CLI.
 //
 //   node scripts/demo.mjs            # everything
 //   node scripts/demo.mjs --build    # deck builds only (what a deploy needs)
@@ -42,6 +43,7 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 import sharp from "sharp";
 import { deepMerge, resolveTheme } from "../../packages/kit/src/theme/theme-resolve.ts";
+import { DEMO_POSTERS, demoName, guideDemos, resolveDemo } from "../src/data/guide-demos.ts";
 
 const site = resolve(import.meta.dirname, "..");
 const repo = resolve(site, "..");
@@ -496,6 +498,17 @@ async function main() {
             await encode(
               await poster(page, server.port, name, recordings[name]),
               join(site, "public/posters", name),
+            );
+          }
+          for (const demo of guideDemos().filter(({ deck }) => NAMES.includes(deck))) {
+            const { last } = resolveDemo(demo);
+            const beats = recordings[demo.deck].states.find((state) => state.slide === last)?.beats;
+            if (beats === undefined)
+              throw new Error(`${demo.page}: demo ${demo.deck}/${demo.last} has no recorded slide ${last}`);
+            log(`poster ${demo.page} ${demo.deck}/${demoName(demo)} at slide ${last}, step ${beats + 1}`);
+            await encode(
+              await poster(page, server.port, demo.deck, { startSlide: last, startBeat: beats }),
+              join(site, "public", DEMO_POSTERS, demo.deck, demoName(demo)),
             );
           }
           await page.close();

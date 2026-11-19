@@ -69,6 +69,14 @@
         "@types/three": "0.185.0",
       },
     },
+    "examples/guide-demos": {
+      "name": "@steamfield/example-guide-demos",
+      "dependencies": {
+        "@steamfield/decks": "workspace:*",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+      },
+    },
     "examples/motion": {
       "name": "@steamfield/example-motion",
       "dependencies": {
@@ -589,6 +597,8 @@
     "@steamfield/example-basic": ["@steamfield/example-basic@workspace:examples/basic"],
 
     "@steamfield/example-building-for-agents": ["@steamfield/example-building-for-agents@workspace:examples/building-for-agents"],
+
+    "@steamfield/example-guide-demos": ["@steamfield/example-guide-demos@workspace:examples/guide-demos"],
 
     "@steamfield/example-motion": ["@steamfield/example-motion@workspace:examples/motion"],
 

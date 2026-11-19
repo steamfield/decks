@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <title>North Inlet in the fog</title>
+  <defs>
+    <linearGradient id="sky" x2=".85" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#233f51"/><stop offset=".5" stop-color="#909d9b"/><stop offset="1" stop-color="#edc99a"/>
+    </linearGradient>
+    <linearGradient id="water" x2="0" y2="1">
+      <stop stop-color="#9fafa4"/><stop offset="1" stop-color="#386376"/>
+    </linearGradient>
+    <path id="pine" d="M0 0 -9 27 -5 25 -15 43 -9 40 -21 61 -4 57 -4 75 4 75 4 57 22 62 10 40 16 43 6 25 10 28Z"/>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1190" cy="255" r="69" fill="#f3d9a1"/>
+  <path d="M0 365 120 336 235 352 442 240 590 309 706 282 858 350 1096 225 1270 318 1443 237 1600 298V640H0Z" fill="#80918d"/>
+  <path d="M0 385 139 413 304 354 483 412 585 374 813 459 993 364 1134 390 1325 287 1478 345 1600 330V655H0Z" fill="#597b78"/>
+  <path d="M0 443Q252 387 605 449T1230 419Q1437 402 1600 433V502Q1341 469 1070 493T441 470Q198 449 0 490Z" fill="#dbe0ca" opacity=".53"/>
+  <path d="M0 444 137 473 276 441 461 496 635 473 810 517 936 480 1125 497 1333 423 1487 447 1600 393V665H0Z" fill="#355954"/>
+  <path d="M0 551Q364 534 742 550T1600 542V900H0Z" fill="url(#water)"/>
+  <g fill="none" stroke="#c5cbb7" stroke-linecap="round" opacity=".55">
+    <path d="M802 592h258m63 0h171M581 632h304m58 2h92M790 697h406m-109 50h168M161 582h241" stroke-width="3"/>
+    <path d="M199 727h282m82 23h74m459-156h192m-682 80h119" stroke-width="2"/>
+  </g>
+  <path d="M0 563Q138 590 290 644T588 695L352 723 0 742Z" fill="#36564b"/>
+  <g fill="#294a40"><use href="#pine" transform="translate(28 379) scale(3.1)"/><use href="#pine" transform="translate(113 461) scale(2.1)"/><use href="#pine" transform="translate(178 489) scale(1.8)"/><use href="#pine" transform="translate(249 540) scale(1.45)"/><use href="#pine" transform="translate(321 591) scale(1.05)"/></g>
+  <path d="M1600 500Q1501 510 1438 559T1258 598Q1388 612 1600 575Z" fill="#31544d"/>
+  <g fill="#31544d"><use href="#pine" transform="translate(1550 393) scale(1.8)"/><use href="#pine" transform="translate(1482 449) scale(1.35)"/><use href="#pine" transform="translate(1425 501) scale(.9)"/></g>
+</svg>

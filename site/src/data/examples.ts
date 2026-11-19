@@ -34,6 +34,8 @@ export type ExampleEntry = {
   loop?: boolean;
   featured?: { label: string; hint: string };
   attribution?: { label: string; href?: string };
+  /** false keeps the deck out of the landing player and gallery (the guide's demos play it). */
+  listed?: boolean;
 };
 
 // Read rather than imported, so Node scripts and Playwright load this module as Vite does.
@@ -147,5 +149,6 @@ export function loadExample(entry: ExampleEntry): Example {
   };
 }
 
-/** Every example in gallery order; the first is the hero. */
-export const loadExamples = (): Example[] => ENTRIES.map(loadExample);
+/** Every listed example in gallery order; the first is the hero. */
+export const loadExamples = (): Example[] =>
+  ENTRIES.filter((entry) => entry.listed !== false).map(loadExample);

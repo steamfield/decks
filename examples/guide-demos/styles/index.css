@@ -1,0 +1,25 @@
+@import "@steamfield/decks/kit/styles.css";
+
+/* Workaround, pending a framework follow-up: motion templates render tiny in any deck that
+   imports the kit stylesheet (as every `decks new` deck does). Remove both rules below once the
+   kit gives templates their frame.
+   The slide frame motion templates expect (they size themselves in em and centre with
+   margin: auto). The kit's base.css pins padding and font size with !important, so the
+   frame has to as well. Values follow examples/motion-reel. */
+[data-deck-slide] {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  overflow: clip;
+  padding: 88px 112px !important;
+  font-size: calc(48px * var(--deck-text-scale, 1)) !important;
+  line-height: 1.2 !important;
+}
+/* Template headlines are h2s sized in em; the kit's compat.css pins h2 to 1.875rem. */
+[data-deck-slide] h2 {
+  font-size: 2.3em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+}

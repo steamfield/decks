@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <title>Ada Reed</title>
+  <rect width="160" height="160" fill="#c9d8cc"/>
+  <path d="M0 134 160 38v122H0Z" fill="#acc4b5"/>
+  <path d="M17 160q4-52 61-54 56 2 65 54" fill="#324c4b"/>
+  <path d="m54 114 26 30 27-29-14-9-3-18H69l-2 18Z" fill="#b77b57"/>
+  <path d="M43 59q-2-38 32-41 35-4 45 31l-8 44-14 11-43-7Z" fill="#322f30"/>
+  <path d="M55 53q20 0 42-16 2 15 11 21l-4 22q-6 24-25 25-17-2-23-23Z" fill="#ce9268"/>
+  <g fill="none" stroke="#323c39" stroke-width="2.6">
+    <rect x="56" y="58" width="20" height="13" rx="5"/>
+    <rect x="83" y="58" width="20" height="13" rx="5"/>
+    <path d="M76 62q4-2 7 0"/>
+  </g>
+  <path d="M73 86q7 4 15-1" fill="none" stroke="#81523e" stroke-width="2" stroke-linecap="round"/>
+  <path d="m54 113 26 31-14-4-16-23m56-4-26 31 13-3 16-24" fill="#55736c"/>
+</svg>

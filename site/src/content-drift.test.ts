@@ -18,6 +18,8 @@ import {
   startSlideOf,
 } from "./data/examples";
 import { loadHookDenial } from "./data/fixtures";
+import { demoPlayer } from "./data/demo-examples";
+import { demoName, guideDemos, resolveDemo } from "./data/guide-demos";
 import { loadMotionShowcase } from "./data/motion-showcase";
 
 const repo = join(process.cwd(), "..");
@@ -115,4 +117,44 @@ it("counts the motion section's slides, source lines and available motion templa
   expect(show.longest).toBe(Math.max(...fileLines));
   const props = read("packages/kit/src/motion-templates/motion-template-props.ts");
   expect(show.templates).toBe([...props.matchAll(/readonly template: "/g)].length);
+});
+
+describe("live demos in the package guide", () => {
+  const lines = (text: string) =>
+    text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.trim() !== "");
+  // The fence is the slides' code in order; it may leave out frontmatter and imports.
+  const contains = (slides: string[], fence: string) => {
+    const source = lines(slides.join("\n"));
+    let at = 0;
+    return lines(fence).every((line) => {
+      while (at < source.length && source[at] !== line) at += 1;
+      return at++ < source.length;
+    });
+  };
+
+  it("has demos", () => {
+    expect(guideDemos().length).toBeGreaterThan(0);
+  });
+
+  it.each(guideDemos().map((demo) => ({ ...demo, name: `${demo.page} ${demoName(demo)}` })))(
+    "$name plays slides that contain its code, from a recorded replay and a poster",
+    (demo) => {
+      const { slides } = resolveDemo(demo);
+      expect(contains(slides.map((slide) => slide.source), demo.code)).toBe(true);
+      const { example, range } = demoPlayer(demo);
+      const steps = example.states.filter(
+        (state) => state.slide >= range.first && state.slide <= range.last,
+      );
+      // A replay starts at the range's first step; it has to have somewhere to go.
+      expect(steps.length).toBeGreaterThan(1);
+      for (const ext of ["avif", "webp"])
+        for (const width of [640, 1280, 1920])
+          expect(existsSync(join(process.cwd(), `public${example.poster?.base}-${width}.${ext}`))).toBe(
+            true,
+          );
+    },
+  );
 });
