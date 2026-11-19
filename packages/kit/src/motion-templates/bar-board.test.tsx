@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { beforeEach, expect, it, onTestFinished } from "vitest";
 import { setup, tick } from "../kit.test-support";
 import { installTheme, resolveTheme } from "../theme/theme";
@@ -24,18 +24,26 @@ function opacity(element: Element) {
     value *= Number(getComputedStyle(part).opacity || 1);
   return value;
 }
+/** The texts of each row: its label, then the value beside its bar. */
+const rowTexts = () =>
+  screen.getAllByRole("listitem", { hidden: true }).map((row) => within(row).getAllByText(/./));
 /** The value each row shows beside its bar, read as a viewer would: blank until it appears. */
 function values() {
-  return screen.getAllByRole("listitem", { hidden: true }).map((row) => {
-    const value = row.lastElementChild?.lastElementChild;
-    return value && opacity(value) > 0 ? value.textContent : "";
-  });
+  return rowTexts().map(([, value]) => (value && opacity(value) > 0 ? value.textContent : ""));
 }
-/** The axis labels, left to right. */
+/** The axis labels, left to right: every number on the board outside its rows. */
 function ticks() {
-  const zero = screen.getByText("0", { exact: true });
-  return Array.from(zero.parentElement?.children ?? [], (tick) => tick.textContent);
+  const inRows = new Set(rowTexts().flat());
+  return screen
+    .getAllByText(/^[\d.,]+$/)
+    .filter((text) => !inRows.has(text))
+    .map((text) => text.textContent);
 }
+/** The labels of the rows marked as the current leaders. */
+const leaders = () =>
+  screen
+    .queryAllByRole("listitem", { current: true })
+    .map((row) => within(row).getAllByText(/./)[0]?.textContent);
 
 it("bar-board hides its values before click at and shows the finished board from click at", async () => {
   const view = await show(2);
@@ -78,7 +86,7 @@ it("no counter runs past its value on the way in", async () => {
   expect(seen.toSorted((a, b) => a - b)).toEqual(seen);
 });
 
-it("click 2 keeps the leader forward and dims the other rows", async () => {
+it("click 2 keeps the leader forward and current, and dims the other rows", async () => {
   const view = await show(1);
   await view.next();
   await tick(1.5);
@@ -87,14 +95,41 @@ it("click 2 keeps the leader forward and dims the other rows", async () => {
       opacity(screen.getByRole("listitem", { name: `${label}: ${value}` })),
     );
   expect(board()).toEqual([1, 1, 1]);
+  expect(leaders()).toEqual([]);
   await view.next();
   await tick(1.2);
   const [leader, ...rest] = board();
   expect(leader).toBe(1);
   for (const row of rest) expect(row).toBeLessThan(1);
+  expect(leaders()).toEqual(["North"]);
   await view.previous();
   await tick(1.2);
   expect(board()).toEqual([1, 1, 1]);
+  expect(leaders()).toEqual([]);
+});
+
+it("click 2 keeps every row tied for the lead forward and current", async () => {
+  const tied = [{ label: "West", value: 42 }, north, south];
+  const view = await show(0, undefined, tied);
+  await tick(1.5);
+  await view.next();
+  await tick(1.2);
+  const forward = tied.map(({ label, value }) =>
+    opacity(screen.getByRole("listitem", { name: `${label}: ${value}` })),
+  );
+  expect(forward.slice(0, 2)).toEqual([1, 1]);
+  expect(forward[2]).toBeLessThan(1);
+  expect(leaders()).toEqual(["West", "North"]);
+});
+
+it("shows rows with the same label and value as separate rows", async () => {
+  const twins = [
+    { label: "Pier", value: 5 },
+    { label: "Pier", value: 5 },
+  ];
+  await show(0, { instant: true }, twins);
+  expect(screen.getAllByRole("listitem", { name: "Pier: 5" })).toHaveLength(2);
+  expect(values()).toEqual(["5", "5"]);
 });
 
 it.each([
@@ -103,6 +138,7 @@ it.each([
   [50, ["0", "10", "20", "30", "40", "50"]],
   [1234, ["0", "250", "500", "750", "1,000", "1,250"]],
   [0.9, ["0", "0.2", "0.4", "0.6", "0.8", "1"]],
+  [0.11, ["0", "0.025", "0.05", "0.075", "0.1", "0.125"]],
 ])("labels the axis for a largest value of %s with at most six nice ticks", async (top, axis) => {
   await show(0, { instant: true }, [
     { label: "Lead", value: top },
@@ -169,13 +205,25 @@ it.each([
   ],
   [{ source: "" }, 'bar-board source must contain text, got ""'],
   [
+    { source: "s".repeat(61) },
+    `bar-board source must be at most 60 characters, got "${"s".repeat(61)}"`,
+  ],
+  [
+    { prefix: "p".repeat(9) },
+    `bar-board prefix must be at most 8 characters, got "${"p".repeat(9)}"`,
+  ],
+  [
+    { suffix: "q".repeat(9) },
+    `bar-board suffix must be at most 8 characters, got "${"q".repeat(9)}"`,
+  ],
+  [
     {
       rows: [
         { label: "A", value: 0 },
         { label: "B", value: 0 },
       ],
     },
-    "bar-board rows need a value above 0",
+    'bar-board rows need a largest value above 0, got rows[0] {"label":"A","value":0}',
   ],
 ] as const)("bar-board throws naming the offending value for %j", async (invalid, message) => {
   const { errors } = await setup(
@@ -185,11 +233,15 @@ it.each([
   expect(errors).toEqual([new Error(message)]);
 });
 
-it("accepts six rows with 16-character labels", async () => {
+it("accepts six rows with 16-character labels, a 60-character source and 8-character affixes", async () => {
   const six = Array.from({ length: 6 }, (_, index) => ({
     label: `${index}`.padEnd(16, "x"),
     value: 6 - index,
   }));
-  await show(0, { instant: true }, six);
-  expect(values()).toEqual(["6", "5", "4", "3", "2", "1"]);
+  const longest = { source: "s".repeat(60), prefix: "p".repeat(8), suffix: "q".repeat(8) };
+  await setup(() => <MotionTemplate template="bar-board" rows={six} {...longest} />, {
+    instant: true,
+  });
+  expect(values()).toEqual(["6", "5", "4", "3", "2", "1"].map((n) => `pppppppp${n}qqqqqqqq`));
+  expect(screen.getByText(longest.source)).toBeVisible();
 });
