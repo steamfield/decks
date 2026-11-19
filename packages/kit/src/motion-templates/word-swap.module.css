@@ -44,14 +44,10 @@
 .fill {
   position: absolute;
   inset: 0;
-  background: var(--od-muted);
 }
 .word {
   position: relative;
   display: inline-block;
-}
-.onAccent {
-  color: var(--od-canvas);
 }
 .word span {
   display: inline-block;

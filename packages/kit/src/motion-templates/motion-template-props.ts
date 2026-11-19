@@ -113,6 +113,12 @@ export type MotionTemplateProps = TemplateBase &
         readonly lead: readonly string[];
         /** 2 to 5 phrases, up to 16 characters each; each click swaps in the next. */
         readonly words: readonly string[];
+        /**
+         * The plates' colours; the last plate always takes `accent`. `"palette"` (the default)
+         * gives each plate before it the next of the theme's hues (cyan, amber, rose, emerald,
+         * violet), skipping `accent`; `"neutral"` gives them the theme's muted surface.
+         */
+        readonly tone?: "palette" | "neutral";
       }
     | {
         readonly template: "bar-board";

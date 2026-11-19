@@ -1,7 +1,7 @@
 import { act, screen } from "@testing-library/react";
 import { beforeEach, expect, it } from "vitest";
 import { readableGlyphs, setup, tick } from "../kit.test-support";
-import { installTheme, resolveTheme } from "../theme/theme";
+import { ink, installTheme, resolveTheme, theme } from "../theme/theme";
 import { MotionTemplate } from "./motion-template";
 
 const content = { lead: ["We used to ship"], words: ["quarterly", "weekly", "daily"] };
@@ -15,6 +15,65 @@ function show(at: number, options?: Parameters<typeof setup>[1], words = content
 }
 /** The plate letters a viewer can read. */
 const plate = () => readableGlyphs(screen.getByRole("heading"));
+/** Each plate's fill colour, in order: a fill is a decorative box, the plate's only one without text. */
+const fills = () =>
+  Array.from(screen.getByRole("heading").querySelectorAll("span"))
+    .filter((span) => !span.textContent)
+    .map((span) => getComputedStyle(span).backgroundColor);
+const channels = (hex: string) => [1, 3, 5].map((at) => Number.parseInt(hex.slice(at, at + 2), 16));
+/** A theme colour as the browser reports it. */
+const rgb = (hex: string) => `rgb(${channels(hex).join(", ")})`;
+function contrast(one: string, two: string) {
+  const luminance = (hex: string) => {
+    const [r = 0, g = 0, b = 0] = channels(hex).map((value) => {
+      const c = value / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [light, dark] = [luminance(one), luminance(two)].sort((a, b) => b - a);
+  return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
+}
+
+it.each([
+  ["palette", () => [ink("amber", 3), ink("rose", 3), ink("cyan", 3)]],
+  ["neutral", () => [theme().surfaces.muted, theme().surfaces.muted, ink("cyan", 3)]],
+] as const)(
+  "with the %s tone each click shows its phrase on its plate's colour",
+  async (tone, colours) => {
+    const view = await setup(() => (
+      <MotionTemplate template="word-swap" {...content} tone={tone} />
+    ));
+    await tick(1.2);
+    for (const [click, word] of content.words.entries()) {
+      if (click) {
+        await view.next();
+        await tick(1.2);
+      }
+      expect(plate()).toBe(word);
+      expect(fills()[click]).toBe(rgb(colours()[click] ?? ""));
+    }
+  },
+);
+
+it("the palette skips the accent hue, cycles the theme's hues and keeps letters readable", async () => {
+  const words = ["one", "two", "three", "four", "five"];
+  await setup(
+    () => <MotionTemplate template="word-swap" lead={content.lead} words={words} accent="amber" />,
+    { instant: true },
+  );
+  const plates = [
+    ink("cyan", 3),
+    ink("rose", 3),
+    ink("emerald", 3),
+    ink("violet", 3),
+    ink("amber", 3),
+  ];
+  expect(fills()).toEqual(plates.map(rgb));
+  // Letters on a coloured plate take the canvas colour.
+  for (const fill of plates)
+    expect(contrast(fill, theme().surfaces.canvas)).toBeGreaterThanOrEqual(4.5);
+});
 
 it("word-swap hides the plate before click at and shows the first phrase from click at", async () => {
   const view = await show(2);

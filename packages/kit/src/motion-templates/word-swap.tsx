@@ -1,7 +1,8 @@
 import { duration, ease, type gsap, rise, SplitText, stagger } from "@react-decks/motion";
 import { useSlide } from "@react-decks/runtime";
 import { useLayoutEffect, useRef } from "react";
-import { ink } from "../theme/theme";
+import { ink, theme } from "../theme/theme";
+import { HUE_NAMES, type Hue } from "../theme/theme-resolve";
 import type { TemplateProps } from "./motion-template-props";
 import { riseWords } from "./rise-words";
 import { useTemplateMotion } from "./use-template-motion";
@@ -11,9 +12,16 @@ import styles from "./word-swap.module.css";
  * A sentence whose last phrase changes on each click. The lead lines rise through their masks;
  * the phrase sits on a plate. On a swap the old plate lifts away and fades, and the next grows in
  * from the left with its letters rising onto it. Nothing clips a plate's letters, so none is ever
- * cut.
+ * cut. The last plate takes the accent; with the `palette` tone each plate before it takes the
+ * next of the theme's hues, skipping the accent, and with `neutral` they take the muted surface.
  */
-export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps<"word-swap">) {
+export function WordSwap({
+  lead,
+  words,
+  tone = "palette",
+  at = 0,
+  accent = "cyan",
+}: TemplateProps<"word-swap">) {
   if (!Number.isInteger(at) || at < 0)
     throw new Error(`word-swap at must be a nonnegative integer, got ${at}`);
   if (lead.length < 1 || lead.length > 2)
@@ -63,6 +71,12 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
     };
   }, []);
   const last = words.length - 1;
+  // Slate is the theme's grey, so the palette is the coloured hues in theme order. Every ramp's
+  // step 3 is lighter than its step 1, which clears 3:1 on the canvas, so canvas-coloured letters
+  // stay readable on any coloured plate.
+  const hues = HUE_NAMES.filter((hue) => hue !== "slate" && hue !== accent);
+  const hueOf = (index: number): Hue | undefined =>
+    index === last ? accent : tone === "palette" ? hues[index % hues.length] : undefined;
   const plates = () => Array.from(heading.current?.querySelectorAll(`.${styles.plate}`) ?? []);
 
   /** The plate grows in from the left and its letters rise onto it, starting together. */
@@ -141,17 +155,23 @@ export function WordSwap({ lead, words, at = 0, accent = "cyan" }: TemplateProps
         ))}
       </span>
       <span className={styles.slot} aria-hidden="true">
-        {Array.from(words.entries(), ([index, word]) => (
-          <span key={`${index}-${word}`} className={styles.plate}>
-            <span
-              className={styles.fill}
-              style={index === last ? { backgroundColor: ink(accent, 3) } : undefined}
-            />
-            <span className={index === last ? `${styles.word} ${styles.onAccent}` : styles.word}>
-              {word}
+        {Array.from(words.entries(), ([index, word]) => {
+          const hue = hueOf(index);
+          return (
+            <span key={`${index}-${word}`} className={styles.plate}>
+              <span
+                className={styles.fill}
+                style={{ backgroundColor: hue ? ink(hue, 3) : theme().surfaces.muted }}
+              />
+              <span
+                className={styles.word}
+                style={hue ? { color: theme().surfaces.canvas } : undefined}
+              >
+                {word}
+              </span>
             </span>
-          </span>
-        ))}
+          );
+        })}
       </span>
     </h2>
   );
