@@ -7,7 +7,14 @@ export { CountUp } from "./count-up";
 export { MagicMove } from "./magic-move";
 export { Mark, type MarkKind } from "./mark";
 export { Morph } from "./morph";
-export { CustomEase, DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin, SplitText } from "./plugins";
+export {
+  CustomEase,
+  DrawSVGPlugin,
+  MorphSVGPlugin,
+  MotionPathPlugin,
+  ScrambleTextPlugin,
+  SplitText,
+} from "./plugins";
 export { ShapeMorph } from "./shape-morph";
 export { shouldTweenStep, stepIndex } from "./stepped";
 export {
@@ -20,6 +27,6 @@ export {
   TextReveal,
   useStepState,
 } from "./steps";
-export { duration, ease, gsap, motionMode, stagger } from "./tokens";
+export { duration, ease, gsap, motionMode, rise, stagger } from "./tokens";
 export { useTimeline } from "./use-timeline";
 export { useTween } from "./use-tween";
