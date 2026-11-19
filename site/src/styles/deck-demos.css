@@ -40,3 +40,16 @@
   color: var(--color-muted);
   font-size: 0.875rem;
 }
+/* One toolbar row at the docs column's width, as the landing's motion showcase does. */
+@container deck-player (min-width: 480px) and (max-width: 899px) {
+  .deck-demo-stage .player-toolbar {
+    grid-template-columns: 1fr auto auto;
+  }
+  .deck-demo-stage :is(.player-position, .player-transport, .player-actions) {
+    grid-area: auto;
+  }
+  .deck-demo-stage .player-status::before,
+  .deck-demo-stage .player-status > [aria-hidden] {
+    display: inline-block;
+  }
+}

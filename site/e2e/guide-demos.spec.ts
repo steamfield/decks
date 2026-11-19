@@ -13,8 +13,7 @@ const figure = (page: Page, index: number) =>
     .nth(index);
 // The player's stage, which the mount script watches; a tall code block below it means
 // scrolling the whole figure into view can leave the stage above the viewport.
-const stage = (page: Page, index: number) =>
-  figure(page, index).locator("[data-deck-demo-player]");
+const stage = (page: Page, index: number) => figure(page, index).locator("[data-deck-demo-player]");
 const player = (page: Page, index: number) =>
   figure(page, index).getByRole("group", { name: /^Deck player:/ });
 

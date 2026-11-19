@@ -110,7 +110,7 @@ Props: `from`, `enter`, `as` (`"div"` by default; `"ul"` or `"ol"` wraps each ch
 One click for the whole group. The children enter one after another, 60ms apart.
 
 ```mdx demo="guide-demos/stagger"
-<Stagger at={1} until={2} enter="rise" as="ul" className="od-bullets">
+<Stagger at={1} enter="rise" as="ul" className="od-bullets">
   <span>Support, for moving old tickets.</span>
   <span>Sales, for loading trial accounts.</span>
   <span>Onboarding, for whole-school rosters.</span>
