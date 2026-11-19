@@ -542,13 +542,48 @@ slide's rendered output at compile time and collected into the notes module. Mor
   framework's, the kit's and a deck's slide CSS is written
   `calc(<size> * var(--deck-text-scale, 1))`. Boxes do not grow, so a tightly composed slide
   overflows after a step or two; a layout in flex or grid absorbs more.
-- Views and components: `PlayView`, `PresenterView`, `OverviewView`, `Notes`, `DeckCredit`
-  (`slides/deck-credit.tsx`, not exported), and the layouts of section 4.4 (`layouts/layouts.tsx`).
-- Not built yet (planned for 1.0.0-rc): `PrintView`, rendering the slides in the `print`
-  context for `decks export`; and the embed protocol, `decks:*` postMessage between a page
-  and a deck opened with `?decks-bridge`, ported from the site's `DeckPlayer`. Today
-  `?decks-bridge` and `?embedded` are parsed and turn sync off, `?embedded` also disables
-  `p` and is reported by `useDeck().embedded`; there is no bridge yet.
+- Views and components: `PlayView`, `PresenterView`, `OverviewView`, `PrintView` (the slides
+  in the `print` context for `decks export`), `Notes`, `DeckCredit` (`slides/deck-credit.tsx`,
+  not exported), and the layouts of section 4.4 (`layouts/layouts.tsx`).
+
+### Embed protocol
+
+A deck opened in a same-origin iframe with `?decks-bridge` (any value) in its search string
+talks to its parent page through `postMessage`, and nothing else turns it on. The bridge is
+active only when the window has a parent, the flag is present and the parent's origin equals
+the deck's; a cross-origin parent leaves it off. Messages go to the deck's own origin, and
+the deck accepts commands only from `window.parent` at that origin, only once it has started,
+and only in the `play` view. `?decks-bridge` and `?embedded` also turn sync off; `?embedded`
+disables `p` and is reported by `useDeck().embedded`. There is no driven-embed flag: a page
+that must keep viewer input out of the deck makes its frame `inert`. The types are
+`EmbedCommand`, `EmbedMessage`, `EmbedState`, `EmbedMeta` and `EmbedDirection`
+(`embed/protocol.ts`), exported from the runtime.
+
+Commands, `{ type: "decks:cmd", cmd, requestId? }`:
+
+| `cmd` | Fields | Effect |
+| --- | --- | --- |
+| `next`, `prev`, `nextSlide`, `prevSlide` | none | The navigation action of the same name. |
+| `go` | `slide` (1-based), `beat` (0-based), `direction?: "forward" \| "backward"` | Moves there, clamped. With `direction`, the transition plays that way whatever the slide order, and the state reports it. The transition name follows section 4.3: a jump of more than one slide uses the manifest's `transition`, else `fade`. |
+| `show` | `slide`, `beat` | Puts that position on screen settled, with no transition and no entrance motion: the move runs with motion `instant` (section 4.3). It reports settled even when the position is unchanged. |
+
+A non-integer `requestId` is ignored. A command with a non-finite `slide` or `beat`, or a
+`direction` other than the two values, is dropped.
+
+Messages from the deck:
+
+| `type` | When | Fields |
+| --- | --- | --- |
+| `decks:ready`, then `decks:meta` | Once, at start | `title`, `slides`, `slideTitles` |
+| `decks:state` | Twice per move: in the next frame with `settled: false`, then with `settled: true` once `settled()` resolves, unless a newer move has started. Also at start, and when the visible story card's text changes | `slide`, `slides`, `beat`, `beats` (the slide's last beat index), `lead`, `body` (the story card's text, empty without one), `settled`, `direction` (`"forward"`, `"backward"` or `null`), and the command's `requestId` |
+| `decks:navigate` | An unmodified arrow key the deck does not own (not in a field, slider or `[data-decks-own-keys]`): the deck does not move and asks the host | `cmd`: `next`, `prev`, `nextSlide` (Shift+Right) or `prevSlide` (Shift+Left) |
+| `decks:interaction` | A key, a pointer down, or hovering or focusing something explorable | none |
+| `decks:error` | A command or settle failed | `message` |
+
+A command's `requestId` comes back on both states of its move, so a host waits for
+`requestId === id && settled`. A superseded move never reports settled, so a host waiting on
+an older id should give up when it sends a newer command. A move the viewer makes carries no
+`requestId`.
 
 ## 4.1 runtime, Phase 2 surface (Final)
 
@@ -906,11 +941,21 @@ declare global {
 
 ### Motion mode
 
-`Deck` sets `data-deck-motion` to `instant` when the view is not `play`, or
+`Deck` sets `data-deck-motion` from one function, `motionMode(view, reducedMotion)`
+(`motion-mode.ts`, runtime-internal). It is `instant` when the view is not `play`, or
 `(prefers-reduced-motion: reduce)` matches (followed live; where `matchMedia` is missing, as
-in jsdom, it counts as not matching), or the page's search string has
-`motion=instant` (what the parity script uses today, and what `shot` and print will use;
-both are not built yet, planned for 1.0.0-rc). Otherwise `live`.
+in jsdom, it counts as not matching), or the page's search string has `motion=instant`
+(what the parity script, `shot` and print use), or an embed `show` move holds the instant
+override. Otherwise `live`. `Deck`'s effect, its reduced-motion listener and the override's
+release all call it, so the attribute is always the base mode or `instant`.
+
+The override only downgrades: it can make a `live` deck `instant` for one move, and never
+makes a reduced-motion or non-`play` deck `live`. The embed sets it synchronously before it
+dispatches a `show`, so the presenter (step 2 below) and the entrance effects that run after
+commit both see `instant`. Any later command replaces it: a `show` keeps it, anything else
+releases it before dispatch. Otherwise it is released when that move's `settled()` resolves
+and the move is still the latest, so an older move's settle never releases a newer `show`'s
+override. Releasing does not stop a tween that was already running when the `show` arrived.
 
 ### Presented and logical state
 
@@ -951,7 +996,7 @@ For each change the presenter decides, in this order:
 2. Otherwise, if the change must not animate, call `skipTransition()` on any transition still
    in flight and `apply()` now, without `flushSync` (a dispatch can come from an effect).
    A change must not animate when any of these holds: `document.startViewTransition` is
-   missing; `data-deck-motion` is `instant`; the view is not `play` both before and after;
+   missing; `data-deck-motion` is `instant` (which an embed `show` forces for its move); the view is not `play` both before and after;
    the position did not change; the target slide's module has not resolved; the transition
    name is `cut`. No transition attributes are set.
 3. Otherwise call `document.startViewTransition(() => flushSync(apply))`.
@@ -965,13 +1010,20 @@ For each change the presenter decides, in this order:
 | A click on any other slide | None; applied at once. |
 
 The name and direction come from the presented state and the logical state at the moment the
-transition starts. While it is in flight `<html>` has `data-deck-transition="<name>"` and
-`data-deck-nav="forward"` or `"backward"` (by slide number, then click). Both are set before
-`startViewTransition` is called and removed when its `finished` promise settles, unless a
-newer transition has replaced them. A change that arrives after the callback ran starts its
-own transition; the browser skips the old one to its end. The `ready`, `finished` and
-`updateCallbackDone` promises are all given a rejection handler: a skipped transition
-rejects `ready`, which is expected.
+transition starts. The direction is `forward` or `backward` by slide number, then click,
+unless the embed forced one for this move (`go` with `direction`): the presenter takes a
+forced direction once, on the next change it presents, and clears it whether or not that
+change animates. The embed clears it again after dispatch, so a `go` to the current position,
+which never reaches the presenter, cannot leave it for a later move. The forced direction
+changes only `data-deck-nav`; the transition name still follows the table above, so a forced
+direction on a jump of more than one slide plays the manifest's `transition`, else `fade`.
+While a transition is in flight `<html>` has `data-deck-transition="<name>"` and
+`data-deck-nav="forward"` or `"backward"`. Both are set before `startViewTransition` is
+called and removed when its `finished` promise settles, unless a newer transition has
+replaced them. A change that arrives after the callback ran starts its own transition; the
+browser skips the old one to its end. The `ready`, `finished` and `updateCallbackDone`
+promises are all given a rejection handler: a skipped transition rejects `ready`, which is
+expected.
 
 The presenter window never transitions (its view is not `play`).
 
