@@ -140,7 +140,7 @@ Tier 2 fills baseline gaps:
 | Template | Beats | What it does | Props |
 | --- | --- | --- | --- |
 | `scramble-text` | one | A word decodes from random glyphs into place, left to right, and settles | `text` (up to 16 characters), `label?` |
-| `donut-build` | list (`segments`) | A ring draws one segment per click on `snap` while the centre value counts to the running share | `segments` (`{ label, value }[]`, 2 to 5), `prefix?`, `suffix?` |
+| `donut-build` | list (`segments`) | A ring draws one segment per click on `snap` while the centre counts the running total of the values | `segments` (`{ label, value }[]`, 2 to 5), `prefix?`, `suffix?` |
 
 `scramble-text` needs GSAP's `ScrambleTextPlugin`, which ships with the installed gsap
 3.15.1 and is not registered; `motion` registers and exports it beside the other four. Its
@@ -211,7 +211,7 @@ not have.
   plate is back at full width with its letters up. Every tween is a `fromTo` with
   `immediateRender: false` on exits, as the reel's is.
 - Jump into a `donut-build` slide at click 3 from the overview: the pose for three segments
-  shows with no animation and the centre reads their share.
+  shows with no animation and the centre reads their running total.
 - Resize mid-entrance: everything is sized in canvas units, so the canvas fit scales it;
   nothing measures the viewport.
 - Print and `?motion=instant`: every template renders its end pose for the click.
