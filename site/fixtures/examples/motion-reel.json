@@ -1,16 +1,17 @@
 {
   "title": "Motion reel",
-  "slides": 9,
+  "slides": 10,
   "slideTitles": [
     "Your agent writes the motion.",
     "Decks makes React slides that move on every click.",
     "Decks ships 21 motion templates.",
     "Pick a template and write its words.",
+    "16 of the 21 templates take one click.",
     "It moves when you click.",
     "The same deck renders in the presenter, the overview, print and PDF.",
     "It ships in one package.",
     "One line installs it.",
-    "Ask your agent for a deck."
+    "This reel is a Decks slide deck."
   ],
   "startSlide": 1,
   "startBeat": 0,
@@ -88,28 +89,21 @@
     {
       "slide": 5,
       "beat": 0,
-      "beats": 3,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 5,
       "beat": 1,
-      "beats": 3,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 5,
       "beat": 2,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 5,
-      "beat": 3,
-      "beats": 3,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
@@ -144,14 +138,28 @@
     {
       "slide": 7,
       "beat": 0,
-      "beats": 1,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 7,
       "beat": 1,
-      "beats": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 3,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
@@ -178,6 +186,20 @@
     },
     {
       "slide": 9,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 10,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 10,
       "beat": 1,
       "beats": 1,
       "lead": "",

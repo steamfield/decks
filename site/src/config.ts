@@ -56,7 +56,7 @@ export const site = {
     example: "motion-reel",
     heading: (slides: number, longest: number) =>
       `This reel is a ${slides}-slide deck, and its longest slide is ${longest} lines of MDX.`,
-    lede: "Every frame in the player is a slide. Step through it with its controls or the arrow keys, and the source beside it follows. Each slide fills in a motion template or calls a component built on gsap.",
+    lede: "Every frame in the player is a slide. Step through it with its controls or the arrow keys, and its MDX source follows. Each slide fills in a motion template or calls a component built on gsap.",
     credit:
       "A Claude Code agent (Fable) wrote the deck from a written brief, using the deck-motion skill and its references, deck-design and writing-slides, then revised it from a human's review notes. Nobody edited it by hand.",
     motion: { href: "/docs/motion/", label: "Write a motion sequence" },
