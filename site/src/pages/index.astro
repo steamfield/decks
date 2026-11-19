@@ -1,9 +1,8 @@
 ---
-import { existsSync } from "node:fs";
 import ThemeCompare from "../components/blog/ThemeCompare.astro";
 import CopyBlock from "../components/CopyBlock.astro";
 import { StaticTranscript } from "@steamfield/ui/react/agent-demo";
-import { AgentSession } from "../components/landing/AgentSession";
+import { AgentSession, STILL_TRANSCRIPT } from "../components/landing/AgentSession";
 import { DeckPlayer } from "../components/landing/DeckPlayer";
 import { InstallTabs } from "../components/landing/InstallTabs";
 import MotionSource from "../components/landing/MotionSource.astro";
@@ -17,8 +16,8 @@ import {
   Section,
 } from "../components/landing/sections";
 import { agents, site } from "../config";
-import { phoneScript } from "../data/agent-session";
-import { entryFor, loadExample, loadExamples } from "../data/examples";
+import { phoneScript, turns } from "../data/agent-session";
+import { entryFor, loadExample, loadExamples, loadPosters } from "../data/examples";
 import { loadMotionShowcase } from "../data/motion-showcase";
 import { loadProjectFiles, setupCommands } from "../data/project";
 import "../styles/landing.css";
@@ -37,18 +36,14 @@ if (!sessionDeck.poster)
   throw new Error(
     "public/posters/agent-hero-1280.avif is missing: run node scripts/demo.mjs --only agent-hero",
   );
-const extraPoster = (name: string) => {
-  if (!existsSync(`public/posters/agent-hero-${name}-1920.webp`))
-    throw new Error(
-      `public/posters/agent-hero-${name}-1920.webp is missing: run node scripts/demo.mjs --only agent-hero`,
-    );
-  return { base: `/posters/agent-hero-${name}`, width: 1920, height: 1080 };
-};
-const sessionPosters = {
-  start: sessionDeck.poster,
-  cover: extraPoster("cover"),
-  finished: extraPoster("finished"),
-};
+const { cover, finished } = loadPosters(sessionEntry);
+if (!cover || !finished)
+  throw new Error(
+    "src/data/examples.json's agent-hero entry needs posters named cover and finished",
+  );
+const sessionPosters = { start: sessionDeck.poster, cover, finished };
+// The session ends on the talk opening with its reel, so the link opens the deck there.
+const finishedDeck = `${sessionDeck.href}#/${turns.at(-1)?.result.first ?? 1}`;
 const files = loadProjectFiles();
 ---
 
@@ -77,12 +72,16 @@ const files = loadProjectFiles();
         <AgentSession
           client:media="(prefers-reduced-motion: no-preference)"
           src={`${sessionDeck.href}index.html`}
-          href={sessionDeck.href}
+          href={finishedDeck}
           posters={sessionPosters}
         >
           <noscript>
             <div class="agent-session-static">
-              <StaticTranscript script={phoneScript} layout="terminal" />
+              <StaticTranscript
+                script={phoneScript}
+                layout="terminal"
+                labels={{ transcript: STILL_TRANSCRIPT }}
+              />
               <img
                 class="agent-session-cover"
                 src={`${sessionPosters.cover.base}-1280.webp`}

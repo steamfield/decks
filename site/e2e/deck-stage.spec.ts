@@ -3,9 +3,10 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { build } from "esbuild";
 
-// DeckStage is on no built page yet, so the spec bundles a harness that mounts it and serves
-// it from the preview server's origin, beside the real agent-hero build in /d/. The page takes
-// the landing's own stylesheets and inline tokens from the built index.
+// The landing's hero mounts DeckStage inside the agent session, which drives it on its own
+// clock; to test the stage alone, the spec bundles a harness that mounts only DeckStage and
+// serves it from the preview server's origin, beside the real agent-hero build in /d/. The
+// page takes the landing's own stylesheets and inline tokens from the built index.
 const HARNESS = "/__deck-stage-harness";
 
 async function harnessPage() {

@@ -72,14 +72,7 @@ async function recordNetwork(page: Page) {
 for (const width of [390, 1440])
   test(`at ${width}px shell stays within 350 KB and the gallery player's live assets are measured separately`, async ({
     page,
-  }, testInfo) => {
-    // Measured 357,488 B: the hero's static finished poster and the gallery thumbnails and
-    // stills that load once the scroll reaches #examples, at the phone project's 2.6 pixel
-    // ratio. The desktop project and the other widths are inside the budget.
-    test.fail(
-      width === 1440 && testInfo.project.name === "mobile",
-      "over 350 KB (357,488 B) at 1440px and a 2.6 pixel ratio",
-    );
+  }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     const network = trackRequests(page);
@@ -111,7 +104,10 @@ test("at 1440px the shell with the agent session hydrated stays within 350 KB", 
   const measure = await recordNetwork(page);
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Replay" })).toBeVisible();
-  await expect(page.locator(".agent-session iframe")).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('iframe[src^="/d/agent-hero/"]')).toBeVisible({ timeout: 20_000 });
+  // Paused, the session sends the deck no further step, so no lazy slide starts loading while
+  // the requests drain; without it the count can catch a slide chunk mid-load.
+  await page.getByRole("button", { name: "Pause" }).click();
   await network.idle();
   const { sizes, shellBytes, liveBytes, report } = await measure();
   await test.info().attach("network-budget-session-1440", {

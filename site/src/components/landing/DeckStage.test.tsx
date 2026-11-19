@@ -1,5 +1,7 @@
-import { act, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, render, screen, within } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { renderToString } from "react-dom/server";
+import { describe, expect, it, onTestFinished } from "vitest";
 import type { Command } from "../../lib/player/protocol";
 import type { StageController } from "../../lib/stage/controller";
 import { DeckStage } from "./DeckStage";
@@ -37,14 +39,23 @@ const settledState = (requestId?: number) => ({
   direction: null,
 });
 
+/** The server's HTML for `element`, in the document until the test ends. */
+function serverHtml(element: ReactElement) {
+  const host = document.createElement("div");
+  host.innerHTML = renderToString(element);
+  document.body.append(host);
+  onTestFinished(() => host.remove());
+  return host;
+}
+
 function mount() {
-  const controllers: StageController[] = [];
+  const controllers: (StageController | null)[] = [];
   const props = {
     src: "/d/agent-hero/index.html",
     poster,
     label: "A blank deck, before the agent starts",
     initialHash: "/1",
-    onController: (controller: StageController) => controllers.push(controller),
+    onController: (controller: StageController | null) => controllers.push(controller),
   };
   const view = render(<DeckStage {...props} />);
   // The stand-in window goes in before any command is sent.
@@ -97,5 +108,60 @@ describe("DeckStage", () => {
     rerender(<DeckStage {...props} onController={(controller) => controllers.push(controller)} />);
     expect(controllers).toHaveLength(1);
     expect(d.sent).toEqual([]);
+  });
+
+  it("server-renders the poster alone, the same image the browser keeps, with no frame", () => {
+    const host = serverHtml(
+      <DeckStage
+        src="/d/agent-hero/index.html"
+        poster={poster}
+        label="A blank deck, before the agent starts"
+      />,
+    );
+    expect(host.querySelector("iframe")).toBeNull();
+    const image = within(host)
+      .getByRole("img", { name: "A blank deck, before the agent starts" })
+      .querySelector("img");
+    expect(image).toHaveAttribute("src", "/posters/agent-hero-1920.webp");
+  });
+
+  it("names itself by the motion preference and offers the reduced poster to the browser", () => {
+    const host = serverHtml(
+      <DeckStage
+        src="/d/agent-hero/index.html"
+        poster={poster}
+        reducedPoster={{ ...poster, base: "/posters/agent-hero-finished" }}
+        label="A blank deck"
+        reducedLabel="The finished deck"
+      />,
+    );
+    // happy-dom has no media queries, so both names are present; landing.css hides one.
+    const stage = within(host).getByRole("img", { name: "A blank deck The finished deck" });
+    const sources = [...stage.querySelectorAll("source")].map((source) => [
+      source.getAttribute("media"),
+      source.getAttribute("srcset")?.split(", ").at(-1),
+    ]);
+    expect(sources).toEqual([
+      ["(prefers-reduced-motion: reduce)", "/posters/agent-hero-finished-1920.avif 1920w"],
+      ["(prefers-reduced-motion: reduce)", "/posters/agent-hero-finished-1920.webp 1920w"],
+      [null, "/posters/agent-hero-1920.avif 1920w"],
+      [null, "/posters/agent-hero-1920.webp 1920w"],
+    ]);
+  });
+
+  it("when made still, disposes its controller, hands over null and shows the poster again", async () => {
+    const { container, rerender, props, controllers, deck: d } = mount();
+    const [stage] = controllers;
+    if (!stage) throw new Error("DeckStage handed over no controller");
+    d.say({ type: "decks:ready" });
+    const shown = stage.show(4, 0);
+    d.say(settledState(1));
+    await act(() => shown);
+    expect(container.querySelector("picture")).toBeNull();
+    rerender(<DeckStage {...props} still />);
+    expect(controllers).toEqual([stage, null]);
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(container.querySelector("picture img")).not.toBeNull();
+    await expect(stage.show(5, 0)).rejects.toThrow("disposed");
   });
 });

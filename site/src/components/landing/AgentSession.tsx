@@ -18,12 +18,17 @@ import { site } from "../../config";
 import { agentSession, phoneScript, turns } from "../../data/agent-session";
 import { track } from "../../lib/analytics";
 import { Events } from "../../lib/events";
-import { type Poster, posterSrcset } from "../../lib/player/example";
+import type { Poster } from "../../lib/player/example";
 import type { StageController } from "../../lib/stage/controller";
 import { DeckStage } from "./DeckStage";
 
 /** How long the finished deck holds before the session loops. */
 export const FINISHED_HOLD_MS = 4000;
+
+/** The playing transcript's accessible name. */
+export const LIVE_TRANSCRIPT = "Agent session transcript";
+/** The whole transcript's name, shown under reduced motion. */
+export const STILL_TRANSCRIPT = "Agent session transcript, every turn";
 
 // The terminal preset, with each prompt typed in its script's `typingMs` (turn 1's is 0, so it
 // is already submitted at first paint) and agent text shown a line at a time, so the lead line
@@ -62,42 +67,10 @@ type Props = {
 const STAGE_SIZES = "(min-width: 1024px) 540px, 100vw";
 
 /**
- * A poster in the stage's frame. `still` is the reduced-motion view, which landing.css shows
- * in place of the live one; it loads lazily, so a display:none still poster costs nothing.
- */
-function StagePoster({ poster, label, still }: { poster: Poster; label: string; still: boolean }) {
-  return (
-    <div
-      className={`deck-stage ${still ? "agent-session-still" : "agent-session-live"}`}
-      role="img"
-      aria-label={label}
-    >
-      <picture>
-        {(["avif", "webp"] as const).map((format) => (
-          <source
-            key={format}
-            type={`image/${format}`}
-            srcSet={posterSrcset(poster, format)}
-            sizes={STAGE_SIZES}
-          />
-        ))}
-        <img
-          src={`${poster.base}-1280.webp`}
-          width={poster.width}
-          height={poster.height}
-          alt=""
-          loading={still ? "lazy" : "eager"}
-          fetchPriority={still ? "auto" : "high"}
-        />
-      </picture>
-    </div>
-  );
-}
-
-/**
  * The landing hero: a scripted agent session in a terminal beside the deck it builds. Each turn
  * holds the deck on its starting state while the prompt and tool calls run, pauses the transcript
  * on the agent's lead line, plays the result on the deck, and resumes once the deck has settled.
+ * After the deck's first failure the transcript runs on alone and the stage keeps what it shows.
  */
 export function AgentSession({ src, href, posters, children }: Props) {
   const phone = useSyncExternalStore(
@@ -115,6 +88,8 @@ export function AgentSession({ src, href, posters, children }: Props) {
     /** The play the transcript is waiting on, or null. */
     waiting: null as symbol | null,
     userPaused: false,
+    /** The deck failed once; the session no longer drives or waits for it. */
+    failed: false,
     turn: -1,
     reached: new Set<number>(),
     completed: false,
@@ -129,12 +104,26 @@ export function AgentSession({ src, href, posters, children }: Props) {
     flags.current.waiting = null;
   };
 
-  const enterTurn = (turn: number) => {
+  /** The deck missed its deadline or reported an error: stop driving it, once, loudly. */
+  const failStage = (error: unknown) => {
+    if (flags.current.failed) return;
+    flags.current.failed = true;
+    console.error("The hero's deck stage failed; the session carries on without it.", error);
+  };
+
+  /** Shows a turn's hold; a cancelled show was superseded and needs nothing. */
+  const showHold = (controller: StageController, turn: number) => {
     const target = turns[turn];
-    if (!target) throw new Error(`The agent session has no turn ${turn + 1}`);
+    if (!target || flags.current.failed) return;
+    controller.show(target.hold.slide, target.hold.beat).catch(failStage);
+  };
+
+  const enterTurn = (turn: number) => {
+    if (!turns[turn]) throw new Error(`The agent session has no turn ${turn + 1}`);
     flags.current.turn = turn;
-    setBuilt(turn - 1);
-    stage.current?.show(target.hold.slide, target.hold.beat);
+    // A failed stage keeps showing what it last showed, and its name says so.
+    if (!flags.current.failed) setBuilt(turn - 1);
+    if (stage.current) showHold(stage.current, turn);
     if (!flags.current.reached.has(turn)) {
       flags.current.reached.add(turn);
       track(Events.agentDemoTurnReached, { turn: turn + 1 });
@@ -144,7 +133,7 @@ export function AgentSession({ src, href, posters, children }: Props) {
   const land = (turn: number) => {
     const controls = controlsRef.current;
     const target = turns[turn];
-    if (!stage.current || !controls || !target) return;
+    if (!stage.current || !controls || !target || flags.current.failed) return;
     const token = Symbol(target.label);
     flags.current.waiting = token;
     controls.pause();
@@ -156,15 +145,15 @@ export function AgentSession({ src, href, posters, children }: Props) {
     };
     stage.current.play(target.result, { dwellMs: dwellFor(turn) }).then(
       (result) => {
-        // A cancelled play was superseded by a jump or a replay, which owns the clock now.
-        if (result.cancelled || flags.current.waiting !== token) return;
-        setBuilt(turn);
+        // A jump or a replay stops waiting before it cancels the play, so a cancelled play
+        // still waited on was superseded by something else (a new script, the stage going away)
+        // and the transcript resumes as it would after the result.
+        if (!result.cancelled && flags.current.waiting === token) setBuilt(turn);
         resume();
       },
       (error: unknown) => {
-        // The deck failed; the transcript carries on without it and the error still surfaces.
+        failStage(error);
         resume();
-        throw error;
       },
     );
   };
@@ -205,13 +194,22 @@ export function AgentSession({ src, href, posters, children }: Props) {
     scriptRef.current = script;
     controlsRef.current = demo.controls;
   });
-  useEffect(() => () => clearTimeout(hold.current), []);
+  useEffect(
+    () => () => {
+      clearTimeout(hold.current);
+      // A play the stage cancels on unmount must not resume a transcript that is gone.
+      flags.current.waiting = null;
+    },
+    [],
+  );
 
-  const onController = useCallback((controller: StageController) => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: showHold reads only refs, so the callback stays stable
+  const onController = useCallback((controller: StageController | null) => {
     stage.current = controller;
+    if (!controller) return;
+    if (flags.current.userPaused) controller.pause();
     // The clock may have started turn 1 before the stage mounted.
-    const target = turns[flags.current.turn];
-    if (target) controller.show(target.hold.slide, target.hold.beat);
+    showHold(controller, flags.current.turn);
   }, []);
 
   const { controls } = demo;
@@ -220,16 +218,19 @@ export function AgentSession({ src, href, posters, children }: Props) {
     setUserPaused(true);
     clearTimeout(hold.current);
     controls.pause();
+    stage.current?.pause();
   };
   const play = () => {
     flags.current.userPaused = false;
     setUserPaused(false);
+    stage.current?.resume();
     if (demo.complete) restart();
     else if (!flags.current.waiting) controls.play();
   };
   const replay = () => {
     flags.current.userPaused = false;
     setUserPaused(false);
+    stage.current?.resume();
     restart();
   };
   const jump = (turn: number) => {
@@ -273,9 +274,10 @@ export function AgentSession({ src, href, posters, children }: Props) {
     </div>
   );
 
-  const label = copy.stageLabels[built + 1] ?? copy.stageLabels[0] ?? "";
   const finishedLabel = copy.stageLabels.at(-1) ?? "";
-  const live = demo.ready && !demo.reduced;
+  const label = demo.reduced
+    ? finishedLabel
+    : (copy.stageLabels[built + 1] ?? copy.stageLabels[0] ?? "");
 
   return (
     <div className="agent-session" ref={demo.ref}>
@@ -289,31 +291,29 @@ export function AgentSession({ src, href, posters, children }: Props) {
               layout="terminal"
               timing={timing}
               position={{ ms: demo.view.elapsed }}
-              labels={{ transcript: "Agent session transcript" }}
+              labels={{ transcript: LIVE_TRANSCRIPT }}
             />
             <StaticTranscript
               className="agent-session-still"
               script={script}
               layout="terminal"
-              labels={{ transcript: "Agent session transcript" }}
+              labels={{ transcript: STILL_TRANSCRIPT }}
             />
           </div>
           <div className="agent-session-stage">
-            {live ? (
-              <DeckStage
-                src={src}
-                poster={posters.start}
-                label={label}
-                onController={onController}
-                initialHash={`/${turns[0]?.hold.slide ?? 1}`}
-                sizes={STAGE_SIZES}
-              />
-            ) : (
-              <>
-                <StagePoster poster={posters.start} label={label} still={false} />
-                <StagePoster poster={posters.finished} label={finishedLabel} still />
-              </>
-            )}
+            {/* The server's HTML can't know the motion preference, so until hydration the
+                picture and the name follow it through media queries. */}
+            <DeckStage
+              src={src}
+              poster={posters.start}
+              reducedPoster={posters.finished}
+              label={label}
+              reducedLabel={demo.ready ? undefined : finishedLabel}
+              still={!demo.ready || demo.reduced}
+              onController={onController}
+              initialHash={`/${turns[0]?.hold.slide ?? 1}`}
+              sizes={STAGE_SIZES}
+            />
           </div>
         </div>
       </DemoWindow>

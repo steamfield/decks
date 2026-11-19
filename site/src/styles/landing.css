@@ -386,42 +386,6 @@ html[data-page="landing"] :focus-visible {
   font-family: var(--font-sans);
 }
 
-.transcript ol {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.transcript li {
-  border-bottom: 1px solid color-mix(in srgb, var(--color-line) 60%, transparent);
-  padding: 0.625rem 1rem;
-}
-
-.transcript li:last-child {
-  border-bottom: 0;
-}
-
-.transcript-prompt {
-  color: var(--color-ink);
-}
-
-.transcript-step {
-  display: grid;
-  gap: 0.125rem 1.25rem;
-}
-
-@media (min-width: 768px) {
-  .transcript-step {
-    grid-template-columns: minmax(0, 1fr) 12rem;
-  }
-}
-
-.transcript-note {
-  color: var(--color-muted);
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-}
-
 .compare-head {
   display: none;
 }
@@ -564,32 +528,6 @@ html[data-page="landing"] :focus-visible {
   display: flex;
   flex-direction: column;
   gap: 48px;
-}
-
-/* Tool-call bullets and the prompt caret in the run. */
-.run-glyph {
-  color: var(--color-data);
-}
-.terminal {
-  background: var(--color-canvas);
-}
-.terminal > figcaption {
-  justify-content: start;
-  align-items: center;
-  background: var(--color-panel);
-}
-.terminal-dots {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 10px;
-  background:
-    radial-gradient(circle at 5px 5px, var(--color-line-strong) 4px, transparent 4.5px),
-    radial-gradient(circle at 20px 5px, var(--color-line-strong) 4px, transparent 4.5px),
-    radial-gradient(circle at 35px 5px, var(--color-line-strong) 4px, transparent 4.5px);
-}
-.terminal > figcaption > .text-muted {
-  flex-basis: 100%;
-  font-size: 13px;
 }
 
 /* Install: the commands beside three label-and-detail rows. */
@@ -1004,19 +942,22 @@ html:not(.js) .motion-showcase :is(.player-loading, .player-status) {
   white-space: nowrap;
 }
 /* Reduced motion: the whole transcript beside the finished deck, with no JavaScript needed
-   (the island hydrates only when motion is allowed). */
-.agent-session .agent-session-still {
+   (the island hydrates only when motion is allowed). The stage's picture picks the finished
+   poster itself; before hydration its name is whichever of the two below is displayed. */
+.agent-session .agent-session-still,
+.deck-stage-name-reduced {
   display: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .agent-session .agent-session-live {
+  .agent-session .agent-session-live,
+  .deck-stage-name-motion {
     display: none;
   }
   .agent-session .agent-session-still {
     display: flex;
   }
-  .agent-session .deck-stage.agent-session-still {
-    display: block;
+  .deck-stage-name-reduced {
+    display: inline;
   }
 }
 /* Without JavaScript: the five prompts and leads beside the drafted cover. */
