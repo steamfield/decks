@@ -65,7 +65,10 @@ export function createDeckStore(
     const hash = formatHash({ ...state.nav, view: state.view });
     if (window.location.hash !== hash) {
       const url = window.location.pathname + window.location.search + hash;
-      if (push) window.history.pushState(window.history.state, "", url);
+      // A framed deck's history entries belong to the host page's tab: Back would step the
+      // embedded deck instead of leaving the page, so inside another page every write replaces.
+      if (push && !state.embedded && !state.bridge)
+        window.history.pushState(window.history.state, "", url);
       else window.history.replaceState(window.history.state, "", url);
     }
   }

@@ -693,7 +693,7 @@ runtime and the tests use.
 | Created | Parses `location.hash` and `location.search`, clamps with `clampNav`. If the hash is not the canonical `formatHash` of that state, rewrites it with `history.replaceState`. |
 | `dispatch`, state unchanged | Nothing: no history entry, no notification. |
 | `dispatch`, only the click changed | State updates, hash rewritten with `replaceState`, subscribers notified once. |
-| `dispatch`, the slide changed | State updates, hash written with `pushState`, subscribers notified once. |
+| `dispatch`, the slide changed | State updates, hash written with `pushState`, subscribers notified once. In a deck opened with `?embedded` or `?decks-bridge` every write uses `replaceState`: inside another page, its history entries would land in the host tab and Back would step the deck instead of leaving the page. This holds for `setView` and remote states too. |
 | `hashchange` or `popstate` (edited URL, back, forward) | Re-parses and clamps; state updates and subscribers are notified if it differs; a non-canonical hash is rewritten with `replaceState`. |
 | Any write | `location.search` is preserved. |
 | `destroy` | Listeners removed; later URL changes do not notify. |
