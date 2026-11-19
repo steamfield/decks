@@ -152,26 +152,55 @@ Layouts arrange their children and nothing else. They set no fonts, colors or si
 | `TwoCol` | Two columns. Requires exactly two element children. | `ratio`: `"1:1"` (default), `"2:1"`, `"1:2"`, `"3:2"`, `"2:3"`. `align`: `"start"` (default), `"center"`, `"end"`. |
 | `ImageSide` | An image filling one side edge to edge, children on the other. | `src` and `alt` (required; an empty `alt` marks the image decorative). `side`: `"left"` (default), `"right"`. `ratio`: `"1:1"` (default), `"2:1"`, `"1:2"`. |
 
-From `examples/motion/slides/29-two-col.mdx` and `30-image-side.mdx`:
+On the docs site each layout below plays live above its code; the slides are in
+`examples/guide-demos/slides/`, and each adds one click so the second element can enter.
 
-```mdx
+```mdx demo="guide-demos/layout-center"
+<Center>
+  <p className="od-title">Every outage gets a written review.</p>
+  <Step at={1} as="p" enter="rise" className="od-lede">
+    Shared with the whole team, with no names attached.
+  </Step>
+</Center>
+```
+
+```mdx demo="guide-demos/layout-cover"
+<Cover>
+  <p className="od-title">What a quarter of on-call<br />taught us about alerts.</p>
+  <Step at={1} as="p" enter="rise" className="od-lede">
+    How we cut the pages that wake people up at night.
+  </Step>
+</Cover>
+```
+
+```mdx demo="guide-demos/layout-section"
+<Section>
+  <p className="od-title">Automate the fix<br />before you page a person.</p>
+  <Step at={1} as="p" enter="rise" className="od-lede">
+    Restarts and rollbacks now run on their own.
+  </Step>
+</Section>
+```
+
+```mdx demo="guide-demos/layout-two-col"
 <TwoCol ratio="2:1" align="center">
-  <div className="layout-statement">
-    <h1>Give the argument<br />more space.</h1>
-  </div>
-  <aside className="layout-note">
-    <h2>Keep a steady anchor.</h2>
-  </aside>
+  <p className="od-title">Write the runbook<br />before the alert.</p>
+  <Step at={1} as="p" enter="rise" className="od-lede">
+    A new alert ships only with a linked runbook, so whoever is paged knows the first step.
+  </Step>
 </TwoCol>
 ```
 
-```mdx
+```mdx demo="guide-demos/layout-image-side"
 <ImageSide src="field.svg" alt="Mint paths converge around an amber circle on a dark field" side="right">
-  <h1>Let the image<br />carry the motion.</h1>
+  <p className="od-title">Every alert routes<br />to one owner.</p>
+  <Step at={1} as="p" enter="rise" className="od-lede">
+    Escalations follow the service map, not the org chart.
+  </Step>
 </ImageSide>
 ```
 
-`field.svg` is `examples/motion/public/field.svg`. In a window that is not 16:9 the layouts use the extra canvas: columns widen and centered content stays centered.
+`field.svg` is `examples/guide-demos/public/field.svg`. In a window that is not 16:9 the layouts use the extra canvas: columns widen and centered content stays centered.
 
 ## `useDeck()` and `useSlide()`
 

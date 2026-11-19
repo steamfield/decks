@@ -18,6 +18,8 @@ export function mountDeckDemos(doc: Document = document, live = LIVE) {
   );
   const mounted: Stage[] = [];
   const unmount = (stage: Stage) => {
+    // Keep the player's height so the page above the reader does not shift when it goes.
+    stage.element.style.minHeight = `${stage.element.offsetHeight}px`;
     stage.root?.unmount();
     stage.root = null;
     stage.element.innerHTML = stage.poster;
@@ -33,17 +35,22 @@ export function mountDeckDemos(doc: Document = document, live = LIVE) {
     const props = JSON.parse(stage.element.dataset.deckDemoPlayer ?? "") as DemoPlayer;
     stage.element.replaceChildren();
     stage.root = createRoot(stage.element);
-    stage.root.render(
-      createElement(DeckPlayer, { examples: [props.example], range: props.range }),
-    );
+    stage.root.render(createElement(DeckPlayer, { examples: [props.example], range: props.range }));
     mounted.push(stage);
+  };
+  const view = doc.defaultView ?? window;
+  const onScreen = (element: HTMLElement) => {
+    const { top, bottom } = element.getBoundingClientRect();
+    return bottom > 0 && top < view.innerHeight;
   };
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       const stage = stages.find((item) => item.element === entry.target);
-      if (!stage) continue;
-      stage.visible = entry.isIntersecting;
+      if (stage) stage.visible = entry.isIntersecting;
     }
+    // Entries arrive in batches; measure the live ones again so one that left in a batch
+    // not yet delivered can still make room.
+    for (const stage of mounted) stage.visible = onScreen(stage.element);
     // A demo that came into view while three others were live gets its turn once one leaves.
     for (const stage of stages) if (stage.visible) mount(stage);
   });

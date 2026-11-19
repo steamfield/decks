@@ -52,51 +52,52 @@ Line numbers in the braces count from 1 within the block, whatever `lines=<n>` s
 
 While a step is in force its lines are at full strength and the others are dimmed. Before click `at`, nothing is emphasized and nothing is dimmed. Each `|` is one more click, and the last step stays in force for any later click. Going back a click reverses it.
 
-`examples/motion/slides/25-code-steps.mdx`:
+On the docs site this block plays live above its code (`examples/guide-demos/slides/85-line-emphasis.mdx`):
 
-````mdx
-```ts {2|4-5|all} lines title="store.ts" maxHeight=500
-export function createStore() {
-  let count = 0;
-
-  const increment = () => count++;
-  const read = () => count;
-
-  return { increment, read };
+````mdx demo="guide-demos/line-emphasis"
+```ts {3-4|5|6|8} at=1 lines title="fetch-with-retry.ts"
+export async function fetchWithRetry(url: string, attempts = 3) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const response = await fetch(url);
+    if (response.ok) return response;
+    if (!isRetryable(response.status)) throw new HttpError(response);
+    await sleep(250 * 2 ** attempt);
+  }
+  throw new Error(`${url} failed after ${attempts} attempts`);
 }
 ```
 ````
 
-At click 0 line 2 is emphasized, at click 1 lines 4 and 5, at click 2 every line.
+At click 0 no line is emphasized. Clicks 1 to 4 emphasize lines 3 and 4, then line 5, then line 6, then line 8.
 
-A block with `k` steps adds `at + k - 1` to the slide's click total, so the slide above has two clicks with no `clicks:` in its frontmatter. A block without braces uses no clicks. See [motion.md](motion.md) for how the total is counted.
+A block with `k` steps adds `at + k - 1` to the slide's click total, so the slide above has four clicks with no `clicks:` in its frontmatter. A block without braces uses no clicks. See [motion.md](motion.md) for how the total is counted.
 
 ## Magic move
 
 A magic-move fence morphs one code block into the next on a click: tokens that stay move to their new place, removed ones fade out and new ones fade in. The syntax is Slidev's, so a Slidev fence pastes in unchanged. Open with four backticks, the language `md` (or `markdown`) and `magic-move`, then put ordinary code fences inside, one per version.
 
-`examples/motion/slides/32-magic-move.mdx`:
+On the docs site it plays live above its code (`examples/guide-demos/slides/54-magic-move.mdx`):
 
-`````mdx
-````md magic-move "greet.ts" {lines: true}
+`````mdx demo="guide-demos/magic-move"
+````md magic-move "grade.ts" {lines: true}
 ```ts {1}
-const greeting = "Hello";
+const passing = score >= 60;
 ```
 
 ```ts {1|2}
-const greet = (name: string) => `Hello, ${name}`;
-greet("Ada");
+const passing = (score: number) => score >= 60;
+passing(72);
 ```
 
 ```ts {all}
-export function greet(name: string) {
-  return `Hello, ${name}!`;
+export function passing(score: number, cutoff = 60) {
+  return score >= cutoff;
 }
 ```
 ````
 `````
 
-After `magic-move` come an optional title, either quoted (`"greet.ts"`) or in brackets (`[greet.ts]`), and an optional options object: `at` (the click of the first version, default 0) and `lines` (line numbers, default off). Each inner fence can have its own `{...}` line emphasis, as in a plain block, and its own `lines`.
+After `magic-move` come an optional title, either quoted (`"grade.ts"`) or in brackets (`[grade.ts]`), and an optional options object: `at` (the click of the first version, default 0) and `lines` (line numbers, default off). Each inner fence can have its own `{...}` line emphasis, as in a plain block, and its own `lines`.
 
 Each version holds for as many clicks as it has emphasis steps, at least one, and the next click morphs to the next version. The slide above shows version 1 at click 0, version 2 with line 1 then line 2 emphasized at clicks 1 and 2, and version 3 at click 3: `at` plus every version's step count, minus 1, so 3 clicks with no `clicks:` in the frontmatter.
 

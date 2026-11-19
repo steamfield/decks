@@ -37,6 +37,16 @@ function figures(names: string[]) {
   return [...document.querySelectorAll<HTMLElement>("[data-deck-demo-player]")];
 }
 
+/** Reports a stage in or out of view, with a matching box (happy-dom has no layout). */
+function viewer() {
+  const intersect = installIntersectionObserver();
+  return (element: Element, inView = true) => {
+    element.getBoundingClientRect = () =>
+      (inView ? { top: 0, bottom: 300 } : { top: -900, bottom: -600 }) as DOMRect;
+    intersect(element, inView);
+  };
+}
+
 let stop = () => {};
 afterEach(() => {
   act(() => stop());
@@ -46,7 +56,7 @@ afterEach(() => {
 describe("guide demo players", () => {
   it("replaces a poster with a live player only once it scrolls into view", () => {
     installMotionPreference(true);
-    const intersect = installIntersectionObserver();
+    const intersect = viewer();
     const [first, second] = figures(["Stagger", "Draw"]);
     stop = mountDeckDemos();
     expect(screen.getAllByRole("img")).toHaveLength(2);
@@ -57,7 +67,7 @@ describe("guide demo players", () => {
 
   it("keeps at most three live, sending the earliest that scrolled away back to its poster", () => {
     installMotionPreference(true);
-    const intersect = installIntersectionObserver();
+    const intersect = viewer();
     const stages = figures(["One", "Two", "Three", "Four"]);
     stop = mountDeckDemos();
     for (const stage of stages.slice(0, 3)) act(() => intersect(stage));
@@ -78,7 +88,7 @@ describe("guide demo players", () => {
 
   it("holds a fourth demo on its poster while three live ones are on screen, then mounts it", () => {
     installMotionPreference(true);
-    const intersect = installIntersectionObserver();
+    const intersect = viewer();
     const stages = figures(["One", "Two", "Three", "Four"]);
     stop = mountDeckDemos();
     for (const stage of stages) act(() => intersect(stage));

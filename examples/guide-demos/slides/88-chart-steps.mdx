@@ -1,0 +1,15 @@
+---
+title: Night pages fell once runbooks shipped.
+clicks: 2
+---
+
+import { ChartSteps, useFrameScale } from "@steamfield/decks/kit";
+import { monthlyPages } from "../data/demo-monthly-pages";
+
+<Cover>
+  <p className="od-h2">Night pages fell once runbooks shipped.</p>
+  <div style={{ width: "100%", height: 560 }}>
+    <ChartSteps specs={monthlyPages(useFrameScale())} at={1} />
+  </div>
+  <p className="od-caption">Night pages per month, July to December. Illustrative figures.</p>
+</Cover>

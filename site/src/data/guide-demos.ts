@@ -67,7 +67,11 @@ export function resolveDemo(ref: DemoRef) {
   const last = find(ref.last);
   if (last.slide < first.slide)
     throw new Error(`demo="${ref.deck}/${ref.first}..${ref.last}": the range runs backwards`);
-  return { first: first.slide, last: last.slide, slides: slides.slice(first.slide - 1, last.slide) };
+  return {
+    first: first.slide,
+    last: last.slide,
+    slides: slides.slice(first.slide - 1, last.slide),
+  };
 }
 
 /** Every demo fence in the package guide, in page and source order. */
@@ -78,10 +82,11 @@ export function guideDemos(): DemoFence[] {
     .sort()
     .flatMap((page) =>
       Array.from(
-        readFileSync(join(dir, page), "utf8").matchAll(/^```(\S*)([^\n]*)\n([\s\S]*?)^```$/gm),
+        // A fence closes on a line of the same backticks, so ````mdx can hold ``` blocks.
+        readFileSync(join(dir, page), "utf8").matchAll(/^(`{3,})(\S*)([^\n]*)\n([\s\S]*?)^\1$/gm),
         (match) => {
-          const ref = parseDemo(match[2]);
-          return ref ? [{ ...ref, page, code: (match[3] ?? "").replace(/\n$/, "") }] : [];
+          const ref = parseDemo(match[3]);
+          return ref ? [{ ...ref, page, code: (match[4] ?? "").replace(/\n$/, "") }] : [];
         },
       ).flat(),
     );

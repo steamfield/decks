@@ -167,8 +167,8 @@ function expectDemoSource(source: string) {
       expect(params).toContain(prop.name);
       expect(typeof prop.value, "Use literal MDX demo props").toBe("string");
       if (prop.name === "example")
-          // DeckDemo resolves listed examples only.
-          expect(loadExamples().map((item) => item.name)).toContain(prop.value);
+        // DeckDemo resolves listed examples only.
+        expect(loadExamples().map((item) => item.name)).toContain(prop.value);
     }
   }
 }

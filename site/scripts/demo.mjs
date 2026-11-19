@@ -504,8 +504,12 @@ async function main() {
             const { last } = resolveDemo(demo);
             const beats = recordings[demo.deck].states.find((state) => state.slide === last)?.beats;
             if (beats === undefined)
-              throw new Error(`${demo.page}: demo ${demo.deck}/${demo.last} has no recorded slide ${last}`);
-            log(`poster ${demo.page} ${demo.deck}/${demoName(demo)} at slide ${last}, step ${beats + 1}`);
+              throw new Error(
+                `${demo.page}: demo ${demo.deck}/${demo.last} has no recorded slide ${last}`,
+              );
+            log(
+              `poster ${demo.page} ${demo.deck}/${demoName(demo)} at slide ${last}, step ${beats + 1}`,
+            );
             await encode(
               await poster(page, server.port, demo.deck, { startSlide: last, startBeat: beats }),
               join(site, "public", DEMO_POSTERS, demo.deck, demoName(demo)),

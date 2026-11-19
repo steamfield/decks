@@ -5,6 +5,7 @@
 // the data-* hooks they emit.
 import { codeMeta, createHastPlugins } from "@steamfield/ui/markdown";
 import { defineHastPlugin, type HastPluginEntry } from "satteri";
+import type { ShikiTransformer } from "shiki";
 import { demoPlayer } from "../data/demo-examples";
 import { parseDemo } from "../data/guide-demos";
 import { guideLink } from "./guide";
@@ -42,9 +43,9 @@ const isElement = (node: unknown): node is HastElement =>
   typeof node === "object" && node !== null && (node as HastElement).type === "element";
 
 /** Marks a fence whose info string carries `demo="deck/slide"` (see src/data/guide-demos.ts). */
-const demoMeta = {
+const demoMeta: ShikiTransformer = {
   name: "deck-demo-meta",
-  pre(this: { options: { meta?: { __raw?: string } } }, node: HastElement) {
+  pre(node) {
     const ref = parseDemo(this.options.meta?.__raw);
     if (ref) node.properties["data-demo"] = `${ref.deck}/${ref.first}..${ref.last}`;
   },
@@ -68,8 +69,14 @@ const deckDemos: HastPluginEntry = () =>
         const [deck, span] = marked.split("/");
         const [first, last] = (span ?? "").split("..");
         if (!deck || !first || !last) throw new Error(`Malformed demo marker ${marked}`);
-        delete pre.properties["data-demo"];
-        delete pre.properties.dataDemo;
+        // Sätteri's nodes are read-only: frame a copy of the code without the marker.
+        const { "data-demo": _marker, dataDemo: _camel, ...properties } = pre.properties;
+        const code = {
+          ...(node as unknown as HastElement),
+          children: (node.children as unknown as HastNode[]).map((child) =>
+            child === pre ? { ...pre, properties } : child,
+          ),
+        };
         const { example, range } = demoPlayer({ deck, first, last });
         const poster = example.poster;
         const stage = poster
@@ -105,7 +112,7 @@ const deckDemos: HastPluginEntry = () =>
               },
               [stage],
             ),
-            node as unknown as HastElement,
+            code,
             el("figcaption", {}, [
               { type: "text", value: "Live demo: " },
               el(

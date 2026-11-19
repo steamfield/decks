@@ -9,7 +9,7 @@ export type DemoPlayer = { example: Example; range: { first: number; last: numbe
 
 export function demoPlayer(ref: DemoRef): DemoPlayer {
   const entry = entryFor(ref.deck);
-  if (!entry || entry.listed !== false)
+  if (entry?.listed !== false)
     throw new Error(
       `demo="${ref.deck}/…": add ${ref.deck} to src/data/examples.json with "listed": false`,
     );

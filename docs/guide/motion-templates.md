@@ -62,6 +62,359 @@ whether the slide imports `MotionTemplate` or a file in `components/` re-exports
 `@steamfield/decks/kit`. When the list comes from a data module, or the template sits inside a
 deck component, set `clicks:` in the slide's frontmatter.
 
+## Template by template
+
+On the docs site each example below plays live above its code; the slides are in
+`examples/guide-demos/slides/`. Every one uses `at={1}`, so the template enters on the first click.
+
+### `title-reveal`
+
+The headline's words rise through their masks one after another, leaning and settling upright; with a subtitle, an accent rule draws under them and the subtitle rises.
+
+```mdx demo="guide-demos/title-reveal"
+<MotionTemplate
+  template="title-reveal"
+  at={1}
+  title="Night buses now reach every district."
+  subtitle="Riverton Transit, 2026 service review"
+/>
+```
+
+### `lower-third`
+
+A name and role slide out from behind an accent block in the lower third, over whatever else is on the slide.
+
+```mdx demo="guide-demos/lower-third"
+<MotionTemplate template="lower-third" at={1} name="Priya Natarajan" role="Head of network planning" />
+```
+
+### `stat-burst`
+
+A number counts up while a ring draws around it; the label slides in under it.
+
+```mdx demo="guide-demos/stat-burst"
+<MotionTemplate template="stat-burst" at={1} value={94} suffix="%" label="Night trips that left on time in October" />
+```
+
+### `stat-compare`
+
+The before value, an arrow, then the after value counting up with the signed change beside it.
+
+```mdx demo="guide-demos/stat-compare"
+<MotionTemplate
+  template="stat-compare"
+  at={1}
+  accent="amber"
+  from={14}
+  to={6}
+  suffix=" min"
+  label="Average wait at Harbor Street, 6 to 7 a.m."
+/>
+```
+
+### `metric-grid`
+
+Two to four tiles rise in a stagger, each counting up to its value.
+
+```mdx demo="guide-demos/metric-grid"
+<MotionTemplate
+  template="metric-grid"
+  at={1}
+  metrics={[
+    { value: 312, label: "Soil cores logged" },
+    { value: 18, label: "Field sites" },
+    { value: 4, suffix: " yrs", label: "Of seasonal records" },
+  ]}
+/>
+```
+
+### `list-cascade`
+
+One item per click, each with a marker that draws beside it; earlier items dim.
+
+```mdx demo="guide-demos/list-cascade"
+<MotionTemplate
+  template="list-cascade"
+  at={1}
+  items={[
+    "The disk alert fired at 02:14 and paged nobody.",
+    "The rota still listed an engineer who had left.",
+    "The status page stayed green for 40 minutes.",
+    "Recovery began when a customer emailed support.",
+  ]}
+/>
+```
+
+### `quote-card`
+
+Quote marks draw, the quote appears word by word, the source follows.
+
+```mdx demo="guide-demos/quote-card"
+<MotionTemplate
+  template="quote-card"
+  at={1}
+  quote="I stopped checking the timetable once the bus came every ten minutes."
+  source="Night shift nurse, Eastgate rider survey"
+/>
+```
+
+### `section-wipe`
+
+An accent panel wipes across the canvas; the section number lands large, then the title.
+
+```mdx demo="guide-demos/section-wipe"
+<MotionTemplate template="section-wipe" at={1} number="02" title="What the pilot changed" />
+```
+
+### `agenda`
+
+The talk's sections, earlier ones checked off, the current one highlighted.
+
+```mdx demo="guide-demos/agenda"
+<MotionTemplate
+  template="agenda"
+  at={1}
+  items={["The pilot routes", "What riders told us", "Operating cost", "The 2027 proposal"]}
+  current={2}
+/>
+```
+
+### `end-card`
+
+The closing title rises, a rule draws, a link types on beneath it.
+
+```mdx demo="guide-demos/end-card"
+<MotionTemplate template="end-card" at={1} title="Read the full service review." link="riverton.example.org/night-review" />
+```
+
+### `timeline-sweep`
+
+A line draws; one dated event per click arrives as a tick while a playhead sweeps to it.
+
+```mdx demo="guide-demos/timeline-sweep"
+<MotionTemplate
+  template="timeline-sweep"
+  at={1}
+  events={[
+    { date: "Jan 2025", label: "Prototype on one ward" },
+    { date: "Jun 2025", label: "Pilot at two hospitals" },
+    { date: "Nov 2025", label: "Regulator approves" },
+    { date: "Mar 2026", label: "Live in 40 clinics" },
+  ]}
+/>
+```
+
+### `process-flow`
+
+Steps left to right; each lights on its click as the connector into it draws.
+
+```mdx demo="guide-demos/process-flow"
+<MotionTemplate
+  template="process-flow"
+  at={1}
+  steps={["Upload the scan", "Model flags a lesion", "Radiologist reviews", "Report goes to the GP"]}
+/>
+```
+
+### `comparison-split`
+
+The left side lands, then a divider slides in and the right side lands.
+
+```mdx demo="guide-demos/comparison-split"
+<MotionTemplate
+  template="comparison-split"
+  at={1}
+  left={{
+    title: "Weekly releases",
+    points: ["One deploy every Thursday", "A fix waits up to six days", "Rollback reverts the whole week"],
+  }}
+  right={{
+    title: "On every merge",
+    points: ["Each merge ships within an hour", "A fix reaches users the same day", "Rollback reverts one change"],
+  }}
+/>
+```
+
+### `myth-fact`
+
+The myth appears; on the next click a strike draws through it and the fact rises below.
+
+```mdx demo="guide-demos/myth-fact"
+<MotionTemplate
+  template="myth-fact"
+  at={1}
+  accent="rose"
+  myth="Riders drive because the bus is slow."
+  fact="Riders in our survey named missed connections three times as often as speed."
+/>
+```
+
+### `spotlight`
+
+An image dims, a ring draws around one point, the label slides in beside it.
+
+```mdx demo="guide-demos/spotlight"
+<MotionTemplate
+  template="spotlight"
+  at={1}
+  src="field.svg"
+  alt="Six transit routes converging on one interchange"
+  x={0.54}
+  y={0.5}
+  label="Central Square interchange"
+/>
+```
+
+### `device-mockup`
+
+A laptop, phone or browser frame slides up with a screenshot inside it.
+
+```mdx demo="guide-demos/device-mockup"
+<MotionTemplate
+  template="device-mockup"
+  at={1}
+  device="browser"
+  src="./trail-desk.svg"
+  alt="Trail Desk showing the lake and ridge patrols at North Inlet station"
+  caption="Both patrol crews read the handoff before they leave the station."
+/>
+```
+
+### `photo-reveal`
+
+A full-bleed photo eases in with a slow push; a caption and credit rise over it.
+
+```mdx demo="guide-demos/photo-reveal"
+<MotionTemplate
+  template="photo-reveal"
+  at={1}
+  src="./north-inlet.svg"
+  alt="Pines along the North Inlet shoreline in morning fog"
+  caption="The survey starts at North Inlet, where the fog lifts by mid-morning."
+  credit="Field sketch by Tomas Varga"
+/>
+```
+
+### `logo-reveal`
+
+A logo opens from a mask as an accent rule draws beneath it; a tagline fades up.
+
+```mdx demo="guide-demos/logo-reveal"
+<MotionTemplate
+  template="logo-reveal"
+  at={1}
+  src="./inlet-press.svg"
+  alt="Inlet Press"
+  tagline="Publisher of the North Inlet field guides since 2019"
+/>
+```
+
+### `icon-array`
+
+A grid of person icons; the first `filled` of `total` fill with the accent ("1 in 4").
+
+```mdx demo="guide-demos/icon-array"
+<MotionTemplate
+  template="icon-array"
+  at={1}
+  filled={7}
+  total={20}
+  label="Seven in twenty night riders are travelling to a hospital shift."
+/>
+```
+
+### `team-grid`
+
+Two to six cards rise in, each with a photo or initials, a name and a role.
+
+```mdx demo="guide-demos/team-grid"
+<MotionTemplate
+  template="team-grid"
+  at={1}
+  people={[
+    { name: "Ada Reed", role: "Survey lead", src: "./ada-reed.svg" },
+    { name: "Tomas Varga", role: "Field ecologist" },
+    { name: "Lena Okafor", role: "Data engineer" },
+    { name: "Jun Park", role: "Community liaison" },
+  ]}
+/>
+```
+
+### `venn-overlap`
+
+Two or three circles slide together; the overlap label lands in the shared region.
+
+```mdx demo="guide-demos/venn-overlap"
+<MotionTemplate template="venn-overlap" at={1} sets={["Nurses", "IT staff", "Patients"]} overlap="Design review" />
+```
+
+### `word-swap`
+
+A fixed lead rises; the last phrase sits on a plate and swaps on each click, the old plate lifting away as the next grows in from the left; plates take the theme's hues and the last lands in the accent.
+
+```mdx demo="guide-demos/word-swap"
+<MotionTemplate
+  template="word-swap"
+  at={1}
+  lead={["The night bus", "now reaches"]}
+  words={["Eastgate.", "the airport.", "every district."]}
+/>
+```
+
+### `bar-board`
+
+A ranked board wipes across, bars grow one after another with their values counting beside them; the next click turns the leader to the accent and dims the rest.
+
+```mdx demo="guide-demos/bar-board"
+<MotionTemplate
+  template="bar-board"
+  at={1}
+  accent="violet"
+  rows={[
+    { label: "Harbor Line", value: 1840 },
+    { label: "Eastgate N4", value: 1310 },
+    { label: "Airport N1", value: 960 },
+    { label: "Riverside N7", value: 520 },
+  ]}
+  source="Nightly boardings, October. Illustrative figures"
+/>
+```
+
+### `command-line`
+
+A command bar wipes across and the command types on into it.
+
+```mdx demo="guide-demos/command-line"
+<MotionTemplate template="command-line" at={1} command="npm install --save-dev @riverton/gtfs-check" />
+```
+
+### `scramble-text`
+
+A word decodes from random glyphs into place, left to right.
+
+```mdx demo="guide-demos/scramble-text"
+<MotionTemplate template="scramble-text" at={1} text="RT-2027" label="The plan the board votes on in March" />
+```
+
+### `donut-build`
+
+A ring draws one segment per click while the centre counts the running total.
+
+```mdx demo="guide-demos/donut-build"
+<MotionTemplate
+  template="donut-build"
+  at={1}
+  prefix="$"
+  suffix="M"
+  segments={[
+    { label: "Driver wages", value: 5 },
+    { label: "Fuel and power", value: 2 },
+    { label: "Maintenance", value: 1 },
+    { label: "Security", value: 1 },
+  ]}
+/>
+```
+
 ## Where a motion graphic fits
 
 A motion graphic earns its place at the moments a talk turns, not on every slide.

@@ -70,15 +70,19 @@ Presets, used by `enter` and `exit` (both default to `fade`):
 | `blur` | Transparent, blurred 12px. |
 | `wipe` | Clipped from the right. |
 
-The examples below are from `examples/motion/slides/`.
+On the docs site each example below plays live above its code; the slides are in
+`examples/guide-demos/slides/`.
 
 ### `Step`
 
 Shows its children from click `at`, and hides them again from `until` if given.
 
-```mdx
+```mdx demo="guide-demos/step"
 <Step at={1} until={2} enter="rise" exit="rise">
-  <div className="hero-card">Make room for the idea.</div>
+  <p className="od-lede">Waiting on the district's privacy review.</p>
+</Step>
+<Step at={2} enter="rise">
+  <p className="od-lede">The review cleared this week.</p>
 </Step>
 ```
 
@@ -88,13 +92,13 @@ Props: `at`, `until`, `enter`, `exit`, `as` (`"div"` by default; also `"span"`, 
 
 One click per child, starting at `from`. A markdown list as its only child reveals one item per click.
 
-```mdx
-<Steps from={1} enter="rise" className="sequence">
+```mdx demo="guide-demos/steps"
+<Steps from={1} enter="rise" className="od-bullets">
 
-1. Frame the question.
-2. Reveal the evidence.
-3. Connect the pieces.
-4. Leave a clear next step.
+1. Interview the teachers who plan lessons.
+2. Build the planner they sketched.
+3. Pilot it in two schools.
+4. Roll it out to the district.
 
 </Steps>
 ```
@@ -105,11 +109,11 @@ Props: `from`, `enter`, `as` (`"div"` by default; `"ul"` or `"ol"` wraps each ch
 
 One click for the whole group. The children enter one after another, 60ms apart.
 
-```mdx
-<Stagger at={1} until={2} enter="rise" className="cards">
-  <div>Notice</div>
-  <div>Compare</div>
-  <div>Connect</div>
+```mdx demo="guide-demos/stagger"
+<Stagger at={1} until={2} enter="rise" as="ul" className="od-bullets">
+  <span>Support, for moving old tickets.</span>
+  <span>Sales, for loading trial accounts.</span>
+  <span>Onboarding, for whole-school rosters.</span>
 </Stagger>
 ```
 
@@ -119,10 +123,10 @@ Props: `at`, `until`, `enter`, `as` (`"div"`, `"ul"`, `"ol"`), `className`.
 
 Reveals text word by word or character by character on one click. Its child must be a plain string. Screen readers get the whole text at once.
 
-```mdx
-<TextReveal at={1} by="word" enter="rise">One idea deserves a moment.</TextReveal>
+```mdx demo="guide-demos/text-reveal"
+<TextReveal at={1} by="word" enter="rise">The library now opens on Sundays.</TextReveal>
 
-<TextReveal at={1} by="char" enter="blur">{"Stay\ncurious."}</TextReveal>
+<TextReveal at={1} by="char" enter="blur">{"Ten to\nsix."}</TextReveal>
 ```
 
 Props: `at`, `by` (`"word"` by default, or `"char"`), `enter`.
@@ -131,8 +135,9 @@ Props: `at`, `by` (`"word"` by default, or `"char"`), `enter`.
 
 Sweeps a marker stroke behind inline text from click `at`. The text itself is always visible.
 
-```mdx
-Give <Highlight at={1} until={2}>the important part</Highlight> a little space.
+```mdx demo="guide-demos/highlight"
+Reading scores rose in <Highlight at={1} until={2}>every grade</Highlight>, and fastest
+in <Highlight at={2}>third grade</Highlight>.
 ```
 
 Props: `at`, `until`. Set the color with the `--deck-highlight` CSS variable; the default is a translucent version of the text color.
@@ -141,21 +146,26 @@ Props: `at`, `until`. Set the color with the `--deck-highlight` CSS variable; th
 
 Shows `from` before click `at` and counts to `to` on it. Going back shows `from` at once.
 
-```mdx
-<CountUp at={1} from={0} to={1200} />
+```mdx demo="guide-demos/count-up"
+<CountUp at={1} from={0} to={8849} />
 ```
 
 Props: `at`, `from` (default 0), `to`, `format` (a function from the number to a string; the default rounds and adds thousands separators).
 
 ### `Draw`
 
-Draws the strokes of its SVG shape children on click `at`. It renders a `<g>`, so it goes inside an `<svg>`. Direct children that are `path`, `line`, `polyline`, `polygon`, `circle`, `ellipse` or `rect` are drawn; give them a stroke in CSS.
+Draws the strokes of its SVG shape children on click `at`. It renders a `<g>`, so it goes inside an `<svg>`. Direct children that are `path`, `line`, `polyline`, `polygon`, `circle`, `ellipse` or `rect` are drawn; give them a stroke (an attribute, as here, or CSS).
 
-```mdx
-<svg className="drawing" viewBox="0 0 1400 500" role="img" aria-label="A rising curve">
-  <Draw at={1} until={2}>
-    <path d="M 80 400 C 340 400 220 150 520 260 S 890 450 1320 60" />
-  </Draw>
+```mdx demo="guide-demos/draw"
+<svg viewBox="0 0 1400 500" width="1400" height="500" role="img" aria-label="The planned route over the ridge, then the valley road the crew took">
+  <g fill="none" strokeWidth="10" strokeLinecap="round">
+    <Draw at={1} until={2}>
+      <path d="M 80 400 C 340 400 220 150 520 260 S 890 450 1320 60" stroke="var(--od-text-muted)" />
+    </Draw>
+    <Draw at={2}>
+      <path d="M 80 400 C 300 330 520 330 760 300 S 1100 180 1320 60" stroke="var(--od-cyan)" />
+    </Draw>
+  </g>
 </svg>
 ```
 
@@ -165,7 +175,7 @@ Props: `at`, `until`.
 
 Draws a hand-drawn mark around inline text on click `at`, and removes it at `until`. The text is always visible and readable; only the mark comes and goes. Going back un-draws it.
 
-```mdx
+```mdx demo="guide-demos/mark"
 The fix was <Mark kind="circle" at={1}>one line</Mark>, and <Mark at={2}>nobody</Mark> had read it.
 ```
 
@@ -275,6 +285,42 @@ express.
 | `ease.leave` | Something leaving: a small gather, then away |
 | `ease.slam` | A plate or band crossing the canvas, at even speed through the middle |
 
+The same plate crosses the same track on each curve, one click each, then a word rises through
+its mask on `rise` (`examples/guide-demos/components/RoleCurves.tsx`):
+
+```mdx demo="guide-demos/role-curves"
+---
+clicks: 5
+---
+
+<RoleCurves />
+```
+
+The curves and tweens in that component:
+
+```tsx
+const CURVES = [
+  { token: "ease.snap", role: "A value arrives", ease: ease.snap },
+  { token: "ease.punch", role: "An accent lands", ease: ease.punch },
+  { token: "ease.leave", role: "Something leaves", ease: ease.leave },
+  { token: "ease.slam", role: "A band crosses", ease: ease.slam },
+];
+
+// one plate per curve, one click each
+tl.fromTo(
+  plates.current[index] ?? null,
+  { x: 0 },
+  { x: TRACK - PLATE, duration: duration.slow, ease: curve.ease },
+);
+
+// the word on the rise tokens
+tl.fromTo(
+  word.current,
+  { yPercent: rise.clear, skewY: rise.lean },
+  { yPercent: 0, skewY: 0, duration: duration.slow, ease: ease.snap },
+);
+```
+
 Never put `ease.punch` on a value. An overshooting bar shows a number it does not have while
 the axis is on screen.
 
@@ -341,6 +387,81 @@ A slide's `transition` applies to the boundary between it and the next slide, in
 | `cut` | No transition. |
 | `story` | Provided by the kit's stylesheet. See [kit.md](kit.md). |
 
+Each one below plays across a pair of slides on the docs site; the first slide of the pair
+carries the `transition`.
+
+```mdx demo="guide-demos/fade-from..fade"
+---
+transition: fade
+---
+```
+
+```mdx demo="guide-demos/push-from..push"
+---
+transition: push
+---
+```
+
+```mdx demo="guide-demos/zoom-from..zoom"
+---
+transition: zoom
+---
+```
+
+```mdx demo="guide-demos/rise-from..rise"
+---
+transition: rise
+---
+```
+
+```mdx demo="guide-demos/cover-from..cover"
+---
+transition: cover
+---
+```
+
+```mdx demo="guide-demos/reveal-from..reveal"
+---
+transition: reveal
+---
+```
+
+```mdx demo="guide-demos/wipe-from..wipe"
+---
+transition: wipe
+---
+```
+
+```mdx demo="guide-demos/iris-from..iris"
+---
+transition: iris
+---
+```
+
+```mdx demo="guide-demos/blur-from..blur"
+---
+transition: blur
+---
+```
+
+```mdx demo="guide-demos/flip-from..flip"
+---
+transition: flip
+---
+```
+
+```mdx demo="guide-demos/cube-from..cube"
+---
+transition: cube
+---
+```
+
+```mdx demo="guide-demos/cut-from..cut"
+---
+transition: cut
+---
+```
+
 Transitions use the browser's View Transitions API. A change is applied with no animation when the browser lacks the API, motion is instant, the view is not the play view, or the target slide's module has not loaded yet.
 
 To define your own, pick a name, use it in `transition`, and style the root snapshots. While a transition runs, `<html>` has `data-deck-transition="<name>"` and `data-deck-nav="forward"` or `"backward"`.
@@ -362,11 +483,11 @@ Most talks use one transition throughout and save a second for one moment (an `i
 
 ## `Camera`
 
-`Camera` frames one region of a large picture per click, like a camera panning and zooming across a diagram or a map. Give its container a height. Each stop is the centre of the frame in the children's own CSS pixels, from their top-left corner, and a zoom (1 keeps their natural size).
+`Camera` frames one region of a large picture per click, like a camera panning and zooming across a diagram or a map. Give its container a width and a height. Each stop is the centre of the frame in the children's own CSS pixels, from their top-left corner, and a zoom (1 keeps their natural size).
 
-```mdx
-<div style={{ height: 600 }}>
-  <Camera at={1} stops={[{ x: 600, y: 300, zoom: 1 }, { x: 250, y: 200, zoom: 2 }, { x: 900, y: 420, zoom: 2.5 }]}>
+```mdx demo="guide-demos/camera"
+<div style={{ width: 1200, height: 600 }}>
+  <Camera at={1} stops={[{ x: 600, y: 300, zoom: 1 }, { x: 260, y: 450, zoom: 2 }, { x: 940, y: 250, zoom: 2.5 }]}>
     <RouteMap />
   </Camera>
 </div>
@@ -378,9 +499,9 @@ Stop 0 shows before click `at`, stop 1 arrives on click `at`, and stop `i` on cl
 
 `ShapeMorph` is one SVG `<path>` that morphs from one outline to the next per click, so the audience follows the same shape as it changes. Put it inside an `<svg>` and set the fill or stroke there.
 
-```mdx
-<svg viewBox="0 0 100 100" role="img" aria-label="A triangle becomes a square">
-  <ShapeMorph at={1} paths={["M50 10L90 90H10Z", "M10 10H90V90H10Z"]} />
+```mdx demo="guide-demos/shape-morph"
+<svg viewBox="0 0 100 100" width="480" height="480" fill="var(--od-cyan)" role="img" aria-label="The play button becomes a stop button">
+  <ShapeMorph at={1} paths={["M30 15L85 50L30 85Z", "M20 20H80V80H20Z"]} />
 </svg>
 ```
 
@@ -394,17 +515,23 @@ For motion beyond the primitives, write a deck component on `useTimeline` (above
 
 `Morph` gives an element an identity that survives a slide change. Put a `Morph` with the same `name` on two neighbouring slides and the element moves and resizes from its old place to its new one while the rest of the slide transitions.
 
-`examples/motion/slides/20-morph-start.mdx` and `21-morph-end.mdx`:
+Two neighbouring slides, the first with a small card and the second with a large one:
 
-```mdx
-<Morph name="gallery-card" className="morph-card compact">
-  <strong>Room to grow.</strong>
+```mdx demo="guide-demos/morph-from..morph"
+<Morph name="release-card">
+  <div style={{ width: 420, padding: 32, borderRadius: 24, background: "var(--od-surface-raised)" }}>
+    <p className="od-eyebrow">Next release</p>
+    <p className="od-h3">Offline mode</p>
+  </div>
 </Morph>
 ```
 
 ```mdx
-<Morph name="gallery-card" className="morph-card expanded">
-  <strong>Room to grow.</strong>
+<Morph name="release-card">
+  <div style={{ width: 1100, padding: 64, borderRadius: 24, background: "var(--od-surface-raised)" }}>
+    <p className="od-eyebrow">Next release</p>
+    <p className="od-title">Offline mode</p>
+  </div>
 </Morph>
 ```
 
@@ -414,11 +541,10 @@ Props: `name`, `as` (`"div"` by default; also `"span"`, `"h1"`, `"h2"`, `"h3"`, 
 - Use each name once per slide.
 - The morph works under any transition preset except `cut`.
 
-To morph between clicks of one slide, set `morphSteps: true` in its frontmatter. Each click then runs through a view transition in which only named elements move. `examples/motion/slides/22-morph-steps.mdx` and `components/MorphSteps.tsx`:
+To morph between clicks of one slide, set `morphSteps: true` in its frontmatter. Each click then runs through a view transition in which only named elements move. The slide, and its component in outline:
 
-```mdx
+```mdx demo="guide-demos/morph-steps"
 ---
-title: Morph / steps
 clicks: 1
 morphSteps: true
 ---

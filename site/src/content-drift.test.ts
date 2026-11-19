@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { resolveTheme } from "../../packages/kit/src/theme/theme-resolve.ts";
 import { runHook } from "../scripts/hook.mjs";
 import { site } from "./config";
+import { demoPlayer } from "./data/demo-examples";
 import {
   deckDir,
   ENTRIES,
@@ -18,7 +19,6 @@ import {
   startSlideOf,
 } from "./data/examples";
 import { loadHookDenial } from "./data/fixtures";
-import { demoPlayer } from "./data/demo-examples";
 import { demoName, guideDemos, resolveDemo } from "./data/guide-demos";
 import { loadMotionShowcase } from "./data/motion-showcase";
 
@@ -143,7 +143,12 @@ describe("live demos in the package guide", () => {
     "$name plays slides that contain its code, from a recorded replay and a poster",
     (demo) => {
       const { slides } = resolveDemo(demo);
-      expect(contains(slides.map((slide) => slide.source), demo.code)).toBe(true);
+      expect(
+        contains(
+          slides.map((slide) => slide.source),
+          demo.code,
+        ),
+      ).toBe(true);
       const { example, range } = demoPlayer(demo);
       const steps = example.states.filter(
         (state) => state.slide >= range.first && state.slide <= range.last,
@@ -152,9 +157,9 @@ describe("live demos in the package guide", () => {
       expect(steps.length).toBeGreaterThan(1);
       for (const ext of ["avif", "webp"])
         for (const width of [640, 1280, 1920])
-          expect(existsSync(join(process.cwd(), `public${example.poster?.base}-${width}.${ext}`))).toBe(
-            true,
-          );
+          expect(
+            existsSync(join(process.cwd(), `public${example.poster?.base}-${width}.${ext}`)),
+          ).toBe(true);
     },
   );
 });

@@ -1,0 +1,45 @@
+---
+title: Night pages peak in the hour after the deploy.
+clicks: 1
+---
+
+import { useMemo } from "react";
+import { ink, OpenChart, scaleChartTheme, slideChartAnimation, slideChartTheme, theme, useFrameScale } from "@steamfield/decks/kit";
+import { HOURLY_PAGES } from "../data/demo-hourly-pages";
+
+export function HourlyPagesChart() {
+  const scale = useFrameScale();
+  const spec = useMemo(() => {
+    const { fonts } = slideChartTheme;
+    const base = scaleChartTheme({ ...slideChartTheme, fonts: { ...fonts, sizes: { ...fonts.sizes, axisTick: 28, body: 26 } } }, scale);
+    return {
+      mark: { type: "line", point: true, interpolate: "monotone" },
+      data: HOURLY_PAGES,
+      encoding: {
+        x: { field: "hour", type: "ordinal", sort: null },
+        y: { field: "pages", type: "quantitative", scale: { domain: [0, 6] }, axis: { title: "Pages per hour", tickCount: 4 } },
+      },
+      legend: { show: false },
+      responsive: false,
+      watermark: false,
+      theme: { ...base, colors: { ...base.colors, categorical: [ink("cyan", 3)], axis: theme().text.secondary } },
+      animation: slideChartAnimation,
+    };
+  }, [scale]);
+  return (
+    <div style={{ width: "100%", height: 440 }}>
+      <OpenChart spec={spec} />
+    </div>
+  );
+}
+
+<Cover>
+  <p className="od-h2">Night pages peak in the hour after the deploy.</p>
+  <div style={{ width: "100%" }}>
+    <HourlyPagesChart />
+    <p className="od-caption">Pages per hour over four weeks; the deploy runs at midnight. Illustrative figures.</p>
+  </div>
+  <Step at={1} as="p" enter="rise" className="od-lede">
+    The nightly deploy moves to 2 p.m. next sprint.
+  </Step>
+</Cover>

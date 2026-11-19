@@ -389,7 +389,7 @@ export function DeckPlayer({
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [example, step, send, flush]);
+  }, [example, range, step, send, flush]);
 
   useEffect(() => {
     if (!example || !playing || phase !== "ready" || !deck?.settled || flight.current !== null)
