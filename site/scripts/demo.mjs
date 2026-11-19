@@ -499,6 +499,24 @@ async function main() {
               await poster(page, server.port, name, recordings[name]),
               join(site, "public/posters", name),
             );
+            for (const extra of entryOf(name)?.posters ?? []) {
+              if (
+                !recordings[name].states.some(
+                  (s) => s.slide === extra.slide && s.beat === extra.beat,
+                )
+              )
+                throw new Error(
+                  `${name}: poster ${extra.name} has no step ${extra.beat + 1} on slide ${extra.slide}`,
+                );
+              log(`poster ${name}-${extra.name} at slide ${extra.slide}, step ${extra.beat + 1}`);
+              await encode(
+                await poster(page, server.port, name, {
+                  startSlide: extra.slide,
+                  startBeat: extra.beat,
+                }),
+                join(site, "public/posters", `${name}-${extra.name}`),
+              );
+            }
           }
           for (const demo of guideDemos().filter(({ deck }) => NAMES.includes(deck))) {
             const { last } = resolveDemo(demo);

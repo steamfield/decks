@@ -1,0 +1,117 @@
+{
+  "title": "Four-minute builds",
+  "slides": 9,
+  "slideTitles": [
+    "Before the first slide",
+    "Our builds went from 14 minutes to 4.",
+    "The median build fell 10 minutes in 12 weeks.",
+    "A build now takes 4 minutes, down from 14.",
+    "3 changes took 10 minutes off every build.",
+    "Keep the build at 4 minutes.",
+    "Builds were slow, then flaky, then fast.",
+    "Cached deps saved 5 of the 10 minutes.",
+    "Keep the build at 4 minutes."
+  ],
+  "startSlide": 1,
+  "startBeat": 0,
+  "states": [
+    {
+      "slide": 1,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 2,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 3,
+      "beat": 0,
+      "beats": 2,
+      "lead": "Weeks 1 to 3: about 14 minutes a build.",
+      "body": "The median CI build each week, every branch."
+    },
+    {
+      "slide": 3,
+      "beat": 1,
+      "beats": 2,
+      "lead": "Caching and parallel tests cut it to 6.",
+      "body": "The cache shipped in week 4, parallel tests in week 7."
+    },
+    {
+      "slide": 3,
+      "beat": 2,
+      "beats": 2,
+      "lead": "A smaller image brought it to 4.",
+      "body": "It shipped in week 10, and the median has held since."
+    },
+    {
+      "slide": 4,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 5,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 6,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 7,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 8,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 9,
+      "beat": 0,
+      "beats": 0,
+      "lead": "",
+      "body": ""
+    }
+  ]
+}

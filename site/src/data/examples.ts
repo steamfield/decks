@@ -32,6 +32,8 @@ export type ExampleEntry = {
   run?: { fixture: string; setup: "repo" | "init" };
   edits?: ({ from: string; to: string } | { commits: string[] }) & { by: Editor };
   loop?: boolean;
+  /** Further posters of the deck, shot at a slide and step as public/posters/<name>-<poster>-<width>. */
+  posters?: { name: string; slide: number; beat: number }[];
   featured?: { label: string; hint: string };
   attribution?: { label: string; href?: string };
   /** false keeps the deck out of the landing player and gallery (the guide's demos play it). */

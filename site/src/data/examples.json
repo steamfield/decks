@@ -59,7 +59,11 @@
       "attribution": {
         "label": "A Claude Code agent wrote this deck for the landing page's scripted session, from illustrative data."
       },
-      "listed": false
+      "listed": false,
+      "posters": [
+        { "name": "cover", "slide": 2, "beat": 0 },
+        { "name": "finished", "slide": 9, "beat": 0 }
+      ]
     }
   ]
 }
