@@ -46,11 +46,11 @@ for the click. Its text stays real text, so it is read once, as a sentence, by a
 | `icon-array` | A grid of person icons; the first `filled` of `total` fill with the accent ("1 in 4") | `filled`, `total` (up to 100), `label` |
 | `team-grid` | Two to six cards rise in, each with a photo or initials, a name and a role | `people` (`{ name, role, src? }[]`) |
 | `venn-overlap` | Two or three circles slide together; the overlap label lands in the shared region | `sets` (2 or 3 labels), `overlap` |
-| `word-swap` | A fixed lead rises; the last phrase sits on a plate and swaps on each click, the old plate leaving right as the next grows in from the left; the last phrase lands in the accent | `lead` (1 or 2 lines, up to 18 characters), `words` (2 to 5, up to 16 characters) |
-| `bar-board` | A ranked board wipes across, bars grow one after another with their values counting beside them; the next click turns the leader to the accent and dims the rest | `rows` (`{ label, value }[]`, 2 to 6, largest first), `source`, `prefix?`, `suffix?` |
+| `word-swap` | A fixed lead rises; the last phrase sits on a plate and swaps on each click, the old plate lifting away as the next grows in from the left; plates take the theme's hues and the last lands in the accent | `lead` (1 or 2 lines, up to 18 characters), `words` (2 to 5, up to 16 characters), `tone?` (`palette`, the default, or `neutral` for grey plates) |
+| `bar-board` | A ranked board wipes across, bars grow one after another with their values counting beside them; the next click turns the leader to the accent and dims the rest | `rows` (`{ label, value }[]`, 2 to 6, largest first, labels up to 16 characters), `source` (up to 60), `prefix?`, `suffix?` (up to 8 each) |
 | `command-line` | A command bar wipes across and the command types on into it | `command` (up to 48 characters) |
-| `scramble-text` | A word decodes from random glyphs into place, left to right | `text` (up to 16 characters), `label?` |
-| `donut-build` | A ring draws one segment per click while the centre counts the running total | `segments` (`{ label, value }[]`, 2 to 5), `prefix?`, `suffix?` |
+| `scramble-text` | A word decodes from random glyphs into place, left to right | `text` (up to 16 characters), `label?` (up to 40) |
+| `donut-build` | A ring draws one segment per click while the centre counts the running total | `segments` (`{ label, value }[]`, 2 to 5, labels up to 16 characters), `prefix?`, `suffix?` (up to 8 each) |
 
 ### Clicks
 

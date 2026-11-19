@@ -121,7 +121,7 @@ Tier 1 comes from the reel:
 
 | Template | Beats | What it does | Props |
 | --- | --- | --- | --- |
-| `word-swap` | list (`words`) | A fixed lead; the last phrase sits on a plate and swaps each click, the old plate shrinking off right as the next grows in from left. Plates are neutral; the last word's plate takes `accent` and lands on `punch` | `lead` (1 or 2 lines, up to 18 characters each), `words` (2 to 5, up to 16 characters each) |
+| `word-swap` | list (`words`) | A fixed lead; the last phrase sits on a plate and swaps each click, the old plate lifting away as the next grows in from left. Plates take the theme's hues in order (skipping the accent), or the neutral surface with `tone="neutral"`; the last word's plate takes `accent` and lands on `punch` | `lead` (1 or 2 lines, up to 18 characters each), `words` (2 to 5, up to 16 characters each) |
 | `bar-board` | two | A ranked board wipes across; bars grow one after another, overlapping, on `snap`, values counting beside them in the deck's number format; the next click turns the leader to `accent` and dims the rest | `rows` (`{ label, value }[]`, 2 to 6, sorted descending, labels up to 16 characters), `source`, `prefix?`, `suffix?` |
 | `command-line` | one | A bar wipes across and a command types on into it | `command` (up to 48 characters) |
 

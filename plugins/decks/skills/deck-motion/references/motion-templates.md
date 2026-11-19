@@ -59,10 +59,10 @@ Install the kit theme in the deck’s `setup.ts` so the graphics can read its hu
 
 | Template | When it fits | Example |
 | --- | --- | --- |
-| `word-swap` | One sentence whose ending changes with each click. One or two `lead` lines (up to 18 characters each) and 2–5 `words` (up to 16 characters each); the last word lands in the accent. | `<MotionTemplate template="word-swap" lead={["We ship"]} words={["monthly.", "weekly.", "daily."]} />` |
+| `word-swap` | One sentence whose ending changes with each click. One or two `lead` lines (up to 18 characters each) and 2–5 `words` (up to 16 characters each). Plates take the theme's hues and the last word lands in the accent; `tone="neutral"` gives grey plates for a sober deck. | `<MotionTemplate template="word-swap" lead={["We ship"]} words={["monthly.", "weekly.", "daily."]} />` |
 | `scramble-text` | A short name or code that should land with a flourish: `text` up to 16 characters, optional `label`. | `<MotionTemplate template="scramble-text" text="TIDE-7" label="The build that fixed the handoff" />` |
 | `command-line` | The one command the audience should run, up to 48 characters. | `<MotionTemplate template="command-line" command="npm create harbour@latest" />` |
-| `bar-board` | A ranking whose leader is the slide's claim. 2–6 `rows` of `{ label, value }`, largest first (unsorted rows throw), a `source`, optional `prefix` and `suffix`. Click 2 highlights the leader. Rows come from `data/*.ts`. | `<MotionTemplate template="bar-board" rows={REGIONS} source="Port authority, 2025" suffix=" ships" />` |
+| `bar-board` | A ranking whose leader is the slide's claim. 2–6 `rows` of `{ label, value }`, largest first (unsorted rows throw), a `source` (up to 60 characters), optional `prefix` and `suffix` (up to 8). Click 2 highlights the leader, or every row tied with it. Rows come from `data/*.ts`. | `<MotionTemplate template="bar-board" rows={REGIONS} source="Port authority, 2025" suffix=" ships" />` |
 | `donut-build` | The parts of one whole, one per click. 2–5 `segments` of `{ label, value }` from `data/*.ts`; set `clicks:` in the frontmatter, because the list is not literal. | `<MotionTemplate template="donut-build" segments={CARGO_SHARE} suffix="%" />` |
 
 `bar-board` and `donut-build` are for one headline comparison of at most six rows with no time axis. Anything larger, over time, or in several steps of evidence is a sourced chart (`OpenChart`, `ChartSteps`) under the visualization skill. Values move on `ease.snap` and never overshoot.
