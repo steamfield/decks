@@ -33,5 +33,8 @@
   },
   "motion-showcase": {
     "dir": "examples/motion-showcase"
+  },
+  "motion-reel": {
+    "dir": "examples/motion-reel"
   }
 }
