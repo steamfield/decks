@@ -51,6 +51,15 @@
         "label": "Claude Code agents wrote these demo slides for the package guide."
       },
       "listed": false
+    },
+    {
+      "name": "agent-hero",
+      "startSlide": 1,
+      "provenance": "agent",
+      "attribution": {
+        "label": "A Claude Code agent wrote this deck for the landing page's scripted session, from illustrative data."
+      },
+      "listed": false
     }
   ]
 }
