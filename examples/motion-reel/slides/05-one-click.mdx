@@ -1,11 +1,14 @@
 ---
-title: 16 of the 21 templates take one click.
+title: 18 of the 26 templates take one click.
 clicks: 2
 transition: wipe
 ---
 
+import { MotionTemplate } from "@steamfield/decks/kit";
 import { ONE_CLICK_HEADLINE, TEMPLATE_CLICKS, TEMPLATE_CLICKS_SOURCE } from "../data/template-clicks";
 
-<RiseLine>{ONE_CLICK_HEADLINE}</RiseLine>
+<div className="reel-headline">
+  <MotionTemplate template="title-reveal" title={ONE_CLICK_HEADLINE} />
+</div>
 
-<BarBoard rows={TEMPLATE_CLICKS} source={TEMPLATE_CLICKS_SOURCE} />
+<MotionTemplate template="bar-board" at={1} accent="amber" rows={TEMPLATE_CLICKS} source={TEMPLATE_CLICKS_SOURCE} />

@@ -100,8 +100,8 @@ it("counts the motion section's slides, source lines and available motion templa
   const lineCount = (file: string) =>
     readFileSync(file, "utf8").match(/[^\n]*\n|[^\n]+$/g)?.length ?? 0;
   expect(show.slides).toHaveLength(loadRecording(name)?.slides ?? -1);
-  expect(show.slides[0]?.components).toContainEqual(
-    expect.objectContaining({ names: "WordSwap", file: "WordSwap.tsx" }),
+  expect(show.slides[1]?.components).toContainEqual(
+    expect.objectContaining({ names: "LogoSting", file: "LogoSting.tsx" }),
   );
   const fileLines = show.slides.map((slide) => {
     for (const component of slide.components) {

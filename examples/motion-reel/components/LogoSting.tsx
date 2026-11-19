@@ -1,7 +1,6 @@
 import { ink, useTemplateMotion } from "@steamfield/decks/kit";
-import { duration, type gsap, SplitText, stagger } from "@steamfield/decks/motion";
+import { duration, ease, type gsap, rise, SplitText, stagger } from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef } from "react";
-import { CLEAR, LEAN, punch, slam, snap } from "./ease";
 import styles from "./LogoSting.module.css";
 
 // The Decks mark on its 32-unit square (site/src/lib/brand.ts): two slides on the diagonal,
@@ -49,14 +48,14 @@ export function LogoSting({ tagline, compact = false }: { tagline?: string; comp
     tl.fromTo(
       rule.current,
       { drawSVG: "0%" },
-      { drawSVG: "100%", duration: duration.slow, ease: slam },
+      { drawSVG: "100%", duration: duration.slow, ease: ease.slam },
       start,
     );
     // The line comes up while the rule is still drawing over it.
     tl.fromTo(
       words.current?.words ?? [],
-      { yPercent: CLEAR, skewY: LEAN },
-      { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap, stagger: stagger / 2 },
+      { yPercent: rise.clear, skewY: rise.lean },
+      { yPercent: 0, skewY: 0, duration: duration.slow, ease: ease.snap, stagger: stagger / 2 },
       start + duration.quick / 2,
     );
   };
@@ -67,33 +66,33 @@ export function LogoSting({ tagline, compact = false }: { tagline?: string; comp
       tl.fromTo(
         front.current,
         { scale: 0, transformOrigin: "50% 50%" },
-        { scale: 1, duration: duration.base, ease: punch },
+        { scale: 1, duration: duration.base, ease: ease.punch },
         0,
       );
       tl.fromTo(
         front.current,
         { morphSVG: DOT },
-        { morphSVG: FRONT, duration: duration.base, ease: snap },
+        { morphSVG: FRONT, duration: duration.base, ease: ease.snap },
         duration.quick,
       );
       // The back slide waits exactly under the front one, then kicks out to its offset.
       tl.fromTo(
         back.current,
         { x: -7, y: 8 },
-        { x: 0, y: 0, duration: duration.slow, ease: punch },
+        { x: 0, y: 0, duration: duration.slow, ease: ease.punch },
         duration.base,
       );
       tl.fromTo(
         wordmark.current,
         { letterSpacing: "0.08em" },
-        { letterSpacing: "-0.06em", duration: duration.slow, ease: snap },
+        { letterSpacing: "-0.06em", duration: duration.slow, ease: ease.snap },
         duration.quick,
       );
       // The letters start while the mark is still opening, each leaning in and settling upright.
       tl.fromTo(
         letters.current?.chars ?? [],
-        { yPercent: CLEAR, skewY: LEAN },
-        { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap, stagger },
+        { yPercent: rise.clear, skewY: rise.lean },
+        { yPercent: 0, skewY: 0, duration: duration.slow, ease: ease.snap, stagger },
         duration.quick,
       );
     },

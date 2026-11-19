@@ -4,9 +4,10 @@ clicks: 1
 transition: cut
 ---
 
+import { MotionTemplate } from "@steamfield/decks/kit";
 import { INSTALL } from "../data/reel";
 
-<div className="reel-stack">
-  <RiseLine>One line installs it.</RiseLine>
-  <InstallLine at={1} command={INSTALL} />
+<div className="reel-stack reel-headline">
+  <MotionTemplate template="title-reveal" title="One line installs it." />
+  <MotionTemplate template="command-line" at={1} accent="amber" command={INSTALL} />
 </div>

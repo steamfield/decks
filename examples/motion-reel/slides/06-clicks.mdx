@@ -6,7 +6,9 @@ transition: cover
 
 import { MotionTemplate } from "@steamfield/decks/kit";
 
-<RiseLine>It moves when you click.</RiseLine>
+<div className="reel-headline">
+  <MotionTemplate template="title-reveal" title="It moves when you click." />
+</div>
 
 <div className="reel-xl">
   <MotionTemplate template="list-cascade" at={1} accent="amber" items={[

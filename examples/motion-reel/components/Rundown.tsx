@@ -1,7 +1,14 @@
 import { ink, useTemplateMotion } from "@steamfield/decks/kit";
-import { duration, type gsap, ShapeMorph, SplitText, stagger } from "@steamfield/decks/motion";
+import {
+  duration,
+  ease,
+  type gsap,
+  rise,
+  ShapeMorph,
+  SplitText,
+  stagger,
+} from "@steamfield/decks/motion";
 import { useLayoutEffect, useRef } from "react";
-import { CLEAR, LEAN, leave, punch, snap } from "./ease";
 import styles from "./Rundown.module.css";
 
 // One flat plate per item, on a 400-unit square: a slide, a grid of slides, a page, a file.
@@ -42,37 +49,37 @@ export function Rundown({ lead, items }: { lead: string; items: readonly string[
       if (!from || !to) return;
       const start = tl.duration();
       // Rows rest in the pose the stylesheet gives them, so no tween here may render early.
-      const timing = { immediateRender: false, duration: duration.base, ease: snap };
+      const timing = { immediateRender: false, duration: duration.base, ease: ease.snap };
       // One marker travels down the list; the row it leaves falls back as the next steps out.
       tl.fromTo(
         marker.current,
         { yPercent: index * 100 },
-        { yPercent: (index + 1) * 100, ...timing, duration: duration.slow, ease: punch },
+        { yPercent: (index + 1) * 100, ...timing, duration: duration.slow, ease: ease.punch },
         start,
       );
       tl.fromTo(
         from,
         { opacity: 1, x: "0.5em" },
-        { opacity: DIM, x: 0, ...timing, ease: leave },
+        { opacity: DIM, x: 0, ...timing, ease: ease.leave },
         start,
       );
       tl.fromTo(
         to,
         { opacity: DIM, x: 0 },
-        { opacity: 1, x: "0.5em", ...timing, duration: duration.slow, ease: punch },
+        { opacity: 1, x: "0.5em", ...timing, duration: duration.slow, ease: ease.punch },
         start + duration.quick / 2,
       );
       // The plate dips as it starts to change shape and comes back up as the morph lands.
       tl.fromTo(
         plate.current,
         { scale: 1 },
-        { scale: 0.9, ...timing, duration: duration.quick, ease: leave },
+        { scale: 0.9, ...timing, duration: duration.quick, ease: ease.leave },
         start,
       );
       tl.fromTo(
         plate.current,
         { scale: 0.9 },
-        { scale: 1, ...timing, duration: duration.slow, ease: punch },
+        { scale: 1, ...timing, duration: duration.slow, ease: ease.punch },
         start + duration.quick,
       );
       tl.fromTo(
@@ -89,26 +96,26 @@ export function Rundown({ lead, items }: { lead: string; items: readonly string[
     (tl) => {
       tl.fromTo(
         split.current?.words ?? [],
-        { yPercent: CLEAR },
-        { yPercent: 0, duration: duration.base, ease: snap, stagger },
+        { yPercent: rise.clear },
+        { yPercent: 0, duration: duration.base, ease: ease.snap, stagger },
         0,
       );
       tl.fromTo(
         root.current?.querySelectorAll(`.${styles.label}`) ?? [],
-        { yPercent: CLEAR, skewY: LEAN },
-        { yPercent: 0, skewY: 0, duration: duration.slow, ease: snap, stagger },
+        { yPercent: rise.clear, skewY: rise.lean },
+        { yPercent: 0, skewY: 0, duration: duration.slow, ease: ease.snap, stagger },
         0,
       );
       tl.fromTo(
         marker.current,
         { scaleX: 0 },
-        { scaleX: 1, duration: duration.base, ease: punch },
+        { scaleX: 1, duration: duration.base, ease: ease.punch },
         duration.base,
       );
       tl.fromTo(
         plate.current,
         { scale: 0 },
-        { scale: 1, duration: duration.slow, ease: punch },
+        { scale: 1, duration: duration.slow, ease: ease.punch },
         duration.quick,
       );
     },

@@ -7,7 +7,9 @@ transition: iris
 import { MotionTemplate } from "@steamfield/decks/kit";
 import { PACKAGE_COUNTS } from "../data/reel";
 
-<RiseLine>It ships in one package.</RiseLine>
+<div className="reel-headline">
+  <MotionTemplate template="title-reveal" title="It ships in one package." />
+</div>
 
 <div className="reel-lg reel-figure">
   <MotionTemplate template="metric-grid" at={1} accent="cyan" metrics={PACKAGE_COUNTS} />
