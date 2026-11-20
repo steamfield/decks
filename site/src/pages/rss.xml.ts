@@ -6,7 +6,7 @@ import { getBlog } from "../lib/collection";
 export async function GET() {
   return rss({
     title: "Decks blog",
-    description: "Slidev and coding-agent presentation guides",
+    description: "Presentation guides for React, MDX and coding agents",
     site: site.url,
     items: (await getBlog()).map((post) => ({
       title: post.data.title,

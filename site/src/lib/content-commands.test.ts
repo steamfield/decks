@@ -130,8 +130,13 @@ describe("every current command matches the CLI", () => {
   });
 
   it("labels retained blog articles as historical and points readers at current docs", () => {
-    for (const file of readdirSync("src/content/blog")) {
-      const text = readFileSync(join("src/content/blog", file), "utf8");
+    const articles = readdirSync("src/content/blog").map((file) => ({
+      file,
+      text: readFileSync(join("src/content/blog", file), "utf8"),
+    }));
+    const historical = articles.filter(({ text }) => text.includes("slidev-addon-decks"));
+    expect(historical.length).toBeGreaterThan(0);
+    for (const { file, text } of historical) {
       expect(text, file).toContain("Decks has moved to its own React framework");
       expect(text, file).toContain("[current documentation](/docs/)");
     }

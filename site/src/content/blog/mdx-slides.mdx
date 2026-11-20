@@ -1,0 +1,156 @@
+---
+title: "How to write presentation slides in MDX"
+description: "Write presentation slides in MDX: one file per slide, Markdown with React components, speaker notes tied to clicks, and a static build you can host anywhere."
+published: 2026-11-19
+keyword: "mdx slides"
+feature: authoring
+relatedDocs:
+  - slides
+  - getting-started/quickstart
+  - motion
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+MDX is Markdown that can hold JSX. In a slide deck that means most slides stay as plain text, a headline and a few lines, and the one slide that needs a live chart, a code walkthrough or a custom diagram drops in a React component without leaving the file. You write the talk in your editor, keep it in git, and run it in a browser.
+
+The examples here use Decks (`@steamfield/decks`), a React slide framework, but the file format, how components reach a slide and how click steps and notes work carry over to other MDX tools. If you're still picking one, the [React presentation framework comparison](/blog/react-presentation-frameworks/) covers Spectacle, reveal.js, ReMDX and Decks.
+
+## What does MDX add over plain Markdown slides?
+
+Markdown slide tools such as Marp turn headings, lists and images into slides, and that covers a lot of talks. The limit shows when a slide needs behavior. A chart that changes when you press the arrow key, a terminal that runs a command, or a diagram whose parts light up one at a time can't be written in Markdown, so those tools fall back on raw HTML or a plugin.
+
+In MDX, components are part of the format. A capitalized tag in an MDX file is a React component, and its props are JavaScript expressions:
+
+```mdx title="slides/03-latency.mdx"
+---
+title: p95 latency fell after the cache.
+---
+
+# p95 latency fell after the cache.
+
+<LatencyChart from="2026-09" to="2026-11" />
+
+The cache shipped on October 14.
+```
+
+The heading and the sentence are Markdown. `LatencyChart` is a component in your project, written in TypeScript, with the same tooling as the rest of your code. Your editor type-checks its props, and a refactor that renames a field breaks the build instead of the talk.
+
+## One file per slide, or one file for the talk?
+
+The first MDX slide tools, MDX Deck being the best known, put the whole talk in one file and split slides with `---`. That reads well top to bottom and suits a short talk.
+
+Decks uses one file per slide in a `slides/` folder. Slides sort by filename, so you number them with a fixed width (`01-cover.mdx`, `02-problem.mdx`, `10-close.mdx`) and reorder by renaming. You give up reading the whole talk in one scroll. Once a talk passes a dozen slides, the per-file layout pays for that:
+
+| Concern | One file | One file per slide |
+| --- | --- | --- |
+| Per-slide settings | Comment conventions or inline config | YAML frontmatter at the top of each file |
+| Git history | Every edit touches the same file | A diff names the slide that changed |
+| Working with a coding agent | The agent rewrites a long file to change one slide | The agent edits one small file |
+
+The agent row is the one that decided it for Decks. An agent asked to tighten slide 7 opens `07-*.mdx` and nothing else, so it can't accidentally reflow slide 12.
+
+## How do you set up an MDX deck?
+
+Decks needs Node 22.12 or later and React 19. Install it with its React peers, scaffold a deck, and start the dev server:
+
+```bash title="Terminal"
+bun add @steamfield/decks react react-dom
+bunx -p @steamfield/decks decks new talk
+bunx -p @steamfield/decks decks dev talk
+```
+
+With npm, use `npm install` and `npx -p @steamfield/decks decks <command>`. Keep the `-p @steamfield/decks` part: the bare `decks` name on npm belongs to an unrelated package.
+
+`decks new talk` writes a deck under `decks/talk/` and registers it in `decks.json`. The directory looks like this:
+
+```text title="decks/talk/"
+deck.config.ts        title and deck-wide settings
+setup.ts              runs once before the deck mounts
+slides/01-cover.mdx   one .mdx file per slide
+slides/02-points.mdx
+components/           .tsx files every slide can use
+styles/index.css      the deck's one stylesheet
+```
+
+There's no `index.html` and no slide list to keep in sync. The dev server reads `slides/`, and an edit to a slide's body hot-updates that slide in the browser without a reload.
+
+## What goes in a slide file?
+
+A slide is optional YAML frontmatter, then Markdown and JSX in any mix. Frontmatter sets the title shown in the overview and the go-to dialog, a slide transition, whether the slide is hidden, and the click count when the framework can't work it out (more on that below). Any other key you add reaches your components through `useSlide().frontmatter`.
+
+MDX has one rule that trips people up: Markdown inside a JSX element needs blank lines around it, or MDX treats it as literal text.
+
+```mdx title="Markdown inside a component"
+<Steps from={1} enter="rise">
+
+1. Frame the question.
+2. Reveal the evidence.
+
+</Steps>
+```
+
+Without the blank lines after `<Steps>` and before `</Steps>`, the list renders as one line of text with the numbers in it.
+
+## How do components get into a slide?
+
+You can import a component at the top of a slide, as in any MDX file. For components you use across the talk, Decks scans the deck's `components/` folder: every named export of a `.tsx` file there is available in every slide under its own name, with no import. The motion components (`Step`, `Steps`, `Highlight` and others) and the layouts (`Cover`, `TwoCol`, `Center` and others) are provided the same way.
+
+A typo in a component name is a compile error, not a blank space on the slide:
+
+```text title="Dev server output"
+slides/03-x.mdx:3:1: <Nonexistent> is not defined. Export it from a file in components/ or import it in the slide.
+```
+
+In a plain MDX setup an unknown tag can fail at runtime, which you discover by clicking through every slide. Here it fails before the slide renders, with a file and line.
+
+## How do click steps work?
+
+A click step is a state within a slide: the first bullet shows, then the second, then a chart redraws. In Decks a slide with three clicks has four states, click 0 through click 3. The arrow keys move one click at a time and cross to the next slide after the last one.
+
+The simplest way to add steps is the `Step` component with an `at` prop:
+
+```mdx title="slides/04-results.mdx"
+# The migration finished early.
+
+<Step at={1} as="p">Cutover took 40 minutes, against a 2-hour window.</Step>
+<Step at={2} as="p">No customer-facing errors during the switch.</Step>
+```
+
+You don't write the click total. The compiler reads the MDX at build time and takes the largest `at` it finds, so this slide has two clicks. Fenced code blocks with line highlights, `Steps` lists and the kit's `ChartSteps` all count the same way.
+
+The count is static, which sets a few rules. `at` must be a literal number, and a counted component can't sit inside a JavaScript expression such as a `.map()`. When a component paces itself from the current click internally, the compiler can't see inside it, so you set the total in frontmatter with `clicks: 3`. When `clicks` is present it wins.
+
+The click lives in the URL (`#/4?clicks=2`), so a reload or a shared link lands on the same state. That makes rehearsing a hard transition much faster.
+
+## How do you write speaker notes for each click?
+
+Put notes in a `<Notes>` block. It's removed from the slide at compile time and shown in the presenter window, which you open with `p`. A line that starts with `[click]` begins the notes for the next click:
+
+```mdx title="Notes that follow the clicks"
+<Notes>
+Open on the headline. Don't read it.
+
+[click] The window was two hours. Say who set it.
+
+[click] Zero errors is the number the support team cares about.
+</Notes>
+```
+
+The presenter window marks the segment for the current click and scrolls it into view, so the note you need is the one that's highlighted. If you later add a step and forget the notes, `decks check` reports the mismatch: a slide with `[click]` cues for two clicks that now has three gets flagged before you rehearse with notes pointing at the wrong step.
+
+## What does an MDX deck look like when it runs?
+
+The player below runs a Decks deck in the page. A Claude Code agent wrote it from a brief, as MDX slides plus a few components, and revised it from review notes.
+
+<DeckDemo example="motion-reel" caption="A deck written as MDX slides with React components. Step through with the arrow keys." />
+
+## How do you build and share it?
+
+`decks build talk` writes a static site. Navigation uses the URL hash, so the output needs no server rewrites and works from any static host or a subfolder. `decks export talk` writes a PDF with one page per click step, which suits a handout or a venue that wants a file. It needs Playwright's Chromium installed.
+
+## When is MDX the wrong format?
+
+MDX suits a talk written by someone comfortable in a code editor, or by a coding agent working in a repo. It's a poor fit when the people editing the deck work in PowerPoint or Google Slides and expect to drag boxes around, and when the required deliverable is an editable `.pptx`. Decks exports PDF and PNG, not PowerPoint files.
+
+If your talk is mostly text with a few images, plain Markdown with Marp may be all you need. Reach for MDX when a slide needs code that runs and you want it versioned and typed like the rest of your code. In Decks, the [slides guide](/docs/slides/) covers frontmatter, layouts and the hooks components use, and the [quickstart](/docs/getting-started/quickstart/) walks through a six-file deck.

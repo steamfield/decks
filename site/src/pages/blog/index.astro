@@ -3,12 +3,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getBlog } from "../../lib/collection";
 import { blogCollection, blogHref, readingMinutes } from "../../lib/blog";
 const posts = await getBlog();
-const title = "Slidev and coding-agent presentation guides";
+const title = "Presentation guides for React, MDX and coding agents";
 ---
 
 <BaseLayout
   title={title}
-  description="Guides to building Slidev presentations with coding agents, interactive charts, story steps and sourced figures using the Decks addon."
+  description="Guides to animated, data-driven presentations in React and MDX: stepped charts, code on slides, presenting, coding agents and sourced figures, with Decks."
   path="/blog/"
   jsonLd={[blogCollection(posts)]}
 >

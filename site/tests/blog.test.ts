@@ -36,55 +36,64 @@ function noNull(value: unknown) {
 }
 
 describe("built blog posts", () => {
-  it.each(posts)("$id has consistent article metadata, structured data and discovery", ({ id }) => {
-    const doc = page(`blog/${id}/index.html`);
-    const meta = (selector: string) => doc.querySelector(selector)?.getAttribute("content");
-    const url = absolute(`/blog/${id}/`);
-    expect(doc.querySelectorAll("h1")).toHaveLength(1);
-    const note = doc.querySelector("[data-blog-body]")?.firstElementChild;
-    expect(note?.textContent, id).toContain("Decks has moved to its own React framework");
-    expect(note?.querySelector("a")?.getAttribute("href"), id).toBe("/docs/");
-    expect(doc.title.length).toBeLessThanOrEqual(60);
-    expect(doc.title.replace(/ \| Decks$/, "").length).toBeLessThanOrEqual(48);
-    const description = meta('meta[name="description"]') ?? "";
-    expect(description.length).toBeGreaterThanOrEqual(120);
-    expect(description.length).toBeLessThanOrEqual(160);
-    for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]'])
-      expect(meta(selector)).toBe(doc.title);
-    for (const selector of ['meta[property="og:description"]', 'meta[name="twitter:description"]'])
-      expect(meta(selector)).toBe(description);
-    expect(doc.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(url);
-    expect(meta('meta[property="og:url"]')).toBe(url);
-    expect(meta('meta[property="og:type"]')).toBe("article");
-    const data = ld(doc);
-    expect(data).toHaveLength(2);
-    data.forEach(noNull);
-    const posting = data.find((item) => item["@type"] === "BlogPosting");
-    expect(posting).toMatchObject({ url, description, about: { "@id": software["@id"] } });
-    expect(meta('meta[property="article:published_time"]')).toBe(posting.datePublished);
-    expect(meta('meta[property="article:modified_time"]')).toBe(posting.dateModified);
-    expect(Number.isNaN(Date.parse(posting.datePublished))).toBe(false);
-    expect(Date.parse(posting.dateModified)).toBeGreaterThanOrEqual(
-      Date.parse(posting.datePublished),
-    );
-    const breadcrumbs = data.find((item) => item["@type"] === "BreadcrumbList").itemListElement;
-    expect(breadcrumbs.at(-1)).not.toHaveProperty("item");
-    expect(breadcrumbs.slice(0, 2).map((item: { item: string }) => item.item)).toEqual([
-      absolute("/"),
-      absolute("/blog/"),
-    ]);
-    expect(readFileSync(`dist/og/blog/${id}.png`).subarray(1, 4).toString()).toBe("PNG");
-    expect([...sitemap.querySelectorAll("loc")].map((loc) => loc.textContent)).toContain(url);
-    const item = [...feed.querySelectorAll("item")].find(
-      (entry) => entry.querySelector("link")?.textContent === url,
-    );
-    expect(item).toBeDefined();
-    expect(new Date(item?.querySelector("pubDate")?.textContent ?? "").toISOString()).toBe(
-      posting.datePublished,
-    );
-    expect(item?.querySelector("description")?.textContent).toBe(description);
-    expect(llms).toContain(`](${url}): ${description}`);
-  });
+  it.each(posts)(
+    "$id has consistent article metadata, structured data and discovery",
+    ({ id, source }) => {
+      const doc = page(`blog/${id}/index.html`);
+      const meta = (selector: string) => doc.querySelector(selector)?.getAttribute("content");
+      const url = absolute(`/blog/${id}/`);
+      expect(doc.querySelectorAll("h1")).toHaveLength(1);
+      // Retained Slidev-era articles open with a note pointing at the current docs.
+      if (source.includes("slidev-addon-decks")) {
+        const note = doc.querySelector("[data-blog-body]")?.firstElementChild;
+        expect(note?.textContent, id).toContain("Decks has moved to its own React framework");
+        expect(note?.querySelector("a")?.getAttribute("href"), id).toBe("/docs/");
+      }
+      expect(doc.title.length).toBeLessThanOrEqual(60);
+      expect(doc.title.replace(/ \| Decks$/, "").length).toBeLessThanOrEqual(48);
+      const description = meta('meta[name="description"]') ?? "";
+      expect(description.length).toBeGreaterThanOrEqual(120);
+      expect(description.length).toBeLessThanOrEqual(160);
+      for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]'])
+        expect(meta(selector)).toBe(doc.title);
+      for (const selector of [
+        'meta[property="og:description"]',
+        'meta[name="twitter:description"]',
+      ])
+        expect(meta(selector)).toBe(description);
+      expect(doc.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(url);
+      expect(meta('meta[property="og:url"]')).toBe(url);
+      expect(meta('meta[property="og:type"]')).toBe("article");
+      const data = ld(doc);
+      expect(data).toHaveLength(2);
+      data.forEach(noNull);
+      const posting = data.find((item) => item["@type"] === "BlogPosting");
+      expect(posting).toMatchObject({ url, description, about: { "@id": software["@id"] } });
+      expect(meta('meta[property="article:published_time"]')).toBe(posting.datePublished);
+      expect(meta('meta[property="article:modified_time"]')).toBe(posting.dateModified);
+      expect(Number.isNaN(Date.parse(posting.datePublished))).toBe(false);
+      expect(Date.parse(posting.dateModified)).toBeGreaterThanOrEqual(
+        Date.parse(posting.datePublished),
+      );
+      const breadcrumbs = data.find((item) => item["@type"] === "BreadcrumbList").itemListElement;
+      expect(breadcrumbs.at(-1)).not.toHaveProperty("item");
+      expect(breadcrumbs.slice(0, 2).map((item: { item: string }) => item.item)).toEqual([
+        absolute("/"),
+        absolute("/blog/"),
+      ]);
+      expect(readFileSync(`dist/og/blog/${id}.png`).subarray(1, 4).toString()).toBe("PNG");
+      expect([...sitemap.querySelectorAll("loc")].map((loc) => loc.textContent)).toContain(url);
+      const item = [...feed.querySelectorAll("item")].find(
+        (entry) => entry.querySelector("link")?.textContent === url,
+      );
+      expect(item).toBeDefined();
+      expect(new Date(item?.querySelector("pubDate")?.textContent ?? "").toISOString()).toBe(
+        posting.datePublished,
+      );
+      expect(item?.querySelector("description")?.textContent).toBe(description);
+      expect(llms).toContain(`](${url}): ${description}`);
+    },
+  );
 
   it("lists exactly the same posts in sitemap, feed, llms.txt and CollectionPage", () => {
     expect(posts.length).toBeGreaterThan(0);

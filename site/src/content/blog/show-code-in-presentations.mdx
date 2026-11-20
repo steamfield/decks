@@ -1,0 +1,139 @@
+---
+title: "How to show code in a presentation"
+description: "Show code in a presentation people can read: fewer lines at a larger size, line highlights that step with your talk, morphs between versions, safer live demos."
+published: 2026-11-19
+keyword: "how to show code in a presentation"
+feature: code
+relatedDocs:
+  - code-blocks
+  - terminal
+  - presenting
+---
+
+To show code in a presentation, put fewer lines on the slide than feels natural, set them large enough for the back row, keep them as real highlighted text rather than a screenshot, and move the audience's attention with line highlights that advance as you talk. When you need to show the code running, run prepared commands instead of typing them live.
+
+That advice holds in any tool. The first sections cover it for PowerPoint, Keynote and Google Slides too; the examples after that use Decks (`@steamfield/decks`), a React slide framework where code blocks are fenced Markdown and the highlighting and stepping are built in.
+
+## How many lines of code fit on a slide?
+
+About a dozen, at a size the back of a room can read. In PowerPoint or Keynote that means code at roughly 24 points or larger on a standard 16:9 slide; much smaller and the people past the third row are guessing.
+
+Decks gives a concrete version of the same limit. It draws slides on a 1920 by 1080 canvas and sets code at 32 pixels with a line height of 1.6, so each line takes about 51 pixels. With the layouts' default padding that leaves room for about 17 lines and nothing else, and a headline and caption bring it to around 12.
+
+A function longer than that needs trimming before it goes on a slide. Cut the logging, the imports and the error handling you won't discuss, and replace a skipped block with a comment such as `// validation omitted`. The audience is reading the code for one idea, and every extra line competes with it.
+
+Check the colors as well as the size. Many editor themes draw comments and punctuation in a faint gray that's fine on your laptop and disappears on a projector. Pick a theme with strong contrast for every token type, or raise the contrast of the faint ones.
+
+## Should code be text or a screenshot?
+
+Text. A screenshot of your editor blurs when the slide is scaled to a projector, can't be copied by someone reading the shared deck later, and goes stale the moment the code changes. Code as text is sharp at any size and can be edited in place.
+
+## How do you put highlighted code into PowerPoint, Keynote or Google Slides?
+
+Copy it from an editor that copies with formatting. VS Code does by default: select the code, copy, and paste into a PowerPoint or Keynote text box, and the syntax colors come along. Then set the font to a monospaced face and the size you settled on above, and turn off autocorrect for that box so it doesn't curl your quotes.
+
+To walk through the code, duplicate the slide and change the emphasis on each copy: on the second slide, gray out every line except the two you're discussing; on the third, a different two. Keynote's Magic Move and PowerPoint's Morph transition can animate between versions of a code block on consecutive slides, which works well for small edits.
+
+This gets tedious past a few slides, and the copies drift apart when the code changes. A code-native slide tool avoids both: you write the code once and describe the steps.
+
+## How do you step through code with highlights?
+
+Highlight the lines you're talking about and dim the rest, one step per point. People read ahead of the speaker, and highlighting gives their eyes somewhere to stop.
+
+In a Decks slide, a fenced code block is highlighted at compile time with Shiki, and you write the steps in braces on the fence, separated by `|`. `at` sets the click where the first step starts:
+
+````mdx title="slides/05-retry.mdx"
+# Retries back off exponentially.
+
+```ts {6|3-4|5|8} at=1 lines title="fetch-with-retry.ts"
+export async function fetchWithRetry(url: string, attempts = 3) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const response = await fetch(url);
+    if (response.ok) return response;
+    if (!isRetryable(response.status)) throw new HttpError(response);
+    await sleep(250 * 2 ** attempt);
+  }
+  throw new Error(`${url} failed after ${attempts} attempts`);
+}
+```
+````
+
+At click 0 the whole function shows at full strength, so the audience sees its shape. Click 1 lights line 6, the backoff, because that's what the headline claims. Clicks 2 to 4 then cover the request and the success case, the errors that aren't worth retrying, and giving up. The order follows the explanation. Going back a click reverses the highlight, which helps when someone asks you to return to the backoff.
+
+`title` adds a filename caption and `lines` numbers the lines, which lets you say "line 6" and have everyone look at the same place. You don't count clicks: the compiler reads the fence and adds them to the slide's total, so this slide advances four times before moving on. The [code block guide](/docs/code-blocks/) plays a version of this block live.
+
+## How do you show code changing between versions?
+
+Use a morph between versions instead of two separate slides. When one block disappears and a slightly different one appears, the audience spends the first few seconds diffing them by eye. A morph moves the tokens that stay, fades out the removed ones and fades in the new ones, so the change itself is what moves.
+
+Decks calls this magic move and uses the same fence syntax as Slidev, so a Slidev slide pastes in unchanged. Each inner fence is one version, and each click morphs to the next:
+
+`````mdx title="A magic-move fence"
+````md magic-move "grade.ts" {lines: true}
+```ts
+const passing = score >= 60;
+```
+
+```ts
+const passing = (score: number) => score >= 60;
+passing(72);
+```
+
+```ts
+export function passing(score: number, cutoff = 60) {
+  return score >= cutoff;
+}
+```
+````
+`````
+
+The morph plays when you step forward while presenting. Going back, jumping to the slide and the PDF export show the right version for the click without animating, so a printed handout gets one page per version.
+
+Morphs suit small edits such as extracting a function, adding a parameter or renaming. If every line changes, two plain slides read better.
+
+## Should you live code during a talk?
+
+Don't type live. Typing while talking is slow, and a typo costs a minute of fixing in front of the room. If the point is that the code really runs, show its output, or run commands you prepared in advance.
+
+Running prepared commands gives you real output without the typing. In Decks, the kit's `LiveTerm` component puts a real shell on a slide, and each click types the next command from your list and runs it:
+
+```tsx title="components/Demo.tsx"
+import { useSlide } from "@steamfield/decks";
+import { LiveTerm } from "@steamfield/decks/kit";
+
+const pane = {
+  id: "hello",
+  rows: 12,
+  cols: 60,
+  cwd: "temp",
+  commands: ["echo hello", "ls", "git status"],
+};
+
+// What the pane shows where no shell can run: the prompt, then one entry per command.
+const RECORDING = ["$", "$ echo hello\nhello", "$ ls", "$ git status\nfatal: not a git repository"];
+
+export function Demo() {
+  const { clicks } = useSlide();
+  return (
+    <LiveTerm
+      pane={pane}
+      click={clicks}
+      fallback={<pre>{RECORDING.slice(0, clicks + 1).join("\n")}</pre>}
+    />
+  );
+}
+```
+
+`fallback` covers every place a shell can't run: the built deck you share afterward, the PDF export, and the bad day when something on the laptop breaks and you need to keep going. Capture it by running the same commands once and pasting their output. The shell itself runs only when you serve the deck with `decks dev talk --live-term` on your own machine at `localhost`, on macOS or Linux with `zsh` and Python installed, and it doesn't support full-screen programs such as `vim`. The [terminal guide](/docs/terminal/) plays a pane like this one with its recorded fallback.
+
+## How do you check that the code is readable before the talk?
+
+1. Look at the slide at the size the room will see it. Put it on a TV across the room, or shrink the window to a quarter of your screen, and check that the highlighted lines still stand out.
+2. In Decks, run `decks inspect talk`. It opens every slide at its last click and reports any element that leaves the canvas or clips its own text, so a code block that grew a line during rehearsal shows up with its slide and the overflow in pixels.
+3. On the day, if the room is bigger than you planned for, press `Cmd` or `Ctrl` with `+` while presenting a Decks deck. Slide text, code included, grows in steps of 10 percent. Only text grows, so a dense slide can overflow after a couple of steps; check before you go on.
+
+## What are the limits?
+
+Decks highlights code at build time, so a slide shows the code as it was when you built the deck. If the slide quotes a file that keeps changing, rebuild before you present. Inline code inside a sentence isn't highlighted.
+
+If your talk is mostly code and a terminal, [set up a deck](/docs/getting-started/quickstart/) and write each slide as an MDX file with fenced blocks.

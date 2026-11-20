@@ -46,6 +46,9 @@ export const blogSchema = z
       "examples",
       "comparison",
       "storytelling",
+      "authoring",
+      "code",
+      "presenting",
     ]),
     relatedDocs: z
       .array(

@@ -1,0 +1,139 @@
+---
+title: "How to animate a chart in a presentation"
+description: "Animate a chart in a presentation so each click changes one thing: fixed axes, marks that keep their identity, captions that follow the data, a clean way back."
+published: 2026-11-19
+keyword: "how to animate a chart in a presentation"
+feature: charts
+relatedDocs:
+  - kit
+  - motion
+  - cli
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+Animate a chart in a presentation by changing one thing per click: add the next year, bring in a second series, or highlight the bars you're about to talk about. Keep the axes, colors and positions still between clicks so the only thing that moves is the change you want the room to see.
+
+The rules below apply in any tool. After them come PowerPoint and Keynote, then a web presentation built with Decks (`@steamfield/decks`), a React slide framework for data talks.
+
+## What should a chart animation show?
+
+The data changing. Most slide software offers entrance effects for charts (fade, wipe, grow), and those animate the chart arriving. Watching bars grow from zero tells the audience little that the finished bars don't.
+
+The animation that helps is a transition between two states of the data. July to September, then the same bars with October through December added. Last year's values, then this year's. All regions in gray, then the two that grew highlighted. Each click is a sentence you say, and the chart changes to match it.
+
+That only works if the viewer can track each mark from one state to the next. Mike Bostock called this [object constancy](https://bost.ocks.org/mike/constancy/): a bar that stands for Texas should still stand for Texas after the transition, in a place the eye can follow. When the marks reshuffle or the axis jumps, the viewer has to re-read the whole chart, and the animation has cost attention instead of saving it.
+
+## What are the rules for a stepped chart?
+
+1. Change one thing per click. If a click adds a series and also rescales the axis, the audience sees motion everywhere and can't tell which part is the point. Split it into two clicks, or fix the scale so it doesn't need to change.
+
+2. Fix the axis domain up front. Set the y-axis range to fit the final state of the data on the first step, even if the early steps leave empty space. The empty space shows what's coming. An axis that rescales on every click makes earlier values look like they changed.
+
+3. Fix the categories' positions too. If October is going to appear on click 2, reserve its slot on the x-axis from the start, so the existing bars don't slide sideways to make room.
+
+4. Keep color for meaning. Use one neutral color for the data and one accent for whatever the current sentence is about. A highlight is a step of its own: same data, different emphasis.
+
+5. Make the caption follow the chart. The headline or caption under the chart should say what the current step shows, and change on the same click as the data. A caption that describes step three while the chart is on step one is worse than no caption.
+
+## How do you animate a chart in PowerPoint?
+
+PowerPoint's chart animations reveal parts of a chart. You apply an entrance effect such as Wipe to the chart, then under Effect Options choose to animate it by series or by category, as a whole or element by element. Each click brings in the next group of bars. Microsoft's [chart animation video](https://support.microsoft.com/en-gb/office/video-animate-charts-and-smartart-0d713521-23c2-46aa-9824-2811297baad7) walks through the options.
+
+That covers "add the next series" and "add the next category," which is a good share of what a data talk needs. It doesn't cover a mark changing value, such as a bar moving from last year's number to this year's, or the same bars turning from gray to highlighted. Those usually end up as separate slides with a transition between them. PowerPoint's [Morph transition](https://support.microsoft.com/en-us/powerpoint/training/use-the-morph-transition-in-powerpoint) animates objects that appear on both slides, and it needs Microsoft 365 or PowerPoint 2019 or later to create. Keynote's Magic Move transition works the same way between two slides that share objects.
+
+If your talk has a handful of charts and your team already works in PowerPoint or Keynote, build the steps there.
+
+## How do you animate a chart in a web presentation?
+
+In a browser deck the chart is code, so each step can be a spec: the same chart description with different data or emphasis. The chart library animates marks from one spec to the next, matching them by a key.
+
+Decks does this with `ChartSteps` from its kit. You give it an array of [OpenChart](https://github.com/tryopendata/openchart) specs, and each click on the slide moves to the next one. Here's a bar chart of night pages per month that shows July to September, then adds October to December, then highlights the months after a change shipped:
+
+```ts title="data/night-pages.ts"
+import { ink } from "@steamfield/decks/kit";
+
+const MONTHS = [
+  { month: "Jul", pages: 52 },
+  { month: "Aug", pages: 47 },
+  { month: "Sep", pages: 55 },
+  { month: "Oct", pages: 31 },
+  { month: "Nov", pages: 22 },
+  { month: "Dec", pages: 18 },
+];
+const SHIPPED = 3;
+
+export const nightPages = [MONTHS.slice(0, SHIPPED), MONTHS, MONTHS].map((data, step) => ({
+  mark: "bar",
+  data,
+  encoding: {
+    // Every month's slot exists from the first step, so bars never shift sideways.
+    x: { field: "month", type: "nominal", sort: null,
+         scale: { domain: MONTHS.map(({ month }) => month) } },
+    // The range fits the final state on every step, so the axis never rescales.
+    y: { field: "pages", type: "quantitative", scale: { domain: [0, 60] } },
+    // The key lets each bar be followed from one step to the next.
+    key: { field: "month", type: "nominal" },
+    color: {
+      condition: {
+        test: { field: "month",
+                oneOf: step === 2 ? MONTHS.slice(SHIPPED).map(({ month }) => month) : [] },
+        value: ink("cyan", 3),
+      },
+      value: ink("slate", 2),
+    },
+  },
+  // No entrance; animate the change between steps.
+  animation: { enter: false, update: true },
+}));
+```
+
+The figures are illustrative.
+
+The slide places the chart and sets the click count, since specs imported from a data module can't be counted at build time:
+
+```mdx title="slides/04-night-pages.mdx"
+---
+title: Night pages fell once runbooks shipped.
+clicks: 2
+---
+
+import { ChartSteps } from "@steamfield/decks/kit";
+import { nightPages } from "../data/night-pages";
+
+<Cover>
+  <p className="od-h2">Night pages fell once runbooks shipped.</p>
+  <div style={{ width: "100%", height: 560 }}>
+    <ChartSteps specs={nightPages} at={1} />
+  </div>
+  <p className="od-caption">Night pages per month, July to December. Illustrative figures.</p>
+</Cover>
+```
+
+The first spec shows when the slide appears, the second on click 1 and the third on click 2. The [kit guide](/docs/kit/#chartsteps) plays a version of this chart live.
+
+`ChartSteps` checks that every spec uses the same mark type and the same fields for the x, y, color and key encodings, and throws an error naming both specs if two differ. A typo that would make the bars reshuffle fails as soon as the slide renders, during rehearsal. The fixed domains are still up to you. One click forward or back animates. A jump from the overview, the presenter window and the PDF export all show the target state directly, without animating.
+
+Some changes snap instead of animating: switching scale types, marks the library can't tween such as axis ticks, and charts with more than 500 SVG marks. If a step snaps when you expected motion, one of those is usually why.
+
+## What about charts that aren't standard chart types?
+
+For a figure a chart library won't draw, such as a timeline with annotations or a map whose regions light up, Decks has story stages. A story slide keeps one SVG drawing on screen and changes it on each click, with a caption card whose text changes on the same click. You describe each click's changes as animations of the drawing's values, and the stage plays them forward or in reverse. The [story stage section](/docs/kit/#story-stages) of the kit guide walks through a full example.
+
+The deck below is a talk on the 2026 Texas election and Austin schools, built from story slides. Its charts keep their axes and marks in place across clicks while the caption and highlights change.
+
+<DeckDemo example="texas-2026" caption="A data talk built from story slides. Step through with the arrow keys, and step backward to see each change reverse." />
+
+## How do you check an animated chart before presenting?
+
+Step through it backward as well as forward. Your audience won't usually see the reverse, but you will the moment someone asks you to go back to the previous number, and a step that doesn't reverse cleanly leaves the chart and caption out of sync.
+
+Then look at the motion itself without the pressure of watching it live. `decks film talk 4 1` writes a contact sheet of the frames between click 0 and click 1 on slide 4, labelled with their time in milliseconds. It uses virtual time, so the same step produces the same sheet on any machine. A bar that dips before rising or a label that jumps shows up in a still frame much more clearly than in a half-second animation.
+
+Last, check the numbers. A stepped chart makes several claims per slide, one per click, so it has more places for a wrong figure to hide. In a Decks project, the `deck-data` agent skill keeps each figure in a `data/*.ts` module, records its query or source document in `data-sources.md`, and checks those records against the slides before hand-off. `decks export talk` writes a PDF with one page per click, which gives you every state of the chart side by side for a final read.
+
+## What are the limits?
+
+Decks' kit charts always draw in dark mode, and Decks exports PDF and PNG, not PowerPoint, so if the deliverable has to be an editable `.pptx`, build the charts in PowerPoint. And an animated chart only helps when the change is the point. A chart you show once and talk over for a minute is better as a static figure.
+
+To try it, [install Decks](/docs/getting-started/quickstart/) and scaffold a story deck with `decks new talk --story`, which includes a stage, a data module with a provenance comment and a `data-sources.md` skeleton.

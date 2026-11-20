@@ -1,0 +1,81 @@
+---
+title: "Speaker notes when your screen is mirrored"
+headline: "How to see speaker notes when your screen is mirrored to a projector"
+description: "Why speaker notes vanish when your laptop mirrors to a projector, and three fixes: extend the display, put notes on a phone or iPad, or share a single window."
+published: 2026-11-19
+keyword: "see speaker notes while screen mirroring"
+feature: presenting
+relatedDocs:
+  - presenting
+  - slides
+---
+
+When your laptop mirrors its screen to a projector, the audience sees exactly what you see, so there's no private screen left for your notes. You have three ways out: switch the display from mirrored to extended so the presenter view gets your laptop screen, move your notes to a second device such as a phone or iPad, or, on a video call, share one window and keep your notes in another.
+
+Which one fits depends on what else you do during the talk. If you only show slides, extending the display is the standard fix. If you leave the slides to run a live demo in a terminal or an editor, you probably want mirroring, and the notes have to go somewhere else.
+
+## Why do speaker notes disappear when the screen is mirrored?
+
+A presenter view needs two screens: the slides go to the one the room sees, and the notes, timer and next slide go to the one only you see. Mirroring makes those the same screen, and no presentation tool can show notes privately on it.
+
+PowerPoint on a Mac shows Presenter View on your laptop only after you turn off mirroring; [Microsoft's instructions](https://support.microsoft.com/en-us/office/present-your-slide-show-4de90e28-487e-435c-9401-eb49a3801257) have you clear "Mirror Displays" in the display settings. On Windows, PowerPoint sets up Presenter View automatically when a second monitor is connected as an extended display.
+
+Keynote shows its presenter display only on a second, separate display. [Apple's guide](https://support.apple.com/en-ph/guide/keynote/tana4da2681/mac) says to turn mirroring off; with mirroring on, the presenter display doesn't appear.
+
+Google Slides opens speaker notes in a separate window from the Presenter view menu. [Google's help page](https://support.google.com/docs/answer/1696787) notes that you can't use Presenter view and full screen at the same time with one monitor.
+
+Browser-based decks work the same way. Decks, the React slide framework this site is for, opens its presenter window with `p`, and that window has to sit on a screen the audience can't see.
+
+## Fix 1: extend the display instead of mirroring
+
+Extending treats the projector as a second monitor. Your laptop screen shows the presenter view, and the projector shows the slides.
+
+On a Mac, open System Settings, then Displays, and set the projector to extend rather than mirror the built-in display. On Windows, press `Windows+P` and choose Extend; Windows calls mirroring Duplicate. Then start the slideshow. PowerPoint and Keynote usually put the presenter view on the right screen on their own, and both let you swap the screens if they guess wrong. In a browser deck, drag the presenter window to your laptop screen and the audience window to the projector, then make the audience window fullscreen.
+
+The catch with extending: anything you open during the talk often opens on your laptop screen, where the audience can't see it. To show a terminal, you drag it to the projector first and then type while looking over your shoulder. Speakers who demo a lot often go back to mirroring for this reason.
+
+## Fix 2: put the notes on a phone, tablet or second laptop
+
+When the laptop has to stay mirrored, give the notes their own device. Your laptop shows the same thing to you and the room, and the device in your hand shows the notes and the controls.
+
+Keynote can be controlled from Keynote on an iPhone or iPad, which shows your notes. For browser-based decks it depends on the framework: Slidev's `--remote` flag serves its presenter view to other devices on the network, optionally behind a password, and Decks has a remote presenter page built into its dev server:
+
+```bash title="Terminal"
+bunx -p @steamfield/decks decks dev talk --remote
+```
+
+The terminal prints a `Remote presenter:` URL and a QR code. Scan it with the phone or iPad. The page shows the slide number and click, the current and next slide titles, the notes for the current click and a talk timer, with Previous, Next and a list of slides to jump to. It shows titles and notes, not slide images.
+
+Next on the remote advances the deck even while another app has focus on the laptop. You can be in a terminal, mirrored to the room, glance at your phone for the next talking point, and tap Next; when you switch back to the browser, the slide is where the remote says it is.
+
+Three things to know before you rely on it. Each URL carries a random token that changes every time `decks dev` starts, but the traffic is plain HTTP, so anyone on the same open network who has the URL can read the notes and step the deck, which also runs a live terminal slide's prepared commands. Venue wifi often blocks devices from reaching each other, so open the URL on your phone before you go on stage, and if it doesn't load, put both devices on a phone hotspot. And set an iPad's Auto-Lock to Never for the talk. The [presenting guide](/docs/presenting/#remote-presenter) covers the rest.
+
+## Fix 3: on a video call, share one window
+
+On Zoom, Teams or Meet, share the window with the slides rather than your whole screen, and keep the notes in another window that the call doesn't capture. With two monitors, put the shared slide window on one and the notes on the other. With one monitor this is fiddly, because the notes window covers the slides you're sharing or the slides cover your notes. A phone showing your notes, as in Fix 2, works on a call as well as in a room if your tool supports one.
+
+## How should you write notes you can read at a glance?
+
+Write notes as cues, not a script. On stage you'll look at them for a second at a time, and a paragraph is unreadable at that speed. One line per point, starting with the thing you'll say: "Two-hour window. Say who set it."
+
+Tie the notes to clicks if your slides have steps. In Decks, a line in a slide's `<Notes>` block that starts with `[click]` begins the notes for the next click:
+
+```mdx title="slides/07-incidents.mdx"
+<Notes>
+Open on the chart. Let them read the headline.
+
+[click] March is the outlier. One bad deploy, four hours.
+
+[click] Since April, nothing over 30 minutes. Credit the on-call rotation.
+</Notes>
+```
+
+Both the presenter window and the remote page show the segment for the current click, so the cue in front of you matches what the room sees. If you later add a step to the slide and forget the notes, `decks check` reports that the `[click]` cues no longer match the slide's clicks.
+
+## What should you check before the talk?
+
+Ask the venue whether there's a confidence monitor (a screen at the front of the stage facing the speaker), which removes the need for any of these fixes. Ask what cable or adapter the projector takes, and whether you'll present from a lectern or walk the stage.
+
+Then rehearse with the setup you'll use. Connect to a second screen or TV, set it to the mode you plan to use, open the presenter view or the remote, and click through the whole talk once. Display problems show up in the first thirty seconds of a rehearsal.
+
+If you're starting a new talk in Decks, the [quickstart](/docs/getting-started/quickstart/) gets a deck running in three commands.
