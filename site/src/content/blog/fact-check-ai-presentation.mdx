@@ -1,0 +1,95 @@
+---
+title: "How to fact-check an AI-made presentation"
+headline: "How to fact-check an AI-made presentation before you present it"
+description: "AI slide tools invent numbers and sources. A checklist for fact-checking an AI-made presentation: record sources, rerun queries, check quotes and dates."
+published: 2026-11-20
+keyword: "ai presentation fact check"
+feature: agents
+relatedDocs:
+  - agents
+  - cli
+---
+
+Every figure in an AI-made presentation needs to trace to a source you can rerun, and you rerun it before you present. The model that wrote the slide can't tell you whether a number came from your data or from habit, so the check has to come from you.
+
+Deloitte learned this in October 2025. It agreed to repay part of an A$440,000 contract with the Australian government after its report cited reports that don't exist and quoted a judge who never said the words. The revised version [disclosed](https://www.theregister.com/2025/10/06/deloitte_ai_report_australia/) that its authors had used a GPT-4o-based tool chain.
+
+A slide is more exposed than a report. It states a figure with no surrounding caveats, and the audience can't check a footnote mid-talk.
+
+The process below is built around Decks (`@steamfield/decks`) and its agent skills. The checklist works for any tool.
+
+## Where do AI-written slides go wrong?
+
+AI-written slides tend to fail in five ways:
+
+- A figure is typed from the model's memory instead of from your data, so it's plausible and wrong.
+- A figure is right for the wrong population or period, such as revenue churn labeled as customer churn.
+- A rounding or derivation step is off: percentage points reported as a percent, or "half" for 46%.
+- A quote or a named person is invented, or a real person is credited with a line they didn't say.
+- A number that was correct in the source draft is stale by the time you present.
+
+A prose linter can't see any of these, and the AI sounds equally confident when it is wrong.
+
+## What should every figure trace back to?
+
+Every figure needs four records, which Decks' `deck-data` skill requires: a record of where the number came from, a typed module that holds it, an import into the slide, and a citation on the slide.
+
+The record is `data-sources.md`, with a section per slide:
+
+```markdown title="data-sources.md"
+## Slide 3: Churn fell after the cache shipped
+
+| Claim / constant | Value and units | Status | Source / query | Retrieved / as of |
+| --- | --- | --- | --- | --- |
+| CHURN_AFTER | 3.1% of customers per month | confirmed | warehouse query in queries/churn.sql | 2026-11-18 |
+
+Definition: customers active on the first day of the month who cancelled before the last day.
+```
+
+The definition line, which names the population, numerator, denominator and period, catches the wrong-period mistake. The query and the returned row are kept, not just a link, because a link to a dashboard doesn't tell you what the dashboard showed on the day you copied the number.
+
+The figure lives in a typed module under `data/` with a comment naming the source, and the slide imports it:
+
+```ts title="data/churn.ts"
+// Source: warehouse, queries/churn.sql. Retrieved 2026-11-18. See data-sources.md, slide 3.
+export const CHURN_AFTER = 0.031;
+```
+
+Because the slide, the chart and the caption all read `CHURN_AFTER`, they can't drift apart, and a reviewer can see in one diff that the number changed and where it came from.
+
+## How do you check a deck before you present it?
+
+Go through the deck's claims in five steps. The agent can do most of this if you ask for it, but the evidence has to be rerun, not remembered.
+
+1. List every claim. That's numbers, dates, rankings, statuses, quotes, named people, and labels on chart annotations. Open every click step, because a number computed in a component may not appear anywhere in the source text.
+2. Rerun the source now. Run the recorded query against the current data, open the cited document, or read the file. A claim you haven't rerun this session isn't verified. If the query fails, the claim is unverifiable, which isn't the same as wrong.
+3. Compare the three versions: the source result, the constant in `data/`, and the number on the slide. Counts should match exactly, rounded values should match the recorded rounding, and percentages should match to a tenth of a point with the same denominator.
+4. Check the people. A real person, a direct quote or an anecdote needs a public record you can open. A clearly hypothetical "a customer" is fine, but any number in it still needs a source.
+5. Check the dates. A figure that can change and was retrieved more than 90 days ago is stale. A closed-period historical figure doesn't go stale with age.
+
+Decks' skill labels each outcome so the report is unambiguous: verified, mismatch, unsourced, unsourced-human (a real person or quote with no public record), unverifiable, stale, flagged for an author-reported claim, and external for an attributed claim you haven't checked. The agent writes the result to `fact-check-report.md`. Any claim the talk's main point rests on has to be resolved before the deck counts as ready.
+
+## Which commands catch what?
+
+Decks has no command that extracts and verifies claims. The fact check is a procedure the agent follows with you, and it's only as good as the queries it reruns.
+
+What the commands do catch:
+
+| Command | Catches |
+| --- | --- |
+| `decks check` | Malformed decks: slide names, config, speaker notes that don't match the click count, and error-level prose patterns |
+| `decks lint` | Stock AI phrasing in slide text, components and story cards, such as a negated claim followed by a grander one |
+| `decks inspect` | Content that overflows the slide or clips its own text at 1920 by 1080 |
+| `decks shot`, `decks film` | A PNG of one slide, or a contact sheet of one click's motion, so you can see what the audience sees |
+
+`decks init` also wires a hook for Claude Code and Codex that denies an edit adding an error-level prose pattern, so the agent rewrites the sentence before it lands in the file. That's a style control. It keeps the deck from sounding like a model wrote it, and says nothing about whether the figures are right.
+
+## What do you do about a claim you can't verify?
+
+Keep it visible. A claim someone told you, such as "our biggest customer saw a 40% drop," gets `FLAG: author-reported` in the data module and the source row, with who reported it and what would confirm it. If it stays on the slide, the slide carries the qualifier so the audience doesn't read it as established. The rule in Decks' skill is that a flag never turns into a smaller, unqualified number.
+
+Corrections need the same discipline. When a check finds a wrong figure, it goes into a banned-content table with the correct value, so a stale brief or a model's next suggestion can't put it back. Fix the constant, the chart domain and any sentence derived from it together.
+
+## Does this slow the first draft down?
+
+Yes, by the time it takes to set up the records. A first draft from the agent takes longer than a one-shot prompt, because it reads the data, records each figure and plans the story before it writes a slide. The payoff comes when the deck gets revised. You change a constant, the chart and caption follow, and the source row tells you which query to rerun. The [working with an agent](/docs/agents/) guide shows the loop on a sample deck, and the [Claude Code](/blog/make-slides-with-claude-code/) article covers prompts for the first draft.

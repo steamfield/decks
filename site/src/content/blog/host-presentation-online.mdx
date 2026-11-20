@@ -1,0 +1,100 @@
+---
+title: "How to host a presentation online for free"
+headline: "How to host a presentation online for free: publish a slide deck as a static site"
+description: "Host a presentation online for free by building your deck as a static site and deploying it to GitHub Pages, Cloudflare Pages or Netlify, with a shareable link."
+published: 2026-11-20
+keyword: "host a presentation online"
+feature: export
+relatedDocs:
+  - getting-started/quickstart
+  - config
+  - cli
+---
+
+A web-based slide deck builds to a folder of static files, and any static host can serve that folder for free. You run one build command, upload the output, and send people a link that opens the talk in a browser with working arrow keys, fullscreen and a presenter view. There's nothing to sign into and nothing to install on the viewer's side.
+
+This walkthrough uses Decks (`@steamfield/decks`), where `decks build` writes the site, and deploys it to GitHub Pages with a workflow that rebuilds on every push. The same build folder works on Cloudflare Pages, Netlify and Vercel.
+
+## What does the build produce?
+
+`decks build` writes a static site. Navigation uses the URL hash, so the output needs no server rewrite rules and works from any host, including a subfolder like `username.github.io/talks/q3/`.
+
+```bash title="Terminal"
+npx -p @steamfield/decks decks build talk
+```
+
+The result lands in `dist/talk/` by default: an `index.html`, an `assets/` folder with the JavaScript and CSS, and, when Chromium is available, an `og.png` link-preview image. The default `--base ./` makes every asset path relative, which is why the folder runs from any path without configuration. If your host needs absolute paths, pass `--base /talks/q3/`. You can also set the output with `--out`.
+
+## How do you deploy it to GitHub Pages?
+
+GitHub Pages serves the folder through an Actions workflow. In the repository, open Settings, then Pages, and set the source to GitHub Actions. Then add this file:
+
+```yaml title=".github/workflows/deploy-talk.yml"
+name: Deploy talk
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx -p @steamfield/decks decks build talk
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/talk
+      - id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+Push to `main` and the Actions tab shows the run. When it finishes, the deployment step prints the URL, which for a project repository looks like `https://username.github.io/repository/`. Check the action versions against [GitHub's custom workflow guide](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) before you copy this, because they get bumped. GitHub Pages on a private repository needs a paid GitHub plan, and every host caps free usage, so check current limits before a launch.
+
+`talk` is an alias registered in `decks.json`, which `decks new talk` writes, so commit that file. Or skip the alias and pass the directory: `decks build decks/talk`.
+
+## What about Cloudflare Pages, Netlify and Vercel?
+
+All three ask for two settings when you connect a repository: a build command and an output directory. Use `npx -p @steamfield/decks decks build talk` and `dist/talk`. Set the Node version to 22 or later, because Decks requires 22.12. Each host gives you a `*.pages.dev`, `*.netlify.app` or `*.vercel.app` address, and you can attach your own domain.
+
+For a one-off talk where you don't want a repository, drag the `dist/talk` folder onto Netlify's manual deploy page, or upload it with `wrangler pages deploy dist/talk` for Cloudflare.
+
+## How do you make a shared link look right?
+
+When someone pastes your link into Slack, a chat app or social media, the preview comes from `og:` tags in the page's `<head>`. Decks writes the title for you. Two settings in `deck.config.ts` fill in the rest:
+
+```ts title="deck.config.ts"
+import { defineDeck } from "@steamfield/decks/node";
+
+export default defineDeck({
+  title: "Q3 review",
+  info: "Revenue, churn and what the cache fixed.",
+  url: "https://talks.example.com/q3/",
+});
+```
+
+`info` becomes the page's description and the preview text. `url` is where the built deck is published. It adds `og:url`, and with a `public/og.png` or `og.jpg` in the deck it adds an absolute `og:image`, which chat apps need to show a picture. When the deck has no `public/og.png`, `decks build` renders slide 1 at 1200 by 630 into the build as `og.png`. To use that image for previews, copy it into `public/og.png` and commit it. Rendering it needs a Chromium for Playwright; without one the build still succeeds and prints one warning.
+
+## Can people find the deck through search?
+
+Not by its slide text. The built page is a JavaScript application: the HTML a crawler downloads has the title, description and `og:` tags, and an empty container where the slides render once the script runs. Search engines that run JavaScript may index more than that, but you shouldn't count on it for a deck.
+
+If a talk should be findable, put its text where crawlers can read it. Publish an article or a page with the argument in prose, embed or link the deck from there, and attach the PDF as a download. `decks export talk` writes one, with a page per click step, or one per slide with `--final`. It needs Playwright's Chromium, installed with `npx playwright install chromium`.
+
+## What should you check before sending the link?
+
+Open the deployed URL in a private window, since it's the version your audience sees. Press the right arrow through the whole talk, because a chart that loads data from a local file path will break on the host even though it worked on your laptop. Press `f` for fullscreen and `p` to confirm the presenter window opens. A live terminal slide shows its recording on the host, because it runs real commands only under `decks dev --live-term`.
+
+Everything you deploy is public, including speaker notes, which ship inside the build. For a confidential talk, put access control in front of the host, such as Cloudflare Access or a password on the site, or share the exported PDF instead.
+
+If you've never built a deck, the [quickstart](/docs/getting-started/quickstart/) covers scaffolding one, and the [CLI reference](/docs/cli/) lists every flag on `export` and `shot`.

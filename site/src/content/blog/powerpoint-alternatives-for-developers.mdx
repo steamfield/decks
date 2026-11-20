@@ -1,0 +1,84 @@
+---
+title: "PowerPoint alternatives for developers"
+headline: "PowerPoint alternatives for developers: Marp, Slidev, reveal.js, Quarto and Decks"
+description: "PowerPoint alternatives for developers: tools that treat slides as code. Compare Marp, Slidev, reveal.js, Quarto, Spectacle and Decks, and who each one suits."
+published: 2026-11-20
+keyword: "powerpoint alternatives for developers"
+feature: comparison
+relatedDocs:
+  - overview
+  - getting-started/quickstart
+---
+
+If you write code for a living, the best PowerPoint alternative is usually a tool where slides are text files: you write the talk in your editor, keep it in git and run it in a browser. Marp is the quickest to learn, Slidev suits a Vue developer, reveal.js gives you the most control over HTML, Quarto fits anyone whose talk contains computed output, and Decks is built for React developers and for talks written with a coding agent.
+
+All of them trade the drag-and-drop editor for a text file, and that trade only pays off if you're comfortable in an editor. If your slides get edited by people who aren't, stay in PowerPoint, Keynote or Google Slides.
+
+## Why do developers look for a PowerPoint alternative?
+
+Developers usually leave PowerPoint over four problems. Code on a slide is hard: syntax highlighting is manual, a long snippet gets cut off, and highlighting line 4 and then line 9 means building duplicate slides. Version control doesn't work, because a `.pptx` file is a binary blob, a diff shows nothing and a merge means picking one copy. Charts tend to be pasted images that go stale when the data changes. And the deck can't be generated, scripted or edited by a program, so an AI coding agent can't help with it.
+
+A text-based tool fixes the first two directly, and the third when the chart reads the data. The fourth, an agent that edits slides, depends on how small and readable each slide file is. I covered the git side separately in [presentations as code](/blog/presentations-as-code/).
+
+## How do the main alternatives compare?
+
+All six tools take slides as text. They differ in what you write and what you can export.
+
+| | You write | Runs on | Exports | Best for |
+| --- | --- | --- | --- | --- |
+| Marp | Markdown, one file | Plain HTML | PDF, PPTX, images, HTML | Simple text-and-image decks |
+| Slidev | Markdown with Vue components | Vue and Vite | PDF, PPTX, PNG, web app | Developer talks with live code |
+| reveal.js | HTML, or Markdown inside it | Plain JavaScript | HTML, PDF through print | Full control and a large plugin ecosystem |
+| Quarto | Markdown with code cells | Pandoc and reveal.js | HTML, PowerPoint, Beamer PDF | Talks that include computed results |
+| Spectacle | JSX | React | HTML, PDF through print | React teams writing slides as components |
+| Decks | MDX, one file per slide | React | Web, PDF, PNG | Animated data talks and agent-written decks |
+
+Marp's default `--pptx` writes one image per slide, so the text isn't editable in PowerPoint; it has an experimental editable mode that its authors advise against when the look matters. Slidev's default PPTX export is also slide images, with a separate editable mode on its command line. Quarto produces real PowerPoint slides from the same source as its reveal.js version, though the mapping from its slide elements to PowerPoint layouts is imperfect.
+
+## Marp: Markdown in, slides out
+
+[Marp](https://marp.app/) is the lowest-friction option. A deck is one Markdown file with `---` between slides, and the Marp VS Code extension previews it as you type. Themes are CSS. It has no component model, so a slide that needs behavior falls back on raw HTML. For a talk that is headings, bullets, images and a few code blocks, it is usually all you need.
+
+## Slidev: for Vue developers who present code
+
+[Slidev](https://sli.dev/) is Markdown on top of Vue and Vite. Slide components are Vue components, a code block can step through highlighted line ranges, and Monaco gives you an editable code block on the slide. It is actively maintained and has a large community. If your team writes Vue, it is the obvious choice. If it writes React, the slide components are in a different framework from the rest of your code. The [Slidev vs Marp vs reveal.js](/blog/slidev-vs-marp/) comparison goes deeper.
+
+## reveal.js: plain HTML with a plugin ecosystem
+
+[reveal.js](https://revealjs.com/) has been around the longest, with nested slides, a plugin ecosystem, Auto-Animate and PDF export through the browser's print dialog. You write HTML, or Markdown inside an HTML shell. Because it's plain JavaScript, there's no build step to start. The cost is that everything beyond the defaults is yours to assemble. It now has official React bindings, and the [React presentation frameworks](/blog/react-presentation-frameworks/) article compares them.
+
+## Quarto: slides that contain computed results
+
+[Quarto](https://quarto.org/docs/presentations/) is a publishing system for documents that run code. A slide can hold a Python, R or Julia cell whose output, a plot or a table, is rendered into the slide each time you build. It supports reveal.js, PowerPoint and Beamer from one source, and its docs recommend reveal.js as the most capable. If your talk is an analysis, this is the one that keeps the numbers tied to the code that produced them.
+
+## Spectacle: slides as React components
+
+Spectacle, from Formidable, is the long-standing React slide library. A deck is a tree of `Deck`, `Slide` and layout components, which suits a team that wants slides to share design-system components with its product. Prose is awkward in JSX, so Spectacle offers Markdown and MDX options for text-heavy slides.
+
+## Decks: React and MDX, with motion built in
+
+Decks (`@steamfield/decks`) is the tool this site is for, so weigh my opinion accordingly. It's a React 19 framework where each slide is an MDX file and components are plain React. What separates it from the others is the part of a talk that moves. `ChartSteps` redraws a chart from one state of the data to the next on each click, story stages keep one figure on screen and change it per click with a matching caption, and the compiler counts click steps from the source, so you don't maintain a total by hand.
+
+`decks init` sets a project up for Claude Code or Codex, and `decks check`, `decks lint` and `decks inspect` flag malformed decks, stock AI phrasing in slide text and content that overflows the slide.
+
+It has limits. It's React only, it exports PDF and PNG but not PowerPoint files, and it needs Node 22.12 or later. The community is far smaller than Slidev's or reveal.js's.
+
+## Which one should you pick?
+
+- Text, images and a few code blocks, in the least time: Marp.
+- A Vue team presenting code: Slidev.
+- An existing reveal.js deck or a need for its plugins: reveal.js.
+- Analysis with live computed output: Quarto.
+- A React team whose slides are mostly static components from its design system: Spectacle.
+- Animated charts, a deck an agent writes and you review, or a talk built around a dataset: Decks.
+- Collaborators who edit by dragging boxes, or a client who wants `.pptx`: stay in PowerPoint or Google Slides.
+
+To try Decks, the [quickstart](/docs/getting-started/quickstart/) scaffolds a deck and has it running in a browser in a few commands, and the [overview](/docs/) lists what ships in the package.
+
+```bash title="Terminal"
+bun add @steamfield/decks react react-dom
+bunx -p @steamfield/decks decks new talk
+bunx -p @steamfield/decks decks dev talk
+```
+
+Keep the `-p @steamfield/decks` part of the command. The bare `decks` name on npm belongs to an unrelated package.

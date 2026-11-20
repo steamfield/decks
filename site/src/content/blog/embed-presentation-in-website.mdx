@@ -1,0 +1,92 @@
+---
+title: "How to embed a presentation in a website"
+headline: "How to embed a presentation in a website with an iframe"
+description: "Embed a presentation in a website with an iframe: the markup, a responsive wrapper, a start slide in the URL, and what the embedded flag turns off in Decks."
+published: 2026-11-20
+keyword: "embed presentation in website"
+feature: presenting
+relatedDocs:
+  - presenting
+  - config
+  - canvas
+---
+
+import DeckDemo from "../../components/blog/DeckDemo.astro";
+
+To embed a web-based presentation in a page, host the built deck somewhere and point an `iframe` at it. The deck runs inside the frame with its own arrow-key navigation, so a reader can step through the talk without leaving your article. For a Decks deck, add `?embedded` to the URL so the deck behaves like a guest in someone else's page.
+
+The embed itself is one tag.
+
+```html title="The embed"
+<iframe
+  src="https://talks.example.com/q3/?embedded"
+  title="Q3 review, slides"
+  loading="lazy"
+  allow="fullscreen"
+  style="width: 100%; aspect-ratio: 16 / 9; border: 0"
+></iframe>
+```
+
+The examples use Decks (`@steamfield/decks`). Any presentation tool that publishes a web page can be framed the same way, but the URL parameters below are specific to Decks.
+
+## What do you need before you can embed a deck?
+
+A URL. The iframe loads a deck that is already hosted, so build it and deploy it first. [Hosting a presentation online](/blog/host-presentation-online/) covers GitHub Pages, Cloudflare Pages and Netlify. If the host sends an `X-Frame-Options` header or a `frame-ancestors` rule in its Content Security Policy that excludes your page, the browser refuses to draw the frame and you'll see a blank box. Static hosts don't send either by default.
+
+The deck can be on a different domain from the page that embeds it.
+
+## How do you make the embed responsive?
+
+Set the frame's width to 100% and give it an aspect ratio instead of a fixed height. Decks draws slides on a 1920 by 1080 canvas and scales it to fill its window, so a frame with the same 16:9 shape shows the whole slide with no bars. This is the `aspect-ratio: 16 / 9` line in the snippet above.
+
+If you changed the deck's `canvas` in `deck.config.ts`, change the ratio to match. A deck on a 1920 by 1200 canvas wants `16 / 10`. The slide always fills its window, so a frame with a different shape doesn't letterbox. The canvas grows on one side, and content built for the original shape can end up cramped or cropped.
+
+## How do you open on a particular slide?
+
+The deck's position is in the URL hash, so you pick the starting slide in the `src`:
+
+| URL | Opens on |
+| --- | --- |
+| `/q3/?embedded` | The first slide |
+| `/q3/?embedded#/5` | Slide 5 at click 0 |
+| `/q3/?embedded#/5?clicks=2` | Slide 5 after its second click |
+
+One article can embed several frames of the same talk, each on the slide it is discussing. Frames on one page don't drive each other, because an embedded deck doesn't sync.
+
+To skip animation, for a frame that sits low on a long page or one that should show a finished state, add `motion=instant`: `/q3/?embedded&motion=instant#/5`. Every slide then renders its end state for the click with no transitions.
+
+## What does `?embedded` change?
+
+The flag tells the deck it is running inside another page, and Decks turns off the controls that need the whole browser window:
+
+- The control tray in the bottom-left corner doesn't appear.
+- The `p` key doesn't open the presenter window, and `g` doesn't open the go-to dialog.
+- Two-window sync is off, so the frame doesn't follow a presenter window in the same browser.
+- Navigation replaces the history entry instead of adding one. Without this, every slide change would add an entry to the host page's history, and the Back button would step the deck backward instead of leaving the page.
+- Live terminal panes stay on their recorded fallback, since they only run in the play view when the deck isn't embedded.
+
+Arrow keys still work, and so does `f` for fullscreen when the iframe has `allow="fullscreen"`. Without that attribute, browsers won't let a frame go fullscreen.
+
+## Why don't the arrow keys work until you click?
+
+Keyboard events go to the focused element, and a page with an iframe starts with focus on the host page. A reader has to click inside the frame once before the arrow keys move the deck. Browsers don't give focus to a frame until it's clicked or focused by script.
+
+Say so in the text next to the frame: "Click the slide, then use the arrow keys."
+
+<DeckDemo example="motion-reel" caption="A Decks deck running inside a page." />
+
+## Where does the embed code go in a CMS or blog tool?
+
+Most publishing tools have a raw HTML or embed block. WordPress has the Custom HTML block, Ghost has an HTML card, and Notion's embed block takes the deck's URL directly. Paste the iframe tag, or the URL for Notion, and preview before publishing. Some hosted platforms strip `iframe` tags from posts. If yours does, link to the deck with an image of the cover slide instead.
+
+## What about search engines and accessibility?
+
+A search engine sees an iframe as a link to another page. The text of your slides belongs to the deck's URL, not to the article that embeds it, and the built deck's HTML holds little text until its script runs ([hosting a presentation online](/blog/host-presentation-online/) covers this). If the talk's argument matters for search, write it in the page around the frame. A short summary of each section, followed by the embed, gives crawlers the text.
+
+The same applies to accessibility. Give the iframe a `title` that says what's in it, as the snippet does, and make sure the page has the key takeaways in text so a reader who can't use the frame still gets them. For a downloadable version, `decks export talk` writes a PDF with a page per click step, and you can link it under the frame.
+
+## When should you embed, and when should you link?
+
+Embed when the deck illustrates the article: a chart that moves, a walkthrough of a code change, a demo the reader can pause. Link when the deck is the main thing and the reader will want fullscreen and the presenter tools. Opening the deck's own URL gives them the control tray and the presenter window on `p`, both of which `?embedded` turns off.
+
+To try it with a deck of your own, the [quickstart](/docs/getting-started/quickstart/) scaffolds one. The [presenting guide](/docs/presenting/) lists the keys and URL parameters.

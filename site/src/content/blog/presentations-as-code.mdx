@@ -1,0 +1,102 @@
+---
+title: "Presentations as code: slides in git"
+headline: "Presentations as code: how to keep slides in git and review them like a pull request"
+description: "Presentations as code means slides live in plain text files in git, so diffs, pull requests and CI work on a talk. How it works, and where it falls short."
+published: 2026-11-20
+keyword: "presentations as code"
+feature: authoring
+relatedDocs:
+  - getting-started/quickstart
+  - cli
+  - agents
+---
+
+A `.pptx` file is a zip archive of XML and media. Git stores it as one opaque blob, so when a colleague changes a number on slide 14, the diff says "binary files differ". PowerPoint has its own compare feature, but a pull request can't show it, so review means opening both versions and comparing them. Two people editing the same deck produce two copies and a manual merge.
+
+Presentations as code fixes this by making the slides plain text. A slide is a file, an edit is a line in a diff, and the deck goes through the same pull request, review and CI process as the rest of your repository. Marp, Slidev, reveal.js, Quarto and Decks all work this way. They differ in what a slide file contains and what you can check automatically.
+
+The examples below use Decks (`@steamfield/decks`), a React slide framework where each slide is an MDX file. The workflow carries over to the other tools, and I'll say where it doesn't.
+
+## What does a presentation look like as code?
+
+In Decks a deck is a directory. Each slide is one `.mdx` file in `slides/`, sorted by filename, with React components in `components/` that every slide can use:
+
+```text title="decks/quarterly/"
+deck.config.ts          title and deck-wide settings
+slides/01-cover.mdx
+slides/02-revenue.mdx
+slides/03-churn.mdx
+components/             .tsx files every slide can use
+data/revenue.ts         the figures, typed
+data-sources.md         where each figure came from
+```
+
+A slide is Markdown with the occasional component:
+
+```mdx title="slides/02-revenue.mdx"
+import { Q3_GROWTH } from "../data/revenue";
+
+# Revenue grew {Math.round(Q3_GROWTH * 100)}% in Q3.
+
+<RevenueChart quarters={4} />
+```
+
+You can read every slide in a text editor, search the whole talk with `grep`, and rename a slide by renaming its file.
+
+## What does git give you that a slide tool doesn't?
+
+The diff is the first change. Say a reviewer asks you to correct a claim. The change is two lines, and the pull request shows exactly which slide, which sentence and which click step it touched:
+
+```diff title="slides/04-results.mdx"
+-<Step at={2} as="p">No customer-facing errors during the switch.</Step>
++<Step at={2} as="p">Two customer-facing errors during the switch, both retried.</Step>
+```
+
+History answers questions too. `git log slides/03-churn.mdx` tells you who changed the churn slide and when, and `git blame` tells you who wrote the sentence a customer disputes. A slide tool's version history can show you older copies of the whole file, but it can't tell you which line changed between them.
+
+A talk can also serve more than one audience from one branch. A slide with `hide: true` in its frontmatter is dropped before numbering, so the extra slides for a longer version can stay in the repository, and a fix to a shared slide is made once.
+
+## Can you review a slide deck in a pull request?
+
+Yes, with one limit: a diff of source shows what changed in the text, not how the slide looks. A reviewer approving a one-line edit can't see that the new sentence wraps onto a second line and pushes a chart off the canvas.
+
+Decks closes part of that gap with commands you can run in CI or locally. `decks check` verifies the deck registry, slide filenames, config and speaker notes, and exits with status 1 when something is wrong. It also reports error-level prose patterns, the stock phrasings of AI-written text, so a slide that leans on one of those stock patterns fails the check. A CI job for it takes a few lines:
+
+```yaml title=".github/workflows/deck.yml"
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+- run: npm ci
+- run: npx -p @steamfield/decks decks check
+```
+
+The visual checks need a browser. `decks inspect` opens every slide at its last click and lists any element that leaves the canvas or clips its own text. `decks shot` writes one slide as a PNG, which you can attach to the pull request. Both use Playwright's Chromium, so a CI job that runs them first installs it with `npx playwright install chromium`.
+
+Marp and Slidev support the same loop for text changes: a Markdown diff, a pull request, and an export step in CI.
+
+## What do coding agents change about this?
+
+A coding agent such as Claude Code or Codex edits text files in a repository. It can only change a `.pptx` through a library, and you can't diff what it changed. A deck stored as one MDX file per slide gives it a small file to open and a diff you can read afterward.
+
+An agent changing slide 7 opens `07-*.mdx` and leaves slide 12 alone. In a single-file format the same edit sits inside a longer file, and the diff you review is longer too.
+
+`decks init` sets a project up for this. It enables the Decks Claude Code plugin, copies the skills to `.agents/skills/` for Codex and adds a Decks section to `AGENTS.md`. The [working with an agent](/docs/agents/) guide walks through the loop. The [Claude Code](/blog/make-slides-with-claude-code/) and [Codex](/blog/make-presentations-with-codex/) articles cover the prompting side.
+
+## How do figures stay correct when slides are code?
+
+In a text deck, the chart on slide 3 and the sentence on slide 9 can import the same constant, so changing the source once updates both.
+
+Decks' `deck-data` skill requires this. Every figure lives in a typed module under `data/`, opens with a comment saying where it came from, and imports into the slide instead of being retyped. A `data-sources.md` file records the query, the result and the retrieval date for each slide. A reviewer reading the diff sees a changed number in `data/revenue.ts` and the changed row in `data-sources.md`.
+
+```ts title="data/revenue.ts"
+// Source: finance warehouse, query in data-sources.md (slide 2). Retrieved 2026-11-18.
+export const Q3_GROWTH = 0.18;
+```
+
+## When is a PowerPoint file still the right answer?
+
+When the people editing the deck don't work in a code editor, text slides cost you more than they return. A sales team that adjusts a template for each customer, or a design team that tunes every slide by eye, will be slower in a repository and will route around it.
+
+The same goes for any situation where the required deliverable is an editable `.pptx`. Decks exports PDF and PNG, not PowerPoint files. Marp and Slidev can write `.pptx`. In both, the default output is an image per slide, so the text isn't editable in PowerPoint, and each has a separate editable mode. Quarto renders real PowerPoint output from the same source as its reveal.js slides, with some loss in how slide elements map to layouts.
+
+The case where code wins is a talk that changes: a quarterly review rebuilt every three months from new data, a conference talk that grows for a year, a deck maintained by a team that already reviews code. For that kind of deck, the quickest way to see the difference is to scaffold one and look at the diff of your first edit. The [quickstart](/docs/getting-started/quickstart/) takes a few minutes and ends with a running deck.
