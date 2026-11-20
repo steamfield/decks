@@ -10,7 +10,7 @@ import {
   readingMinutes,
 } from "../lib/blog";
 import { type DocEntry, docHref } from "../lib/docs";
-import { landingCss } from "../lib/tokens";
+import { landingCss, ruleCss } from "../lib/tokens";
 import "../styles/blog.css";
 import BaseLayout from "./BaseLayout.astro";
 
@@ -42,6 +42,7 @@ const date = (value: Date) =>
   modifiedTime={data.updated.toISOString()}
   jsonLd={[blogPosting(post), blogBreadcrumbs(post)]}
 >
+  <style is:inline set:html={ruleCss()} />
   <style is:inline set:html={landingCss(undefined, "[data-demo]")} />
   <div class="blog-page">
     <article class="blog-article">

@@ -25,7 +25,7 @@ When a slide's frontmatter has no `clicks`, the total is read from the MDX sourc
 
 So this slide has two clicks with no `clicks:` line:
 
-```mdx
+```mdx demo="guide-demos/counted-clicks"
 <Step at={1}>First</Step>
 <Step at={2}>Second</Step>
 ```
@@ -126,7 +126,7 @@ Reveals text word by word or character by character on one click. Its child must
 ```mdx demo="guide-demos/text-reveal"
 <TextReveal at={1} by="word" enter="rise">The library now opens on Sundays.</TextReveal>
 
-<TextReveal at={1} by="char" enter="blur">{"Ten to\nsix."}</TextReveal>
+<TextReveal at={1} by="char" enter="blur">Ten to six.</TextReveal>
 ```
 
 Props: `at`, `by` (`"word"` by default, or `"char"`), `enter`.

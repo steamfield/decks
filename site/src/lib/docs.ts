@@ -78,3 +78,32 @@ export function llmsFull(
     .map(toMarkdownExport);
   return `# ${site.name}\n\n> ${site.tagline}\n\n${pages.join("\n")}`;
 }
+
+export type OutlineItem = { slug: string; label: string; code: boolean };
+
+/** The words of a command signature before its first argument: `decks new <alias> [dir]` is `decks new`. */
+export function commandName(signature: string): string {
+  const words = signature.split(/\s+/);
+  const end = words.findIndex((word) => /^[<[-]/.test(word) || word.includes("|"));
+  return end > 0 ? words.slice(0, end).join(" ") : signature;
+}
+
+/**
+ * The sidebar's list of a page's h2s. An h2 whose Markdown is one code span (a CLI signature) is
+ * labelled with just the command and flagged `code`; the page heading and its anchor are unchanged.
+ */
+export function outline(
+  headings: readonly { depth: number; slug: string; text: string }[],
+  body: string,
+): OutlineItem[] {
+  const codeOnly = new Set(
+    Array.from(body.matchAll(/^## `([^`\n]+)`[ \t]*$/gm), (match) => match[1] ?? ""),
+  );
+  return headings
+    .filter((heading) => heading.depth === 2)
+    .map(({ slug, text }) =>
+      codeOnly.has(text)
+        ? { slug, label: commandName(text), code: true }
+        : { slug, label: text, code: false },
+    );
+}

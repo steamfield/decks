@@ -2,6 +2,9 @@
 
 `@steamfield/decks/kit` is the optional kit import path for data-storytelling decks: a token theme, a "story stage" (one pinned visualization per slide, advanced by clicks, with a prose card), a chart wrapper, and a stylesheet. Two example decks use it and are the references for this page: `examples/tides-slide` (two slides, the smallest working story deck) and `examples/building-for-agents` (19 slides with its own design system).
 
+```mdx demo="building-for-agents"
+```
+
 ## Setting up a deck
 
 Add `@steamfield/decks` to the deck's dependencies, then do three things.
@@ -39,20 +42,20 @@ export { StoryCover } from "@steamfield/decks/kit";
 
 | Export | What it is |
 | --- | --- |
-| `resolveTheme`, `installTheme`, `theme`, `ink`; types `Theme`, `Hue` | The theme. |
+| `resolveTheme`, `installTheme`, `theme`, `ink`<br>Types: `Theme`, `Hue` | The theme. |
 | `StoryStage`, `StoryLayer`, `StoryCard`, `StoryCover`, `StoryLink`, `STAGE` | Story stage components and the stage's 1920x1080 box. |
 | `useStage`, `useScriptedDemo` | Hooks that drive a stage from clicks. |
 | `OpenChart`, `ChartSteps`, `slideChartTheme`, `scaleChartTheme`, `slideChartAnimation`, `useFrameScale` | Charts, and a chart whose data changes per click. |
-| `MotionTemplate`, `useTemplateMotion`; types `MotionTemplateProps`, `MotionTemplateName`, `TemplateProps` | Ready-made motion graphics and the hook they are built on. See [motion-templates.md](motion-templates.md). |
+| `MotionTemplate`, `useTemplateMotion`<br>Types: `MotionTemplateProps`, `MotionTemplateName`, `TemplateProps` | Ready-made motion graphics and the hook they are built on. See [motion-templates.md](motion-templates.md). |
 | `Scene3D` | A three.js scene on the click timeline, with a still poster everywhere else. |
 | `OdQrCard`, `OdByline`, `OdCoverHead`, `OdEyebrow`, `OdLogo` | A QR code card, a byline row, the cover's brand row, a small overline label, and the theme's brand mark. |
-| `InkLine`, `InkBars`, `InkTimeline`, `InkTimelineCursor`, `InkRule`, `InkNumber`, `InkChip`, `InkCardRect`, `InkPing`, `UnitGrid`, `Underline`, `CodeInk`, `Graph3D`; handle types `LineHandle`, `BarsHandle`, `GrowHandle`, `RuleHandle`, `UnitGridHandle`, data types `InkBarRow`, `InkStep`, `DrawOptions` | Marks for story stages: lines, bars, timelines, rules, figures that count up, chips, card outlines, focus rings, unit grids (waffles), underlines, SQL with ink, and a 3D graph (live WebGL on the slide, an SVG still everywhere else). A mark that grows itself exposes a handle the stage adds to its timeline through a ref. |
+| `InkLine`, `InkBars`, `InkTimeline`, `InkTimelineCursor`, `InkRule`, `InkNumber`, `InkChip`, `InkCardRect`, `InkPing`, `UnitGrid`, `Underline`, `CodeInk`, `Graph3D`<br>Handle types: `LineHandle`, `BarsHandle`, `GrowHandle`, `RuleHandle`, `UnitGridHandle`<br>Data types: `InkBarRow`, `InkStep`, `DrawOptions` | Marks for story stages: lines, bars, timelines, rules, figures that count up, chips, card outlines, focus rings, unit grids (waffles), underlines, SQL with ink, and a 3D graph (live WebGL on the slide, an SVG still everywhere else). A mark that grows itself exposes a handle the stage adds to its timeline through a ref. |
 | `useStageEntrance`, `useStageMap`, `entrance`, `fadeIn`, `fadeOutInPlace`, `riseIn`, `easeHeight`, `RISE`, `prefersReducedMotion`, `resolvePosition` | Lower-level stage helpers: a one-shot entrance, stage-to-overlay coordinates, gsap tween presets, the reduced-motion check, and timeline position resolution. |
 | `brushRibbon`, `inkStyle`, `polylinePath`, `STORY_STYLE`, `STROKE`, `hash`, `hashRange`, `hashSigned`, `rippleProgress`, `parliament`, `tokenizeSql`, `UNIT_GRID_DEFAULTS`, `unitCellCenter`, `unitCellHeight`, `lerp`, `stackEndLabels`, `CATEGORICAL_COLORS`, `CANVAS` | Drawing primitives for custom marks: hand-drawn ribbons seeded by data identity, stroke styles, seeded hashes, ripple and hemicycle layouts, SQL tokens, unit-grid geometry, and the theme's categorical palette and canvas color. |
 | `DUR`, `SETTLE`, `DRAW`, `TRACE`, `SETTLE_CSS`, `DRAW_CSS`, `TRACE_CSS`, `easedStagger` | The story duration table (seconds), three gsap ease names, the same curves as CSS strings, and an eased stagger offset. |
 | `xScale`, `yScale`, `clamp01`, `stagger` | Linear scales (d3-scale) for stage coordinates, a 0 to 1 clamp, and per-item progress within one staggered beat. |
 | `FILTER_IDS`, `filterUrl` | SVG filters every `StoryStage` defines (marker textures and a glow), referenced as `filter={filterUrl(FILTER_IDS.glow)}`. |
-| `LiveTerm`; type `LiveTermStatus` | A real shell on a slide, one command per click, with a fallback wherever a shell can't run. See [terminal.md](terminal.md). |
+| `LiveTerm`<br>Type: `LiveTermStatus` | A real shell on a slide, one command per click, with a fallback wherever a shell can't run. See [terminal.md](terminal.md). |
 | `gsap` | The motion package's gsap instance, re-exported. |
 
 The package also exports `@steamfield/decks/kit/styles.css`. Nothing else is public.
@@ -303,7 +306,7 @@ card={<StoryCard anchor="left" hue="rose" lead={copy.lead} body={copy.body} />}
 
 `StoryCover` is a cover or closing slide built on `StoryStage`. `examples/tides-slide/slides/01-cover.mdx`:
 
-```mdx
+```mdx demo="guide-demos/story-cover"
 <StoryCover brand
   title={<>Tides run on<br />the Moon's clock.</>}
   lede="Why the sea rises twice a day, and why some coasts get far more of it."

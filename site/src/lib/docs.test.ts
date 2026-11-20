@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { type DocEntry, docsNav, llmsFull, llmsIndex, pageLinks, toMarkdownExport } from "./docs";
+import {
+  type DocEntry,
+  docsNav,
+  llmsFull,
+  llmsIndex,
+  outline,
+  pageLinks,
+  toMarkdownExport,
+} from "./docs";
 
 const groups = [
   { id: "getting-started", label: "Getting started" },
@@ -83,5 +91,38 @@ describe("agent-readable exports", () => {
     const text = llmsFull(site, nav, entries);
     expect(text.indexOf("# Installation")).toBeLessThan(text.indexOf("# Later"));
     expect(text.indexOf("# Later")).toBeLessThan(text.indexOf("# Configuration"));
+  });
+});
+
+describe("outline", () => {
+  const signatures = [
+    ["decks new <alias> [dir] [--story]", "decks new"],
+    ["decks check", "decks check"],
+    ["decks lint [alias...] [--stdin]", "decks lint"],
+    ["decks hook lint|prompt", "decks hook"],
+    ["decks init [--force]", "decks init"],
+  ] as const;
+  const body = [
+    ...signatures.map(([text]) => `## \`${text}\`\n\nText.`),
+    "## Share image",
+    "### `decks dev <deck>`",
+  ].join("\n\n");
+  const headings = [
+    ...signatures.map(([text]) => ({ depth: 2, slug: text, text })),
+    { depth: 2, slug: "share-image", text: "Share image" },
+    { depth: 3, slug: "dev", text: "decks dev <deck>" },
+  ];
+
+  it("labels a code-only h2 with its command and keeps prose h2s", () => {
+    expect(outline(headings, body)).toEqual([
+      ...signatures.map(([text, label]) => ({ slug: text, label, code: true })),
+      { slug: "share-image", label: "Share image", code: false },
+    ]);
+  });
+
+  it("leaves an h2 that only contains code among prose as it is", () => {
+    expect(
+      outline([{ depth: 2, slug: "x", text: "Run decks check" }], "## Run `decks check`\n"),
+    ).toEqual([{ slug: "x", label: "Run decks check", code: false }]);
   });
 });

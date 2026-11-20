@@ -580,7 +580,7 @@ export function DeckPlayer({
         aria-label={`Deck player: ${example.title}.${phase === "poster" ? "" : " Arrow keys step, Shift moves a slide."}`}
         tabIndex={phase === "poster" ? undefined : 0}
         onKeyDown={onKeyDown}
-        className="player"
+        className="player brand-top"
         data-player
         data-phase={phase}
         data-fullscreen={fullscreen || undefined}

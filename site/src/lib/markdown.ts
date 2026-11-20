@@ -47,8 +47,9 @@ const isElement = (node: unknown): node is HastElement =>
 const demoMeta: ShikiTransformer = {
   name: "deck-demo-meta",
   pre(node) {
-    const ref = parseDemo(this.options.meta?.__raw);
-    if (ref) node.properties["data-demo"] = `${ref.deck}/${ref.first}..${ref.last}`;
+    const raw = this.options.meta?.__raw;
+    // Validates the attribute while the page renders; the figure plugin parses it again.
+    if (parseDemo(raw)) node.properties["data-demo"] = raw;
   },
 };
 
@@ -67,9 +68,8 @@ const deckDemos: HastPluginEntry = () =>
         );
         const marked = pre?.properties["data-demo"] ?? pre?.properties.dataDemo;
         if (!pre || typeof marked !== "string") return;
-        const [deck, span] = marked.split("/");
-        const [first, last] = (span ?? "").split("..");
-        if (!deck || !first || !last) throw new Error(`Malformed demo marker ${marked}`);
+        const ref = parseDemo(marked);
+        if (!ref) throw new Error(`Malformed demo marker ${marked}`);
         // Sätteri's nodes are read-only: frame a copy of the code without the marker.
         const { "data-demo": _marker, dataDemo: _camel, ...properties } = pre.properties;
         const code = {
@@ -78,7 +78,8 @@ const deckDemos: HastPluginEntry = () =>
             child === pre ? { ...pre, properties } : child,
           ),
         };
-        const { example, range } = demoPlayer({ deck, first, last });
+        const player = demoPlayer(ref);
+        const { example } = player;
         const poster = example.poster;
         const stage = poster
           ? el("picture", {}, [
@@ -104,26 +105,37 @@ const deckDemos: HastPluginEntry = () =>
           : el("p", {}, [{ type: "text", value: "Run make demo to shoot this demo's poster." }]);
         context.replaceNode(
           node as never,
-          el("figure", { className: ["deck-demo", "not-prose"], dataDeckDemo: "" }, [
+          el("figure", { className: ["deck-demo", "not-prose"], dataDeckDemo: player.kind }, [
             el(
               "div",
               {
                 className: ["deck-demo-stage"],
-                dataDeckDemoPlayer: JSON.stringify({ example, range }),
+                dataDeckDemoPlayer: JSON.stringify(player),
               },
               [stage],
             ),
-            code,
+            ...(player.kind === "reel" ? [] : [code]),
             el("figcaption", {}, [
               { type: "text", value: "Live demo: " },
               el(
                 "a",
                 {
-                  href: `${example.href}#/${range.first}`,
+                  href:
+                    player.kind === "range"
+                      ? `${example.href}#/${player.range.first}`
+                      : example.href,
                   target: "_blank",
                   rel: "noopener",
                 },
-                [{ type: "text", value: "open this slide in a new tab" }],
+                [
+                  {
+                    type: "text",
+                    value:
+                      player.kind === "reel"
+                        ? "open the deck in a new tab"
+                        : "open this slide in a new tab",
+                  },
+                ],
               ),
             ]),
           ]) as never,

@@ -15,7 +15,7 @@ html[data-page="landing"] {
   --radius-lg: 8px;
   --header-height: 56px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  /* The brand rule: the theme's step-2 hues, on the players, the hero's window and the closing CTA. */
+  /* The brand rule: the theme's step-2 hues, on the players, the hero's window (.brand-top) and the closing CTA. */
   --brand-rule: linear-gradient(
     90deg,
     var(--color-rule-1),
@@ -166,11 +166,6 @@ html[data-page="landing"] :focus-visible {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-}
-.hero-fineprint {
-  color: var(--color-muted);
-  font-size: 13px;
-  line-height: 1.5;
 }
 .button-primary,
 .button-secondary {
@@ -842,19 +837,19 @@ html:not(.js) .motion-showcase :is(.player-loading, .player-status) {
   gap: 12px;
   --sf-font-size: 12px;
 }
-/* The brand rule as the window's top border. The window clips its overflow, so the rule can't be
-   drawn over the border as on the player: the top border is transparent over the gradient, the
-   canvas fills the padding box, and the border follows the rounded corners. */
 /* A window one step above the canvas, with its title bar one step above that, edged like the
-   install block beside it; dividers inside stay at the quieter line. */
+   install block beside it; dividers inside stay at the quieter line. The window clips its overflow,
+   so the shared top rule (.brand-top in global.css) sits inside it at the top edge instead of over
+   the border: the top border is dropped and the clip's rounded corners trim the bar's ends. */
 .agent-session-window {
   --sf-demo-subtle-bg: var(--color-raised);
   border-color: var(--color-line-strong);
-  border-top: 2px solid transparent;
+  border-top-width: 0;
   border-radius: var(--radius-lg);
-  background:
-    linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
-    var(--brand-rule) border-box;
+  background: var(--color-panel);
+}
+.agent-session-window.brand-top::before {
+  inset: 0;
 }
 .agent-session-window [data-part="window-bar"] {
   flex-wrap: wrap;

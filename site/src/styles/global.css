@@ -35,6 +35,15 @@
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 12px;
+
+  /* The brand rule; its --color-rule-* stops come from src/lib/tokens.ts (ruleCss). */
+  --brand-rule: linear-gradient(
+    90deg,
+    var(--color-rule-1),
+    var(--color-rule-2) 35%,
+    var(--color-rule-3) 70%,
+    var(--color-rule-4)
+  );
 }
 
 @layer base {
@@ -110,8 +119,58 @@
   --tw-prose-td-borders: var(--color-line);
 }
 
+/* Inline code: cyan text (the cyan ramp's dark end on light, its light end on dark, both above 4.5:1
+   on the pill; the colors come from src/lib/tokens.ts), a faint violet tint over the canvas, and the brand rule as a 1px bottom edge. The
+   rule is a background layer over the transparent bottom border, so it follows the radius and
+   stays one hairline however many pills a paragraph holds. */
+.prose {
+  --code-ink: var(--color-code-ink-light);
+  --code-tint: 9%;
+}
+.dark .prose {
+  --code-ink: var(--color-code-ink-dark);
+  --code-tint: 12%;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .prose {
+    --code-ink: var(--color-code-ink-dark);
+    --code-tint: 12%;
+  }
+}
 .prose :where(code):not(:where(pre code)) {
-  @apply bg-panel border-line rounded-xs border px-1 py-0.5 font-normal;
+  @apply rounded-sm border px-[5px] py-px font-normal;
+  color: var(--code-ink);
+  border-color: color-mix(in srgb, var(--color-code-pill) 24%, var(--color-line));
+  border-bottom-color: transparent;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-rule-1) 65%, transparent),
+      color-mix(in srgb, var(--color-rule-2) 65%, transparent) 35%,
+      color-mix(in srgb, var(--color-rule-3) 65%, transparent) 70%,
+      color-mix(in srgb, var(--color-rule-4) 65%, transparent)
+    )
+    bottom / 100% 1px no-repeat border-box,
+    color-mix(in srgb, var(--color-code-pill) var(--code-tint), var(--color-canvas));
+  background-origin: border-box;
+  box-decoration-break: clone;
+  overflow-wrap: anywhere;
+}
+/* In a table cell a row can hold twenty pills; the brand rule stays on pills in running prose. */
+.prose :where(td) :where(code):not(:where(pre code)) {
+  background-image: none;
+}
+
+/* A heading's code is a signature, not a pill: no box, sized to sit with the heading. */
+.prose :where(h1, h2, h3, h4) :where(code) {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}
+.prose :where(a code):not(:where(pre code)) {
+  color: inherit;
 }
 
 .prose :where(code):not(:where(pre code))::before,
@@ -279,4 +338,274 @@ html:not(.js) .js-only {
 .transcript-fence [data-line="prompt"] > span[aria-hidden],
 .transcript-fence [data-line="call"] > span[aria-hidden] {
   user-select: none;
+}
+
+/* Sticky docs sidebars: the header scrolls away, so they pin 1.5rem from the top and scroll
+   inside themselves when taller than the viewport. */
+.docs-sticky {
+  max-height: calc(100vh - 3rem);
+}
+
+/* Docs home: a short brand rule above each section heading. */
+.docs-section > h2::before {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 2px;
+  margin-bottom: 0.75rem;
+  background: var(--brand-rule);
+}
+
+/* The brand rule on a card's top edge, shared by the docs-home cards, the players and the hero's
+   session window (.brand-top): a flat 2px bar over the top border. The ::before covers the host's
+   whole border box with the host's radius and paints the gradient in its top 2px only, so the
+   host's real curve trims the bar's ends and the bar never bends. (A 2px-tall box can't hold the
+   radius: the browser scales it down and the bar's ends stick out past the curve.) */
+.brand-top {
+  position: relative;
+}
+.brand-top::before {
+  content: "";
+  position: absolute;
+  z-index: 11;
+  inset: -1px;
+  border-radius: var(--radius-lg);
+  background: var(--brand-rule) top / 100% 2px no-repeat;
+  pointer-events: none;
+}
+
+/* Docs-home cards only (.brand-top-grow): on hover or keyboard focus the rule grows from the top
+   edge down both sides until the whole border is the gradient, and shrinks back on leave. The
+   ::before is a 2px ring over the card's border box, drawn with the brand-rule gradient and masked
+   to the ring (padding-box XOR border-box) and to a band from the top (intersect). At rest the band
+   is 2px tall, so only the top 2px of the ring shows: the same flat bar, trimmed by the corners, as
+   .brand-top. Hovered, the band covers the whole card. The ring sits at z-index -1 in the card's own
+   stacking context, under the text, and takes no pointer events, so the stretched link still works.
+   Mask support: Chromium 120+, Safari 15.4+, Firefox 53+. */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.brand-top-grow {
+  isolation: isolate;
+}
+.brand-top-grow::before {
+  z-index: -1;
+  border: 2px solid transparent;
+  background: var(--brand-rule) border-box;
+  --band-h: 2px;
+  mask:
+    linear-gradient(#000 0 0) top / 100% var(--band-h) no-repeat border-box,
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0) border-box;
+  mask-composite: intersect, exclude;
+  transition: mask-size 450ms var(--ease-out);
+}
+.brand-top-grow:is(:hover, :focus-within)::before {
+  --band-h: 100%;
+}
+/* Reduced motion: no growth around the border. The top bar stays put and a second, full ring
+   (::after) fades in over it instead. */
+@media (prefers-reduced-motion: reduce) {
+  .brand-top-grow::before {
+    transition: none;
+  }
+  .brand-top-grow:is(:hover, :focus-within)::before {
+    --band-h: 2px;
+  }
+  .brand-top-grow::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -1px;
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    background: var(--brand-rule) border-box;
+    mask:
+      linear-gradient(#000 0 0) padding-box,
+      linear-gradient(#000 0 0) border-box;
+    mask-composite: exclude;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 450ms var(--ease-out);
+  }
+  .brand-top-grow:is(:hover, :focus-within)::after {
+    opacity: 1;
+  }
+}
+
+/* Docs home card: the docs-card surface with the shared top rule (.brand-top). The title link
+   stretches over the card, so the whole card is one link. */
+.docs-card {
+  position: relative;
+  padding: 1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-canvas);
+}
+.docs-card:hover {
+  border-color: var(--color-line-strong);
+}
+.docs-card:has(a:focus-visible) {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+.docs-card a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.docs-card a:focus-visible {
+  outline: none;
+}
+
+/* Click-to-copy inline code (setupInlineCodeCopy in src/scripts/site.ts sets data-copy-inline). */
+[data-copy-inline] :where(code):not(:where(pre code, a code, h1 code, h2 code, h3 code, h4 code)) {
+  cursor: pointer;
+}
+[data-copy-inline]
+  :where(code):not(:where(pre code, a code, h1 code, h2 code, h3 code, h4 code)):hover {
+  /* The cue is the edge: a deeper tint would take light-theme ink below 4.5:1. */
+  border-color: color-mix(in srgb, var(--color-code-pill) 60%, var(--color-line));
+}
+.copy-tip {
+  position: absolute;
+  z-index: 50;
+  padding: 2px 8px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 4px;
+  background: var(--color-panel);
+  color: var(--color-ink);
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% - 6px));
+  transition:
+    opacity 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s 150ms;
+}
+.copy-tip[data-visible] {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .copy-tip,
+  .copy-tip[data-visible] {
+    transition: none;
+  }
+}
+
+/* The current docs page: full ink, with the brand rule as a 2px line under the text only (the link
+   shrinks to its text; a wrapped label gets the line under its last line). */
+nav[aria-label="Docs"] a[aria-current="page"],
+nav[aria-label="Docs menu"] a[aria-current="page"] {
+  width: fit-content;
+  padding-bottom: 6px;
+  color: var(--color-ink);
+  background: var(--brand-rule) bottom / 100% 2px no-repeat;
+}
+
+/* Native smooth scrolling for in-page links (the "On this page" TOC and heading anchors) on docs
+   and blog pages. The header scrolls away, so headings only clear the 1.5rem sticky offset. */
+html:not([data-page="landing"]) {
+  scroll-padding-top: 1.5rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-page="landing"]) {
+    scroll-behavior: smooth;
+  }
+}
+
+/* The docs sidebar lists the active page's h2s under its link, with the scroll-spy mark
+   (aria-current="location", set by spyToc) at full ink and medium weight. */
+.docs-subnav {
+  margin: 0.25rem 0 0.5rem 0.25rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--color-line);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+.docs-subnav a {
+  display: block;
+  padding-block: 0.1875rem;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.docs-subnav a.docs-subnav-code {
+  font-family: var(--font-mono);
+}
+.docs-subnav a:hover,
+.docs-subnav a[aria-current="location"] {
+  color: var(--color-ink);
+}
+.docs-subnav a[aria-current="location"] {
+  font-weight: 500;
+}
+
+/* Docs article measure: running text stays at 48rem; code blocks, tables and deck demos may use the
+   whole column. */
+.docs-article .prose > :where(h1, h2, h3, h4, p, ul, ol, dl, blockquote) {
+  max-width: 48rem;
+}
+
+/* Docs prev/next: two cards on the docs-home card surface, without its brand rule. The whole card
+   is the link. */
+.docs-pager {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+@media (min-width: 40rem) {
+  .docs-pager {
+    grid-template-columns: 1fr 1fr;
+  }
+  .docs-pager-next {
+    grid-column-start: 2;
+  }
+}
+.docs-pager a {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-canvas);
+  text-decoration: none;
+}
+.docs-pager a:hover {
+  border-color: var(--color-line-strong);
+}
+.docs-pager-next {
+  text-align: right;
+}
+.docs-pager-dir {
+  display: block;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.docs-pager-title {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.docs-pager-arrow {
+  display: inline-block;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.docs-pager a:hover .docs-pager-arrow {
+  transform: translateX(2px);
+}
+.docs-pager a[rel="prev"]:hover .docs-pager-arrow {
+  transform: translateX(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .docs-pager-arrow {
+    transition: none;
+  }
 }

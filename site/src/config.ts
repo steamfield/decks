@@ -25,7 +25,7 @@ const pluginInstall = "claude plugin install decks@steamfield --scope project";
  */
 const stacksNew = "npx @steamfield/stacks@latest new decks my-talk";
 
-/** The agents the installed guidance supports. The requirements row, the hero's fine print and the section lede all read this list. */
+/** The agents the installed guidance supports. The requirements row and the section lede read this list. */
 export const agents = ["Claude Code", "Codex"];
 const numberWords = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 /** A count under ten as a word ("seven"), otherwise digits. */
@@ -102,8 +102,7 @@ export const site = {
   ],
   /** Shown under the hero's install block. */
   price,
-  /** The hero's last line, under the install block and buttons. */
-  heroFineprint: `${price}. React 19 and Node 22.12+. Bun runs the installed local decks bin. Guidance for ${agents.join(" and ")}.`,
+  /** The install block's tabs: one command list per package manager, and the stacks scaffold. */
   install: [
     {
       label: "bun",

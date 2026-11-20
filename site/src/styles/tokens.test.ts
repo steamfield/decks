@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { contrast } from "../lib/contrast";
-import { landingCss, landingTokens, productTheme } from "../lib/tokens";
+import { codePillTokens, landingCss, landingTokens, mix, productTheme } from "../lib/tokens";
 
 const css = readFileSync(new URL("./global.css", import.meta.url), "utf8");
 
@@ -117,4 +117,37 @@ it("emits the same player tokens for a demo selector without changing the page r
   for (const [name, value] of Object.entries(tokens))
     expect(css).toContain(`--color-${name}:${value};`);
   expect(css).toContain("color-scheme:dark");
+});
+
+describe("inline code pills", () => {
+  const pill = codePillTokens();
+  /** The pill's tint share, from the `--code-tint` declared in the prose block that opens with `opener`. */
+  const tint = (opener: string) => {
+    const start = css.indexOf(opener);
+    if (start === -1) throw new Error(`${opener} missing from global.css`);
+    const value = css.slice(start, css.indexOf("}", start)).match(/--code-tint:\s*(\d+)%/)?.[1];
+    if (!value) throw new Error(`--code-tint missing after ${opener}`);
+    return Number(value);
+  };
+  const cases = [
+    {
+      theme: "light",
+      ink: pill["code-ink-light"],
+      canvas: light.canvas,
+      tint: tint("--code-ink: var(--color-code-ink-light);"),
+    },
+    {
+      theme: "dark",
+      ink: pill["code-ink-dark"],
+      canvas: dark.canvas,
+      tint: tint("--code-ink: var(--color-code-ink-dark);"),
+    },
+  ];
+
+  it.each(cases)("$theme ink is at least 4.5:1 on its pill", (c) => {
+    if (!c.ink || !c.canvas || !pill["code-pill"]) throw new Error("pill token missing");
+    expect(contrast(c.ink, mix(c.canvas, pill["code-pill"], c.tint / 100))).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  });
 });

@@ -51,7 +51,7 @@ describe("docs Markdown", () => {
     const { code } = await render(
       '```mdx demo="guide-demos/title-reveal"\n<MotionTemplate template="title-reveal" />\n```\n',
     );
-    expect(code).toMatch(/<figure class="deck-demo not-prose" data-deck-demo="">/);
+    expect(code).toMatch(/<figure class="deck-demo not-prose" data-deck-demo="range">/);
     expect(code).toMatch(
       /<img src="\/posters\/demos\/guide-demos\/title-reveal-1280\.webp"[^>]*loading="lazy"/,
     );
@@ -64,5 +64,18 @@ describe("docs Markdown", () => {
     await expect(render('```mdx demo="guide-demos/no-such-slide"\nx\n```\n')).rejects.toThrow(
       /no-such-slide/,
     );
+  });
+
+  it("renders an empty demo fence for a gallery deck as a player with no code", async () => {
+    const { code } = await render('```mdx demo="building-for-agents"\n```\n');
+    expect(code).toMatch(/<figure class="deck-demo not-prose" data-deck-demo="reel">/);
+    expect(code).toContain("data-deck-demo-player");
+    expect(code).toMatch(/<img src="\/posters\/building-for-agents[^"]*-1280\.webp"/);
+    expect(code).not.toContain("data-code-block");
+    expect(code).toContain('href="/d/building-for-agents/"');
+  });
+
+  it("rejects a demo of a deck that is not registered, naming it", async () => {
+    await expect(render('```mdx demo="no-such-deck"\n```\n')).rejects.toThrow(/no-such-deck/);
   });
 });

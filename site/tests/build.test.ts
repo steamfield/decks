@@ -20,7 +20,7 @@ import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { site } from "../src/config";
 import { loadExamples } from "../src/data/examples";
-import { demoName, guideDemos } from "../src/data/guide-demos";
+import { demoName, guideDemos, guideReels } from "../src/data/guide-demos";
 import { guideId } from "../src/lib/guide";
 import { deckDemoCount } from "./mdx";
 
@@ -207,7 +207,10 @@ describe("the whole site", () => {
     expect(pages.size).toBeGreaterThan(0);
     for (const [file, demos] of pages) {
       const doc = page("dist", pagePath(guideId(file)));
-      const figures = [...doc.querySelectorAll("figure[data-deck-demo]")];
+      const figures = [...doc.querySelectorAll('figure[data-deck-demo="range"]')];
+      expect(doc.querySelectorAll('figure[data-deck-demo="reel"]').length, `${file} reels`).toBe(
+        guideReels().filter((reel) => reel.page === file).length,
+      );
       expect(
         figures.map((figure) => figure.querySelector("img")?.getAttribute("src")),
         file,

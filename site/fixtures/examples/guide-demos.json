@@ -1,6 +1,6 @@
 {
   "title": "Guide demos",
-  "slides": 78,
+  "slides": 85,
   "slideTitles": [
     "Guide demos",
     "Title reveal",
@@ -29,6 +29,10 @@
     "Command line",
     "Scramble text",
     "Donut build",
+    "Live terminal",
+    "Types make the boundary readable.",
+    "Three steps",
+    "Markdown in JSX",
     "Step",
     "Steps",
     "Stagger",
@@ -68,18 +72,21 @@
     "Transition cube",
     "Transition cut from",
     "Transition cut",
+    "Counted clicks",
     "Every outage gets a written review.",
     "What a quarter of on-call taught us about alerts.",
     "Automate the fix before you page a person.",
     "Write the runbook before the alert.",
     "Every alert routes to one owner.",
     "Retry only the failures a retry can fix.",
+    "86-inline-story",
     "Runbooks cut the pages that wake people up.",
     "Night pages fell once runbooks shipped.",
     "Night pages peak in the hour after the deploy.",
     "Checkout is the service that wakes people up.",
     "In July, most alerts had no runbook.",
-    "By October, most alerts had one."
+    "By October, most alerts had one.",
+    "Tides run on the Moon's clock."
   ],
   "startSlide": 1,
   "startBeat": 0,
@@ -577,91 +584,91 @@
     {
       "slide": 28,
       "beat": 0,
-      "beats": 2,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 28,
       "beat": 1,
-      "beats": 2,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 28,
       "beat": 2,
-      "beats": 2,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 29,
-      "beat": 0,
-      "beats": 4,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 29,
-      "beat": 1,
-      "beats": 4,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 29,
-      "beat": 2,
-      "beats": 4,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 29,
+      "slide": 28,
       "beat": 3,
-      "beats": 4,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 29,
-      "beat": 4,
-      "beats": 4,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 29,
+      "beat": 1,
+      "beats": 1,
       "lead": "",
       "body": ""
     },
     {
       "slide": 30,
       "beat": 0,
-      "beats": 2,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 30,
       "beat": 1,
-      "beats": 2,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 30,
       "beat": 2,
-      "beats": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 30,
+      "beat": 3,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
     {
       "slide": 31,
       "beat": 0,
-      "beats": 1,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 31,
       "beat": 1,
-      "beats": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 31,
+      "beat": 2,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
@@ -689,189 +696,224 @@
     {
       "slide": 33,
       "beat": 0,
-      "beats": 1,
+      "beats": 4,
       "lead": "",
       "body": ""
     },
     {
       "slide": 33,
       "beat": 1,
-      "beats": 1,
+      "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 34,
-      "beat": 0,
-      "beats": 2,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 34,
-      "beat": 1,
-      "beats": 2,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 34,
+      "slide": 33,
       "beat": 2,
-      "beats": 2,
+      "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 35,
-      "beat": 0,
-      "beats": 2,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 35,
-      "beat": 1,
-      "beats": 2,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 35,
-      "beat": 2,
-      "beats": 2,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 36,
-      "beat": 0,
-      "beats": 5,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 36,
-      "beat": 1,
-      "beats": 5,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 36,
-      "beat": 2,
-      "beats": 5,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 36,
+      "slide": 33,
       "beat": 3,
-      "beats": 5,
+      "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 36,
+      "slide": 33,
       "beat": 4,
-      "beats": 5,
+      "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 36,
-      "beat": 5,
-      "beats": 5,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 37,
+      "slide": 34,
       "beat": 0,
       "beats": 2,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 37,
+      "slide": 34,
       "beat": 1,
       "beats": 2,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 37,
+      "slide": 34,
       "beat": 2,
       "beats": 2,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 38,
+      "slide": 35,
       "beat": 0,
       "beats": 1,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 38,
+      "slide": 35,
       "beat": 1,
       "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 36,
+      "beat": 2,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 37,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 37,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 38,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 38,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 38,
+      "beat": 2,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 39,
       "beat": 0,
-      "beats": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 39,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 39,
+      "beat": 2,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 40,
       "beat": 0,
-      "beats": 0,
+      "beats": 5,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 41,
-      "beat": 0,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 41,
+      "slide": 40,
       "beat": 1,
-      "beats": 1,
+      "beats": 5,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 42,
-      "beat": 0,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 42,
-      "beat": 1,
-      "beats": 3,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 42,
+      "slide": 40,
       "beat": 2,
-      "beats": 3,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 40,
+      "beat": 3,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 40,
+      "beat": 4,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 40,
+      "beat": 5,
+      "beats": 5,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 41,
+      "beat": 0,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 41,
+      "beat": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 41,
+      "beat": 2,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 42,
-      "beat": 3,
-      "beats": 3,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 42,
+      "beat": 1,
+      "beats": 1,
       "lead": "",
       "body": ""
     },
@@ -892,14 +934,42 @@
     {
       "slide": 45,
       "beat": 0,
-      "beats": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 45,
+      "beat": 1,
+      "beats": 1,
       "lead": "",
       "body": ""
     },
     {
       "slide": 46,
       "beat": 0,
-      "beats": 0,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 46,
+      "beat": 1,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 46,
+      "beat": 2,
+      "beats": 3,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 46,
+      "beat": 3,
+      "beats": 3,
       "lead": "",
       "body": ""
     },
@@ -1046,205 +1116,282 @@
     {
       "slide": 67,
       "beat": 0,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 67,
-      "beat": 1,
-      "beats": 1,
+      "beats": 0,
       "lead": "",
       "body": ""
     },
     {
       "slide": 68,
       "beat": 0,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 68,
-      "beat": 1,
-      "beats": 1,
+      "beats": 0,
       "lead": "",
       "body": ""
     },
     {
       "slide": 69,
       "beat": 0,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 69,
-      "beat": 1,
-      "beats": 1,
+      "beats": 0,
       "lead": "",
       "body": ""
     },
     {
       "slide": 70,
       "beat": 0,
-      "beats": 1,
-      "lead": "",
-      "body": ""
-    },
-    {
-      "slide": 70,
-      "beat": 1,
-      "beats": 1,
+      "beats": 0,
       "lead": "",
       "body": ""
     },
     {
       "slide": 71,
       "beat": 0,
-      "beats": 1,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 71,
       "beat": 1,
-      "beats": 1,
+      "beats": 2,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 71,
+      "beat": 2,
+      "beats": 2,
       "lead": "",
       "body": ""
     },
     {
       "slide": 72,
       "beat": 0,
-      "beats": 4,
+      "beats": 1,
       "lead": "",
       "body": ""
     },
     {
       "slide": 72,
       "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 73,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 73,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 74,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 74,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 75,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 75,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 76,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 76,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 77,
+      "beat": 0,
       "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 72,
+      "slide": 77,
+      "beat": 1,
+      "beats": 4,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 77,
       "beat": 2,
       "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 72,
+      "slide": 77,
       "beat": 3,
       "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 72,
+      "slide": 77,
       "beat": 4,
       "beats": 4,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 73,
+      "slide": 78,
+      "beat": 0,
+      "beats": 1,
+      "lead": "A story starts here.",
+      "body": ""
+    },
+    {
+      "slide": 78,
+      "beat": 1,
+      "beats": 1,
+      "lead": "The story advances.",
+      "body": ""
+    },
+    {
+      "slide": 79,
       "beat": 0,
       "beats": 2,
       "lead": "Night pages per week, by service.",
       "body": "Pages between 10 p.m. and 7 a.m. Illustrative figures."
     },
     {
-      "slide": 73,
+      "slide": 79,
       "beat": 1,
       "beats": 2,
       "lead": "Checkout paged more than the rest.",
       "body": "16 pages a week, against 14 for the other 4 services combined."
     },
     {
-      "slide": 73,
+      "slide": 79,
       "beat": 2,
       "beats": 2,
       "lead": "Its runbooks cut that to 4.",
       "body": "Each alert now links the steps that fix it, and most fixes run on their own."
     },
     {
-      "slide": 74,
+      "slide": 80,
       "beat": 0,
       "beats": 2,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 74,
+      "slide": 80,
       "beat": 1,
       "beats": 2,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 74,
+      "slide": 80,
       "beat": 2,
       "beats": 2,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 75,
+      "slide": 81,
       "beat": 0,
       "beats": 1,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 75,
+      "slide": 81,
       "beat": 1,
       "beats": 1,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 76,
+      "slide": 82,
       "beat": 0,
       "beats": 1,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 76,
+      "slide": 82,
       "beat": 1,
       "beats": 1,
       "lead": "",
       "body": ""
     },
     {
-      "slide": 77,
+      "slide": 83,
       "beat": 0,
       "beats": 1,
       "lead": "Each dot is one alert rule.",
       "body": "40 rules can page the platform team. Illustrative figures."
     },
     {
-      "slide": 77,
+      "slide": 83,
       "beat": 1,
       "beats": 1,
       "lead": "12 of 40 linked a runbook.",
       "body": "For the rest, whoever was paged started from scratch."
     },
     {
-      "slide": 78,
+      "slide": 84,
       "beat": 0,
       "beats": 1,
       "lead": "The same 40 rules, one quarter later.",
       "body": "Each team wrote the runbooks for its own alerts."
     },
     {
-      "slide": 78,
+      "slide": 84,
       "beat": 1,
       "beats": 1,
       "lead": "34 of 40 now link a runbook.",
       "body": "The alerts still without one are up for removal."
+    },
+    {
+      "slide": 85,
+      "beat": 0,
+      "beats": 1,
+      "lead": "",
+      "body": ""
+    },
+    {
+      "slide": 85,
+      "beat": 1,
+      "beats": 1,
+      "lead": "",
+      "body": ""
     }
   ]
 }

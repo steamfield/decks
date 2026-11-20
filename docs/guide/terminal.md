@@ -2,7 +2,7 @@
 
 `LiveTerm` puts a real shell on a slide. Each click on the slide types the next command into it and runs it, so a talk about a command-line tool never leaves the deck. Everywhere a shell can't run (a built deck, `decks export`, the presenter's preview, the overview, a dev server started without `--live-term`), the pane shows a fallback you supply instead, usually a recording of the same commands.
 
-It works on macOS and Linux. The shell is `zsh`, run through Python's standard `pty` module, so both must be on the speaker's machine. On Windows the dev server logs one line and every pane shows its fallback.
+The shell only runs when the deck is served by `decks dev --live-term` on your own machine at `localhost`. A dev server bound to any other address logs `Live terminal disabled: host "…" is not loopback` and shows the fallback, and a deck served from anywhere else, this site included, always shows the fallback. It works on macOS and Linux. The shell is `zsh`, run through Python's standard `pty` module, so both must be on the speaker's machine. On Windows the dev server logs one line and every pane shows its fallback.
 
 ## A pane
 
@@ -29,6 +29,17 @@ export function Demo() {
     />
   );
 }
+```
+
+Here the demo below shows the fallback, because a built deck has no shell. Its recording is the real output of the three commands, captured in an empty project, and its component is `examples/guide-demos/components/term-demo.tsx`:
+
+```mdx demo="guide-demos/live-term"
+---
+title: Live terminal
+clicks: 3
+---
+
+<TermDemo />
 ```
 
 The slide sets `clicks:` in its frontmatter to the number of commands. Moving from click n − 1 to n types `commands[n - 1]` and runs it; returning to click 0 restarts the shell.

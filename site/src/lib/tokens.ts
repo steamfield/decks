@@ -90,3 +90,25 @@ export function landingCss(
     .join("");
   return `${selector}{${vars}color-scheme:dark}`;
 }
+
+/**
+ * The inline-code pill's colors on docs and blog prose: cyan ink for each page theme (the ramp's
+ * dark and light ends) over a violet tint. global.css picks the ink by theme and mixes the tint
+ * into the page canvas; tokens.test.ts checks their contrast.
+ */
+export function codePillTokens(theme = productTheme()): Record<string, string> {
+  return {
+    "code-ink-light": theme.ramps.cyan[0],
+    "code-ink-dark": theme.ramps.cyan[3],
+    "code-pill": theme.ramps.violet[1],
+  };
+}
+
+/** The brand rule's stops and the inline-code pill's colors on a docs page, whose tokens are otherwise the light and dark docs set. */
+export function ruleCss(selector = ":root"): string {
+  const tokens = { ...landingTokens(), ...codePillTokens() };
+  const vars = (["rule-1", "rule-2", "rule-3", "rule-4", ...Object.keys(codePillTokens())] as const)
+    .map((name) => `--color-${name}:${tokens[name]};`)
+    .join("");
+  return `${selector}{${vars}}`;
+}

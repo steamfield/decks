@@ -2,7 +2,7 @@
 
 A slide is one MDX file under `slides/`: optional YAML frontmatter, then markdown and JSX. The filename sets its order and its id.
 
-```mdx
+```mdx demo="guide-demos/three-steps"
 ---
 title: Three steps
 clicks: 3
@@ -27,7 +27,7 @@ That is `examples/basic/slides/02-steps.mdx`. `StepList` comes from `examples/ba
 
 Markdown and JSX mix freely. Markdown inside a JSX element needs blank lines around it, which is MDX's rule:
 
-```mdx
+```mdx demo="guide-demos/markdown-in-jsx"
 <Steps from={1} enter="rise">
 
 1. Frame the question.

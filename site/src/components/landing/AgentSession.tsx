@@ -56,7 +56,7 @@ const dwellFor = (turn: number) => (turn === 0 ? 1500 : 1000);
 type Props = {
   /** The deck's page, `/d/agent-hero/index.html`. */
   src: string;
-  /** The finished deck, opened from the fine print. */
+  /** The finished deck, opened from the link under the session. */
   href: string;
   posters: { start: Poster; finished: Poster };
   /** The no-JavaScript view, a `<noscript>` from the page. */
@@ -281,7 +281,7 @@ export function AgentSession({ src, href, posters, children }: Props) {
 
   return (
     <div className="agent-session" ref={demo.ref}>
-      <DemoWindow className="agent-session-window js-only" controls={bar}>
+      <DemoWindow className="agent-session-window brand-top js-only" controls={bar}>
         <div className="agent-session-body">
           <div className="agent-session-transcript">
             <AgentDemo

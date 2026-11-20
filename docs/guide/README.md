@@ -14,17 +14,6 @@ Each page stands alone. Read the one that answers your question.
 | [code-blocks.md](code-blocks.md) | How do I show highlighted code and step through lines? |
 | [config.md](config.md) | What can `deck.config.ts` set, how do I add MDX plugins, layers or a setup file, and how are errors reported? |
 | [cli.md](cli.md) | What do `decks new`, `check`, `lint`, `hook`, `export`, `shot`, `film`, `inspect` and `init` do? |
-| [migrating-from-slidev.md](migrating-from-slidev.md) | How do I move a deck from `slidev-addon-decks`? |
 | [presenting.md](presenting.md) | Which keys do what, how do the presenter window, overview, sync and text sizing behave, and how do I present from an iPad or second laptop? |
 | [terminal.md](terminal.md) | How do I run real commands in a terminal pane on a slide, and what does the deck show when it can't? |
 | [kit.md](kit.md) | What does `@steamfield/decks/kit` provide: theme, story stages, `OpenChart`, `ChartSteps`, `Scene3D`, the `story` transition? |
-
-## Not built yet
-
-These are mentioned in the design document and do not exist in the code. Do not write a deck that depends on them.
-
-- `decks list`, `snap` and `motion-check`.
-- `defineTheme` and theme packages. A deck themes itself with CSS, and with the kit's `theme.json` when it uses the kit.
-- Tailwind scaffolding. A deck can add Vite plugins through the `vite` option, and nothing sets Tailwind up for it.
-- Pinch zoom and pan in the viewer.
-- A print page size other than the 1920x1080 canvas: `decks export` prints every deck at that size.

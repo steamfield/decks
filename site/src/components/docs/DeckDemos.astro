@@ -9,6 +9,9 @@ import "../../styles/deck-demos.css";
 
 <style is:inline set:html={landingCss(undefined, ".deck-demo-stage")}></style>
 <script>
+  // Docs pages have no React island, so Astro never adds React's refresh preamble; without it the
+  // dev server throws "can't detect preamble" and the players never mount. Empty in a build.
+  import "@vitejs/plugin-react/preamble";
   import { mountDeckDemos } from "../../scripts/deck-demos";
   mountDeckDemos();
 </script>

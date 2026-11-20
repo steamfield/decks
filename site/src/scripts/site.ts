@@ -79,7 +79,8 @@ function setupCopyButtons() {
  */
 function setupGallery() {
   if (document.documentElement.dataset.page !== "landing") return;
-  const player = () => document.querySelector<HTMLElement>("[data-player]");
+  // The gallery player, not the motion section's reel above it, which is also a [data-player].
+  const player = () => document.querySelector<HTMLElement>("#examples [data-player]");
   for (const link of document.querySelectorAll<HTMLAnchorElement>("a[data-example]")) {
     link.addEventListener("click", (event) => {
       const target = player();
@@ -142,9 +143,78 @@ function setupReveal() {
   });
 }
 
-/** Marks the "On this page" link being read with aria-current="location" (DocsLayout styles it). */
+/** Marks the in-page link being read with aria-current="location" (DocsLayout styles it). */
 function setupTocHighlight() {
-  spyToc(document, { linkSelector: "[data-toc] a[href^='#']" });
+  // One spy per list: the docs sidebar and its mobile menu carry the same hashes, and a spy keeps
+  // one link per hash.
+  for (const list of document.querySelectorAll("[data-toc]")) {
+    spyToc(list, { linkSelector: "a[href^='#']" });
+  }
+}
+
+/** How long the "Copied" tooltip stays; global.css fades it over 150ms. */
+const TIP_MS = 1200;
+
+/**
+ * Click an inline code pill in docs or blog prose to copy its text. One delegated listener on the
+ * article; fenced blocks (their own copy buttons), linked pills (they navigate) and headings
+ * (anchor targets) are left alone, and so is a click that ends a text selection. The "Copied"
+ * tooltip is one element reused across clicks; a polite live region announces it. global.css
+ * styles the pills once the article carries data-copy-inline, so without JavaScript they stay inert.
+ * Click-to-copy is a pointer enhancement: the text stays selectable, and copyable from the
+ * keyboard, as it always was.
+ */
+function setupInlineCodeCopy() {
+  const article = document.querySelector("article");
+  if (!article?.querySelector(".prose") || !canCopy()) return;
+  article.dataset.copyInline = "";
+  const tip = document.createElement("div");
+  tip.className = "copy-tip";
+  tip.setAttribute("aria-hidden", "true");
+  tip.textContent = "Copied";
+  const live = document.createElement("div");
+  live.className = "sr-only";
+  live.setAttribute("role", "status");
+  live.setAttribute("aria-live", "polite");
+  document.body.append(tip, live);
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const show = (code: HTMLElement) => {
+    clearTimeout(hideTimer);
+    const rect = code.getBoundingClientRect();
+    tip.style.left = `${rect.left + rect.width / 2 + window.scrollX}px`;
+    tip.style.top = `${rect.top + window.scrollY}px`;
+    tip.dataset.visible = "";
+    live.textContent = "";
+    live.textContent = "Copied";
+    hideTimer = setTimeout(() => {
+      delete tip.dataset.visible;
+      live.textContent = "";
+    }, TIP_MS);
+  };
+
+  article.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const code = event.target.closest<HTMLElement>("code");
+    if (!code || !article.contains(code)) return;
+    if (!code.closest(".prose") || code.closest("pre, a, h1, h2, h3, h4, h5, h6")) return;
+    if (!window.getSelection()?.isCollapsed) return;
+    navigator.clipboard.writeText(code.textContent ?? "").then(
+      () => show(code),
+      (error) => console.warn("Copying inline code failed", error),
+    );
+  });
+}
+
+/** Brings the current page's link into view inside the sticky sidebar, leaving the page itself alone. */
+function setupSidebarScroll() {
+  const nav = document.querySelector<HTMLElement>('nav[aria-label="Docs"]');
+  const link = nav?.querySelector<HTMLElement>('a[aria-current="page"]');
+  if (!nav || !link) return;
+  const box = nav.getBoundingClientRect();
+  const at = link.getBoundingClientRect();
+  if (at.top < box.top) nav.scrollTop += at.top - box.top;
+  else if (at.bottom > box.bottom) nav.scrollTop += at.bottom - box.bottom;
 }
 
 setupThemeToggle();
@@ -155,4 +225,6 @@ setupGallery();
 // After the layout script has called initAnalytics, which runs once this module has loaded.
 queueMicrotask(trackQuickstart);
 setupCopyPage();
+setupInlineCodeCopy();
 setupTocHighlight();
+setupSidebarScroll();

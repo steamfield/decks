@@ -2,7 +2,7 @@
 
 Write a fenced code block in a slide and it is syntax-highlighted at compile time. Options after the language add a title, line numbers, a maximum height, and line emphasis that steps with clicks.
 
-````mdx
+````mdx demo="guide-demos/code-block"
 ---
 title: Types make the boundary readable.
 ---

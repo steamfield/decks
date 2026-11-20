@@ -1,0 +1,17 @@
+---
+clicks: 1
+---
+
+import { StoryCard, StoryStage, useStage } from "@steamfield/decks/kit";
+
+export function Story() {
+  const { copy, clicks, beats } = useStage({
+    copy: [{ lead: "A story starts here." }, { lead: "The story advances." }],
+    beats: (_tl, beat) => { beat(0); beat(1); },
+  });
+  return <StoryStage beats={beats} click={clicks}
+    overlay={<h1 className="od-story-head">Ready to present.</h1>}
+    card={<StoryCard lead={copy.lead} />} />;
+}
+
+<Story />

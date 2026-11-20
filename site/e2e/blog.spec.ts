@@ -131,10 +131,12 @@ test("a blog player carries the landing's colored top rule", async ({ page }) =>
   await page.goto("/blog/data-storytelling-presentation/");
   const rule = await page.locator("[data-player]").evaluate((el) => ({
     image: getComputedStyle(el, "::before").backgroundImage,
-    height: getComputedStyle(el, "::before").height,
+    size: getComputedStyle(el, "::before").backgroundSize,
+    position: getComputedStyle(el, "::before").backgroundPositionY,
   }));
   expect(rule.image).toContain("linear-gradient(");
-  expect(rule.height).toBe("2px");
+  expect(rule.size).toBe("100% 2px");
+  expect(rule.position).toBe("0%");
 });
 
 test.describe("ThemeCompare without a player", () => {

@@ -17,22 +17,6 @@
   outline-offset: 3px;
 }
 
-/* The brand rule as the player's top border: a box over the border, masked to its 2px top edge,
-   so the rule curves into the rounded corners instead of running straight past them. */
-.player::before {
-  content: "";
-  position: absolute;
-  z-index: 11;
-  inset: -1px;
-  border-top: 2px solid transparent;
-  border-radius: var(--radius-lg);
-  background: var(--brand-rule) border-box;
-  mask:
-    linear-gradient(#000 0 0) padding-box,
-    linear-gradient(#000 0 0) border-box;
-  mask-composite: exclude;
-  pointer-events: none;
-}
 .player:fullscreen::before {
   display: none;
 }

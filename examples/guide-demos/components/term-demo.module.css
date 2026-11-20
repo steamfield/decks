@@ -1,0 +1,44 @@
+.window {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 880px;
+  overflow: hidden;
+  border: var(--od-hairline) solid var(--od-border);
+  border-radius: var(--od-radius);
+  background: var(--od-surface);
+  /* The theme's mono face is its sans face; a terminal needs a fixed-width one. */
+  --deck-term-font: ui-monospace, Menlo, monospace;
+  --deck-term-foreground: var(--od-text);
+  --deck-term-background: var(--od-surface);
+}
+
+.screen {
+  min-height: 0;
+  padding: 24px 32px;
+}
+
+.recording {
+  margin: 0;
+  color: var(--od-text);
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 34px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.prompt {
+  color: var(--od-cyan);
+}
+
+.output {
+  color: var(--od-text-muted);
+}
+
+.status {
+  padding: 8px 32px;
+  border-top: var(--od-hairline) solid var(--od-border);
+  color: var(--od-text-muted);
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 22px;
+}

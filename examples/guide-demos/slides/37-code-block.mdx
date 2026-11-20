@@ -1,0 +1,14 @@
+---
+title: Types make the boundary readable.
+---
+
+# Types make the boundary readable.
+
+```ts {3-6} at=1 lines=10 title="session.ts"
+type Session = { name: string; role: "speaker" | "guest" };
+
+export function welcome(session: Session) {
+  const greeting = `Welcome, ${session.name}`;
+  return session.role === "speaker" ? `${greeting}. You're on.` : greeting;
+}
+```

@@ -174,7 +174,7 @@ import { StoryCard } from "@steamfield/decks/kit";
 
 `slides/02-end.mdx`:
 
-```mdx
+```mdx demo="guide-demos/inline-story"
 ---
 clicks: 1
 ---

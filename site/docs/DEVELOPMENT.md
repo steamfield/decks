@@ -18,8 +18,8 @@
 | `src/data/` | `examples.json` (the example registry), build-time loaders for the examples, the recorded fixtures and the scaffolded file tree |
 | `src/lib/player/` | The embed contract, caption and counter formatting, and the example types (`stateAt`, `markAt`, `draftLine`) |
 | `src/lib/tokens.ts` | The landing page's tokens, derived from the product theme |
-| `src/scripts/site.ts` | Theme toggle (docs and blog), command and code copy buttons (`enhanceCopyButtons`, with an execCommand fallback), gallery picks, copy page, the TOC highlight, and on the landing page the header's scroll edge and the section scroll reveal |
-| `src/layouts/` | `BaseLayout` (head, header, footer), `DocsLayout` (sidebar, TOC, pager) and `BlogLayout` (article, TOC, install CTA, related links) |
+| `src/scripts/site.ts` | Theme toggle (docs and blog), command and code copy buttons (`enhanceCopyButtons`, with an execCommand fallback), gallery picks, copy page, click-to-copy for inline code pills in prose (`setupInlineCodeCopy`), the sidebar outline highlight and scrolling the current page's link into view in the sticky docs sidebar, and on the landing page the header's scroll edge and the section scroll reveal |
+| `src/layouts/` | `BaseLayout` (head, header, footer), `DocsLayout` (sticky sidebar whose current page opens into its h2 outline, via `components/docs/PageOutline.astro`, which replaced the right-hand "On this page" column; pager) and `BlogLayout` (article, TOC, install CTA, related links) |
 
 ## Docs pages
 

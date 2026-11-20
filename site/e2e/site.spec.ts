@@ -19,7 +19,7 @@ const examples = loadExamples();
 const FENCED_DOC = "/docs/getting-started/quickstart/";
 const warmTheme = readFileSync("demo/warm-theme.json", "utf8");
 
-test("the docs index and retired CLI URL lead to the current CLI guide", async ({ page }) => {
+test("the docs index and retired docs URLs lead to the current guide pages", async ({ page }) => {
   await page.goto("/docs/");
   await page
     .getByRole("article")
@@ -30,6 +30,8 @@ test("the docs index and retired CLI URL lead to the current CLI guide", async (
   await page.goto("/docs/reference/cli/");
   await expect(page).toHaveURL(/\/docs\/cli\/$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("The decks command");
+  await page.goto("/docs/migrating-from-slidev/");
+  await expect(page).toHaveURL(/\/docs\/overview\/$/);
 });
 
 /** Copy controls exist in the HTML but none is visible: without JavaScript they would be dead. */

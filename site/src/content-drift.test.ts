@@ -1,6 +1,6 @@
 // @vitest-environment node
 // Check registered recordings and theme override against the repository.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadDeck } from "@steamfield/decks/node";
 import { describe, expect, it } from "vitest";
@@ -17,7 +17,7 @@ import {
   startBeatOf,
   startSlideOf,
 } from "./data/examples";
-import { demoName, guideDemos, resolveDemo } from "./data/guide-demos";
+import { demoName, guideDemos, guideReels, resolveDemo } from "./data/guide-demos";
 import { loadMotionShowcase } from "./data/motion-showcase";
 
 const repo = join(process.cwd(), "..");
@@ -140,9 +140,10 @@ describe("live demos in the package guide", () => {
           demo.code,
         ),
       ).toBe(true);
-      const { example, range } = demoPlayer(demo);
+      const player = demoPlayer(demo);
+      const { example } = player;
       const steps = example.states.filter(
-        (state) => state.slide >= range.first && state.slide <= range.last,
+        (state) => state.slide >= player.range.first && state.slide <= player.range.last,
       );
       // A replay starts at the range's first step; it has to have somewhere to go.
       expect(steps.length).toBeGreaterThan(1);
@@ -152,5 +153,33 @@ describe("live demos in the package guide", () => {
             existsSync(join(process.cwd(), `public${example.poster?.base}-${width}.${ext}`)),
           ).toBe(true);
     },
+  );
+
+  it.each(guideReels())("$page reel $deck is a registered deck with its gallery poster", (reel) => {
+    const { example } = demoPlayer(reel);
+    expect(example.states.length).toBeGreaterThan(1);
+    for (const ext of ["avif", "webp"])
+      expect(existsSync(join(process.cwd(), `public${example.poster?.base}-1280.${ext}`))).toBe(
+        true,
+      );
+  });
+});
+
+it("keeps the live-terminal demo's hand-typed recording equal to what `decks new --story` writes", () => {
+  const template = join(repo, "packages/node/templates/story");
+  const files = (dir: string): string[] =>
+    readdirSync(join(template, dir), { withFileTypes: true }).flatMap((entry) =>
+      entry.isDirectory() ? files(join(dir, entry.name)) : [join(dir, entry.name)],
+    );
+  const written = files("").sort();
+  const source = read("examples/guide-demos/components/term-demo.tsx");
+  const wrote = [...source.matchAll(/["']Wrote decks\/talk\/([^"']+)["']/g)].map((m) => m[1]);
+  expect(wrote).toEqual(written);
+  const listed = source.match(/output: \[((?:"[\w-]+\.mdx",?\s*)+)\]/)?.[1];
+  const slides = [...(listed ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  expect(slides).toEqual(
+    files("slides")
+      .map((file) => file.replace(/^slides\//, ""))
+      .sort(),
   );
 });

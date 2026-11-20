@@ -5,6 +5,7 @@ import { mountDeckDemos } from "./deck-demos";
 import { installIntersectionObserver, installMotionPreference } from "./site.test-support";
 
 const player = (name: string): DemoPlayer => ({
+  kind: "range",
   range: { first: 2, last: 2 },
   example: {
     name: "guide-demos",
@@ -27,23 +28,30 @@ const player = (name: string): DemoPlayer => ({
 });
 
 /** Server-rendered demo figures as src/lib/markdown.ts writes them. */
-function figures(names: string[]) {
+function figures(names: string[], make: (name: string) => DemoPlayer = player) {
   document.body.innerHTML = names
     .map(
       (name) =>
-        `<figure data-deck-demo><div data-deck-demo-player='${JSON.stringify(player(name))}'><img alt="${name} poster"></div></figure>`,
+        `<figure data-deck-demo><div data-deck-demo-player='${JSON.stringify(make(name))}'><img alt="${name} poster"></div></figure>`,
     )
     .join("");
   return [...document.querySelectorAll<HTMLElement>("[data-deck-demo-player]")];
 }
 
-/** Reports a stage in or out of view, with a matching box (happy-dom has no layout). */
+// Boxes against a 768px-tall window: in the viewport, below it but inside the 600px lead, and
+// far outside both (happy-dom has no layout).
+const BOXES = {
+  view: { top: 0, bottom: 300 },
+  margin: { top: 1000, bottom: 1300 },
+  away: { top: -3000, bottom: -2700 },
+};
+
+/** Reports a stage as in the viewport, in the lead margin only, or away, with a matching box. */
 function viewer() {
   const intersect = installIntersectionObserver();
-  return (element: Element, inView = true) => {
-    element.getBoundingClientRect = () =>
-      (inView ? { top: 0, bottom: 300 } : { top: -900, bottom: -600 }) as DOMRect;
-    intersect(element, inView);
+  return (element: Element, where: keyof typeof BOXES = "view") => {
+    element.getBoundingClientRect = () => BOXES[where] as DOMRect;
+    intersect(element, where !== "away");
   };
 }
 
@@ -71,8 +79,8 @@ describe("guide demo players", () => {
     const stages = figures(["One", "Two", "Three", "Four"]);
     stop = mountDeckDemos();
     for (const stage of stages.slice(0, 3)) act(() => intersect(stage));
-    act(() => intersect(stages[0] as Element, false));
-    act(() => intersect(stages[1] as Element, false));
+    act(() => intersect(stages[0] as Element, "away"));
+    act(() => intersect(stages[1] as Element, "away"));
     act(() => intersect(stages[3] as Element));
     expect(
       screen
@@ -94,8 +102,54 @@ describe("guide demo players", () => {
     for (const stage of stages) act(() => intersect(stage));
     expect(screen.getAllByRole("group", { name: /^Deck player:/ })).toHaveLength(3);
     expect(screen.getByRole("img", { name: "Four poster" })).toBeInTheDocument();
-    act(() => intersect(stages[0] as Element, false));
+    act(() => intersect(stages[0] as Element, "away"));
     expect(screen.getByRole("group", { name: /^Deck player: Four demo/ })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "One poster" })).toBeInTheDocument();
+  });
+
+  it("lets a demo in the viewport replace one that sits only in the lead margin", () => {
+    installMotionPreference(true);
+    const intersect = viewer();
+    const stages = figures(["One", "Two", "Three", "Four"]);
+    stop = mountDeckDemos();
+    for (const stage of stages.slice(0, 3)) act(() => intersect(stage, "margin"));
+    expect(screen.getAllByRole("group", { name: /^Deck player:/ })).toHaveLength(3);
+    act(() => intersect(stages[3] as Element));
+    expect(
+      screen
+        .getAllByRole("group", { name: /^Deck player:/ })
+        .map((g) => g.getAttribute("aria-label")),
+    ).toEqual([
+      expect.stringMatching(/Two demo/),
+      expect.stringMatching(/Three demo/),
+      expect.stringMatching(/Four demo/),
+    ]);
+    expect(screen.getByRole("img", { name: "One poster" })).toBeInTheDocument();
+  });
+
+  it("holds a demo that is only in the lead margin while three live ones are in the viewport", () => {
+    installMotionPreference(true);
+    const intersect = viewer();
+    const stages = figures(["One", "Two", "Three", "Four"]);
+    stop = mountDeckDemos();
+    for (const stage of stages.slice(0, 3)) act(() => intersect(stage));
+    act(() => intersect(stages[3] as Element, "margin"));
+    expect(screen.getByRole("img", { name: "Four poster" })).toBeInTheDocument();
+    expect(screen.getAllByRole("group", { name: /^Deck player:/ })).toHaveLength(3);
+  });
+
+  it("autoplays a framed demo but leaves a reel paused for Play", () => {
+    installMotionPreference(false);
+    const intersect = viewer();
+    const reel = (name: string): DemoPlayer => ({ kind: "reel", example: player(name).example });
+    const [framed] = figures(["Framed"]);
+    stop = mountDeckDemos();
+    act(() => intersect(framed as Element));
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
+    act(() => stop());
+    figures(["Reel"], reel);
+    stop = mountDeckDemos();
+    act(() => intersect(document.querySelector("[data-deck-demo-player]") as Element));
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
   });
 });

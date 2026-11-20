@@ -24,7 +24,13 @@ test("the files and graph slides survive two complete forward and reverse walks"
     .click();
   await expect(player.locator("iframe")).toHaveAttribute("src", /\/d\/opendata-pitch\//);
   await expect(player.getByRole("status")).toContainText("Live deck", { timeout: 20_000 });
-  await expect(player.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+  // Under no-preference motion the visible gallery player autoplays. Pause it, then return to the
+  // deck's start step with the player's own slide rail, so the walk starts paused and in place.
+  const play = player.getByRole("button", { name: "Play", exact: true });
+  const pause = player.getByRole("button", { name: "Pause", exact: true });
+  await expect(play.or(pause)).toBeVisible();
+  if (await pause.isVisible()) await pause.click();
+  await expect(play).toBeVisible();
   const frame = player.frameLocator("iframe");
   // The scale-graph slide's number, from the deck's own slide files (sorted, as the deck numbers them).
   const graphSlide =
@@ -36,6 +42,23 @@ test("the files and graph slides survive two complete forward and reverse walks"
     ({ slide }) => slide >= example.startSlide && slide <= graphSlide,
   );
   expect(ordered.length).toBeGreaterThan(1);
+  const [start] = ordered;
+  if (!start) throw new Error("opendata-pitch has no start state");
+  await player
+    .getByRole("navigation", { name: "Slides" })
+    .getByRole("button")
+    .nth(example.startSlide - 1)
+    .click();
+  await expect(
+    player.getByText(
+      announcement(
+        { ...start, slides: example.slides, settled: true, direction: null },
+        example.slideTitles[start.slide - 1],
+      ),
+      { exact: true },
+    ),
+  ).toBeAttached({ timeout: 15_000 });
+  await expect(play).toBeVisible();
   for (let cycle = 0; cycle < 2; cycle++) {
     for (const forward of [true, false]) {
       const label = forward ? "Step forward" : "Step back";

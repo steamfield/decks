@@ -24,6 +24,4 @@ The `decks` command: `dev`, `build`, `new`, `check`, `lint`, `export` (PDF), `sh
 
 The guide for this version is installed with the package in `node_modules/@steamfield/decks/docs/`; start with `docs/README.md`. Source, issues and the changelog: https://github.com/steamfield/decks.
 
-Decks replaces `slidev-addon-decks`, a Slidev addon. A Slidev deck moves over by rewriting each `pages/NN-slug.md` as `slides/NN-slug.mdx` and each Vue component as a React one; `docs/migrating-from-slidev.md` has the mapping.
-
 Apache-2.0.

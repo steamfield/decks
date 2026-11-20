@@ -11,7 +11,7 @@ bunx -p @steamfield/decks decks dev talk           # serve it, with presenter vi
 
 Node 22.12 or later and React 19. The `-p` form keeps runners from fetching the unrelated `decks` package on npm. The user guide is [docs/guide/](docs/guide/README.md); it also ships inside the package.
 
-Decks was a Slidev addon (`slidev-addon-decks`) until 1.0. [Moving a deck from slidev-addon-decks](docs/guide/migrating-from-slidev.md) has the mapping; the git tag `slidev-final` holds the last Slidev version of this repo.
+Decks was a Slidev addon (`slidev-addon-decks`) until 1.0; the git tag `slidev-final` holds the last Slidev version of this repo.
 
 ## This repository
 

@@ -4,7 +4,7 @@ import DeckDemos from "../../components/docs/DeckDemos.astro";
 import { docsGroups } from "../../config";
 import DocsLayout from "../../layouts/DocsLayout.astro";
 import { getDocs, getDocEntries, render } from "../../lib/collection";
-import { docHref, docsNav, markdownHref, ogImageHref, pageLinks } from "../../lib/docs";
+import { docHref, docsNav, markdownHref, ogImageHref, outline, pageLinks } from "../../lib/docs";
 
 export const getStaticPaths = (async () => {
   const entries = await getDocEntries();
@@ -25,7 +25,7 @@ const { prev, next } = pageLinks(nav, entry.id);
   markdown={markdownHref(entry.id)}
   nav={nav}
   current={entry.id}
-  headings={headings}
+  outline={outline(headings, entry.body ?? "")}
   prev={prev}
   next={next}
 >
