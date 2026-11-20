@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import type { humanGate as HumanGate } from "@steamfield/ui/human-gate";
 import posthog from "posthog-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -19,6 +20,9 @@ const testEvent = "test_event_captured" as EventName;
 let keyCounter = 0;
 let key = "";
 let analytics: typeof AnalyticsModule;
+// The gate analytics.ts imported: one module registry per test, so import it after
+// vi.resetModules, beside the analytics module.
+let gate: typeof HumanGate;
 let pipeline: PostHogPipeline;
 let storedBefore: Set<string>;
 
@@ -46,6 +50,10 @@ function newStorage(live: PostHogPipeline = pipeline): string[] {
 beforeEach(async () => {
   vi.resetModules();
   analytics = await import("./analytics");
+  ({ humanGate: gate } = await import("@steamfield/ui/human-gate"));
+  // happy-dom's events are untrusted, so no dispatched click can open the gate. Most tests
+  // are about what is sent, not when; the human gate describe closes it again.
+  gate.markHuman();
   key = `phc_test_${++keyCounter}`;
   pipeline = createPostHogPipeline(posthog);
   storedBefore = new Set(storageNames());
@@ -53,6 +61,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   vi.useRealTimers();
+  gate.reset();
   pipeline.shutdown();
   localStorage.clear();
   sessionStorage.clear();
@@ -79,6 +88,8 @@ async function nextPage(consent: ConsentStore | undefined, { siblingSite = false
   }
   vi.resetModules();
   analytics = await import("./analytics");
+  ({ humanGate: gate } = await import("@steamfield/ui/human-gate"));
+  gate.markHuman();
   const next = createPostHogPipeline(posthog);
   await analytics.initAnalytics({ key, site: "decks", consent }, next.load);
   return next;
@@ -313,6 +324,52 @@ describe("a choice stored from an earlier visit", () => {
   });
 });
 
+describe("the human gate", () => {
+  beforeEach(() => gate.reset());
+
+  it("sends nothing before the visitor gives a trusted input", async () => {
+    const { button } = page();
+    await start({ consent: consentStore() });
+    clickOn(button);
+    analytics.track(testEvent);
+    window.dispatchEvent(new Event("pagehide"));
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    // The gate lets the SDK's own $set through (UNGATED_EVENTS): it carries no visitor activity.
+    expect(pipeline.captured().filter((event) => event.event !== "$set")).toEqual([]);
+    document.body.innerHTML = "";
+  });
+
+  it("sends the initial pageview once on the first input, stamped with the landing time", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const landed = new Date("2026-01-01T00:00:00Z");
+    vi.setSystemTime(landed);
+    await start({ consent: consentStore() });
+    vi.setSystemTime(new Date(landed.getTime() + 5000));
+    gate.markHuman();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const pageview = pipeline.only("$pageview");
+    expect(pageview.properties.site).toBe("decks");
+    expect(pageview.timestamp?.getTime()).toBe(landed.getTime());
+  });
+
+  it("sends an event tracked while closed once the gate opens, with the site", async () => {
+    await start({ consent: consentStore() });
+    analytics.track(testEvent, { position: 2 });
+    expect(pipeline.captured(testEvent)).toEqual([]);
+    gate.markHuman();
+    const event = pipeline.only(testEvent);
+    expect(event.properties).toMatchObject({ site: "decks", position: 2 });
+  });
+
+  it("still captures the page leave after the gate opens", async () => {
+    await start({ consent: consentStore() });
+    gate.markHuman();
+    await firstPageview();
+    window.dispatchEvent(new Event("pagehide"));
+    expect(pipeline.only("$pageleave").properties.site).toBe("decks");
+  });
+});
+
 describe("init", () => {
   it("initializes with the module's options", async () => {
     await start({ host: "http://127.0.0.1:9" });
@@ -323,7 +380,8 @@ describe("init", () => {
       opt_out_capturing_by_default: true,
       persistence: "localStorage+cookie",
       cross_subdomain_cookie: true,
-      capture_pageview: "history_change",
+      capture_pageview: false,
+      capture_pageleave: true,
       disable_capture_url_hashes: true,
       disable_session_recording: true,
       capture_dead_clicks: false,
@@ -453,17 +511,14 @@ describe("capture features", () => {
   });
 
   it("sends page URLs without the hash, which carries search text", async () => {
-    await start({ consent: consentStore() });
-    await firstPageview();
-    pipeline.clear();
-    // posthog-js wraps history.pushState only once per window, for the first instance in
-    // this file, so the navigation is announced the way Back would be: popstate, which
-    // each instance listens for.
     history.pushState(null, "", "/search/#q=zebra");
-    window.dispatchEvent(new PopStateEvent("popstate"));
-    const pageview = await vi.waitFor(() => pipeline.only("$pageview"), { timeout: 10_000 });
-    expect(pageview.properties.$current_url).toBe(`${location.origin}/search/`);
-    history.pushState(null, "", "/");
+    try {
+      await start({ consent: consentStore() });
+      const pageview = await firstPageview();
+      expect(pageview.properties.$current_url).toBe(`${location.origin}/search/`);
+    } finally {
+      history.pushState(null, "", "/");
+    }
   });
 
   it("web vitals capture is on for every visitor", async () => {
@@ -731,6 +786,9 @@ describe("posthog-js contract that beforeSend's site stamp works around", () => 
 });
 
 describe("the queue", () => {
+  // A closed gate keeps the initial $pageview out of the fake SDK's calls.
+  beforeEach(() => gate.reset());
+
   it("keeps the first 50 calls made before init, drops the rest and warns once", async () => {
     const sdk = fakeSdk();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);

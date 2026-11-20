@@ -130,6 +130,16 @@ window._POSTHOG_REMOTE_CONFIG[${JSON.stringify(key)}] = { config: ${JSON.stringi
   return route.fulfill({ json: { status: 1 } });
 }
 
+// The human gate holds every event until a trusted input, and Playwright's mouse is one.
+// Called after each navigation, since a new page starts with the gate closed. The pause
+// outlasts posthog-js's 3 s batch timer, so the pageview is sent before the next
+// navigation instead of relying on the unload flush, which a loaded machine can lose.
+async function beHuman(page: Page) {
+  await page.mouse.move(40, 40);
+  await page.mouse.move(80, 90);
+  await page.waitForTimeout(3500);
+}
+
 async function open(page: Page, siteURL: string) {
   const sent: Sent[] = [];
   // posthog-js drops every event from a browser that looks automated (navigator.webdriver,
@@ -142,6 +152,7 @@ async function open(page: Page, siteURL: string) {
   // On the context, so a page's last batch, sent as it unloads, is caught too.
   await page.context().route(`${host}/**`, (route) => servePostHog(route, sent));
   await page.goto(`${siteURL}/`);
+  await beHuman(page);
   return sent;
 }
 
@@ -179,13 +190,16 @@ async function typeIntoAField(page: Page) {
 // changes a visitor makes.
 async function useSite(page: Page, siteURL: string) {
   await page.goto(`${siteURL}/`);
+  await beHuman(page);
   const install = page.locator("#install");
   await install.getByRole("tab").nth(1).click();
   await install.getByRole("button", { name: /copy/i }).first().click();
   await typeIntoAField(page);
   await page.goto(`${siteURL}${DOC}`);
+  await beHuman(page);
   // Leaving the page flushes what posthog-js buffers: heatmaps, recordings, web vitals.
   await page.goto(`${siteURL}/`);
+  await beHuman(page);
 }
 
 test("counts a cookieless visitor without recordings or heatmaps, and sends web vitals", async ({
@@ -223,6 +237,7 @@ test("records after Accept, with typed text masked and no network payloads", asy
   const sent = await open(page, siteURL);
   await banner(page).getByRole("button", { name: "Accept" }).click();
   await page.goto(`${siteURL}/`);
+  await beHuman(page);
   await typeIntoAField(page);
   await page.locator("#install").getByRole("tab").nth(1).click();
   // Staying on the page: recordings and heatmaps are sent on their own timers.
@@ -276,6 +291,7 @@ test("stops after a decline on another steamfield.io site, on the next page load
   const sent = await open(page, siteURL);
   await banner(page).getByRole("button", { name: "Accept" }).click();
   await page.goto(`${siteURL}/`);
+  await beHuman(page);
   await page.locator("#install").getByRole("tab").nth(1).click();
   // Recording, before the decline.
   await expect.poll(() => named(sent, "$snapshot").length, delivery).toBeGreaterThan(0);
@@ -286,13 +302,16 @@ test("stops after a decline on another steamfield.io site, on the next page load
   await context.clearCookies({ name: `__ph_opt_in_out_${key}` });
   expect(cookies.some((cookie) => cookie.name === `__ph_opt_in_out_${key}`)).toBe(true);
   await page.goto(`${siteURL}${DOC}`);
+  await beHuman(page);
   await page.goBack();
+  await beHuman(page);
   // A fresh load: Playwright's Chromium runs with the back-forward cache off, so the
   // restored-page path is covered by analytics.test.ts's pageshow tests instead.
   const since = Date.now();
   await page.locator("#install").getByRole("tab").first().click();
   await typeIntoAField(page);
   await page.goto(`${siteURL}${DOC}`);
+  await beHuman(page);
   await expect.poll(() => named(sent, "$pageview", since).length, delivery).toBeGreaterThan(0);
   // The flush sentinel: see the Decline test above.
   await expect.poll(() => named(sent, "$web_vitals", since).length, delivery).toBeGreaterThan(0);

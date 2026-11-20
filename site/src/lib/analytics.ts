@@ -5,6 +5,11 @@
 // Consent: the visitor's banner choice (the sf-consent cookie, read through a consent
 // store) is the single source of truth, and PostHog's own consent state follows it.
 // Until the visitor accepts, PostHog runs cookieless and stores nothing on the device.
+//
+// Human gate: no event leaves the browser until the visitor gives a trusted input
+// (pointer, key, wheel, touch or click), so headless crawlers that pass posthog-js's own
+// bot filter send nothing. See @steamfield/ui/human-gate.
+import { humanGate } from "@steamfield/ui/human-gate";
 import type { BeforeSendFn, PostHog, PostHogConfig } from "posthog-js";
 import type { EventName, EventProps } from "./events";
 
@@ -136,13 +141,17 @@ function onRestore(c: Client, key: string) {
   });
 }
 
-function onLoaded(instance: Client, key: string, store?: ConsentStore) {
-  // Runs before posthog-js captures the deferred initial $pageview, so that
-  // pageview already reflects the stored choice.
+function onLoaded(instance: Client, key: string, landedAt: Date, store?: ConsentStore) {
+  // Runs before the gate captures the initial $pageview, so that pageview already
+  // reflects the stored choice.
   if (store) {
     applyConsent(instance, store.getState(), key);
     store.subscribe(() => send((c) => applyConsent(c, store.getState(), key)));
   }
+  // Held events replay through this client; the initial $pageview is captured on the
+  // visitor's first input and stamped with the time the page loaded.
+  humanGate.attach(instance);
+  humanGate.whenHuman((options) => instance.capture("$pageview", {}, options), landedAt);
   onRestore(instance, key);
   client = instance;
   for (const call of queue ?? []) call(instance);
@@ -162,6 +171,7 @@ export async function initAnalytics(
   const { key } = config;
   if (!key || typeof window === "undefined" || queue || client) return;
   queue = [];
+  const landedAt = new Date();
   let posthog: Pick<PostHog, "init">;
   try {
     ({ default: posthog } = await load());
@@ -177,7 +187,13 @@ export async function initAnalytics(
     // Move it on purpose when upgrading, after reading what the new snapshot changes.
     defaults: "2026-08-30",
     person_profiles: "identified_only",
-    capture_pageview: "history_change",
+    // The human gate captures the initial $pageview: a held $pageview would corrupt
+    // posthog-js's $prev_pageview_* bookkeeping. This site has no client-side route
+    // changes, so there is nothing for history_change to add.
+    capture_pageview: false,
+    // Explicit: posthog-js defaults this to "if_capture_pageview", so turning pageviews
+    // off would silently turn page leaves off too. The gate drops $pageleave until open.
+    capture_pageleave: true,
     // URLs without their hash: a hash such as stacks' /search/#q=… would put the search
     // text on every event.
     disable_capture_url_hashes: true,
@@ -228,8 +244,9 @@ export async function initAnalytics(
     // PostHog's CDN (remote config, web vitals, the recorder) are allowed.
     advanced_disable_feature_flags: true,
     advanced_disable_feature_flags_on_first_load: true,
-    before_send: beforeSend(config.site),
-    loaded: (instance) => onLoaded(instance, key, config.consent),
+    // The gate goes last, so held events already carry site and the consent floor.
+    before_send: [beforeSend(config.site), humanGate.filter],
+    loaded: (instance) => onLoaded(instance, key, landedAt, config.consent),
   });
 }
 
